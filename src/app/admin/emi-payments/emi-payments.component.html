@@ -1,0 +1,72 @@
+<div *ngIf="toast" class="panel-alert panel-alert-success mb-3" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;">
+  <i class="fas fa-check-circle"></i> {{ toast }}
+</div>
+
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+  <div class="pg-header" style="margin-bottom:0;"><h4>EMI & Payment Tracking</h4><p>Manage bookings and overdue EMIs</p></div>
+  <button class="btn btn-outline-green btn-sm" (click)="loadBookings();loadOverdue()"><i class="fas fa-sync me-1"></i>Refresh</button>
+</div>
+
+<div class="d-flex gap-2 mb-4">
+  <div class="filter-tab" [class.active]="activeTab==='bookings'" (click)="activeTab='bookings'">
+    <i class="fas fa-calendar me-1"></i>Pending Bookings <span class="sl-badge ms-1">{{ bookings.length }}</span>
+  </div>
+  <div class="filter-tab" [class.active]="activeTab==='overdue'" (click)="activeTab='overdue'">
+    <i class="fas fa-exclamation-triangle me-1"></i>Overdue EMIs <span class="sl-badge red ms-1">{{ overdueEmis.length }}</span>
+  </div>
+</div>
+
+<div class="search-box mb-3" style="width:fit-content;">
+  <i class="fas fa-search"></i>
+  <input [(ngModel)]="search" placeholder="Search customer..."/>
+</div>
+
+<!-- Bookings Tab -->
+<div class="data-table-wrap" *ngIf="activeTab==='bookings'">
+  <div class="data-table-head"><h5>Payment Pending Bookings ({{ filteredBookings.length }})</h5></div>
+  <div *ngIf="loading" class="panel-loading"><i class="fas fa-spinner"></i></div>
+  <div *ngIf="!loading && filteredBookings.length===0" class="panel-empty"><i class="fas fa-calendar-check"></i><h6>No pending bookings</h6></div>
+  <div class="table-responsive" *ngIf="!loading && filteredBookings.length>0">
+    <table class="table">
+      <thead><tr><th>Booking</th><th>Customer</th><th>Plot</th><th>Advance</th><th>Type</th><th>Date</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let b of filteredBookings">
+          <td><span class="fw-700 text-primary fs-12">{{ b.booking_serial }}</span></td>
+          <td><strong style="color:var(--txt-h);">{{ b.customer_name }}</strong><div class="fs-12 text-muted">{{ b.mobile_no }}</div></td>
+          <td class="fs-12">{{ b.plot_number }}<div class="text-muted">{{ b.site_name }}</div></td>
+          <td class="fw-700">₹{{ b.advance_amount | number }}</td>
+          <td><span class="sbadge sbadge-blue">{{ b.payment_type }}</span></td>
+          <td class="fs-12 text-muted">{{ b.booking_date | date:'dd MMM yy' }}</td>
+          <td><span class="sbadge" [class.sbadge-yellow]="b.booking_status==='PaymentPending'" [class.sbadge-green]="b.booking_status==='Confirmed'" [class.sbadge-red]="b.booking_status==='Cancelled'">{{ b.booking_status }}</span></td>
+          <td>
+            <button *ngIf="b.booking_status!=='Confirmed'" class="action-btn success" title="Confirm" (click)="confirmBooking(b)" [disabled]="confirmLoading">
+              <i class="fas fa-check"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Overdue EMI Tab -->
+<div class="data-table-wrap" *ngIf="activeTab==='overdue'">
+  <div class="data-table-head"><h5>Overdue EMIs ({{ filteredEmis.length }})</h5></div>
+  <div *ngIf="filteredEmis.length===0" class="panel-empty"><i class="fas fa-check-circle"></i><h6>No overdue EMIs</h6><p>All payments are up to date</p></div>
+  <div class="table-responsive" *ngIf="filteredEmis.length>0">
+    <table class="table">
+      <thead><tr><th>Customer</th><th>Plot</th><th>EMI Amt</th><th>Due Date</th><th>Overdue Days</th><th>Late Fee</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let e of filteredEmis">
+          <td><strong style="color:var(--txt-h);">{{ e.full_name }}</strong><div class="fs-12 text-muted">{{ e.mobile_no }}</div></td>
+          <td class="fs-12">{{ e.plot_number }}<div class="text-muted">{{ e.site_name }}</div></td>
+          <td class="fw-700">₹{{ e.emi_amount | number }}</td>
+          <td class="fs-12 text-muted">{{ e.due_date | date:'dd MMM yyyy' }}</td>
+          <td><span class="sbadge sbadge-red">{{ e.overdue_days }} days</span></td>
+          <td class="text-danger fw-700">₹{{ e.late_fee_due | number }}</td>
+          <td><button class="action-btn success" title="Confirm Payment" (click)="confirmEmi(e)"><i class="fas fa-check"></i></button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

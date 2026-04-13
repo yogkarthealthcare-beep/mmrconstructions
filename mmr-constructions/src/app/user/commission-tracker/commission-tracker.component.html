@@ -1,0 +1,74 @@
+<div class="mb-4"><h4 style="font-family:var(--ff-display);color:var(--txt-h);margin:0;">Commission Tracker</h4>
+<p style="font-size:13px;color:var(--txt-muted);margin:0;">12-year Associate Commission Program — Your earnings</p></div>
+
+<!-- Summary Banner -->
+<div style="background:var(--grad-green);border-radius:var(--r-xl);padding:24px 28px;margin-bottom:24px;display:flex;gap:32px;flex-wrap:wrap;align-items:center;">
+  <div *ngFor="let s of [['₹14,400/mo','Current Monthly Commission'],['2400 gaj','Total Gaj Sold'],['₹1,72,800','Total Earned (YTD)'],['₹3,00,000','Bonus (after 12 yrs)']]" style="text-align:center;">
+    <div style="font-family:var(--ff-display);font-size:1.4rem;font-weight:700;color:var(--clr-gold-lt);">{{ s[0] }}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;">{{ s[1] }}</div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Target Progress -->
+  <div class="col-lg-5">
+    <div class="panel-card h-100">
+      <div class="panel-card-title">Target Progress (2000 gaj)</div>
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-family:var(--ff-display);font-size:2.5rem;font-weight:700;color:var(--clr-primary);">{{ pctToBonus }}%</div>
+        <div style="font-size:13px;color:var(--txt-muted);">{{ gajSold }} / {{ targetGaj }} gaj</div>
+      </div>
+      <div class="progress-bar-wrap" style="height:12px;margin-bottom:16px;">
+        <div class="progress-bar-fill gold" [style.width]="pctToBonus + '%'"></div>
+      </div>
+      <div style="background:var(--clr-primary-bg);border-radius:var(--r-lg);padding:14px;text-align:center;">
+        <div style="font-size:12px;color:var(--txt-muted);">Target Achieved! Bonus in</div>
+        <div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700;color:var(--clr-primary);">2031</div>
+        <div style="font-size:12px;color:var(--txt-muted);">₹3,00,000 one-time bonus</div>
+      </div>
+      <div style="margin-top:16px;background:var(--clr-gold-bg);border:1px solid var(--clr-gold);border-radius:var(--r-lg);padding:12px;font-size:13px;color:var(--clr-gold-dk);">
+        <i class="fas fa-star me-2"></i>Target surpassed! +400 gaj bonus sold. Monthly income: ₹14,400
+      </div>
+    </div>
+  </div>
+
+  <!-- Commission Table -->
+  <div class="col-lg-7">
+    <div class="panel-card h-100">
+      <div class="panel-card-title">Monthly Commission History</div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead><tr><th>Month</th><th>Gaj</th><th>Commission</th><th>Status</th><th>Paid On</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let c of commissions">
+              <td style="font-weight:600;color:var(--txt-h);">{{ c.month }}</td>
+              <td>{{ c.gaj }} gaj</td>
+              <td style="font-weight:700;color:#16a34a;font-size:1rem;">{{ c.amount }}</td>
+              <td><span class="sbadge" [class.sbadge-green]="c.status==='paid'" [class.sbadge-yellow]="c.status==='pending'">{{ c.status }}</span></td>
+              <td style="font-size:12px;color:var(--txt-muted);">{{ c.paidDate || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- My Customers -->
+<div class="panel-card">
+  <div class="panel-card-title">Customers Referred by Me ({{ customers.length }})</div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Name</th><th>Mobile</th><th>Gaj</th><th>Joined</th><th>EMI Status</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let c of customers">
+          <td><strong style="color:var(--txt-h);">{{ c.name }}</strong></td>
+          <td>{{ c.mobile }}</td>
+          <td style="font-weight:700;color:var(--clr-primary);">{{ c.gaj }} gaj</td>
+          <td style="color:var(--txt-muted);font-size:12px;">{{ c.joinDate }}</td>
+          <td><span class="sbadge" [class.sbadge-green]="c.emi==='active'" [class.sbadge-blue]="c.emi==='complete'">{{ c.emi }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

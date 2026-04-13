@@ -1,0 +1,35 @@
+<div class="mb-4"><h4 style="font-family:var(--ff-display);color:var(--txt-h);margin:0;">Payment History</h4>
+<p style="font-size:13px;color:var(--txt-muted);margin:0;">All your payment receipts and records</p></div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-4" *ngFor="let s of summaryStats">
+    <div class="stat-card">
+      <div class="sc-icon" [style]="'background:' + s.bg + ';color:' + s.clr"><i [class]="s.icon"></i></div>
+      <div class="sc-val" style="font-size:1.3rem;">{{ s.val }}</div>
+      <div class="sc-lbl">{{ s.lbl }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="data-table-wrap">
+  <div class="data-table-head">
+    <h5>All Receipts</h5>
+    <button class="btn btn-outline-green btn-sm"><i class="fas fa-download me-1"></i>Download All</button>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Receipt No.</th><th>Date</th><th>Description</th><th>Amount</th><th>Method</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let p of payments">
+          <td style="font-family:monospace;font-size:12px;color:var(--clr-primary);font-weight:600;">{{ p.id }}</td>
+          <td style="font-size:12px;color:var(--txt-muted);">{{ p.date }}</td>
+          <td style="font-size:13px;">{{ p.desc }}</td>
+          <td style="font-weight:700;color:var(--txt-h);">{{ p.amount }}</td>
+          <td><span class="sbadge sbadge-gray">{{ p.method }}</span></td>
+          <td><span class="sbadge sbadge-green">{{ p.status }}</span></td>
+          <td><button class="action-btn" title="Download PDF"><i class="fas fa-file-pdf" style="color:#dc2626;"></i></button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

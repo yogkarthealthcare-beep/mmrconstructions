@@ -1,0 +1,31 @@
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+  <div class="pg-header" style="margin-bottom:0;"><h4>Associate Management</h4><p>All associates and their commission info</p></div>
+</div>
+<div class="data-table-wrap">
+  <div class="data-table-head">
+    <h5>Associates ({{ total }})</h5>
+    <div class="search-box"><i class="fas fa-search"></i><input [(ngModel)]="search" placeholder="Search..." (input)="load()"/></div>
+  </div>
+  <div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+  <div *ngIf="!loading && associates.length===0" class="panel-empty"><i class="fas fa-user-tie"></i><h6>No associates found</h6></div>
+  <div class="table-responsive" *ngIf="!loading && associates.length>0">
+    <table class="table">
+      <thead><tr><th>Member ID</th><th>Name & Mobile</th><th>Invite Code</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let a of associates">
+          <td><span class="fw-700 text-gold fs-12">{{ a.member_id || '—' }}</span></td>
+          <td><strong style="color:var(--txt-h);">{{ a.full_name }}</strong><div class="fs-12 text-muted">{{ a.mobile_no }}</div></td>
+          <td><span *ngIf="a.invitation_code" style="font-family:monospace;font-size:11px;background:var(--clr-primary-bg);padding:2px 8px;border-radius:6px;color:var(--clr-primary);">{{ a.invitation_code }}</span><span *ngIf="!a.invitation_code" class="text-muted fs-12">—</span></td>
+          <td><span class="sbadge" [class.sbadge-green]="a.account_status==='Active'" [class.sbadge-yellow]="a.account_status==='Pending'" [class.sbadge-gray]="a.account_status==='Suspended'">{{ a.account_status }}</span></td>
+          <td class="fs-12 text-muted">{{ a.registered_at | date:'dd MMM yyyy' }}</td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="action-btn" title="View"><i class="fas fa-eye"></i></button>
+              <a [href]="'https://wa.me/91'+a.mobile_no" target="_blank" class="action-btn" style="color:#16a34a;"><i class="fab fa-whatsapp"></i></a>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

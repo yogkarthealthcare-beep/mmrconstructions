@@ -1,0 +1,85 @@
+<!-- Welcome Banner -->
+<div style="background:var(--grad-green);border-radius:var(--r-xl);padding:24px 28px;margin-bottom:24px;position:relative;overflow:hidden;">
+  <div style="position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:rgba(255,255,255,.04);border-radius:50%;"></div>
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+      <p style="color:var(--clr-gold-lt);font-size:12px;font-family:var(--ff-ui);letter-spacing:.12em;text-transform:uppercase;margin:0;">Welcome Back</p>
+      <h3 style="font-family:var(--ff-display);color:#fff;margin:4px 0 6px;">Ramesh Kumar</h3>
+      <p style="color:rgba(255,255,255,.65);font-size:13px;margin:0;"><i class="fas fa-id-badge me-2"></i>Member ID: MMR-C-00247 &nbsp;|&nbsp; <i class="fas fa-calendar me-1"></i>Joined Jan 2024</p>
+    </div>
+    <div class="d-flex gap-3">
+      <a routerLink="/user/emi-history" class="btn btn-gold btn-sm"><i class="fas fa-calendar-check me-1"></i>Pay EMI</a>
+      <a routerLink="/user/my-plots" class="btn btn-outline-white btn-sm"><i class="fas fa-map me-1"></i>My Plots</a>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3" *ngFor="let s of stats">
+    <div class="stat-card">
+      <div class="sc-icon" [style]="s.color"><i [class]="s.icon"></i></div>
+      <div class="sc-val" style="font-size:1.5rem;">{{ s.val }}</div>
+      <div class="sc-lbl">{{ s.lbl }}</div>
+      <div style="font-size:11px;color:var(--txt-muted);margin-top:4px;">{{ s.sub }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- EMI Progress -->
+  <div class="col-lg-5">
+    <div class="panel-card h-100">
+      <div class="panel-card-title">Loan Repayment Progress</div>
+      <div style="margin-bottom:20px;" *ngFor="let p of myPlots">
+        <div class="d-flex justify-content-between mb-1">
+          <span style="font-size:13px;font-weight:600;color:var(--txt-h);">{{ p.id }}</span>
+          <span style="font-size:12px;color:var(--txt-muted);">{{ p.site }}</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" [style.width]="emiPct + '%'"></div>
+        </div>
+        <div class="d-flex justify-content-between mt-1">
+          <span style="font-size:11px;color:#16a34a;">Paid: {{ p.paid }}</span>
+          <span style="font-size:11px;color:var(--txt-muted);">Balance: {{ p.bal }}</span>
+        </div>
+      </div>
+      <div style="background:var(--bg-section);border-radius:var(--r-lg);padding:14px;text-align:center;margin-top:16px;">
+        <div style="font-size:12px;color:var(--txt-muted);">Next EMI Due</div>
+        <div style="font-family:var(--ff-display);font-size:1.5rem;font-weight:700;color:var(--clr-primary);">₹12,000</div>
+        <div style="font-size:12px;color:var(--txt-muted);">01 May 2025</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Payments -->
+  <div class="col-lg-7">
+    <div class="panel-card h-100">
+      <div class="panel-card-title">Recent Payments <a routerLink="/user/payments" style="font-size:12px;color:var(--clr-primary);font-family:var(--ff-body);font-weight:500;">View All →</a></div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Receipt</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let p of recentPayments">
+              <td style="color:var(--txt-muted);font-size:12px;">{{ p.date }}</td>
+              <td style="font-weight:700;color:var(--txt-h);">{{ p.amount }}</td>
+              <td><span class="sbadge sbadge-gray">{{ p.method }}</span></td>
+              <td><span style="font-family:monospace;font-size:11px;color:var(--clr-primary);">{{ p.receipt }}</span></td>
+              <td><span class="sbadge sbadge-green">{{ p.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Buyback Reminder -->
+<div style="background:var(--clr-gold-bg);border:1px solid var(--clr-gold);border-radius:var(--r-xl);padding:20px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+  <div style="width:44px;height:44px;background:var(--grad-gold);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-shield-alt" style="color:var(--clr-primary-dk);font-size:18px;"></i></div>
+  <div class="flex-fill">
+    <h6 style="font-family:var(--ff-display);color:var(--clr-primary-dk);margin:0 0 4px;">Buyback Guarantee Active</h6>
+    <p style="font-size:13px;color:var(--clr-gold-dk);margin:0;">आपका Buyback window <strong>Jan 2026 तक</strong> active है। Original price + ₹1,00,000 guaranteed।</p>
+  </div>
+  <a href="#" class="btn btn-gold btn-sm">Learn More</a>
+</div>

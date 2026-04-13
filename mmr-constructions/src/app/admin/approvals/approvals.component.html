@@ -1,0 +1,43 @@
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div><h4 style="font-family:var(--ff-display);color:var(--txt-h);margin:0;">Registration Approvals</h4>
+  <p style="font-size:13px;color:var(--txt-muted);margin:0;">Review and approve/reject new registrations</p></div>
+</div>
+
+<!-- Summary Badges -->
+<div class="d-flex gap-3 mb-4 flex-wrap">
+  <div class="stat-card" style="padding:14px 20px;cursor:pointer;" *ngFor="let f of [['all','All','fas fa-list'],['pending','Pending','fas fa-hourglass-half'],['approved','Approved','fas fa-check-circle'],['rejected','Rejected','fas fa-times-circle']]" (click)="filter=f[0]" [style.border]="filter===f[0] ? '2px solid var(--clr-primary)' : ''">
+    <div style="display:flex;align-items:center;gap:8px;"><i [class]="f[2]" style="color:var(--clr-primary);"></i><span style="font-size:13px;font-weight:600;">{{ f[1] }}</span></div>
+  </div>
+  <div class="ms-auto d-flex align-items-center">
+    <div class="search-box"><i class="fas fa-search"></i><input [(ngModel)]="search" placeholder="Search name or mobile..."/></div>
+  </div>
+</div>
+
+<div class="data-table-wrap">
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Type</th><th>City</th><th>Date</th><th>Aadhar</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of filtered">
+          <td style="font-size:11px;color:var(--txt-muted);">{{ r.id }}</td>
+          <td><strong style="color:var(--txt-h);">{{ r.name }}</strong><br/><span style="font-size:11px;color:var(--txt-muted);">{{ r.email || '—' }}</span></td>
+          <td>{{ r.mobile }}</td>
+          <td><span class="sbadge" [class.sbadge-green]="r.type==='Customer'" [class.sbadge-blue]="r.type==='Associate'">{{ r.type }}</span></td>
+          <td>{{ r.city }}</td>
+          <td style="color:var(--txt-muted);font-size:12px;">{{ r.date }}</td>
+          <td style="font-family:monospace;font-size:12px;">{{ r.aadhar }}</td>
+          <td>
+            <span class="sbadge" [class.sbadge-yellow]="r.status==='pending'" [class.sbadge-green]="r.status==='approved'" [class.sbadge-red]="r.status==='rejected'">{{ r.status }}</span>
+          </td>
+          <td>
+            <ng-container *ngIf="r.status==='pending'">
+              <button class="action-btn me-1" style="color:#16a34a;border-color:#bbf7d0;" title="Approve" (click)="approve(r)"><i class="fas fa-check"></i></button>
+              <button class="action-btn danger" title="Reject" (click)="reject(r)"><i class="fas fa-times"></i></button>
+            </ng-container>
+            <button class="action-btn ms-1" title="View"><i class="fas fa-eye"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

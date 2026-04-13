@@ -1,0 +1,104 @@
+<!-- Page Header -->
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <h4 style="font-family:var(--ff-display);color:var(--txt-h);margin:0;">Dashboard Overview</h4>
+    <p style="font-size:13px;color:var(--txt-muted);margin:0;">Welcome back, Admin · April 2025</p>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-green btn-sm"><i class="fas fa-download me-1"></i>Export</button>
+    <a routerLink="/admin/approvals" class="btn btn-green btn-sm"><i class="fas fa-user-check me-1"></i>Pending Approvals <span class="ms-1" style="background:var(--clr-gold);color:var(--clr-primary-dk);border-radius:99px;padding:1px 7px;font-size:10px;">12</span></a>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3" *ngFor="let s of stats">
+    <div class="stat-card">
+      <div class="sc-icon" [style]="s.color"><i [class]="s.icon"></i></div>
+      <div class="sc-val">{{ s.val }}</div>
+      <div class="sc-lbl">{{ s.lbl }}</div>
+      <div class="sc-delta" [class.up]="s.up" [class.down]="!s.up">
+        <i [class]="s.up ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>{{ s.delta }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Site Occupancy -->
+  <div class="col-lg-5">
+    <div class="panel-card h-100">
+      <div class="panel-card-title">
+        Site Occupancy
+        <span style="font-size:12px;color:var(--txt-muted);font-family:var(--ff-body);font-weight:400;">Plot availability</span>
+      </div>
+      <div *ngFor="let s of siteOccupancy" style="margin-bottom:18px;">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span style="font-size:13px;font-weight:600;color:var(--txt-h);">{{ s.name }}</span>
+          <span style="font-size:12px;color:var(--txt-muted);">{{ s.sold }}/{{ s.total }}</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" [class.gold]="s.pct > 70" [style.width]="s.pct + '%'"></div>
+        </div>
+        <div class="d-flex justify-content-between mt-1">
+          <span style="font-size:11px;color:var(--txt-muted);">{{ s.pct }}% occupied</span>
+          <span style="font-size:11px;color:var(--st-vacant);">{{ s.total - s.sold }} vacant</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Approvals -->
+  <div class="col-lg-7">
+    <div class="panel-card h-100">
+      <div class="panel-card-title">
+        Pending Registrations
+        <a routerLink="/admin/approvals" style="font-size:12px;color:var(--clr-primary);font-family:var(--ff-body);font-weight:500;">View All →</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead><tr><th>Name</th><th>Mobile</th><th>Type</th><th>City</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let a of pendingApprovals">
+              <td><strong style="color:var(--txt-h);">{{ a.name }}</strong></td>
+              <td>{{ a.mobile }}</td>
+              <td><span class="sbadge" [class.sbadge-green]="a.type==='Customer'" [class.sbadge-blue]="a.type==='Associate'">{{ a.type }}</span></td>
+              <td>{{ a.city }}</td>
+              <td style="color:var(--txt-muted);">{{ a.date }}</td>
+              <td>
+                <button class="action-btn me-1" title="Approve" style="color:#16a34a;border-color:#bbf7d0;"><i class="fas fa-check"></i></button>
+                <button class="action-btn danger" title="Reject"><i class="fas fa-times"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Enquiries -->
+<div class="panel-card">
+  <div class="panel-card-title">
+    Recent Enquiries
+    <a routerLink="/admin/enquiries" style="font-size:12px;color:var(--clr-primary);font-family:var(--ff-body);font-weight:500;">View All →</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Name</th><th>Mobile</th><th>Interest</th><th>Time</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let e of recentEnquiries">
+          <td><strong style="color:var(--txt-h);">{{ e.name }}</strong></td>
+          <td>{{ e.mobile }}</td>
+          <td>{{ e.interest }}</td>
+          <td style="color:var(--txt-muted);">{{ e.time }}</td>
+          <td>
+            <button class="action-btn me-1" title="Call"><i class="fas fa-phone"></i></button>
+            <button class="action-btn me-1" title="WhatsApp" style="color:#16a34a;"><i class="fab fa-whatsapp"></i></button>
+            <button class="action-btn danger" title="Close"><i class="fas fa-times"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

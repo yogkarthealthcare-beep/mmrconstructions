@@ -1,0 +1,52 @@
+<div class="pg-header"><h4>Referral & Invite Code</h4><p>Share your code and earn 12-year commission</p></div>
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<ng-container *ngIf="!loading">
+  <!-- Invite Code Card -->
+  <div class="welcome-banner mb-4" style="text-align:center;">
+    <p style="color:rgba(255,255,255,.6);font-size:13px;margin:0 0 8px;position:relative;z-index:1;">Your Invitation Code</p>
+    <div style="font-family:monospace;font-size:2.5rem;font-weight:700;color:var(--clr-gold-lt);letter-spacing:.15em;margin-bottom:20px;position:relative;z-index:1;">
+      {{ inviteData.invitation_code || 'N/A' }}
+    </div>
+    <div class="d-flex justify-content-center gap-3 flex-wrap" style="position:relative;z-index:1;">
+      <button class="btn btn-gold" (click)="copyCode()"><i class="fas fa-copy me-2"></i>{{ copied ? '✓ Copied!' : 'Copy Code' }}</button>
+      <button class="btn btn-outline-white" (click)="shareWhatsApp()"><i class="fab fa-whatsapp me-2"></i>Share on WhatsApp</button>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-5">
+      <div class="panel-card">
+        <div class="panel-card-title">Referral Link</div>
+        <div style="background:var(--bg-section);border:1px solid var(--bdr);border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:14px;word-break:break-all;">
+          <span class="fs-12 text-muted flex-fill">{{ referralLink }}</span>
+          <button class="action-btn flex-shrink-0" (click)="copyCode()" title="Copy"><i class="fas fa-copy"></i></button>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-green flex-fill btn-sm" (click)="shareWhatsApp()"><i class="fab fa-whatsapp me-1"></i>WhatsApp</button>
+          <button class="btn btn-outline-green flex-fill btn-sm"><i class="fas fa-sms me-1"></i>SMS</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="panel-card">
+        <div class="panel-card-title">My Network ({{ network.length }})</div>
+        <div *ngIf="network.length===0" class="panel-empty" style="padding:20px;"><i class="fas fa-users"></i><p>No referrals yet. Share your code!</p></div>
+        <div class="table-responsive" *ngIf="network.length>0">
+          <table class="table">
+            <thead><tr><th>Name</th><th>Member ID</th><th>Gaj</th><th>Level</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let n of network">
+                <td><strong style="color:var(--txt-h);">{{ n.full_name }}</strong><div class="fs-12 text-muted">{{ n.mobile_no }}</div></td>
+                <td class="fs-12 text-primary">{{ n.member_id }}</td>
+                <td class="fw-700 text-primary">{{ n.total_gaj_sold || 0 }}</td>
+                <td><span class="sbadge sbadge-gold">L{{ n.level }}</span></td>
+                <td><span class="sbadge" [class.sbadge-green]="n.account_status==='Active'">{{ n.account_status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

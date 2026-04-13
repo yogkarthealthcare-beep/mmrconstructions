@@ -1,0 +1,56 @@
+<section id="sites" class="sec-py" style="background:#fff;">
+  <div class="mmr-container">
+    <div class="row align-items-end mb-5">
+      <div class="col-lg-7">
+        <div class="sec-label">Our Locations</div>
+        <h2 class="sec-title">5 Premium Sites<br/><span>Across 3 Cities</span></h2>
+        <div class="sec-line"></div>
+        <p class="sec-desc">Kanpur, Unnao और Lucknow के prime locations पर affordable plots। हर site highway, airport और colleges के नजदीक।</p>
+      </div>
+      <div class="col-lg-5 text-lg-end mt-3 mt-lg-0">
+        <div class="d-flex align-items-center justify-content-lg-end gap-3 flex-wrap">
+          <div style="display:flex;align-items:center;gap:6px;"><div style="width:12px;height:12px;background:var(--st-vacant);border-radius:3px;"></div><span style="font-size:12px;color:var(--txt-muted);">Vacant</span></div>
+          <div style="display:flex;align-items:center;gap:6px;"><div style="width:12px;height:12px;background:var(--st-process);border-radius:3px;"></div><span style="font-size:12px;color:var(--txt-muted);">In Process</span></div>
+          <div style="display:flex;align-items:center;gap:6px;"><div style="width:12px;height:12px;background:var(--st-booked);border-radius:3px;"></div><span style="font-size:12px;color:var(--txt-muted);">Booked</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-sm-6 col-xl-4" *ngFor="let site of sites">
+        <div class="site-card">
+          <div class="site-img">
+            <img [src]="site.img" [alt]="site.name" loading="lazy"/>
+            <div class="site-img-badge"><span [class]="site.badgeClass">{{ site.city }}</span></div>
+          </div>
+          <div class="site-body">
+            <div class="site-name">{{ site.name }}</div>
+            <div class="site-loc"><i class="fas fa-map-marker-alt"></i> {{ site.loc }}</div>
+            <div class="site-meta">
+              <div class="site-meta-item"><div class="site-meta-num">50</div><div class="site-meta-lbl">50 Gaj</div></div>
+              <div class="site-meta-sep"></div>
+              <div class="site-meta-item"><div class="site-meta-num">100</div><div class="site-meta-lbl">100 Gaj</div></div>
+              <div class="site-meta-sep"></div>
+              <div class="site-meta-item"><div class="site-meta-num" style="color:var(--st-vacant)">✓</div><div class="site-meta-lbl">Available</div></div>
+            </div>
+            <div class="site-tags">
+              <span class="site-tag" *ngFor="let tag of parseTags(site.tags)">
+                <i [class]="tag.icon"></i> {{ tag.label }}
+              </span>
+            </div>
+            <a href="#" class="btn btn-green w-100"><i class="fas fa-map me-2"></i>View Plot Map</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-4">
+        <div class="site-card d-flex flex-column justify-content-center align-items-center text-center h-100" style="background:var(--grad-green);min-height:340px;border:none;">
+          <div style="width:60px;height:60px;background:rgba(201,168,76,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+            <i class="fas fa-calendar-check" style="color:var(--clr-gold-lt);font-size:24px;"></i>
+          </div>
+          <h5 class="fw-bold text-white mb-2" style="font-family:var(--ff-display);">Site Visit करें</h5>
+          <p style="color:rgba(255,255,255,.65);font-size:13px;margin-bottom:20px;">Personal visit fix करें और plot खुद देखें।</p>
+          <button class="btn btn-gold" (click)="scrollTo('contact')"><i class="fas fa-calendar-alt me-2"></i>Book Visit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

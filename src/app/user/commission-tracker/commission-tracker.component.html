@@ -1,0 +1,87 @@
+<div class="pg-header"><h4>Commission Tracker</h4><p>12-year Associate Commission Program</p></div>
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<ng-container *ngIf="!loading">
+  <!-- Summary Banner -->
+  <div class="welcome-banner mb-4">
+    <div class="row g-4" style="position:relative;z-index:1;">
+      <div class="col-6 col-md-3" *ngFor="let s of [
+        ['₹'+(dashData.current_monthly_net||0|number)+'/mo','Monthly Income'],
+        [(tracker.total_gaj_sold||0)+' gaj','Total Gaj Sold'],
+        ['₹'+(tracker.total_commission_earned||0|number),'Total Earned'],
+        [dashData.direct_network_count||0,'Network Size']]">
+        <div class="text-center">
+          <div style="font-family:var(--ff-display);font-size:1.4rem;font-weight:700;color:var(--clr-gold-lt);">{{ s[0] }}</div>
+          <div class="fs-12" style="color:rgba(255,255,255,.55);margin-top:2px;">{{ s[1] }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-4">
+      <div class="panel-card">
+        <div class="panel-card-title">Target Progress (2000 gaj)</div>
+        <div style="text-align:center;margin-bottom:16px;">
+          <div style="font-family:var(--ff-display);font-size:3rem;font-weight:700;color:var(--clr-primary);">{{ pct }}%</div>
+          <div class="fs-12 text-muted">{{ tracker.total_gaj_sold || 0 }} / 2000 gaj sold</div>
+        </div>
+        <div class="progress-bar-wrap" style="height:10px;margin-bottom:16px;"><div class="progress-bar-fill gold" [style.width]="pct+'%'"></div></div>
+        <div *ngIf="dashData.milestone_achieved" class="panel-alert panel-alert-success">
+          <i class="fas fa-trophy"></i><span class="fs-13">🎉 Target achieved! Bonus in 12 years: <strong>₹3,00,000</strong></span>
+        </div>
+        <div *ngIf="!dashData.milestone_achieved" class="panel-alert panel-alert-info">
+          <i class="fas fa-info-circle"></i><span class="fs-13">{{ 2000 - (tracker.total_gaj_sold||0) }} gaj more to unlock ₹12,000/month!</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="panel-card">
+        <div class="panel-card-title">
+          <div class="d-flex gap-2">
+            <span class="filter-tab" [class.active]="activeTab==='commissions'" (click)="activeTab='commissions'" style="cursor:pointer;">Commissions</span>
+            <span class="filter-tab" [class.active]="activeTab==='network'" (click)="activeTab='network'" style="cursor:pointer;">My Network</span>
+          </div>
+        </div>
+
+        <!-- Commissions -->
+        <div *ngIf="activeTab==='commissions'">
+          <div *ngIf="commissions.length===0" class="panel-empty" style="padding:24px;"><i class="fas fa-rupee-sign"></i><p>No commission records yet</p></div>
+          <div class="table-responsive" *ngIf="commissions.length>0">
+            <table class="table">
+              <thead><tr><th>Month</th><th>Type</th><th>Net Amount</th><th>Status</th><th>Paid On</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let c of commissions">
+                  <td class="fw-700 fs-13">{{ c.commission_month }}</td>
+                  <td><span class="sbadge sbadge-blue">{{ c.commission_type }}</span></td>
+                  <td style="font-size:1rem;font-weight:700;color:#16a34a;">₹{{ c.net_amount | number }}</td>
+                  <td><span class="sbadge" [class.sbadge-green]="c.commission_status==='Paid'" [class.sbadge-yellow]="c.commission_status==='Pending'">{{ c.commission_status }}</span></td>
+                  <td class="fs-12 text-muted">{{ c.paid_at ? (c.paid_at | date:'dd MMM') : '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Network -->
+        <div *ngIf="activeTab==='network'">
+          <div *ngIf="network.length===0" class="panel-empty" style="padding:24px;"><i class="fas fa-users"></i><p>No referrals yet</p></div>
+          <div class="table-responsive" *ngIf="network.length>0">
+            <table class="table">
+              <thead><tr><th>Name</th><th>Member ID</th><th>Gaj Sold</th><th>Level</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let n of network">
+                  <td><strong style="color:var(--txt-h);">{{ n.full_name }}</strong><div class="fs-12 text-muted">{{ n.mobile_no }}</div></td>
+                  <td class="fs-12 text-primary">{{ n.member_id }}</td>
+                  <td class="fw-700 text-primary">{{ n.total_gaj_sold || 0 }} gaj</td>
+                  <td><span class="sbadge sbadge-gold">Level {{ n.level }}</span></td>
+                  <td><span class="sbadge" [class.sbadge-green]="n.account_status==='Active'" [class.sbadge-yellow]="n.account_status==='Pending'">{{ n.account_status }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

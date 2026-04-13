@@ -1,0 +1,62 @@
+<section id="emi" class="sec-py emi-section">
+  <div class="mmr-container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-5">
+        <div class="sec-label">Transparent Pricing</div>
+        <h2 class="sec-title">EMI <span>Calculator</span></h2>
+        <div class="sec-line"></div>
+        <p class="sec-desc mb-4">कोई hidden fees नहीं। Plot size चुनें और instant EMI breakdown देखें।</p>
+        <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:12px;">
+          <li *ngFor="let item of [['File Charge: ₹499 only (one time)', ''],['60 months (5 year) tenure',''],['Cash या Cheque payment accepted',''],['Late payment: 5% additional charge','']]" style="display:flex;align-items:center;gap:12px;">
+            <div style="width:28px;height:28px;background:var(--clr-primary-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-check" style="color:var(--clr-primary);font-size:11px;"></i></div>
+            <span style="font-size:14px;">{{ item[0] }}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="col-lg-7">
+        <div class="emi-box">
+          <h5 style="font-family:var(--ff-display);color:#fff;margin-bottom:20px;">Select Plot Size</h5>
+          <div class="emi-toggle mb-5">
+            <div class="emi-btn" [class.active]="selectedSize===100" (click)="selectedSize=100">100 Gaj</div>
+            <div class="emi-btn" [class.active]="selectedSize===50"  (click)="selectedSize=50">50 Gaj</div>
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-6">
+              <div style="background:rgba(255,255,255,.08);border-radius:var(--r-lg);padding:20px;">
+                <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Down Payment</div>
+                <div style="font-family:var(--ff-display);font-size:1.75rem;font-weight:700;color:#fff;">{{ plan.dp }}</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div style="background:rgba(201,168,76,.15);border-radius:var(--r-lg);padding:20px;">
+                <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Monthly EMI</div>
+                <div style="font-family:var(--ff-display);font-size:1.75rem;font-weight:700;color:var(--clr-gold-lt);">{{ plan.emi }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="emi-result">
+            <div class="row text-center g-3">
+              <div class="col-4">
+                <div style="font-size:11px;opacity:.7;color:#fff;margin-bottom:4px;">Total Payable</div>
+                <div class="emi-amount" style="font-size:1.5rem;">{{ plan.total }}</div>
+              </div>
+              <div class="col-4">
+                <div style="font-size:11px;opacity:.7;color:#fff;margin-bottom:4px;">Tenure</div>
+                <div class="emi-amount" style="font-size:1.5rem;">{{ plan.tenure }}</div>
+              </div>
+              <div class="col-4">
+                <div style="font-size:11px;opacity:.7;color:#fff;margin-bottom:4px;">File Charge</div>
+                <div class="emi-amount" style="font-size:1.5rem;">₹499</div>
+              </div>
+            </div>
+            <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.15);">
+              <a routerLink="/register" class="btn btn-gold btn-lg w-100">
+                <i class="fas fa-user-check me-2"></i>Book a Plot Now
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

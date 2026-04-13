@@ -1,0 +1,126 @@
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i><span>Loading your dashboard...</span></div>
+
+<ng-container *ngIf="!loading">
+  <!-- Welcome Banner -->
+  <div class="welcome-banner mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3" style="position:relative;z-index:1;">
+      <div>
+        <p style="color:var(--clr-gold-lt);font-size:11px;font-family:var(--ff-ui);letter-spacing:.14em;text-transform:uppercase;margin:0;">Welcome Back</p>
+        <h3 style="font-family:var(--ff-display);color:#fff;margin:4px 0 6px;font-size:1.6rem;">{{ profile.full_name || userData?.full_name || 'User' }}</h3>
+        <p style="color:rgba(255,255,255,.6);font-size:13px;margin:0;">
+          <i class="fas fa-id-badge me-2"></i>{{ profile.member_id || '—' }} &nbsp;·&nbsp;
+          <span class="sbadge sbadge-green" style="font-size:10px;">{{ profile.user_type || 'Customer' }}</span>
+        </p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a routerLink="/user/emi-history" class="btn btn-gold btn-sm"><i class="fas fa-calendar-check me-1"></i>Pay EMI</a>
+        <a routerLink="/user/my-plots" class="btn btn-outline-white btn-sm"><i class="fas fa-map me-1"></i>My Plots</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="sc-icon" style="background:#eaf4ee;color:#1a5c3a;"><i class="fas fa-map"></i></div>
+        <div class="sc-val">{{ bookings.length }}</div>
+        <div class="sc-lbl">My Plots</div>
+        <div class="sc-delta up"><i class="fas fa-check-circle"></i>Active bookings</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="sc-icon" style="background:#fdf8ec;color:#a07c2a;"><i class="fas fa-calendar-check"></i></div>
+        <div class="sc-val">{{ paidEmis }}</div>
+        <div class="sc-lbl">EMIs Paid</div>
+        <div class="sc-delta up"><i class="fas fa-arrow-up"></i>{{ pendingEmis }} pending</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="sc-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check-circle"></i></div>
+        <div class="sc-val">₹{{ (totalPaid/1000).toFixed(0) }}K</div>
+        <div class="sc-lbl">Amount Paid</div>
+        <div class="sc-delta up"><i class="fas fa-arrow-up"></i>Total paid so far</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="sc-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-rupee-sign"></i></div>
+        <div class="sc-val">{{ nextEmi ? '₹'+nextEmi.emi_amount : '—' }}</div>
+        <div class="sc-lbl">Next EMI</div>
+        <div class="sc-delta" [class.down]="!!nextEmi" [class.up]="!nextEmi">
+          <i [class]="nextEmi ? 'fas fa-calendar' : 'fas fa-check'"></i>
+          {{ nextEmi ? (nextEmi.due_date | date:'dd MMM') : 'All paid' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- My Bookings -->
+    <div class="col-lg-6">
+      <div class="panel-card">
+        <div class="panel-card-title">
+          My Plot Bookings
+          <a routerLink="/user/my-plots" class="pc-link">View All →</a>
+        </div>
+        <div *ngIf="bookings.length===0" class="panel-empty" style="padding:20px;">
+          <i class="fas fa-map"></i><p>No plots booked yet</p>
+        </div>
+        <div *ngFor="let b of bookings" style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f0f3f1;">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <div>
+              <span class="fw-700 fs-13" style="color:var(--txt-h);">{{ b.plot_number }}</span>
+              <span class="fs-12 text-muted ms-2">{{ b.site_name }}</span>
+            </div>
+            <span class="sbadge" [class.sbadge-green]="b.booking_status==='Confirmed'" [class.sbadge-yellow]="b.booking_status==='PaymentPending'" [class.sbadge-blue]="b.booking_status==='InProcess'">{{ b.booking_status }}</span>
+          </div>
+          <div class="progress-bar-wrap mt-2"><div class="progress-bar-fill" [style.width]="emiPct(b)+'%'"></div></div>
+          <div class="d-flex justify-content-between mt-1">
+            <span class="fs-12 text-success">{{ emiPct(b) }}% paid</span>
+            <span class="fs-12 text-muted">{{ b.plot_area || '—' }} gaj</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent EMI -->
+    <div class="col-lg-6">
+      <div class="panel-card">
+        <div class="panel-card-title">
+          Recent EMI Payments
+          <a routerLink="/user/emi-history" class="pc-link">View All →</a>
+        </div>
+        <div *ngIf="recentEmis.length===0" class="panel-empty" style="padding:20px;">
+          <i class="fas fa-calendar"></i><p>No payments yet</p>
+        </div>
+        <div class="table-responsive" *ngIf="recentEmis.length>0">
+          <table class="table">
+            <thead><tr><th>#</th><th>Plot</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let e of recentEmis">
+                <td class="fw-700 text-primary">{{ e.installment_no }}</td>
+                <td class="fs-12">{{ e.plot_number }}</td>
+                <td class="fw-700">₹{{ e.paid_amount | number }}</td>
+                <td class="fs-12 text-muted">{{ e.paid_date | date:'dd MMM' }}</td>
+                <td><span class="sbadge sbadge-green">Paid</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buyback Guarantee Notice -->
+  <div class="panel-alert panel-alert-warning" *ngIf="bookings.length>0">
+    <i class="fas fa-shield-alt" style="color:var(--clr-gold-dk);font-size:18px;"></i>
+    <div class="flex-fill">
+      <strong style="color:var(--clr-gold-dk);">Buyback Guarantee Active</strong><br/>
+      <span class="fs-13">2 साल की buyback window active है। Original price + ₹1,00,000 guaranteed।</span>
+    </div>
+    <a routerLink="/user/my-plots" class="btn btn-gold btn-sm">Details</a>
+  </div>
+</ng-container>

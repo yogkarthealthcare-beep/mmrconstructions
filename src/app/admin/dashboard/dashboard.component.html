@@ -1,0 +1,133 @@
+<!-- Loading -->
+<div class="panel-loading" *ngIf="loading">
+  <i class="fas fa-spinner"></i>
+  <span>Loading dashboard...</span>
+</div>
+
+<ng-container *ngIf="!loading">
+  <!-- Page Header -->
+  <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+    <div class="pg-header" style="margin-bottom:0;">
+      <h4>Dashboard Overview</h4>
+      <p>Welcome back, Admin</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-outline-green btn-sm" (click)="loadDashboard()">
+        <i class="fas fa-sync me-1"></i>Refresh
+      </button>
+      <a routerLink="/admin/approvals" class="btn btn-green btn-sm">
+        <i class="fas fa-user-check me-1"></i>Pending Approvals
+        <span class="ms-1 sl-badge">{{ stats.pending_approvals || '!' }}</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3" *ngFor="let s of statCards">
+      <div class="stat-card">
+        <div class="sc-icon" [style.background]="s.bg" [style.color]="s.color">
+          <i [class]="s.icon"></i>
+        </div>
+        <div class="sc-val">{{ getStatVal(s.key) }}</div>
+        <div class="sc-lbl">{{ s.lbl }}</div>
+        <div class="sc-delta" [class.up]="s.up" [class.down]="!s.up">
+          <i [class]="s.up ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+          {{ s.delta }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Site Occupancy -->
+    <div class="col-lg-5">
+      <div class="panel-card">
+        <div class="panel-card-title">
+          Site Occupancy
+          <span class="fs-12 text-muted">Live plot availability</span>
+        </div>
+
+        <div *ngIf="sites.length === 0" class="panel-empty" style="padding:24px;">
+          <i class="fas fa-map-marked-alt"></i>
+          <p>No site data available</p>
+        </div>
+
+        <div *ngFor="let s of sites" style="margin-bottom:18px;">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <span class="fw-700 fs-13" style="color:var(--txt-h);max-width:65%;">{{ s.site_name }}</span>
+            <span class="fs-12 text-muted">{{ s.sold || 0 }}/{{ s.total_plots || 0 }}</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" [class.gold]="occupancyPct(s) > 70" [style.width]="occupancyPct(s) + '%'"></div>
+          </div>
+          <div class="d-flex justify-content-between mt-1">
+            <span class="fs-12" style="color:var(--txt-muted);">{{ occupancyPct(s) }}% occupied</span>
+            <span class="fs-12 text-success">{{ s.vacant || 0 }} vacant</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Bookings -->
+    <div class="col-lg-7">
+      <div class="panel-card">
+        <div class="panel-card-title">
+          Recent Bookings
+          <a routerLink="/admin/emi-payments" class="pc-link">View All →</a>
+        </div>
+
+        <div *ngIf="recentBookings.length === 0" class="panel-empty" style="padding:24px;">
+          <i class="fas fa-calendar-times"></i>
+          <p>No recent bookings</p>
+        </div>
+
+        <div class="table-responsive" *ngIf="recentBookings.length > 0">
+          <table class="table">
+            <thead>
+              <tr><th>Booking</th><th>Customer</th><th>Plot</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of recentBookings">
+                <td><span class="fw-700 text-primary" style="font-size:12px;">{{ b.booking_serial }}</span></td>
+                <td>
+                  <strong style="color:var(--txt-h);">{{ b.full_name }}</strong>
+                  <div class="fs-12 text-muted">{{ b.booking_date | date:'dd MMM yyyy' }}</div>
+                </td>
+                <td class="fs-12">{{ b.plot_number }} · {{ b.site_name }}</td>
+                <td>
+                  <span class="sbadge"
+                    [class.sbadge-green]="b.booking_status==='Confirmed'"
+                    [class.sbadge-yellow]="b.booking_status==='PaymentPending'"
+                    [class.sbadge-red]="b.booking_status==='Cancelled'"
+                    [class.sbadge-blue]="b.booking_status==='InProcess'">
+                    {{ b.booking_status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row g-3">
+    <div class="col-sm-6 col-lg-3" *ngFor="let qa of [
+      {icon:'fas fa-user-check',label:'Approve Users',    route:'/admin/approvals',   bg:'#eaf4ee',clr:'#1a5c3a'},
+      {icon:'fas fa-envelope',  label:'View Enquiries',   route:'/admin/enquiries',   bg:'#eff6ff',clr:'#1d4ed8'},
+      {icon:'fas fa-rupee-sign',label:'Overdue EMIs',     route:'/admin/emi-payments',bg:'#fef2f2',clr:'#dc2626'},
+      {icon:'fas fa-map',       label:'Manage Sites',     route:'/admin/sites',       bg:'#fdf8ec',clr:'#a07c2a'}]">
+      <a [routerLink]="qa.route" style="text-decoration:none;">
+        <div class="stat-card" style="display:flex;align-items:center;gap:14px;padding:16px 20px;">
+          <div class="sc-icon" [style.background]="qa.bg" [style.color]="qa.clr" style="margin:0;flex-shrink:0;">
+            <i [class]="qa.icon"></i>
+          </div>
+          <span class="fw-700 fs-13" style="color:var(--txt-h);">{{ qa.label }}</span>
+          <i class="fas fa-chevron-right ms-auto fs-12 text-muted"></i>
+        </div>
+      </a>
+    </div>
+  </div>
+</ng-container>

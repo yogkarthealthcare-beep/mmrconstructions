@@ -1,0 +1,94 @@
+<!-- Toast -->
+<div *ngIf="toast" class="panel-alert panel-alert-success mb-3" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;animation:fadeIn .2s;">
+  <i class="fas fa-check-circle"></i> {{ toast }}
+</div>
+
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+  <div class="pg-header" style="margin-bottom:0;">
+    <h4>Registration Approvals</h4>
+    <p>Review and approve / reject new registrations</p>
+  </div>
+  <button class="btn btn-outline-green btn-sm" (click)="loadUsers()">
+    <i class="fas fa-sync me-1"></i>Refresh
+  </button>
+</div>
+
+<!-- Filters -->
+<div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+  <div class="filter-tabs">
+    <div class="filter-tab" [class.active]="filter==='all'"       (click)="filter='all'">All</div>
+    <div class="filter-tab" [class.active]="filter==='pending'"   (click)="filter='pending'">Pending</div>
+    <div class="filter-tab" [class.active]="filter==='customer'"  (click)="filter='customer'">Customer</div>
+    <div class="filter-tab" [class.active]="filter==='associate'" (click)="filter='associate'">Associate</div>
+  </div>
+  <div class="search-box ms-auto">
+    <i class="fas fa-search"></i>
+    <input [(ngModel)]="search" placeholder="Search name or mobile..."/>
+  </div>
+</div>
+
+<div class="panel-loading" *ngIf="loading">
+  <i class="fas fa-spinner"></i><span>Loading registrations...</span>
+</div>
+
+<div class="data-table-wrap" *ngIf="!loading">
+  <div class="data-table-head">
+    <h5>{{ filtered.length }} Registration(s)</h5>
+  </div>
+
+  <div *ngIf="filtered.length===0" class="panel-empty">
+    <i class="fas fa-user-check"></i>
+    <h6>No registrations found</h6>
+    <p>Try changing filters</p>
+  </div>
+
+  <div class="table-responsive" *ngIf="filtered.length > 0">
+    <table class="table">
+      <thead>
+        <tr><th>Name</th><th>Mobile</th><th>Type</th><th>Sponsor</th><th>Docs</th><th>Registered</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of filtered">
+          <td>
+            <strong style="color:var(--txt-h);">{{ u.full_name }}</strong>
+            <div class="fs-12 text-muted">{{ u.email || 'No email' }}</div>
+          </td>
+          <td>{{ u.mobile_no }}</td>
+          <td>
+            <span class="sbadge" [class.sbadge-green]="u.user_type==='Customer'" [class.sbadge-blue]="u.user_type==='Associate'">
+              {{ u.user_type }}
+            </span>
+          </td>
+          <td class="fs-12 text-muted">{{ u.sponsor_name || '—' }}</td>
+          <td>
+            <span class="sbadge" [class.sbadge-green]="u.doc_count>0" [class.sbadge-red]="u.doc_count==0">
+              {{ u.doc_count || 0 }} docs
+            </span>
+          </td>
+          <td class="fs-12 text-muted">{{ u.registered_at | date:'dd MMM yy' }}</td>
+          <td>
+            <span class="sbadge"
+              [class.sbadge-yellow]="u.account_status==='Pending'"
+              [class.sbadge-green]="u.account_status==='Active'"
+              [class.sbadge-red]="u.account_status==='Rejected'">
+              {{ u.account_status }}
+            </span>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <button *ngIf="u.account_status==='Pending'" class="action-btn success" title="Approve" (click)="approve(u)" [disabled]="actionLoading">
+                <i class="fas fa-check"></i>
+              </button>
+              <button *ngIf="u.account_status==='Pending'" class="action-btn danger" title="Reject" (click)="reject(u)">
+                <i class="fas fa-times"></i>
+              </button>
+              <button class="action-btn" title="View Details">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

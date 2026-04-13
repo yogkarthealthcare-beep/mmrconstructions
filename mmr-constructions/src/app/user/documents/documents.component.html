@@ -1,0 +1,37 @@
+<div class="mb-4"><h4 style="font-family:var(--ff-display);color:var(--txt-h);margin:0;">My Documents</h4>
+<p style="font-size:13px;color:var(--txt-muted);margin:0;">KYC documents, agreements and financial docs</p></div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-4" *ngFor="let doc of myDocs">
+    <div class="panel-card" style="padding:20px;display:flex;align-items:center;gap:16px;">
+      <div style="width:48px;height:48px;border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;flex-shrink:0;" [style]="'background:' + doc.color.split(';')[0].split(':')[1]">
+        <i [class]="doc.icon" [style]="doc.color.split(';')[1]" style="font-size:20px;"></i>
+      </div>
+      <div class="flex-fill">
+        <div style="font-weight:600;color:var(--txt-h);font-size:14px;">{{ doc.name }}</div>
+        <div style="font-size:11px;color:var(--txt-muted);">{{ doc.type }} · {{ doc.date }}</div>
+      </div>
+      <div>
+        <span *ngIf="doc.status==='verified'" class="sbadge sbadge-green">Verified</span>
+        <span *ngIf="doc.status==='issued'"   class="sbadge sbadge-blue">Issued</span>
+        <span *ngIf="doc.status==='pending'"  class="sbadge sbadge-yellow">Pending</span>
+        <button *ngIf="doc.status==='download' || doc.status==='issued'" class="action-btn ms-2" title="Download"><i class="fas fa-download"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Section -->
+<div class="panel-card">
+  <div class="panel-card-title">Upload New Document</div>
+  <div class="row g-3">
+    <div class="col-md-4" *ngFor="let u of ['Aadhar Card','PAN Card','Bank Passbook','Other Document']">
+      <label style="border:2px dashed var(--bdr);border-radius:var(--r-lg);padding:20px;text-align:center;cursor:pointer;display:block;transition:var(--t-base);background:var(--bg-section);" onmouseover="this.style.borderColor='var(--clr-primary)'" onmouseout="this.style.borderColor='var(--bdr)'">
+        <input type="file" style="display:none;"/>
+        <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:var(--clr-primary);margin-bottom:8px;display:block;"></i>
+        <div style="font-size:13px;font-weight:600;color:var(--txt-h);">{{ u }}</div>
+        <div style="font-size:11px;color:var(--txt-muted);">JPG, PNG or PDF</div>
+      </label>
+    </div>
+  </div>
+</div>

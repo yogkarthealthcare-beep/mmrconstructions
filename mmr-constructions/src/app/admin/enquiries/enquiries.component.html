@@ -1,0 +1,37 @@
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div><h4 style="font-family:var(--ff-display);color:var(--txt-h);margin:0;">Enquiries Management</h4>
+  <p style="font-size:13px;color:var(--txt-muted);margin:0;">All website enquiries from potential customers</p></div>
+  <button class="btn btn-green btn-sm"><i class="fas fa-download me-1"></i>Export</button>
+</div>
+
+<div class="d-flex gap-2 mb-4 flex-wrap align-items-center">
+  <ng-container *ngFor="let f of [['all','All'],['open','Open'],['called','Called'],['closed','Closed']]">
+    <button class="btn btn-sm" [class.btn-green]="filter===f[0]" [class.btn-outline-green]="filter!==f[0]" (click)="filter=f[0]">{{ f[1] }}</button>
+  </ng-container>
+  <div class="ms-auto search-box"><i class="fas fa-search"></i><input [(ngModel)]="search" placeholder="Search..."/></div>
+</div>
+
+<div class="data-table-wrap">
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>ID</th><th>Name & Mobile</th><th>Interest</th><th>Message</th><th>Priority</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let e of filtered">
+          <td style="font-size:11px;color:var(--txt-muted);">{{ e.id }}</td>
+          <td><strong style="color:var(--txt-h);">{{ e.name }}</strong><br/><span style="font-size:11px;color:var(--txt-muted);">{{ e.mobile }}</span></td>
+          <td style="font-size:12px;max-width:140px;">{{ e.interest }}</td>
+          <td style="font-size:12px;color:var(--txt-muted);max-width:160px;">{{ e.message }}</td>
+          <td><span class="sbadge" [class.sbadge-red]="e.priority==='high'" [class.sbadge-yellow]="e.priority==='medium'" [class.sbadge-gray]="e.priority==='low'">{{ e.priority }}</span></td>
+          <td style="font-size:12px;color:var(--txt-muted);">{{ e.date }}</td>
+          <td><span class="sbadge" [class.sbadge-blue]="e.status==='open'" [class.sbadge-yellow]="e.status==='called'" [class.sbadge-gray]="e.status==='closed'">{{ e.status }}</span></td>
+          <td>
+            <a [href]="'tel:' + e.mobile" class="action-btn me-1" title="Call"><i class="fas fa-phone"></i></a>
+            <a [href]="'https://wa.me/91' + e.mobile" target="_blank" class="action-btn me-1" style="color:#16a34a;" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <button class="action-btn me-1" title="Mark Called" (click)="updateStatus(e,'called')"><i class="fas fa-phone-volume"></i></button>
+            <button class="action-btn danger" title="Close" (click)="updateStatus(e,'closed')"><i class="fas fa-times"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

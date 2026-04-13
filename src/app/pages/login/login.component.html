@@ -1,0 +1,104 @@
+<div class="login-page">
+  <div class="login-left">
+    <a routerLink="/" class="brand mb-5 d-inline-flex text-decoration-none">
+      <div class="brand-icon me-3"><span>M</span></div>
+      <div>
+        <span class="brand-name" style="color:#fff;">M.M.R. Constructions</span>
+        <span class="brand-sub">& Developers Pvt. Ltd.</span>
+      </div>
+    </a>
+    <div>
+      <div style="color:var(--clr-gold-lt);font-family:var(--ff-ui);letter-spacing:.2em;font-size:.75rem;text-transform:uppercase;margin-bottom:10px;">Welcome Back</div>
+      <h2 style="font-family:var(--ff-display);color:#fff;font-size:2.4rem;line-height:1.15;margin-bottom:16px;">Your Dream Plot<br/>Awaits You</h2>
+      <p style="color:rgba(255,255,255,.55);line-height:1.8;max-width:320px;font-size:13.5px;">Dashboard पर login करें — plots browse करें, EMI track करें, और commission check करें।</p>
+    </div>
+    <div class="d-flex gap-4 mt-5">
+      <div class="text-center"><div style="font-family:var(--ff-display);font-size:1.8rem;font-weight:700;color:var(--clr-gold-lt);">5+</div><div style="color:rgba(255,255,255,.5);font-size:11px;">Active Sites</div></div>
+      <div class="vr opacity-20"></div>
+      <div class="text-center"><div style="font-family:var(--ff-display);font-size:1.8rem;font-weight:700;color:var(--clr-gold-lt);">500+</div><div style="color:rgba(255,255,255,.5);font-size:11px;">Happy Customers</div></div>
+      <div class="vr opacity-20"></div>
+      <div class="text-center"><div style="font-family:var(--ff-display);font-size:1.8rem;font-weight:700;color:var(--clr-gold-lt);">2019</div><div style="color:rgba(255,255,255,.5);font-size:11px;">Established</div></div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-box">
+      <div class="mb-5">
+        <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:6px;">Login to Account</h3>
+        <p class="fs-13 text-muted">Mobile number से login करें</p>
+      </div>
+
+      <div *ngIf="error" class="panel-alert panel-alert-error mb-4"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label class="f-label">Mobile Number *</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-muted);"><i class="fas fa-mobile-alt"></i></span>
+            <input type="tel" class="f-input" style="padding-left:38px;" placeholder="10-digit mobile number" [(ngModel)]="mobile" name="mobile" required maxlength="10"/>
+          </div>
+        </div>
+
+        <!-- Password Mode -->
+        <div class="mb-3" *ngIf="loginMode==='password'">
+          <label class="f-label">Password *</label>
+          <div style="position:relative;">
+            <input [type]="showPassword ? 'text' : 'password'" class="f-input" style="padding-right:44px;" placeholder="Enter password" [(ngModel)]="password" name="password"/>
+            <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--txt-muted);" (click)="showPassword=!showPassword">
+              <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          <div class="text-end mt-1"><a href="#" class="fs-12" style="color:var(--clr-primary);">Forgot Password?</a></div>
+        </div>
+
+        <!-- OTP Mode -->
+        <div class="mb-3" *ngIf="loginMode==='otp'">
+          <label class="f-label">OTP *</label>
+          <div *ngIf="!otpSent">
+            <button type="button" class="btn btn-outline-green w-100" (click)="sendOtp()" [disabled]="loading">
+              <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sms me-2'"></i>
+              {{ loading ? 'Sending...' : 'Send OTP to Mobile' }}
+            </button>
+          </div>
+          <div *ngIf="otpSent">
+            <div class="otp-inputs mb-2">
+              <input *ngFor="let o of otp; let i=index" [id]="'otp'+i" type="text" maxlength="1" [(ngModel)]="otp[i]" [name]="'otp'+i" (input)="onOtpInput($event,i)" style="width:44px;height:48px;text-align:center;font-weight:700;font-size:1.1rem;border-radius:9px;border:1.5px solid var(--bdr);outline:none;"/>
+            </div>
+            <div class="fs-12 text-muted">OTP sent to {{ mobile }}</div>
+          </div>
+          <button type="button" class="fs-12 mt-2 border-0 bg-transparent" style="color:var(--clr-primary);" (click)="loginMode='password'">← Use Password</button>
+        </div>
+
+        <button type="submit" class="btn btn-green btn-lg w-100 mb-3" [disabled]="loading">
+          <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sign-in-alt me-2'"></i>
+          {{ loading ? 'Logging in...' : 'Login' }}
+        </button>
+
+        <div *ngIf="loginMode==='password'" class="text-center">
+          <div class="d-flex align-items-center gap-3 my-3">
+            <div class="flex-fill border-bottom"></div><span class="fs-12 text-muted">या</span><div class="flex-fill border-bottom"></div>
+          </div>
+          <button type="button" class="btn btn-outline-green w-100 mb-3" (click)="loginMode='otp';otpSent=false">
+            <i class="fas fa-mobile-alt me-2"></i>Login with OTP
+          </button>
+        </div>
+
+        <div class="text-center mt-2">
+          <span class="fs-12 text-muted">Account नहीं है? </span>
+          <a routerLink="/register" class="fs-12 fw-700" style="color:var(--clr-primary);">Register Free</a>
+        </div>
+      </form>
+
+      <div class="mt-5 pt-4 border-top">
+        <div class="d-flex gap-2">
+          <a routerLink="/admin-login" class="btn btn-outline-green btn-sm flex-fill text-center" style="font-size:11px;">
+            <i class="fas fa-user-shield me-1"></i>Admin Login
+          </a>
+          <a routerLink="/user/dashboard" class="btn btn-outline-green btn-sm flex-fill text-center" style="font-size:11px;">
+            <i class="fas fa-user me-1"></i>Demo User Panel
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

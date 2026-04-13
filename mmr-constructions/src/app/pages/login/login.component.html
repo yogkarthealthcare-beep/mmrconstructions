@@ -1,0 +1,103 @@
+<div class="login-page">
+  <div class="login-left">
+    <a routerLink="/" class="brand mb-5 d-inline-flex text-decoration-none">
+      <div class="brand-icon me-3"><span>M</span></div>
+      <div>
+        <span class="brand-name" style="color:#fff;">M.M.R. Constructions</span>
+        <span class="brand-sub">& Developers Pvt. Ltd.</span>
+      </div>
+    </a>
+    <div>
+      <div style="color:var(--clr-gold-lt);font-family:var(--ff-ui);letter-spacing:.2em;font-size:.8rem;text-transform:uppercase;margin-bottom:12px;">Welcome Back</div>
+      <h2 style="font-family:var(--ff-display);color:#fff;font-size:2.5rem;line-height:1.2;margin-bottom:20px;">Your Dream Plot<br/>Awaits You</h2>
+      <p style="color:rgba(255,255,255,.6);line-height:1.8;max-width:360px;">Dashboard पर login करें — plots browse करें, EMI track करें, और commission check करें।</p>
+    </div>
+    <div class="d-flex gap-4 mt-5">
+      <div class="stat-badge"><div class="num">5+</div><div class="lbl">Active Sites</div></div>
+      <div class="vr opacity-25"></div>
+      <div class="stat-badge"><div class="num">500+</div><div class="lbl">Happy Customers</div></div>
+      <div class="vr opacity-25"></div>
+      <div class="stat-badge"><div class="num">2019</div><div class="lbl">Established</div></div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-box">
+      <div class="mb-5">
+        <h3 style="font-family:var(--ff-display);color:var(--clr-primary-dk);margin-bottom:6px;">Login to Account</h3>
+        <p class="small text-muted">Mobile number से login करें</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label class="f-label">Mobile Number *</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-muted);"><i class="fas fa-mobile-alt"></i></span>
+            <input type="tel" class="f-input" style="padding-left:38px;" placeholder="10-digit mobile number" [(ngModel)]="mobile" name="mobile" required/>
+          </div>
+        </div>
+
+        <div class="mb-3" *ngIf="loginMode === 'password'">
+          <label class="f-label">Password *</label>
+          <div style="position:relative;">
+            <input [type]="showPassword ? 'text' : 'password'" class="f-input" style="padding-right:44px;" placeholder="Enter password" [(ngModel)]="password" name="password"/>
+            <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--txt-muted);" (click)="togglePassword()">
+              <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          <div class="text-end mt-1">
+            <a href="#" class="small" style="color:var(--clr-primary);">Forgot Password?</a>
+          </div>
+        </div>
+
+        <div class="mb-3" *ngIf="loginMode === 'otp'">
+          <label class="f-label">Enter OTP *</label>
+          <div class="otp-inputs mb-2">
+            <input *ngFor="let o of otp; let i = index" [id]="'otp'+i" type="text" maxlength="1" [(ngModel)]="otp[i]" [name]="'otp'+i" (input)="onOtpInput($event, i)"/>
+          </div>
+          <div class="small text-muted">OTP sent to your registered mobile</div>
+          <button type="button" class="small mt-1 border-0 bg-transparent" style="color:var(--clr-primary);" (click)="switchToPassword()">← Use Password instead</button>
+        </div>
+
+        <button type="submit" class="btn btn-green btn-lg w-100 mb-3">
+          <i class="fas fa-sign-in-alt me-2"></i>Login
+        </button>
+
+        <div *ngIf="loginMode === 'password'" class="text-center">
+          <div class="d-flex align-items-center gap-3 my-3">
+            <div class="flex-fill border-bottom"></div><span class="small text-muted">या</span><div class="flex-fill border-bottom"></div>
+          </div>
+          <button type="button" class="btn btn-outline-green w-100 mb-3" (click)="switchToOtp()">
+            <i class="fas fa-mobile-alt me-2"></i>Login with OTP
+          </button>
+        </div>
+
+        <div class="text-center mt-3">
+          <span class="small text-muted">Account नहीं है? </span>
+          <a routerLink="/register" class="small fw-semibold" style="color:var(--clr-primary);">Register Free</a>
+        </div>
+      </form>
+
+      <!-- Quick Access Panel Links -->
+      <div class="mt-4 pt-4 border-top">
+        <p class="small text-muted text-center mb-3">Quick Access (Demo)</p>
+        <div class="d-flex gap-2">
+          <a routerLink="/user/dashboard" class="btn btn-outline-green btn-sm flex-fill text-center">
+            <i class="fas fa-user me-1"></i>User Panel
+          </a>
+          <a routerLink="/admin/dashboard" class="btn btn-green btn-sm flex-fill text-center">
+            <i class="fas fa-user-shield me-1"></i>Admin Panel
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Access Dev Links -->
+<div class="mt-4 pt-3 border-top">
+  <div class="d-flex gap-2">
+    <a routerLink="/admin/dashboard" class="btn btn-outline-green btn-sm flex-fill text-center" style="font-size:11px;"><i class="fas fa-user-shield me-1"></i>Admin Panel</a>
+    <a routerLink="/user/dashboard"  class="btn btn-outline-green btn-sm flex-fill text-center" style="font-size:11px;"><i class="fas fa-user me-1"></i>User Panel</a>
+  </div>
+</div>

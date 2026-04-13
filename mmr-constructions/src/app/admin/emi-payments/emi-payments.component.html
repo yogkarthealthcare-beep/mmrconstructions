@@ -1,0 +1,46 @@
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div><h4 style="font-family:var(--ff-display);color:var(--txt-h);margin:0;">EMI & Payment Tracking</h4>
+  <p style="font-size:13px;color:var(--txt-muted);margin:0;">Track all customer EMI payments</p></div>
+  <div class="d-flex gap-2 align-items-center">
+    <input type="month" class="f-input" style="width:160px;padding:8px 12px;" [(ngModel)]="filterMonth"/>
+    <button class="btn btn-green btn-sm"><i class="fas fa-download me-1"></i>Export</button>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3" *ngFor="let s of summaryStats">
+    <div class="stat-card">
+      <div class="sc-icon" [style]="'background:' + s.bg + ';color:' + s.clr"><i [class]="s.icon"></i></div>
+      <div class="sc-val">{{ s.val }}</div>
+      <div class="sc-lbl">{{ s.lbl }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="data-table-wrap">
+  <div class="data-table-head">
+    <h5>EMI Records</h5>
+    <div class="search-box"><i class="fas fa-search"></i><input [(ngModel)]="search" placeholder="Search customer..."/></div>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Pay ID</th><th>Customer</th><th>Plot</th><th>EMI Amt</th><th>Due Date</th><th>Paid Date</th><th>Method</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let p of filtered">
+          <td style="font-size:11px;color:var(--clr-primary);font-weight:600;">{{ p.id }}</td>
+          <td><strong style="color:var(--txt-h);">{{ p.customer }}</strong><br/><span style="font-size:11px;color:var(--txt-muted);">{{ p.mobile }}</span></td>
+          <td><span style="font-family:monospace;font-size:12px;">{{ p.plot }}</span></td>
+          <td style="font-weight:700;">{{ p.emi }}</td>
+          <td style="color:var(--txt-muted);font-size:12px;">{{ p.dueDate }}</td>
+          <td style="font-size:12px;">{{ p.paidDate || '—' }}</td>
+          <td><span *ngIf="p.method" class="sbadge sbadge-gray">{{ p.method }}</span></td>
+          <td><span class="sbadge" [class.sbadge-green]="p.status==='paid'" [class.sbadge-red]="p.status==='overdue'" [class.sbadge-yellow]="p.status==='pending'">{{ p.status }}</span></td>
+          <td>
+            <button *ngIf="p.status!=='paid'" class="action-btn me-1" style="color:#16a34a;border-color:#bbf7d0;" title="Mark Paid" (click)="markPaid(p)"><i class="fas fa-check"></i></button>
+            <button class="action-btn" title="Receipt"><i class="fas fa-file-invoice"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

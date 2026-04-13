@@ -1,0 +1,75 @@
+<div *ngIf="toast" class="panel-alert panel-alert-success mb-3" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;">
+  <i class="fas fa-check-circle"></i> {{ toast }}
+</div>
+
+<div class="pg-header"><h4>My Plots</h4><p>All your booked plots and repayment status</p></div>
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<div *ngIf="!loading && bookings.length===0" class="panel-empty" style="padding:60px;">
+  <i class="fas fa-map" style="font-size:3rem;"></i>
+  <h6>No plots booked yet</h6>
+  <p>Contact us to book your dream plot</p>
+  <a routerLink="/" class="btn btn-green btn-sm mt-2"><i class="fas fa-home me-1"></i>Explore Plots</a>
+</div>
+
+<div class="row g-4" *ngIf="!loading && bookings.length>0">
+  <div class="col-lg-6" *ngFor="let b of bookings">
+    <div class="panel-card" style="padding:0;overflow:hidden;border-radius:14px;">
+      <!-- Header -->
+      <div style="background:var(--grad-green);padding:18px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700;color:#fff;">{{ b.plot_number }}</div>
+          <div class="fs-12" style="color:rgba(255,255,255,.7);">{{ b.site_name }} · {{ b.city }}</div>
+        </div>
+        <span class="sbadge" [class.sbadge-green]="b.booking_status==='Confirmed'" [class.sbadge-yellow]="b.booking_status==='PaymentPending'">{{ b.booking_status }}</span>
+      </div>
+
+      <div style="padding:20px;">
+        <!-- Meta grid -->
+        <div class="row g-2 mb-3">
+          <div class="col-6" *ngFor="let d of [
+            ['Booking ID',  b.booking_serial],
+            ['Plot Size',   (b.plot_area||'—')+' gaj'],
+            ['Payment',     b.payment_type],
+            ['Advance Paid','₹'+(b.advance_amount||(0)|number)]
+          ]">
+            <div class="fs-12 text-muted">{{ d[0] }}</div>
+            <div class="fw-700 fs-13" style="color:var(--txt-h);">{{ d[1] }}</div>
+          </div>
+        </div>
+
+        <!-- Booking date -->
+        <div class="panel-alert panel-alert-info mb-3" style="padding:10px 14px;">
+          <i class="fas fa-calendar"></i>
+          <span class="fs-12">Booked on <strong>{{ b.booking_date | date:'dd MMM yyyy' }}</strong></span>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-2 flex-wrap">
+          <a routerLink="/user/emi-history" class="btn btn-green btn-sm flex-fill text-center">
+            <i class="fas fa-calendar-check me-1"></i>EMI Schedule
+          </a>
+          <button *ngIf="b.booking_status==='Confirmed'" class="btn btn-outline-green btn-sm flex-fill"
+            (click)="buybackModal=b">
+            <i class="fas fa-shield-alt me-1"></i>Apply Buyback
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Buyback Modal -->
+<div *ngIf="buybackModal" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;padding:28px;max-width:420px;width:100%;">
+    <h5 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:12px;">Apply Buyback</h5>
+    <div class="panel-alert panel-alert-warning mb-4">
+      <i class="fas fa-info-circle"></i>
+      <span class="fs-13">Plot <strong>{{ buybackModal.plot_number }}</strong> ke liye buyback apply karein? 2-year window check ki jaegi.</span>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-green flex-fill" (click)="applyBuyback(buybackModal)"><i class="fas fa-check me-1"></i>Confirm Apply</button>
+      <button class="btn btn-outline-green flex-fill" (click)="buybackModal=null">Cancel</button>
+    </div>
+  </div>
+</div>

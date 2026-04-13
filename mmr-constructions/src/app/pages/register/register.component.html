@@ -1,0 +1,217 @@
+<div class="auth-page">
+  <!-- Left Panel -->
+  <div class="auth-left">
+    <div>
+      <a routerLink="/" class="brand d-inline-flex mb-5 text-decoration-none">
+        <div class="brand-icon me-3"><span>M</span></div>
+        <div>
+          <span class="brand-name" style="color:#fff;">M.M.R. Constructions</span>
+          <span class="brand-sub">& Developers Pvt. Ltd.</span>
+        </div>
+      </a>
+      <h2 style="font-family:var(--ff-display);color:#fff;font-size:2rem;margin-bottom:12px;">Join MMR Family</h2>
+      <p style="color:rgba(255,255,255,.6);line-height:1.7;font-size:.9rem;">Free registration। Admin approval के बाद premium plots browse करें।</p>
+      <div class="mt-4 d-flex flex-column gap-3">
+        <div class="check-item"><div class="ci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:.85rem;">100% Free Registration</span></div>
+        <div class="check-item"><div class="ci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:.85rem;">Secure OTP Verification</span></div>
+        <div class="check-item"><div class="ci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:.85rem;">Quick Admin Approval</span></div>
+        <div class="check-item"><div class="ci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:.85rem;">Unique Member ID Assigned</span></div>
+      </div>
+    </div>
+    <p style="color:rgba(255,255,255,.35);font-size:.75rem;">Already registered? <a routerLink="/login" style="color:var(--clr-gold-lt);">Login here</a></p>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+
+      <!-- Success -->
+      <div *ngIf="submitted" style="text-align:center;padding:60px 20px;">
+        <div style="width:80px;height:80px;background:var(--clr-primary-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+          <i class="fas fa-check" style="color:var(--clr-primary);font-size:32px;"></i>
+        </div>
+        <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:12px;">Registration Successful!</h3>
+        <p style="color:var(--txt-muted);">आपका registration हो गया है। Admin approval के बाद आप login कर पाएंगे। Redirecting to login...</p>
+      </div>
+
+      <ng-container *ngIf="!submitted">
+        <div class="mb-4">
+          <h3 style="font-family:var(--ff-display);color:var(--clr-primary-dk);margin-bottom:4px;">Create Account</h3>
+          <p class="small text-muted">Step {{ currentStep }} of {{ totalSteps }}</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+          <ng-container *ngFor="let s of steps; let last = last">
+            <div class="step-item">
+              <div class="step-circle" [class.active]="isStepActive(s.num)" [class.done]="isStepDone(s.num)">
+                <i *ngIf="isStepDone(s.num)" class="fas fa-check" style="font-size:10px;"></i>
+                <span *ngIf="!isStepDone(s.num)">{{ s.num }}</span>
+              </div>
+              <div *ngIf="!last" class="step-line" [class.done]="isStepDone(s.num)"></div>
+            </div>
+          </ng-container>
+        </div>
+        <div class="d-flex justify-content-between mb-5">
+          <span *ngFor="let s of steps" style="font-size:9px;color:var(--txt-muted);">{{ s.label }}</span>
+        </div>
+
+        <!-- STEP 1: Type -->
+        <div class="form-step" *ngIf="currentStep===1">
+          <h5 style="font-family:var(--ff-display);margin-bottom:24px;">I want to register as...</h5>
+          <div class="row g-4 mb-5">
+            <div class="col-sm-6">
+              <div class="type-card" [class.selected]="form.type==='customer'" (click)="selectType('customer')">
+                <div class="type-icon-wrap"><i class="fas fa-home"></i></div>
+                <h6 class="fw-bold mb-1">Customer</h6>
+                <p class="small text-muted mb-0">Plot buy करना है। EMI से अपना dream plot book करें।</p>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="type-card" [class.selected]="form.type==='associate'" (click)="selectType('associate')">
+                <div class="type-icon-wrap"><i class="fas fa-user-tie"></i></div>
+                <h6 class="fw-bold mb-1">Associate</h6>
+                <p class="small text-muted mb-0">Commission earn करना है। Plot बेचकर 12 साल तक income।</p>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="form.type==='associate'" style="background:var(--clr-gold-bg);border:1px solid var(--clr-gold);border-radius:var(--r-lg);padding:16px 20px;margin-bottom:24px;">
+            <label class="f-label">Referral / Invitation Code (Optional)</label>
+            <input type="text" class="f-input" placeholder="Enter invitation code" [(ngModel)]="form.referCode" name="referCode"/>
+          </div>
+        </div>
+
+        <!-- STEP 2: Personal -->
+        <div class="form-step" *ngIf="currentStep===2">
+          <h5 style="font-family:var(--ff-display);margin-bottom:24px;">Personal Information</h5>
+          <div class="row g-3">
+            <div class="col-sm-6"><label class="f-label">Full Name *</label><input type="text" class="f-input" placeholder="As per Aadhar" [(ngModel)]="form.name" name="name"/></div>
+            <div class="col-sm-6"><label class="f-label">Father's Name *</label><input type="text" class="f-input" placeholder="Father's full name" [(ngModel)]="form.fatherName" name="fatherName"/></div>
+            <div class="col-sm-6"><label class="f-label">Date of Birth *</label><input type="date" class="f-input" [(ngModel)]="form.dob" name="dob"/></div>
+            <div class="col-sm-6"><label class="f-label">Gender *</label>
+              <select class="f-select" [(ngModel)]="form.gender" name="gender">
+                <option value="">Select</option><option>Male</option><option>Female</option><option>Other</option>
+              </select>
+            </div>
+            <div class="col-sm-6"><label class="f-label">Mobile Number *</label><input type="tel" class="f-input" placeholder="10-digit" [(ngModel)]="form.mobile" name="mobile"/></div>
+            <div class="col-sm-6"><label class="f-label">Email Address</label><input type="email" class="f-input" placeholder="Optional" [(ngModel)]="form.email" name="email"/></div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Identity -->
+        <div class="form-step" *ngIf="currentStep===3">
+          <h5 style="font-family:var(--ff-display);margin-bottom:24px;">Identity Details</h5>
+          <div class="row g-3">
+            <div class="col-sm-6"><label class="f-label">Aadhar Number *</label><input type="text" class="f-input" placeholder="12-digit Aadhar" maxlength="12" [(ngModel)]="form.aadhar" name="aadhar"/></div>
+            <div class="col-sm-6"><label class="f-label">PAN Number</label><input type="text" class="f-input" placeholder="ABCDE1234F" [(ngModel)]="form.pan" name="pan"/></div>
+            <div class="col-12"><label class="f-label">Voter ID (Optional)</label><input type="text" class="f-input" placeholder="Voter ID number" [(ngModel)]="form.voterId" name="voterId"/></div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Address -->
+        <div class="form-step" *ngIf="currentStep===4">
+          <h5 style="font-family:var(--ff-display);margin-bottom:24px;">Address Details</h5>
+          <div class="row g-3">
+            <div class="col-12"><label class="f-label">Full Address *</label><textarea class="f-input" rows="3" placeholder="House/Flat No., Street, Area" [(ngModel)]="form.address" name="address"></textarea></div>
+            <div class="col-sm-6"><label class="f-label">City *</label><input type="text" class="f-input" placeholder="City" [(ngModel)]="form.city" name="city"/></div>
+            <div class="col-sm-4"><label class="f-label">State *</label><input type="text" class="f-input" placeholder="State" [(ngModel)]="form.state" name="state"/></div>
+            <div class="col-sm-2"><label class="f-label">Pincode *</label><input type="text" class="f-input" placeholder="PIN" [(ngModel)]="form.pincode" name="pincode"/></div>
+          </div>
+        </div>
+
+        <!-- STEP 5: Bank -->
+        <div class="form-step" *ngIf="currentStep===5">
+          <h5 style="font-family:var(--ff-display);margin-bottom:24px;">Bank Account Details</h5>
+          <div class="row g-3">
+            <div class="col-sm-6"><label class="f-label">Bank Name *</label><input type="text" class="f-input" placeholder="Bank name" [(ngModel)]="form.bankName" name="bankName"/></div>
+            <div class="col-sm-6"><label class="f-label">Account Number *</label><input type="text" class="f-input" placeholder="Account number" [(ngModel)]="form.accountNo" name="accountNo"/></div>
+            <div class="col-sm-6"><label class="f-label">IFSC Code *</label><input type="text" class="f-input" placeholder="IFSC code" [(ngModel)]="form.ifsc" name="ifsc"/></div>
+            <div class="col-sm-6"><label class="f-label">Branch Name *</label><input type="text" class="f-input" placeholder="Branch" [(ngModel)]="form.branch" name="branch"/></div>
+          </div>
+        </div>
+
+        <!-- STEP 6: Nominee -->
+        <div class="form-step" *ngIf="currentStep===6">
+          <h5 style="font-family:var(--ff-display);margin-bottom:24px;">Nominee Details</h5>
+          <div class="row g-3">
+            <div class="col-sm-6"><label class="f-label">Nominee Name *</label><input type="text" class="f-input" placeholder="Full name" [(ngModel)]="form.nomineeName" name="nomineeName"/></div>
+            <div class="col-sm-6"><label class="f-label">Relation *</label>
+              <select class="f-select" [(ngModel)]="form.nomineeRelation" name="nomineeRelation">
+                <option value="">Select</option><option>Spouse</option><option>Son</option><option>Daughter</option><option>Father</option><option>Mother</option><option>Brother</option><option>Sister</option><option>Other</option>
+              </select>
+            </div>
+            <div class="col-sm-6"><label class="f-label">Nominee DOB *</label><input type="date" class="f-input" [(ngModel)]="form.nomineeDob" name="nomineeDob"/></div>
+            <div class="col-sm-6"><label class="f-label">Nominee Mobile</label><input type="tel" class="f-input" placeholder="Mobile number" [(ngModel)]="form.nomineeMobile" name="nomineeMobile"/></div>
+          </div>
+        </div>
+
+        <!-- STEP 7: Documents -->
+        <div class="form-step" *ngIf="currentStep===7">
+          <h5 style="font-family:var(--ff-display);margin-bottom:24px;">Upload Documents</h5>
+          <div class="row g-4">
+            <div class="col-md-4">
+              <label class="f-label">Aadhar Card *</label>
+              <label class="file-upload-box d-block">
+                <input type="file" accept="image/*,.pdf"/>
+                <i class="fas fa-cloud-upload-alt" style="font-size:28px;color:var(--clr-primary);margin-bottom:10px;display:block;"></i>
+                <p class="small" style="color:var(--txt-muted);margin:0;">Click to upload<br/><span style="font-size:10px;">JPG, PNG or PDF</span></p>
+              </label>
+            </div>
+            <div class="col-md-4">
+              <label class="f-label">PAN Card</label>
+              <label class="file-upload-box d-block">
+                <input type="file" accept="image/*,.pdf"/>
+                <i class="fas fa-cloud-upload-alt" style="font-size:28px;color:var(--clr-primary);margin-bottom:10px;display:block;"></i>
+                <p class="small" style="color:var(--txt-muted);margin:0;">Click to upload<br/><span style="font-size:10px;">JPG, PNG or PDF</span></p>
+              </label>
+            </div>
+            <div class="col-md-4">
+              <label class="f-label">Passport Photo *</label>
+              <label class="file-upload-box d-block">
+                <input type="file" accept="image/*"/>
+                <i class="fas fa-camera" style="font-size:28px;color:var(--clr-primary);margin-bottom:10px;display:block;"></i>
+                <p class="small" style="color:var(--txt-muted);margin:0;">Click to upload<br/><span style="font-size:10px;">JPG or PNG</span></p>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 8: Declaration -->
+        <div class="form-step" *ngIf="currentStep===8">
+          <h5 style="font-family:var(--ff-display);margin-bottom:24px;">Declaration</h5>
+          <div style="background:var(--bg-section);border-radius:var(--r-lg);padding:24px;margin-bottom:28px;max-height:220px;overflow-y:auto;font-size:13px;color:var(--txt-muted);line-height:1.8;">
+            <p>मैं/हम एतद्द्वारा घोषणा करता/करती हूं/हैं कि ऊपर दी गई जानकारी मेरे/हमारे सर्वोत्तम ज्ञान और विश्वास के अनुसार सत्य और सही है।</p>
+            <p style="margin-top:12px;">I/We hereby declare that the information given above is true and correct to the best of my/our knowledge and belief. I/We understand that M.M.R. Constructions & Developers Pvt. Ltd. reserves the right to reject the application if any information is found to be incorrect.</p>
+            <p style="margin-top:12px;">मैं/हम M.M.R. Constructions & Developers Pvt. Ltd. की Terms & Conditions से सहमत हैं। Buyback policy, EMI schedule और commission structure के नियम व शर्तें मुझे/हमें स्वीकार्य हैं।</p>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:24px;">
+            <input type="checkbox" id="decl" style="width:18px;height:18px;margin-top:2px;accent-color:var(--clr-primary);" [(ngModel)]="form.declaration" name="declaration"/>
+            <label for="decl" style="font-size:14px;cursor:pointer;">मैं उपरोक्त Declaration से सहमत हूं और सभी Terms & Conditions स्वीकार करता/करती हूं।</label>
+          </div>
+          <div style="background:var(--clr-gold-bg);border:1px solid var(--clr-gold);border-radius:var(--r-lg);padding:16px 20px;">
+            <p style="font-size:13px;color:var(--txt-body);margin:0;"><i class="fas fa-info-circle" style="color:var(--clr-gold-dk);margin-right:8px;"></i>Registration के बाद Admin review करेंगे। Approval होने पर आपको SMS/call आएगा। तब आप login करके plots browse कर पाएंगे।</p>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex gap-3 mt-5">
+          <button *ngIf="currentStep > 1" class="btn btn-outline-green btn-lg flex-fill" (click)="prev()">
+            <i class="fas fa-arrow-left me-2"></i>Previous
+          </button>
+          <button *ngIf="currentStep < totalSteps" class="btn btn-green btn-lg flex-fill" (click)="next()">
+            Next <i class="fas fa-arrow-right ms-2"></i>
+          </button>
+          <button *ngIf="currentStep === totalSteps" class="btn btn-gold btn-lg flex-fill" (click)="onSubmit()" [disabled]="!form.declaration">
+            <i class="fas fa-check-circle me-2"></i>Submit Registration
+          </button>
+        </div>
+
+        <div class="text-center mt-3">
+          <span class="small text-muted">Already registered? </span>
+          <a routerLink="/login" class="small fw-semibold" style="color:var(--clr-primary);">Login here</a>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+</div>

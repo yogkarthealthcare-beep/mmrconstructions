@@ -1,0 +1,51 @@
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+  <div class="pg-header" style="margin-bottom:0;">
+    <h4>Notifications
+      <span *ngIf="unreadCount>0" style="background:#ef4444;color:#fff;font-size:11px;padding:2px 8px;border-radius:99px;font-family:var(--ff-ui);font-weight:700;margin-left:8px;">{{ unreadCount }} new</span>
+    </h4>
+    <p>System messages, EMI reminders and updates</p>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-green btn-sm" (click)="load()"><i class="fas fa-sync me-1"></i>Refresh</button>
+    <button *ngIf="unreadCount>0" class="btn btn-green btn-sm" (click)="markAll()" [disabled]="markingAll">
+      <i [class]="markingAll ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check-double me-1'"></i>Mark All Read
+    </button>
+  </div>
+</div>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<div *ngIf="!loading && notifications.length===0" class="panel-empty" style="padding:60px;">
+  <i class="fas fa-bell-slash" style="font-size:3rem;"></i>
+  <h6>No notifications yet</h6>
+  <p>You'll see EMI reminders, approval updates and announcements here</p>
+</div>
+
+<div *ngIf="!loading && notifications.length>0" style="display:flex;flex-direction:column;gap:8px;">
+  <div *ngFor="let n of notifications"
+    style="background:#fff;border-radius:12px;border:1px solid var(--bdr);padding:16px 18px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:all .2s;"
+    [style.border-left]="n.is_read ? '' : '4px solid var(--clr-primary)'"
+    [style.background]="n.is_read ? '#fff' : '#fafcfb'"
+    (click)="markRead(n)">
+
+    <div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"
+      [style.background]="colorFor(n.channel)+'18'">
+      <i [class]="iconFor(n.channel)" [style.color]="colorFor(n.channel)" style="font-size:16px;"></i>
+    </div>
+
+    <div class="flex-fill" style="min-width:0;">
+      <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+        <div class="fw-700 fs-13" style="color:var(--txt-h);">{{ n.title || 'Notification' }}</div>
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+          <span class="sbadge sbadge-gray fs-12">{{ n.channel }}</span>
+          <span *ngIf="!n.is_read" class="sbadge sbadge-green fs-12">New</span>
+        </div>
+      </div>
+      <p class="fs-13 text-muted mt-1 mb-1">{{ n.message }}</p>
+      <div class="fs-12 text-muted">
+        <i class="fas fa-clock me-1"></i>{{ n.sent_at | date:'dd MMM yyyy, hh:mm a' }}
+        <span *ngIf="n.is_read && n.read_at" class="ms-3"><i class="fas fa-check-double me-1" style="color:#16a34a;"></i>Read {{ n.read_at | date:'dd MMM' }}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,68 @@
+<div *ngIf="toast" class="panel-alert panel-alert-success mb-3" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;">
+  <i class="fas fa-check-circle"></i> {{ toast }}
+</div>
+
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+  <div class="pg-header" style="margin-bottom:0;"><h4>Plot & Site Management</h4><p>Manage all 5 sites and plots</p></div>
+  <button class="btn btn-green btn-sm" (click)="showAddSite=!showAddSite"><i class="fas fa-plus me-1"></i>Add Site</button>
+</div>
+
+<!-- Add Site Form -->
+<div *ngIf="showAddSite" class="panel-card mb-4">
+  <div class="panel-card-title">New Site</div>
+  <div class="row g-3">
+    <div class="col-sm-6"><label class="f-label">Site Name *</label><input type="text" class="f-input" [(ngModel)]="newSite.site_name" placeholder="e.g. MMR Green Valley"/></div>
+    <div class="col-sm-3"><label class="f-label">City *</label><input type="text" class="f-input" [(ngModel)]="newSite.city"/></div>
+    <div class="col-sm-3"><label class="f-label">State</label><input type="text" class="f-input" [(ngModel)]="newSite.state"/></div>
+    <div class="col-12"><label class="f-label">Full Address</label><input type="text" class="f-input" [(ngModel)]="newSite.full_address"/></div>
+    <div class="col-12 d-flex gap-2">
+      <button class="btn btn-green btn-sm" (click)="addSite()">Create Site</button>
+      <button class="btn btn-outline-green btn-sm" (click)="showAddSite=false">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<ng-container *ngIf="!loading">
+  <!-- Site Summary Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl" *ngFor="let s of sites; let i=index">
+      <div class="stat-card" style="cursor:pointer;" [style.border]="activeSiteIdx===i ? '2px solid var(--clr-primary)' : ''" (click)="selectSite(i)">
+        <div class="sc-icon" style="background:var(--clr-primary-bg);color:var(--clr-primary);"><i class="fas fa-map-marked-alt"></i></div>
+        <div class="sc-val" style="font-size:1.4rem;">{{ s.total_plots || 0 }}</div>
+        <div class="sc-lbl" style="font-size:11px;">{{ s.site_name }}</div>
+        <div class="d-flex gap-1 mt-2 flex-wrap">
+          <span style="font-size:10px;background:#dcfce7;color:#16a34a;padding:2px 6px;border-radius:99px;">{{ s.vacant || 0 }} vacant</span>
+          <span style="font-size:10px;background:#fef9c3;color:#b45309;padding:2px 6px;border-radius:99px;">{{ s.in_process || 0 }} process</span>
+          <span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:2px 6px;border-radius:99px;">{{ s.sold || 0 }} sold</span>
+        </div>
+        <div class="progress-bar-wrap mt-2"><div class="progress-bar-fill" [class.gold]="pct(s)>70" [style.width]="pct(s)+'%'"></div></div>
+        <div class="fs-12 text-muted mt-1">{{ pct(s) }}% occupied</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plot Map -->
+  <div class="panel-card" *ngIf="sites.length>0">
+    <div class="panel-card-title">
+      {{ activeSite.site_name }} — Plot Map
+      <div class="d-flex gap-3 fs-12 text-muted flex-wrap">
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:var(--st-vacant);border-radius:2px;display:inline-block;"></span>Vacant</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:var(--st-process);border-radius:2px;display:inline-block;"></span>In Process</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:var(--st-booked);border-radius:2px;display:inline-block;"></span>Booked/Sold</span>
+      </div>
+    </div>
+    <div *ngIf="plotsLoading" class="panel-loading" style="padding:24px;"><i class="fas fa-spinner"></i></div>
+    <div *ngIf="!plotsLoading && sitePlots.length===0" class="panel-empty" style="padding:24px;"><i class="fas fa-th"></i><p>No plots found. Add plots from admin panel.</p></div>
+    <div *ngIf="!plotsLoading && sitePlots.length>0" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:4px;">
+      <div *ngFor="let p of sitePlots"
+        [title]="'Plot #'+p.plot_number+' — '+p.plot_status+' ('+p.plot_area+' gaj)'"
+        style="height:36px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;transition:transform .1s;"
+        onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"
+        [style.background]="p.plot_status==='Vacant'?'var(--st-vacant)':p.plot_status==='InProcess'?'var(--st-process)':'var(--st-booked)'">
+        {{ p.plot_number }}
+      </div>
+    </div>
+  </div>
+</ng-container>

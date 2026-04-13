@@ -1,0 +1,54 @@
+<div class="panel-shell">
+  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen=false"></div>
+
+  <aside class="sidebar" [class.open]="sidebarOpen">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon"><span>M</span></div>
+        <div class="sidebar-brand-text">
+          <span class="name">M.M.R. Constructions</span>
+          <span class="role">{{ userType }} Panel</span>
+        </div>
+      </div>
+    </div>
+    <!-- User card -->
+    <div style="margin:14px 10px;background:rgba(255,255,255,.06);border-radius:var(--r-lg);padding:14px;border:1px solid rgba(255,255,255,.08);">
+      <div class="d-flex align-items-center gap-3">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--grad-gold);display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-weight:700;color:var(--clr-primary-dk);">{{ initials }}</div>
+        <div>
+          <div style="color:#fff;font-size:13px;font-weight:600;line-height:1.2;">{{ userName }}</div>
+          <div style="color:var(--clr-gold-lt);font-size:10px;margin-top:2px;">{{ memberId }}</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">My Account</div>
+      <a *ngFor="let item of navItems" [routerLink]="item.route" routerLinkActive="active" class="sidebar-link" (click)="sidebarOpen=false">
+        <i [class]="item.icon"></i> {{ item.label }}
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a routerLink="/" class="sidebar-link"><i class="fas fa-globe"></i> View Website</a>
+      <a routerLink="/login" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+  </aside>
+
+  <div class="panel-main">
+    <header class="panel-topbar">
+      <button class="hamburger-toggle" (click)="sidebarOpen=true"><i class="fas fa-bars"></i></button>
+      <div class="flex-fill">
+        <div class="page-title" style="font-size:1rem;">{{ userName }}</div>
+        <div class="page-sub">{{ memberId }} · {{ userType }}</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-icon-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+        <div class="topbar-avatar">{{ initials }}</div>
+      </div>
+    </header>
+    <main class="panel-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

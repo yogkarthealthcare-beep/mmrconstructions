@@ -1,0 +1,66 @@
+<div class="admin-login-page">
+  <div class="al-left">
+    <div style="position:relative;z-index:1;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:48px;">
+        <div style="width:42px;height:42px;background:linear-gradient(135deg,#a07c2a,#e8c97a);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <span style="font-family:var(--ff-display);font-weight:900;color:#0a2e1b;font-size:1.1rem;">M</span>
+        </div>
+        <div>
+          <div style="font-family:var(--ff-display);color:#fff;font-size:.9rem;font-weight:700;">M.M.R. Constructions</div>
+          <div style="font-size:10px;color:#e8c97a;">Admin Control Panel</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--clr-gold-lt);font-family:var(--ff-ui);letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;">Secure Access</div>
+      <h2 style="font-family:var(--ff-display);color:#fff;font-size:2.2rem;line-height:1.15;margin-bottom:16px;">Admin Panel<br/>Login</h2>
+      <p style="color:rgba(255,255,255,.55);font-size:13.5px;line-height:1.75;">Authorized personnel only. All login activities are logged and monitored.</p>
+      <div class="d-flex flex-column gap-3 mt-5">
+        <div style="display:flex;align-items:center;gap:10px;"><div style="width:26px;height:26px;background:rgba(201,168,76,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fas fa-lock" style="color:var(--clr-gold-lt);font-size:10px;"></i></div><span style="color:rgba(255,255,255,.65);font-size:13px;">JWT Secured Access</span></div>
+        <div style="display:flex;align-items:center;gap:10px;"><div style="width:26px;height:26px;background:rgba(201,168,76,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fas fa-history" style="color:var(--clr-gold-lt);font-size:10px;"></i></div><span style="color:rgba(255,255,255,.65);font-size:13px;">Full Audit Logging</span></div>
+        <div style="display:flex;align-items:center;gap:10px;"><div style="width:26px;height:26px;background:rgba(201,168,76,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fas fa-user-shield" style="color:var(--clr-gold-lt);font-size:10px;"></i></div><span style="color:rgba(255,255,255,.65);font-size:13px;">Role-Based Permissions</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="al-right">
+    <div class="al-box">
+      <div class="mb-5">
+        <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:6px;">Welcome Back, Admin</h3>
+        <p class="fs-13 text-muted">Enter your admin credentials to continue</p>
+      </div>
+
+      <div *ngIf="error" class="panel-alert panel-alert-error mb-4">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+      </div>
+
+      <form (ngSubmit)="login()">
+        <div class="mb-3">
+          <label class="f-label">Admin Email *</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-muted);font-size:13px;"><i class="fas fa-envelope"></i></span>
+            <input type="email" class="f-input" style="padding-left:38px;" placeholder="admin@mmr.com" [(ngModel)]="email" name="email" required/>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="f-label">Password *</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-muted);font-size:13px;"><i class="fas fa-lock"></i></span>
+            <input [type]="showPass ? 'text' : 'password'" class="f-input" style="padding-left:38px;padding-right:44px;" placeholder="Enter password" [(ngModel)]="password" name="password"/>
+            <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--txt-muted);" (click)="showPass=!showPass">
+              <i [class]="showPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-green btn-lg w-100" [disabled]="loading">
+          <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sign-in-alt me-2'"></i>
+          {{ loading ? 'Authenticating...' : 'Login to Admin Panel' }}
+        </button>
+      </form>
+
+      <div class="mt-4 text-center">
+        <a routerLink="/login" class="fs-12 text-muted"><i class="fas fa-arrow-left me-1"></i>Back to User Login</a>
+      </div>
+    </div>
+  </div>
+</div>

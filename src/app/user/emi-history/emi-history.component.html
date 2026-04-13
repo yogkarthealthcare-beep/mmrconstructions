@@ -1,0 +1,62 @@
+<div *ngIf="toast" class="panel-alert panel-alert-success mb-3" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;">
+  <i class="fas fa-check-circle"></i> {{ toast }}
+</div>
+
+<div class="pg-header"><h4>EMI Schedule & History</h4><p>All installments and payment records</p></div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="sc-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check-circle"></i></div><div class="sc-val">{{ paidCount }}</div><div class="sc-lbl">EMIs Paid</div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="sc-icon" style="background:#eaf4ee;color:#1a5c3a;"><i class="fas fa-rupee-sign"></i></div><div class="sc-val">₹{{ (totalPaid/1000)|number:'1.0-0' }}K</div><div class="sc-lbl">Total Paid</div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="sc-icon" style="background:#fdf8ec;color:#a07c2a;"><i class="fas fa-hourglass"></i></div><div class="sc-val">{{ nextDue ? '₹'+nextDue.emi_amount : '—' }}</div><div class="sc-lbl">Next EMI</div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="sc-icon" style="background:#fee2e2;color:#dc2626;"><i class="fas fa-exclamation-triangle"></i></div><div class="sc-val">{{ overdueCount }}</div><div class="sc-lbl">Overdue</div></div>
+  </div>
+</div>
+
+<div *ngIf="nextDue" class="panel-alert panel-alert-warning mb-4">
+  <i class="fas fa-bell"></i>
+  <div class="flex-fill">
+    <strong>Next EMI Due: {{ nextDue.due_date | date:'dd MMM yyyy' }}</strong><br/>
+    <span class="fs-13">Amount: <strong>₹{{ nextDue.emi_amount | number }}</strong> — {{ nextDue.site_name }} · {{ nextDue.plot_number }}</span>
+  </div>
+  <label class="btn btn-gold btn-sm" style="cursor:pointer;">
+    <i class="fas fa-upload me-1"></i>Upload Proof
+    <input type="file" accept="image/*,.pdf" style="display:none;" (change)="uploadProof(nextDue.emi_id, $event)"/>
+  </label>
+</div>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<div class="data-table-wrap" *ngIf="!loading">
+  <div class="data-table-head"><h5>EMI Records ({{ emis.length }})</h5></div>
+  <div *ngIf="emis.length===0" class="panel-empty"><i class="fas fa-calendar"></i><h6>No EMI records yet</h6></div>
+  <div class="table-responsive" *ngIf="emis.length>0">
+    <table class="table">
+      <thead><tr><th>#</th><th>Plot</th><th>Due Date</th><th>EMI Amt</th><th>Paid Date</th><th>Overdue Days</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let e of emis">
+          <td class="fw-700 text-primary">{{ e.installment_no }}</td>
+          <td class="fs-12">{{ e.plot_number }}<div class="text-muted">{{ e.site_name }}</div></td>
+          <td class="fs-12 text-muted">{{ e.due_date | date:'dd MMM yyyy' }}</td>
+          <td class="fw-700">₹{{ e.emi_amount | number }}</td>
+          <td class="fs-12">{{ e.paid_date ? (e.paid_date | date:'dd MMM yyyy') : '—' }}</td>
+          <td><span *ngIf="e.overdue_days>0" class="sbadge sbadge-red">{{ e.overdue_days }}d</span><span *ngIf="!(e.overdue_days>0)" class="text-muted fs-12">—</span></td>
+          <td><span class="sbadge" [class.sbadge-green]="e.emi_status==='Paid'" [class.sbadge-yellow]="e.emi_status==='Pending'||e.emi_status==='ProofSubmitted'" [class.sbadge-red]="e.emi_status==='Overdue'">{{ e.emi_status }}</span></td>
+          <td>
+            <label *ngIf="e.emi_status==='Pending'||e.emi_status==='Overdue'" class="action-btn" style="cursor:pointer;" title="Upload Proof">
+              <input type="file" accept="image/*,.pdf" style="display:none;" (change)="uploadProof(e.emi_id, $event)"/>
+              <i [class]="uploadingId===e.emi_id ? 'fas fa-spinner fa-spin' : 'fas fa-upload'"></i>
+            </label>
+            <button *ngIf="e.emi_status==='Paid'" class="action-btn" title="Voucher"><i class="fas fa-file-invoice"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

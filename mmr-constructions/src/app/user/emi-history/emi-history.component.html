@@ -1,0 +1,41 @@
+<div class="mb-4"><h4 style="font-family:var(--ff-display);color:var(--txt-h);margin:0;">EMI Schedule & History</h4>
+<p style="font-size:13px;color:var(--txt-muted);margin:0;">Complete installment track record for both plots</p></div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3" *ngFor="let s of summaryStats">
+    <div class="stat-card">
+      <div class="sc-icon" [style]="'background:' + s.bg + ';color:' + s.clr"><i [class]="s.icon"></i></div>
+      <div class="sc-val" style="font-size:1.3rem;">{{ s.val }}</div>
+      <div class="sc-lbl">{{ s.lbl }}</div>
+    </div>
+  </div>
+</div>
+
+<div style="background:var(--clr-gold-bg);border:1px solid var(--clr-gold);border-radius:var(--r-xl);padding:18px 22px;display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;">
+  <div style="width:44px;height:44px;background:var(--grad-gold);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-bell" style="color:var(--clr-primary-dk);font-size:18px;"></i></div>
+  <div class="flex-fill"><h6 style="font-family:var(--ff-display);color:var(--clr-primary-dk);margin:0 0 3px;">Next EMI Due: 01 May 2025</h6><p style="font-size:13px;color:var(--clr-gold-dk);margin:0;">Amount: <strong>₹12,000</strong>. Pay on time to avoid 5% late charge।</p></div>
+  <button class="btn btn-gold btn-sm"><i class="fas fa-credit-card me-1"></i>Pay Now</button>
+</div>
+
+<div class="data-table-wrap">
+  <div class="data-table-head"><h5>Installment History</h5></div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>#</th><th>Due Date</th><th>Paid Date</th><th>Amount</th><th>Method</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let e of schedule">
+          <td style="font-weight:700;color:var(--clr-primary);">{{ e.inst }}</td>
+          <td style="font-size:12px;color:var(--txt-muted);">{{ e.dueDate }}</td>
+          <td style="font-size:12px;">{{ e.paidDate || '—' }}</td>
+          <td style="font-weight:700;">{{ e.amount }}<span *ngIf="e.late" style="font-size:10px;color:#dc2626;margin-left:4px;">(+late fee)</span></td>
+          <td><span *ngIf="e.method" class="sbadge sbadge-gray">{{ e.method }}</span></td>
+          <td><span class="sbadge" [class.sbadge-green]="e.status==='paid'" [class.sbadge-yellow]="e.status==='upcoming'" [class.sbadge-red]="e.status==='overdue'">{{ e.status }}</span></td>
+          <td>
+            <button *ngIf="e.status==='paid'" class="action-btn" title="Download Receipt"><i class="fas fa-download"></i></button>
+            <button *ngIf="e.status==='upcoming'" class="action-btn" style="color:#16a34a;" title="Pay Now"><i class="fas fa-rupee-sign"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

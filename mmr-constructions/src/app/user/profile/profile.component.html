@@ -1,0 +1,117 @@
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <h4 style="font-family:var(--ff-display);color:var(--txt-h);margin:0;">Profile & KYC</h4>
+    <p style="font-size:13px;color:var(--txt-muted);margin:0;">Your personal and account details</p>
+  </div>
+  <button class="btn btn-sm" [class.btn-green]="!editMode" [class.btn-gold]="editMode"
+    (click)="editMode ? save() : editMode=true">
+    <i [class]="editMode ? 'fas fa-save me-1' : 'fas fa-edit me-1'"></i>
+    {{ editMode ? 'Save Changes' : 'Edit Profile' }}
+  </button>
+</div>
+
+<div *ngIf="saved" style="background:#dcfce7;border:1px solid #bbf7d0;border-radius:var(--r-md);padding:12px 16px;margin-bottom:20px;">
+  <i class="fas fa-check-circle" style="color:#16a34a;margin-right:8px;"></i>Profile updated successfully!
+</div>
+
+<!-- Member Card -->
+<div style="background:var(--grad-green);border-radius:var(--r-xl);padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+  <div style="width:64px;height:64px;background:var(--grad-gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-size:1.6rem;font-weight:700;color:var(--clr-primary-dk);flex-shrink:0;">RK</div>
+  <div>
+    <h4 style="font-family:var(--ff-display);color:#fff;margin:0 0 4px;">{{ profile.name }}</h4>
+    <p style="color:rgba(255,255,255,.65);font-size:13px;margin:0;">
+      <i class="fas fa-id-badge me-2"></i>{{ profile.memberId }} &nbsp;·&nbsp;
+      <span class="sbadge sbadge-green" style="font-size:11px;">{{ profile.type }}</span>
+    </p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Personal -->
+  <div class="col-lg-6">
+    <div class="panel-card">
+      <div class="panel-card-title">Personal Information</div>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label class="f-label">Full Name</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.name" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+        <div class="col-sm-6">
+          <label class="f-label">Father's Name</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.fatherName" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+        <div class="col-sm-6">
+          <label class="f-label">Date of Birth</label>
+          <input type="date" class="f-input" [(ngModel)]="profile.dob" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+        <div class="col-sm-6">
+          <label class="f-label">Gender</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.gender" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+        <div class="col-sm-6">
+          <label class="f-label">Mobile</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.mobile" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+        <div class="col-sm-6">
+          <label class="f-label">Email</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.email" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Identity + Nominee -->
+  <div class="col-lg-6">
+    <div class="panel-card mb-4">
+      <div class="panel-card-title">Identity Documents</div>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label class="f-label">Aadhar Number</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.aadhar" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+        <div class="col-sm-6">
+          <label class="f-label">PAN Number</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.pan" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+      </div>
+    </div>
+    <div class="panel-card">
+      <div class="panel-card-title">Nominee Details</div>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label class="f-label">Nominee Name</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.nomineeName" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+        <div class="col-sm-6">
+          <label class="f-label">Relation</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.nomineeRelation" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bank -->
+  <div class="col-12">
+    <div class="panel-card">
+      <div class="panel-card-title">Bank Account Details</div>
+      <div class="row g-3">
+        <div class="col-sm-3">
+          <label class="f-label">Bank Name</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.bankName" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+        <div class="col-sm-3">
+          <label class="f-label">Account No.</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.accountNo" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+        <div class="col-sm-3">
+          <label class="f-label">IFSC Code</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.ifsc" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+        <div class="col-sm-3">
+          <label class="f-label">Branch</label>
+          <input type="text" class="f-input" [(ngModel)]="profile.branch" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

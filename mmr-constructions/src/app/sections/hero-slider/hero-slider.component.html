@@ -1,0 +1,68 @@
+<section id="home" class="hero">
+  <div class="slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
+    <div class="slide-bg" [style.background-image]="'url(' + slide.bg + ')'"></div>
+    <div class="slide-overlay"></div>
+    <div class="slide-content">
+      <div class="mmr-container">
+        <div class="slide-inner">
+          <div class="slide-tag">
+            <div class="tag-dot"><i [class]="slide.tagIcon"></i></div>
+            <span class="tag-txt">{{ slide.tagTxt }}</span>
+          </div>
+          <h1 class="slide-title">{{ slide.title }}<br/><span class="hl">{{ slide.titleHl }}</span></h1>
+          <p class="slide-desc">{{ slide.desc }}</p>
+          <div class="slide-btns">
+            <button *ngIf="slide.btn1.scroll" class="btn btn-gold btn-lg" (click)="scrollTo(slide.btn1.scroll!)">
+              <i [class]="slide.btn1.icon + ' me-2'"></i>{{ slide.btn1.text }}
+            </button>
+            <a *ngIf="slide.btn1.link" [routerLink]="slide.btn1.link" class="btn btn-gold btn-lg">
+              <i [class]="slide.btn1.icon + ' me-2'"></i>{{ slide.btn1.text }}
+            </a>
+            <button *ngIf="slide.btn2.scroll" class="btn btn-outline-white btn-lg" (click)="scrollTo(slide.btn2.scroll!)">
+              <i [class]="slide.btn2.icon + ' me-2'"></i>{{ slide.btn2.text }}
+            </button>
+            <a *ngIf="slide.btn2.link" [routerLink]="slide.btn2.link" class="btn btn-outline-white btn-lg">
+              <i [class]="slide.btn2.icon + ' me-2'"></i>{{ slide.btn2.text }}
+            </a>
+          </div>
+          <div class="slide-stats">
+            <ng-container *ngFor="let stat of slide.stats; let j = index">
+              <div *ngIf="j > 0" class="stat-sep"></div>
+              <div><div class="stat-num">{{ stat.num }}</div><div class="stat-lbl">{{ stat.lbl }}</div></div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slider-arrows">
+    <button class="s-arrow" (click)="prev()"><i class="fas fa-chevron-left"></i></button>
+    <button class="s-arrow" (click)="next()"><i class="fas fa-chevron-right"></i></button>
+  </div>
+
+  <div class="slider-dots">
+    <div class="s-dot" *ngFor="let s of slides; let i = index" [class.active]="i === currentSlide" (click)="goTo(i)"></div>
+  </div>
+
+  <div class="slide-counter d-none d-md-flex">
+    <span class="curr">{{ padNum(currentSlide) }}</span>
+    <span>/ 05</span>
+  </div>
+
+  <div class="float-card">
+    <div class="fc-icon"><i class="fas fa-shield-alt"></i></div>
+    <h6>Buyback Guarantee</h6>
+    <p>Original + ₹1,00,000 in 2 years</p>
+  </div>
+
+  <div class="thumb-nav d-none d-lg-flex">
+    <div class="thumb-item" *ngFor="let s of slides; let i = index" [class.active]="i === currentSlide" (click)="goTo(i)">
+      <img class="thumb-img" [src]="s.thumb" alt=""/>
+      <div class="thumb-info">
+        <div class="thumb-title">{{ s.thumbTitle }}</div>
+        <div class="thumb-sub">{{ s.thumbSub }}</div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,443 @@
+<div class="auth-page">
+
+  <!-- ══ LEFT PANEL ════════════════════════════ -->
+  <div class="auth-left">
+    <div>
+      <a routerLink="/" class="brand d-inline-flex mb-5 text-decoration-none">
+        <div class="brand-icon me-3"><span>M</span></div>
+        <div>
+          <span class="brand-name" style="color:#fff;">M.M.R. Constructions</span>
+          <span class="brand-sub">& Developers Pvt. Ltd.</span>
+        </div>
+      </a>
+      <h2 style="font-family:var(--ff-display);color:#fff;font-size:1.9rem;margin-bottom:12px;">Join MMR Family</h2>
+      <p style="color:rgba(255,255,255,.55);font-size:13px;line-height:1.8;">Free registration। Premium plots browse करें, EMI track करें और commission कमाएं।</p>
+      <div class="mt-4">
+        <div class="reg-check"><div class="rci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:13px;">Quick 3-step registration</span></div>
+        <div class="reg-check"><div class="rci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:13px;">OTP-verified secure signup</span></div>
+        <div class="reg-check"><div class="rci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:13px;">Complete profile anytime</span></div>
+        <div class="reg-check"><div class="rci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:13px;">Admin approval after registration</span></div>
+      </div>
+    </div>
+    <p style="color:rgba(255,255,255,.35);font-size:12px;">
+      Already registered? <a routerLink="/login" style="color:var(--clr-gold-lt);">Login here</a>
+    </p>
+  </div>
+
+  <!-- ══ RIGHT PANEL ═══════════════════════════ -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+
+      <!-- ── SUCCESS STATE ── -->
+      <div *ngIf="registered" style="text-align:center;padding:60px 20px;">
+        <div style="width:80px;height:80px;background:var(--clr-primary-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+          <i class="fas fa-check" style="color:var(--clr-primary);font-size:32px;"></i>
+        </div>
+        <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:12px;">Registration Successful!</h3>
+        <p style="color:var(--txt-muted);max-width:360px;margin:0 auto 28px;">आपका account create हो गया है। Admin approval के बाद आप login करके baaki details fill कर सकते हैं।</p>
+        <div class="panel-alert panel-alert-info mb-4" style="text-align:left;">
+          <i class="fas fa-info-circle"></i>
+          <div class="fs-13">Login करने के बाद <strong>Profile & KYC</strong> section से अपनी बाकी details (Aadhar, PAN, Bank, Nominee) complete करें।</div>
+        </div>
+        <a routerLink="/login" class="btn btn-green btn-lg"><i class="fas fa-sign-in-alt me-2"></i>Proceed to Login</a>
+      </div>
+
+      <ng-container *ngIf="!registered">
+        <div class="mb-4">
+          <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:4px;">Create Account</h3>
+          <p class="fs-13 text-muted">Choose how you want to register</p>
+        </div>
+
+        <!-- ── MODE TOGGLE ── -->
+        <div class="mode-toggle">
+          <button class="mode-btn" [class.active]="mode==='quick'" (click)="mode='quick'">
+            <i class="fas fa-bolt me-2"></i>Quick Register
+          </button>
+          <button class="mode-btn" [class.active]="mode==='full'" (click)="mode='full'">
+            <i class="fas fa-list-check me-2"></i>Full Registration
+          </button>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="error" class="panel-alert panel-alert-error mb-4">
+          <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+
+        <!-- ████████████████████████████████████████
+             QUICK REGISTRATION (3 steps)
+        ████████████████████████████████████████ -->
+        <ng-container *ngIf="mode==='quick'">
+
+          <!-- Step Track -->
+          <div class="step-track mb-1">
+            <div class="step-track-item" *ngFor="let s of [1,2,3]; let last=last">
+              <div class="step-circle" [class.active]="qStep===s" [class.done]="qStep>s">
+                <i *ngIf="qStep>s" class="fas fa-check" style="font-size:10px;"></i>
+                <span *ngIf="qStep<=s">{{ s }}</span>
+              </div>
+              <div *ngIf="!last" class="step-line" [class.done]="qStep>s"></div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between mb-5 px-1">
+            <span class="fs-12 text-muted">Verify Mobile</span>
+            <span class="fs-12 text-muted">Set Password</span>
+            <span class="fs-12 text-muted">Confirm</span>
+          </div>
+
+          <!-- ── QUICK STEP 1: Mobile + OTP ── -->
+          <div class="q-step" *ngIf="qStep===1">
+            <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Verify Your Mobile</h5>
+
+            <!-- Account type -->
+            <div class="row g-3 mb-4">
+              <div class="col-6">
+                <div class="type-card" [class.selected]="qForm.user_type==='Customer'" (click)="qForm.user_type='Customer'">
+                  <div class="tc-icon"><i class="fas fa-home"></i></div>
+                  <div class="fw-700 fs-13" style="color:var(--txt-h);">Customer</div>
+                  <div class="fs-12 text-muted mt-1">Plot book करना है</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="type-card" [class.selected]="qForm.user_type==='Associate'" (click)="qForm.user_type='Associate'">
+                  <div class="tc-icon"><i class="fas fa-user-tie"></i></div>
+                  <div class="fw-700 fs-13" style="color:var(--txt-h);">Associate</div>
+                  <div class="fs-12 text-muted mt-1">Commission कमाना है</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mobile input -->
+            <div class="mb-3">
+              <label class="f-label">Mobile Number *</label>
+              <div style="display:flex;gap:10px;">
+                <div style="position:relative;flex:1;">
+                  <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-muted);"><i class="fas fa-mobile-alt"></i></span>
+                  <input type="tel" class="f-input" style="padding-left:38px;" placeholder="10-digit mobile number"
+                    [(ngModel)]="qForm.mobile_no" name="mobile_no" maxlength="10" [disabled]="otpSent"/>
+                </div>
+                <button type="button" class="btn btn-outline-green" style="white-space:nowrap;flex-shrink:0;"
+                  (click)="sendOtp()" [disabled]="loading || otpSent || qForm.mobile_no.length!==10">
+                  <i [class]="loading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-sms me-1'"></i>
+                  {{ otpSent ? '✓ Sent' : loading ? 'Sending...' : 'Send OTP' }}
+                </button>
+              </div>
+              <div *ngIf="otpSent" class="fs-12" style="color:var(--clr-primary);margin-top:6px;">
+                <i class="fas fa-check-circle me-1"></i>OTP sent to {{ qForm.mobile_no }}
+                <button type="button" class="border-0 bg-transparent ms-2 fs-12" style="color:var(--clr-primary);text-decoration:underline;" (click)="otpSent=false">Change number</button>
+              </div>
+            </div>
+
+            <!-- OTP input (shown after OTP sent) -->
+            <div class="mb-4" *ngIf="otpSent">
+              <label class="f-label">Enter OTP *</label>
+              <input type="number" class="f-input" placeholder="Enter 6-digit OTP"
+                [(ngModel)]="qForm.otp_code" name="otp_code" maxlength="6"
+                style="font-size:1.2rem;font-weight:700;letter-spacing:.2em;"/>
+              <div class="d-flex justify-content-between mt-1">
+                <span class="fs-12 text-muted">OTP is valid for 10 minutes</span>
+                <button type="button" class="border-0 bg-transparent fs-12" style="color:var(--clr-primary);" (click)="sendOtp()">Resend OTP</button>
+              </div>
+            </div>
+
+            <!-- Optional email -->
+            <div class="mb-4" *ngIf="otpSent">
+              <label class="f-label">Email Address <span class="text-muted">(Optional)</span></label>
+              <div style="position:relative;">
+                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-muted);"><i class="fas fa-envelope"></i></span>
+                <input type="email" class="f-input" style="padding-left:38px;" placeholder="your@email.com" [(ngModel)]="qForm.email" name="email"/>
+              </div>
+            </div>
+
+            <button *ngIf="otpSent" type="button" class="btn btn-green btn-lg w-100"
+              (click)="verifyOtp()" [disabled]="!qOtpFilled">
+              Verify OTP & Continue <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+          </div>
+
+          <!-- ── QUICK STEP 2: Password ── -->
+          <div class="q-step" *ngIf="qStep===2">
+            <h5 style="font-family:var(--ff-display);margin-bottom:8px;">Set Your Password</h5>
+            <p class="fs-13 text-muted mb-4">यह password login करने के लिए use होगा। OTP से भी login कर सकते हैं।</p>
+
+            <div class="mb-3">
+              <label class="f-label">Password *</label>
+              <div style="position:relative;">
+                <input [type]="showPass ? 'text' : 'password'" class="f-input" style="padding-right:44px;"
+                  placeholder="Min 6 characters" [(ngModel)]="qForm.password" name="password"/>
+                <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--txt-muted);" (click)="showPass=!showPass">
+                  <i [class]="showPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              <!-- Strength bar -->
+              <div class="pass-strength mt-2" [style.width]="qForm.password.length>7?'100%':qForm.password.length>4?'60%':'30%'"
+                [style.background]="qForm.password.length>7?'#16a34a':qForm.password.length>4?'#f59e0b':'#ef4444'"></div>
+              <div class="fs-12 text-muted mt-1">{{ qForm.password.length>7 ? '✅ Strong password' : qForm.password.length>4 ? '⚠️ Medium strength' : '❌ Too short' }}</div>
+            </div>
+
+            <div class="mb-4">
+              <label class="f-label">Confirm Password *</label>
+              <div style="position:relative;">
+                <input [type]="showConfPass ? 'text' : 'password'" class="f-input" style="padding-right:44px;"
+                  placeholder="Re-enter password" [(ngModel)]="qForm.confirmPassword" name="confirmPassword"/>
+                <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--txt-muted);" (click)="showConfPass=!showConfPass">
+                  <i [class]="showConfPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              <div *ngIf="qForm.confirmPassword && qForm.password !== qForm.confirmPassword" class="fs-12" style="color:#dc2626;margin-top:4px;">
+                <i class="fas fa-times me-1"></i>Passwords don't match
+              </div>
+              <div *ngIf="qForm.confirmPassword && qForm.password === qForm.confirmPassword" class="fs-12" style="color:#16a34a;margin-top:4px;">
+                <i class="fas fa-check me-1"></i>Passwords match
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-green flex-fill" (click)="qStep=1"><i class="fas fa-arrow-left me-1"></i>Back</button>
+              <button type="button" class="btn btn-green flex-fill" (click)="nextToStep3()"
+                [disabled]="qForm.password.length<6 || qForm.password!==qForm.confirmPassword">
+                Continue <i class="fas fa-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── QUICK STEP 3: Confirm + Terms ── -->
+          <div class="q-step" *ngIf="qStep===3">
+            <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Confirm & Register</h5>
+
+            <!-- Summary card -->
+            <div style="background:var(--bg-section);border-radius:12px;padding:18px 20px;margin-bottom:20px;border:1px solid var(--bdr);">
+              <div class="fw-700 fs-13 mb-3" style="color:var(--txt-h);">Registration Summary</div>
+              <div class="row g-2">
+                <div class="col-6"><div class="fs-12 text-muted">Account Type</div><div class="fw-700 fs-13" style="color:var(--clr-primary);">{{ qForm.user_type }}</div></div>
+                <div class="col-6"><div class="fs-12 text-muted">Mobile</div><div class="fw-700 fs-13" style="color:var(--txt-h);">{{ qForm.mobile_no }}</div></div>
+                <div class="col-6" *ngIf="qForm.email"><div class="fs-12 text-muted">Email</div><div class="fs-13" style="color:var(--txt-h);">{{ qForm.email }}</div></div>
+                <div class="col-6"><div class="fs-12 text-muted">OTP Status</div><div class="fs-13" style="color:#16a34a;"><i class="fas fa-check-circle me-1"></i>Verified</div></div>
+              </div>
+            </div>
+
+            <!-- Optional invite code -->
+            <div class="mb-4">
+              <label class="f-label">Referral / Invite Code <span class="text-muted">(Optional)</span></label>
+              <input type="text" class="f-input" placeholder="e.g. MMRABC123" [(ngModel)]="qForm.sponsor_invite_code" name="sponsorCode"/>
+            </div>
+
+            <!-- What to do next -->
+            <div class="panel-alert panel-alert-info mb-4">
+              <i class="fas fa-info-circle"></i>
+              <div class="fs-13">
+                <strong>Registration के बाद:</strong> Admin approval होने पर आप login करके अपनी <strong>Aadhar, PAN, Bank, Address, Nominee</strong> details Profile section से भर सकते हैं।
+              </div>
+            </div>
+
+            <!-- Terms -->
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:24px;">
+              <input type="checkbox" id="terms" style="width:18px;height:18px;margin-top:2px;accent-color:var(--clr-primary);flex-shrink:0;"
+                [(ngModel)]="qForm.terms_accepted" name="terms"/>
+              <label for="terms" class="fs-13" style="cursor:pointer;">
+                मैं <a href="#" style="color:var(--clr-primary);">Terms & Conditions</a> और
+                <a href="#" style="color:var(--clr-primary);">Privacy Policy</a> से सहमत हूं।
+              </label>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-green flex-fill" (click)="qStep=2"><i class="fas fa-arrow-left me-1"></i>Back</button>
+              <button type="button" class="btn btn-green flex-fill" (click)="quickSubmit()" [disabled]="!qForm.terms_accepted || loading">
+                <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-user-check me-2'"></i>
+                {{ loading ? 'Registering...' : 'Complete Registration' }}
+              </button>
+            </div>
+
+            <div class="text-center mt-3">
+              <span class="fs-12 text-muted">Already have account? </span>
+              <a routerLink="/login" class="fs-12 fw-700" style="color:var(--clr-primary);">Login here</a>
+            </div>
+          </div>
+
+        </ng-container>
+        <!-- END QUICK REGISTRATION -->
+
+
+        <!-- ████████████████████████████████████████
+             FULL REGISTRATION (8 steps)
+        ████████████████████████████████████████ -->
+        <ng-container *ngIf="mode==='full'">
+
+          <!-- Step Track (8 steps) -->
+          <div class="step-track mb-1">
+            <ng-container *ngFor="let s of [1,2,3,4,5,6,7,8]; let last=last">
+              <div class="step-circle" [class.active]="fStep===s" [class.done]="fStep>s" style="width:26px;height:26px;font-size:10px;">
+                <i *ngIf="fStep>s" class="fas fa-check" style="font-size:8px;"></i>
+                <span *ngIf="fStep<=s">{{ s }}</span>
+              </div>
+              <div *ngIf="!last" class="step-line" [class.done]="fStep>s"></div>
+            </ng-container>
+          </div>
+          <div class="d-flex justify-content-between mb-4">
+            <span *ngFor="let l of ['Type','Mobile','Personal','ID','Address','Bank','Nominee','Declare']" class="fs-12 text-muted" style="font-size:9px!important;">{{ l }}</span>
+          </div>
+          <div class="fs-13 text-muted mb-4">Step {{ fStep }} of 8</div>
+
+          <!-- STEP 1: Type -->
+          <div *ngIf="fStep===1" class="q-step">
+            <h5 style="font-family:var(--ff-display);margin-bottom:20px;">I want to register as...</h5>
+            <div class="row g-3 mb-5">
+              <div class="col-sm-6">
+                <div class="type-card" [class.selected]="fForm.user_type==='Customer'" (click)="fForm.user_type='Customer'">
+                  <div class="tc-icon"><i class="fas fa-home"></i></div>
+                  <div class="fw-700 mb-1">Customer</div>
+                  <p class="fs-12 text-muted mb-0">Plot buy करना है। EMI से dream plot book करें।</p>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="type-card" [class.selected]="fForm.user_type==='Associate'" (click)="fForm.user_type='Associate'">
+                  <div class="tc-icon"><i class="fas fa-user-tie"></i></div>
+                  <div class="fw-700 mb-1">Associate</div>
+                  <p class="fs-12 text-muted mb-0">Commission earn करना है। 12 साल तक income।</p>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-green btn-lg w-100" (click)="fNext()">Next <i class="fas fa-arrow-right ms-2"></i></button>
+          </div>
+
+          <!-- STEP 2: Mobile OTP -->
+          <div *ngIf="fStep===2" class="q-step">
+            <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Verify Mobile Number</h5>
+            <div class="mb-3">
+              <label class="f-label">Mobile Number *</label>
+              <div style="display:flex;gap:10px;">
+                <div style="position:relative;flex:1;">
+                  <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-muted);"><i class="fas fa-mobile-alt"></i></span>
+                  <input type="tel" class="f-input" style="padding-left:38px;" placeholder="10-digit mobile"
+                    [(ngModel)]="fForm.mobile_no" name="fmobile" [disabled]="fOtpSent"/>
+                </div>
+                <button type="button" class="btn btn-outline-green" style="white-space:nowrap;flex-shrink:0;"
+                  (click)="sendFullOtp()" [disabled]="loading || fOtpSent">
+                  <i [class]="loading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-sms me-1'"></i>
+                  {{ fOtpSent ? '✓ Sent' : 'Send OTP' }}
+                </button>
+              </div>
+            </div>
+            <div *ngIf="fOtpSent" class="mb-4">
+              <label class="f-label">Enter 6-digit OTP *</label>
+              <div class="otp-row">
+                <input *ngFor="let o of fOtp; let i=index" [id]="'fotp'+i" type="text" maxlength="1"
+                  [(ngModel)]="fOtp[i]" [name]="'fotp'+i" (input)="fOtpInput($event,i)"/>
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+              <button class="btn btn-outline-green flex-fill" (click)="fPrev()"><i class="fas fa-arrow-left me-1"></i>Back</button>
+              <button class="btn btn-green flex-fill" (click)="verifyFullOtp()" *ngIf="fOtpSent">Verify & Continue <i class="fas fa-arrow-right ms-1"></i></button>
+            </div>
+          </div>
+
+          <!-- STEP 3: Personal -->
+          <div *ngIf="fStep===3" class="q-step">
+            <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Personal Information</h5>
+            <div class="row g-3">
+              <div class="col-sm-6"><label class="f-label">Full Name *</label><input type="text" class="f-input" placeholder="As per Aadhar" [(ngModel)]="fForm.full_name" name="fname"/></div>
+              <div class="col-sm-6"><label class="f-label">Father's Name *</label><input type="text" class="f-input" [(ngModel)]="fForm.father_name" name="ffname"/></div>
+              <div class="col-sm-6"><label class="f-label">Date of Birth *</label><input type="date" class="f-input" [(ngModel)]="fForm.date_of_birth" name="fdob"/></div>
+              <div class="col-sm-6"><label class="f-label">Gender *</label>
+                <select class="f-select" [(ngModel)]="fForm.gender" name="fgender">
+                  <option value="">Select</option><option>Male</option><option>Female</option><option>Other</option>
+                </select>
+              </div>
+              <div class="col-sm-6"><label class="f-label">Email</label><input type="email" class="f-input" [(ngModel)]="fForm.email" name="femail"/></div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+              <button class="btn btn-outline-green flex-fill" (click)="fPrev()"><i class="fas fa-arrow-left me-1"></i>Back</button>
+              <button class="btn btn-green flex-fill" (click)="fNext()">Next <i class="fas fa-arrow-right ms-1"></i></button>
+            </div>
+          </div>
+
+          <!-- STEP 4: Identity -->
+          <div *ngIf="fStep===4" class="q-step">
+            <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Identity Details</h5>
+            <div class="row g-3">
+              <div class="col-sm-6"><label class="f-label">Aadhar Number *</label><input type="text" class="f-input" placeholder="12-digit" maxlength="12" [(ngModel)]="fForm.aadhar_number" name="faadhar"/></div>
+              <div class="col-sm-6"><label class="f-label">PAN Number *</label><input type="text" class="f-input" placeholder="ABCDE1234F" [(ngModel)]="fForm.pan_number" name="fpan"/></div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+              <button class="btn btn-outline-green flex-fill" (click)="fPrev()"><i class="fas fa-arrow-left me-1"></i>Back</button>
+              <button class="btn btn-green flex-fill" (click)="fNext()">Next <i class="fas fa-arrow-right ms-1"></i></button>
+            </div>
+          </div>
+
+          <!-- STEP 5: Address -->
+          <div *ngIf="fStep===5" class="q-step">
+            <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Address Details</h5>
+            <div class="row g-3">
+              <div class="col-12"><label class="f-label">Full Address *</label><textarea class="f-input" rows="2" [(ngModel)]="fForm.perm_address_line1" name="faddr"></textarea></div>
+              <div class="col-sm-5"><label class="f-label">City *</label><input type="text" class="f-input" [(ngModel)]="fForm.perm_city" name="fcity"/></div>
+              <div class="col-sm-4"><label class="f-label">State</label><input type="text" class="f-input" [(ngModel)]="fForm.perm_state" name="fstate" placeholder="Uttar Pradesh"/></div>
+              <div class="col-sm-3"><label class="f-label">Pincode</label><input type="text" class="f-input" [(ngModel)]="fForm.perm_pin" name="fpin"/></div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+              <button class="btn btn-outline-green flex-fill" (click)="fPrev()"><i class="fas fa-arrow-left me-1"></i>Back</button>
+              <button class="btn btn-green flex-fill" (click)="fNext()">Next <i class="fas fa-arrow-right ms-1"></i></button>
+            </div>
+          </div>
+
+          <!-- STEP 6: Bank -->
+          <div *ngIf="fStep===6" class="q-step">
+            <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Bank Account Details</h5>
+            <div class="row g-3">
+              <div class="col-sm-6"><label class="f-label">Bank Name *</label><input type="text" class="f-input" [(ngModel)]="fForm.bank_name" name="fbank"/></div>
+              <div class="col-sm-6"><label class="f-label">Account Number *</label><input type="text" class="f-input" [(ngModel)]="fForm.account_number" name="facc"/></div>
+              <div class="col-sm-6"><label class="f-label">IFSC Code *</label><input type="text" class="f-input" [(ngModel)]="fForm.ifsc_code" name="fifsc"/></div>
+              <div class="col-sm-6"><label class="f-label">Branch Name</label><input type="text" class="f-input" [(ngModel)]="fForm.branch_name" name="fbranch"/></div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+              <button class="btn btn-outline-green flex-fill" (click)="fPrev()"><i class="fas fa-arrow-left me-1"></i>Back</button>
+              <button class="btn btn-green flex-fill" (click)="fNext()">Next <i class="fas fa-arrow-right ms-1"></i></button>
+            </div>
+          </div>
+
+          <!-- STEP 7: Nominee -->
+          <div *ngIf="fStep===7" class="q-step">
+            <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Nominee Details</h5>
+            <div class="row g-3">
+              <div class="col-sm-6"><label class="f-label">Nominee Name *</label><input type="text" class="f-input" [(ngModel)]="fForm.nominee_name" name="fnomname"/></div>
+              <div class="col-sm-6"><label class="f-label">Relation *</label>
+                <select class="f-select" [(ngModel)]="fForm.nominee_relationship" name="fnom_rel">
+                  <option value="">Select</option>
+                  <option *ngFor="let r of ['Spouse','Son','Daughter','Father','Mother','Brother','Sister','Other']">{{ r }}</option>
+                </select>
+              </div>
+              <div class="col-sm-6"><label class="f-label">Nominee DOB</label><input type="date" class="f-input" [(ngModel)]="fForm.nominee_dob" name="fnomdob"/></div>
+              <div class="col-sm-6"><label class="f-label">Referral Code</label><input type="text" class="f-input" [(ngModel)]="fForm.sponsor_invite_code" name="fsponsor" placeholder="Optional"/></div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+              <button class="btn btn-outline-green flex-fill" (click)="fPrev()"><i class="fas fa-arrow-left me-1"></i>Back</button>
+              <button class="btn btn-green flex-fill" (click)="fNext()">Next <i class="fas fa-arrow-right ms-1"></i></button>
+            </div>
+          </div>
+
+          <!-- STEP 8: Declaration -->
+          <div *ngIf="fStep===8" class="q-step">
+            <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Declaration & Submit</h5>
+            <div style="background:var(--bg-section);border-radius:10px;padding:16px;max-height:180px;overflow-y:auto;font-size:12.5px;color:var(--txt-muted);line-height:1.8;margin-bottom:20px;border:1px solid var(--bdr);">
+              मैं/हम एतद्द्वारा घोषणा करता/करती हूं/हैं कि ऊपर दी गई जानकारी मेरे/हमारे सर्वोत्तम ज्ञान और विश्वास के अनुसार सत्य और सही है।
+              I/We hereby declare that the information given is true and correct. I/We agree to M.M.R. Constructions & Developers Pvt. Ltd. Terms & Conditions, Buyback policy, EMI schedule and commission structure.
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:24px;">
+              <input type="checkbox" id="fterms" style="width:18px;height:18px;margin-top:2px;accent-color:var(--clr-primary);flex-shrink:0;"
+                [(ngModel)]="fForm.terms_accepted" name="fterms"/>
+              <label for="fterms" class="fs-13" style="cursor:pointer;">मैं उपरोक्त Declaration से सहमत हूं और सभी Terms & Conditions स्वीकार करता/करती हूं।</label>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-green flex-fill" (click)="fPrev()"><i class="fas fa-arrow-left me-1"></i>Back</button>
+              <button class="btn btn-gold flex-fill" (click)="fullSubmit()" [disabled]="!fForm.terms_accepted || loading">
+                <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-check-circle me-2'"></i>
+                {{ loading ? 'Submitting...' : 'Submit Registration' }}
+              </button>
+            </div>
+          </div>
+
+        </ng-container>
+        <!-- END FULL REGISTRATION -->
+
+      </ng-container>
+    </div>
+  </div>
+</div>

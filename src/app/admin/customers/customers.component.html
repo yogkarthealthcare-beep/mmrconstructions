@@ -1,0 +1,59 @@
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+  <div class="pg-header" style="margin-bottom:0;"><h4>Customer Management</h4><p>All registered customers</p></div>
+  <button class="btn btn-green btn-sm"><i class="fas fa-user-plus me-1"></i>Add Customer</button>
+</div>
+
+<div class="data-table-wrap">
+  <div class="data-table-head">
+    <h5>Customers ({{ total }})</h5>
+    <div class="dtable-actions">
+      <select class="f-select" style="width:140px;padding:7px 12px;" [(ngModel)]="statusFilter" (change)="onSearch()">
+        <option value="">All Status</option>
+        <option value="Active">Active</option>
+        <option value="Pending">Pending</option>
+        <option value="Suspended">Suspended</option>
+      </select>
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input [(ngModel)]="search" placeholder="Search name or mobile..." (input)="onSearch()"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+  <div *ngIf="!loading && customers.length===0" class="panel-empty">
+    <i class="fas fa-users"></i><h6>No customers found</h6>
+  </div>
+
+  <div class="table-responsive" *ngIf="!loading && customers.length>0">
+    <table class="table">
+      <thead><tr><th>Member ID</th><th>Name & Mobile</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let c of customers">
+          <td><span class="fw-700 text-primary fs-12">{{ c.member_id || '—' }}</span></td>
+          <td>
+            <strong style="color:var(--txt-h);">{{ c.full_name }}</strong>
+            <div class="fs-12 text-muted">{{ c.mobile_no }}</div>
+          </td>
+          <td>
+            <span class="sbadge"
+              [class.sbadge-green]="c.account_status==='Active'"
+              [class.sbadge-yellow]="c.account_status==='Pending'"
+              [class.sbadge-red]="c.account_status==='Suspended'||c.account_status==='Blacklisted'">
+              {{ c.account_status }}
+            </span>
+          </td>
+          <td class="fs-12 text-muted">{{ c.registered_at | date:'dd MMM yyyy' }}</td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="action-btn" title="View"><i class="fas fa-eye"></i></button>
+              <a [href]="'tel:'+c.mobile_no" class="action-btn" title="Call"><i class="fas fa-phone"></i></a>
+              <a [href]="'https://wa.me/91'+c.mobile_no" target="_blank" class="action-btn" style="color:#16a34a;" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,45 @@
+<div *ngIf="toast" class="panel-alert panel-alert-success mb-3" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;"><i class="fas fa-check-circle"></i> {{ toast }}</div>
+<div class="pg-header"><h4>My Documents</h4><p>KYC documents and verification status</p></div>
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<div class="row g-3 mb-4" *ngIf="!loading">
+  <div class="col-sm-6 col-lg-3" *ngFor="let dt of docTypes">
+    <div class="panel-card" style="padding:20px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;border-radius:11px;background:var(--clr-primary-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i [class]="dt.icon" style="color:var(--clr-primary);font-size:18px;"></i>
+        </div>
+        <div>
+          <div class="fw-700 fs-13" style="color:var(--txt-h);">{{ dt.label }}</div>
+          <div *ngIf="docStatus(dt.key) as doc">
+            <span class="sbadge" [class.sbadge-green]="doc.is_verified" [class.sbadge-yellow]="!doc.is_verified">{{ doc.is_verified ? 'Verified' : 'Pending Verification' }}</span>
+          </div>
+          <span *ngIf="!docStatus(dt.key)" class="sbadge sbadge-gray">Not Uploaded</span>
+        </div>
+      </div>
+      <label class="btn btn-outline-green btn-sm w-100" style="cursor:pointer;">
+        <input type="file" accept="image/*,.pdf" style="display:none;" (change)="upload(dt.key, $event)" [disabled]="uploading"/>
+        <i [class]="uploading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-cloud-upload-alt me-1'"></i>
+        {{ docStatus(dt.key) ? 'Replace' : 'Upload' }}
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Docs Table -->
+<div class="data-table-wrap" *ngIf="!loading && docs.length>0">
+  <div class="data-table-head"><h5>Uploaded Documents ({{ docs.length }})</h5></div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Type</th><th>Uploaded On</th><th>Verified</th><th>Rejection Note</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let d of docs">
+          <td class="fw-700 fs-13" style="color:var(--txt-h);">{{ d.document_type }}</td>
+          <td class="fs-12 text-muted">{{ d.uploaded_at | date:'dd MMM yyyy' }}</td>
+          <td><span class="sbadge" [class.sbadge-green]="d.is_verified" [class.sbadge-yellow]="!d.is_verified">{{ d.is_verified ? 'Verified' : 'Pending' }}</span></td>
+          <td class="fs-12 text-danger">{{ d.rejection_note || '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

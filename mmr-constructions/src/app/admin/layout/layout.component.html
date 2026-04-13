@@ -1,0 +1,62 @@
+<div class="panel-shell">
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen=false"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.open]="sidebarOpen">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon"><span>M</span></div>
+        <div class="sidebar-brand-text">
+          <span class="name">M.M.R. Constructions</span>
+          <span class="role">Admin Panel</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ng-container *ngFor="let group of navGroups">
+        <div class="nav-group-label">{{ group.label }}</div>
+        <a *ngFor="let item of group.items"
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           class="sidebar-link"
+           (click)="sidebarOpen=false">
+          <i [class]="item.icon"></i>
+          {{ item.label }}
+          <span *ngIf="item.badge" class="badge" [class.red]="item.badgeRed">{{ item.badge }}</span>
+        </a>
+      </ng-container>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a routerLink="/" class="sidebar-link">
+        <i class="fas fa-globe"></i> View Website
+      </a>
+      <a routerLink="/login" class="sidebar-link">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="panel-main">
+    <header class="panel-topbar">
+      <button class="hamburger-toggle" (click)="sidebarOpen=true"><i class="fas fa-bars"></i></button>
+      <div class="flex-fill">
+        <div class="page-title">Admin Panel</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-icon-btn">
+          <i class="fas fa-bell"></i>
+          <span class="notif-dot"></span>
+        </div>
+        <div class="topbar-icon-btn"><i class="fas fa-cog"></i></div>
+        <div class="topbar-avatar">A</div>
+      </div>
+    </header>
+    <main class="panel-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
