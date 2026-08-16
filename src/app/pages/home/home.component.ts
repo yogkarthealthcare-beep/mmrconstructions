@@ -23,7 +23,7 @@ export class HomeComponent {
     { icon: 'fas fa-shield-alt', title: 'Buyback Guarantee', desc: '2 साल में buyback। Original price + ₹1 lakh वापस। निवेश पूरी तरह सुरक्षित।' },
     { icon: 'fas fa-money-bill-wave', title: 'Easy EMI', desc: '₹51,000 down payment से शुरू। ₹3,000/month EMI। Bank finance भी available।' },
     { icon: 'fas fa-map-marked-alt', title: 'Prime Locations', desc: 'Highway, Airport, Station के नजदीक। High appreciation potential वाले plots।' },
-    { icon: 'fas fa-certificate', title: 'Govt. Registered', desc: 'Reg. No. UNNO/0011132। Transparent paperwork। Daakhil Kharij company करती है।' },
+    { icon: 'fas fa-certificate', title: 'Govt. Registered', desc: 'CIN: U68200UP2025PTC229203। Transparent paperwork। Daakhil Kharij company करती है।' },
   ];
   facilities = [
     { icon: 'fas fa-road',         title: 'Paved Roads',     desc: 'Internal paved road network सभी sites पर।' },
