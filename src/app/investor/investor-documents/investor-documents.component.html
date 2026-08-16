@@ -1,0 +1,64 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold text-dark mb-1">Document Upload</h4>
+    <p class="text-muted mb-0">Upload KYC and supporting documents for admin verification</p>
+  </div>
+</div>
+
+<div *ngIf="message" class="alert alert-success">{{ message }}</div>
+<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <label class="form-label fw-semibold">Document Type</label>
+        <select class="form-select mb-3" [(ngModel)]="documentType">
+          <option *ngFor="let type of documentTypes" [value]="type.value">{{ type.label }}</option>
+        </select>
+        <label class="form-label fw-semibold">File</label>
+        <input class="form-control mb-3" type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onFileChange($event)">
+        <div class="small text-muted mb-3">PDF, JPG, PNG. Maximum 5 MB.</div>
+        <button class="btn btn-success w-100 fw-bold" [disabled]="uploading" (click)="uploadDocument()">
+          <span *ngIf="uploading" class="spinner-border spinner-border-sm me-2"></span>
+          Upload Document
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white py-3">
+        <h5 class="fw-bold m-0">Uploaded Documents</h5>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-3">Type</th>
+              <th>File</th>
+              <th>Status</th>
+              <th>Remarks</th>
+              <th class="text-end pe-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let doc of documents">
+              <td class="ps-3 text-capitalize">{{ doc.document_type?.replace('_', ' ') }}</td>
+              <td><a [href]="fileUrl(doc.id)" target="_blank">{{ doc.original_file_name }}</a></td>
+              <td><span class="badge rounded-pill border" [ngClass]="badge(doc.status)">{{ doc.status }}</span></td>
+              <td class="text-muted small">{{ doc.admin_remarks || '-' }}</td>
+              <td class="text-end pe-3">
+                <button class="btn btn-sm btn-outline-danger" [disabled]="doc.status === 'approved'" (click)="deleteDocument(doc)">Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="!loading && !documents.length">
+              <td colspan="5" class="text-center text-muted py-4">No documents uploaded yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

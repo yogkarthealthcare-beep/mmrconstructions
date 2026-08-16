@@ -1,0 +1,22 @@
+<a routerLink="/admin/associates" class="btn btn-outline-green btn-sm mb-3"><i class="fas fa-arrow-left me-1"></i>Back</a>
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+<ng-container *ngIf="!loading">
+  <div class="pg-header"><h4>{{ data.profile?.full_name || 'Associate Detail' }}</h4><p>{{ data.profile?.member_id }} • {{ data.profile?.rank_name }}</p></div>
+  <div class="tabs mb-3">
+    <button *ngFor="let t of ['profile','referrals','commissions','payouts','status']" class="filter-tab" [class.active]="tab===t" (click)="tab=t">{{ t | titlecase }}</button>
+  </div>
+  <section class="panel-card" *ngIf="tab==='profile'">
+    <div class="detail-grid">
+      <div><span>Email</span><strong>{{ data.profile?.email || '-' }}</strong></div>
+      <div><span>Mobile</span><strong>{{ data.profile?.mobile_no || '-' }}</strong></div>
+      <div><span>Sponsor</span><strong>{{ data.profile?.sponsor_name || 'Direct' }}</strong></div>
+      <div><span>Total Gaj Sold</span><strong>{{ data.profile?.total_gaj_sold || 0 }}</strong></div>
+      <div><span>Total Commission</span><strong>{{ data.profile?.total_commission_earned | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+      <div><span>Status</span><strong>{{ data.profile?.account_status }}</strong></div>
+    </div>
+  </section>
+  <section class="panel-card" *ngIf="tab==='referrals'"><table class="table"><tr *ngFor="let r of data.direct_referrals"><td>{{ r.full_name }}</td><td>{{ r.member_id }}</td><td>{{ r.status }}</td></tr></table></section>
+  <section class="panel-card" *ngIf="tab==='commissions'"><table class="table"><tr *ngFor="let c of data.commissions"><td>{{ c.commission_type }}</td><td>{{ c.net_amount | currency:'INR':'symbol':'1.0-0' }}</td><td>{{ c.commission_status }}</td></tr></table></section>
+  <section class="panel-card" *ngIf="tab==='payouts'"><table class="table"><tr *ngFor="let p of data.payouts"><td>{{ p.requested_amount | currency:'INR':'symbol':'1.0-0' }}</td><td>{{ p.status }}</td><td>{{ p.payment_reference || '-' }}</td></tr></table></section>
+  <section class="panel-card" *ngIf="tab==='status'"><table class="table"><tr *ngFor="let h of data.status_history"><td>{{ h.old_status }} → {{ h.new_status }}</td><td>{{ h.reason }}</td><td>{{ h.changed_at | date:'dd MMM yyyy' }}</td></tr></table></section>
+</ng-container>

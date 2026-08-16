@@ -1,0 +1,392 @@
+<div *ngIf="toast" class="site-toast" [class.error]="toastType === 'error'"><i class="fas fa-info-circle"></i>{{ toast }}</div>
+
+<div class="editor-head">
+  <div class="pg-header">
+    <h4>Admin Plot Map Editor</h4>
+    <p>Move, resize, draw, and save plot coordinates visually</p>
+  </div>
+  <div class="head-actions">
+    <button class="btn btn-green btn-sm" (click)="saveLayout()" [disabled]="saving || !hasDirtyPlots">
+      <i class="fas fa-save me-1"></i>{{ saving ? 'Saving...' : 'Save Layout' }}
+    </button>
+    <button class="btn btn-outline-green btn-sm" (click)="startNewPolygon()" [disabled]="!activeSite"><i class="fas fa-draw-polygon me-1"></i>Draw Plot</button>
+    <button class="btn btn-outline-green btn-sm" (click)="addPlot()" [disabled]="!activeSite"><i class="fas fa-plus me-1"></i>Add Plot</button>
+  </div>
+</div>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<div class="editor-grid" *ngIf="!loading">
+  <aside class="panel-card site-sidebar">
+    <div class="site-select-head">
+      <div>
+        <div class="panel-card-title">Select Site / Project</div>
+        <p *ngIf="activeSite">{{ activeSite.city }} - {{ activeSite.total_plots || 0 }} plots</p>
+      </div>
+      <span *ngIf="activeSite" class="active-site-chip">
+        <i class="fas fa-map-marker-alt"></i>{{ activeSite.site_name }}
+      </span>
+    </div>
+    <div class="site-select-wrap" [class.open]="siteDropdownOpen">
+      <i class="fas fa-building"></i>
+      <input
+        type="text"
+        class="f-input site-select"
+        [(ngModel)]="siteSearch"
+        [ngModelOptions]="{standalone:true}"
+        (focus)="openSiteDropdown()"
+        (input)="siteDropdownOpen=true"
+        (blur)="closeSiteDropdownSoon()"
+        placeholder="Search site / project"
+        autocomplete="off"
+        aria-label="Search and select site or project">
+      <button type="button" class="site-select-caret" (mousedown)="$event.preventDefault()" (click)="siteDropdownOpen=!siteDropdownOpen" aria-label="Toggle site dropdown">
+        <i class="fas fa-chevron-down"></i>
+      </button>
+      <div class="site-options" *ngIf="siteDropdownOpen">
+        <button
+          type="button"
+          class="site-option"
+          *ngFor="let site of filteredSites"
+          [class.active]="activeSite?.site_id === site.site_id"
+          (mousedown)="$event.preventDefault(); selectSiteFromDropdown(site)">
+          <strong>{{ site.site_name }}</strong>
+          <span>{{ site.city }} - {{ site.total_plots || 0 }} plots</span>
+        </button>
+        <div class="site-option empty" *ngIf="!filteredSites.length">
+          No matching site found
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <section class="panel-card map-card" *ngIf="activeSite">
+    <div class="panel-card-title">
+      <span>{{ activeSite.site_name }}</span>
+      <div class="map-card-actions">
+        <button type="button" class="upload-btn" (click)="openSiteMap()">
+          <i class="fas fa-map"></i> View Plot Site Image
+        </button>
+      <label class="upload-btn">
+          <i class="fas fa-upload"></i> Upload Layout
+          <input type="file" accept=".jpg,.jpeg,.png,.pdf,.svg,image/jpeg,image/png,image/svg+xml,application/pdf" (change)="uploadLayout($event)">
+        </label>
+      </div>
+    </div>
+
+    <div class="legend-row">
+      <span *ngFor="let item of statusItems"><i [style.background]="item.color"></i>{{ item.label }}</span>
+      <strong class="dirty-count" *ngIf="hasDirtyPlots">{{ dirtyPlotIds.size }} unsaved</strong>
+    </div>
+
+    <div class="editor-workspace">
+    <div class="editor-toolbar" aria-label="Plot editor tools">
+      <button type="button" class="toolbar-toggle zoom-action" (click)="zoomOut()" title="Zoom out" aria-label="Zoom out"><i class="fas fa-search-minus"></i> Zoom Out</button>
+      <button type="button" class="tool-btn" (click)="resetView()" title="Fit to screen" aria-label="Fit to screen"><i class="fas fa-compress-arrows-alt"></i></button>
+      <button type="button" class="toolbar-toggle zoom-action" (click)="zoomIn()" title="Zoom in" aria-label="Zoom in"><i class="fas fa-search-plus"></i> Zoom In</button>
+      <button type="button" class="tool-btn" (click)="undo()" [disabled]="!canUndo" title="Undo" aria-label="Undo"><i class="fas fa-undo"></i></button>
+      <button type="button" class="tool-btn" (click)="redo()" [disabled]="!canRedo" title="Redo" aria-label="Redo"><i class="fas fa-redo"></i></button>
+      <button type="button" class="tool-btn" (click)="continueExistingNumbering()" title="Continue existing numbering" aria-label="Continue existing numbering"><i class="fas fa-forward"></i></button>
+      <button type="button" class="tool-btn" (click)="resetStartingNumber()" title="Reset starting number" aria-label="Reset starting number"><i class="fas fa-eraser"></i></button>
+      <button type="button" class="tool-btn" (click)="copySelection()" title="Copy" aria-label="Copy"><i class="fas fa-copy"></i></button>
+      <button type="button" class="tool-btn" (click)="pasteSelection()" [disabled]="!copiedPlots.length" title="Paste" aria-label="Paste"><i class="fas fa-paste"></i></button>
+      <button type="button" class="toolbar-toggle" (click)="autoDetectPlots()" [disabled]="!siteMapUrl || saving" title="Auto Detect" aria-label="Auto Detect">
+        <i class="fas fa-wand-magic-sparkles"></i> Auto Detect
+      </button>
+      <button type="button" class="toolbar-toggle" (click)="duplicateSelection()" [class.active]="selectedPlotIds.size > 0" title="Duplicate" aria-label="Duplicate">
+        <i class="fas fa-clone"></i> Duplicate
+      </button>
+      <button type="button" class="toolbar-toggle" (click)="splitSelectedPlot()" [disabled]="!selectedPlot" title="Split" aria-label="Split">
+        <i class="fas fa-columns"></i> Split
+      </button>
+      <button type="button" class="toolbar-toggle" (click)="mergeSelectedPlots()" [disabled]="selectedPlotIds.size < 2" title="Merge" aria-label="Merge">
+        <i class="fas fa-object-group"></i> Merge
+      </button>
+      <button type="button" class="toolbar-toggle danger-tool" (click)="deleteSelectedPlots()" [disabled]="!selectedPlotIds.size" title="Delete" aria-label="Delete">
+        <i class="fas fa-trash"></i> Delete
+      </button>
+      <button type="button" class="toolbar-toggle" [class.active]="panMode" (click)="panMode = !panMode; drawingPlot = null" title="Pan" aria-label="Pan">
+        <i class="fas fa-hand-paper"></i> Pan
+      </button>
+      <button type="button" class="toolbar-toggle" (click)="downloadImportTemplate()" title="Template" aria-label="Template">
+        <i class="fas fa-file-excel"></i> Template
+      </button>
+      <label class="toolbar-toggle" [class.active]="importing" title="Import">
+        <i class="fas fa-file-import"></i> Import
+        <input type="file" accept=".xlsx,.csv" (change)="importPlotDetails($event)">
+      </label>
+    </div>
+
+    <div class="editor-main">
+    <div class="editor-top-tools" aria-label="Plot editor settings">
+      <label class="number-seed" title="Starting Plot Number">
+        <span>Starting Plot Number</span>
+        <input
+          type="text"
+          [(ngModel)]="startingPlotNumber"
+          [ngModelOptions]="{standalone:true}"
+          placeholder="Continue"
+          aria-label="Starting plot number">
+      </label>
+      <select class="toolbar-select compact-select" [(ngModel)]="autoNumberDirection" [ngModelOptions]="{standalone:true}" title="Auto numbering direction" aria-label="Auto numbering direction">
+        <option value="up">Increase</option>
+        <option value="down">Decrease</option>
+      </select>
+      <label class="toolbar-toggle" [class.active]="skipExistingNumbers" title="Skip Existing">
+        <input type="checkbox" [(ngModel)]="skipExistingNumbers" [ngModelOptions]="{standalone:true}"> Skip Existing
+      </label>
+      <label class="toolbar-toggle" [class.active]="showGrid" title="Grid">
+        <input type="checkbox" [(ngModel)]="showGrid" [ngModelOptions]="{standalone:true}"> Grid
+      </label>
+      <label class="toolbar-toggle" [class.active]="snapToGrid" title="Snap">
+        <input type="checkbox" [(ngModel)]="snapToGrid" [ngModelOptions]="{standalone:true}"> Snap
+      </label>
+      <label class="toolbar-toggle" [class.active]="smartSnap" title="Smart Snap">
+        <input type="checkbox" [(ngModel)]="smartSnap" [ngModelOptions]="{standalone:true}"> Smart Snap
+      </label>
+      <div class="toolbar-search" title="Find plot">
+        <i class="fas fa-search"></i>
+        <input placeholder="Find plot" [(ngModel)]="search" [ngModelOptions]="{standalone:true}" aria-label="Search plot">
+      </div>
+      <select class="toolbar-select" [(ngModel)]="statusFilter" [ngModelOptions]="{standalone:true}" title="Filter plots by status" aria-label="Filter plots by status">
+        <option value="">All Status</option>
+        <option *ngFor="let item of statusItems" [value]="item.value">{{ item.label }}</option>
+      </select>
+      <label class="grid-size" title="Grid Size">
+        Grid
+        <input type="number" min="0.5" step="0.5" [(ngModel)]="gridSize" [ngModelOptions]="{standalone:true}">
+      </label>
+      <span class="zoom-readout" title="Zoom Level">{{ zoom | number:'1.1-1' }}x</span>
+      <span class="keyboard-mode" [class.active]="selectedPlot" [title]="selectedPlot ? 'Keyboard Edit On' : 'Select a plot'">
+        <i class="fas fa-keyboard"></i>{{ selectedPlot ? 'Keyboard Edit On' : 'Select a plot' }}
+      </span>
+    </div>
+    <div class="import-summary" *ngIf="importing || importSummary">
+      <div class="import-progress" *ngIf="importing"><span [style.width.%]="importProgress"></span></div>
+      <strong *ngIf="importSummary">Import Summary</strong>
+      <span *ngIf="importSummary">Total {{ importSummary.total_records || 0 }} | Created {{ importSummary.created || 0 }} | Updated {{ importSummary.updated || 0 }} | Failed {{ importSummary.failed || 0 }} | Duplicate {{ importSummary.duplicate || 0 }}</span>
+      <span class="import-error" *ngFor="let item of importSummary?.errors?.slice(0, 5)">Row {{ item.row }}: {{ item.error }}</span>
+    </div>
+
+    <div class="validation-warnings" *ngIf="validationWarnings.length">
+      <strong>Warnings</strong>
+      <span *ngFor="let warning of validationWarnings">{{ warning }}</span>
+    </div>
+
+    <div class="draw-toolbar" *ngIf="drawingPlot || drawingNewPlot">
+      <div>
+        <strong>{{ drawingNewPlot ? 'Drawing New Plot' : ('Drawing Plot ' + drawingPlot.plot_number) }}</strong>
+        <span>Click corners over the image. Double-click or Enter finishes and keeps drawing ready for the next plot.</span>
+      </div>
+      <div class="draw-actions">
+        <button class="btn btn-green btn-sm" *ngIf="drawingNewPlot" (click)="finishNewPolygon()" [disabled]="draftPoints.length < 3">Finish Polygon</button>
+        <button class="btn btn-green btn-sm" *ngIf="drawingPlot" (click)="applyDraftPolygon()" [disabled]="draftPoints.length < 3">Apply Shape</button>
+        <button class="btn btn-outline-green btn-sm" *ngIf="drawingPlot" (click)="savePolygon()" [disabled]="draftPoints.length < 3 || saving">Apply & Save</button>
+        <button class="btn btn-outline-green btn-sm" (click)="undoPoint()" [disabled]="!draftPoints.length">Undo</button>
+        <button class="btn btn-outline-green btn-sm" (click)="clearDraft()" [disabled]="!draftPoints.length">Clear</button>
+        <button class="btn btn-outline-danger btn-sm" (click)="drawingPlot=null; drawingNewPlot=false; draftPoints=[]">Cancel</button>
+      </div>
+    </div>
+
+    <div class="map-stage" [class.pan-mode]="panMode" (wheel)="onWheel($event)">
+      <div class="map-quick-controls">
+        <button type="button" (click)="zoomOut()" title="Zoom out" aria-label="Zoom out">
+          <i class="fas fa-minus"></i>
+        </button>
+        <span>{{ zoom | number:'1.1-1' }}x</span>
+        <button type="button" (click)="zoomIn()" title="Zoom in" aria-label="Zoom in">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button type="button" (click)="shrinkSelectedPlot()" [disabled]="!selectedPlot" title="Shrink selected plot" aria-label="Shrink selected plot">
+          <i class="fas fa-compress-alt"></i>
+        </button>
+        <button type="button" (click)="growSelectedPlot()" [disabled]="!selectedPlot" title="Grow selected plot" aria-label="Grow selected plot">
+          <i class="fas fa-expand-alt"></i>
+        </button>
+      </div>
+      <div *ngIf="plotsLoading" class="panel-loading map-loading"><i class="fas fa-spinner"></i></div>
+      <svg
+        *ngIf="!plotsLoading"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        (click)="onMapClick($event)"
+        (dblclick)="onMapDoubleClick($event)"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp($event)"
+        (pointercancel)="onPointerUp($event)"
+        (mouseleave)="endDrag(); selectionState=null"
+        (contextmenu)="$event.preventDefault()">
+        <g [attr.transform]="mapTransform">
+          <rect x="0" y="0" width="100" height="100" class="map-bg"></rect>
+          <image
+            *ngIf="siteMapUrl"
+            [attr.href]="siteMapUrl"
+            x="0"
+            y="0"
+            width="100"
+            height="100"
+            preserveAspectRatio="none"
+            class="site-layout-image"></image>
+          <g class="grid-layer" *ngIf="showGrid">
+            <line *ngFor="let line of gridLines" [attr.x1]="line" y1="0" [attr.x2]="line" y2="100"></line>
+            <line *ngFor="let line of gridLines" x1="0" [attr.y1]="line" x2="100" [attr.y2]="line"></line>
+          </g>
+
+          <g
+            *ngFor="let plot of filteredPlots; trackBy: trackPlot"
+            class="plot-overlay"
+            [class.unsaved]="dirtyPlotIds.has(plot.plot_id)"
+            [ngClass]="detectionConfidenceClass(plot)">
+            <polygon
+              *ngIf="polygonPoints(plot)"
+              [attr.points]="polygonPoints(plot)"
+              [attr.fill]="plotColor(plot.plot_status)"
+              [class.active]="selectedPlot?.plot_id === plot.plot_id || selectedPlotIds.has(+plot.plot_id)"
+              (pointerdown)="startPlotDrag(plot, $event)"
+              (click)="onPlotClick(plot, $event)"
+              (dblclick)="openPlotDetails(plot, $event.ctrlKey || $event.metaKey || $event.shiftKey); $event.stopPropagation()">
+              <title>Drag Plot {{ plot.plot_number }}{{ detectionConfidenceLabel(plot) ? ' - ' + detectionConfidenceLabel(plot) : '' }}</title>
+            </polygon>
+            <text
+              *ngIf="polygonPoints(plot)"
+              class="plot-label"
+              [attr.x]="labelPoint(plot).x"
+              [attr.y]="labelPoint(plot).y"
+              [attr.textLength]="plotLabelWidth(plot)"
+              [attr.font-size]="plotLabelFontSize(plot)"
+              lengthAdjust="spacingAndGlyphs">{{ plot.plot_number }}</text>
+            <text
+              *ngIf="selectedPlot?.plot_id === plot.plot_id && plotDimensionLabel(plot)"
+              class="plot-dimension-label"
+              [attr.x]="labelPoint(plot).x"
+              [attr.y]="labelPoint(plot).y + plotLabelFontSize(plot) + .7"
+              [attr.textLength]="plotLabelWidth(plot)"
+              [attr.font-size]="plotDimensionFontSize(plot)"
+              lengthAdjust="spacingAndGlyphs">{{ plotDimensionLabel(plot) }}</text>
+          </g>
+
+          <g *ngIf="selectedBounds && selectedPlot && !drawingPlot" class="edit-frame">
+            <rect [attr.x]="selectedBounds.x" [attr.y]="selectedBounds.y" [attr.width]="selectedBounds.width" [attr.height]="selectedBounds.height"></rect>
+            <ng-container *ngFor="let edge of resizeEdges(selectedBounds)">
+              <line
+                [attr.x1]="edge.x1"
+                [attr.y1]="edge.y1"
+                [attr.x2]="edge.x2"
+                [attr.y2]="edge.y2"
+                class="edge-resize-line"
+                [class.active]="hoveredResizeEdge === edge.key"></line>
+              <line
+                [attr.x1]="edge.x1"
+                [attr.y1]="edge.y1"
+                [attr.x2]="edge.x2"
+                [attr.y2]="edge.y2"
+                [attr.data-edge]="edge.key"
+                class="edge-resize-hit"
+                (pointerenter)="hoveredResizeEdge = edge.key"
+                (pointerleave)="hoveredResizeEdge = null"
+                (pointerdown)="hoveredResizeEdge = edge.key; startEdgeResize(edge.key, $event)"
+                (contextmenu)="$event.preventDefault()">
+                <title>Ctrl + left-drag or right-drag edge to resize</title>
+              </line>
+            </ng-container>
+            <circle
+              *ngFor="let handle of resizeHandles(selectedBounds)"
+              [attr.cx]="handle.x"
+              [attr.cy]="handle.y"
+              r=".55"
+              [attr.data-handle]="handle.key"
+              class="resize-handle"
+              (pointerdown)="startResize(handle.key, $event)">
+              <title>Resize {{ handle.key }}</title>
+            </circle>
+            <circle
+              *ngFor="let point of selectedPoints; let i=index"
+              [attr.cx]="point.x"
+              [attr.cy]="point.y"
+              r=".42"
+              class="vertex-handle"
+              (pointerdown)="startVertexDrag(i, $event)">
+              <title>Move vertex {{ i + 1 }}</title>
+            </circle>
+          </g>
+
+          <g *ngIf="drawingPlot || drawingNewPlot">
+            <polygon *ngIf="draftPoints.length > 2" [attr.points]="draftPointString" class="draft-polygon"></polygon>
+            <polyline *ngIf="draftPoints.length > 1" [attr.points]="draftPointString" class="draft-line"></polyline>
+            <circle *ngFor="let point of draftPoints" [attr.cx]="point.x" [attr.cy]="point.y" r="1.1" class="draft-point"></circle>
+          </g>
+
+          <g *ngIf="selectionBounds && !drawingPlot" class="selection-preview">
+            <rect [attr.x]="selectionBounds.x" [attr.y]="selectionBounds.y" [attr.width]="selectionBounds.width" [attr.height]="selectionBounds.height"></rect>
+            <text [attr.x]="selectionBounds.x2" [attr.y]="selectionBounds.y">
+              {{ selectionBounds.width | number:'1.1-1' }} x {{ selectionBounds.height | number:'1.1-1' }}
+            </text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    </div>
+    </div>
+  </section>
+
+  <section id="plot-details-panel" class="panel-card details-card" *ngIf="selectedPlot">
+    <div class="panel-card-title">
+      <span>Plot {{ selectedPlot.plot_number }} Details</span>
+      <div class="draw-actions">
+        <button class="btn btn-outline-green btn-sm" (click)="startDraw(selectedPlot)">Custom Polygon</button>
+        <button class="btn btn-outline-green btn-sm" (click)="duplicateSelection()">Duplicate</button>
+        <button class="btn btn-outline-danger btn-sm" (click)="deleteSelectedPlots()">Delete</button>
+        <button class="btn btn-green btn-sm" (click)="saveLayout()" [disabled]="saving || !hasDirtyPlots">Save Layout</button>
+      </div>
+    </div>
+
+    <div class="coordinate-preview" *ngIf="selectedBounds">
+      <div><span>X</span><strong>{{ selectedBounds.x | number:'1.2-2' }}</strong></div>
+      <div><span>Y</span><strong>{{ selectedBounds.y | number:'1.2-2' }}</strong></div>
+      <div><span>Width</span><strong>{{ selectedBounds.width | number:'1.2-2' }}</strong></div>
+      <div><span>Height</span><strong>{{ selectedBounds.height | number:'1.2-2' }}</strong></div>
+      <div *ngIf="detectionConfidenceLabel(selectedPlot)"><span>Detection</span><strong>{{ detectionConfidenceLabel(selectedPlot) }}</strong></div>
+      <div class="wide"><span>Polygon Points</span><strong>{{ polygonPoints(selectedPlot) }}</strong></div>
+    </div>
+
+    <form [formGroup]="detailForm" (ngSubmit)="saveDetails()" class="details-form">
+      <label>Plot Number<input class="f-input" formControlName="plot_number"></label>
+      <label>Area<input class="f-input" type="number" formControlName="plot_area"></label>
+      <label>Plot Name / Size<input class="f-input" formControlName="dimensions"></label>
+      <label>Plot Type<input class="f-input" formControlName="plot_category"></label>
+      <label>Status<select class="f-input" formControlName="plot_status" title="Plot status" aria-label="Plot status"><option *ngFor="let item of statusItems" [value]="item.value">{{ item.label }}</option></select></label>
+      <label>Width<input class="f-input" type="number" formControlName="width_ft"></label>
+      <label>Length<input class="f-input" type="number" formControlName="length_ft"></label>
+      <label>Road Width<input class="f-input" type="number" formControlName="road_width_ft"></label>
+      <label>Price<input class="f-input" type="number" formControlName="base_price"></label>
+      <label>EMI<input class="f-input" type="number" formControlName="monthly_emi"></label>
+      <label>Facing<input class="f-input" formControlName="facing"></label>
+      <label>Block<input class="f-input" formControlName="block"></label>
+      <label class="check-label"><input type="checkbox" formControlName="is_corner_plot"> Corner Plot</label>
+      <label class="check-label"><input type="checkbox" formControlName="is_park_facing"> Park Facing</label>
+      <label class="wide">Features<textarea class="f-input" rows="2" formControlName="features"></textarea></label>
+      <label class="wide">Description<textarea class="f-input" rows="2" formControlName="description"></textarea></label>
+      <div class="form-actions wide">
+        <button class="btn btn-green btn-sm" type="submit" [disabled]="saving">{{ saving ? 'Saving...' : 'Save Details' }}</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div class="site-image-modal-backdrop" *ngIf="showSiteImageModal" (click)="closeSiteMapModal()">
+  <div class="site-image-modal" (click)="$event.stopPropagation()">
+    <div class="site-image-modal-head">
+      <div>
+        <h5>{{ activeSite?.site_name || 'Site' }} Layout Image</h5>
+        <span>Original plot site image</span>
+      </div>
+      <button type="button" class="modal-close-btn" (click)="closeSiteMapModal()" aria-label="Close site image">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="site-image-modal-body">
+      <img *ngIf="siteMapUrl" [src]="siteMapUrl" [alt]="(activeSite?.site_name || 'Site') + ' layout image'">
+    </div>
+  </div>
+</div>

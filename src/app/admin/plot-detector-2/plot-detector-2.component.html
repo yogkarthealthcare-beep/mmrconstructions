@@ -1,0 +1,131 @@
+<div *ngIf="toast" class="site-toast" [class.error]="toastType === 'error'"><i class="fas fa-info-circle"></i>{{ toast }}</div>
+
+<div class="pd2-head">
+  <div class="pg-header">
+    <h4>Plot Detector 2</h4>
+    <p>Select an existing project, view its site map, and manage generated plot boxes.</p>
+  </div>
+  <button class="btn btn-outline-green btn-sm" (click)="loadProjects(activeProject?.project_id)" [disabled]="loading">
+    <i class="fas fa-sync-alt me-1"></i>Refresh
+  </button>
+</div>
+
+<section class="pd2-form panel-card">
+  <div>
+    <label>Select Project</label>
+    <select class="f-input" [(ngModel)]="form.project_id" name="project_id" (ngModelChange)="selectProject($event)">
+      <option [ngValue]="null">Select Project</option>
+      <option *ngFor="let project of projects" [ngValue]="project.site_id || project.project_id">
+        {{ project.site_name || project.project_name }}
+      </option>
+    </select>
+  </div>
+  <div>
+    <label>Total Plots</label>
+    <input class="f-input" type="number" min="1" [(ngModel)]="form.total_plots" name="total_plots" placeholder="100">
+  </div>
+  <div class="pd2-map-note">
+    <label>Site Map Image</label>
+    <span>{{ activeProject?.site_map_url ? 'Loaded from selected project' : 'No image found for selected project' }}</span>
+  </div>
+  <button class="btn btn-green" (click)="createProject()" [disabled]="saving">
+    <i class="fas fa-table-cells-large me-1"></i>{{ saving ? 'Generating...' : 'Generate Plot Boxes' }}
+  </button>
+</section>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<ng-container *ngIf="!loading">
+  <section class="pd2-empty panel-card" *ngIf="!activeProject">
+    <i class="fas fa-map"></i>
+    <p>Select an existing project to generate clickable plot boxes.</p>
+  </section>
+
+  <section class="pd2-workspace" *ngIf="activeProject">
+    <div class="pd2-map-side">
+      <div class="pd2-section-title">
+        <div>
+          <h5>{{ activeProject.project_name }}</h5>
+          <span>Uploaded site map image</span>
+        </div>
+      </div>
+      <div class="pd2-image-frame">
+        <img [src]="activeProject.site_map_url" [alt]="activeProject.project_name + ' site map'">
+      </div>
+    </div>
+
+    <div class="pd2-layout-side">
+      <div class="pd2-section-title">
+        <div>
+          <h5>Plot Panel</h5>
+          <span>{{ plots.length }} generated plot boxes</span>
+        </div>
+      </div>
+
+      <div class="pd2-legend">
+        <span *ngFor="let item of statusCounts" [ngClass]="statusClass(item.status)">
+          <i></i>{{ item.status }} {{ item.count }}
+        </span>
+      </div>
+
+      <div class="pd2-plot-grid">
+        <button
+          type="button"
+          class="pd2-plot-box"
+          *ngFor="let plot of plots"
+          [ngClass]="statusClass(plot.status)"
+          [class.active]="selectedPlot?.plot_id === plot.plot_id"
+          (click)="openPlot(plot)"
+          [title]="plotTooltip(plot)">
+          <strong>{{ gridLabelMode === 'number' ? plot.plot_no : ('Plot ' + plot.plot_no) }}</strong>
+          <span>{{ displayStatus(plot.status || plot.plot_status) }}</span>
+        </button>
+      </div>
+    </div>
+  </section>
+</ng-container>
+
+<div class="pd2-modal-backdrop" *ngIf="selectedPlot" (click)="closePlot()">
+  <div class="pd2-modal" (click)="$event.stopPropagation()">
+    <div class="pd2-modal-head">
+      <div>
+        <span>Plot Details</span>
+        <h5>Plot {{ selectedPlot.plot_no }}</h5>
+      </div>
+      <button type="button" class="pd2-close" (click)="closePlot()" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="pd2-detail-list">
+      <div><span>Plot Number</span><strong>{{ selectedPlot.plot_no }}</strong></div>
+      <div><span>Plot Status</span><strong>{{ plotForm.status }}</strong></div>
+      <div><span>Project</span><strong>{{ activeProject?.project_name || activeProject?.site_name || '-' }}</strong></div>
+      <div><span>Buyer / Owner</span><strong>{{ detailValue(plotForm.customer_name) }}</strong></div>
+      <div><span>Mobile</span><strong>{{ detailValue(plotForm.mobile_number) }}</strong></div>
+      <div><span>Area</span><strong>{{ detailValue(plotForm.area) }}</strong></div>
+      <div><span>Booking Date</span><strong>{{ detailValue(plotForm.booking_date) }}</strong></div>
+      <div><span>Purchase Date</span><strong>{{ detailValue(plotForm.purchase_date) }}</strong></div>
+      <div><span>Payment Status</span><strong>{{ detailValue(plotForm.payment_status) }}</strong></div>
+      <div><span>Reservation / Booking ID</span><strong>{{ detailValue(selectedPlot.booking_id) }}</strong></div>
+      <div><span>Buyer Member ID</span><strong>{{ detailValue(selectedPlot.customer_member_id) }}</strong></div>
+      <div><span>Buyer Email</span><strong>{{ detailValue(selectedPlot.customer_email) }}</strong></div>
+      <div><span>Payment Type</span><strong>{{ detailValue(selectedPlot.payment_type) }}</strong></div>
+      <div><span>Booking Amount</span><strong>{{ detailValue(selectedPlot.booking_amount) }}</strong></div>
+      <div><span>Down Payment Paid</span><strong>{{ detailValue(selectedPlot.down_payment_paid) }}</strong></div>
+      <div><span>Total Paid</span><strong>{{ detailValue(selectedPlot.total_paid) }}</strong></div>
+      <div><span>Remaining Payment</span><strong>{{ detailValue(selectedPlot.remaining_payment) }}</strong></div>
+      <div><span>Pending EMI Count</span><strong>{{ detailValue(selectedPlot.pending_emi_count) }}</strong></div>
+    </div>
+
+    <div class="pd2-inline-edit">
+      <label>Status</label>
+      <select class="f-input" [(ngModel)]="plotForm.status" name="status">
+        <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+      </select>
+      <label>Area</label>
+      <input class="f-input" [(ngModel)]="plotForm.area" name="area" placeholder="1200 sq ft">
+      <button type="button" class="btn btn-green btn-sm" (click)="savePlot()" [disabled]="plotSaving">
+        {{ plotSaving ? 'Saving...' : 'Save Plot Details' }}
+      </button>
+    </div>
+  </div>
+</div>

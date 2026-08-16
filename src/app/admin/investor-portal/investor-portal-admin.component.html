@@ -1,0 +1,309 @@
+<div class="pg-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+  <div>
+    <h4 class="m-0 fw-bold">Investor Portal Management</h4>
+    <p class="text-muted m-0 small">Approve investors, process deposits, manage withdrawals, and inspect financial transactions</p>
+  </div>
+</div>
+
+<div *ngIf="message" class="alert alert-success alert-dismissible fade show mb-3">
+  <i class="fas fa-check-circle me-1"></i> {{ message }}
+</div>
+
+<div *ngIf="error" class="alert alert-danger alert-dismissible fade show mb-3">
+  <i class="fas fa-exclamation-circle me-1"></i> {{ error }}
+</div>
+
+<!-- Tabs Navigation -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+  <div class="card-header bg-white p-2">
+    <ul class="nav nav-pills custom-admin-pills">
+      <li class="nav-item">
+        <button class="nav-link px-4 py-2" [class.active]="activeTab === 'investors'" (click)="switchTab('investors')">
+          <i class="fas fa-users me-2"></i>Investor Accounts
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link px-4 py-2" [class.active]="activeTab === 'deposits'" (click)="switchTab('deposits')">
+          <i class="fas fa-arrow-down-long me-2"></i>Deposits
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link px-4 py-2" [class.active]="activeTab === 'withdrawals'" (click)="switchTab('withdrawals')">
+          <i class="fas fa-arrow-up-long me-2"></i>Withdrawals
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link px-4 py-2" [class.active]="activeTab === 'transactions'" (click)="switchTab('transactions')">
+          <i class="fas fa-receipt me-2"></i>All Transactions
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Tab 1: Investors Accounts -->
+<div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'investors'">
+  <div class="card-header bg-white py-3">
+    <div class="row g-3 align-items-center">
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input type="text" class="form-control" [(ngModel)]="investorSearch" (keyup.enter)="loadData()" placeholder="Search investor by name, email, mobile, PAN..." />
+          <button class="btn btn-outline-secondary" (click)="loadData()">Search</button>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" [(ngModel)]="investorStatusFilter" (change)="loadData()">
+          <option value="all">All Statuses</option>
+          <option value="pending">Pending Approval</option>
+          <option value="approved">Approved / Active</option>
+          <option value="rejected">Rejected / Inactive</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-success spinner-border-sm me-2"></div> Loading investors...
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Investor</th>
+            <th>Contact</th>
+            <th>PAN & Bank</th>
+            <th>Total Investment</th>
+            <th>Available Bal</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let inv of investors">
+            <td class="ps-3">
+              <div class="fw-bold">{{ inv.full_name }}</div>
+              <div class="small text-muted">{{ inv.city }}, {{ inv.state }}</div>
+            </td>
+            <td>
+              <div>{{ inv.email }}</div>
+              <div class="small text-muted">{{ inv.mobile_number }}</div>
+            </td>
+            <td class="small">
+              <div>PAN: <strong>{{ inv.pan_number || '-' }}</strong></div>
+              <div class="text-muted">{{ inv.bank_name || '-' }} ({{ inv.account_number || '-' }})</div>
+            </td>
+            <td class="fw-bold text-dark">₹{{ inv.total_investment | number:'1.2-2' }}</td>
+            <td class="fw-bold text-success">₹{{ inv.available_balance | number:'1.2-2' }}</td>
+            <td>
+              <span class="badge rounded-pill px-2.5 py-1 text-capitalize" [ngClass]="getStatusBadge(inv.status)">
+                {{ inv.status }}
+              </span>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                <button *ngIf="(inv.status === 'approved' || inv.status === 'active') && inv.is_verified" class="btn btn-sm btn-outline-success me-1" title="Login as Investor" (click)="loginAsInvestor(inv)"><i class="fas fa-sign-in-alt me-1"></i>Login</button>
+                <button *ngIf="inv.status === 'pending'" class="btn btn-success" (click)="toggleInvestorStatus(inv, 'approved')">Approve</button>
+                <button *ngIf="inv.status === 'pending'" class="btn btn-danger" (click)="toggleInvestorStatus(inv, 'rejected')">Reject</button>
+                <button *ngIf="inv.status === 'approved' || inv.status === 'active'" class="btn btn-outline-danger" (click)="toggleInvestorStatus(inv, 'inactive')">Deactivate</button>
+                <button *ngIf="inv.status === 'inactive' || inv.status === 'rejected'" class="btn btn-outline-success" (click)="toggleInvestorStatus(inv, 'approved')">Activate</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="!investors.length">
+            <td colspan="7" class="text-center text-muted py-5">No investor accounts found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 2: Deposits -->
+<div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'deposits'">
+  <div class="card-body p-0">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-success spinner-border-sm me-2"></div> Loading deposits...
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Date</th>
+            <th>Investor</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Txn Reference / UTR</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let dep of deposits">
+            <td class="ps-3 text-muted small">{{ dep.created_at | date:'medium' }}</td>
+            <td>
+              <div class="fw-bold">{{ dep.investor_name }}</div>
+              <div class="small text-muted">{{ dep.investor_email }}</div>
+            </td>
+            <td class="fw-bold text-success fs-6">₹{{ dep.amount | number:'1.2-2' }}</td>
+            <td class="text-secondary small">{{ dep.payment_method }}</td>
+            <td class="font-monospace small">{{ dep.transaction_reference }}</td>
+            <td>
+              <span class="badge rounded-pill px-2.5 py-1 text-capitalize" [ngClass]="getStatusBadge(dep.status)">
+                {{ dep.status }}
+              </span>
+            </td>
+            <td>
+              <div *ngIf="dep.status === 'pending'" class="btn-group btn-group-sm">
+                <button class="btn btn-success" (click)="openActionModal(dep, 'approve_deposit')">Approve</button>
+                <button class="btn btn-danger" (click)="openActionModal(dep, 'reject_deposit')">Reject</button>
+              </div>
+              <span *ngIf="dep.status !== 'pending'" class="text-muted small">Processed</span>
+            </td>
+          </tr>
+          <tr *ngIf="!deposits.length">
+            <td colspan="7" class="text-center text-muted py-5">No deposit requests recorded.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 3: Withdrawals -->
+<div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'withdrawals'">
+  <div class="card-body p-0">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-success spinner-border-sm me-2"></div> Loading withdrawals...
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Date</th>
+            <th>Investor</th>
+            <th>Amount</th>
+            <th>Bank Details</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let w of withdrawals">
+            <td class="ps-3 text-muted small">{{ w.created_at | date:'medium' }}</td>
+            <td>
+              <div class="fw-bold">{{ w.investor_name }}</div>
+              <div class="small text-muted">Avail Bal: ₹{{ w.current_balance | number:'1.2-2' }}</div>
+            </td>
+            <td class="fw-bold text-dark fs-6">₹{{ w.amount | number:'1.2-2' }}</td>
+            <td class="small">
+              <div>Bank: {{ w.bank_name }}</div>
+              <div class="font-monospace text-muted">A/C: {{ w.account_number }} ({{ w.ifsc_code }})</div>
+            </td>
+            <td>
+              <span class="badge rounded-pill px-2.5 py-1 text-capitalize" [ngClass]="getStatusBadge(w.status)">
+                {{ w.status }}
+              </span>
+            </td>
+            <td>
+              <div *ngIf="w.status === 'pending'" class="btn-group btn-group-sm">
+                <button class="btn btn-success" (click)="openActionModal(w, 'approve_withdrawal')">Approve</button>
+                <button class="btn btn-danger" (click)="openActionModal(w, 'reject_withdrawal')">Reject</button>
+              </div>
+              <span *ngIf="w.status !== 'pending'" class="text-muted small">Processed</span>
+            </td>
+          </tr>
+          <tr *ngIf="!withdrawals.length">
+            <td colspan="6" class="text-center text-muted py-5">No withdrawal requests recorded.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 4: All Transactions -->
+<div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'transactions'">
+  <div class="card-body p-0">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-success spinner-border-sm me-2"></div> Loading transaction log...
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Date</th>
+            <th>Investor</th>
+            <th>Txn ID</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tx of transactions">
+            <td class="ps-3 text-muted small">{{ tx.created_at | date:'medium' }}</td>
+            <td>
+              <div class="fw-bold">{{ tx.investor_name }}</div>
+              <div class="small text-muted">{{ tx.investor_email }}</div>
+            </td>
+            <td class="font-monospace small">{{ tx.transaction_id }}</td>
+            <td>
+              <span class="badge text-uppercase px-2 py-1"
+                    [class.bg-success-subtle]="tx.type === 'deposit'"
+                    [class.text-success]="tx.type === 'deposit'"
+                    [class.bg-info-subtle]="tx.type === 'withdrawal'"
+                    [class.text-info]="tx.type === 'withdrawal'">
+                {{ tx.type }}
+              </span>
+            </td>
+            <td class="fw-bold">₹{{ tx.amount | number:'1.2-2' }}</td>
+            <td>
+              <span class="badge rounded-pill px-2.5 py-1 text-capitalize" [ngClass]="getStatusBadge(tx.status)">
+                {{ tx.status }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="!transactions.length">
+            <td colspan="6" class="text-center text-muted py-5">No transactions recorded.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Action Modal for Admin Remarks -->
+<div class="modal fade show d-block" *ngIf="actionType" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">
+          Confirm {{ actionType.replace('_', ' ') | uppercase }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeActionModal()"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">Amount: <strong>₹{{ selectedItem?.amount | number:'1.2-2' }}</strong></p>
+        <p class="mb-3 text-muted small" *ngIf="selectedItem?.investor_name">Investor: {{ selectedItem?.investor_name }}</p>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Admin Remarks / Note (Optional)</label>
+          <textarea class="form-control" rows="2" [(ngModel)]="adminRemarks" placeholder="Enter remarks..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeActionModal()">Cancel</button>
+        <button type="button" class="btn" [class.btn-success]="actionType.includes('approve')" [class.btn-danger]="actionType.includes('reject')" (click)="confirmAction()" [disabled]="processingAction">
+          <span *ngIf="processingAction" class="spinner-border spinner-border-sm me-1"></span>
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

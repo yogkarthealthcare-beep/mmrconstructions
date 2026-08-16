@@ -1,0 +1,95 @@
+<div class="panel-shell" [class.collapsed-layout]="sidebarCollapsed">
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen = false"></div>
+
+  <!-- Left Sidebar -->
+  <aside class="sidebar" [class.open]="sidebarOpen" [class.mini-sidebar]="sidebarCollapsed">
+    <div class="sidebar-header d-flex align-items-center justify-content-between">
+      <a routerLink="/investor/dashboard" class="sidebar-brand text-decoration-none">
+        <div class="sidebar-brand-icon"><span>M</span></div>
+        <div class="sidebar-brand-text" *ngIf="!sidebarCollapsed">
+          <span class="name">MMR Constructions</span>
+          <span class="role">Investor Portal</span>
+        </div>
+      </a>
+      <!-- Desktop Mini-Sidebar Toggle Button -->
+      <button class="mini-toggle-btn d-none d-md-flex" (click)="toggleSidebarCollapse()" [title]="sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'">
+        <i [class]="sidebarCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'"></i>
+      </button>
+    </div>
+
+    <!-- Investor User Info Card -->
+    <div class="sidebar-user-card" *ngIf="investorData && !sidebarCollapsed">
+      <div class="d-flex align-items-center gap-3">
+        <div class="sidebar-avatar" style="overflow:hidden; display:flex; align-items:center; justify-content:center;">
+          <img *ngIf="investorData?.profile_picture_url" [src]="getImageUrl(investorData.profile_picture_url)" alt="Profile" class="w-100 h-100" style="object-fit:cover; border-radius:50%;" />
+          <span *ngIf="!investorData?.profile_picture_url">{{ initials }}</span>
+        </div>
+        <div style="min-width: 0;">
+          <div class="sidebar-user-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ investorData?.full_name || 'Investor' }}</div>
+          <div class="sidebar-user-id" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ investorData?.email }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <div class="nav-group-label" *ngIf="!sidebarCollapsed">INVESTOR MENU</div>
+      <a *ngFor="let item of navItems"
+         [routerLink]="item.route"
+         routerLinkActive="active"
+         class="sidebar-link"
+         [title]="sidebarCollapsed ? item.label : ''"
+         (click)="sidebarOpen = false">
+        <i [class]="item.icon"></i>
+        <span class="sl-label" *ngIf="!sidebarCollapsed">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <a routerLink="/" class="sidebar-link" title="View Website">
+        <i class="fas fa-globe"></i>
+        <span class="sl-label" *ngIf="!sidebarCollapsed">View Website</span>
+      </a>
+      <a class="sidebar-link text-danger" style="cursor:pointer;" (click)="logout()" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span class="sl-label" *ngIf="!sidebarCollapsed">Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Shell -->
+  <div class="panel-main" [class.expanded-main]="sidebarCollapsed">
+    <!-- Topbar -->
+    <header class="panel-topbar">
+      <!-- Mobile Hamburger Toggle -->
+      <button class="hamburger-toggle d-md-none" (click)="sidebarOpen = true">
+        <i class="fas fa-bars"></i>
+      </button>
+      <!-- Desktop Collapse Toggle -->
+      <button class="desktop-sidebar-toggle d-none d-md-flex" (click)="toggleSidebarCollapse()" [title]="sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="flex-fill ps-2" style="min-width:0;">
+        <div class="topbar-page-title">Investor Portal</div>
+        <div class="topbar-page-sub" *ngIf="investorData">{{ investorData?.full_name }} · {{ investorData?.email }}</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-icon-btn" title="Notifications" routerLink="/investor/notifications" style="cursor:pointer;">
+          <i class="fas fa-bell"></i>
+          <span class="notif-dot"></span>
+        </div>
+        <div class="topbar-avatar" [title]="investorData?.full_name || 'Investor'" routerLink="/investor/profile" style="cursor:pointer; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+          <img *ngIf="investorData?.profile_picture_url" [src]="getImageUrl(investorData.profile_picture_url)" alt="Profile" class="w-100 h-100" style="object-fit:cover; border-radius:50%;" />
+          <span *ngIf="!investorData?.profile_picture_url">{{ initials }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="panel-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

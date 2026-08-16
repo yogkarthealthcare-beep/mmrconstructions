@@ -1,0 +1,218 @@
+<div class="investor-profile">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h4 class="fw-bold text-dark mb-1">Investor Profile</h4>
+      <p class="text-muted mb-0">Manage your personal info, bank details, and security settings</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Navigation Tabs Card -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="card-body p-3">
+          <div class="text-center p-3 mb-2 border-bottom">
+            <div class="position-relative mx-auto mb-3" style="width: 100px; height: 100px;">
+              <div class="w-100 h-100 rounded-circle overflow-hidden shadow-sm d-flex align-items-center justify-content-center bg-light border border-2 border-success position-relative">
+                <img *ngIf="profile?.profile_picture_url" [src]="getImageUrl(profile.profile_picture_url)" alt="Profile Picture" class="w-100 h-100" style="object-fit: cover;" />
+                <i *ngIf="!profile?.profile_picture_url" class="fas fa-user text-success fa-3x"></i>
+
+                <div *ngIf="uploadingPhoto" class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center rounded-circle">
+                  <div class="spinner-border spinner-border-sm text-light" role="status"></div>
+                </div>
+              </div>
+
+              <label for="investorPhotoInput" class="position-absolute bottom-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow cursor-pointer" style="width: 32px; height: 32px; cursor: pointer; transform: translate(2px, 2px);" title="Upload Profile Picture">
+                <i class="fas fa-camera fa-xs"></i>
+              </label>
+              <input type="file" id="investorPhotoInput" class="d-none" accept="image/*" (change)="onPhotoSelected($event)" />
+            </div>
+
+            <div *ngIf="photoMsg" class="alert alert-success py-1 px-2 mb-2 small" style="font-size: 0.8rem;">{{ photoMsg }}</div>
+            <div *ngIf="photoErr" class="alert alert-danger py-1 px-2 mb-2 small" style="font-size: 0.8rem;">{{ photoErr }}</div>
+
+            <h6 class="fw-bold m-0 text-dark">{{ profile?.full_name || 'Investor' }}</h6>
+            <span class="badge bg-success-subtle text-success mt-1">
+              {{ profile?.status === 'approved' ? 'Verified Investor' : 'Pending Verification' }}
+            </span>
+          </div>
+
+          <div class="nav flex-column nav-pills custom-pills">
+            <button class="nav-link text-start py-2.5 px-3" [class.active]="activeTab === 'personal'" (click)="activeTab = 'personal'">
+              <i class="fas fa-user me-2"></i> Personal Details
+            </button>
+            <button class="nav-link text-start py-2.5 px-3" [class.active]="activeTab === 'bank'" (click)="activeTab = 'bank'">
+              <i class="fas fa-university me-2"></i> Bank Account
+            </button>
+            <button class="nav-link text-start py-2.5 px-3" [class.active]="activeTab === 'security'" (click)="activeTab = 'security'">
+              <i class="fas fa-lock me-2"></i> Security & Password
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Content Card -->
+    <div class="col-lg-9">
+      <!-- Personal Details Tab -->
+      <div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'personal'">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold m-0 text-dark"><i class="fas fa-user text-success me-2"></i>Personal Details</h5>
+        </div>
+        <div class="card-body p-4">
+          <!-- Profile Photo Upload Card inside Personal Details -->
+          <div class="card bg-light border-0 rounded-3 mb-4 p-3">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="position-relative" style="width: 64px; height: 64px;">
+                  <div class="w-100 h-100 rounded-circle overflow-hidden bg-white border border-2 border-success d-flex align-items-center justify-content-center shadow-sm">
+                    <img *ngIf="profile?.profile_picture_url" [src]="getImageUrl(profile.profile_picture_url)" alt="Profile" class="w-100 h-100" style="object-fit: cover;" />
+                    <i *ngIf="!profile?.profile_picture_url" class="fas fa-user text-success fa-2x"></i>
+                  </div>
+                </div>
+                <div>
+                  <h6 class="fw-bold text-dark mb-1">Profile Photo</h6>
+                  <p class="text-muted small mb-0">Upload a JPG, PNG, or WEBP image (max 5MB).</p>
+                </div>
+              </div>
+              <div>
+                <label for="personalPhotoInput" class="btn btn-outline-success btn-sm fw-bold px-3 shadow-sm mb-0" style="cursor: pointer;">
+                  <i class="fas fa-upload me-1" *ngIf="!uploadingPhoto"></i>
+                  <span *ngIf="uploadingPhoto" class="spinner-border spinner-border-sm me-1"></span>
+                  {{ uploadingPhoto ? 'Uploading...' : (profile?.profile_picture_url ? 'Change Photo' : 'Upload Photo') }}
+                </label>
+                <input type="file" id="personalPhotoInput" class="d-none" accept="image/*" (change)="onPhotoSelected($event)" />
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="personalErr" class="alert alert-danger mb-3">{{ personalErr }}</div>
+          <div *ngIf="personalMsg" class="alert alert-success mb-3">{{ personalMsg }}</div>
+
+          <form (ngSubmit)="savePersonal()">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Full Name</label>
+                <input type="text" class="form-control" [(ngModel)]="personalForm.full_name" name="full_name" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Mobile Number</label>
+                <input type="tel" class="form-control" [(ngModel)]="personalForm.mobile_number" name="mobile_number" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Email Address (Read-only)</label>
+                <input type="email" class="form-control bg-light" [value]="personalForm.email" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Nominee Name</label>
+                <input type="text" class="form-control" [(ngModel)]="personalForm.nominee_name" name="nominee_name" />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Address</label>
+              <textarea class="form-control" rows="2" [(ngModel)]="personalForm.address" name="address"></textarea>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">City</label>
+                <input type="text" class="form-control" [(ngModel)]="personalForm.city" name="city" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">State</label>
+                <input type="text" class="form-control" [(ngModel)]="personalForm.state" name="state" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Pincode</label>
+                <input type="text" class="form-control" [(ngModel)]="personalForm.pincode" name="pincode" />
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">PAN Number</label>
+                <input type="text" class="form-control text-uppercase" [(ngModel)]="personalForm.pan_number" name="pan_number" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Aadhaar Number</label>
+                <input type="text" class="form-control" [(ngModel)]="personalForm.aadhaar_number" name="aadhaar_number" />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-success px-4 py-2 fw-bold" [disabled]="personalSaving">
+              <span *ngIf="personalSaving" class="spinner-border spinner-border-sm me-2"></span>
+              {{ personalSaving ? 'Saving...' : 'Save Profile Changes' }}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Bank Details Tab -->
+      <div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'bank'">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold m-0 text-dark"><i class="fas fa-university text-success me-2"></i>Bank Details</h5>
+        </div>
+        <div class="card-body p-4">
+          <div *ngIf="bankErr" class="alert alert-danger mb-3">{{ bankErr }}</div>
+          <div *ngIf="bankMsg" class="alert alert-success mb-3">{{ bankMsg }}</div>
+
+          <form (ngSubmit)="saveBank()">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Bank Name</label>
+              <input type="text" class="form-control" [(ngModel)]="bankForm.bank_name" name="bank_name" placeholder="e.g. State Bank of India" required />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Account Number</label>
+              <input type="text" class="form-control" [(ngModel)]="bankForm.account_number" name="account_number" placeholder="Enter Account Number" required />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">IFSC Code</label>
+              <input type="text" class="form-control text-uppercase" [(ngModel)]="bankForm.ifsc_code" name="ifsc_code" placeholder="e.g. SBIN0001234" required />
+            </div>
+
+            <button type="submit" class="btn btn-success px-4 py-2 fw-bold" [disabled]="bankSaving">
+              <span *ngIf="bankSaving" class="spinner-border spinner-border-sm me-2"></span>
+              {{ bankSaving ? 'Saving...' : 'Update Bank Details' }}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Security Tab -->
+      <div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'security'">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold m-0 text-dark"><i class="fas fa-lock text-success me-2"></i>Change Password</h5>
+        </div>
+        <div class="card-body p-4">
+          <div *ngIf="passErr" class="alert alert-danger mb-3">{{ passErr }}</div>
+          <div *ngIf="passMsg" class="alert alert-success mb-3">{{ passMsg }}</div>
+
+          <form (ngSubmit)="changePassword()">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Current Password</label>
+              <input type="password" class="form-control" [(ngModel)]="passwordForm.current_password" name="current_password" required />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">New Password</label>
+              <input type="password" class="form-control" [(ngModel)]="passwordForm.new_password" name="new_password" required />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Confirm New Password</label>
+              <input type="password" class="form-control" [(ngModel)]="passwordForm.confirm_password" name="confirm_password" required />
+            </div>
+
+            <button type="submit" class="btn btn-success px-4 py-2 fw-bold" [disabled]="passSaving">
+              <span *ngIf="passSaving" class="spinner-border spinner-border-sm me-2"></span>
+              {{ passSaving ? 'Updating...' : 'Change Password' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

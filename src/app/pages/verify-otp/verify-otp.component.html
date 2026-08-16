@@ -1,0 +1,119 @@
+<!-- verify-otp.component.html  (NEW) -->
+<div class="auth-page">
+
+  <!-- ══ LEFT PANEL ════════════════════════════ -->
+  <div class="auth-left">
+    <div>
+      <a routerLink="/" class="brand d-inline-flex mb-5 text-decoration-none">
+        <div class="brand-icon me-3"><span>M</span></div>
+        <div>
+          <span class="brand-name" style="color:#fff;">M.M.R. Constructions</span>
+          <span class="brand-sub">&amp; Developers Pvt. Ltd.</span>
+        </div>
+      </a>
+      <h2 style="font-family:var(--ff-display);color:#fff;font-size:1.9rem;margin-bottom:12px;">Verify Your Email</h2>
+      <p style="color:rgba(255,255,255,.55);font-size:13px;line-height:1.8;">
+        We've sent a 6-digit OTP to your email address.<br/>Enter it below to activate your account.
+      </p>
+      <div class="mt-4">
+        <div class="reg-check"><div class="rci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:13px;">OTP valid for 10 minutes</span></div>
+        <div class="reg-check"><div class="rci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:13px;">One-time use — cannot be reused</span></div>
+        <div class="reg-check"><div class="rci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:13px;">Resend available after 60 seconds</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT PANEL ════════════════════════════ -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+
+      <!-- ── SUCCESS STATE ── -->
+      <div *ngIf="verified" style="text-align:center;padding:60px 20px;">
+        <div style="width:80px;height:80px;background:var(--clr-primary-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+          <i class="fas fa-check" style="color:var(--clr-primary);font-size:32px;"></i>
+        </div>
+        <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:12px;">Email Verified!</h3>
+        <p style="color:var(--txt-muted);max-width:360px;margin:0 auto 16px;">
+          Your email has been verified. Redirecting to your dashboard...
+        </p>
+        <div class="spinner-border text-success" role="status" style="width:28px;height:28px;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- ── VERIFY FORM ── -->
+      <ng-container *ngIf="!verified">
+
+        <div class="mb-4">
+          <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:4px;">Email Verification</h3>
+          <p class="fs-13 text-muted">Enter the 6-digit OTP sent to your email</p>
+        </div>
+
+        <!-- Email (readonly) -->
+        <div class="mb-4">
+          <label class="f-label">Email Address</label>
+          <div style="position:relative;">
+            <span class="f-icon"><i class="fas fa-envelope"></i></span>
+            <input type="email" class="f-input f-input-icon"
+              [value]="email"
+              readonly
+              style="background:var(--bg-section);color:var(--txt-muted);cursor:default;"
+              aria-label="Email address readonly" />
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="error" class="panel-alert panel-alert-error mb-4">
+          <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+
+        <!-- OTP Boxes -->
+        <div class="mb-4">
+          <label class="f-label">Enter OTP *</label>
+          <div class="otp-box-row" (paste)="onOtpPaste($event)">
+            <input *ngFor="let d of otpDigits; let i = index"
+              [id]="'otp' + i"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="1"
+              class="otp-box"
+              [value]="d"
+              (input)="onOtpInput($event, i)"
+              (keydown)="onOtpKeydown($event, i)"
+              [attr.aria-label]="'OTP digit ' + (i + 1)"
+              autocomplete="one-time-code" />
+          </div>
+          <div class="d-flex justify-content-between mt-2">
+            <span class="fs-12 text-muted">OTP valid for 10 minutes</span>
+            <!-- Resend button -->
+            <button type="button" class="border-0 bg-transparent fs-12"
+              style="color:var(--clr-primary);"
+              (click)="resend()"
+              [disabled]="resendCooldown > 0 || resending">
+              <ng-container *ngIf="resending">
+                <i class="fas fa-spinner fa-spin me-1"></i>Sending...
+              </ng-container>
+              <ng-container *ngIf="!resending && resendCooldown === 0">Resend OTP</ng-container>
+              <ng-container *ngIf="!resending && resendCooldown > 0">Resend in {{ resendCooldown }}s</ng-container>
+            </button>
+          </div>
+        </div>
+
+        <!-- Verify Button -->
+        <button type="button" class="btn btn-green btn-lg w-100"
+          (click)="verify()" [disabled]="!otpComplete || loading">
+          <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-shield-alt me-2'"></i>
+          {{ loading ? 'Verifying...' : 'Verify OTP' }}
+        </button>
+
+        <!-- Back link -->
+        <p class="text-center fs-13 text-muted mt-4">
+          Wrong email?
+          <a routerLink="/signup" [queryParams]="{type: userType}" style="color:var(--clr-primary);font-weight:600;">Go back</a>
+        </p>
+
+      </ng-container>
+    </div>
+  </div>
+</div>

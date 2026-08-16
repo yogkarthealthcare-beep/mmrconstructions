@@ -1,0 +1,418 @@
+<div class="pg-header d-flex align-items-center justify-content-between">
+  <div>
+    <h4>Configure Gateway: {{ gatewayName | uppercase }}</h4>
+    <p>Securely manage keys, webhook targets, callback configurations, and priorities.</p>
+  </div>
+  <a routerLink="/admin/payment-gateways" class="btn btn-outline-green btn-sm">
+    <i class="fas fa-arrow-left"></i> Back to settings
+  </a>
+</div>
+
+<!-- Alert messages -->
+<div *ngIf="errorMessage" class="panel-alert panel-alert-error mb-3">
+  <i class="fas fa-exclamation-circle"></i>
+  <div>{{ errorMessage }}</div>
+</div>
+
+<div *ngIf="successMessage" class="panel-alert panel-alert-success mb-3">
+  <i class="fas fa-check-circle"></i>
+  <div>{{ successMessage }}</div>
+</div>
+
+<div *ngIf="copyMessage" class="panel-alert panel-alert-info mb-3">
+  <i class="fas fa-copy"></i>
+  <div>{{ copyMessage }}</div>
+</div>
+
+<!-- Loading spinner -->
+<div *ngIf="loading" class="panel-loading">
+  <i class="fas fa-spinner"></i>
+  <p>Loading credentials database settings...</p>
+</div>
+
+<form [formGroup]="gatewayForm" (ngSubmit)="saveGateway()" *ngIf="!loading">
+  <div class="row g-4">
+    <!-- Left Column: Core configs & Redirection URLs -->
+    <div class="col-lg-6">
+      <div class="panel-card form-card-section mb-4">
+        <div class="card-header-accent">
+          <h5>1. General Settings</h5>
+          <p>Configure priorities, metadata, and active mode toggles.</p>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="f-label" for="display_name">Display Name</label>
+            <input
+              id="display_name"
+              type="text"
+              class="f-input"
+              formControlName="display_name"
+              placeholder="e.g. Razorpay PG"
+              [class.is-invalid]="gatewayForm.get('display_name')?.touched && gatewayForm.get('display_name')?.invalid"
+            />
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('display_name')?.touched && gatewayForm.get('display_name')?.invalid">
+              Display name is required.
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="f-label" for="priority">Gateway Priority</label>
+            <input
+              id="priority"
+              type="number"
+              class="f-input"
+              formControlName="priority"
+              placeholder="0"
+              min="0"
+              max="99"
+              [class.is-invalid]="gatewayForm.get('priority')?.touched && gatewayForm.get('priority')?.invalid"
+            />
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('priority')?.touched && gatewayForm.get('priority')?.invalid">
+              Priority must be between 0 and 99.
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="f-label" for="status">Gateway Status</label>
+            <select id="status" class="f-select" formControlName="status">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="f-label" for="environment_mode">Environment Mode</label>
+            <select id="environment_mode" class="f-select" formControlName="environment_mode">
+              <!-- Razorpay test modes vs Cashfree Sandbox modes -->
+              <option value="sandbox" *ngIf="gatewayName === 'cashfree'">Sandbox (Test)</option>
+              <option value="production" *ngIf="gatewayName === 'cashfree'">Production (Live)</option>
+              
+              <option value="test" *ngIf="gatewayName === 'razorpay'">Test</option>
+              <option value="live" *ngIf="gatewayName === 'razorpay'">Live</option>
+            </select>
+          </div>
+
+          <div class="col-md-12">
+            <div class="env-indicator" [ngClass]="environmentClass">
+              <i class="fas fa-bolt"></i>
+              <div>
+                <strong>{{ environmentLabel }}</strong>
+                <span>{{ appOrigin }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card form-card-section">
+        <div class="card-header-accent">
+          <h5>2. Redirect & Verification URLs</h5>
+          <p>URLs are generated from the current application domain and saved with the gateway.</p>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-12">
+            <label class="f-label" for="callback_url">Server Callback URL</label>
+            <div class="copy-input-row">
+              <input
+                id="callback_url"
+                type="text"
+                class="f-input"
+                [class.readonly-url]="gatewayName !== 'cashfree'"
+                formControlName="callback_url"
+                [readonly]="gatewayName !== 'cashfree'"
+              />
+              <button type="button" class="btn btn-outline-green btn-sm" (click)="copyUrl(gatewayForm.get('callback_url')?.value, 'Callback URL')">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('callback_url')?.touched && gatewayForm.get('callback_url')?.invalid">
+              Enter a valid callback server URL.
+            </div>
+          </div>
+
+          <div class="col-md-12">
+            <label class="f-label" for="webhook_url">Webhook URL</label>
+            <div class="copy-input-row">
+              <input
+                id="webhook_url"
+                type="text"
+                class="f-input"
+                [class.readonly-url]="gatewayName !== 'cashfree'"
+                formControlName="webhook_url"
+                [readonly]="gatewayName !== 'cashfree'"
+              />
+              <button type="button" class="btn btn-outline-green btn-sm" (click)="copyUrl(gatewayForm.get('webhook_url')?.value, 'Webhook URL')">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('webhook_url')?.touched && gatewayForm.get('webhook_url')?.invalid">
+              Enter a valid webhook URL.
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="f-label" for="success_url">Success Return URL</label>
+            <div class="copy-input-row">
+              <input
+                id="success_url"
+                type="text"
+                class="f-input"
+                [class.readonly-url]="gatewayName !== 'cashfree'"
+                formControlName="success_url"
+                [readonly]="gatewayName !== 'cashfree'"
+              />
+              <button type="button" class="btn btn-outline-green btn-sm" (click)="copyUrl(gatewayForm.get('success_url')?.value, 'Success URL')"><i class="fas fa-copy"></i></button>
+            </div>
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('success_url')?.touched && gatewayForm.get('success_url')?.invalid">
+              Enter a valid success redirect URL.
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="f-label" for="failure_url">Failure Return URL</label>
+            <div class="copy-input-row">
+              <input
+                id="failure_url"
+                type="text"
+                class="f-input"
+                [class.readonly-url]="gatewayName !== 'cashfree'"
+                formControlName="failure_url"
+                [readonly]="gatewayName !== 'cashfree'"
+              />
+              <button type="button" class="btn btn-outline-green btn-sm" (click)="copyUrl(gatewayForm.get('failure_url')?.value, 'Failure URL')"><i class="fas fa-copy"></i></button>
+            </div>
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('failure_url')?.touched && gatewayForm.get('failure_url')?.invalid">
+              Enter a valid failure redirect URL.
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="f-label" for="cancel_url">Pending Return URL</label>
+            <div class="copy-input-row">
+              <input
+                id="cancel_url"
+                type="text"
+                class="f-input"
+                [class.readonly-url]="gatewayName !== 'cashfree'"
+                formControlName="cancel_url"
+                [readonly]="gatewayName !== 'cashfree'"
+              />
+              <button type="button" class="btn btn-outline-green btn-sm" (click)="copyUrl(gatewayForm.get('cancel_url')?.value, 'Pending URL')"><i class="fas fa-copy"></i></button>
+            </div>
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('cancel_url')?.touched && gatewayForm.get('cancel_url')?.invalid">
+              Enter a valid cancel redirect URL.
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="f-label">Processing Return URL</label>
+            <div class="copy-input-row">
+              <input type="text" class="f-input readonly-url" [value]="generatedUrls.processing" readonly />
+              <button type="button" class="btn btn-outline-green btn-sm" (click)="copyUrl(generatedUrls.processing, 'Processing URL')"><i class="fas fa-copy"></i></button>
+            </div>
+          </div>
+
+          <div class="col-md-12">
+            <div class="url-preview">
+              <div><span>Return URL</span><strong>{{ generatedUrls.return }}</strong></div>
+              <div><span>Common Status Route</span><strong>{{ generatedUrls.status }}</strong></div>
+            </div>
+          </div>
+
+          <div class="col-md-12">
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="button" class="btn btn-outline-green btn-sm" (click)="testConnection()">
+                <i class="fas fa-plug me-1"></i>Test Connection
+              </button>
+              <button type="button" class="btn btn-outline-green btn-sm" (click)="verifyCredentials()">
+                <i class="fas fa-shield-alt me-1"></i>Verify Gateway Credentials
+              </button>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="f-label" for="min_customer_fund_amount">Customer Minimum Add Fund</label>
+            <input
+              id="min_customer_fund_amount"
+              type="number"
+              class="f-input"
+              formControlName="min_customer_fund_amount"
+              min="0"
+              step="0.01"
+              [class.is-invalid]="gatewayForm.get('min_customer_fund_amount')?.touched && gatewayForm.get('min_customer_fund_amount')?.invalid"
+            />
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('min_customer_fund_amount')?.touched && gatewayForm.get('min_customer_fund_amount')?.invalid">
+              Enter a valid minimum amount.
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="f-label" for="min_associate_fund_amount">Associate Minimum Add Fund</label>
+            <input
+              id="min_associate_fund_amount"
+              type="number"
+              class="f-input"
+              formControlName="min_associate_fund_amount"
+              min="0"
+              step="0.01"
+              [class.is-invalid]="gatewayForm.get('min_associate_fund_amount')?.touched && gatewayForm.get('min_associate_fund_amount')?.invalid"
+            />
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('min_associate_fund_amount')?.touched && gatewayForm.get('min_associate_fund_amount')?.invalid">
+              Enter a valid minimum amount.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: API Keys and secrets -->
+    <div class="col-lg-6">
+      <div class="panel-card form-card-section h-100">
+        <div class="card-header-accent">
+          <h5>3. Secure API Credentials</h5>
+          <p>Ensure client details are kept secure. Secrets are masked by default.</p>
+        </div>
+
+        <!-- Razorpay credentials -->
+        <div class="row g-3" *ngIf="gatewayName === 'razorpay'">
+          <div class="col-md-12">
+            <label class="f-label" for="key_id">Razorpay Key ID</label>
+            <input
+              id="key_id"
+              type="text"
+              class="f-input"
+              formControlName="key_id"
+              placeholder="rzp_test_..."
+              [class.is-invalid]="gatewayForm.get('key_id')?.touched && gatewayForm.get('key_id')?.invalid"
+            />
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('key_id')?.touched && gatewayForm.get('key_id')?.invalid">
+              Razorpay Key ID is required.
+            </div>
+          </div>
+
+          <div class="col-md-12">
+            <label class="f-label" for="key_secret">Razorpay Key Secret</label>
+            <div class="input-secret-wrap">
+              <input
+                id="key_secret"
+                [type]="editingCredentials.key_secret ? 'password' : 'text'"
+                class="f-input"
+                formControlName="key_secret"
+                [readonly]="!editingCredentials.key_secret"
+                placeholder="Securely encrypted"
+                [class.is-invalid]="gatewayForm.get('key_secret')?.touched && gatewayForm.get('key_secret')?.invalid"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-green btn-sm secret-edit-btn"
+                *ngIf="!editingCredentials.key_secret"
+                (click)="enableEditSecret('key_secret')"
+              >
+                <i class="fas fa-key"></i> Update Secret
+              </button>
+            </div>
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('key_secret')?.touched && gatewayForm.get('key_secret')?.invalid">
+              Key Secret is required.
+            </div>
+            <span class="field-hint text-warning mt-1" *ngIf="!editingCredentials.key_secret">
+              <i class="fas fa-lock"></i> Credential is masked. Click Update to replace.
+            </span>
+          </div>
+
+          <div class="col-md-12">
+            <label class="f-label" for="rzp_webhook_secret">Webhook Secret</label>
+            <input
+              id="rzp_webhook_secret"
+              type="password"
+              class="f-input"
+              formControlName="webhook_secret"
+              placeholder="Webhook signing secret"
+              [class.is-invalid]="gatewayForm.get('webhook_secret')?.touched && gatewayForm.get('webhook_secret')?.invalid"
+            />
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('webhook_secret')?.touched && gatewayForm.get('webhook_secret')?.invalid">
+              Webhook signing secret is required to secure hooks.
+            </div>
+          </div>
+        </div>
+
+        <!-- Cashfree credentials -->
+        <div class="row g-3" *ngIf="gatewayName === 'cashfree'">
+          <div class="col-md-12">
+            <label class="f-label" for="client_id">Cashfree Client ID</label>
+            <input
+              id="client_id"
+              type="text"
+              class="f-input"
+              formControlName="client_id"
+              placeholder="Enter App ID / Client ID"
+              [class.is-invalid]="gatewayForm.get('client_id')?.touched && gatewayForm.get('client_id')?.invalid"
+            />
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('client_id')?.touched && gatewayForm.get('client_id')?.invalid">
+              Cashfree Client ID is required.
+            </div>
+          </div>
+
+          <div class="col-md-12">
+            <label class="f-label" for="client_secret">Cashfree Client Secret</label>
+            <div class="input-secret-wrap">
+              <input
+                id="client_secret"
+                [type]="editingCredentials.client_secret ? 'password' : 'text'"
+                class="f-input"
+                formControlName="client_secret"
+                [readonly]="!editingCredentials.client_secret"
+                placeholder="Securely encrypted"
+                [class.is-invalid]="gatewayForm.get('client_secret')?.touched && gatewayForm.get('client_secret')?.invalid"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-green btn-sm secret-edit-btn"
+                *ngIf="!editingCredentials.client_secret"
+                (click)="enableEditSecret('client_secret')"
+              >
+                <i class="fas fa-key"></i> Update Secret
+              </button>
+            </div>
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('client_secret')?.touched && gatewayForm.get('client_secret')?.invalid">
+              Client Secret is required.
+            </div>
+            <span class="field-hint text-warning mt-1" *ngIf="!editingCredentials.client_secret">
+              <i class="fas fa-lock"></i> Credential is masked. Click Update to replace.
+            </span>
+          </div>
+
+          <div class="col-md-12">
+            <label class="f-label" for="cf_webhook_secret">Webhook Secret</label>
+            <input
+              id="cf_webhook_secret"
+              type="password"
+              class="f-input"
+              formControlName="webhook_secret"
+              placeholder="Webhook signing secret"
+              [class.is-invalid]="gatewayForm.get('webhook_secret')?.touched && gatewayForm.get('webhook_secret')?.invalid"
+            />
+            <div class="invalid-feedback" *ngIf="gatewayForm.get('webhook_secret')?.touched && gatewayForm.get('webhook_secret')?.invalid">
+              Webhook signing secret is required to secure hooks.
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom action inside credentials card -->
+        <div class="form-actions-bottom mt-5">
+          <app-loading-button
+            type="submit"
+            text="Save Credentials & Mode"
+            loadingText="Saving settings..."
+            [loading]="saving"
+            [disabled]="gatewayForm.invalid"
+            btnClass="btn btn-green w-100 btn-lg"
+            icon="fas fa-shield-alt"
+          ></app-loading-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

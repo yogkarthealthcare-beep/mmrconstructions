@@ -1,0 +1,52 @@
+<div class="status-page-wrapper">
+  <div class="panel-card status-card pending-card text-center">
+    <!-- Icon animation container -->
+    <div class="pending-icon-wrap mb-4" *ngIf="!statusChecked">
+      <div class="circle-bg"></div>
+      <i class="fas fa-spinner pending-icon"></i>
+    </div>
+    <div class="pending-icon-wrap mb-4 alert-icon-state" *ngIf="statusChecked">
+      <div class="circle-bg-gold"></div>
+      <i class="fas fa-clock pending-icon-gold"></i>
+    </div>
+
+    <!-- Title and message -->
+    <h3 class="status-title" [class.text-gold]="statusChecked">
+      {{ statusChecked ? 'Verification Delayed' : 'Verifying Payment...' }}
+    </h3>
+    
+    <p class="status-desc" *ngIf="!statusChecked">
+      We are checking your payment status with the gateway servers. Please do not close this window or click refresh.
+    </p>
+    <p class="status-desc" *ngIf="statusChecked">
+      We have not received immediate confirmation from your bank. Don't worry, bank settlements sometimes take up to 20 minutes. We will update your status as soon as webhooks resolve.
+    </p>
+
+    <!-- Details Box -->
+    <div class="details-box-accent my-4" *ngIf="orderId">
+      <div class="db-row">
+        <span>Order ID</span>
+        <strong>{{ orderId }}</strong>
+      </div>
+      <div class="db-row">
+        <span>Status</span>
+        <span class="badge-pending-label" *ngIf="!statusChecked">
+          <i class="fas fa-spinner fa-spin"></i> Polling Gateway ({{ attempts }}/{{ maxAttempts }})
+        </span>
+        <span class="badge-pending-label-gold" *ngIf="statusChecked">
+          <i class="fas fa-hourglass-half"></i> Pending Settlement
+        </span>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="status-actions d-flex flex-column gap-2 mt-4">
+      <a routerLink="/user/dashboard" class="btn btn-green w-100" *ngIf="statusChecked">
+        <i class="fas fa-th-large"></i> Go to Dashboard
+      </a>
+      <a routerLink="/user/payments" class="btn btn-outline-green w-100">
+        <i class="fas fa-history"></i> View Payment History
+      </a>
+    </div>
+  </div>
+</div>

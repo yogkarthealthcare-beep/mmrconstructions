@@ -1,0 +1,172 @@
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+<div class="panel-alert panel-alert-error" *ngIf="error">{{ error }}</div>
+
+<section class="invoice-page" *ngIf="!loading && invoice">
+  <!-- Top Action Bar (Hidden during Print) -->
+  <div class="invoice-actions no-print">
+    <button class="btn btn-green" (click)="downloadPdf()"><i class="fas fa-file-pdf me-1"></i> Download PDF</button>
+    <button class="btn btn-outline-green" (click)="print()"><i class="fas fa-print me-1"></i> Print Invoice</button>
+    <button class="btn btn-outline-green" (click)="downloadImage()"><i class="fas fa-image me-1"></i> Print / Image</button>
+    <a routerLink="/" class="btn btn-outline-secondary">Back To Home</a>
+  </div>
+
+  <!-- Corporate A4 Sheet -->
+  <article class="invoice-sheet" id="invoice-sheet">
+
+    <!-- Header Section -->
+    <header class="company-header" [style.border-top-color]="settings?.theme_color || '#14532d'">
+      <div class="company-brand">
+        <img *ngIf="settings?.company_logo" [src]="settings.company_logo" alt="Logo" class="company-logo" />
+        <div>
+          <h1 class="company-name" [style.color]="settings?.theme_color || '#14532d'">
+            {{ settings?.company_name || 'MMR Constructions & Developers' }}
+          </h1>
+          <p class="company-address">{{ settings?.address || 'Head Office: Main Road, Lucknow, Uttar Pradesh' }}</p>
+          <p class="company-contact">
+            <span><strong>Phone:</strong> {{ settings?.phone || '+91 98765 43210' }}</span> |
+            <span><strong>Email:</strong> {{ settings?.email || 'info@mmrconstructions.com' }}</span> |
+            <span><strong>Website:</strong> {{ settings?.website || 'www.mmrconstructions.com' }}</span>
+          </p>
+          <p *ngIf="settings?.gst_number" class="company-gst"><strong>GSTIN:</strong> {{ settings.gst_number }}</p>
+        </div>
+      </div>
+      <div class="invoice-meta text-end">
+        <h2 class="invoice-title">INVOICE</h2>
+        <div class="inv-num font-mono" [style.color]="settings?.theme_color || '#14532d'">
+          {{ invoice.invoice_number }}
+        </div>
+        <div class="inv-date"><strong>Date:</strong> {{ invoice.invoice_date | date:'mediumDate' }}</div>
+        <div class="inv-order"><strong>Order ID:</strong> {{ invoice.order_id || ('BK-' + invoice.booking_id) }}</div>
+      </div>
+    </header>
+
+    <div class="divider"></div>
+
+    <!-- Section 1: Customer Details -->
+    <div class="section-title" [style.color]="settings?.theme_color || '#14532d'">
+      <i class="fas fa-user me-1"></i> CUSTOMER INFORMATION
+    </div>
+    <div class="invoice-grid grid-2 mb-3">
+      <div><span>Customer Name</span><strong>{{ data.customer_name || '-' }}</strong></div>
+      <div><span>Father's Name</span><strong>{{ data.father_name || '-' }}</strong></div>
+      <div><span>Mobile Number</span><strong>{{ data.mobile_no || '-' }}</strong></div>
+      <div><span>Email Address</span><strong>{{ data.email || '-' }}</strong></div>
+      <div class="col-span-2"><span>Full Address</span><strong>{{ data.address || data.full_address || '-' }}</strong></div>
+    </div>
+
+    <!-- Section 2: Associate Details (Shown if Associate Sale, Hidden if Direct) -->
+    <div *ngIf="data.associate_name" class="associate-card mb-3">
+      <div class="section-title text-info mb-2">
+        <i class="fas fa-user-tie me-1"></i> ASSOCIATE / SPONSOR DETAILS
+      </div>
+      <div class="invoice-grid grid-3">
+        <div><span>Associate Name</span><strong>{{ data.associate_name }}</strong></div>
+        <div><span>Associate ID</span><strong>{{ data.associate_id || '-' }}</strong></div>
+        <div><span>Mobile Number</span><strong>{{ data.associate_mobile || '-' }}</strong></div>
+      </div>
+    </div>
+
+    <!-- Section 3: Plot & Property Details -->
+    <div class="section-title" [style.color]="settings?.theme_color || '#14532d'">
+      <i class="fas fa-home me-1"></i> PROPERTY & PLOT BREAKDOWN
+    </div>
+    <div class="invoice-grid grid-3 mb-3">
+      <div><span>Project / Site Name</span><strong>{{ data.site_name || '-' }}</strong></div>
+      <div><span>Block</span><strong>{{ data.block || 'Main' }}</strong></div>
+      <div><span>Plot Number</span><strong class="text-success">{{ data.plot_number || '-' }}</strong></div>
+      <div><span>Facing</span><strong>{{ data.facing || 'East' }}</strong></div>
+      <div><span>Plot Size / Area</span><strong>{{ data.plot_size || (data.plot_area_sqft + ' Sq.Ft.') }}</strong></div>
+      <div><span>Rate Per Sq.Ft.</span><strong>₹{{ (data.rate_per_sqft || 0) | number }}</strong></div>
+    </div>
+
+    <!-- Section 4: Amount Summary Table -->
+    <div class="section-title" [style.color]="settings?.theme_color || '#14532d'">
+      <i class="fas fa-calculator me-1"></i> FINANCIAL SUMMARY & PAYMENT DETAILS
+    </div>
+    <table class="summary-table mb-3">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class="text-end">Amount (INR)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Subtotal Plot Price</td>
+          <td class="text-end">₹{{ (data.total_plot_price || invoice.subtotal || 0) | number }}</td>
+        </tr>
+        <tr *ngIf="data.discount || invoice.discount">
+          <td>Discount Allowed</td>
+          <td class="text-end text-danger">- ₹{{ (data.discount || invoice.discount || 0) | number }}</td>
+        </tr>
+        <tr *ngIf="data.registration_charges || invoice.registration_charges">
+          <td>Registration & Statutory Charges</td>
+          <td class="text-end">+ ₹{{ (data.registration_charges || invoice.registration_charges || 0) | number }}</td>
+        </tr>
+        <tr *ngIf="data.other_charges || invoice.other_charges">
+          <td>Development & Other Charges</td>
+          <td class="text-end">+ ₹{{ (data.other_charges || invoice.other_charges || 0) | number }}</td>
+        </tr>
+        <tr class="grand-total-row font-lg" [style.background-color]="(settings?.theme_color || '#14532d') + '15'">
+          <td><strong>Grand Total Payable</strong></td>
+          <td class="text-end"><strong [style.color]="settings?.theme_color || '#14532d'">₹{{ (invoice.grand_total || 0) | number }}</strong></td>
+        </tr>
+        <tr>
+          <td class="text-success fw-bold">Amount Paid Till Date</td>
+          <td class="text-end text-success fw-bold">₹{{ (invoice.paid_amount || 0) | number }}</td>
+        </tr>
+        <tr>
+          <td class="text-warning fw-bold">Remaining Balance Amount</td>
+          <td class="text-end text-warning fw-bold">₹{{ (invoice.balance_amount || 0) | number }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 5: Payment Details & Security Barcodes -->
+    <div class="row-flex align-items-center mb-3">
+      <div class="pay-info flex-fill">
+        <div class="invoice-grid grid-2">
+          <div><span>Payment Method</span><strong>{{ invoice.payment_method || 'Online' }}</strong></div>
+          <div><span>Payment Status</span><strong class="text-success">{{ invoice.payment_status }}</strong></div>
+          <div><span>Order Status</span><strong class="text-dark">{{ invoice.order_status }}</strong></div>
+          <div><span>Transaction ID</span><strong class="font-mono">{{ data.transaction_id || '-' }}</strong></div>
+        </div>
+      </div>
+
+      <div class="barcode-box text-center ms-3">
+        <div *ngIf="qrCode" class="qr-code-img mb-1">
+          <img [src]="qrCode" alt="Scan QR Code to Verify" width="90" height="90" />
+          <div class="font-xs text-muted mt-1"><i class="fas fa-qrcode me-1"></i>Scan to Verify</div>
+        </div>
+        <div *ngIf="barcode" class="barcode-img mt-1">
+          <img [src]="barcode" alt="Invoice Barcode" style="max-height: 40px; width: 140px;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6: Terms & Conditions & Signatures -->
+    <div class="footer-section pt-3 border-top">
+      <div class="row-flex gap-4">
+        <div class="terms-box flex-fill">
+          <h6 class="fw-bold font-xs text-muted mb-1">TERMS & CONDITIONS</h6>
+          <p class="font-xs text-secondary whitespace-pre font-mono mb-0">
+            {{ settings?.terms_and_conditions || '1. All payments are subject to clearance.\n2. Plot allocation is subject to guidelines.\n3. System generated invoice.' }}
+          </p>
+        </div>
+
+        <div class="signatures-box text-end" style="min-width: 220px;">
+          <div class="signature-line mb-4">
+            <img *ngIf="settings?.signature_url" [src]="settings.signature_url" alt="Signature" height="40" />
+          </div>
+          <div class="fw-bold font-sm" [style.color]="settings?.theme_color || '#14532d'">Authorized Signatory</div>
+          <div class="font-xs text-muted">{{ settings?.company_name || 'MMR Constructions & Developers' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="invoice-footer text-center mt-3 pt-2 border-top font-xs text-muted">
+      {{ settings?.invoice_footer || 'This is an authentic system-generated invoice issued by MMR Constructions & Developers.' }}
+    </footer>
+
+  </article>
+</section>

@@ -1,0 +1,114 @@
+<div class="data-table-wrap">
+  <div class="data-table-head">
+    <h5>Available Payment Gateways</h5>
+    <div class="dtable-actions">
+      <span class="badge-status-info"><i class="fas fa-info-circle"></i> Active default receives direct transactions.</span>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Gateway / Logo</th>
+          <th>Environment</th>
+          <th>Priority</th>
+          <th>Default</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let gw of gateways">
+          <!-- Logo & Name -->
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <div class="table-logo-wrap">
+                <img *ngIf="gw.logo" [src]="gw.logo" [alt]="gw.display_name" class="table-logo" />
+                <i *ngIf="!gw.logo" class="fas fa-credit-card text-muted"></i>
+              </div>
+              <div>
+                <strong class="gw-list-name">{{ gw.display_name }}</strong>
+                <span class="d-block text-muted text-uppercase fs-10" style="letter-spacing:0.03em;">{{ gw.gateway_name }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Environment -->
+          <td>
+            <span class="env-tag" [class.env-sandbox]="gw.mode !== 'production' && gw.mode !== 'live'">
+              {{ gw.mode || 'sandbox' | uppercase }}
+            </span>
+          </td>
+
+          <!-- Priority -->
+          <td>
+            <input
+              type="number"
+              class="f-input priority-input"
+              [value]="gw.priority || 0"
+              (change)="onPriorityChange(gw, $event)"
+              min="0"
+              max="99"
+            />
+          </td>
+
+          <!-- Default Selection Radio -->
+          <td>
+            <button
+              type="button"
+              class="default-toggle-btn"
+              [class.is-default]="defaultGateway === gw.gateway_name"
+              [disabled]="gw.status !== 'active'"
+              (click)="onSetDefault(gw)"
+              [title]="gw.status !== 'active' ? 'Gateway must be active to be set as default' : 'Set as default'"
+            >
+              <i class="fas" [ngClass]="defaultGateway === gw.gateway_name ? 'fa-check-circle' : 'fa-circle-notch'"></i>
+              <span>{{ defaultGateway === gw.gateway_name ? 'Default' : 'Set Default' }}</span>
+            </button>
+          </td>
+
+          <!-- Status Badge -->
+          <td>
+            <app-status-badge [status]="gw.status"></app-status-badge>
+          </td>
+
+          <!-- Actions -->
+          <td class="text-end">
+            <div class="d-flex justify-content-end gap-2">
+              <!-- Quick status cycle button -->
+              <button
+                type="button"
+                class="action-btn success"
+                (click)="onToggleStatus(gw)"
+                title="Change status"
+              >
+                <i class="fas" [ngClass]="gw.status === 'active' ? 'fa-power-off text-success' : 'fa-play'"></i>
+              </button>
+
+              <!-- Configure details router link -->
+              <a
+                [routerLink]="['/admin/payment-gateways', gw.gateway_name]"
+                class="action-btn"
+                title="Configure Credentials"
+              >
+                <i class="fas fa-edit"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Empty state inside table -->
+        <tr *ngIf="gateways.length === 0">
+          <td colspan="6" class="text-center py-5">
+            <div class="panel-empty">
+              <i class="fas fa-credit-card"></i>
+              <h6>No gateways registered</h6>
+              <p>Configure a database migration to register supported gateways.</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

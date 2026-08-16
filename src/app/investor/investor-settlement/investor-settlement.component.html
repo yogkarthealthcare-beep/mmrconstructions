@@ -1,0 +1,64 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold text-dark mb-1">Settlement Details</h4>
+    <p class="text-muted mb-0">Choose settlement frequency once, or request an admin-approved change</p>
+  </div>
+</div>
+
+<div *ngIf="message" class="alert alert-success">{{ message }}</div>
+<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <ng-container *ngIf="!preference; else lockedPreference">
+          <h5 class="fw-bold mb-3">First-time Settlement Setup</h5>
+          <select class="form-select mb-3" [(ngModel)]="frequency">
+            <option *ngFor="let option of options" [value]="option.value">{{ option.label }}</option>
+          </select>
+          <button class="btn btn-success fw-bold w-100" [disabled]="saving" (click)="saveFirstChoice()">Save and Lock Frequency</button>
+        </ng-container>
+        <ng-template #lockedPreference>
+          <h5 class="fw-bold mb-2">Current Frequency</h5>
+          <div class="display-6 fw-bold text-success text-capitalize mb-2">{{ preference.frequency?.replace('_', '-') }}</div>
+          <p class="text-muted mb-0">This choice is locked. Use request change for admin approval.</p>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-3">Request Settlement Change</h5>
+        <select class="form-select mb-3" [(ngModel)]="requested_frequency" [disabled]="!preference">
+          <option *ngFor="let option of options" [value]="option.value">{{ option.label }}</option>
+        </select>
+        <textarea class="form-control mb-3" rows="3" [(ngModel)]="reason" placeholder="Reason for change" [disabled]="!preference"></textarea>
+        <button class="btn btn-outline-success fw-bold" [disabled]="!preference || saving" (click)="requestChange()">Submit Request</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white py-3"><h5 class="fw-bold m-0">Request History</h5></div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light"><tr><th class="ps-3">Date</th><th>Current</th><th>Requested</th><th>Status</th><th>Remarks</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let request of requests">
+              <td class="ps-3">{{ request.created_at | date:'mediumDate' }}</td>
+              <td class="text-capitalize">{{ request.current_frequency }}</td>
+              <td class="text-capitalize">{{ request.requested_frequency }}</td>
+              <td class="text-capitalize">{{ request.status }}</td>
+              <td class="text-muted">{{ request.admin_remarks || '-' }}</td>
+            </tr>
+            <tr *ngIf="!requests.length"><td colspan="5" class="text-center text-muted py-4">No change requests yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

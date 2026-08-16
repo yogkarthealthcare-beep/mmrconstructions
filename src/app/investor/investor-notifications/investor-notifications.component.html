@@ -1,0 +1,27 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold text-dark mb-1">Notifications</h4>
+    <p class="text-muted mb-0">Investor account, document, wallet, deposit, and settlement updates</p>
+  </div>
+</div>
+
+<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+<div *ngIf="loading" class="text-center py-5"><span class="spinner-border text-success"></span></div>
+
+<div class="card border-0 shadow-sm" *ngIf="!loading">
+  <div class="list-group list-group-flush">
+    <button type="button" class="list-group-item list-group-item-action p-3" *ngFor="let item of notifications" (click)="markRead(item)">
+      <div class="d-flex justify-content-between gap-3">
+        <div>
+          <div class="fw-bold" [class.text-success]="!item.is_read">{{ item.title }}</div>
+          <div class="text-muted small">{{ item.message }}</div>
+        </div>
+        <div class="text-end">
+          <span class="badge" [class.bg-success]="!item.is_read" [class.bg-secondary]="item.is_read">{{ item.is_read ? 'Read' : 'New' }}</span>
+          <div class="small text-muted mt-1">{{ item.created_at | date:'short' }}</div>
+        </div>
+      </div>
+    </button>
+    <div *ngIf="!notifications.length" class="text-center text-muted py-4">No notifications yet.</div>
+  </div>
+</div>

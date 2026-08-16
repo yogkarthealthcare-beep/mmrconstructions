@@ -1,0 +1,116 @@
+<div *ngIf="toast" class="site-toast" [class.error]="toastType === 'error'"><i class="fas fa-info-circle"></i>{{ toast }}</div>
+
+<div class="booking-head">
+  <div class="pg-header">
+    <h4>Plot Booking Management</h4>
+    <p>Review booking requests, payment proofs, and plot status</p>
+  </div>
+  <button class="btn btn-outline-green btn-sm" (click)="loadBookings()"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+</div>
+
+<form class="filter-card panel-card" [formGroup]="filterForm">
+  <input class="f-input" formControlName="search" placeholder="Search booking, customer, plot, site">
+  <select class="f-input" formControlName="status">
+    <option value="">All Status</option>
+    <option value="Pending">Pending</option>
+    <option value="PaymentPending">Payment Pending</option>
+    <option value="Confirmed">Confirmed</option>
+    <option value="Cancelled">Cancelled</option>
+  </select>
+</form>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<div class="booking-grid" *ngIf="!loading">
+  <section class="panel-card">
+    <div class="table-responsive">
+      <table class="table booking-table">
+        <thead>
+          <tr>
+            <th>Booking</th>
+            <th>Customer</th>
+            <th>Plot</th>
+            <th>Amount</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let booking of pagedBookings" [class.selected]="selected?.booking_id === booking.booking_id">
+            <td><strong>{{ booking.booking_serial || ('#' + booking.booking_id) }}</strong><small>{{ booking.booking_date | date:'mediumDate' }}</small></td>
+            <td>{{ booking.customer_name || booking.full_name || '-' }}<small>{{ booking.mobile_no || '-' }}{{ booking.email ? ' · ' + booking.email : '' }}</small></td>
+            <td>Plot {{ booking.plot_number }}<small>{{ booking.site_name }}</small></td>
+            <td>{{ booking.advance_amount || booking.booking_amount || 0 | currency:'INR':'symbol':'1.0-0' }}</td>
+            <td><span class="status-pill">{{ booking.payment_status || (booking.booking_status === 'Confirmed' ? 'Paid' : 'Pending') }}</span></td>
+            <td><span class="status-pill">{{ booking.booking_status || '-' }}</span></td>
+            <td class="text-end"><button class="btn btn-green btn-sm" (click)="selectBooking(booking)">View</button></td>
+          </tr>
+          <tr *ngIf="!pagedBookings.length">
+            <td colspan="7" class="empty-row">No booking requests found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <span>Page {{ page }} of {{ totalPages }}</span>
+      <div>
+        <button class="btn btn-outline-green btn-sm" (click)="prevPage()" [disabled]="page === 1">Prev</button>
+        <button class="btn btn-outline-green btn-sm" (click)="nextPage()" [disabled]="page === totalPages">Next</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel-card detail-panel" *ngIf="selected; else noSelection">
+    <div class="panel-card-title">
+      <span>{{ selected.booking_serial || ('Booking #' + selected.booking_id) }}</span>
+      <span class="status-pill">{{ selected.booking_status || '-' }}</span>
+    </div>
+    <div *ngIf="detailLoading" class="panel-loading detail-loading"><i class="fas fa-spinner"></i></div>
+    <ng-container *ngIf="!detailLoading">
+      <div class="detail-grid">
+        <div><span>Customer</span><strong>{{ selected.customer_name || selected.full_name || '-' }}</strong></div>
+        <div><span>Mobile</span><strong>{{ selected.mobile_no || '-' }}</strong></div>
+        <div><span>Email</span><strong>{{ selected.email || '-' }}</strong></div>
+        <div><span>Site</span><strong>{{ selected.site_name || '-' }}</strong></div>
+        <div><span>Plot</span><strong>{{ selected.plot_number || '-' }}</strong></div>
+        <div><span>Booking Date</span><strong>{{ selected.booking_date ? (selected.booking_date | date:'mediumDate') : '-' }}</strong></div>
+        <div><span>Price</span><strong>{{ selected.base_price ? (selected.base_price | currency:'INR':'symbol':'1.0-0') : '-' }}</strong></div>
+        <div><span>Booking Amount</span><strong>{{ selected.advance_amount || selected.booking_amount ? ((selected.advance_amount || selected.booking_amount) | currency:'INR':'symbol':'1.0-0') : '-' }}</strong></div>
+        <div><span>Payment Status</span><strong>{{ selected.payment_status || (selected.booking_status === 'Confirmed' ? 'Paid' : 'Pending') }}</strong></div>
+        <div><span>Payment Method</span><strong>{{ selected.payment_method || selected.payment_type || '-' }}</strong></div>
+        <div><span>Booking Status</span><strong>{{ selected.workflow_status || selected.booking_status || '-' }}</strong></div>
+        <div *ngIf="selected.appointment"><span>Appointment</span><strong>{{ selected.appointment.appointment_date | date:'mediumDate' }} {{ selected.appointment.start_time }} · {{ selected.appointment.status }}</strong></div>
+      </div>
+
+      <div class="proofs" *ngIf="proofsFor(selected).length">
+        <h6>Payment Proof</h6>
+        <a *ngFor="let proof of proofsFor(selected)" [href]="proof.file_path || proof.file_url || proof.url" target="_blank" rel="noopener">
+          <i class="fas fa-receipt"></i> View proof
+        </a>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-green btn-sm" (click)="approve()" [disabled]="actionLoading">{{ selected.payment_method === 'Offline' ? 'Approve Offline Payment' : 'Approve Booking' }}</button>
+        <button *ngIf="selected.booking_status === 'Confirmed'" class="btn btn-outline-green btn-sm" (click)="approvePartialPayment()" [disabled]="actionLoading">Approve Partial Payment</button>
+        <button *ngIf="selected.appointment" class="btn btn-outline-green btn-sm" (click)="rescheduleAppointment()" [disabled]="actionLoading">Reschedule Appointment</button>
+        <form [formGroup]="reasonForm" class="reason-form">
+          <textarea class="f-input" rows="2" formControlName="reason" placeholder="Reason for reject/cancel"></textarea>
+          <button type="button" class="btn btn-outline-danger btn-sm" (click)="reject()" [disabled]="actionLoading">Reject / Cancel</button>
+        </form>
+      </div>
+
+      <div class="status-actions">
+        <h6>Mark Plot</h6>
+        <button class="btn btn-outline-green btn-sm" *ngFor="let status of plotStatuses" (click)="markPlot(status)" [disabled]="actionLoading">{{ status }}</button>
+      </div>
+    </ng-container>
+  </aside>
+
+  <ng-template #noSelection>
+    <aside class="panel-card detail-panel empty">
+      <i class="fas fa-mouse-pointer"></i>
+      <p>Select a booking request to view details.</p>
+    </aside>
+  </ng-template>
+</div>

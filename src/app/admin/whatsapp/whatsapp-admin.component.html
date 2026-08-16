@@ -1,0 +1,100 @@
+<div class="wa-page">
+  <div class="wa-header">
+    <div>
+      <h1>WhatsApp Business</h1>
+      <p>Meta Cloud API settings, templates, OTP rules, queue and delivery tracking.</p>
+    </div>
+    <button class="primary" (click)="processQueue()" [disabled]="processing">
+      <i class="fas fa-play"></i> Process Queue
+    </button>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric"><span>Total Sent</span><strong>{{ dashboard.total_messages_sent || 0 }}</strong></div>
+    <div class="metric"><span>Delivered</span><strong>{{ dashboard.delivered_messages || 0 }}</strong></div>
+    <div class="metric"><span>Failed</span><strong>{{ dashboard.failed_messages || 0 }}</strong></div>
+    <div class="metric"><span>OTP Today</span><strong>{{ dashboard.otp_sent_today || 0 }}</strong></div>
+    <div class="metric"><span>OTP Success</span><strong>{{ dashboard.otp_verification_success_rate || 0 }}%</strong></div>
+    <div class="metric"><span>Pending Queue</span><strong>{{ dashboard.pending_queue_count || 0 }}</strong></div>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="activeTab==='settings'" (click)="activeTab='settings'">Settings</button>
+    <button [class.active]="activeTab==='templates'" (click)="activeTab='templates'">Templates</button>
+    <button [class.active]="activeTab==='queue'" (click)="activeTab='queue'">Queue</button>
+    <button [class.active]="activeTab==='logs'" (click)="activeTab='logs'">Message Logs</button>
+  </div>
+
+  <div class="alert success" *ngIf="message">{{ message }}</div>
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+
+  <section *ngIf="activeTab==='settings'" class="panel">
+    <div class="switch-row">
+      <div>
+        <h2>Integration Configuration</h2>
+        <p>All sensitive values are encrypted in database and masked after save.</p>
+      </div>
+      <label class="switch"><input type="checkbox" [(ngModel)]="settings.is_enabled"><span></span> Enabled</label>
+    </div>
+
+    <div class="form-grid">
+      <label>Access Token<input type="password" [(ngModel)]="settings.access_token" autocomplete="new-password"></label>
+      <label>API Secret<input type="password" [(ngModel)]="settings.api_secret" autocomplete="new-password"></label>
+      <label>Phone Number ID<input [(ngModel)]="settings.phone_number_id"></label>
+      <label>Business Account ID<input [(ngModel)]="settings.whatsapp_business_account_id"></label>
+      <label>Verify Token<input type="password" [(ngModel)]="settings.verify_token" autocomplete="new-password"></label>
+      <label>Webhook Callback URL<input [(ngModel)]="settings.webhook_callback_url"></label>
+      <label>API Version<input [(ngModel)]="settings.api_version"></label>
+      <label>Default Country Code<input [(ngModel)]="settings.default_country_code"></label>
+      <label>OTP Length<select [(ngModel)]="settings.otp_length"><option [ngValue]="4">4 digit</option><option [ngValue]="6">6 digit</option></select></label>
+      <label>OTP Expiry Minutes<input type="number" [(ngModel)]="settings.otp_expiry_minutes"></label>
+      <label>Resend Limit<input type="number" [(ngModel)]="settings.resend_limit"></label>
+      <label>Maximum Attempts<input type="number" [(ngModel)]="settings.max_attempts"></label>
+    </div>
+
+    <div class="actions">
+      <button class="primary" (click)="saveSettings()" [disabled]="saving"><i class="fas fa-save"></i> Save Settings</button>
+    </div>
+
+    <div class="test-box">
+      <h2>Send Test Message</h2>
+      <div class="form-grid compact">
+        <label>Mobile Number<input [(ngModel)]="test.mobile_no"></label>
+        <label>Template<select [(ngModel)]="test.template_key"><option *ngFor="let t of templates" [value]="t.template_key">{{ t.template_name }}</option></select></label>
+        <label class="wide">Message<input [(ngModel)]="test.message"></label>
+      </div>
+      <button class="secondary" (click)="sendTestMessage()" [disabled]="processing"><i class="fab fa-whatsapp"></i> Send Test</button>
+    </div>
+  </section>
+
+  <section *ngIf="activeTab==='templates'" class="template-list">
+    <div class="template-card" *ngFor="let t of templates">
+      <div class="template-top">
+        <strong>{{ t.template_name }}</strong>
+        <button class="tiny" (click)="toggleTemplate(t)">{{ t.is_active ? 'Deactivate' : 'Activate' }}</button>
+      </div>
+      <div class="form-grid compact">
+        <label>Name<input [(ngModel)]="t.template_name"></label>
+        <label>Meta Template<input [(ngModel)]="t.meta_template_name"></label>
+        <label>Category<input [(ngModel)]="t.template_category"></label>
+        <label>Language<input [(ngModel)]="t.language"></label>
+        <label>Variables<input [ngModel]="variableText(t)" (ngModelChange)="setVariableText(t, $event)"></label>
+        <label>Status<select [(ngModel)]="t.status"><option>Active</option><option>Inactive</option><option>Pending</option><option>Approved</option><option>Rejected</option></select></label>
+        <label class="wide">Body<textarea rows="3" [(ngModel)]="t.template_body"></textarea></label>
+      </div>
+      <button class="primary" (click)="saveTemplate(t)" [disabled]="t.saving"><i class="fas fa-save"></i> Save Template</button>
+    </div>
+  </section>
+
+  <section *ngIf="activeTab==='queue'" class="panel">
+    <table><thead><tr><th>ID</th><th>Template</th><th>Recipient</th><th>Status</th><th>Attempts</th><th>Error</th></tr></thead>
+      <tbody><tr *ngFor="let q of queue"><td>{{q.queue_id}}</td><td>{{q.template_key}}</td><td>{{q.recipient_mobile}}</td><td>{{q.status}}</td><td>{{q.attempts}}/{{q.max_attempts}}</td><td>{{q.last_error}}</td></tr></tbody>
+    </table>
+  </section>
+
+  <section *ngIf="activeTab==='logs'" class="panel">
+    <table><thead><tr><th>ID</th><th>Mobile</th><th>Template</th><th>Status</th><th>Delivery</th><th>Error</th><th>Created</th></tr></thead>
+      <tbody><tr *ngFor="let l of logs"><td>{{l.message_log_id}}</td><td>{{l.mobile_no}}</td><td>{{l.template_key}}</td><td>{{l.status}}</td><td>{{l.delivery_status}}</td><td>{{l.error_message}}</td><td>{{l.created_at | date:'short'}}</td></tr></tbody>
+    </table>
+  </section>
+</div>

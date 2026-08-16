@@ -1,0 +1,45 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold text-dark mb-1">Investor Wallet</h4>
+    <p class="text-muted mb-0">Balance, deposits, settlements, earnings, and withdrawals</p>
+  </div>
+  <a routerLink="/investor/deposit" class="btn btn-success fw-bold">Add Deposit</a>
+</div>
+
+<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+<div *ngIf="loading" class="text-center py-5"><span class="spinner-border text-success"></span></div>
+
+<div *ngIf="!loading" class="row g-4">
+  <div class="col-md-6 col-xl-4" *ngFor="let item of [
+    { label: 'Current Balance', value: wallet?.current_balance, icon: 'fa-wallet', color: 'text-success' },
+    { label: 'Total Deposits', value: wallet?.total_deposits, icon: 'fa-arrow-down', color: 'text-primary' },
+    { label: 'Total Settlements', value: wallet?.total_settlements, icon: 'fa-calendar-check', color: 'text-info' },
+    { label: 'Total Earnings', value: wallet?.total_earnings, icon: 'fa-chart-line', color: 'text-warning' },
+    { label: 'Total Withdrawals', value: wallet?.total_withdrawals, icon: 'fa-arrow-up', color: 'text-danger' }
+  ]">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body p-4 d-flex align-items-center justify-content-between">
+        <div>
+          <div class="small text-muted text-uppercase fw-semibold">{{ item.label }}</div>
+          <h3 class="fw-bold mb-0">₹{{ (item.value || 0) | number:'1.2-2' }}</h3>
+        </div>
+        <i class="fas {{ item.icon }} fs-2 {{ item.color }}"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-3">Last Transaction</h5>
+        <div *ngIf="wallet?.last_transaction; else noTx" class="d-flex flex-wrap gap-3 align-items-center">
+          <span class="fw-semibold">{{ wallet.last_transaction.transaction_id }}</span>
+          <span class="badge bg-light text-dark text-capitalize">{{ wallet.last_transaction.type }}</span>
+          <span class="fw-bold">₹{{ wallet.last_transaction.amount | number:'1.2-2' }}</span>
+          <span class="text-muted">{{ wallet.last_transaction.created_at | date:'medium' }}</span>
+        </div>
+        <ng-template #noTx><span class="text-muted">No wallet transaction yet.</span></ng-template>
+      </div>
+    </div>
+  </div>
+</div>

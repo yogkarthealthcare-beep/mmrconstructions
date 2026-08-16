@@ -1,0 +1,45 @@
+<section class="sales-chart-card">
+  <header class="sales-chart-header">
+    <div>
+      <h5>{{ title }}</h5>
+      <p>{{ subtitle }}</p>
+    </div>
+    <div class="sales-chart-total">
+      <span>Total</span>
+      <strong>{{ formatValue(totalValue) }}</strong>
+    </div>
+  </header>
+
+  <div class="sales-chart-empty" *ngIf="!hasData">
+    <i class="fas fa-chart-line"></i>
+    <span>No sales recorded for this period</span>
+  </div>
+
+  <div class="sales-chart-scroll" *ngIf="hasData">
+    <svg [attr.viewBox]="'0 0 ' + width + ' ' + height" role="img" [attr.aria-label]="title">
+      <defs>
+        <linearGradient id="salesAreaGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1a5c3a" stop-opacity=".24"></stop>
+          <stop offset="100%" stop-color="#1a5c3a" stop-opacity=".02"></stop>
+        </linearGradient>
+      </defs>
+
+      <g *ngFor="let tick of yTicks">
+        <line class="grid-line" [attr.x1]="left" [attr.x2]="width-right" [attr.y1]="tick.y" [attr.y2]="tick.y"></line>
+        <text class="axis-label y-label" [attr.x]="left-8" [attr.y]="tick.y+4">{{ formatValue(tick.value) }}</text>
+      </g>
+
+      <polygon class="chart-area" [attr.points]="areaPoints"></polygon>
+      <polyline class="chart-line" [attr.points]="polylinePoints"></polyline>
+
+      <g *ngFor="let point of points; let i=index">
+        <circle class="chart-point" [attr.cx]="point.x" [attr.cy]="point.y" r="4">
+          <title>{{ point.label }}: {{ formatValue(point.value) }} · {{ point.count }} sale(s)</title>
+        </circle>
+        <text *ngIf="showLabel(i)" class="axis-label x-label" [attr.x]="point.x" [attr.y]="height-18">
+          {{ point.label?.split(' ')[0] }}
+        </text>
+      </g>
+    </svg>
+  </div>
+</section>

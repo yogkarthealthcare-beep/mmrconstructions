@@ -1,0 +1,337 @@
+<div class="pg-header">
+  <h4>Payment Gateway Management</h4>
+  <p>Configure primary payment routes, credentials, webhook secrets, and user selection rules.</p>
+</div>
+
+<!-- Alert messages -->
+<div *ngIf="errorMessage" class="panel-alert panel-alert-error mb-3">
+  <i class="fas fa-exclamation-circle"></i>
+  <div>{{ errorMessage }}</div>
+</div>
+
+<div *ngIf="successMessage" class="panel-alert panel-alert-success mb-3">
+  <i class="fas fa-check-circle"></i>
+  <div>{{ successMessage }}</div>
+</div>
+
+<!-- Loading spinner -->
+<div *ngIf="loading" class="panel-loading">
+  <i class="fas fa-spinner"></i>
+  <p>Loading gateway configuration matrices...</p>
+</div>
+
+<div class="row g-4 mt-1" *ngIf="!loading">
+  <!-- Left column: Global Configuration form -->
+  <div class="col-lg-4">
+    <div class="panel-card global-config-card">
+      <div class="card-header-accent">
+        <h5>Routing & Toggles</h5>
+        <p>Set primary configurations for end-user checkouts.</p>
+      </div>
+
+      <form [formGroup]="globalForm" (ngSubmit)="saveGlobalSettings()">
+        <!-- Toggle 1: User Gateway Selection -->
+        <div class="toggle-control-item mb-4">
+          <div class="tci-info">
+            <span class="tci-title">User Selection</span>
+            <span class="tci-desc">Allow customers to choose between active gateways at checkout.</span>
+          </div>
+          <div class="form-check form-switch">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="user_gateway_selection"
+              formControlName="user_gateway_selection"
+            />
+          </div>
+        </div>
+
+        <!-- Toggle 2: Fallback Gateway Enabled -->
+        <div class="toggle-control-item mb-4">
+          <div class="tci-info">
+            <span class="tci-title">Fallback Routing</span>
+            <span class="tci-desc">Automatically reroute to active gateways on primary failures.</span>
+          </div>
+          <div class="form-check form-switch">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="fallback_gateway"
+              formControlName="fallback_gateway"
+            />
+          </div>
+        </div>
+
+        <!-- Select 1: Default Primary Gateway -->
+        <div class="select-control-item mb-4">
+          <label class="f-label" for="default_gateway">Primary Default Gateway</label>
+          <select
+            id="default_gateway"
+            class="f-select"
+            formControlName="default_gateway"
+          >
+            <option value="">-- Choose Default Gateway --</option>
+            <option
+              *ngFor="let gw of gateways"
+              [value]="gw.gateway_name"
+              [disabled]="gw.status !== 'active'"
+            >
+              {{ gw.display_name }} ({{ gw.status | uppercase }})
+            </option>
+          </select>
+          <span class="field-hint" *ngIf="globalForm.get('user_gateway_selection')?.value">
+            Acts as fallback if user selection is disabled or ignored.
+          </span>
+        </div>
+
+        <!-- Save button -->
+        <div class="form-actions mt-3">
+          <app-loading-button
+            type="submit"
+            text="Save Configuration"
+            loadingText="Saving settings..."
+            [loading]="savingGlobal"
+            btnClass="btn btn-green w-100"
+            icon="fas fa-save"
+          ></app-loading-button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right column: List of payment gateways -->
+  <div class="col-lg-8">
+    <app-payment-gateway-list
+      [gateways]="gateways"
+      [defaultGateway]="globalForm.get('default_gateway')?.value"
+      (toggleStatus)="handleToggleStatus($event)"
+      (setDefault)="handleSetDefault($event)"
+      (updatePriority)="handleUpdatePriority($event)"
+    ></app-payment-gateway-list>
+  </div>
+</div>
+
+<div class="gateway-config-grid mt-4" *ngIf="!loading">
+  <form
+    class="panel-card gateway-config-card"
+    [formGroup]="gatewayForms.razorpay"
+    (ngSubmit)="saveGatewayConfig('razorpay')"
+  >
+    <div class="gateway-config-head">
+      <div>
+        <span class="gateway-chip">Razorpay</span>
+        <h5>Razorpay API Configuration</h5>
+        <p>Manage Key ID, Secret Key, callback, webhook, and gateway status.</p>
+      </div>
+      <span class="status-pill" [class.active]="gatewayForms.razorpay.get('status')?.value === 'active'">
+        {{ gatewayForms.razorpay.get('status')?.value | uppercase }}
+      </span>
+    </div>
+
+    <div class="gateway-form-grid">
+      <div>
+        <label class="f-label" for="razorpay_key_id">Key ID</label>
+        <input id="razorpay_key_id" class="f-input" formControlName="public_key" placeholder="rzp_test_..." />
+        <span class="field-error" *ngIf="gatewayForms.razorpay.get('public_key')?.touched && gatewayForms.razorpay.get('public_key')?.invalid">Key ID is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="razorpay_secret_key">Secret Key</label>
+        <div class="secret-input">
+          <input
+            id="razorpay_secret_key"
+            class="f-input"
+            formControlName="secret_key"
+            [type]="secretVisible.razorpay ? 'text' : 'password'"
+            placeholder="Enter or update Razorpay secret"
+          />
+          <button type="button" class="secret-toggle" (click)="toggleSecret('razorpay')">
+            <i [class]="secretVisible.razorpay ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+        <span class="field-error" *ngIf="gatewayForms.razorpay.get('secret_key')?.touched && gatewayForms.razorpay.get('secret_key')?.invalid">Secret Key is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="razorpay_callback_url">Callback URL</label>
+        <input id="razorpay_callback_url" class="f-input" formControlName="callback_url" placeholder="https://api.example.com/api/wallet/add-fund/verify-callback" />
+        <span class="field-error" *ngIf="gatewayForms.razorpay.get('callback_url')?.touched && gatewayForms.razorpay.get('callback_url')?.invalid">Valid callback URL is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="razorpay_webhook_url">Webhook URL</label>
+        <input id="razorpay_webhook_url" class="f-input" formControlName="webhook_url" placeholder="https://api.example.com/api/payment/razorpay/webhook" />
+        <span class="field-error" *ngIf="gatewayForms.razorpay.get('webhook_url')?.touched && gatewayForms.razorpay.get('webhook_url')?.invalid">Valid webhook URL is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="razorpay_status">Status</label>
+        <select id="razorpay_status" class="f-select" formControlName="status">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="gateway-actions">
+      <button type="submit" class="btn btn-green btn-sm" [disabled]="savingGateway.razorpay">
+        <i class="fas fa-save me-1"></i>{{ savingGateway.razorpay ? 'Saving...' : (gatewayExists('razorpay') ? 'Update Razorpay' : 'Save Razorpay') }}
+      </button>
+    </div>
+  </form>
+
+  <form
+    class="panel-card gateway-config-card"
+    [formGroup]="gatewayForms.cashfree"
+    (ngSubmit)="saveGatewayConfig('cashfree')"
+  >
+    <div class="gateway-config-head">
+      <div>
+        <span class="gateway-chip cashfree">Cashfree</span>
+        <h5>Cashfree API Configuration</h5>
+        <p>Manage App ID, Client Secret, environment, callback, webhook, and gateway status.</p>
+      </div>
+      <span class="status-pill" [class.active]="gatewayForms.cashfree.get('status')?.value === 'active'">
+        {{ gatewayForms.cashfree.get('status')?.value | uppercase }}
+      </span>
+    </div>
+
+    <div class="gateway-form-grid">
+      <div>
+        <label class="f-label" for="cashfree_client_id">App ID / Client ID</label>
+        <input id="cashfree_client_id" class="f-input" formControlName="public_key" placeholder="Cashfree Client ID" />
+        <span class="field-error" *ngIf="gatewayForms.cashfree.get('public_key')?.touched && gatewayForms.cashfree.get('public_key')?.invalid">Client ID is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="cashfree_client_secret">Secret Key / Client Secret</label>
+        <div class="secret-input">
+          <input
+            id="cashfree_client_secret"
+            class="f-input"
+            formControlName="client_secret"
+            [type]="secretVisible.cashfree ? 'text' : 'password'"
+            placeholder="Enter or update Cashfree client secret"
+          />
+          <button type="button" class="secret-toggle" (click)="toggleSecret('cashfree')">
+            <i [class]="secretVisible.cashfree ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+        <span class="field-error" *ngIf="gatewayForms.cashfree.get('client_secret')?.touched && gatewayForms.cashfree.get('client_secret')?.invalid">Client Secret is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="cashfree_callback_url">Callback URL</label>
+        <input id="cashfree_callback_url" class="f-input" formControlName="callback_url" placeholder="https://api.example.com/api/wallet/add-fund/verify-callback" />
+        <span class="field-error" *ngIf="gatewayForms.cashfree.get('callback_url')?.touched && gatewayForms.cashfree.get('callback_url')?.invalid">Valid callback URL is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="cashfree_webhook_url">Webhook URL</label>
+        <input id="cashfree_webhook_url" class="f-input" formControlName="webhook_url" placeholder="https://api.example.com/api/payment/cashfree/webhook" />
+        <span class="field-error" *ngIf="gatewayForms.cashfree.get('webhook_url')?.touched && gatewayForms.cashfree.get('webhook_url')?.invalid">Valid webhook URL is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="cashfree_environment">Environment</label>
+        <select id="cashfree_environment" class="f-select" formControlName="environment_mode">
+          <option value="sandbox">Sandbox</option>
+          <option value="production">Production</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="f-label" for="cashfree_status">Status</label>
+        <select id="cashfree_status" class="f-select" formControlName="status">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="gateway-actions">
+      <button type="submit" class="btn btn-green btn-sm" [disabled]="savingGateway.cashfree">
+        <i class="fas fa-save me-1"></i>{{ savingGateway.cashfree ? 'Saving...' : (gatewayExists('cashfree') ? 'Update Cashfree' : 'Save Cashfree') }}
+      </button>
+    </div>
+  </form>
+
+  <form
+    class="panel-card gateway-config-card"
+    [formGroup]="gatewayForms.payu"
+    (ngSubmit)="saveGatewayConfig('payu')"
+  >
+    <div class="gateway-config-head">
+      <div>
+        <span class="gateway-chip cashfree">PayU</span>
+        <h5>PayU Test Configuration</h5>
+        <p>Manage Merchant Key, Salt, callback URL, environment, and gateway status.</p>
+      </div>
+      <span class="status-pill" [class.active]="gatewayForms.payu.get('status')?.value === 'active'">
+        {{ gatewayForms.payu.get('status')?.value | uppercase }}
+      </span>
+    </div>
+
+    <div class="gateway-form-grid">
+      <div>
+        <label class="f-label" for="payu_merchant_key">Merchant Key</label>
+        <input id="payu_merchant_key" class="f-input" formControlName="public_key" placeholder="PayU Merchant Key" />
+        <span class="field-error" *ngIf="gatewayForms.payu.get('public_key')?.touched && gatewayForms.payu.get('public_key')?.invalid">Merchant Key is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="payu_salt">Salt / Secret</label>
+        <div class="secret-input">
+          <input
+            id="payu_salt"
+            class="f-input"
+            formControlName="secret_key"
+            [type]="secretVisible.payu ? 'text' : 'password'"
+            placeholder="Enter or update PayU salt"
+          />
+          <button type="button" class="secret-toggle" (click)="toggleSecret('payu')">
+            <i [class]="secretVisible.payu ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+        <span class="field-error" *ngIf="gatewayForms.payu.get('secret_key')?.touched && gatewayForms.payu.get('secret_key')?.invalid">Salt is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="payu_callback_url">Callback URL</label>
+        <input id="payu_callback_url" class="f-input" formControlName="callback_url" placeholder="https://api.example.com/api/payment/payu/verify" />
+        <span class="field-error" *ngIf="gatewayForms.payu.get('callback_url')?.touched && gatewayForms.payu.get('callback_url')?.invalid">Valid callback URL is required.</span>
+      </div>
+
+      <div>
+        <label class="f-label" for="payu_environment">Environment</label>
+        <select id="payu_environment" class="f-select" formControlName="environment_mode">
+          <option value="test">Test</option>
+          <option value="live">Live</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="f-label" for="payu_status">Status</label>
+        <select id="payu_status" class="f-select" formControlName="status">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="gateway-actions">
+      <button type="submit" class="btn btn-green btn-sm" [disabled]="savingGateway.payu">
+        <i class="fas fa-save me-1"></i>{{ savingGateway.payu ? 'Saving...' : (gatewayExists('payu') ? 'Update PayU' : 'Save PayU') }}
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Reusable dialog for action confirmations -->
+<app-confirmation-dialog
+  [isOpen]="dialogOpen"
+  [title]="dialogTitle"
+  [message]="dialogMessage"
+  (confirm)="confirmAction()"
+  (cancel)="closeDialog()"
+></app-confirmation-dialog>

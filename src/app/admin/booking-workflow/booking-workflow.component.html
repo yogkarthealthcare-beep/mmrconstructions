@@ -1,0 +1,56 @@
+<div *ngIf="toast" class="panel-alert panel-alert-success workflow-toast">{{ toast }}</div>
+<div class="pg-header"><h4>Booking & Compliance Workflow</h4><p>Configure booking payments, KYC approvals, locks, appointments, and action alerts.</p></div>
+
+<div class="filter-tabs mb-4">
+  <div class="filter-tab" [class.active]="activeTab==='settings'" (click)="activeTab='settings'">Booking Settings</div>
+  <div class="filter-tab" [class.active]="activeTab==='kyc'" (click)="activeTab='kyc'">KYC Verification</div>
+  <div class="filter-tab" [class.active]="activeTab==='alerts'" (click)="activeTab='alerts'">Alert Center</div>
+</div>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<div class="panel-card" *ngIf="!loading && activeTab==='settings'">
+  <div class="panel-card-title">Initial Booking Payment Formula</div>
+  <div class="row g-3">
+    <div class="col-md-4"><label class="f-label">Minimum Booking Amount</label><input class="f-input" type="number" [(ngModel)]="settings.minimum_booking_amount"></div>
+    <div class="col-md-4"><label class="f-label">First EMI Amount</label><input class="f-input" type="number" [(ngModel)]="settings.first_emi_amount"></div>
+    <div class="col-md-4"><label class="f-label">Total Required</label><input class="f-input" [value]="requiredPayment" readonly></div>
+    <div class="col-md-4"><label class="f-label">Plot Lock Minutes</label><input class="f-input" type="number" [(ngModel)]="settings.plot_lock_minutes"></div>
+    <div class="col-md-4"><label class="f-label">Appointment Days Available</label><input class="f-input" type="number" [(ngModel)]="settings.appointment_days_ahead"></div>
+    <div class="col-md-2"><label class="f-label">Office Opens</label><input class="f-input" type="time" [(ngModel)]="settings.office_open_time"></div>
+    <div class="col-md-2"><label class="f-label">Office Closes</label><input class="f-input" type="time" [(ngModel)]="settings.office_close_time"></div>
+    <div class="col-md-6"><label class="f-label">Company Name</label><input class="f-input" [(ngModel)]="settings.company_name"></div>
+    <div class="col-md-6"><label class="f-label">Company Email</label><input class="f-input" [(ngModel)]="settings.company_email"></div>
+    <div class="col-12"><label class="f-label">Company Address</label><textarea class="f-input" rows="2" [(ngModel)]="settings.company_address"></textarea></div>
+  </div>
+  <button class="btn btn-green mt-3" (click)="saveSettings()" [disabled]="saving">{{ saving ? 'Saving...' : 'Save Workflow Settings' }}</button>
+</div>
+
+<div *ngIf="!loading && activeTab==='kyc'">
+  <div class="d-flex justify-content-end mb-3">
+    <select class="f-select workflow-filter" [(ngModel)]="statusFilter"><option value="">All Status</option><option>Not Submitted</option><option>Submitted</option><option>Under Review</option><option>Approved</option><option>Rejected</option></select>
+  </div>
+  <div class="data-table-wrap"><div class="table-responsive"><table class="table">
+    <thead><tr><th>Customer</th><th>Status</th><th>Documents</th><th>Remarks</th><th>Actions</th></tr></thead>
+    <tbody><tr *ngFor="let row of filteredKyc">
+      <td><strong>{{ row.full_name }}</strong><div class="fs-12 text-muted">{{ row.email }} · {{ row.mobile_no }}</div></td>
+      <td><span class="sbadge" [class.sbadge-green]="row.status==='Approved'" [class.sbadge-red]="row.status==='Rejected'" [class.sbadge-yellow]="row.status!=='Approved'&&row.status!=='Rejected'">{{ row.status }}</span></td>
+      <td><div *ngFor="let doc of row.documents"><a [href]="doc.file_path" target="_blank">{{ doc.document_type }}</a></div></td>
+      <td class="fs-12">{{ row.admin_remarks || '—' }}</td>
+      <td><div class="d-flex gap-1"><button class="action-btn" title="Under Review" (click)="setKyc(row,'Under Review')"><i class="fas fa-search"></i></button><button class="action-btn success" title="Approve" (click)="setKyc(row,'Approved')"><i class="fas fa-check"></i></button><button class="action-btn danger" title="Reject / Re-upload" (click)="setKyc(row,'Rejected')"><i class="fas fa-times"></i></button></div></td>
+    </tr></tbody>
+  </table></div></div>
+</div>
+
+<div class="row g-3" *ngIf="!loading && activeTab==='alerts'">
+  <div class="col-sm-6 col-lg-4" *ngFor="let item of [
+    ['Pending Email Verifications', alerts.pending_email_verifications, 'fas fa-envelope'],
+    ['Pending KYC Reviews', alerts.pending_kyc_reviews, 'fas fa-id-card'],
+    ['Rejected Documents', alerts.rejected_documents, 'fas fa-file-circle-xmark'],
+    ['Pending Offline Bookings', alerts.pending_offline_bookings, 'fas fa-building'],
+    ['Pending Payment Approvals', alerts.pending_payment_approvals, 'fas fa-money-check'],
+    ['Pending Appointments', alerts.pending_appointment_requests, 'fas fa-calendar']
+  ]">
+    <div class="stat-card"><div class="sc-icon"><i [class]="item[2]"></i></div><div class="sc-val">{{ item[1] || 0 }}</div><div class="sc-lbl">{{ item[0] }}</div></div>
+  </div>
+</div>

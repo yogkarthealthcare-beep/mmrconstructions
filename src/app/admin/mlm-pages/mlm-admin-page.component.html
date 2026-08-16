@@ -1,0 +1,154 @@
+<div *ngIf="toast" class="panel-alert panel-alert-info mb-3">{{ toast }}</div>
+<div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-4">
+  <div class="pg-header"><h4>{{ title }}</h4><p>MLM, referrals, commissions, ranks and payout controls.</p></div>
+  <button class="btn btn-outline-green btn-sm" (click)="load()"><i class="fas fa-sync me-1"></i>Refresh</button>
+</div>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+<ng-container *ngIf="!loading">
+  <div class="commission-note mb-4" *ngIf="mode === 'rules'">
+    <div class="commission-note-icon"><i class="fas fa-circle-info"></i></div>
+    <div>
+      <h6>Important Note</h6>
+      <p><strong>Direct:</strong> जिस associate ने customer को सीधे refer करके plot sell कराया, उसे मिलने वाला commission।</p>
+      <p><strong>Upline:</strong> Direct associate के ऊपर MLM network में मौजूद sponsor/parent associates को level के अनुसार मिलने वाला commission।</p>
+      <div class="commission-example">
+        <strong>Example:</strong>
+        <span>A → B → C → Customer</span>
+        <span>अगर C ने customer को plot बेचा, तो C को Direct commission, B को Upline Level 1 और A को Upline Level 2 commission मिलेगा।</span>
+      </div>
+      <p class="mb-0"><strong>Level Depth:</strong> यह बताता है कि commission network में ऊपर किस level के associate को मिलेगा।</p>
+    </div>
+  </div>
+
+  <section class="panel-card mb-4" *ngIf="mode === 'rules' || mode === 'ranks'">
+    <div class="panel-card-title">{{ selected ? 'Edit' : 'Create' }} {{ mode === 'ranks' ? 'Rank' : 'Commission Rule' }}</div>
+    <div class="mlm-form" *ngIf="mode === 'rules'">
+      <div class="rule-field">
+        <label for="commission-type">Commission Type</label>
+        <select id="commission-type" class="f-input" [(ngModel)]="form.commission_type">
+          <option value="Direct">Direct</option>
+          <option value="Upline">Upline</option>
+          <option value="Bonus">Bonus</option>
+          <option value="Monthly">Monthly</option>
+        </select>
+        <small>Direct seller या उसके Upline को मिलने वाला commission प्रकार।</small>
+      </div>
+      <div class="rule-field">
+        <label for="level-depth">Level Depth</label>
+        <input id="level-depth" class="f-input" type="number" min="1" [(ngModel)]="form.level_depth">
+        <small>Direct के लिए 1; Upline के लिए ऊपर का level, जैसे 1 या 2।</small>
+      </div>
+      <div class="rule-field">
+        <label for="plot-area-unit">Plot Area Unit</label>
+        <select id="plot-area-unit" class="f-input" [(ngModel)]="form.plot_area_unit">
+          <option value="gaj">Gaj</option>
+        </select>
+        <small>Commission calculation में उपयोग होने वाली plot area unit।</small>
+      </div>
+      <div class="rule-field">
+        <label for="commission-amount">Amount per 100 Gaj (₹)</label>
+        <input id="commission-amount" class="f-input" type="number" min="0" step="0.01" [(ngModel)]="form.amount_per_100_gaj">
+        <small>प्रत्येक 100 गज की sale पर मिलने वाली commission राशि।</small>
+      </div>
+      <div class="rule-field">
+        <label for="duration-months">Duration (Months)</label>
+        <input id="duration-months" class="f-input" type="number" min="1" [(ngModel)]="form.duration_months">
+        <small>Commission कितने महीने तक मिलेगा; 144 महीने = 12 साल।</small>
+      </div>
+      <label class="check-row rule-active"><input type="checkbox" [(ngModel)]="form.is_active"> Active Rule</label>
+    </div>
+    <div class="mlm-form" *ngIf="mode === 'ranks'">
+      <input class="f-input" [(ngModel)]="form.rank_name" placeholder="Rank name">
+      <input class="f-input" type="number" [(ngModel)]="form.min_direct_sales_gaj" placeholder="Direct sales gaj">
+      <input class="f-input" type="number" [(ngModel)]="form.min_total_network_sales_gaj" placeholder="Network sales gaj">
+      <input class="f-input" type="number" [(ngModel)]="form.commission_multiplier" placeholder="Multiplier">
+      <label class="check-row"><input type="checkbox" [(ngModel)]="form.is_active"> Active</label>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-green btn-sm" (click)="saveRuleOrRank()">Save</button>
+      <button class="btn btn-outline-green btn-sm" (click)="resetForm()">Cancel</button>
+    </div>
+  </section>
+
+  <section class="panel-card" *ngIf="mode === 'reports'">
+    <div class="report-grid">
+      <div><span>Top Associates</span><strong>{{ report.top_associates?.length || 0 }}</strong></div>
+      <div><span>Commission Groups</span><strong>{{ report.commission_summary?.length || 0 }}</strong></div>
+      <div><span>Payout Groups</span><strong>{{ report.payout_summary?.length || 0 }}</strong></div>
+      <div><span>Growth Months</span><strong>{{ report.network_growth?.length || 0 }}</strong></div>
+    </div>
+    <h6 class="mt-4">Top Associates</h6>
+    <table class="table"><tbody><tr *ngFor="let a of report.top_associates"><td>{{ a.full_name }}</td><td>{{ a.member_id }}</td><td>{{ a.total_gaj_sold }} gaj</td><td>{{ a.total_commission_earned | currency:'INR':'symbol':'1.0-0' }}</td></tr></tbody></table>
+  </section>
+
+  <section class="panel-card" *ngIf="mode !== 'reports'">
+    <div class="d-flex justify-content-between gap-2 flex-wrap mb-3">
+      <div class="panel-card-title">{{ title }}</div>
+      <select *ngIf="mode === 'commissions' || mode === 'payouts'" class="f-input status-filter" [(ngModel)]="filterStatus" (change)="load()" title="Status filter" aria-label="Status filter">
+        <option value="">All Status</option>
+        <option *ngFor="let s of ['Pending','Paid','Rejected','Requested','Approved','Hold','Cancelled']" [value]="s">{{ s }}</option>
+      </select>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <tbody>
+          <tr *ngFor="let item of paginatedItems">
+            <td>
+              <strong>{{ item.rank_name || item.commission_type || item.associate_name || item.full_name || item.requested_amount }}</strong>
+              <div class="fs-12 text-muted">{{ item.member_id || item.rule_id || item.payout_id || item.commission_id }}</div>
+            </td>
+            <td *ngIf="mode === 'rules'">{{ item.level_depth }} • {{ item.amount_per_100_gaj | currency:'INR':'symbol':'1.0-0' }} / 100 gaj • {{ item.duration_months }} months</td>
+            <td *ngIf="mode === 'ranks'">{{ item.min_direct_sales_gaj }} direct • {{ item.min_total_network_sales_gaj }} network • {{ item.commission_multiplier }}x</td>
+            <td *ngIf="mode === 'commissions'">{{ item.net_amount | currency:'INR':'symbol':'1.0-0' }} • {{ item.commission_status }}</td>
+            <td *ngIf="mode === 'payouts'">{{ item.requested_amount | currency:'INR':'symbol':'1.0-0' }} • {{ item.status }}</td>
+            <td class="text-end">
+              <button *ngIf="mode === 'rules' || mode === 'ranks'" class="btn btn-outline-green btn-sm" (click)="edit(item)">Edit</button>
+              <button *ngIf="mode === 'commissions'" class="btn btn-green btn-sm" (click)="approveCommission(item)">Approve</button>
+              <button *ngIf="mode === 'commissions'" class="btn btn-outline-danger btn-sm" (click)="rejectCommission(item)">Reject</button>
+              <button *ngIf="mode === 'commissions'" class="btn btn-outline-green btn-sm" (click)="adjustCommission(item)">Adjust</button>
+              <button *ngIf="mode === 'payouts'" class="btn btn-green btn-sm" (click)="payoutAction(item, 'approve')">Approve</button>
+              <button *ngIf="mode === 'payouts'" class="btn btn-outline-green btn-sm" (click)="payoutAction(item, 'pay')">Pay</button>
+              <button *ngIf="mode === 'payouts'" class="btn btn-outline-danger btn-sm" (click)="payoutAction(item, 'reject')">Reject</button>
+            </td>
+          </tr>
+          <tr *ngIf="!items.length"><td colspan="3"><div class="panel-empty small-empty"><p>No records found.</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="commission-pagination" *ngIf="mode === 'rules' && items.length">
+      <div class="pagination-summary">
+        Showing {{ pageStart }}–{{ pageEnd }} of {{ items.length }} rules
+      </div>
+      <div class="pagination-controls">
+        <label>
+          Rows
+          <select class="f-input pagination-size" [(ngModel)]="pageSize" (change)="changePageSize()" aria-label="Rows per page">
+            <option [ngValue]="5">5</option>
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="20">20</option>
+            <option [ngValue]="50">50</option>
+          </select>
+        </label>
+        <button type="button" class="page-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" aria-label="Previous page">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button
+          type="button"
+          class="page-btn"
+          *ngFor="let page of pageNumbers"
+          [class.active]="page === currentPage"
+          [attr.aria-current]="page === currentPage ? 'page' : null"
+          (click)="changePage(page)">
+          {{ page }}
+        </button>
+        <button type="button" class="page-btn" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" aria-label="Next page">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+</ng-container>
+
+<app-commission-notes></app-commission-notes>

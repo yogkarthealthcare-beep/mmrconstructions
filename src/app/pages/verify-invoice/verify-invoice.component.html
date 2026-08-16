@@ -1,0 +1,122 @@
+<div class="verify-page">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+
+        <!-- Search Box Card -->
+        <div class="card shadow-lg border-0 rounded-4 mb-4">
+          <div class="card-body p-4 text-center">
+            <div class="icon-circle bg-success-light text-success mx-auto mb-3">
+              <i class="fas fa-shield-alt fa-2x"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">Invoice Authenticity Verification</h3>
+            <p class="text-muted font-xs mb-4">Verify MMR Constructions plot booking invoices by scanning QR code or entering Invoice Number.</p>
+
+            <form (ngSubmit)="verifyInvoice()">
+              <div class="input-group input-group-lg mb-3">
+                <input type="text" class="form-control font-mono" [(ngModel)]="invoiceNumber" name="invoiceNumber"
+                  placeholder="Enter Invoice Number e.g. MMR-2026-000001" required />
+                <button type="submit" class="btn btn-success px-4" [disabled]="loading">
+                  <i *ngIf="loading" class="fas fa-spinner fa-spin"></i>
+                  <span *ngIf="!loading"><i class="fas fa-search me-1"></i> Verify</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Verification Results -->
+        <div *ngIf="searched && !loading">
+
+          <!-- VALID INVOICE BADGE CARD -->
+          <div *ngIf="verificationResult?.valid" class="card shadow-lg border-0 rounded-4 overflow-hidden border-top-success">
+            <div class="bg-success text-white p-4 text-center">
+              <i class="fas fa-check-circle fa-4x mb-2 text-white"></i>
+              <h2 class="fw-bold mb-0">OFFICIALLY VERIFIED & VALID INVOICE</h2>
+              <p class="font-xs mb-0 text-white-50 mt-1">This document is authentic and issued by {{ verificationResult.company_name }}</p>
+            </div>
+
+            <div class="card-body p-4">
+              <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0 font-sm">
+                  <tbody>
+                    <tr>
+                      <th class="bg-light w-40 text-muted">Invoice Number</th>
+                      <td class="fw-bold font-mono text-success">{{ verificationResult.invoice_number }}</td>
+                    </tr>
+                    <tr>
+                      <th class="bg-light text-muted">Booking / Serial ID</th>
+                      <td class="fw-bold text-dark">{{ verificationResult.order_id }}</td>
+                    </tr>
+                    <tr>
+                      <th class="bg-light text-muted">Customer Name</th>
+                      <td class="fw-bold text-dark">{{ verificationResult.customer_name }}</td>
+                    </tr>
+                    <tr>
+                      <th class="bg-light text-muted">Project / Site</th>
+                      <td>{{ verificationResult.site_name }}</td>
+                    </tr>
+                    <tr>
+                      <th class="bg-light text-muted">Plot Number</th>
+                      <td><span class="badge bg-light text-dark border">{{ verificationResult.plot_number }}</span></td>
+                    </tr>
+                    <tr>
+                      <th class="bg-light text-muted">Plot Size</th>
+                      <td>{{ verificationResult.plot_size }}</td>
+                    </tr>
+                    <tr>
+                      <th class="bg-light text-muted">Grand Total Price</th>
+                      <td class="fw-bold text-dark">₹{{ verificationResult.grand_total | number }}</td>
+                    </tr>
+                    <tr>
+                      <th class="bg-light text-muted">Paid Amount</th>
+                      <td class="fw-bold text-success">₹{{ verificationResult.paid_amount | number }}</td>
+                    </tr>
+                    <tr>
+                      <th class="bg-light text-muted">Remaining Balance</th>
+                      <td class="fw-bold text-warning">₹{{ verificationResult.balance_amount | number }}</td>
+                    </tr>
+                    <tr>
+                      <th class="bg-light text-muted">Payment & Order Status</th>
+                      <td>
+                        <span class="badge bg-success me-1">{{ verificationResult.payment_status }}</span>
+                        <span class="badge bg-secondary">{{ verificationResult.order_status }}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th class="bg-light text-muted">Verified Timestamp</th>
+                      <td class="font-xs text-muted">{{ verificationResult.verified_at | date:'medium' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card-footer bg-light p-3 text-center">
+              <a routerLink="/" class="btn btn-outline-secondary font-xs">
+                <i class="fas fa-home me-1"></i> Back to Homepage
+              </a>
+            </div>
+          </div>
+
+          <!-- INVALID / NOT FOUND CARD -->
+          <div *ngIf="!verificationResult?.valid" class="card shadow-lg border-0 rounded-4 overflow-hidden border-top-danger">
+            <div class="bg-danger text-white p-4 text-center">
+              <i class="fas fa-times-circle fa-4x mb-2 text-white"></i>
+              <h2 class="fw-bold mb-0">INVOICE NOT FOUND / INVALID</h2>
+              <p class="font-xs mb-0 text-white-50 mt-1">No valid record matches the entered Invoice Number.</p>
+            </div>
+            <div class="card-body p-4 text-center">
+              <p class="text-muted">Please double check the Invoice Number on your document or contact MMR Constructions support.</p>
+              <a routerLink="/" class="btn btn-danger px-4 mt-2">
+                <i class="fas fa-arrow-left me-1"></i> Return Home
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

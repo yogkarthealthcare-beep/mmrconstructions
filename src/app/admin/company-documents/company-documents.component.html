@@ -1,0 +1,78 @@
+<div class="doc-toast" *ngIf="toast" [class.error]="toastType === 'error'">
+  <i [class]="toastType === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle'"></i>{{ toast }}
+</div>
+
+<div class="documents-head">
+  <div class="pg-header">
+    <h4>Company Documents</h4>
+    <p>Upload and manage public company verification documents.</p>
+  </div>
+  <button type="button" class="btn btn-green btn-sm" (click)="openAdd()"><i class="fas fa-plus me-1"></i>Add Document</button>
+</div>
+
+<div class="summary-card">
+  <div><i class="fas fa-folder-open"></i><span><strong>{{ documents.length }}</strong>Total Documents</span></div>
+  <div><i class="fas fa-eye"></i><span><strong>{{ activeCount }}</strong>Active on Website</span></div>
+  <p>Use display order 1–10 to arrange the primary verification document slots.</p>
+</div>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner fa-spin"></i></div>
+
+<section class="panel-card" *ngIf="!loading">
+  <div class="table-responsive" *ngIf="documents.length; else emptyState">
+    <table class="table documents-table">
+      <thead><tr><th>Preview</th><th>Document</th><th>File</th><th>Order</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let document of documents">
+          <td>
+            <img *ngIf="document.file_type === 'image'" class="document-thumb" [src]="fileUrl(document)" [alt]="document.document_name">
+            <div *ngIf="document.file_type === 'pdf'" class="pdf-thumb"><i class="fas fa-file-pdf"></i></div>
+          </td>
+          <td><strong>{{ document.document_name }}</strong><span>{{ document.document_type || 'Verification Document' }}</span><small>{{ document.document_description || 'No description' }}</small></td>
+          <td><a [href]="fileUrl(document)" target="_blank" rel="noopener noreferrer">{{ document.original_file_name || 'Open file' }}</a><small>{{ fileSize(document.file_size_bytes) }}</small></td>
+          <td>{{ document.display_order }}</td>
+          <td><span class="status-pill" [class.inactive]="!document.is_active">{{ document.is_active ? 'Active' : 'Inactive' }}</span></td>
+          <td class="text-end">
+            <button type="button" class="icon-btn" title="Edit document" (click)="openEdit(document)"><i class="fas fa-edit"></i></button>
+            <button type="button" class="icon-btn danger" title="Deactivate document" (click)="deactivate(document)" [disabled]="!document.is_active"><i class="fas fa-ban"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-template #emptyState>
+    <div class="documents-empty"><i class="fas fa-folder-open"></i><h5>No company documents yet</h5><p>Add registration, GST, PAN, MSME or other verification documents.</p><button type="button" class="btn btn-green btn-sm" (click)="openAdd()">Add First Document</button></div>
+  </ng-template>
+</section>
+
+<div class="document-modal-backdrop" *ngIf="showForm" (click)="closeForm()">
+  <section class="document-modal" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div><h5>{{ editing ? 'Edit Company Document' : 'Add Company Document' }}</h5><p>Images and PDFs appear on the public verification page.</p></div>
+      <button type="button" class="modal-close" aria-label="Close" (click)="closeForm()"><i class="fas fa-times"></i></button>
+    </div>
+    <form (ngSubmit)="save()">
+      <div class="document-form-grid">
+        <div><label class="f-label">Document Name *</label><input class="f-input" name="document_name" maxlength="180" [(ngModel)]="form.document_name" placeholder="GST Certificate" required></div>
+        <div><label class="f-label">Document Type</label><input class="f-input" name="document_type" maxlength="100" [(ngModel)]="form.document_type" placeholder="Tax / Registration / Approval"></div>
+        <div class="full"><label class="f-label">Short Description</label><textarea class="f-input" name="document_description" rows="3" maxlength="1000" [(ngModel)]="form.document_description"></textarea></div>
+        <div><label class="f-label">Document Name (Hindi)</label><input class="f-input" name="document_name_hi" maxlength="180" [(ngModel)]="form.document_name_hi" placeholder="जीएसटी प्रमाणपत्र"></div>
+        <div><label class="f-label">Document Type (Hindi)</label><input class="f-input" name="document_type_hi" maxlength="100" [(ngModel)]="form.document_type_hi" placeholder="कर / पंजीकरण / स्वीकृति"></div>
+        <div class="full"><label class="f-label">Short Description (Hindi)</label><textarea class="f-input" name="document_description_hi" rows="3" maxlength="1000" [(ngModel)]="form.document_description_hi"></textarea></div>
+        <div><label class="f-label">Display Order</label><input class="f-input" name="display_order" type="number" min="0" [(ngModel)]="form.display_order"></div>
+        <label class="active-check"><input type="checkbox" name="is_active" [(ngModel)]="form.is_active"><span>Visible on public website</span></label>
+        <div class="full">
+          <label class="f-label">{{ editing ? 'Replace File (optional)' : 'Document File *' }}</label>
+          <input class="f-input" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" (change)="onFileSelected($event)">
+          <small>JPG, JPEG, PNG, WEBP or PDF up to 5 MB.</small>
+        </div>
+      </div>
+      <div class="file-preview" *ngIf="previewUrl"><img [src]="previewUrl" alt="Document preview"></div>
+      <div class="pdf-selection" *ngIf="form.company_document?.type === 'application/pdf'"><i class="fas fa-file-pdf"></i><span>{{ form.company_document?.name }}</span></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline-green" (click)="closeForm()">Cancel</button>
+        <button type="submit" class="btn btn-green" [disabled]="saving"><i [class]="saving ? 'fas fa-spinner fa-spin me-2' : 'fas fa-save me-2'"></i>{{ saving ? 'Saving...' : 'Save Document' }}</button>
+      </div>
+    </form>
+  </section>
+</div>

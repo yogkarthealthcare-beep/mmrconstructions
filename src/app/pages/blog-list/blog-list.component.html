@@ -1,0 +1,39 @@
+<app-navbar />
+
+<main class="blog-page">
+  <section class="blog-hero">
+    <div class="mmr-container">
+      <span class="eyebrow">{{ 'propertyKnowledge' | tr }}</span>
+      <h1>{{ 'blogs' | tr }}</h1>
+      <p>{{ 'blogIntro' | tr }}</p>
+    </div>
+  </section>
+
+  <section class="blog-content">
+    <div class="mmr-container">
+      <div class="blog-grid">
+        <article class="blog-card" *ngFor="let post of posts">
+          <a class="image-link" [routerLink]="['/blog', post.slug]" [attr.aria-label]="post.title">
+            <img [src]="post.featuredImage" [alt]="post.title" loading="lazy" />
+          </a>
+          <div class="card-content">
+            <div class="post-meta">
+              <time [attr.datetime]="post.publishDate">
+                {{ formatDate(post.publishDate) }}
+              </time>
+            </div>
+            <h2>
+              <a [routerLink]="['/blog', post.slug]">{{ post.title }}</a>
+            </h2>
+            <p>{{ post.shortDescription }}</p>
+            <a class="read-more" [routerLink]="['/blog', post.slug]">
+              {{ 'readMore' | tr }} <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</main>
+
+<app-footer />

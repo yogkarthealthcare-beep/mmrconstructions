@@ -1,0 +1,266 @@
+<app-navbar></app-navbar>
+
+<section class="plot-map-page">
+  <div class="map-topbar">
+    <a routerLink="/" fragment="sites" class="back-link" title="Back to sites"><i class="fas fa-arrow-left"></i></a>
+    <div class="map-title">
+      <span class="map-kicker">Live Plot Inventory</span>
+      <h1>{{ site?.site_name || 'Plot Map' }}</h1>
+      <p>{{ site?.full_address || site?.city || 'Live plot availability' }}</p>
+      <div class="quick-stats" *ngIf="!loading && !error">
+        <span><strong>{{ plots.length }}</strong>Total Plots</span>
+        <span><strong>{{ availableCount }}</strong>Available</span>
+        <span><strong>{{ reservedCount }}</strong>Reserved</span>
+        <span><strong>{{ bookedCount }}</strong>Booked/Sold</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-legend">
+    <span *ngFor="let item of statusItems"><i [style.background]="item.color"></i>{{ item.label }}</span>
+  </div>
+
+  <div *ngIf="toast" class="map-toast" [class.error]="toastType === 'error'">{{ toast }}</div>
+  <div *ngIf="loading" class="map-loading"><i class="fas fa-spinner fa-spin"></i></div>
+  <div *ngIf="error" class="map-error">{{ error }}</div>
+
+  <div class="map-layout" *ngIf="!loading && !error">
+    <section class="plot-layout-panel">
+      <div class="plot-layout-head">
+        <div>
+          <h2>Plots</h2>
+          <p>{{ filteredPlots.length }} of {{ plots.length }} plots</p>
+        </div>
+        <span class="plot-count">{{ availableCount }}</span>
+      </div>
+
+      <div class="plot-filters">
+        <label class="search-field">
+          <i class="fas fa-search"></i>
+          <input type="search" [(ngModel)]="searchTerm" placeholder="Search plot number">
+        </label>
+        <select [(ngModel)]="statusFilter" aria-label="Filter plots by status">
+          <option value="All">All Status</option>
+          <option *ngFor="let item of statusItems" [value]="item.status">{{ item.label }}</option>
+        </select>
+      </div>
+
+      <div class="plot-card-grid" *ngIf="filteredPlots.length; else noPlots">
+        <button
+          type="button"
+          class="plot-card"
+          *ngFor="let plot of filteredPlots; trackBy: trackPlot"
+          [ngClass]="statusClass(plot)"
+          [class.active]="selectedPlot?.plot_id === plot.plot_id"
+          [title]="plotTooltip(plot)"
+          (mouseenter)="onPlotHover(plot, $event)"
+          (mousemove)="onPlotHover(plot, $event)"
+          (mouseleave)="hoverPlot=null"
+          (click)="selectPlot(plot)">
+          <span class="plot-card-top">
+            <strong>Plot {{ plot.plot_number }}</strong>
+            <i>{{ plotLabel(plot.plot_status) }}</i>
+          </span>
+          <span><i class="fas fa-vector-square"></i>{{ sizeFor(plot) }}</span>
+          <b>{{ priceFor(plot) ? (priceFor(plot) | currency:'INR':'symbol':'1.0-0') : 'Price on request' }}</b>
+        </button>
+      </div>
+      <ng-template #noPlots>
+        <div class="plot-layout-empty">
+          <i class="fas fa-table-cells-large"></i>
+          <p>No plots match the current view.</p>
+        </div>
+      </ng-template>
+    </section>
+
+    <section
+      #siteImageStage
+      class="site-image-panel"
+      [class.is-panning]="zoom > 1"
+      (mousedown)="startPan($event)"
+      (mousemove)="movePan($event)">
+      <div class="image-toolbar">
+        <button type="button" class="tool-btn" (click)="zoomOut()" title="Zoom out"><i class="fas fa-minus"></i></button>
+        <button type="button" class="tool-btn" (click)="resetView()" title="Reset view"><i class="fas fa-rotate-right"></i></button>
+        <button type="button" class="tool-btn" (click)="zoomIn()" title="Zoom in"><i class="fas fa-plus"></i></button>
+        <button type="button" class="tool-btn" (click)="toggleFullscreen()" title="Fullscreen"><i class="fas fa-expand"></i></button>
+      </div>
+
+      <div class="image-caption">
+        <span>Master Layout Plan</span>
+        <strong>{{ zoom * 100 | number:'1.0-0' }}%</strong>
+      </div>
+
+      <div class="map-stage">
+        <svg
+          class="map-canvas"
+          *ngIf="site?.layout_map_url || site?.map_image_url"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          [style.transform]="imageTransform"
+          [attr.aria-label]="(site?.site_name || 'Project') + ' site layout'">
+          <image
+            [attr.href]="site.layout_map_url || site.map_image_url"
+            x="0"
+            y="0"
+            width="100"
+            height="100"
+            preserveAspectRatio="none"></image>
+          <g *ngIf="legacyOverlayEnabled" class="plot-overlay-svg">
+            <g *ngFor="let plot of filteredPlots; trackBy: trackPlot">
+              <polygon
+                *ngIf="polygonPoints(plot)"
+                [attr.points]="polygonPoints(plot)"
+                [attr.fill]="plotColor(plot)"
+                [class.active]="selectedPlot?.plot_id === plot.plot_id"
+                (mouseenter)="onPlotHover(plot, $event)"
+                (mousemove)="onPlotHover(plot, $event)"
+                (mouseleave)="hoverPlot=null"
+                (click)="selectPlot(plot); $event.stopPropagation()">
+                <title>{{ plotTooltip(plot) }}</title>
+              </polygon>
+              <text
+                *ngIf="polygonPoints(plot)"
+                [attr.x]="labelPoint(plot).x"
+                [attr.y]="labelPoint(plot).y">
+                {{ plot.plot_number }}
+              </text>
+            </g>
+          </g>
+        </svg>
+        <div class="map-empty" *ngIf="!(site?.layout_map_url || site?.map_image_url)">
+          <i class="fas fa-map"></i>
+          <p>Site map image is not available.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="public-site-documents" *ngIf="!loading && !error">
+    <div class="documents-heading">
+      <div>
+        <span>Project Records</span>
+        <h2>Site Documents</h2>
+      </div>
+      <i class="fas fa-shield-halved"></i>
+    </div>
+
+    <div class="documents-state" *ngIf="documentsLoading">
+      <i class="fas fa-spinner fa-spin"></i> Loading documents...
+    </div>
+    <div class="documents-state error" *ngIf="!documentsLoading && documentsError">
+      <i class="fas fa-circle-exclamation"></i> {{ documentsError }}
+    </div>
+    <div class="documents-state" *ngIf="!documentsLoading && !documentsError && !siteDocuments.length">
+      No documents available for this site.
+    </div>
+    <div class="public-document-grid" *ngIf="!documentsLoading && !documentsError && siteDocuments.length">
+      <article class="public-document-card" *ngFor="let document of siteDocuments">
+        <i [class]="documentIcon(document)"></i>
+        <div>
+          <strong>{{ document.document_name }}</strong>
+          <span>{{ document.document_type || 'Site document' }}</span>
+          <p *ngIf="document.description">{{ document.description }}</p>
+        </div>
+        <a [href]="documentUrl(document)" target="_blank" rel="noopener" class="btn btn-outline-green btn-sm">
+          View Document <i class="fas fa-arrow-up-right-from-square ms-1"></i>
+        </a>
+      </article>
+    </div>
+  </section>
+
+  <div class="plot-detail-backdrop" *ngIf="selectedPlot" (click)="closePlot()">
+    <aside class="plot-detail-modal" (click)="$event.stopPropagation()">
+      <button type="button" class="close-panel" (click)="closePlot()" title="Close"><i class="fas fa-times"></i></button>
+      <div *ngIf="detailLoading" class="detail-loader"><i class="fas fa-spinner fa-spin"></i></div>
+      <ng-container *ngIf="!detailLoading">
+        <div class="modal-head">
+          <span class="status-chip" [style.background]="plotColor(selectedPlotDetail || selectedPlot)">{{ plotLabel((selectedPlotDetail || selectedPlot)?.plot_status) }}</span>
+          <h2>Plot {{ (selectedPlotDetail || selectedPlot)?.plot_number }}</h2>
+          <p>{{ (selectedPlotDetail || selectedPlot)?.site_name || site?.site_name || 'Project Plot Details' }}</p>
+        </div>
+        <div class="detail-grid">
+          <div><span>Size</span><strong>{{ sizeFor(selectedPlotDetail || selectedPlot) }}</strong></div>
+          <div><span>Dimensions</span><strong>{{ (selectedPlotDetail || selectedPlot)?.dimensions || (selectedPlotDetail || selectedPlot)?.dimension || '-' }}</strong></div>
+          <div><span>Facing</span><strong>{{ (selectedPlotDetail || selectedPlot)?.facing || (selectedPlotDetail || selectedPlot)?.facing_direction || '-' }}</strong></div>
+          <div><span>Status</span><strong>{{ plotLabel((selectedPlotDetail || selectedPlot)?.plot_status) }}</strong></div>
+          <div><span>Price</span><strong>{{ priceFor(selectedPlotDetail || selectedPlot) ? (priceFor(selectedPlotDetail || selectedPlot) | currency:'INR':'symbol':'1.0-0') : '-' }}</strong></div>
+          <div><span>Booking Amount</span><strong>{{ (selectedPlotDetail || selectedPlot)?.booking_amount || (selectedPlotDetail || selectedPlot)?.down_payment ? (((selectedPlotDetail || selectedPlot)?.booking_amount || (selectedPlotDetail || selectedPlot)?.down_payment) | currency:'INR':'symbol':'1.0-0') : '-' }}</strong></div>
+          <div><span>Remaining Balance</span><strong>{{ remainingBalance(selectedPlotDetail || selectedPlot) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+          <div><span>Site</span><strong>{{ (selectedPlotDetail || selectedPlot)?.site_name || site?.site_name || '-' }}</strong></div>
+          <div><span>EMI</span><strong>{{ (selectedPlotDetail || selectedPlot)?.monthly_emi ? ((selectedPlotDetail || selectedPlot)?.monthly_emi | currency:'INR':'symbol':'1.0-0') : '-' }}</strong></div>
+        </div>
+        <p class="plot-desc" *ngIf="(selectedPlotDetail || selectedPlot)?.description || (selectedPlotDetail || selectedPlot)?.additional_details">
+          {{ (selectedPlotDetail || selectedPlot)?.description || (selectedPlotDetail || selectedPlot)?.additional_details }}
+        </p>
+        <div class="feature-row" *ngIf="featuresFor(selectedPlotDetail || selectedPlot).length">
+          <span *ngFor="let feature of featuresFor(selectedPlotDetail || selectedPlot)">{{ feature }}</span>
+        </div>
+        <div class="status-note" *ngIf="statusMessage(selectedPlotDetail || selectedPlot)">
+          {{ statusMessage(selectedPlotDetail || selectedPlot) }}
+        </div>
+        <button *ngIf="isBookable(selectedPlotDetail || selectedPlot)" type="button" class="btn btn-green w-100" [disabled]="bookingSaving" (click)="bookSelectedPlot()">
+          <i class="fas me-2" [ngClass]="bookingSaving ? 'fa-spinner fa-spin' : 'fa-calendar-check'"></i>{{ bookingSaving ? 'Booking...' : 'Book Now' }}
+        </button>
+        <button *ngIf="!isBookable(selectedPlotDetail || selectedPlot)" type="button" class="btn btn-outline-green w-100" disabled>
+          {{ statusMessage(selectedPlotDetail || selectedPlot) || 'Not Available' }}
+        </button>
+      </ng-container>
+    </aside>
+  </div>
+
+  <div class="plot-tooltip" *ngIf="hoverPlot" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
+    <strong>Plot No: {{ hoverPlot.plot_number }}</strong>
+    <span>Status: {{ plotLabel(hoverPlot.plot_status) }}</span>
+    <span>Area: {{ hoverPlot.plot_area || '-' }}</span>
+  </div>
+
+  <div class="booking-confirm-backdrop" *ngIf="confirmPlot" (click)="cancelBookingConfirm()">
+    <div class="booking-confirm" (click)="$event.stopPropagation()">
+      <h3>Book Plot No. {{ confirmPlot.plot_number }}</h3>
+      <div class="booking-progress">
+        <span class="active">1. Validated</span><span class="active">2. Payment Method</span><span>3. Confirmation</span>
+      </div>
+      <div class="booking-summary-grid">
+        <div><span>Project</span><strong>{{ confirmPlot.site_name || site?.site_name }}</strong></div>
+        <div><span>Plot Size</span><strong>{{ sizeFor(confirmPlot) }}</strong></div>
+        <div><span>Plot Price</span><strong>{{ priceFor(confirmPlot) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div><span>Minimum Booking</span><strong>{{ workflowConfig?.minimum_booking_amount | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div><span>First EMI</span><strong>{{ workflowConfig?.first_emi_amount | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div><span>Required Now</span><strong>{{ requiredBookingPayment(confirmPlot) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div><span>Remaining Balance</span><strong>{{ remainingBalance(confirmPlot) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div><span>Monthly EMI</span><strong>{{ confirmPlot.monthly_emi | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+      </div>
+      <div class="payment-methods">
+        <label [class.selected]="paymentMethod==='Online'">
+          <input type="radio" name="paymentMethod" value="Online" [(ngModel)]="paymentMethod">
+          <strong>Online Payment</strong><span>Pay securely using Razorpay</span>
+        </label>
+        <label [class.selected]="paymentMethod==='Offline'">
+          <input type="radio" name="paymentMethod" value="Offline" [(ngModel)]="paymentMethod">
+          <strong>Offline Payment</strong><span>Office visit / cheque submission</span>
+        </label>
+      </div>
+      <div class="appointment-picker" *ngIf="paymentMethod==='Offline'">
+        <label>Appointment Date
+          <select [(ngModel)]="selectedAppointmentDate" (ngModelChange)="selectAppointmentDate($event)">
+            <option *ngFor="let item of appointmentDates" [value]="item.date">{{ item.date | date:'mediumDate' }}</option>
+          </select>
+        </label>
+        <div class="slot-grid">
+          <button type="button" *ngFor="let slot of selectedDateSlots"
+            [class.active]="selectedAppointmentSlot?.start_time===slot.start_time"
+            (click)="selectedAppointmentSlot=slot">
+            {{ slot.start_time }} - {{ slot.end_time }}
+          </button>
+        </div>
+      </div>
+      <div class="booking-confirm-actions">
+        <button type="button" class="btn btn-outline-green" (click)="cancelBookingConfirm()">Cancel</button>
+        <button type="button" class="btn btn-green" [disabled]="bookingSaving" (click)="confirmBooking()">
+          {{ bookingSaving ? 'Processing...' : (paymentMethod === 'Online' ? 'Proceed to Pay' : 'Schedule Appointment') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

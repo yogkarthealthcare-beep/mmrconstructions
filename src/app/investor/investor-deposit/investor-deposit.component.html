@@ -1,0 +1,141 @@
+<div class="investor-deposit">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h4 class="fw-bold text-dark mb-1">Make a Deposit</h4>
+      <p class="text-muted mb-0">Add funds using the configured online gateway or manual UPI verification</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Deposit Form Card -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold m-0 text-dark">
+            <i class="fas fa-hand-holding-usd text-success me-2"></i>New Deposit Request
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <div *ngIf="errorMessage" class="alert alert-danger mb-3">
+            <i class="fas fa-exclamation-circle me-1"></i>{{ errorMessage }}
+          </div>
+          <div *ngIf="successMessage" class="alert alert-success mb-3">
+            <i class="fas fa-check-circle me-1"></i>{{ successMessage }}
+          </div>
+
+          <form (ngSubmit)="submitDeposit()">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Deposit Amount (₹) *</label>
+              <div class="input-group">
+                <span class="input-group-text">₹</span>
+                <input type="number"
+                       class="form-control form-control-lg"
+                       [(ngModel)]="form.amount"
+                       name="amount"
+                       placeholder="e.g. 50000"
+                       min="100"
+                       required />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Payment Method *</label>
+              <select class="form-select" [(ngModel)]="form.payment_method" name="payment_method" required>
+                <option *ngFor="let method of paymentMethods" [value]="method.value">{{ method.label }}</option>
+              </select>
+            </div>
+
+            <div class="mb-3" *ngIf="form.payment_method === 'online'">
+              <label class="form-label fw-semibold">Gateway *</label>
+              <select class="form-select text-capitalize" [(ngModel)]="form.gateway" name="gateway">
+                <option *ngFor="let gateway of gateways" [value]="gateway">{{ gateway }}</option>
+              </select>
+            </div>
+
+            <div class="upi-card mb-3" *ngIf="form.payment_method === 'manual_upi'">
+              <div class="fw-bold mb-2">Company UPI Payment</div>
+              <div class="d-flex align-items-center gap-3">
+                <img [src]="companyQrUrl" alt="Company UPI QR" class="upi-qr">
+                <div>
+                  <div class="small text-muted">Company UPI ID</div>
+                  <div class="fw-bold">{{ companyUpiId }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3" *ngIf="form.payment_method === 'manual_upi'">
+              <label class="form-label fw-semibold">Transaction Reference / UTR Number *</label>
+              <input type="text"
+                     class="form-control"
+                     [(ngModel)]="form.transaction_reference"
+                     name="transaction_reference"
+                     placeholder="Enter Bank Ref / UTR / Txn ID"
+                     required />
+            </div>
+
+            <div class="mb-3" *ngIf="form.payment_method === 'manual_upi'">
+              <label class="form-label fw-semibold">Upload Screenshot</label>
+              <input type="file"
+                     class="form-control"
+                     accept=".jpg,.jpeg,.png,.pdf"
+                     (change)="onScreenshotChange($event)" />
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 py-2.5 fw-bold shadow-sm rounded-3 mt-2" [disabled]="submitting">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+              {{ submitting ? 'Submitting...' : 'Submit Deposit Request' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deposit History List -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-3 h-100">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold m-0 text-dark">
+            <i class="fas fa-history text-muted me-2"></i>Deposit History
+          </h5>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-success spinner-border-sm me-2"></div> Loading deposits...
+          </div>
+
+          <div class="table-responsive" *ngIf="!loading">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Date</th>
+                  <th class="text-end">Amount</th>
+                  <th>Method</th>
+                  <th>Transaction ID</th>
+                  <th>Status</th>
+                  <th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let dep of deposits">
+                  <td class="ps-3 text-muted small">{{ dep.created_at | date:'mediumDate' }}</td>
+                  <td class="fw-bold text-success text-end">+ ₹{{ dep.amount | number:'1.2-2' }}</td>
+                  <td class="text-secondary small text-capitalize">{{ dep.payment_method?.replace('_', ' ') }}</td>
+                  <td class="small font-monospace">{{ dep.transaction_reference }}</td>
+                  <td>
+                    <span class="badge rounded-pill border px-2.5 py-1 text-capitalize" [ngClass]="getStatusBadge(dep.status)">
+                      {{ dep.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted small">{{ dep.admin_remarks || '-' }}</td>
+                </tr>
+                <tr *ngIf="!deposits.length">
+                  <td colspan="5" class="text-center text-muted py-4">No deposit requests submitted yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

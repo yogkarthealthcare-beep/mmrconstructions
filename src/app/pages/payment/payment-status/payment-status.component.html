@@ -1,0 +1,86 @@
+<div class="status-page-wrapper">
+  <!-- Loader -->
+  <div *ngIf="loading" class="panel-loading">
+    <i class="fas fa-spinner"></i>
+    <p>Checking secure transaction records...</p>
+  </div>
+
+  <!-- Error alert -->
+  <div *ngIf="!loading && errorMessage" class="panel-card status-card text-center">
+    <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 40px;"></i>
+    <h4 class="status-title text-danger">Record Load Error</h4>
+    <p class="status-desc">{{ errorMessage }}</p>
+    <a routerLink="/user/dashboard" class="btn btn-green w-100">
+      <i class="fas fa-th-large"></i> Go to Dashboard
+    </a>
+  </div>
+
+  <!-- Main Status Card -->
+  <div *ngIf="!loading && !errorMessage && paymentData" class="panel-card status-card">
+    <div class="status-card-header text-center mb-4">
+      <div class="sci-status-wrap">
+        <i class="fas" [ngClass]="{
+          'fa-check-circle text-success': paymentData.payment_status === 'success',
+          'fa-times-circle text-danger': paymentData.payment_status === 'failed',
+          'fa-clock text-warning': paymentData.payment_status === 'pending',
+          'fa-undo-alt text-primary': paymentData.payment_status === 'refunded'
+        }"></i>
+      </div>
+      <h3 class="status-title">Transaction Receipt</h3>
+      <p class="status-desc">Payment information for Order ID: #{{ paymentData.order_id }}</p>
+    </div>
+
+    <!-- Receipt detail grid -->
+    <div class="receipt-details">
+      <div class="receipt-row">
+        <span class="rl">Payment Status</span>
+        <span class="rv">
+          <app-status-badge [status]="paymentData.payment_status"></app-status-badge>
+        </span>
+      </div>
+      
+      <div class="receipt-row">
+        <span class="rl">Amount Paid</span>
+        <span class="rv amount-val">₹{{ paymentData.amount | number:'1.2-2' }}</span>
+      </div>
+
+      <div class="receipt-row">
+        <span class="rl">Payment Gateway</span>
+        <span class="rv gateway-val">{{ paymentData.gateway_name | uppercase }}</span>
+      </div>
+
+      <div class="receipt-row" *ngIf="paymentData.gateway_payment_id">
+        <span class="rl">Transaction Reference</span>
+        <span class="rv ref-val text-truncate" [title]="paymentData.gateway_payment_id">{{ paymentData.gateway_payment_id }}</span>
+      </div>
+
+      <div class="receipt-row">
+        <span class="rl">Initiated On</span>
+        <span class="rv">{{ paymentData.created_at | date:'medium' }}</span>
+      </div>
+
+      <div class="receipt-row" *ngIf="paymentData.updated_at && paymentData.updated_at !== paymentData.created_at">
+        <span class="rl">Last Settled</span>
+        <span class="rv">{{ paymentData.updated_at | date:'medium' }}</span>
+      </div>
+
+      <div class="receipt-row text-danger-row" *ngIf="paymentData.failure_reason">
+        <span class="rl">Reason Code</span>
+        <span class="rv text-danger fw-600">{{ paymentData.failure_reason }}</span>
+      </div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="status-actions d-flex flex-column gap-2 mt-4">
+      <a [routerLink]="['/payment', paymentData.order_id]" class="btn btn-green w-100" *ngIf="paymentData.payment_status !== 'success'">
+        <i class="fas fa-redo-alt"></i> Try Checkout Again
+      </a>
+      <a routerLink="/user/dashboard" class="btn btn-outline-green w-100">
+        <i class="fas fa-th-large"></i> Go to Dashboard
+      </a>
+      <a routerLink="/user/payments" class="btn btn-outline-green w-100">
+        <i class="fas fa-history"></i> Payment History
+      </a>
+    </div>
+  </div>
+</div>

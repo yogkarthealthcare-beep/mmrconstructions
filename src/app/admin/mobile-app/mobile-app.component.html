@@ -1,0 +1,198 @@
+<div class="mobile-app-toast" *ngIf="toast" [class.error]="toastType === 'error'">
+  <i [class]="toastType === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle'"></i>
+  {{ toast }}
+</div>
+
+<div class="mobile-app-head">
+  <div class="pg-header">
+    <h4>Mobile App</h4>
+    <p>Manage the Download App section shown in the website header.</p>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="load()" [disabled]="loading">
+      <i [class]="loading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-sync-alt me-1'"></i>Refresh
+    </button>
+    <button type="button" class="btn btn-green btn-sm" (click)="toggleVisibility()" [disabled]="loading">
+      <i [class]="form.is_enabled ? 'fas fa-eye-slash me-1' : 'fas fa-eye me-1'"></i>
+      {{ form.is_enabled ? 'Disable Header' : 'Enable Header' }}
+    </button>
+  </div>
+</div>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner fa-spin"></i></div>
+
+<section class="mobile-app-grid" *ngIf="!loading">
+  <aside class="panel-card preview-card">
+    <div class="status-row">
+      <span [class.active]="form.is_enabled">{{ form.is_enabled ? 'Visible' : 'Hidden' }}</span>
+      <span [class.warning]="form.is_coming_soon">{{ form.is_coming_soon ? 'Coming Soon' : 'Live Link' }}</span>
+      <span class="mode-pill">{{ form.download_mode === 'apk' ? 'Direct APK' : 'Google Play' }}</span>
+    </div>
+
+    <div class="phone-preview">
+      <div class="phone-topbar">
+        <div class="mock-contact"><i class="fas fa-phone-alt"></i> +91 95111 19879</div>
+        <div class="mock-actions">
+          <div class="mock-download" [class.disabled]="!form.is_enabled || form.is_coming_soon || (form.download_mode === 'apk' ? !form.apk_url : !form.play_store_url)">
+            <span class="mock-logo">
+              <img *ngIf="previewUrl; else previewIcon" [src]="previewUrl" alt="App logo preview">
+            </span>
+            <span>
+              <strong>{{ form.button_text || 'Download App' }}</strong>
+              <small>
+                <i [class]="form.download_mode === 'apk' ? 'fab fa-android' : 'fab fa-google-play'"></i>
+                {{ form.is_coming_soon ? 'Coming Soon' : (form.download_mode === 'apk' ? (form.current_version || 'Android APK') : (form.badge_text || 'Google Play')) }}
+              </small>
+            </span>
+          </div>
+          <div class="mock-language"><i class="fas fa-language"></i> English</div>
+        </div>
+      </div>
+      <div class="preview-body">
+        <span>Website Header Preview</span>
+        <strong>{{ form.app_name || 'MMR Constructions' }}</strong>
+        <p>{{ form.description || 'Add app details and Play Store link from this page.' }}</p>
+      </div>
+    </div>
+
+    <div class="apk-uploader">
+      <div class="section-mini-title">
+        <strong>Direct APK Download</strong>
+        <span>{{ form.apk_file_name || 'No APK uploaded yet' }}</span>
+      </div>
+      <div class="apk-meta">
+        <div><small>Latest Version</small><strong>{{ form.latest_version || '-' }}</strong></div>
+        <div><small>Version Code</small><strong>{{ form.version_code || '-' }}</strong></div>
+        <div><small>File Size</small><strong>{{ formatBytes(form.apk_file_size_bytes) }}</strong></div>
+        <div><small>Upload Date</small><strong>{{ form.apk_uploaded_at ? (form.apk_uploaded_at | date:'medium') : '-' }}</strong></div>
+      </div>
+      <label class="f-label">APK Upload</label>
+      <input class="f-input" type="file" accept=".apk,application/vnd.android.package-archive" (change)="onApkSelected($event)">
+      <small>Upload only signed Android .apk files. New upload replaces the old APK and switches download mode to Direct APK.</small>
+      <div class="apk-progress" *ngIf="uploadingApk">
+        <span [style.width.%]="apkUploadProgress"></span>
+      </div>
+      <small *ngIf="uploadingApk">Uploading APK {{ apkUploadProgress }}%</small>
+      <button type="button" class="btn btn-green btn-sm" (click)="uploadApk()" [disabled]="uploadingApk || !selectedApk">
+        <i [class]="uploadingApk ? 'fas fa-spinner fa-spin me-1' : 'fas fa-upload me-1'"></i>Upload APK
+      </button>
+    </div>
+
+    <div class="logo-uploader">
+      <label class="f-label">App Logo</label>
+      <input class="f-input" type="file" accept=".png,.svg,.jpg,.jpeg,.webp" (change)="onLogoSelected($event)">
+      <small>PNG, SVG, JPG, JPEG or WEBP. Maximum 2 MB.</small>
+      <div class="logo-actions">
+        <button type="button" class="btn btn-green btn-sm" (click)="uploadLogo()" [disabled]="uploading || !selectedLogo">
+          <i [class]="uploading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-upload me-1'"></i>Upload Logo
+        </button>
+        <button type="button" class="btn btn-outline-danger btn-sm" (click)="deleteLogo()" [disabled]="deletingLogo || !form.app_logo_url">
+          <i [class]="deletingLogo ? 'fas fa-spinner fa-spin me-1' : 'fas fa-trash me-1'"></i>Delete
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <form class="panel-card settings-card" (ngSubmit)="save()">
+    <div class="settings-title">
+      <div>
+        <h5>App Information</h5>
+        <p>These values drive the public website header automatically.</p>
+      </div>
+      <button type="submit" class="btn btn-green" [disabled]="saving">
+        <i [class]="saving ? 'fas fa-spinner fa-spin me-2' : 'fas fa-save me-2'"></i>{{ saving ? 'Saving...' : 'Save Settings' }}
+      </button>
+    </div>
+
+    <div class="form-grid">
+      <div>
+        <label class="f-label">App Name *</label>
+        <input class="f-input" name="app_name" maxlength="180" [(ngModel)]="form.app_name" required>
+      </div>
+      <div>
+        <label class="f-label">Platform</label>
+        <select class="f-input" name="platform" [(ngModel)]="form.platform">
+          <option value="google_play">Google Play</option>
+          <option value="direct_apk">Direct APK</option>
+        </select>
+      </div>
+      <div>
+        <label class="f-label">Download Mode</label>
+        <select class="f-input" name="download_mode" [(ngModel)]="form.download_mode">
+          <option value="apk">Direct APK Download</option>
+          <option value="play_store">Google Play Store</option>
+        </select>
+      </div>
+      <div class="full">
+        <label class="f-label">Play Store URL</label>
+        <input class="f-input" name="play_store_url" placeholder="https://play.google.com/store/apps/details?id=..." maxlength="1200" [(ngModel)]="form.play_store_url">
+      </div>
+      <div>
+        <label class="f-label">Package Name</label>
+        <input class="f-input" name="package_name" placeholder="com.mmr.constructions" maxlength="180" [(ngModel)]="form.package_name">
+      </div>
+      <div>
+        <label class="f-label">Current Version</label>
+        <input class="f-input" name="current_version" maxlength="60" [(ngModel)]="form.current_version">
+      </div>
+      <div>
+        <label class="f-label">Latest Version</label>
+        <input class="f-input" name="latest_version" maxlength="60" [(ngModel)]="form.latest_version">
+      </div>
+      <div>
+        <label class="f-label">Version Code</label>
+        <input class="f-input" name="version_code" maxlength="60" [(ngModel)]="form.version_code">
+      </div>
+      <div>
+        <label class="f-label">Release Date</label>
+        <input class="f-input" name="release_date" type="date" [(ngModel)]="form.release_date">
+      </div>
+      <div>
+        <label class="f-label">Button Text</label>
+        <input class="f-input" name="button_text" maxlength="80" [(ngModel)]="form.button_text">
+      </div>
+      <div>
+        <label class="f-label">Badge Text</label>
+        <input class="f-input" name="badge_text" maxlength="80" [(ngModel)]="form.badge_text">
+      </div>
+      <div>
+        <label class="f-label">Open Link</label>
+        <select class="f-input" name="open_target" [(ngModel)]="form.open_target">
+          <option value="_blank">New Tab</option>
+          <option value="_self">Same Tab</option>
+        </select>
+      </div>
+      <div>
+        <label class="f-label">Display Order</label>
+        <input class="f-input" name="display_order" type="number" min="1" [(ngModel)]="form.display_order">
+      </div>
+      <div class="full">
+        <label class="f-label">Description</label>
+        <textarea class="f-input" name="description" rows="4" maxlength="2000" [(ngModel)]="form.description"></textarea>
+      </div>
+      <div class="full">
+        <label class="f-label">Release Notes</label>
+        <textarea class="f-input" name="release_notes" rows="4" maxlength="4000" [(ngModel)]="form.release_notes"></textarea>
+      </div>
+    </div>
+
+    <div class="toggle-grid">
+      <label class="toggle-card">
+        <span><strong>Visibility</strong><small>Show Download App in website header.</small></span>
+        <input type="checkbox" name="is_enabled" [(ngModel)]="form.is_enabled">
+      </label>
+      <label class="toggle-card">
+        <span><strong>Coming Soon</strong><small>Disable the click action until the app is published.</small></span>
+        <input type="checkbox" name="is_coming_soon" [(ngModel)]="form.is_coming_soon">
+      </label>
+      <label class="toggle-card">
+        <span><strong>Force Download</strong><small>Use attachment mode for direct APK downloads.</small></span>
+        <input type="checkbox" name="force_download" [(ngModel)]="form.force_download">
+      </label>
+    </div>
+  </form>
+</section>
+
+<ng-template #previewIcon>
+  <i class="fas fa-mobile-alt"></i>
+</ng-template>

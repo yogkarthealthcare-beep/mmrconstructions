@@ -1,0 +1,160 @@
+<app-navbar></app-navbar>
+
+<main>
+  <section class="city-hero">
+    <div class="container">
+      <nav class="city-breadcrumb" aria-label="breadcrumb">
+        <a routerLink="/">Home</a><span>›</span><span>{{ pageIntent.label }} in {{ cityData.city }}</span>
+      </nav>
+      <h1 class="city-h1">
+        {{ pageIntent.h1(cityData.city) }}
+      </h1>
+      <p class="city-sub" *ngIf="isUnnao; else regularIntro">
+        {{ pageIntent.contentLead(cityData.city) }} Local guidance is available across Shuklaganj, Gangaghat, Safipur, Bangarmau, PD Nagar, Civil Lines and Unnao City.
+      </p>
+      <ng-template #regularIntro><p class="city-sub">{{ cityData.description }}</p></ng-template>
+      <div class="city-cta-row">
+        <a [href]="isUnnao ? 'tel:+919511119879' : '/#contact'" class="btn btn-green btn-lg">
+          <i class="fas fa-phone-alt me-2"></i>{{ isUnnao ? 'Call 9511119879' : 'Free Enquiry' }}
+        </a>
+        <a routerLink="/" fragment="emi" class="btn btn-outline-green btn-lg"><i class="fas fa-calculator me-2"></i>EMI Calculator</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="city-section">
+    <div class="container">
+      <h2 class="city-h2">{{ isUnnao ? 'Why Choose an Unnao Top Property Dealer?' : ('Why Invest in ' + cityData.city + '?') }}</h2>
+      <p class="city-p">{{ cityData.description }}</p>
+      <ul class="city-highlights">
+        <li *ngFor="let item of cityData.highlights"><i class="fas fa-check-circle"></i>{{ item }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <ng-container *ngIf="isUnnao; else genericCityContent">
+    <section class="city-section city-alt">
+      <div class="container">
+        <h2 class="city-h2">Unnao Best Property Dealer for Every Property Requirement</h2>
+        <p class="city-p">
+          Choosing an <strong>Unnao Property Dealer</strong> is easier when advice is local, transparent and based on actual site conditions.
+          MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED supports buyers looking for <strong>Unnao Property</strong>, whether the requirement is
+          a home plot, shop-facing commercial plot, completed house, agricultural land or long-term investment.
+        </p>
+        <p class="city-p">
+          Buyers often search for an <strong>Unnao Property Dealers List</strong>, an <strong>Unnao Top Property Dealer</strong> or
+          <strong>Unnao Property Brokers</strong> before arranging a visit. Online research helps, but title documents, approach roads,
+          nearby development and exact plot boundaries should also be checked on the ground.
+        </p>
+        <div class="city-type-grid">
+          <article><i class="fas fa-house"></i><h3>Residential Plots in Unnao</h3><p>Explore residential plots for building a family home in connected and developing localities.</p></article>
+          <article><i class="fas fa-store"></i><h3>Commercial Plots in Unnao</h3><p>Consider road-facing and market-connected locations for shops, offices and commercial use.</p></article>
+          <article><i class="fas fa-city"></i><h3>House for Sale in Unnao</h3><p>Ask about current ready-house and resale enquiries in Unnao City and nearby residential areas.</p></article>
+          <article><i class="fas fa-seedling"></i><h3>Agricultural Land for Sale in Unnao</h3><p>Review land use, title, road access and intended purpose before purchasing agricultural land.</p></article>
+          <article><i class="fas fa-chart-line"></i><h3>Investment Opportunities in Unnao</h3><p>Compare connectivity, planned development, entry budget and long-term holding potential.</p></article>
+          <article><i class="fas fa-indian-rupee-sign"></i><h3>Plot in Unnao Under 5 Lakh</h3><p>Budget inventory may be available in selected developing locations; availability and final pricing change regularly.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="city-section">
+      <div class="container">
+        <h2 class="city-h2">Unnao Property Rates by Major Local Area</h2>
+        <p class="city-p">
+          <strong>Unnao Property Rates</strong> change with road width, land use, registry status, plot dimensions, construction,
+          corner location and distance from established markets. This table explains the locality profile; call
+          <a href="tel:+919511119879">9511119879</a> for a current property-specific quotation.
+        </p>
+        <div class="table-responsive rate-table">
+          <table>
+            <thead><tr><th>Unnao Area</th><th>Property Profile</th><th>Rate Guidance</th></tr></thead>
+            <tbody><tr *ngFor="let item of unnaoAreas"><td><strong>{{ item.area }}</strong></td><td>{{ item.profile }}</td><td>{{ item.rate }}</td></tr></tbody>
+          </table>
+        </div>
+        <p class="city-note">Rate guidance is not a fixed price list. Verify the exact property, ownership documents and current quotation before payment.</p>
+      </div>
+    </section>
+
+    <section class="city-section city-alt">
+      <div class="container">
+        <h2 class="city-h2">How to Compare Property in Unnao</h2>
+        <div class="city-two-col">
+          <div>
+            <h3 class="city-h3">Local Property Dealer Support</h3>
+            <p class="city-p">A local team can coordinate site visits, explain the neighbourhood, identify approach roads and help buyers understand available documents.</p>
+            <h3 class="city-h3">Online Property Portal Research</h3>
+            <p class="city-p"><strong>Magicbricks Unnao</strong> and other portals can help compare advertised options. Every listing should still be independently verified before booking.</p>
+          </div>
+          <div class="contact-panel">
+            <span>Unnao Property Dealer Contact Number</span>
+            <strong>9511119879</strong>
+            <p>Discuss your preferred location, property type, plot size and budget, then schedule a site visit.</p>
+            <a href="tel:+919511119879" class="btn btn-green">Call Property Team</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="city-section">
+      <div class="container">
+        <h2 class="city-h2">Popular Unnao Property Searches</h2>
+        <div class="seo-tag-list"><span *ngFor="let tag of cityData.tags">{{ tag }}</span></div>
+        <h3 class="city-h3 internal-title">Explore More Unnao Property Guides</h3>
+        <div class="internal-link-list"><a *ngFor="let link of unnaoInternalLinks" [routerLink]="link.route">{{ link.label }}</a></div>
+      </div>
+    </section>
+
+    <section class="city-section city-alt">
+      <div class="container">
+        <h2 class="city-h2">About Our Unnao Property Services</h2>
+        <div class="gbp-card">
+          <h3>{{ googleBusinessProfile.title }}</h3>
+          <p>{{ googleBusinessProfile.description }}</p>
+          <div class="seo-tag-list"><span *ngFor="let service of googleBusinessProfile.services">{{ service }}</span></div>
+        </div>
+      </div>
+    </section>
+  </ng-container>
+
+  <ng-template #genericCityContent>
+    <section class="city-section city-alt">
+      <div class="container">
+        <h2 class="city-h2">Residential Plots in {{ cityData.city }}</h2>
+        <p class="city-p">Explore current plot inventory, location details, payment plans and site-visit options with MMR Constructions.</p>
+      </div>
+    </section>
+  </ng-template>
+
+  <section class="city-section">
+    <div class="container">
+      <h2 class="city-h2">Explore Other Locations</h2>
+      <div class="city-link-grid">
+        <a routerLink="/property-in-lucknow" class="city-link-card"><i class="fas fa-map-marker-alt"></i><strong>Property in Lucknow</strong><span>Explore available opportunities</span></a>
+        <a routerLink="/property-in-kanpur" class="city-link-card"><i class="fas fa-map-marker-alt"></i><strong>Property in Kanpur</strong><span>Explore available opportunities</span></a>
+        <a routerLink="/property-dealer-in-unnao" class="city-link-card" [class.active]="isUnnao"><i class="fas fa-map-marker-alt"></i><strong>Property in Unnao</strong><span>Plots, houses and land enquiries</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="city-section city-alt">
+    <div class="container">
+      <h2 class="city-h2">{{ isUnnao ? 'Unnao Property Dealer FAQs' : (cityData.city + ' Property FAQs') }}</h2>
+      <div class="city-faq">
+        <details *ngFor="let faq of cityData.faqs" class="city-faq-item">
+          <summary class="city-faq-q">{{ faq.q }}</summary>
+          <p class="city-faq-a">{{ faq.a }}</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="city-cta-section">
+    <div class="container text-center">
+      <h2>{{ isUnnao ? 'Contact an Unnao Property Dealer Today' : ('Explore Property in ' + cityData.city) }}</h2>
+      <p>{{ isUnnao ? 'Talk to MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED about your property requirement.' : 'Request current availability and schedule a site visit.' }}</p>
+      <a [href]="isUnnao ? 'tel:+919511119879' : '/#contact'" class="btn btn-gold btn-lg"><i class="fas fa-phone-alt me-2"></i>{{ isUnnao ? 'Call 9511119879' : 'Contact Now' }}</a>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

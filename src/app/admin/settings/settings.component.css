@@ -1,0 +1,97 @@
+@import url('../../panel.css');
+
+/* Provider cards */
+.provider-card {
+  border: 2px solid var(--bdr);
+  border-radius: var(--r-lg);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: var(--t-fast);
+}
+.provider-card:hover  { border-color: var(--clr-primary); background: var(--clr-primary-bg); }
+.provider-card.selected { border-color: var(--clr-primary); background: var(--clr-primary-bg); }
+
+.provider-active { border: 2px solid var(--clr-primary) !important; }
+
+.prov-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+
+.badge-active {
+  background: #eaf4ee; color: #1a5c3a;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+  letter-spacing: .05em; text-transform: uppercase;
+}
+
+/* Alerts */
+.alert-success-panel {
+  background: #eaf4ee; border: 1px solid #bbf7d0;
+  border-radius: var(--r-md); padding: 12px 16px;
+  color: #15803d; font-size: 13px; font-weight: 500;
+}
+.alert-danger-panel {
+  background: #fef2f2; border: 1px solid #fecaca;
+  border-radius: var(--r-md); padding: 12px 16px;
+  color: #dc2626; font-size: 13px; font-weight: 500;
+}
+
+/* Registration toggle */
+.reg-status-icon {
+  width: 80px; height: 80px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 32px;
+}
+.reg-status-icon.enabled  { background: #eaf4ee; color: #1a5c3a; }
+.reg-status-icon.disabled { background: #fef2f2; color: #dc2626; }
+
+.toggle-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  background: var(--bg-section);
+  border-radius: var(--r-lg);
+  padding: 16px 20px;
+}
+
+.toggle-switch { position: relative; display: inline-block; width: 52px; height: 28px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: #d1d5db; border-radius: 28px;
+  cursor: pointer; transition: .3s;
+}
+.toggle-slider:before {
+  content: ''; position: absolute;
+  width: 22px; height: 22px; left: 3px; bottom: 3px;
+  background: #fff; border-radius: 50%;
+  transition: .3s; box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+input:checked + .toggle-slider { background: var(--clr-primary); }
+input:checked + .toggle-slider:before { transform: translateX(24px); }
+
+.status-display {
+  border-radius: var(--r-lg); padding: 16px 20px;
+  font-size: 14px;
+}
+.status-display.enabled  { background: #eaf4ee; color: #15803d; border: 1px solid #bbf7d0; }
+.status-display.disabled { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+/* Password page */
+.pass-toggle {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; color: var(--txt-muted); cursor: pointer;
+}
+
+.req-badge {
+  font-size: 11px; padding: 3px 10px;
+  border-radius: 20px; border: 1px solid var(--bdr);
+  color: var(--txt-muted); background: var(--bg-section);
+  transition: var(--t-fast);
+}
+.req-badge.met {
+  border-color: #bbf7d0; color: #15803d;
+  background: #eaf4ee;
+}

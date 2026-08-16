@@ -1,0 +1,52 @@
+<div class="pg-header mb-4">
+  <div>
+    <h4 class="pg-title">Buyback</h4>
+    <p class="pg-sub">Manage the Buyback Terms & Conditions shown on the website.</p>
+  </div>
+  <a routerLink="/buyback" target="_blank" class="btn btn-outline-green">
+    <i class="fas fa-external-link-alt"></i> View Public Page
+  </a>
+</div>
+
+<div class="panel-card buyback-editor">
+  <div class="editor-heading">
+    <div class="editor-icon"><i class="fas fa-file-contract"></i></div>
+    <div>
+      <h5>Buyback Terms & Conditions</h5>
+      <p>Changes saved here will appear on the public Buyback page.</p>
+    </div>
+  </div>
+
+  <div class="editor-loading" *ngIf="loading">
+    <span class="spinner-border text-success"></span>
+    <span>Loading content...</span>
+  </div>
+
+  <form *ngIf="!loading" (ngSubmit)="save()">
+    <div class="mb-3">
+      <label class="f-label" for="buyback-title">Page Title</label>
+      <input id="buyback-title" name="title" class="f-input" maxlength="200" [(ngModel)]="form.title" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="f-label" for="buyback-summary">Short Summary</label>
+      <textarea id="buyback-summary" name="summary" class="f-input editor-summary" maxlength="1000" [(ngModel)]="form.summary"></textarea>
+      <div class="field-count">{{ form.summary.length }}/1000</div>
+    </div>
+
+    <div class="mb-3">
+      <label class="f-label" for="buyback-content">Terms & Conditions Content</label>
+      <textarea id="buyback-content" name="content" class="f-input editor-content" maxlength="50000" [(ngModel)]="form.content" required></textarea>
+      <div class="field-help">Use separate lines and numbered points to keep the policy easy to read.</div>
+      <div class="field-count">{{ form.content.length }}/50000</div>
+    </div>
+
+    <div class="alert-success-panel mb-3" *ngIf="success"><i class="fas fa-check-circle me-2"></i>{{ success }}</div>
+    <div class="alert-danger-panel mb-3" *ngIf="error"><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</div>
+
+    <button type="submit" class="btn btn-green" [disabled]="saving">
+      <span *ngIf="!saving"><i class="fas fa-save me-2"></i>Save Buyback Terms</span>
+      <span *ngIf="saving"><span class="spinner-border spinner-border-sm me-2"></span>Saving...</span>
+    </button>
+  </form>
+</div>

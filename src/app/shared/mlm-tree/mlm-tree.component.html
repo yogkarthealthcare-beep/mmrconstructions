@@ -1,0 +1,211 @@
+<div *ngIf="toast" class="panel-alert panel-alert-info mb-3">
+  <i class="fas fa-info-circle"></i>{{ toast }}
+</div>
+
+<div class="tree-head">
+  <div class="pg-header">
+    <h4>MLM Tree</h4>
+    <p>{{ stats.total || 0 }} members - {{ activeTree === 'hierarchical' ? 'Hierarchical' : 'Binary' }} view</p>
+  </div>
+  <div class="tree-tabs tree-tabs-hidden" aria-hidden="true">
+    <button type="button" class="filter-tab" [class.active]="activeTree === 'binary'" (click)="setTree('binary')" tabindex="-1">Binary Tree</button>
+    <button type="button" class="filter-tab" [class.active]="activeTree === 'hierarchical'" (click)="setTree('hierarchical')" tabindex="-1">Hierarchical Tree</button>
+  </div>
+</div>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i><span>Loading MLM tree...</span></div>
+
+<ng-container *ngIf="!loading">
+  <section class="tree-toolbar">
+    <div class="tree-search">
+      <i class="fas fa-search"></i>
+      <input class="f-input" placeholder="Search by User Name or User ID" [(ngModel)]="searchTerm" (ngModelChange)="search()">
+      <div class="search-results" *ngIf="searchResults.length">
+        <button type="button" *ngFor="let result of searchResults" (click)="focusNode(result)">
+          <strong>{{ result.name }}</strong>
+          <span>ID: {{ result.userId }} - {{ result.memberCode }}</span>
+        </button>
+      </div>
+    </div>
+    <div class="toolbar-actions">
+      <button type="button" class="tool-btn" title="Zoom in" (click)="zoomIn()"><i class="fas fa-search-plus"></i></button>
+      <button type="button" class="tool-btn" title="Zoom out" (click)="zoomOut()"><i class="fas fa-search-minus"></i></button>
+      <button type="button" class="tool-btn" title="Reset view" (click)="resetView()"><i class="fas fa-compress-arrows-alt"></i></button>
+      <button type="button" class="tool-btn" title="Center user" (click)="centerCurrentUser()"><i class="fas fa-crosshairs"></i></button>
+      <button type="button" class="tool-btn" title="Expand all" (click)="expandAll()"><i class="fas fa-expand"></i></button>
+      <button type="button" class="tool-btn" title="Collapse all" (click)="collapseAll()"><i class="fas fa-compress"></i></button>
+      <button type="button" class="tool-btn" title="Export SVG" (click)="exportTree('svg')"><i class="fas fa-file-code"></i></button>
+      <button type="button" class="tool-btn" title="Export PNG" (click)="exportTree('png')"><i class="fas fa-file-image"></i></button>
+      <button type="button" class="tool-btn" title="Export PDF" (click)="exportTree('pdf')"><i class="fas fa-file-pdf"></i></button>
+      <button type="button" class="tool-btn tool-primary" title="Print" (click)="printTree()"><i class="fas fa-print"></i></button>
+      <button type="button" class="tool-btn" title="Network information" (click)="showInfoPanel = !showInfoPanel"><i class="fas fa-info-circle"></i></button>
+    </div>
+  </section>
+
+  <aside class="tree-info-drawer panel-card" *ngIf="showInfoPanel">
+    <div class="info-drawer-head">
+      <strong>Network Information</strong>
+      <button type="button" class="tool-btn" title="Close information" (click)="showInfoPanel=false"><i class="fas fa-times"></i></button>
+    </div>
+    <section class="compact-stats-grid">
+      <div><span>Total Team</span><strong>{{ stats.total }}</strong></div>
+      <div><span>Active</span><strong>{{ stats.active }}</strong></div>
+      <div><span>Inactive</span><strong>{{ stats.inactive }}</strong></div>
+      <div><span>Current Level</span><strong>{{ stats.currentLevel }}</strong></div>
+      <div><span>Max Depth</span><strong>{{ stats.maxDepth }} / 12</strong></div>
+    </section>
+    <section class="compact-admin-analytics" *ngIf="audience === 'admin'">
+      <div>
+        <div class="panel-card-title">Highest Rank Members</div>
+        <button type="button" class="mini-member" *ngFor="let node of highestRankMembers" (click)="focusNode(node); showInfoPanel=false">
+          <strong>{{ node.name }}</strong><span>{{ node.rank }} - {{ node.memberCode }}</span>
+        </button>
+      </div>
+      <div>
+        <div class="panel-card-title">Top Recruiters</div>
+        <button type="button" class="mini-member" *ngFor="let node of topRecruiters" (click)="focusNode(node); showInfoPanel=false">
+          <strong>{{ node.name }}</strong><span>{{ node.directCount }} direct members</span>
+        </button>
+      </div>
+      <div>
+        <div class="panel-card-title">Recently Joined</div>
+        <button type="button" class="mini-member" *ngFor="let node of recentlyJoined" (click)="focusNode(node); showInfoPanel=false">
+          <strong>{{ node.name }}</strong><span>{{ node.joinDate | date:'dd MMM yyyy' }}</span>
+        </button>
+      </div>
+    </section>
+  </aside>
+
+  <section class="stats-grid legacy-tree-summary">
+    <div><span>Total Binary Team</span><strong>{{ stats.total }}</strong></div>
+    <div><span>Total Active Members</span><strong>{{ stats.active }}</strong></div>
+    <div><span>Total Inactive Members</span><strong>{{ stats.inactive }}</strong></div>
+    <div><span>Current Level</span><strong>{{ stats.currentLevel }}</strong></div>
+    <div><span>Max Depth Used</span><strong>{{ stats.maxDepth }} / 12</strong></div>
+  </section>
+
+  <section class="admin-analytics legacy-tree-summary" *ngIf="audience === 'admin'">
+    <div class="panel-card">
+      <div class="panel-card-title">Network Analytics</div>
+      <div class="analytics-grid">
+        <div><span>Total Members</span><strong>{{ stats.total }}</strong></div>
+        <div><span>Total Binary Members</span><strong>{{ stats.binary }}</strong></div>
+        <div><span>Total Hierarchical Members</span><strong>{{ stats.hierarchical }}</strong></div>
+      </div>
+    </div>
+    <div class="panel-card">
+      <div class="panel-card-title">Highest Rank Members</div>
+      <button type="button" class="mini-member" *ngFor="let node of highestRankMembers" (click)="focusNode(node)">
+        <strong>{{ node.name }}</strong><span>{{ node.rank }} - {{ node.memberCode }}</span>
+      </button>
+    </div>
+    <div class="panel-card">
+      <div class="panel-card-title">Top Recruiters</div>
+      <button type="button" class="mini-member" *ngFor="let node of topRecruiters" (click)="focusNode(node)">
+        <strong>{{ node.name }}</strong><span>{{ node.directCount }} direct members</span>
+      </button>
+    </div>
+    <div class="panel-card">
+      <div class="panel-card-title">Recently Joined</div>
+      <button type="button" class="mini-member" *ngFor="let node of recentlyJoined" (click)="focusNode(node)">
+        <strong>{{ node.name }}</strong><span>{{ node.joinDate | date:'dd MMM yyyy' }}</span>
+      </button>
+    </div>
+  </section>
+
+  <section
+    #treeViewport
+    class="tree-viewport panel-card"
+    (pointerdown)="startPan($event)"
+    (pointermove)="movePan($event)"
+    (pointerup)="endPan()"
+    (pointercancel)="endPan()"
+    (mouseleave)="endPan(); hoveredNode=null">
+    <div class="tree-canvas" [style.transform]="transform">
+      <ng-container *ngIf="visibleRoot as root">
+        <div class="binary-tree" *ngIf="activeTree === 'binary'">
+          <ng-container *ngTemplateOutlet="binaryNode; context: { $implicit: root }"></ng-container>
+        </div>
+        <div class="hier-tree" *ngIf="activeTree === 'hierarchical'">
+          <ng-container *ngTemplateOutlet="hierNode; context: { $implicit: root }"></ng-container>
+        </div>
+      </ng-container>
+    </div>
+  </section>
+</ng-container>
+
+<app-commission-notes></app-commission-notes>
+
+<ng-template #nodeCard let-node>
+  <div
+    class="tree-node"
+    [class.focused]="focusedNode?.id === node.id"
+    [class.search-match]="isSearchMatch(node)"
+    [class.inactive]="node.status === 'Inactive'"
+    (mouseenter)="showTooltip(node, $event)"
+    (mousemove)="showTooltip(node, $event)"
+    (mouseleave)="hoveredNode=null"
+    (click)="focusNode(node); $event.stopPropagation()">
+    <button type="button" class="expand-dot" *ngIf="node.children.length" (click)="toggleNode(node, $event)">
+      <i [class]="node.expanded ? 'fas fa-minus' : 'fas fa-plus'"></i>
+    </button>
+    <div class="avatar">{{ node.name.charAt(0) || 'M' }}</div>
+    <div class="node-info">
+      <strong>{{ node.name }}</strong>
+      <span>ID: {{ node.userId }}</span>
+      <small>{{ node.memberCode }}</small>
+      <em [class]="'rank rank-' + node.rank.toLowerCase().replace(' ', '-')">{{ node.rank }}</em>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #binaryNode let-node>
+  <div class="binary-branch">
+    <ng-container *ngTemplateOutlet="nodeCard; context: { $implicit: node }"></ng-container>
+    <div class="binary-children" *ngIf="node.expanded && node.level < maxDepthAllowed">
+      <div class="binary-slot">
+        <span class="slot-label">Left</span>
+        <ng-container *ngIf="node.left; else emptyLeft">
+          <ng-container *ngTemplateOutlet="binaryNode; context: { $implicit: node.left }"></ng-container>
+        </ng-container>
+        <ng-template #emptyLeft><div class="empty-slot">Open Left</div></ng-template>
+      </div>
+      <div class="binary-slot">
+        <span class="slot-label">Right</span>
+        <ng-container *ngIf="node.right; else emptyRight">
+          <ng-container *ngTemplateOutlet="binaryNode; context: { $implicit: node.right }"></ng-container>
+        </ng-container>
+        <ng-template #emptyRight><div class="empty-slot">Open Right</div></ng-template>
+      </div>
+    </div>
+    <div class="level-limit" *ngIf="node.level >= maxDepthAllowed">Level 12 limit reached</div>
+  </div>
+</ng-template>
+
+<ng-template #hierNode let-node>
+  <div class="hier-row">
+    <ng-container *ngTemplateOutlet="nodeCard; context: { $implicit: node }"></ng-container>
+    <div class="hier-children" *ngIf="node.expanded && node.loaded && node.children.length && node.level < maxDepthAllowed">
+      <ng-container *ngFor="let child of node.children">
+        <ng-container *ngTemplateOutlet="hierNode; context: { $implicit: child }"></ng-container>
+      </ng-container>
+    </div>
+    <div class="level-limit" *ngIf="node.level >= maxDepthAllowed">Level 12 limit reached</div>
+  </div>
+</ng-template>
+
+<div class="node-tooltip" *ngIf="hoveredNode" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
+  <strong>{{ hoveredNode.name }}</strong>
+  <span>User ID: {{ hoveredNode.userId }}</span>
+  <span>Member Code: {{ hoveredNode.memberCode }}</span>
+  <span>Mobile: {{ hoveredNode.mobile }}</span>
+  <span>Email: {{ hoveredNode.email }}</span>
+  <span>Rank: {{ hoveredNode.rank }}</span>
+  <span>Total Team: {{ hoveredNode.teamCount }}</span>
+  <span>Direct Referrals: {{ hoveredNode.directCount }}</span>
+  <span>Sales: {{ hoveredNode.salesGaj | number }} gaj</span>
+  <span *ngIf="audience === 'admin' || hoveredNode.id === root?.id">Commission Earned: {{ hoveredNode.commissionEarned | currency:'INR':'symbol':'1.0-0' }}</span>
+  <span *ngIf="audience === 'admin' || hoveredNode.id === root?.id">Pending Commission: {{ hoveredNode.pendingCommission | currency:'INR':'symbol':'1.0-0' }}</span>
+  <span>Joining: {{ hoveredNode.joinDate | date:'dd MMM yyyy' }}</span>
+  <span>Status: {{ hoveredNode.status }}</span>
+</div>

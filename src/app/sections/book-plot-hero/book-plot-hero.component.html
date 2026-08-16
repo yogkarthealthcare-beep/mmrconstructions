@@ -1,0 +1,22 @@
+<section class="book-plot-hero" [class.modal-mode]="mode === 'modal'" [class.mobile-inline-mode]="mode === 'mobile-inline'">
+  <div class="hero-bg" *ngFor="let image of (backgrounds.length ? backgrounds : [null]); let i = index"
+       [class.active]="i === current" [style.background-image]="background(i)"></div>
+  <div class="hero-shade"></div>
+  <div class="mmr-container hero-content">
+    <form class="book-card" (ngSubmit)="submit()" #leadForm="ngForm" novalidate>
+      <div class="form-kicker"><i class="fas fa-map-marked-alt"></i> Find your perfect property</div>
+      <h1>Book Plot</h1>
+      <p>Share your details and our property expert will contact you.</p>
+      <label>Full Name <span>*</span></label>
+      <input name="full_name" [(ngModel)]="model.full_name" required minlength="2" placeholder="Enter your full name" autocomplete="name">
+      <label>Contact Number <span>*</span></label>
+      <input name="contact_number" [(ngModel)]="model.contact_number" required inputmode="numeric" maxlength="10" placeholder="10 digit mobile number" autocomplete="tel">
+      <label>Site / Project Name <span>*</span></label>
+      <input name="site_value" [(ngModel)]="model.site_value" required list="active-sites" placeholder="Search or enter a project">
+      <datalist id="active-sites"><option *ngFor="let site of sites" [value]="site.site_name">{{ site.city ? site.city : 'Active project' }}</option></datalist>
+      <button type="submit" [disabled]="submitting"><span *ngIf="!submitting">Submit Inquiry</span><span *ngIf="submitting"><i class="fas fa-spinner fa-spin"></i> Submitting...</span></button>
+      <div class="form-message" *ngIf="message" [class.success]="success">{{ message }}</div>
+      <small><i class="fas fa-lock"></i> No account required. Your information is secure.</small>
+    </form>
+  </div>
+</section>

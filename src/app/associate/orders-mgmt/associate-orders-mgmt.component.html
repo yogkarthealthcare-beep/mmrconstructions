@@ -1,0 +1,145 @@
+<div class="orders-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><i class="fas fa-shopping-bag text-success"></i> My Network Orders & Invoices</h1>
+      <p class="page-sub">Track all plot booking & sales orders made by your referred customers.</p>
+    </div>
+  </div>
+
+  <!-- Toast Alert -->
+  <div *ngIf="toastMessage" [class]="'toast-banner toast-' + toastType">
+    <i [class]="toastType === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle'"></i>
+    <span>{{ toastMessage }}</span>
+  </div>
+
+  <!-- Filters Toolbar -->
+  <div class="filters-card mb-4">
+    <div class="row g-3">
+      <div class="col-md-4 col-lg-3">
+        <label class="form-label font-xs fw-bold text-muted">SEARCH</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input type="text" class="form-control" [(ngModel)]="search" (keyup.enter)="onFilterChange()"
+            placeholder="Customer Name, Mobile, Plot, Invoice..." />
+        </div>
+      </div>
+
+      <div class="col-md-3 col-lg-2">
+        <label class="form-label font-xs fw-bold text-muted">PAYMENT STATUS</label>
+        <select class="form-select" [(ngModel)]="paymentStatus" (change)="onFilterChange()">
+          <option value="">All Statuses</option>
+          <option value="Paid">Paid</option>
+          <option value="Pending">Pending</option>
+        </select>
+      </div>
+
+      <div class="col-md-3 col-lg-2">
+        <label class="form-label font-xs fw-bold text-muted">SORT BY</label>
+        <select class="form-select" [(ngModel)]="sortBy" (change)="onFilterChange()">
+          <option value="latest">Latest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="amount_desc">Amount: High to Low</option>
+          <option value="amount_asc">Amount: Low to High</option>
+        </select>
+      </div>
+
+      <div class="col-md-2 col-lg-2 d-flex align-items-end gap-2">
+        <button class="btn btn-success w-100" (click)="onFilterChange()">Search</button>
+        <button class="btn btn-outline-secondary" (click)="resetFilters()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-success" role="status"></div>
+    <p class="mt-2 text-muted">Loading network orders...</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="table-responsive bg-white rounded-3 shadow-sm border">
+    <table class="table table-hover align-middle mb-0 font-sm">
+      <thead class="table-dark">
+        <tr>
+          <th>Order ID</th>
+          <th>Invoice Number</th>
+          <th>Date</th>
+          <th>Customer Name</th>
+          <th>Mobile Number</th>
+          <th>Project Name</th>
+          <th>Plot #</th>
+          <th>Plot Size</th>
+          <th>Grand Total</th>
+          <th>Paid Amount</th>
+          <th>Balance</th>
+          <th>Payment Status</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of orders">
+          <td><span class="badge bg-secondary font-mono">{{ order.order_id || ('BK-' + order.booking_id) }}</span></td>
+          <td>
+            <a [routerLink]="['/booking', order.invoice_number || order.booking_id, 'invoice']" class="fw-bold text-success text-decoration-none">
+              {{ order.invoice_number }}
+            </a>
+          </td>
+          <td>{{ order.invoice_date | date:'mediumDate' }}</td>
+          <td><strong class="text-dark">{{ order.invoice_data?.customer_name || '-' }}</strong></td>
+          <td>{{ order.invoice_data?.mobile_no || '-' }}</td>
+          <td>{{ order.invoice_data?.site_name || '-' }}</td>
+          <td><span class="badge bg-light text-dark border">{{ order.invoice_data?.plot_number || '-' }}</span></td>
+          <td>{{ order.invoice_data?.plot_size || '-' }}</td>
+          <td><strong class="text-dark">₹{{ (order.grand_total || 0) | number }}</strong></td>
+          <td class="text-success fw-bold">₹{{ (order.paid_amount || 0) | number }}</td>
+          <td class="text-warning fw-bold">₹{{ (order.balance_amount || 0) | number }}</td>
+          <td>
+            <span [class]="order.payment_status === 'Paid' ? 'badge bg-success' : 'badge bg-warning text-dark'">
+              {{ order.payment_status }}
+            </span>
+          </td>
+          <td class="text-center">
+            <div class="btn-group btn-group-sm">
+              <a [routerLink]="['/booking', order.invoice_number || order.booking_id, 'invoice']" class="btn btn-outline-success" title="View Invoice">
+                <i class="fas fa-eye"></i>
+              </a>
+              <button class="btn btn-outline-primary" (click)="downloadPdf(order)" title="Download PDF">
+                <i class="fas fa-download"></i>
+              </button>
+              <button class="btn btn-outline-dark" (click)="printOrder(order)" title="Print Invoice">
+                <i class="fas fa-print"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="orders.length === 0">
+          <td colspan="13" class="text-center py-5 text-muted">
+            <i class="fas fa-shopping-bag fa-3x mb-3 text-secondary opacity-50 d-block"></i>
+            No orders found for your referred network customers.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && pagination.pages > 1" class="d-flex justify-content-between align-items-center mt-3 bg-white p-3 rounded-3 border">
+    <span class="text-muted font-xs">
+      Page <strong>{{ pagination.page }}</strong> of <strong>{{ pagination.pages }}</strong> (Total <strong>{{ pagination.total }}</strong> orders)
+    </span>
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" [class.disabled]="pagination.page === 1">
+          <button class="page-link" (click)="loadOrders(pagination.page - 1)">Prev</button>
+        </li>
+        <li *ngFor="let p of pagesArray" class="page-item" [class.active]="p === pagination.page">
+          <button class="page-link" (click)="loadOrders(p)">{{ p }}</button>
+        </li>
+        <li class="page-item" [class.disabled]="pagination.page === pagination.pages">
+          <button class="page-link" (click)="loadOrders(pagination.page + 1)">Next</button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

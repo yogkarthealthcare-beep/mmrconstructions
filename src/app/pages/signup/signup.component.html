@@ -1,0 +1,240 @@
+<!-- signup.component.html  (NEW) -->
+<div class="auth-page">
+
+  <!-- ══ LEFT PANEL ════════════════════════════ -->
+  <div class="auth-left">
+    <div>
+      <a routerLink="/" class="brand d-inline-flex mb-5 text-decoration-none">
+        <div class="brand-icon me-3"><span>M</span></div>
+        <div>
+          <span class="brand-name" style="color:#fff;">M.M.R. Constructions</span>
+          <span class="brand-sub">&amp; Developers Pvt. Ltd.</span>
+        </div>
+      </a>
+      <h2 style="font-family:var(--ff-display);color:#fff;font-size:1.9rem;margin-bottom:12px;">
+        {{ userType === 'Associate' ? 'Become an Associate' : 'Join as Customer' }}
+      </h2>
+      <p style="color:rgba(255,255,255,.55);font-size:13px;line-height:1.8;">
+        {{ userType === 'Associate'
+           ? 'Register as an Associate Partner and start earning commissions.'
+           : 'Create your account and explore premium plots across MMR sites.' }}
+      </p>
+      <div class="mt-4">
+        <div class="reg-check"><div class="rci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:13px;">Email OTP verification</span></div>
+        <div class="reg-check"><div class="rci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:13px;">Secure password storage</span></div>
+        <div class="reg-check"><div class="rci"><i class="fas fa-check"></i></div><span style="color:rgba(255,255,255,.7);font-size:13px;">Complete profile after login</span></div>
+      </div>
+    </div>
+    <p style="color:rgba(255,255,255,.35);font-size:12px;">
+      Already registered? <a routerLink="/login" style="color:var(--clr-gold-lt);">Login here</a>
+    </p>
+  </div>
+
+  <!-- ══ RIGHT PANEL ════════════════════════════ -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <div class="mobile-auth-brand" aria-hidden="true">
+        <div class="mobile-logo-wrap">
+          <img src="assets/mmr-logo.png" alt="">
+        </div>
+        <div>
+          <div class="mobile-company">MMR Constructions & Developers</div>
+          <div class="mobile-welcome">Create your account</div>
+          <p>{{ userType === 'Associate' ? 'Start your associate journey' : 'Explore premium plots with MMR' }}</p>
+        </div>
+      </div>
+
+      <!-- Header -->
+      <div class="mb-4">
+        <!-- Back link -->
+        <a routerLink="/register" class="fs-13 d-inline-flex align-items-center gap-2 mb-3" style="color:var(--txt-muted);text-decoration:none;">
+          <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <!-- Type badge -->
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="tc-icon" style="width:32px;height:32px;">
+            <i [class]="userType === 'Associate' ? 'fas fa-user-tie' : 'fas fa-home'" style="font-size:14px;"></i>
+          </div>
+          <span class="fs-12 fw-600" style="color:var(--clr-primary);">
+            {{ userType === 'Associate' ? 'Associate Registration' : 'Customer Registration' }}
+          </span>
+        </div>
+
+        <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:4px;">Create Your Account</h3>
+        <p class="fs-13 text-muted">Fill in the details below to get started</p>
+      </div>
+
+      <!-- Error banner -->
+      <div *ngIf="error" class="panel-alert panel-alert-error mb-4">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+      </div>
+
+      <!-- ── FORM ── -->
+      <div class="signup-form">
+
+        <!-- Full Name -->
+        <div class="mb-3">
+          <label class="f-label">Full Name *</label>
+          <div style="position:relative;">
+            <span class="f-icon"><i class="fas fa-user"></i></span>
+            <input type="text" class="f-input f-input-icon"
+              placeholder="Your full name"
+              [(ngModel)]="form.full_name"
+              name="full_name"
+              [class.is-invalid]="v['full_name']"
+              aria-label="Full name" />
+          </div>
+          <div *ngIf="v['full_name']" class="f-error">{{ v['full_name'] }}</div>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label class="f-label">Email Address *</label>
+          <div style="position:relative;">
+            <span class="f-icon"><i class="fas fa-envelope"></i></span>
+            <input type="email" class="f-input f-input-icon"
+              placeholder="you@example.com"
+              [(ngModel)]="form.email"
+              name="email"
+              [class.is-invalid]="v['email']"
+              aria-label="Email address" />
+          </div>
+          <div *ngIf="v['email']" class="f-error">{{ v['email'] }}</div>
+          <div class="fs-12 text-muted mt-1">
+            <i class="fas fa-info-circle me-1"></i>OTP will be sent to this email
+          </div>
+        </div>
+
+        <!-- Mobile -->
+        <div class="mb-3">
+          <label class="f-label">Mobile Number *</label>
+          <div style="position:relative;">
+            <span class="f-icon"><i class="fas fa-mobile-alt"></i></span>
+            <input type="tel" class="f-input f-input-icon"
+              placeholder="10-digit mobile number"
+              [(ngModel)]="form.mobile_no"
+              (ngModelChange)="onMobileInput($event)"
+              name="mobile_no"
+              maxlength="10"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              [class.is-invalid]="v['mobile_no']"
+              aria-label="Mobile number" />
+          </div>
+          <div *ngIf="v['mobile_no']" class="f-error">{{ v['mobile_no'] }}</div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="f-label">Password *</label>
+          <div style="position:relative;">
+            <span class="f-icon"><i class="fas fa-lock"></i></span>
+            <input [type]="showPass ? 'text' : 'password'" class="f-input f-input-icon"
+              style="padding-right:44px;"
+              placeholder="Min 6 characters"
+              [(ngModel)]="form.password"
+              name="password"
+              [class.is-invalid]="v['password']"
+              aria-label="Password" />
+            <button type="button" class="f-eye-btn"
+              (click)="showPass = !showPass"
+              aria-label="Show or hide password"
+              title="Show or hide password">
+              <i [class]="showPass ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+            </button>
+          </div>
+          <!-- Strength bar -->
+          <div *ngIf="form.password.length > 0" class="mt-2">
+            <div class="pass-strength-bar">
+              <div class="pass-strength-fill"
+                [style.width]="passwordStrength.width"
+                [style.background]="passwordStrength.color"></div>
+            </div>
+            <div class="fs-12 mt-1" [style.color]="passwordStrength.color">{{ passwordStrength.label }}</div>
+          </div>
+          <div *ngIf="v['password']" class="f-error">{{ v['password'] }}</div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mb-3">
+          <label class="f-label">Confirm Password *</label>
+          <div style="position:relative;">
+            <span class="f-icon"><i class="fas fa-lock"></i></span>
+            <input [type]="showConfPass ? 'text' : 'password'" class="f-input f-input-icon"
+              style="padding-right:44px;"
+              placeholder="Re-enter password"
+              [(ngModel)]="form.confirmPassword"
+              name="confirmPassword"
+              [class.is-invalid]="v['confirmPassword'] || passwordsMismatch"
+              aria-label="Confirm password" />
+            <button type="button" class="f-eye-btn"
+              (click)="showConfPass = !showConfPass"
+              aria-label="Show or hide confirm password"
+              title="Show or hide confirm password">
+              <i [class]="showConfPass ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+            </button>
+          </div>
+          <!-- Match indicator -->
+          <div *ngIf="passwordsMatch"
+               class="fs-12 mt-1" style="color:#16a34a;">
+            <i class="fas fa-check-circle me-1"></i>Passwords match
+          </div>
+          <div *ngIf="passwordsMismatch"
+               class="fs-12 mt-1" style="color:#dc2626;">
+            <i class="fas fa-times-circle me-1"></i>Passwords do not match
+          </div>
+          <div *ngIf="v['confirmPassword']" class="f-error">{{ v['confirmPassword'] }}</div>
+        </div>
+
+        <!-- Referral / Sponsor Code -->
+        <div class="mb-4">
+          <label class="f-label">Referral / Sponsor Code *</label>
+          <div style="position:relative;">
+            <span class="f-icon"><i class="fas fa-tag"></i></span>
+            <input type="text" class="f-input f-input-icon"
+              placeholder="Example: MMR0001"
+              [(ngModel)]="form.sponsor_invite_code"
+              (ngModelChange)="onSponsorCodeInput($event)"
+              (blur)="verifySponsor()"
+              name="sponsor_invite_code"
+              [readonly]="referralLocked"
+              [class.is-invalid]="v['sponsor_invite_code']"
+              [style.background]="referralLocked ? 'var(--bg-section)' : '#fff'"
+              aria-label="Sponsor invite code" />
+          </div>
+          <!-- Sponsor checking state -->
+          <div class="fs-12 text-muted mt-1" *ngIf="sponsorChecking">
+            <i class="fas fa-spinner fa-spin me-1"></i> Verifying sponsor code...
+          </div>
+          <!-- Sponsor valid state -->
+          <div class="fs-12 mt-1 fw-600" style="color:#16a34a;" *ngIf="!sponsorChecking && sponsorValid">
+            <i class="fas fa-check-circle me-1"></i> Sponsor: {{ sponsorName }} ({{ sponsorCodeFormatted }})
+          </div>
+          <!-- Sponsor error state -->
+          <div class="f-error fs-12 mt-1" *ngIf="!sponsorChecking && v['sponsor_invite_code']">
+            <i class="fas fa-exclamation-circle me-1"></i> {{ v['sponsor_invite_code'] }}
+          </div>
+          <!-- Referral link notice -->
+          <div class="fs-12 text-muted mt-1" *ngIf="referralLocked">
+            Referral code captured from your signup link.
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="button" class="btn btn-green btn-lg w-100" (click)="submit()" [disabled]="loading">
+          <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-user-plus me-2'"></i>
+          {{ loading ? 'Creating account...' : 'Sign Up' }}
+        </button>
+
+        <p class="text-center fs-13 text-muted mt-4">
+          Already have an account?
+          <a routerLink="/login" style="color:var(--clr-primary);font-weight:600;">Login here</a>
+        </p>
+
+      </div>
+      <!-- END FORM -->
+
+    </div>
+  </div>
+</div>

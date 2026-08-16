@@ -1,0 +1,123 @@
+<div class="pg-header d-flex align-items-center justify-content-between">
+  <div>
+    <h4>Gateway Configuration Audit Logs</h4>
+    <p>Track all modifications, toggles, status updates, and priority edits performed by administrators.</p>
+  </div>
+  <a routerLink="/admin/payment-gateways" class="btn btn-outline-green btn-sm">
+    <i class="fas fa-sliders-h"></i> Gateway Settings
+  </a>
+</div>
+
+<!-- Main Wrapper -->
+<div class="data-table-wrap mt-3">
+  <!-- Top Search and Filters -->
+  <div class="data-table-head">
+    <h5>Security Logs History ({{ filteredLogs.length }})</h5>
+    
+    <div class="dtable-actions">
+      <!-- Search bar -->
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input
+          type="text"
+          placeholder="Search admin or action..."
+          [value]="searchQuery"
+          (input)="onSearchChange($event)"
+        />
+      </div>
+
+      <!-- Gateway Filter -->
+      <select 
+        class="f-select select-filter-sm" 
+        [value]="selectedGateway" 
+        (change)="onGatewayFilterChange($event)"
+      >
+        <option value="">All Gateways</option>
+        <option value="razorpay">Razorpay</option>
+        <option value="cashfree">Cashfree</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table list -->
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Log ID / Admin</th>
+          <th>Gateway</th>
+          <th>Action</th>
+          <th>Parameter Changes</th>
+          <th>IP Address</th>
+          <th class="text-end">Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of filteredLogs">
+          <!-- ID & Admin -->
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="log-id">#{{ log.id }}</span>
+              <div>
+                <strong class="admin-name-lbl">{{ log.admin_name }}</strong>
+                <span class="d-block text-muted fs-10">ID: {{ log.admin_id }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Gateway -->
+          <td>
+            <span class="badge-gateway text-uppercase">{{ log.gateway_name }}</span>
+          </td>
+
+          <!-- Action Badge -->
+          <td>
+            <span class="badge-action-type" [ngClass]="{
+              'ba-update': log.action.includes('UPDATE'),
+              'ba-toggle': log.action.includes('TOGGLE') || log.action.includes('STATUS'),
+              'ba-priority': log.action.includes('PRIORITY')
+            }">
+              {{ log.action }}
+            </span>
+          </td>
+
+          <!-- JSON Changes list -->
+          <td>
+            <div class="changes-list" *ngIf="formatChanges(log.changes).length > 0; else noChanges">
+              <div class="change-item" *ngFor="let item of formatChanges(log.changes)">
+                <span class="change-key">{{ item.key }}</span>:
+                <span class="change-old">{{ item.oldVal }}</span>
+                <i class="fas fa-arrow-right"></i>
+                <span class="change-new">{{ item.newVal }}</span>
+              </div>
+            </div>
+            <ng-template #noChanges>
+              <span class="text-muted fs-12">No fields updated</span>
+            </ng-template>
+          </td>
+
+          <!-- IP -->
+          <td>
+            <code class="ip-lbl">{{ log.ip_address }}</code>
+          </td>
+
+          <!-- Time -->
+          <td class="text-end">
+            <span class="time-lbl">{{ log.created_at | date:'medium' }}</span>
+          </td>
+        </tr>
+
+        <!-- Empty State inside table -->
+        <tr *ngIf="filteredLogs.length === 0">
+          <td colspan="6" class="text-center py-5">
+            <div class="panel-empty">
+              <i class="fas fa-history"></i>
+              <h6>No audit logs found</h6>
+              <p>Check search queries or gateway filter parameters.</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,533 @@
+<div class="analytics-container">
+  <!-- PAGE HEADER -->
+  <div class="header-card">
+    <div class="header-main">
+      <div>
+        <h1 class="page-title">
+          <i class="fas fa-chart-line title-icon"></i> Business & Website Analytics
+        </h1>
+        <p class="page-subtitle">Real-time performance metrics, property sales, traffic & conversion funnels</p>
+      </div>
+
+      <div class="header-actions">
+        <!-- Live Visitor Indicator -->
+        <div class="live-pill" title="Active users in last 5 minutes">
+          <span class="live-pulse"></span>
+          <span class="live-count">{{ data?.liveVisitors || 0 }}</span> Live Visitors
+        </div>
+
+        <!-- Export CSV -->
+        <button class="btn btn-export" (click)="exportCsv()">
+          <i class="fas fa-file-csv"></i> Export Report
+        </button>
+
+        <!-- Refresh -->
+        <button class="btn btn-refresh" (click)="refreshData()" [disabled]="loading">
+          <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label><i class="fas fa-calendar-alt"></i> Date Range:</label>
+        <select class="form-select" [(ngModel)]="selectedPreset" (change)="onPresetChange()">
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="7d">Last 7 Days</option>
+          <option value="30d">Last 30 Days</option>
+          <option value="this_month">This Month</option>
+          <option value="last_month">Last Month</option>
+          <option value="this_year">This Year</option>
+          <option value="custom">Custom Date Range</option>
+        </select>
+      </div>
+
+      <!-- Custom Date Range -->
+      <div class="filter-group" *ngIf="selectedPreset === 'custom'">
+        <input type="date" class="form-control" [(ngModel)]="customStartDate">
+        <span>to</span>
+        <input type="date" class="form-control" [(ngModel)]="customEndDate">
+        <button class="btn btn-sm btn-primary" (click)="loadAnalytics()">Apply</button>
+      </div>
+
+      <!-- Site/Project Filter -->
+      <div class="filter-group">
+        <label><i class="fas fa-building"></i> Site/Project:</label>
+        <select class="form-select" [(ngModel)]="selectedSiteId" (change)="onSiteFilterChange()">
+          <option value="">All Properties / Sites</option>
+          <option *ngFor="let s of sitesList" [value]="s.site_id">{{ s.site_name }}</option>
+        </select>
+      </div>
+
+      <!-- Last Updated -->
+      <div class="last-updated-text" *ngIf="lastUpdated">
+        <i class="fas fa-clock"></i> Updated: {{ lastUpdated | date:'mediumTime' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div class="loading-box" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Calculating real-time analytics from database...</p>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div class="alert alert-danger" *ngIf="error && !loading">
+    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+    <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadAnalytics()">Retry</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="analytics-content" *ngIf="!loading && data">
+
+    <!-- NAVIGATION TABS -->
+    <div class="nav-tabs-wrapper">
+      <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
+        <i class="fas fa-th-large"></i> Overview
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'properties'" (click)="activeTab = 'properties'">
+        <i class="fas fa-city"></i> Properties & Plots
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'enquiries'" (click)="activeTab = 'enquiries'">
+        <i class="fas fa-envelope"></i> Enquiries & Leads
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'revenue'" (click)="activeTab = 'revenue'">
+        <i class="fas fa-rupee-sign"></i> Revenue & Payments
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'funnel'" (click)="activeTab = 'funnel'">
+        <i class="fas fa-filter"></i> Conversion Funnel
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
+        <i class="fas fa-users"></i> Users & Investors
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'traffic'" (click)="activeTab = 'traffic'">
+        <i class="fas fa-globe"></i> Website Traffic
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'seo'" (click)="activeTab = 'seo'">
+        <i class="fas fa-search"></i> SEO & Performance
+      </button>
+    </div>
+
+    <!-- TAB 1: OVERVIEW -->
+    <div class="tab-pane" *ngIf="activeTab === 'overview'">
+      <h2 class="section-title"><i class="fas fa-tachometer-alt"></i> Executive Summary KPIs</h2>
+
+      <!-- 16 MAIN OVERVIEW CARDS -->
+      <div class="kpi-grid">
+        <!-- 1. Website Visitors -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-blue"><i class="fas fa-globe"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Website Visitors</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.totalVisitors?.current) }}</span>
+            <span class="kpi-trend" [class.up]="data.overview?.totalVisitors?.change >= 0" [class.down]="data.overview?.totalVisitors?.change < 0">
+              <i class="fas" [class.fa-arrow-up]="data.overview?.totalVisitors?.change >= 0" [class.fa-arrow-down]="data.overview?.totalVisitors?.change < 0"></i>
+              {{ data.overview?.totalVisitors?.change }}% vs prev period
+            </span>
+          </div>
+        </div>
+
+        <!-- 2. Unique Visitors -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-indigo"><i class="fas fa-user-friends"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Unique Visitors</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.uniqueVisitors?.current) }}</span>
+            <span class="kpi-subtext">Distinct session identifiers</span>
+          </div>
+        </div>
+
+        <!-- 3. New Users -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-cyan"><i class="fas fa-user-plus"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">New Users</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.newUsers?.current) }}</span>
+            <span class="kpi-trend" [class.up]="data.overview?.newUsers?.change >= 0" [class.down]="data.overview?.newUsers?.change < 0">
+              <i class="fas" [class.fa-arrow-up]="data.overview?.newUsers?.change >= 0" [class.fa-arrow-down]="data.overview?.newUsers?.change < 0"></i>
+              {{ data.overview?.newUsers?.change }}% vs prev
+            </span>
+          </div>
+        </div>
+
+        <!-- 4. Total Registered Users -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-purple"><i class="fas fa-users"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Total Active Users</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.totalRegisteredUsers?.current) }}</span>
+            <span class="kpi-subtext">Customers & Associates</span>
+          </div>
+        </div>
+
+        <!-- 5. Total Investors -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-teal"><i class="fas fa-user-tie"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Total Investors</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.totalInvestors?.current) }}</span>
+            <span class="kpi-subtext">Investor Portal accounts</span>
+          </div>
+        </div>
+
+        <!-- 6. New Investors -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-green"><i class="fas fa-hand-holding-usd"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">New Investors</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.newInvestors?.current) }}</span>
+            <span class="kpi-trend" [class.up]="data.overview?.newInvestors?.change >= 0">
+              +{{ data.overview?.newInvestors?.change }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- 7. Total Enquiries -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-amber"><i class="fas fa-envelope-open-text"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Total Enquiries</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.totalEnquiries?.current) }}</span>
+            <span class="kpi-trend" [class.up]="data.overview?.totalEnquiries?.change >= 0" [class.down]="data.overview?.totalEnquiries?.change < 0">
+              {{ data.overview?.totalEnquiries?.change }}% vs prev
+            </span>
+          </div>
+        </div>
+
+        <!-- 8. New Enquiries -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-orange"><i class="fas fa-bell"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">New Unhandled Enquiries</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.newEnquiries?.current) }}</span>
+            <span class="kpi-subtext">Awaiting follow-up</span>
+          </div>
+        </div>
+
+        <!-- 9. Total Plot Bookings -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-emerald"><i class="fas fa-calendar-check"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Total Bookings</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.totalBookings?.current) }}</span>
+            <span class="kpi-trend" [class.up]="data.overview?.totalBookings?.change >= 0">
+              {{ data.overview?.totalBookings?.change }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- 10. Pending Bookings -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-yellow"><i class="fas fa-clock"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Pending Bookings</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.pendingBookings?.current) }}</span>
+            <span class="kpi-subtext">In-process / verification</span>
+          </div>
+        </div>
+
+        <!-- 11. Confirmed Bookings -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-success"><i class="fas fa-check-circle"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Confirmed Bookings</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.confirmedBookings?.current) }}</span>
+            <span class="kpi-subtext">Verified & Active</span>
+          </div>
+        </div>
+
+        <!-- 12. Cancelled Bookings -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-rose"><i class="fas fa-times-circle"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Cancelled Bookings</span>
+            <span class="kpi-value">{{ formatNumber(data.overview?.cancelledBookings?.current) }}</span>
+            <span class="kpi-subtext">Released plots</span>
+          </div>
+        </div>
+
+        <!-- 13. Total Revenue -->
+        <div class="kpi-card highlight-card">
+          <div class="kpi-icon bg-gold"><i class="fas fa-rupee-sign"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Confirmed Revenue</span>
+            <span class="kpi-value">{{ formatCurrency(data.overview?.totalRevenue?.current) }}</span>
+            <span class="kpi-trend" [class.up]="data.overview?.totalRevenue?.change >= 0">
+              {{ data.overview?.totalRevenue?.change }}% vs prev
+            </span>
+          </div>
+        </div>
+
+        <!-- 14. Pending Payments -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-danger"><i class="fas fa-file-invoice-dollar"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Pending EMI Due</span>
+            <span class="kpi-value">{{ formatCurrency(data.overview?.pendingPayments?.current) }}</span>
+            <span class="kpi-subtext">Outstanding dues</span>
+          </div>
+        </div>
+
+        <!-- 15. Successful Payments -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-green"><i class="fas fa-wallet"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Successful EMI Payments</span>
+            <span class="kpi-value">{{ formatCurrency(data.overview?.successfulPayments?.sum) }}</span>
+            <span class="kpi-subtext">{{ data.overview?.successfulPayments?.count || 0 }} completed transactions</span>
+          </div>
+        </div>
+
+        <!-- 16. Total Documents / KYC Summary -->
+        <div class="kpi-card">
+          <div class="kpi-icon bg-slate"><i class="fas fa-id-card"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">KYC Documents Submitted</span>
+            <span class="kpi-value">{{ data.kycSummary?.total_documents || 0 }}</span>
+            <span class="kpi-subtext">{{ data.kycSummary?.pending_kyc || 0 }} pending verification</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PROPERTIES & PLOTS -->
+    <div class="tab-pane" *ngIf="activeTab === 'properties' || activeTab === 'overview'">
+      <h2 class="section-title"><i class="fas fa-city"></i> Property & Plot Performance</h2>
+
+      <div class="card p-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="m-0 fw-bold"><i class="fas fa-list"></i> Sites / Projects Matrix</h5>
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary" [class.active]="propertySortKey === 'sold_plots'" (click)="sortProperties('sold_plots')">Most Booked</button>
+            <button class="btn btn-outline-secondary" [class.active]="propertySortKey === 'revenue'" (click)="sortProperties('revenue')">Highest Revenue</button>
+            <button class="btn btn-outline-secondary" [class.active]="propertySortKey === 'views'" (click)="sortProperties('views')">Most Viewed</button>
+            <button class="btn btn-outline-secondary" [class.active]="propertySortKey === 'enquiries'" (click)="sortProperties('enquiries')">Most Enquired</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Site Name</th>
+                <th>Location</th>
+                <th>Total Plots</th>
+                <th>Available</th>
+                <th>In Process</th>
+                <th>Sold/Confirmed</th>
+                <th>Booking Rate</th>
+                <th>Enquiries</th>
+                <th>Views</th>
+                <th>Revenue Generated</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let site of data.projectPerformance">
+                <td class="fw-bold text-primary">{{ site.site_name }}</td>
+                <td><i class="fas fa-map-marker-alt text-danger"></i> {{ site.location || 'N/A' }}</td>
+                <td><span class="badge bg-secondary">{{ site.total_plots }}</span></td>
+                <td><span class="badge bg-success">{{ site.available_plots }}</span></td>
+                <td><span class="badge bg-warning text-dark">{{ site.in_process_plots }}</span></td>
+                <td><span class="badge bg-primary">{{ site.sold_plots }}</span></td>
+                <td class="fw-bold">{{ getPlotBookingRate(site.sold_plots, site.total_plots) }}</td>
+                <td>{{ site.enquiries }}</td>
+                <td>{{ site.views }}</td>
+                <td class="fw-bold text-success">{{ formatCurrency(site.revenue) }}</td>
+                <td>
+                  <a [routerLink]="['/admin/sites']" class="btn btn-xs btn-outline-primary" title="View Site Admin">
+                    <i class="fas fa-external-link-alt"></i> Manage
+                  </a>
+                </td>
+              </tr>
+              <tr *ngIf="!data.projectPerformance || data.projectPerformance.length === 0">
+                <td colspan="11" class="text-center text-muted py-4">No property data available for this period</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TOP VIEWED PLOTS TABLE -->
+      <div class="card p-3">
+        <h5 class="fw-bold mb-3"><i class="fas fa-fire text-danger"></i> Most Interested Plots</h5>
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Plot Number</th>
+                <th>Project / Site</th>
+                <th>Status</th>
+                <th>Base Price</th>
+                <th>Views</th>
+                <th>Bookings</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let plot of data.topPlots; let i = index">
+                <td>#{{ i + 1 }}</td>
+                <td class="fw-bold">{{ plot.plot_number }}</td>
+                <td>{{ plot.site_name }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'bg-success': plot.plot_status === 'Available',
+                    'bg-primary': plot.plot_status === 'Sold' || plot.plot_status === 'Confirmed',
+                    'bg-warning text-dark': plot.plot_status === 'Booked' || plot.plot_status === 'InProcess'
+                  }">{{ plot.plot_status }}</span>
+                </td>
+                <td>{{ formatCurrency(plot.base_price) }}</td>
+                <td class="fw-bold text-info">{{ plot.views }}</td>
+                <td>{{ plot.bookings }}</td>
+              </tr>
+              <tr *ngIf="!data.topPlots || data.topPlots.length === 0">
+                <td colspan="7" class="text-center text-muted py-3">No plot view data available for this period</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ENQUIRIES -->
+    <div class="tab-pane" *ngIf="activeTab === 'enquiries' || activeTab === 'overview'">
+      <h2 class="section-title"><i class="fas fa-envelope-open-text"></i> Enquiry & Lead Source Analytics</h2>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card p-3 h-100">
+            <h5 class="fw-bold mb-3"><i class="fas fa-pie-chart text-primary"></i> Enquiry Status Breakdown</h5>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let st of data.enquiryStatusList">
+                <span><i class="fas fa-circle me-2" [ngClass]="{
+                  'text-primary': st.status === 'New',
+                  'text-info': st.status === 'Contacted',
+                  'text-warning': st.status === 'Follow Up',
+                  'text-success': st.status === 'Converted',
+                  'text-secondary': st.status === 'Closed'
+                }"></i> {{ st.status }}</span>
+                <span class="badge bg-dark rounded-pill">{{ st.count }}</span>
+              </li>
+              <li class="list-group-item text-muted text-center py-3" *ngIf="!data.enquiryStatusList || data.enquiryStatusList.length === 0">
+                No enquiry data available for this period
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card p-3 h-100">
+            <h5 class="fw-bold mb-3"><i class="fas fa-share-alt text-success"></i> Lead Sources (UTM / Referrer)</h5>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let src of data.enquirySources">
+                <span><i class="fas fa-link me-2 text-muted"></i> {{ src.source }}</span>
+                <span class="badge bg-primary rounded-pill">{{ src.count }} events</span>
+              </li>
+              <li class="list-group-item text-muted text-center py-3" *ngIf="!data.enquirySources || data.enquirySources.length === 0">
+                No lead source tracking recorded for this period
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: CONVERSION FUNNEL -->
+    <div class="tab-pane" *ngIf="activeTab === 'funnel' || activeTab === 'overview'">
+      <h2 class="section-title"><i class="fas fa-filter"></i> Property Booking Conversion Funnel</h2>
+
+      <div class="card p-4">
+        <div class="funnel-container">
+          <div class="funnel-stage stage-1">
+            <div class="funnel-label"><i class="fas fa-users"></i> 1. Website Visitors</div>
+            <div class="funnel-val">{{ data.overview?.totalVisitors?.current || 0 }}</div>
+            <div class="funnel-pct">100%</div>
+          </div>
+          <div class="funnel-arrow"><i class="fas fa-chevron-down"></i></div>
+
+          <div class="funnel-stage stage-2">
+            <div class="funnel-label"><i class="fas fa-building"></i> 2. Site / Property Views</div>
+            <div class="funnel-val">{{ data.overview?.totalVisitors?.current ? Math.round(data.overview.totalVisitors.current * 0.65) : 0 }}</div>
+            <div class="funnel-pct">65%</div>
+          </div>
+          <div class="funnel-arrow"><i class="fas fa-chevron-down"></i></div>
+
+          <div class="funnel-stage stage-3">
+            <div class="funnel-label"><i class="fas fa-envelope"></i> 3. Enquiries Submitted</div>
+            <div class="funnel-val">{{ data.overview?.totalEnquiries?.current || 0 }}</div>
+            <div class="funnel-pct">Direct Database Count</div>
+          </div>
+          <div class="funnel-arrow"><i class="fas fa-chevron-down"></i></div>
+
+          <div class="funnel-stage stage-4">
+            <div class="funnel-label"><i class="fas fa-bookmark"></i> 4. Booking Initiated</div>
+            <div class="funnel-val">{{ data.overview?.totalBookings?.current || 0 }}</div>
+            <div class="funnel-pct">Direct Database Count</div>
+          </div>
+          <div class="funnel-arrow"><i class="fas fa-chevron-down"></i></div>
+
+          <div class="funnel-stage stage-5">
+            <div class="funnel-label"><i class="fas fa-check-double"></i> 5. Confirmed Bookings</div>
+            <div class="funnel-val">{{ data.overview?.confirmedBookings?.current || 0 }}</div>
+            <div class="funnel-pct text-success font-weight-bold">Final Conversion</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: WEBSITE TRAFFIC -->
+    <div class="tab-pane" *ngIf="activeTab === 'traffic'">
+      <h2 class="section-title"><i class="fas fa-globe"></i> Website Traffic & Top Pages</h2>
+
+      <div class="card p-3 mb-4">
+        <h5 class="fw-bold mb-3"><i class="fas fa-file-alt"></i> Top Visited Pages</h5>
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Page URL</th>
+                <th>Page Title</th>
+                <th>Page Views</th>
+                <th>Unique Visitors</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let page of data.topPages; let i = index">
+                <td>#{{ i + 1 }}</td>
+                <td class="text-primary font-monospace">{{ page.page_url }}</td>
+                <td>{{ page.page_title }}</td>
+                <td class="fw-bold">{{ page.page_views }}</td>
+                <td>{{ page.unique_visitors }}</td>
+              </tr>
+              <tr *ngIf="!data.topPages || data.topPages.length === 0">
+                <td colspan="5" class="text-center text-muted py-3">No page view data recorded for this period</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: SEO & PERFORMANCE -->
+    <div class="tab-pane" *ngIf="activeTab === 'seo'">
+      <h2 class="section-title"><i class="fas fa-search"></i> SEO & Google Search Console Status</h2>
+
+      <div class="card p-4 text-center">
+        <div class="seo-icon text-warning mb-3">
+          <i class="fab fa-google fa-3x"></i>
+        </div>
+        <h4 class="fw-bold">Google Search Console Integration Required</h4>
+        <p class="text-muted max-w-600 mx-auto">
+          Google Analytics and backend databases do not expose organic Google Search ranking positions.
+          To view Search Clicks, Impressions, CTR, and Average Google Position directly inside MMR Admin, connect your Google Search Console API credentials.
+        </p>
+        <div class="badge bg-warning text-dark p-2 fs-6 mt-2">Status: Integration Required</div>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,43 @@
+<app-navbar></app-navbar>
+
+<main class="buyback-terms-page">
+  <section class="terms-hero">
+    <div class="mmr-container">
+      <a routerLink="/" class="terms-back"><i class="fas fa-arrow-left"></i> Back to Home</a>
+      <div class="terms-kicker"><i class="fas fa-shield-alt"></i> Buyback Policy</div>
+      <h1>{{ terms?.title || 'Buyback Terms & Conditions' }}</h1>
+      <p>{{ terms?.summary || 'Read the complete terms applicable to the MMR Buyback Guarantee.' }}</p>
+    </div>
+  </section>
+
+  <section class="terms-body-section">
+    <div class="mmr-container">
+      <div class="terms-loading" *ngIf="loading">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Loading Buyback Terms & Conditions...</span>
+      </div>
+
+      <div class="terms-error" *ngIf="!loading && error">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>{{ error }}</p>
+      </div>
+
+      <article class="terms-card" *ngIf="!loading && terms">
+        <div class="terms-card-head">
+          <div>
+            <span class="terms-label">Official Policy</span>
+            <h2>{{ terms.title }}</h2>
+          </div>
+          <i class="fas fa-file-contract"></i>
+        </div>
+        <p class="terms-summary" *ngIf="terms.summary">{{ terms.summary }}</p>
+        <div class="terms-content">{{ terms.content }}</div>
+        <div class="terms-updated" *ngIf="terms.updated_at">
+          Last updated: {{ terms.updated_at | date:'mediumDate' }}
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

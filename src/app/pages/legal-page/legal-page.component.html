@@ -1,0 +1,37 @@
+<app-navbar></app-navbar>
+
+<main class="legal-page">
+  <section class="legal-hero">
+    <div class="mmr-container">
+      <a routerLink="/" class="back-link"><i class="fas fa-arrow-left"></i> {{ 'backToHome' | tr }}</a>
+      <div class="legal-kicker"><i [class]="icon"></i> {{ 'officialWebsitePolicy' | tr }}</div>
+      <h1>{{ title }}</h1>
+      <p>{{ description }}</p>
+    </div>
+  </section>
+
+  <section class="legal-body">
+    <div class="mmr-container">
+      <article class="legal-card">
+        <div class="legal-intro">
+          <div>
+            <span>MMR Constructions & Developers Private Limited</span>
+            <h2>{{ title }}</h2>
+          </div>
+          <i [class]="icon"></i>
+        </div>
+        <p class="updated">{{ 'effectiveDate' | tr }}: {{ language.current() === 'hi' ? '20 जून 2026' : '20 June 2026' }}</p>
+        <section *ngFor="let section of sections; let i = index" class="legal-section">
+          <h2><span>{{ i + 1 }}</span>{{ section.title }}</h2>
+          <p *ngFor="let paragraph of section.paragraphs">{{ paragraph }}</p>
+        </section>
+        <div class="legal-note">
+          <i class="fas fa-circle-info"></i>
+          <p>{{ 'policyBookingNote' | tr }}</p>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

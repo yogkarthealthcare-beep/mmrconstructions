@@ -1,0 +1,140 @@
+<div *ngIf="toast" class="site-toast" [class.error]="toastType === 'error'">
+  <i class="fas fa-info-circle"></i>{{ toast }}
+</div>
+
+<div class="emi-admin-head">
+  <div class="pg-header">
+    <h4>Manage EMI Calculator</h4>
+    <p>Control Home Page EMI calculator plans from database.</p>
+  </div>
+  <button type="button" class="btn btn-outline-green btn-sm" (click)="resetForm()">Add New EMI Plan</button>
+</div>
+
+<div class="emi-admin-grid">
+  <section class="panel-card emi-form-card">
+    <div class="panel-card-title">{{ editingId ? 'Update EMI Plan' : 'Add EMI Plan' }}</div>
+    <form [formGroup]="form" (ngSubmit)="savePlan()" class="emi-form">
+      <label>
+        Plot Size *
+        <input class="f-input" formControlName="plot_size" placeholder="100 Sq Yard">
+      </label>
+      <label>
+        Plot Price *
+        <input class="f-input" type="number" formControlName="plot_price">
+      </label>
+      <label>
+        Down Payment *
+        <input class="f-input" type="number" formControlName="down_payment">
+      </label>
+      <label>
+        Loan Amount
+        <input class="f-input readonly" type="number" formControlName="loan_amount">
+      </label>
+      <label>
+        Interest Rate (%) *
+        <input class="f-input" type="number" step="0.01" formControlName="interest_rate">
+      </label>
+      <label>
+        Tenure (Months) *
+        <input class="f-input" type="number" formControlName="tenure_months">
+      </label>
+      <label>
+        Monthly EMI
+        <input class="f-input readonly" type="number" formControlName="monthly_emi">
+      </label>
+      <label>
+        Processing Fee
+        <input class="f-input" type="number" formControlName="processing_fee">
+      </label>
+      <label>
+        Display Order
+        <input class="f-input" type="number" formControlName="display_order">
+      </label>
+      <label class="status-check">
+        <input type="checkbox" formControlName="is_active">
+        Active Status
+      </label>
+
+      <div class="calc-preview">
+        <div><span>Loan</span><strong>{{ rawForm.loan_amount | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div><span>EMI</span><strong>{{ rawForm.monthly_emi | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline-green btn-sm" (click)="resetForm()">Cancel</button>
+        <button type="submit" class="btn btn-green btn-sm" [disabled]="saving">
+          {{ saving ? 'Saving...' : (editingId ? 'Update' : 'Save') }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel-card emi-list-card">
+    <div class="panel-card-title">EMI Plans</div>
+    <div class="emi-filters">
+      <input class="f-input" placeholder="Search plot size" [(ngModel)]="search" (keyup.enter)="reloadFromFirstPage()">
+      <select class="f-input" title="Status filter" aria-label="Status filter" [(ngModel)]="status" (change)="reloadFromFirstPage()">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      <button type="button" class="btn btn-outline-green btn-sm" (click)="reloadFromFirstPage()">Search</button>
+    </div>
+
+    <div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table emi-table">
+        <thead>
+          <tr>
+            <th><button type="button" class="sort-btn" (click)="sort('plot_size')">Plot Size</button></th>
+            <th><button type="button" class="sort-btn" (click)="sort('plot_price')">Plot Price</button></th>
+            <th><button type="button" class="sort-btn" (click)="sort('down_payment')">Down Payment</button></th>
+            <th><button type="button" class="sort-btn" (click)="sort('interest_rate')">Rate</button></th>
+            <th><button type="button" class="sort-btn" (click)="sort('tenure_months')">Tenure</button></th>
+            <th><button type="button" class="sort-btn" (click)="sort('monthly_emi')">Monthly EMI</button></th>
+            <th>Status</th>
+            <th><button type="button" class="sort-btn" (click)="sort('created_at')">Created</button></th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let plan of plans">
+            <td><strong>{{ plan.plot_size }}</strong></td>
+            <td>{{ money(plan.plot_price) | currency:'INR':'symbol':'1.0-0' }}</td>
+            <td>{{ money(plan.down_payment) | currency:'INR':'symbol':'1.0-0' }}</td>
+            <td>{{ plan.interest_rate }}%</td>
+            <td>{{ plan.tenure_months }} months</td>
+            <td><strong>{{ money(plan.monthly_emi) | currency:'INR':'symbol':'1.0-0' }}</strong></td>
+            <td><span class="status-pill" [class.status-muted]="!plan.is_active">{{ plan.is_active ? 'Active' : 'Inactive' }}</span></td>
+            <td>{{ plan.created_at | date:'dd MMM yyyy' }}</td>
+            <td class="text-end">
+              <button type="button" class="icon-btn" title="Edit EMI plan" aria-label="Edit EMI plan" (click)="editPlan(plan)">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button type="button" class="icon-btn danger" title="Delete EMI plan" aria-label="Delete EMI plan" (click)="deletePlan(plan)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!plans.length">
+            <td colspan="9">
+              <div class="panel-empty small-empty">
+                <i class="fas fa-calculator"></i>
+                <p>No EMI plans found.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-row" *ngIf="!loading && total > limit">
+      <span>Page {{ page }} of {{ totalPages }} • {{ total }} plans</span>
+      <div>
+        <button type="button" class="btn btn-outline-green btn-sm" (click)="setPage(page - 1)" [disabled]="page <= 1">Previous</button>
+        <button type="button" class="btn btn-outline-green btn-sm" (click)="setPage(page + 1)" [disabled]="page >= totalPages">Next</button>
+      </div>
+    </div>
+  </section>
+</div>

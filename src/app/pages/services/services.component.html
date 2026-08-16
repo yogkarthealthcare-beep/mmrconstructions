@@ -1,0 +1,89 @@
+<app-navbar></app-navbar>
+
+<main class="services-page">
+  <section class="services-hero" [style.background-image]="'linear-gradient(90deg, rgba(15,61,39,.92), rgba(15,61,39,.68), rgba(15,61,39,.28)), url(' + heroImage + ')'">
+    <div class="mmr-container">
+      <a routerLink="/" class="services-back"><i class="fas fa-arrow-left"></i> Back to Home</a>
+      <div class="services-kicker"><i class="fas fa-building"></i> MMR Constructions</div>
+      <h1>Our Services</h1>
+      <p>
+        MMR Constructions provides comprehensive real estate, construction, and interior design solutions. Whether you are looking to buy property, sell your land, invest in a farmhouse, build your dream home, or create beautiful interiors, our experienced team is here to help you at every step.
+      </p>
+    </div>
+  </section>
+
+  <section class="services-intro">
+    <div class="mmr-container">
+      <div class="intro-grid">
+        <div class="intro-copy">
+          <div class="sec-label">Complete Property Support</div>
+          <h2 class="sec-title">Real estate guidance with construction expertise</h2>
+          <p class="sec-desc">
+            From land selection and documentation to construction planning and premium interiors, our service approach is built around clarity, quality, and dependable execution.
+          </p>
+        </div>
+        <div class="intro-metrics" aria-label="Service highlights">
+          <div class="metric-item">
+            <strong>04</strong>
+            <span>Core Services</span>
+          </div>
+          <div class="metric-item">
+            <strong>360</strong>
+            <span>Degree Support</span>
+          </div>
+          <div class="metric-item">
+            <strong>100%</strong>
+            <span>Transparent Process</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="services-list" aria-labelledby="services-heading">
+    <div class="mmr-container">
+      <div class="section-head">
+        <div class="sec-label">What We Offer</div>
+        <h2 id="services-heading" class="sec-title">Professional services for every property need</h2>
+      </div>
+
+      <article class="service-card" *ngFor="let service of services; let i = index" [class.reverse]="i % 2 === 1">
+        <div class="service-media">
+          <img [src]="service.image" [alt]="service.title" loading="lazy">
+          <div class="service-number">0{{ i + 1 }}</div>
+        </div>
+        <div class="service-content">
+          <div class="service-icon"><i [class]="service.icon"></i></div>
+          <h3>{{ service.title }}</h3>
+          <p>{{ service.description }}</p>
+          <div class="feature-grid">
+            <span class="feature-pill" *ngFor="let feature of service.features">
+              <i class="fas fa-check"></i>
+              {{ feature }}
+            </span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="services-cta">
+    <div class="mmr-container">
+      <div class="cta-panel">
+        <div>
+          <div class="sec-label">Ready to Start</div>
+          <h2>Ready to Start Your Property Journey?</h2>
+          <p>
+            Whether you want to buy a plot, sell property, invest in a farmhouse, construct your dream home, or design beautiful interiors, MMR Constructions is ready to assist you.
+          </p>
+        </div>
+        <div class="cta-actions">
+          <a routerLink="/" fragment="contact" class="btn btn-gold"><i class="fas fa-phone"></i> Contact Us</a>
+          <a href="tel:+919511119879" class="btn btn-outline-white"><i class="fas fa-calendar-check"></i> Request Consultation</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

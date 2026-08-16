@@ -1,0 +1,73 @@
+<app-navbar />
+
+<main class="detail-page">
+  <ng-container *ngIf="post as blog; else notFound">
+    <header class="article-header">
+      <div class="mmr-container header-inner">
+        <a class="back-link" routerLink="/blog">← {{ 'backToBlogs' | tr }}</a>
+        <h1>{{ blog.title }}</h1>
+        <div class="article-meta">
+          <span>{{ 'by' | tr }} {{ blog.author }}</span>
+          <span aria-hidden="true">•</span>
+          <time [attr.datetime]="blog.publishDate">
+            {{ formatDate(blog.publishDate) }}
+          </time>
+        </div>
+      </div>
+    </header>
+
+    <article class="article-wrap mmr-container">
+      <img class="featured-image" [src]="blog.featuredImage" [alt]="blog.title" />
+
+      <div class="article-body">
+        <p class="lead">{{ blog.shortDescription }}</p>
+
+        <section *ngFor="let section of blog.content">
+          <h2>{{ section.heading }}</h2>
+          <p *ngFor="let paragraph of section.paragraphs">{{ paragraph }}</p>
+          <ul *ngIf="section.bullets?.length">
+            <li *ngFor="let bullet of section.bullets">{{ bullet }}</li>
+          </ul>
+        </section>
+
+        <a class="back-button" routerLink="/blog">{{ 'backToBlogs' | tr }}</a>
+      </div>
+    </article>
+
+    <section class="related-section" *ngIf="relatedPosts.length">
+      <div class="mmr-container">
+        <div class="section-heading">
+          <span>{{ 'continueReading' | tr }}</span>
+          <h2>{{ 'relatedBlogs' | tr }}</h2>
+        </div>
+        <div class="related-grid">
+          <article class="related-card" *ngFor="let related of relatedPosts">
+            <a [routerLink]="['/blog', related.slug]">
+              <img [src]="related.featuredImage" [alt]="related.title" loading="lazy" />
+              <div>
+                <time [attr.datetime]="related.publishDate">
+                  {{ formatDate(related.publishDate, true) }}
+                </time>
+                <h3>{{ related.title }}</h3>
+                <span>{{ 'readArticle' | tr }} →</span>
+              </div>
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+  </ng-container>
+
+  <ng-template #notFound>
+    <section class="not-found">
+      <div class="mmr-container">
+        <span class="not-found-code">404</span>
+        <h1>{{ 'blogNotFound' | tr }}</h1>
+        <p>{{ 'blogNotFoundDesc' | tr }}</p>
+        <a class="back-button" routerLink="/blog">{{ 'backToBlogs' | tr }}</a>
+      </div>
+    </section>
+  </ng-template>
+</main>
+
+<app-footer />

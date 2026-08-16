@@ -1,0 +1,55 @@
+<app-navbar></app-navbar>
+
+<main class="documents-page">
+  <section class="documents-hero">
+    <div class="mmr-container">
+      <a routerLink="/" class="back-link"><i class="fas fa-arrow-left"></i> {{ 'backToHome' | tr }}</a>
+      <div class="documents-kicker"><i class="fas fa-shield-check"></i> {{ 'transparencyTrust' | tr }}</div>
+      <h1>{{ 'companyVerificationDocuments' | tr }}</h1>
+      <p>{{ language.current() === 'hi' ? 'कंपनी की पहचान और प्रामाणिकता सत्यापित करने के लिए MMR Constructions & Developers Private Limited द्वारा प्रकाशित आधिकारिक दस्तावेज़ देखें।' : 'Review the official documents published by MMR Constructions & Developers Private Limited to help verify company identity and authenticity.' }}</p>
+    </div>
+  </section>
+
+  <section class="documents-body">
+    <div class="mmr-container">
+      <div class="trust-strip">
+        <div><i class="fas fa-building-shield"></i><span><strong>{{ 'companyRecords' | tr }}</strong>{{ 'officialBusinessDocuments' | tr }}</span></div>
+        <div><i class="fas fa-eye"></i><span><strong>{{ 'publicVerification' | tr }}</strong>{{ 'viewPublishedRecords' | tr }}</span></div>
+        <div><i class="fas fa-lock"></i><span><strong>{{ 'secureStorage' | tr }}</strong>{{ 'managedAdminPanel' | tr }}</span></div>
+      </div>
+
+      <div class="state-card" *ngIf="loading"><i class="fas fa-spinner fa-spin"></i><p>{{ 'loadingDocuments' | tr }}</p></div>
+      <div class="state-card error" *ngIf="!loading && error"><i class="fas fa-circle-exclamation"></i><p>{{ error | tr }}</p></div>
+      <div class="state-card" *ngIf="!loading && !error && !documents.length"><i class="fas fa-folder-open"></i><h2>{{ 'noDocuments' | tr }}</h2><p>{{ 'noDocumentsDesc' | tr }}</p></div>
+
+      <div class="documents-grid" *ngIf="!loading && documents.length">
+        <article class="document-card" *ngFor="let document of documents">
+          <div class="document-preview" [class.pdf]="isPdf(document)">
+            <img *ngIf="!isPdf(document)" [src]="fileUrl(document)" [alt]="documentValue(document, 'document_name')" loading="lazy">
+            <div *ngIf="isPdf(document)" class="pdf-preview"><i class="fas fa-file-pdf"></i><span>{{ 'pdfDocument' | tr }}</span></div>
+            <span class="type-badge">{{ documentValue(document, 'document_type') || (isPdf(document) ? 'PDF' : ('certificate' | tr)) }}</span>
+          </div>
+          <div class="document-content">
+            <h2>{{ documentValue(document, 'document_name') }}</h2>
+            <p>{{ documentValue(document, 'document_description') || ('officialVerificationDocument' | tr) }}</p>
+            <div class="document-actions">
+              <a [href]="fileUrl(document)" target="_blank" rel="noopener noreferrer" class="btn btn-green btn-sm">
+                <i [class]="isPdf(document) ? 'fas fa-file-pdf me-2' : 'fas fa-eye me-2'"></i>{{ (isPdf(document) ? 'viewPdf' : 'viewDocument') | tr }}
+              </a>
+              <a [href]="fileUrl(document, true)" class="btn btn-outline-green btn-sm">
+                <i class="fas fa-download me-2"></i>{{ 'download' | tr }}
+              </a>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="verification-note" *ngIf="!loading && documents.length">
+        <i class="fas fa-circle-info"></i>
+        <p>{{ 'documentsVerificationNote' | tr }}</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

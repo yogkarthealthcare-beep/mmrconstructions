@@ -1,0 +1,147 @@
+<div class="settings-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><i class="fas fa-cogs"></i> Invoice Settings Module</h1>
+      <p class="page-sub">Configure company branding, address, bank info, terms & conditions, logo, and theme color for invoices.</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/admin/orders" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Back to Orders
+      </a>
+    </div>
+  </div>
+
+  <!-- Toast Banner -->
+  <div *ngIf="toastMessage" [class]="'toast-banner toast-' + toastType">
+    <i [class]="toastType === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle'"></i>
+    <span>{{ toastMessage }}</span>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-success" role="status"></div>
+    <p class="mt-2 text-muted">Loading Invoice Settings...</p>
+  </div>
+
+  <div *ngIf="!loading" class="card shadow-sm border-0 rounded-3">
+    <div class="card-body p-4">
+      <form (ngSubmit)="saveSettings()">
+
+        <!-- Section 1: Company Profile -->
+        <h5 class="text-success fw-bold border-bottom pb-2 mb-3">
+          <i class="fas fa-building me-2"></i> Company Branding & Info
+        </h5>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label font-xs fw-bold text-muted">COMPANY NAME</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.company_name" name="company_name" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label font-xs fw-bold text-muted">GST NUMBER</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.gst_number" name="gst_number" placeholder="e.g. 09AAAAA0000A1Z5" />
+          </div>
+          <div class="col-md-12">
+            <label class="form-label font-xs fw-bold text-muted">HEAD OFFICE ADDRESS</label>
+            <textarea class="form-control" rows="2" [(ngModel)]="settings.address" name="address"></textarea>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label font-xs fw-bold text-muted">PHONE NUMBERS</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.phone" name="phone" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label font-xs fw-bold text-muted">EMAIL ADDRESS</label>
+            <input type="email" class="form-control" [(ngModel)]="settings.email" name="email" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label font-xs fw-bold text-muted">WEBSITE</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.website" name="website" />
+          </div>
+        </div>
+
+        <!-- Section 2: Branding Media & Logos -->
+        <h5 class="text-success fw-bold border-bottom pb-2 mb-3">
+          <i class="fas fa-image me-2"></i> Logo, Signatures & Color Theme
+        </h5>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label font-xs fw-bold text-muted">COMPANY LOGO URL</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.company_logo" name="company_logo" placeholder="https://..." />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label font-xs fw-bold text-muted">AUTHORIZED SIGNATURE URL</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.signature_url" name="signature_url" placeholder="https://..." />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label font-xs fw-bold text-muted">COMPANY STAMP/SEAL URL</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.stamp_url" name="stamp_url" placeholder="https://..." />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label font-xs fw-bold text-muted">INVOICE PREFIX</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.invoice_prefix" name="invoice_prefix" placeholder="MMR" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label font-xs fw-bold text-muted">PRIMARY THEME COLOR</label>
+            <div class="d-flex gap-2">
+              <input type="color" class="form-control form-control-color" [(ngModel)]="settings.theme_color" name="theme_color" />
+              <input type="text" class="form-control" [(ngModel)]="settings.theme_color" name="theme_color_text" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Bank & Payment Info -->
+        <h5 class="text-success fw-bold border-bottom pb-2 mb-3">
+          <i class="fas fa-university me-2"></i> Company Bank Details & UPI
+        </h5>
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <label class="form-label font-xs fw-bold text-muted">BANK NAME</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.bank_name" name="bank_name" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label font-xs fw-bold text-muted">ACCOUNT NUMBER</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.account_no" name="account_no" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label font-xs fw-bold text-muted">IFSC CODE</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.ifsc_code" name="ifsc_code" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label font-xs fw-bold text-muted">BRANCH</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.branch" name="branch" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label font-xs fw-bold text-muted">UPI QR CODE IMAGE URL</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.upi_qr_url" name="upi_qr_url" placeholder="https://..." />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label font-xs fw-bold text-muted">INVOICE FOOTER NOTE</label>
+            <input type="text" class="form-control" [(ngModel)]="settings.invoice_footer" name="invoice_footer" />
+          </div>
+        </div>
+
+        <!-- Section 4: Terms & Notes -->
+        <h5 class="text-success fw-bold border-bottom pb-2 mb-3">
+          <i class="fas fa-file-contract me-2"></i> Terms & Conditions & Special Notes
+        </h5>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label font-xs fw-bold text-muted">TERMS & CONDITIONS</label>
+            <textarea class="form-control" rows="5" [(ngModel)]="settings.terms_and_conditions" name="terms_and_conditions"></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label font-xs fw-bold text-muted">SPECIAL NOTES</label>
+            <textarea class="form-control" rows="5" [(ngModel)]="settings.notes" name="notes"></textarea>
+          </div>
+        </div>
+
+        <!-- Submit Action -->
+        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+          <button type="submit" class="btn btn-success px-5 font-weight-bold" [disabled]="saving">
+            <i *ngIf="saving" class="fas fa-spinner fa-spin me-1"></i>
+            <i *ngIf="!saving" class="fas fa-save me-1"></i> Save Invoice Settings
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

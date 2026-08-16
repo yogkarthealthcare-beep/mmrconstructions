@@ -1,0 +1,225 @@
+<div class="detector-head">
+  <div class="pg-header">
+    <h4>Plot Detector Tool</h4>
+    <p>Upload a plot map image, detect numeric plot labels, preview boundaries, and export coordinates.</p>
+  </div>
+  <div class="detector-actions">
+    <input #fileInput type="file" accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml" (change)="onFileSelected($event)" hidden>
+    <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">📷 Upload Site Map</button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="copyPrompt()">📋 Copy Prompt</button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="openCloudAiDetector()">☁ Open Cloud AI Detector</button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="detectAgain()" [disabled]="!imageUrl || loading"><i class="fas fa-magic me-1"></i>Detect Again</button>
+    <button type="button" class="tool-btn" title="Zoom out" aria-label="Zoom out" (click)="zoomOut()" [disabled]="!imageUrl"><i class="fas fa-search-minus"></i></button>
+    <button type="button" class="tool-btn" title="Fit to screen" aria-label="Fit to screen" (click)="fitToScreen()" [disabled]="!imageUrl"><i class="fas fa-compress-arrows-alt"></i></button>
+    <button type="button" class="tool-btn" title="Zoom in" aria-label="Zoom in" (click)="zoomIn()" [disabled]="!imageUrl"><i class="fas fa-search-plus"></i></button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="debugMode=!debugMode" [disabled]="!imageUrl">
+      <i class="fas fa-bug me-1"></i>{{ debugMode ? 'Hide Debug' : 'Debug Mode' }}
+    </button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="exportJson()" [disabled]="!detections.length">Export JSON</button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="exportCsv()" [disabled]="!detections.length">Export CSV</button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="exportMasterSvg()" [disabled]="!detections.length">Export Master SVG</button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="downloadMasterSvgTemplate()">Master SVG Format</button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="copyJson()" [disabled]="!detections.length">Copy JSON</button>
+  </div>
+</div>
+
+<div class="correction-menu" *ngIf="correctionMenu" [style.left.px]="correctionMenu.x" [style.top.px]="correctionMenu.y">
+  <ng-container *ngIf="correctionMenu.mode === 'plot' && correctionMenu.plot">
+    <button type="button" (click)="startAdjustPlot(correctionMenu.plot)">Adjust Plot</button>
+    <button type="button" class="danger" (click)="deleteDetection(correctionMenu.plot)">Remove Plot</button>
+  </ng-container>
+  <ng-container *ngIf="correctionMenu.mode === 'empty'">
+    <button type="button" (click)="getPlotAtMenuPoint()">Get Plot</button>
+  </ng-container>
+</div>
+
+<div class="duplicate-dialog" *ngIf="duplicateCandidate">
+  <div>
+    <h6>Possible duplicate plot detected.</h6>
+    <p>Overlap is more than 15%. Choose how to apply this correction.</p>
+    <div class="side-actions">
+      <button type="button" class="btn btn-outline-green btn-sm" (click)="handleDuplicate('merge')">Merge</button>
+      <button type="button" class="btn btn-outline-green btn-sm" (click)="handleDuplicate('replace')">Replace</button>
+      <button type="button" class="btn btn-outline-danger btn-sm" (click)="handleDuplicate('cancel')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="error" class="panel-alert panel-alert-error mb-3"><i class="fas fa-exclamation-circle"></i>{{ error }}</div>
+<div *ngIf="warning" class="panel-alert panel-alert-info mb-3"><i class="fas fa-info-circle"></i>{{ warning }}</div>
+
+<div class="detector-layout">
+  <section class="panel-card preview-card">
+    <div class="preview-meta">
+      <span>{{ imageName || 'No image selected' }}</span>
+      <strong *ngIf="imageWidth">{{ imageWidth }} x {{ imageHeight }} px • {{ zoom | number:'1.1-1' }}x</strong>
+    </div>
+
+    <div class="detector-empty" *ngIf="!imageUrl">
+      <i class="fas fa-image"></i>
+      <h6>Upload a plot map image</h6>
+      <p>PNG, JPG, JPEG, WEBP, or SVG. Master SVG with data-plot-no imports exact plot count.</p>
+      <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">Choose Image</button>
+    </div>
+
+    <div class="detector-stage" *ngIf="imageUrl">
+      <div class="detector-loading" *ngIf="loading">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>{{ progress || 'Processing image...' }}</span>
+      </div>
+
+      <svg
+        [attr.viewBox]="'0 0 ' + imageWidth + ' ' + imageHeight"
+        preserveAspectRatio="xMidYMid meet"
+        (pointerdown)="startPan($event)"
+        (pointermove)="movePan($event)"
+        (pointerup)="endPan()"
+        (pointercancel)="endPan()"
+        (mouseleave)="endPan(); onHover(null)"
+        (click)="onStageClick($event)">
+        <g [attr.transform]="transform">
+          <image [attr.href]="imageUrl" x="0" y="0" [attr.width]="imageWidth" [attr.height]="imageHeight"></image>
+          <g *ngIf="debugMode" class="debug-layer">
+            <polygon
+              *ngFor="let candidate of candidateDebug"
+              class="candidate"
+              [attr.points]="rectPointsAttr(candidate)">
+              <title>{{ candidate.kind }} - {{ candidate.confidence }}%</title>
+            </polygon>
+            <polygon
+              *ngFor="let rejected of rejectedDebug"
+              class="rejected"
+              [attr.points]="rectPointsAttr(rejected)">
+              <title>{{ rejected.reason }}</title>
+            </polygon>
+            <polygon
+              *ngFor="let cell of unmatchedCells"
+              class="unmatched"
+              [attr.points]="rectPointsAttr(cell)">
+              <title>{{ cell.reason || 'No usable OCR in cell' }}</title>
+            </polygon>
+            <rect
+              *ngFor="let word of ocrDebug"
+              class="ocr-box"
+              [attr.x]="word.box.x"
+              [attr.y]="word.box.y"
+              [attr.width]="word.box.width"
+              [attr.height]="word.box.height">
+              <title>OCR {{ word.text }} - {{ word.confidence }}%</title>
+            </rect>
+          </g>
+          <g *ngFor="let plot of detections">
+            <polygon
+              [attr.points]="polygonPoints(plot)"
+              [class.selected]="selected?.id === plot.id"
+              [class.low]="plot.status === 'low confidence'"
+              [class.missing]="plot.status === 'boundary not found'"
+              [class.invalid]="plot.status === 'invalid'"
+              (pointerdown)="$event.stopPropagation()"
+              (mouseenter)="onHover(plot, $event)"
+              (mousemove)="onHover(plot, $event)"
+              (mouseleave)="onHover(null)"
+              (click)="selectPlot(plot, $event)">
+              <title>Plot {{ plot.plot_no }} - {{ plot.status }}</title>
+            </polygon>
+            <text [attr.x]="center(plot).x" [attr.y]="center(plot).y">{{ plot.plot_no }}</text>
+            <g *ngIf="adjustingPlot && selected?.id === plot.id" class="vertex-layer">
+              <circle
+                *ngFor="let point of plot.points; let pointIndex = index"
+                [attr.cx]="point.x"
+                [attr.cy]="point.y"
+                r="7"
+                (pointerdown)="startVertexDrag(plot, pointIndex, $event)">
+                <title>Move vertex</title>
+              </circle>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <aside class="panel-card detector-side">
+    <div class="panel-card-title">Detection Summary</div>
+    <div class="summary-grid">
+      <div><span>Numbers</span><strong>{{ detections.length }}</strong></div>
+      <div><span>Boundaries</span><strong>{{ detectedCount }}</strong></div>
+      <div><span>Low Confidence</span><strong>{{ lowConfidence.length }}</strong></div>
+      <div><span>Missing</span><strong>{{ boundaryMissing.length }}</strong></div>
+      <div><span>Duplicates</span><strong>{{ duplicateNumbers.length }}</strong></div>
+      <div><span>Candidates</span><strong>{{ candidateDebug.length }}</strong></div>
+      <div><span>Rejected OCR</span><strong>{{ rejectedOcrDebug.length }}</strong></div>
+      <div><span>Unmatched Cells</span><strong>{{ unmatchedCells.length }}</strong></div>
+      <div><span>Master SVG</span><strong>{{ masterSvgCount || '-' }}</strong></div>
+      <div><span>Plot Count</span><strong>{{ validPlotCount }}</strong></div>
+      <div><span>Unknown</span><strong>{{ unknownPlotCount }}</strong></div>
+    </div>
+
+    <div class="master-format">
+      <span>Master SVG Format</span>
+      <code>&lt;g class="plot" data-plot-no="1"&gt;&lt;rect x="80" y="80" width="180" height="120"/&gt;&lt;/g&gt;</code>
+    </div>
+
+    <ng-container *ngIf="selected; else noSelection">
+      <div class="panel-card-title mt-4">Selected Plot</div>
+      <div class="selected-details">
+        <label>Plot Number<input class="f-input" [(ngModel)]="selected.plot_no" (ngModelChange)="refreshSelectedPlotNo()"></label>
+        <div><span>OCR Confidence</span><strong>{{ selected.ocr_confidence }}%</strong></div>
+        <div><span>Boundary Confidence</span><strong>{{ selected.boundary_confidence }}%</strong></div>
+        <div><span>Status</span><strong>{{ selected.status }}</strong></div>
+        <div><span>Source</span><strong>{{ selected.detection_source }}</strong></div>
+        <div><span>Boundary Type</span><strong>{{ selected.boundary_type }}</strong></div>
+        <div><span>X</span><input class="f-input" type="number" [(ngModel)]="selected.bounding_box.x" (ngModelChange)="updateSelectedBox()"></div>
+        <div><span>Y</span><input class="f-input" type="number" [(ngModel)]="selected.bounding_box.y" (ngModelChange)="updateSelectedBox()"></div>
+        <div><span>Width</span><input class="f-input" type="number" [(ngModel)]="selected.bounding_box.width" (ngModelChange)="updateSelectedBox()"></div>
+        <div><span>Height</span><input class="f-input" type="number" [(ngModel)]="selected.bounding_box.height" (ngModelChange)="updateSelectedBox()"></div>
+      </div>
+      <div class="point-list">
+        <span>Coordinates</span>
+        <code>{{ polygonPoints(selected) }}</code>
+      </div>
+      <div class="panel-alert panel-alert-info mt-2" *ngIf="selected.warning"><i class="fas fa-info-circle"></i>{{ selected.warning }}</div>
+      <div class="side-actions">
+        <button type="button" class="btn btn-outline-green btn-sm" (click)="startAdjustPlot(selected)">Adjust Plot</button>
+        <button type="button" class="btn btn-outline-green btn-sm" (click)="convertSelectedBoundary()">Rect ↔ Polygon</button>
+        <button type="button" class="btn btn-outline-green btn-sm" (click)="markStatus(selected, 'detected')">Mark Valid</button>
+        <button type="button" class="btn btn-outline-danger btn-sm" (click)="markStatus(selected, 'invalid')">Mark Invalid</button>
+        <button type="button" class="btn btn-outline-danger btn-sm" (click)="deleteDetection(selected)">Delete</button>
+      </div>
+    </ng-container>
+
+    <ng-template #noSelection>
+      <div class="panel-empty small-empty">
+        <i class="fas fa-mouse-pointer"></i>
+        <p>Click a detected plot to view details.</p>
+      </div>
+    </ng-template>
+
+    <div class="panel-card-title mt-4" *ngIf="lowConfidence.length">Low Confidence</div>
+    <button type="button" class="low-row" *ngFor="let plot of lowConfidence" (click)="selectPlot(plot)">
+      <strong>Plot {{ plot.plot_no }}</strong><span>{{ plot.ocr_confidence }}%</span>
+    </button>
+
+    <div class="panel-card-title mt-4" *ngIf="boundaryMissing.length">Boundary Not Found</div>
+    <button type="button" class="low-row missing-row" *ngFor="let plot of boundaryMissing" (click)="selectPlot(plot)">
+      <strong>Plot {{ plot.plot_no }}</strong><span>Review</span>
+    </button>
+
+    <div class="panel-card-title mt-4">Validation Report</div>
+    <div class="validation-list">
+      <div *ngFor="let item of validationReport" [class.warn]="item.status === 'warn'" [class.fail]="item.status === 'fail'">
+        <span>{{ item.status === 'pass' ? '✓' : item.status === 'warn' ? '!' : '×' }}</span>
+        <strong>{{ item.label }}</strong>
+        <em>{{ item.count }}</em>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<canvas #sourceCanvas hidden></canvas>
+
+<div class="plot-tooltip" *ngIf="hovered" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
+  <strong>Plot {{ hovered.plot_no }}</strong>
+  <span>{{ hovered.status }} • {{ hovered.ocr_confidence }}%</span>
+  <small>{{ hovered.bounding_box.x }},{{ hovered.bounding_box.y }} • {{ hovered.bounding_box.width }}x{{ hovered.bounding_box.height }}</small>
+</div>
