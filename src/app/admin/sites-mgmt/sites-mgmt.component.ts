@@ -36,7 +36,12 @@ export class SitesMgmtComponent implements OnInit {
     city: '',
     state: 'Uttar Pradesh',
     full_address: '',
-    description: ''
+    description: '',
+    nearest_place: '',
+    landmark: '',
+    highway_distance: '',
+    airport_distance: '',
+    is_booking_enabled: true
   };
 
   editSiteForm = {
@@ -44,7 +49,12 @@ export class SitesMgmtComponent implements OnInit {
     city: '',
     state: '',
     full_address: '',
-    description: ''
+    description: '',
+    nearest_place: '',
+    landmark: '',
+    highway_distance: '',
+    airport_distance: '',
+    is_booking_enabled: true
   };
 
   newPlot = {
@@ -81,8 +91,13 @@ export class SitesMgmtComponent implements OnInit {
 
   loadSites() {
     this.loading = true;
+    const timeout = setTimeout(() => {
+      if (this.loading) this.loading = false;
+    }, 4000);
+
     this.api.adminGetSites().subscribe({
       next: (res: any) => {
+        clearTimeout(timeout);
         const list = res?.data || (Array.isArray(res) ? res : []);
         if (list && list.length) {
           this.sites = list;
@@ -93,14 +108,20 @@ export class SitesMgmtComponent implements OnInit {
         }
       },
       error: () => {
+        clearTimeout(timeout);
         this.fetchPublicSites();
       }
     });
   }
 
   fetchPublicSites() {
+    const timeout = setTimeout(() => {
+      this.loading = false;
+    }, 3000);
+
     this.api.getSites().subscribe({
       next: (res: any) => {
+        clearTimeout(timeout);
         this.sites = res?.data || (Array.isArray(res) ? res : []);
         if (this.sites.length) {
           this.selectSite(0);
@@ -108,6 +129,7 @@ export class SitesMgmtComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
+        clearTimeout(timeout);
         this.loading = false;
       }
     });
@@ -116,49 +138,80 @@ export class SitesMgmtComponent implements OnInit {
   selectSite(idx: number) {
     this.activeSiteIdx = idx;
     const site = this.sites[idx];
-    if (!site) return;
+    if (!site) {
+      this.plotsLoading = false;
+      return;
+    }
 
-    this.siteToggle.setActiveSiteId(site.site_id);
-    this.isInteractive = this.siteToggle.isSiteInteractive(site.site_id);
+    const siteId = Number(site.site_id || site.id || 0);
+    if (siteId) {
+      this.siteToggle.setActiveSiteId(siteId);
+    }
+    const storedToggle = site.is_booking_enabled !== undefined ? Boolean(site.is_booking_enabled) : (siteId ? this.siteToggle.isSiteInteractive(siteId) : true);
+    this.isInteractive = storedToggle;
 
     this.selectedPlot = null;
     this.resetView();
     this.plotsLoading = true;
 
-    // Fetch site map details (includes full site map image URL and plot polygon coordinates)
-    this.api.getSiteMap(site.site_id).subscribe({
-      next: (res: any) => {
-        const data = res?.data || res;
-        if (data?.site) {
-          this.sites[idx] = { ...site, ...data.site };
+    if (siteId) {
+      const plotTimeout = setTimeout(() => {
+        if (this.plotsLoading) this.plotsLoading = false;
+      }, 3500);
+
+      this.api.getSiteMap(siteId).subscribe({
+        next: (res: any) => {
+          clearTimeout(plotTimeout);
+          const data = res?.data || res;
+          if (data?.site) {
+            this.sites[idx] = { ...site, ...data.site, site_id: siteId };
+            if (data.site.is_booking_enabled !== undefined) {
+              this.isInteractive = Boolean(data.site.is_booking_enabled);
+            }
+          }
+          const plots = data?.plots || (Array.isArray(data) ? data : []);
+          if (plots && plots.length) {
+            this.sitePlots = this.processPlots(plots);
+            this.plotsLoading = false;
+          } else {
+            this.fetchAdminSitePlots(siteId);
+          }
+        },
+        error: () => {
+          clearTimeout(plotTimeout);
+          this.fetchAdminSitePlots(siteId);
         }
-        const plots = data?.plots || (Array.isArray(data) ? data : []);
-        if (plots && plots.length) {
-          this.sitePlots = plots;
-          this.plotsLoading = false;
-        } else {
-          this.fetchAdminSitePlots(site.site_id);
-        }
+      });
+    } else {
+      this.plotsLoading = false;
+    }
+  }
+
+  toggleInteractiveMode(enabled: boolean) {
+    const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
+    if (!siteId) return;
+    this.isInteractive = enabled;
+    this.activeSite.is_booking_enabled = enabled;
+    this.siteToggle.setSiteInteractive(siteId, enabled);
+
+    this.api.adminUpdateSite(siteId, { is_booking_enabled: enabled }).subscribe({
+      next: () => {
+        const siteName = this.activeSite.site_name || 'Site';
+        this.showToast(enabled ? `Enable Plot Booking turned ON for ${siteName}` : `Enable Plot Booking turned OFF for ${siteName}`);
       },
       error: () => {
-        this.fetchAdminSitePlots(site.site_id);
+        const siteName = this.activeSite.site_name || 'Site';
+        this.showToast(enabled ? `Enable Plot Booking turned ON for ${siteName}` : `Enable Plot Booking turned OFF for ${siteName}`);
       }
     });
   }
 
-  toggleInteractiveMode(enabled: boolean) {
-    if (!this.activeSite?.site_id) return;
-    this.isInteractive = enabled;
-    this.siteToggle.setSiteInteractive(this.activeSite.site_id, enabled);
-    const siteName = this.activeSite.site_name || 'Site';
-    this.showToast(enabled ? `Interactive Plot Mode turned ON for ${siteName}` : `Interactive Plot Mode turned OFF for ${siteName}`);
-  }
-
   fetchAdminSitePlots(siteId: number) {
+    if (!siteId) return;
     this.api.adminGetSitePlots(siteId).subscribe({
       next: (res: any) => {
         const plots = res?.data || (Array.isArray(res) ? res : []);
-        this.sitePlots = plots;
+        this.sitePlots = this.processPlots(plots);
         this.plotsLoading = false;
       },
       error: () => {
@@ -168,9 +221,11 @@ export class SitesMgmtComponent implements OnInit {
   }
 
   fetchFallbackSitePlots(siteId: number) {
+    if (!siteId) return;
     this.api.getSitePlots(siteId).subscribe({
       next: (res: any) => {
-        this.sitePlots = res?.data || (Array.isArray(res) ? res : []);
+        const plots = res?.data || (Array.isArray(res) ? res : []);
+        this.sitePlots = this.processPlots(plots);
         this.plotsLoading = false;
       },
       error: () => {
@@ -179,8 +234,19 @@ export class SitesMgmtComponent implements OnInit {
     });
   }
 
-  fetchPublicSitePlots(siteId: number) {
-    this.fetchAdminSitePlots(siteId);
+  processPlots(plots: any[]): any[] {
+    if (!Array.isArray(plots)) return [];
+    return plots.map(p => {
+      const points = this.pointsForPlot(p);
+      const polyStr = points.map(pt => `${pt.x},${pt.y}`).join(' ');
+      const labelPt = points.length ? points.reduce((acc, pt) => ({ x: acc.x + pt.x / points.length, y: acc.y + pt.y / points.length }), { x: 0, y: 0 }) : { x: 0, y: 0 };
+      return {
+        ...p,
+        _polygonPoints: polyStr,
+        _labelPoint: labelPt,
+        _color: this.plotColor(p.plot_status)
+      };
+    });
   }
 
   onSiteImageLoad(event: Event) {
@@ -192,7 +258,8 @@ export class SitesMgmtComponent implements OnInit {
 
   uploadSiteImage(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file || !this.activeSite?.site_id) return;
+    const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
+    if (!file || !siteId) return;
     if (!/\.(jpe?g|png|pdf|svg)$/i.test(file.name)) {
       this.showToast('Only JPG, JPEG, PNG, PDF, and SVG layout files are allowed.');
       (event.target as HTMLInputElement).value = '';
@@ -202,7 +269,7 @@ export class SitesMgmtComponent implements OnInit {
     form.append('site_map', file);
     form.append('map_image', file);
     this.actionLoading = true;
-    this.api.adminUploadSiteMap(this.activeSite.site_id, form).subscribe({
+    this.api.adminUploadSiteMap(siteId, form).subscribe({
       next: (res: any) => {
         this.actionLoading = false;
         const url = res?.data?.map_image_url || res?.data?.url || res?.map_image_url;
@@ -259,13 +326,11 @@ export class SitesMgmtComponent implements OnInit {
   }
 
   polygonPoints(plot: any): string {
-    return this.pointsForPlot(plot).map(p => `${p.x},${p.y}`).join(' ');
+    return plot?._polygonPoints || this.pointsForPlot(plot).map(p => `${p.x},${p.y}`).join(' ');
   }
 
   labelPoint(plot: any): { x: number; y: number } {
-    const points = this.pointsForPlot(plot);
-    if (!points.length) return { x: 0, y: 0 };
-    return points.reduce((acc, p) => ({ x: acc.x + p.x / points.length, y: acc.y + p.y / points.length }), { x: 0, y: 0 });
+    return plot?._labelPoint || { x: 0, y: 0 };
   }
 
   plotColor(status: string): string {
@@ -301,18 +366,29 @@ export class SitesMgmtComponent implements OnInit {
   // --- ACTIONS & MODALS ---
 
   addSite() {
-    if (!this.newSite.site_name) {
-      this.showToast('Site name is required');
+    if (!this.newSite.site_name || !this.newSite.city) {
+      this.showToast('Site name and city are required');
       return;
     }
     this.actionLoading = true;
     this.api.adminCreateSite(this.newSite).subscribe({
       next: (res: any) => {
-        if (res.success) {
+        if (res.success || res.site_id || res.id) {
           this.showToast('Site created successfully!');
           this.showAddSite = false;
           this.loadSites();
-          this.newSite = { site_name: '', city: '', state: 'Uttar Pradesh', full_address: '', description: '' };
+          this.newSite = {
+            site_name: '',
+            city: '',
+            state: 'Uttar Pradesh',
+            full_address: '',
+            description: '',
+            nearest_place: '',
+            landmark: '',
+            highway_distance: '',
+            airport_distance: '',
+            is_booking_enabled: true
+          };
         }
         this.actionLoading = false;
       },
@@ -329,20 +405,29 @@ export class SitesMgmtComponent implements OnInit {
       site_name: s.site_name || '',
       city: s.city || '',
       state: s.state || 'Uttar Pradesh',
-      full_address: s.full_address || '',
-      description: s.description || ''
+      full_address: s.full_address || s.address || '',
+      description: s.description || '',
+      nearest_place: s.nearest_place || '',
+      landmark: s.landmark || '',
+      highway_distance: s.highway_distance || '',
+      airport_distance: s.airport_distance || '',
+      is_booking_enabled: s.is_booking_enabled !== undefined ? Boolean(s.is_booking_enabled) : this.isInteractive
     };
     this.showEditSite = true;
   }
 
   updateSite() {
-    if (!this.activeSite.site_id) return;
+    const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
+    if (!siteId) return;
     this.actionLoading = true;
-    this.api.adminUpdateSite(this.activeSite.site_id, this.editSiteForm).subscribe({
+    this.api.adminUpdateSite(siteId, this.editSiteForm).subscribe({
       next: (res: any) => {
         if (res.success) {
           this.showToast('Site details updated!');
           this.showEditSite = false;
+          this.isInteractive = Boolean(this.editSiteForm.is_booking_enabled);
+          this.activeSite.is_booking_enabled = this.editSiteForm.is_booking_enabled;
+          this.siteToggle.setSiteInteractive(siteId, this.editSiteForm.is_booking_enabled);
           this.loadSites();
         }
         this.actionLoading = false;
@@ -367,12 +452,13 @@ export class SitesMgmtComponent implements OnInit {
   }
 
   saveNewPlot() {
-    if (!this.newPlot.plot_number || !this.activeSite.site_id) {
+    const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
+    if (!this.newPlot.plot_number || !siteId) {
       this.showToast('Plot number is required');
       return;
     }
     this.actionLoading = true;
-    this.api.adminCreateSitePlot(this.activeSite.site_id, this.newPlot).subscribe({
+    this.api.adminCreateSitePlot(siteId, this.newPlot).subscribe({
       next: (res: any) => {
         if (res.success) {
           this.showToast(`Plot #${this.newPlot.plot_number} created successfully!`);
@@ -393,6 +479,7 @@ export class SitesMgmtComponent implements OnInit {
       next: (res: any) => {
         if (res.success) {
           plot.plot_status = newStatus;
+          plot._color = this.plotColor(newStatus);
           this.showToast(`Plot #${plot.plot_number} status updated to ${newStatus}`);
         }
       },

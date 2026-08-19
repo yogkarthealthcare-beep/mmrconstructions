@@ -56,7 +56,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       ]
     },
     {
-      label: 'PROPERTY & PLOT TOOLS',
+      label: 'PROPERTY & PLOT',
       icon: 'fas fa-building',
       expanded: false,
       items: [
@@ -166,7 +166,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   get navGroups(): NavGroup[] {
     return this.rawNavGroups.map(group => {
-      if (group.label === 'PROPERTY & PLOT TOOLS' && !this.activeSiteInteractive) {
+      if (group.label === 'PROPERTY & PLOT' && !this.activeSiteInteractive) {
         return {
           ...group,
           items: group.items.filter(item =>

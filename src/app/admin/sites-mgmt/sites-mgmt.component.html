@@ -169,12 +169,16 @@
           <table class="table table-sm text-dark fs-12 mb-3">
             <tbody>
               <tr><td class="text-muted">Site Name:</td><td class="fw-700">{{ activeSite?.site_name }}</td></tr>
-              <tr><td class="text-muted">City / Location:</td><td class="fw-700">{{ activeSite?.city || 'U.P.' }}</td></tr>
+              <tr><td class="text-muted">Address:</td><td class="fw-700">{{ activeSite?.full_address || activeSite?.city || 'Uttar Pradesh' }}</td></tr>
+              <tr *ngIf="activeSite?.nearest_place"><td class="text-muted">Nearest Place:</td><td class="fw-700">{{ activeSite?.nearest_place }}</td></tr>
+              <tr *ngIf="activeSite?.landmark"><td class="text-muted">Landmark:</td><td class="fw-700">{{ activeSite?.landmark }}</td></tr>
+              <tr *ngIf="activeSite?.highway_distance"><td class="text-muted">Highway Distance:</td><td class="fw-700">{{ activeSite?.highway_distance }}</td></tr>
+              <tr *ngIf="activeSite?.airport_distance"><td class="text-muted">Airport Distance:</td><td class="fw-700">{{ activeSite?.airport_distance }}</td></tr>
               <tr><td class="text-muted">Total Plots Registered:</td><td class="fw-700">{{ activeSite?.total_plots || sitePlots.length || 0 }} Plots</td></tr>
-              <tr><td class="text-muted">Interactive Plot Mode:</td><td><span class="badge bg-secondary">OFF (Image Only)</span></td></tr>
+              <tr><td class="text-muted">Enable Plot Booking:</td><td><span class="badge" [ngClass]="isInteractive ? 'bg-success' : 'bg-secondary'">{{ isInteractive ? 'ON (Active)' : 'OFF (Image Only)' }}</span></td></tr>
             </tbody>
           </table>
-          <p class="fs-11 text-muted mb-0"><i class="fas fa-lightbulb text-gold me-1"></i> When Interactive Plot Mode is OFF, public site map will display only the actual site image without green plot overlays.</p>
+          <p class="fs-11 text-muted mb-0"><i class="fas fa-lightbulb text-gold me-1"></i> When Enable Plot Booking is OFF, public site map will display only the actual site image without green plot overlays.</p>
         </div>
       </div>
 
@@ -292,9 +296,9 @@
             <g class="plot-overlay-svg">
               <g *ngFor="let p of filteredPlots" class="plot-group">
                 <polygon
-                  *ngIf="polygonPoints(p)"
-                  [attr.points]="polygonPoints(p)"
-                  [attr.fill]="plotColor(p.plot_status)"
+                  *ngIf="p._polygonPoints"
+                  [attr.points]="p._polygonPoints"
+                  [attr.fill]="p._color || plotColor(p.plot_status)"
                   fill-opacity="0.55"
                   stroke="#ffffff"
                   stroke-width="0.35"
@@ -305,9 +309,9 @@
                 </polygon>
 
                 <text
-                  *ngIf="polygonPoints(p)"
-                  [attr.x]="labelPoint(p).x"
-                  [attr.y]="labelPoint(p).y"
+                  *ngIf="p._polygonPoints"
+                  [attr.x]="p._labelPoint?.x || 0"
+                  [attr.y]="p._labelPoint?.y || 0"
                   text-anchor="middle"
                   dominant-baseline="central"
                   fill="#ffffff"
@@ -519,6 +523,38 @@
             <label class="form-label fs-11 fw-700 text-dark">Description</label>
             <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="newSite.description" placeholder="Project highlights, amenities..."></textarea>
           </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Nearest Place</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newSite.nearest_place" placeholder="e.g. Highway Junction / Barrage">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Landmark</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newSite.landmark" placeholder="e.g. Near IIT Kanpur">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Highway Distance</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newSite.highway_distance" placeholder="e.g. 500m from NH-27">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Airport Distance</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newSite.airport_distance" placeholder="e.g. 15 km from Airport">
+          </div>
+
+          <div class="col-12 border-top pt-3">
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-8 border">
+              <div>
+                <div class="fw-700 text-dark fs-12"><i class="fas fa-calendar-check text-emerald me-2"></i>Enable Plot Booking</div>
+                <div class="fs-11 text-muted">Controls whether the Plot Booking System is enabled for this Site.</div>
+              </div>
+              <div class="form-check form-switch fs-5 mb-0">
+                <input class="form-check-input cursor-pointer" type="checkbox" role="switch" [(ngModel)]="newSite.is_booking_enabled">
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -569,7 +605,39 @@
             <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="editSiteForm.description"></textarea>
           </div>
 
-          <div class="col-12 border-top pt-3 mt-2">
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Nearest Place</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="editSiteForm.nearest_place" placeholder="e.g. Highway Junction">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Landmark</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="editSiteForm.landmark" placeholder="e.g. Near IIT Kanpur">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Highway Distance</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="editSiteForm.highway_distance" placeholder="e.g. 500m from NH-27">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Airport Distance</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="editSiteForm.airport_distance" placeholder="e.g. 15 km from Airport">
+          </div>
+
+          <div class="col-12 border-top pt-3">
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-8 border">
+              <div>
+                <div class="fw-700 text-dark fs-12"><i class="fas fa-calendar-check text-emerald me-2"></i>Enable Plot Booking</div>
+                <div class="fs-11 text-muted">Controls whether the Plot Booking System is enabled for this Site.</div>
+              </div>
+              <div class="form-check form-switch fs-5 mb-0">
+                <input class="form-check-input cursor-pointer" type="checkbox" role="switch" [(ngModel)]="editSiteForm.is_booking_enabled">
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 border-top pt-3">
             <label class="form-label fs-11 fw-700 text-dark">Upload / Update Site Image (Layout Map)</label>
             <div class="d-flex align-items-center gap-2">
               <input type="file" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.pdf,.svg,image/*,application/pdf" (change)="uploadSiteImage($event)">
