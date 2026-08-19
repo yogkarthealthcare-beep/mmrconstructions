@@ -91,46 +91,58 @@ export class SitesMgmtComponent implements OnInit {
 
   loadSites() {
     this.loading = true;
-    const timeout = setTimeout(() => {
-      if (this.loading) this.loading = false;
-    }, 4000);
+    const hasAdminToken = Boolean(localStorage.getItem('mmr_admin_token'));
 
-    this.api.adminGetSites().subscribe({
-      next: (res: any) => {
-        clearTimeout(timeout);
-        const list = res?.data || (Array.isArray(res) ? res : []);
-        if (list && list.length) {
-          this.sites = list;
-          this.selectSite(0);
-          this.loading = false;
-        } else {
-          this.fetchPublicSites();
-        }
-      },
-      error: () => {
-        clearTimeout(timeout);
-        this.fetchPublicSites();
+    const safetyTimer = setTimeout(() => {
+      if (this.loading) this.loading = false;
+    }, 2500);
+
+    const onSitesLoaded = (list: any[]) => {
+      clearTimeout(safetyTimer);
+      this.sites = Array.isArray(list) ? list : [];
+      this.loading = false;
+      if (this.sites.length > 0) {
+        this.selectSite(0);
       }
-    });
+    };
+
+    if (hasAdminToken) {
+      this.api.adminGetSites().subscribe({
+        next: (res: any) => {
+          const list = res?.data || (Array.isArray(res) ? res : []);
+          if (list && list.length) {
+            onSitesLoaded(list);
+          } else {
+            this.fetchPublicSites(onSitesLoaded);
+          }
+        },
+        error: () => {
+          this.fetchPublicSites(onSitesLoaded);
+        }
+      });
+    } else {
+      this.fetchPublicSites(onSitesLoaded);
+    }
   }
 
-  fetchPublicSites() {
-    const timeout = setTimeout(() => {
-      this.loading = false;
-    }, 3000);
-
+  fetchPublicSites(callback?: (list: any[]) => void) {
     this.api.getSites().subscribe({
       next: (res: any) => {
-        clearTimeout(timeout);
-        this.sites = res?.data || (Array.isArray(res) ? res : []);
-        if (this.sites.length) {
-          this.selectSite(0);
+        const list = res?.data || (Array.isArray(res) ? res : []);
+        if (callback) {
+          callback(list);
+        } else {
+          this.sites = list;
+          this.loading = false;
+          if (this.sites.length) this.selectSite(0);
         }
-        this.loading = false;
       },
       error: () => {
-        clearTimeout(timeout);
-        this.loading = false;
+        if (callback) {
+          callback([]);
+        } else {
+          this.loading = false;
+        }
       }
     });
   }
@@ -157,14 +169,23 @@ export class SitesMgmtComponent implements OnInit {
     if (siteId) {
       const plotTimeout = setTimeout(() => {
         if (this.plotsLoading) this.plotsLoading = false;
-      }, 3500);
+      }, 2500);
 
       this.api.getSiteMap(siteId).subscribe({
         next: (res: any) => {
           clearTimeout(plotTimeout);
           const data = res?.data || res;
           if (data?.site) {
-            this.sites[idx] = { ...site, ...data.site, site_id: siteId };
+            this.sites[idx] = {
+              ...site,
+              ...data.site,
+              site_id: siteId,
+              nearest_place: data.site.nearest_place || site.nearest_place,
+              landmark: data.site.landmark || site.landmark,
+              highway_distance: data.site.highway_distance || site.highway_distance,
+              airport_distance: data.site.airport_distance || site.airport_distance,
+              is_booking_enabled: data.site.is_booking_enabled !== undefined ? Boolean(data.site.is_booking_enabled) : storedToggle
+            };
             if (data.site.is_booking_enabled !== undefined) {
               this.isInteractive = Boolean(data.site.is_booking_enabled);
             }
