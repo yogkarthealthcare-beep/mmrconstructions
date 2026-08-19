@@ -12,37 +12,37 @@
       <p class="admin-hero-sub mb-0">Manage project sites, plot layouts, price rates per sqft, and real-time inventory availability.</p>
     </div>
 
-      <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
-        <!-- SITE INTERACTIVE TOGGLE SWITCH -->
-        <div class="site-mode-toggle-pill d-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border" style="background: rgba(255,255,255,0.15); border-color: rgba(201,168,76,0.5) !important;">
-          <span class="fs-11 fw-800 text-uppercase letter-spacing-1" [style.color]="isInteractive ? '#e8c97a' : 'rgba(255,255,255,0.7)'">
-            <i class="fas" [ngClass]="isInteractive ? 'fa-bolt text-gold me-1' : 'fa-image text-white-50 me-1'"></i>
-            {{ isInteractive ? 'Plot Mode: ON' : 'Plot Mode: OFF' }}
-          </span>
-          <div class="form-check form-switch mb-0 ms-1 p-0">
-            <input class="form-check-input cursor-pointer" type="checkbox" role="switch" [checked]="isInteractive" (change)="toggleInteractiveMode($any($event.target).checked)" title="Toggle Property & Plot Mode">
-          </div>
+    <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+      <!-- SITE INTERACTIVE TOGGLE SWITCH -->
+      <div class="site-mode-toggle-pill d-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border" style="background: rgba(255,255,255,0.15); border-color: rgba(201,168,76,0.5) !important;">
+        <span class="fs-11 fw-800 text-uppercase letter-spacing-1" [style.color]="isInteractive ? '#e8c97a' : 'rgba(255,255,255,0.7)'">
+          <i class="fas" [ngClass]="isInteractive ? 'fa-bolt text-gold me-1' : 'fa-image text-white-50 me-1'"></i>
+          {{ isInteractive ? 'Plot Mode: ON' : 'Plot Mode: OFF' }}
+        </span>
+        <div class="form-check form-switch mb-0 ms-1 p-0">
+          <input class="form-check-input cursor-pointer" type="checkbox" role="switch" [checked]="isInteractive" (change)="toggleInteractiveMode($any($event.target).checked)" title="Toggle Property & Plot Mode">
         </div>
-
-        <button class="btn btn-outline-light btn-xs" (click)="loadSites()">
-          <i class="fas fa-sync me-1"></i> Refresh
-        </button>
-        <a routerLink="/admin/plot-detector-tool" class="btn btn-outline-light btn-xs" *ngIf="isInteractive">
-          <i class="fas fa-wand-magic-sparkles me-1"></i> Plot Detector Tool
-        </a>
-        <a [routerLink]="['/site-map', activeSite?.site_id]" target="_blank" class="btn btn-outline-gold btn-xs" *ngIf="activeSite?.site_id">
-          <i class="fas fa-eye me-1"></i> Preview Site Map
-        </a>
-        <button class="btn btn-outline-gold btn-xs" (click)="openEditSiteModal()" *ngIf="sites.length > 0">
-          <i class="fas fa-edit me-1"></i> Edit Site Details
-        </button>
-        <button class="btn btn-gold btn-xs" (click)="openAddPlotModal()" *ngIf="sites.length > 0 && isInteractive">
-          <i class="fas fa-th-large me-1"></i> + Add Plot
-        </button>
-        <button class="btn btn-gold btn-xs" (click)="showAddSite=true">
-          <i class="fas fa-plus me-1"></i> + Add New Site
-        </button>
       </div>
+
+      <button class="btn btn-outline-light btn-xs" (click)="loadSites()">
+        <i class="fas fa-sync me-1"></i> Refresh
+      </button>
+      <a routerLink="/admin/plot-detector-tool" class="btn btn-outline-light btn-xs" *ngIf="isInteractive">
+        <i class="fas fa-wand-magic-sparkles me-1"></i> Plot Detector Tool
+      </a>
+      <a [routerLink]="['/site-map', activeSite?.site_id || activeSite?.id]" target="_blank" class="btn btn-outline-gold btn-xs" *ngIf="activeSite?.site_id || activeSite?.id">
+        <i class="fas fa-eye me-1"></i> Preview Site Map
+      </a>
+      <button class="btn btn-outline-gold btn-xs" (click)="openEditSiteModal()" *ngIf="sites.length > 0">
+        <i class="fas fa-edit me-1"></i> Edit Site Details
+      </button>
+      <button class="btn btn-gold btn-xs" (click)="openAddPlotModal()" *ngIf="sites.length > 0 && isInteractive">
+        <i class="fas fa-th-large me-1"></i> + Add Plot
+      </button>
+      <button class="btn btn-gold btn-xs" (click)="showAddSite=true">
+        <i class="fas fa-plus me-1"></i> + Add New Site
+      </button>
+    </div>
   </div>
 </div>
 
@@ -231,50 +231,18 @@
     <div class="sites-3col-grid">
       
       <!-- MAIN MAP CANVAS AREA (LEFT / CENTER) -->
-      <div class="panel-card p-3 main-map-canvas-card">
-        <!-- HEADER ROW: SITE TITLE & ACTIONS -->
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 border-bottom pb-2">
-          <h4 class="site-title-serif mb-0">{{ activeSite?.site_name || 'AIMA Site' }}</h4>
+      <div class="site-map-stage-card">
+        <div class="stage-header d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-light">
           <div class="d-flex align-items-center gap-2">
-            <label class="btn btn-emerald-pill btn-xs mb-0" style="cursor: pointer;">
-              <i class="fas fa-upload me-1"></i> Upload Site Image
-              <input type="file" hidden accept=".jpg,.jpeg,.png,.pdf,.svg,image/*,application/pdf" (change)="uploadSiteImage($event)">
-            </label>
-            <a routerLink="/admin/plot-map-editor" class="btn btn-outline-emerald-pill btn-xs">
-              <i class="fas fa-map-marked-alt me-1"></i> Open Map Editor
-            </a>
+            <span class="badge bg-gold text-dark font-mono"><i class="fas fa-layer-group me-1"></i>SITE VISUAL CANVAS</span>
+            <span class="fs-12 fw-700 text-dark">{{ activeSite?.site_name }} Master Plan</span>
           </div>
-        </div>
 
-        <!-- STATUS LEGEND BADGES ROW -->
-        <div class="status-legend-bar d-flex align-items-center gap-3 mb-3 flex-wrap">
-          <span class="legend-badge"><span class="dot vacant-dot"></span> Vacant</span>
-          <span class="legend-badge"><span class="dot inprocess-dot"></span> In Process</span>
-          <span class="legend-badge"><span class="dot booked-dot"></span> Booked</span>
-          <span class="legend-badge"><span class="dot sold-dot"></span> Sold</span>
-        </div>
-
-        <!-- INTERACTIVE TOOLBAR ROW -->
-        <div class="visual-toolbar-box p-2 mb-3">
-          <div class="d-flex align-items-center justify-content-between flex-wrap gap-1.5">
-            <div class="d-flex align-items-center gap-1.5">
-              <button class="vtool-btn" (click)="zoomOut()" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
-              <button class="vtool-btn" (click)="resetView()" title="Fit Screen"><i class="fas fa-compress-arrows-alt"></i></button>
-              <button class="vtool-btn" (click)="zoomIn()" title="Zoom In"><i class="fas fa-search-plus"></i></button>
-              <span class="zoom-pill-readout ms-1">{{ zoom | number:'1.1-1' }}x</span>
-            </div>
-            <div class="d-flex align-items-center gap-1.5 ms-auto">
-              <label class="vtool-pill-btn vtool-active-green mb-0" style="cursor: pointer;">
-                <i class="fas fa-upload me-1"></i> Upload Site Image
-                <input type="file" hidden accept=".jpg,.jpeg,.png,.pdf,.svg,image/*,application/pdf" (change)="uploadSiteImage($event)">
-              </label>
-              <a routerLink="/admin/plot-map-editor" class="vtool-pill-btn">
-                <i class="fas fa-edit me-1"></i> Map Editor
-              </a>
-              <a routerLink="/admin/plot-detector-tool" class="vtool-pill-btn">
-                <i class="fas fa-wand-magic-sparkles me-1"></i> Plot Detector Tool
-              </a>
-            </div>
+          <div class="zoom-tools d-flex align-items-center gap-1">
+            <button class="btn btn-xs btn-outline-secondary" (click)="zoomOut()"><i class="fas fa-minus"></i></button>
+            <span class="fs-11 fw-700 px-2 text-dark">{{ zoom * 100 | number:'1.0-0' }}%</span>
+            <button class="btn btn-xs btn-outline-secondary" (click)="zoomIn()"><i class="fas fa-plus"></i></button>
+            <button class="btn btn-xs btn-outline-secondary" (click)="resetView()"><i class="fas fa-rotate-right"></i></button>
           </div>
         </div>
 
@@ -335,132 +303,80 @@
           </svg>
 
           <ng-template #noSiteImageStage>
-            <div class="d-flex flex-column align-items-center justify-content-center py-5 text-center px-3" style="min-height: 440px;">
-              <i class="fas fa-map-marked-alt text-gold mb-3" style="font-size: 3.5rem; opacity: 0.8;"></i>
-              <h5 class="text-white fw-700 mb-2">No Site Image Uploaded</h5>
-              <p class="text-muted fs-13 mb-4" style="max-width: 480px;">
-                Upload a site plan / layout image for {{ activeSite?.site_name || 'this site' }} to view plot boundaries overlaying the site image.
-              </p>
-              <div class="d-flex gap-2">
-                <label class="btn btn-gold btn-sm mb-0" style="cursor: pointer;">
-                  <i class="fas fa-upload me-1.5"></i> Select & Upload Site Image
-                  <input type="file" hidden accept=".jpg,.jpeg,.png,.pdf,.svg,image/*,application/pdf" (change)="uploadSiteImage($event)">
-                </label>
-                <a routerLink="/admin/plot-detector-tool" class="btn btn-outline-light btn-sm">
-                  <i class="fas fa-wand-magic-sparkles me-1.5"></i> Auto Detect Plots
-                </a>
-              </div>
+            <div class="text-center py-5 text-white-50">
+              <i class="fas fa-file-image fs-1 text-gold mb-3"></i>
+              <h5>No Site Image Uploaded</h5>
+              <p class="fs-12 text-muted mb-3">Upload a site map layout plan for {{ activeSite?.site_name }}.</p>
+              <label class="btn btn-emerald btn-xs cursor-pointer">
+                <i class="fas fa-upload me-1"></i> Upload Site Image
+                <input type="file" hidden accept=".jpg,.jpeg,.png,.pdf,.svg,image/*,application/pdf" (change)="uploadSiteImage($event)">
+              </label>
             </div>
           </ng-template>
         </div>
       </div>
 
-      <!-- RIGHT PLOTS SIDEBAR PANEL -->
-      <div class="panel-card p-3 right-plots-drawer">
-        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-          <h5 class="fw-700 text-dark mb-0 fs-16">Plots</h5>
-          <span class="badge bg-emerald-subtle text-emerald fs-11 px-2 py-1" style="border-radius: 20px;">
-            {{ filteredPlots.length }} Plots
-          </span>
-        </div>
-
-        <!-- SEARCH & STATUS FILTERS -->
-        <div class="plot-drawer-filters mb-3">
-          <div class="search-box position-relative mb-2">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="plotSearch" placeholder="Search plot">
+      <!-- RIGHT PLOTS INVENTORY PANEL -->
+      <div class="plots-sidebar-card">
+        <div class="card-header bg-dark-emerald text-white p-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <span class="fs-13 fw-700"><i class="fas fa-th-list text-gold me-2"></i>Plot Inventory Grid</span>
+            <span class="badge bg-gold text-dark fs-10 font-mono">{{ filteredPlots.length }} Plots</span>
           </div>
-          <select class="form-select form-select-sm" [(ngModel)]="plotFilter">
-            <option value="all">All Status</option>
-            <option value="vacant">Vacant</option>
-            <option value="booked">Booked</option>
-            <option value="sold">Sold</option>
-          </select>
         </div>
 
-        <!-- SCROLLABLE PLOT CARDS LIST -->
-        <div class="drawer-plot-list">
-          <div *ngFor="let p of filteredPlots" class="drawer-plot-item mb-2 p-2">
-            <div class="d-flex align-items-center gap-2">
-              <div class="plot-status-sq"
-                [class.bg-vacant]="p.plot_status==='Available'||p.plot_status==='Vacant'"
-                [class.bg-inprocess]="p.plot_status==='InProcess'||p.plot_status==='PaymentPending'"
-                [class.bg-booked]="p.plot_status==='Booked'||p.plot_status==='Hold'"
-                [class.bg-sold]="p.plot_status==='Sold'">
-              </div>
-              <div class="plot-item-meta flex-fill">
-                <div class="d-flex align-items-center gap-1">
-                  <span class="fw-700 text-dark fs-11">Plot {{ p.plot_number }}</span>
-                  <span class="fs-10 text-muted">({{ p.sqft || 120 }} sq.ft)</span>
-                </div>
-                <div class="fs-10 fw-700"
-                  [class.text-emerald]="p.plot_status==='Available'||p.plot_status==='Vacant'"
-                  [class.text-amber]="p.plot_status==='InProcess'||p.plot_status==='PaymentPending'"
-                  [class.text-danger]="p.plot_status==='Booked'||p.plot_status==='Hold'"
-                  [class.text-secondary]="p.plot_status==='Sold'">
-                  {{ p.plot_status || 'Vacant' }}
-                </div>
-              </div>
-              <select class="form-select form-select-xs status-pill-select"
-                [ngModel]="p.plot_status || 'Available'"
-                (change)="changePlotStatus(p, $any($event.target).value)">
-                <option value="Available">Vacant</option>
-                <option value="InProcess">In Process</option>
-                <option value="Booked">Booked</option>
-                <option value="Sold">Sold</option>
-              </select>
+        <div class="plots-grid-list p-2" style="max-height: 480px; overflow-y: auto;">
+          <div class="plot-mini-item p-2 mb-2 border rounded-8 bg-white shadow-xs"
+               *ngFor="let p of filteredPlots"
+               [class.selected-item]="selectedPlot?.plot_id === p.plot_id"
+               (click)="selectPlot(p)">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="fw-700 text-dark fs-12">Plot {{ p.plot_number }} ({{ p.sqft || 1000 }} sq.ft)</span>
+              <span class="badge bg-light text-dark border fs-10">{{ p.facing_direction || 'East' }}</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fw-700 text-emerald fs-11">₹{{ ((p.sqft || 1000) * (p.rate_per_sqft || 1200)) | number:'1.0-0' }}</span>
+              <span class="sbadge"
+                [class.sbadge-green]="p.plot_status==='Available'||p.plot_status==='Vacant'"
+                [class.sbadge-yellow]="p.plot_status==='Booked'||p.plot_status==='InProcess'||p.plot_status==='PaymentPending'"
+                [class.sbadge-red]="p.plot_status==='Sold'">
+                {{ p.plot_status || 'Available' }}
+              </span>
             </div>
           </div>
 
           <div *ngIf="filteredPlots.length === 0" class="text-center py-4 text-muted fs-12">
-            No matching plots found
+            <i class="fas fa-search me-1"></i> No plots match your search.
           </div>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- PLOT DIRECTORY TABLE CARD -->
-  <div class="panel-card p-3 mb-2">
+  <!-- FULL TABLE LIST OF PLOTS (Visible when Toggle ON) -->
+  <div class="panel-card p-3 mb-4" *ngIf="isInteractive && sitePlots.length > 0">
     <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-      <h6 class="fw-700 text-dark mb-0"><i class="fas fa-list text-emerald me-2"></i>Plot Inventory Directory ({{ filteredPlots.length }})</h6>
-      <button class="btn btn-gold btn-xs" (click)="openAddPlotModal()">
-        <i class="fas fa-plus me-1"></i> Add Plot
-      </button>
+      <h5 class="fs-14 fw-700 text-dark mb-0"><i class="fas fa-table text-emerald me-2"></i>Detailed Plot Records Directory</h5>
+      <span class="badge bg-light text-dark border fs-11">{{ sitePlots.length }} Total Registered Plots</span>
     </div>
 
-    <div *ngIf="plotsLoading" class="text-center py-5">
-      <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
-      <p class="text-muted fs-12 mt-2 mb-0">Loading plots for {{ activeSite.site_name }}...</p>
-    </div>
-
-    <div *ngIf="!plotsLoading &amp;&amp; filteredPlots.length === 0" class="text-center py-5">
-      <i class="fas fa-map-marked-alt text-muted fs-1 mb-2"></i>
-      <h6 class="fw-700 text-dark mb-1">No Plots Found</h6>
-      <p class="text-muted fs-12 mb-0">No plots added yet for this site. Click "+ Add Plot" to create plots.</p>
-    </div>
-
-    <div class="table-responsive" *ngIf="!plotsLoading &amp;&amp; filteredPlots.length > 0">
-      <table class="table align-middle custom-dash-table mb-0">
-        <thead>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
           <tr>
-            <th>Plot #</th>
-            <th>Area (Sqft)</th>
-            <th>Rate / Sqft</th>
-            <th>Total Base Price</th>
-            <th>Facing</th>
-            <th>Plot Status</th>
-            <th class="text-end">Quick Action</th>
+            <th class="fs-11 fw-700 text-dark">Plot #</th>
+            <th class="fs-11 fw-700 text-dark">Area (sqft)</th>
+            <th class="fs-11 fw-700 text-dark">Rate / sqft</th>
+            <th class="fs-11 fw-700 text-dark">Total Price</th>
+            <th class="fs-11 fw-700 text-dark">Facing</th>
+            <th class="fs-11 fw-700 text-dark">Status</th>
+            <th class="fs-11 fw-700 text-dark text-end">Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let p of filteredPlots">
-            <td>
-              <span class="fw-700 text-primary fs-13">Plot #{{ p.plot_number }}</span>
-              <div class="fs-10 text-muted" *ngIf="p.khasra_number">Khasra: {{ p.khasra_number }}</div>
-            </td>
-            <td class="fw-600 text-dark fs-12">{{ p.sqft || p.plot_area || 1000 }} sqft</td>
+            <td class="fw-700 text-dark fs-12">Plot {{ p.plot_number }}</td>
+            <td class="fs-12 text-muted">{{ p.sqft || 1000 }} sq.ft</td>
             <td class="fs-12 text-muted">₹{{ p.rate_per_sqft || 1200 }}/sqft</td>
             <td class="fw-700 text-dark fs-12">₹{{ ((p.sqft || 1000) * (p.rate_per_sqft || 1200)) | number:'1.0-0' }}</td>
             <td>
@@ -668,13 +584,13 @@
   </div>
 </div>
 
-<!-- ADD NEW PLOT MODAL -->
+<!-- ADD PLOT MODAL -->
 <div class="modal-backdrop fade show" *ngIf="showAddPlot"></div>
 <div class="modal d-block fade show" tabIndex="-1" *ngIf="showAddPlot" (click)="closeModals()">
   <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content border-0 rounded-14 shadow-lg">
       <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-th-large text-gold me-2"></i>Add Plot to {{ activeSite?.site_name }}</h5>
+        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-th-large text-gold me-2"></i>Add New Plot to {{ activeSite?.site_name }}</h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
       </div>
 
@@ -682,16 +598,16 @@
         <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label fs-11 fw-700 text-dark">Plot Number *</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="newPlot.plot_number" placeholder="e.g. 101">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newPlot.plot_number" placeholder="e.g. A-101">
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Area (Sqft) *</label>
+            <label class="form-label fs-11 fw-700 text-dark">Plot Area (sq.ft) *</label>
             <input type="number" class="form-control form-control-sm" [(ngModel)]="newPlot.sqft" placeholder="1000">
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Rate / Sqft (₹) *</label>
+            <label class="form-label fs-11 fw-700 text-dark">Rate per sq.ft (₹) *</label>
             <input type="number" class="form-control form-control-sm" [(ngModel)]="newPlot.rate_per_sqft" placeholder="1200">
           </div>
 
@@ -708,9 +624,9 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Initial Plot Status</label>
+            <label class="form-label fs-11 fw-700 text-dark">Plot Status</label>
             <select class="form-select form-select-sm" [(ngModel)]="newPlot.plot_status">
-              <option value="Available">Available / Vacant</option>
+              <option value="Available">Available</option>
               <option value="Booked">Booked</option>
               <option value="Sold">Sold</option>
               <option value="Hold">Hold</option>
@@ -718,19 +634,18 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Khasra Number</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="newPlot.khasra_number" placeholder="Optional khasra #">
+            <label class="form-label fs-11 fw-700 text-dark">Khasra / Survey #</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newPlot.khasra_number" placeholder="Optional">
           </div>
         </div>
       </div>
 
       <div class="modal-footer bg-light rounded-bottom-14 p-3">
         <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Cancel</button>
-        <button type="button" class="btn btn-emerald btn-xs" (click)="saveNewPlot()" [disabled]="actionLoading">
-          <i class="fas fa-plus me-1"></i> Add Plot
+        <button type="button" class="btn btn-gold btn-xs" (click)="saveNewPlot()" [disabled]="actionLoading">
+          <i class="fas fa-plus-circle me-1"></i> Add Plot
         </button>
       </div>
     </div>
   </div>
 </div>
-

@@ -89,13 +89,34 @@ export class SitesMgmtComponent implements OnInit {
     return path ? this.api.url(path) : '';
   }
 
+  get activeSite(): any {
+    return this.sites[this.activeSiteIdx] || {};
+  }
+
+  get filteredPlots(): any[] {
+    return this.sitePlots.filter(p => {
+      const matchFilter =
+        this.plotFilter === 'all' ? true :
+        this.plotFilter === 'vacant' ? (p.plot_status === 'Available' || p.plot_status === 'Vacant') :
+        p.plot_status?.toLowerCase() === this.plotFilter.toLowerCase();
+
+      const q = this.plotSearch.trim().toLowerCase();
+      const matchSearch = !q ||
+        p.plot_number?.toString().toLowerCase().includes(q) ||
+        p.sqft?.toString().includes(q) ||
+        p.facing_direction?.toLowerCase().includes(q);
+
+      return matchFilter && matchSearch;
+    });
+  }
+
   loadSites() {
     this.loading = true;
     const hasAdminToken = Boolean(localStorage.getItem('mmr_admin_token'));
 
     const safetyTimer = setTimeout(() => {
       if (this.loading) this.loading = false;
-    }, 2500);
+    }, 2000);
 
     const onSitesLoaded = (list: any[]) => {
       clearTimeout(safetyTimer);
@@ -169,7 +190,7 @@ export class SitesMgmtComponent implements OnInit {
     if (siteId) {
       const plotTimeout = setTimeout(() => {
         if (this.plotsLoading) this.plotsLoading = false;
-      }, 2500);
+      }, 2000);
 
       this.api.getSiteMap(siteId).subscribe({
         next: (res: any) => {
@@ -361,27 +382,6 @@ export class SitesMgmtComponent implements OnInit {
     if (clean === 'booked' || clean === 'hold') return '#ef4444';
     if (clean === 'sold') return '#6b7280';
     return '#16a34a';
-  }
-
-  get activeSite() {
-    return this.sites[this.activeSiteIdx] || {};
-  }
-
-  get filteredPlots(): any[] {
-    return this.sitePlots.filter(p => {
-      const matchFilter =
-        this.plotFilter === 'all' ? true :
-        this.plotFilter === 'vacant' ? (p.plot_status === 'Available' || p.plot_status === 'Vacant') :
-        p.plot_status?.toLowerCase() === this.plotFilter.toLowerCase();
-
-      const q = this.plotSearch.trim().toLowerCase();
-      const matchSearch = !q ||
-        p.plot_number?.toString().toLowerCase().includes(q) ||
-        p.sqft?.toString().includes(q) ||
-        p.facing_direction?.toLowerCase().includes(q);
-
-      return matchFilter && matchSearch;
-    });
   }
 
   // --- ACTIONS & MODALS ---
