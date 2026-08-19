@@ -1,1 +1,279 @@
-.investors-section{background:linear-gradient(180deg,#f7faf8,#fff)}.investor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,220px));gap:26px;justify-content:center}.investor-grid article{text-align:center;background:#fff;border:1px solid var(--bdr);border-radius:16px;padding:24px 14px;box-shadow:0 8px 24px rgba(18,69,44,.06)}.portrait{width:160px;height:160px;max-width:100%;margin:0 auto 17px;border-radius:50%;padding:5px;background:linear-gradient(135deg,var(--clr-gold),var(--clr-green));box-shadow:0 10px 26px rgba(0,0,0,.15)}.portrait img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#e8efe9}.investor-grid h3{font-size:1.05rem;margin:0}.investor-loading,.investor-empty{text-align:center;color:var(--clr-green);padding:40px}.investor-empty{background:#fff;border:1px dashed rgba(15,107,72,.24);border-radius:14px;color:var(--txt-muted)}@media(max-width:650px){.investor-grid{grid-template-columns:repeat(auto-fit,minmax(140px,160px));gap:12px}.investor-grid article{padding:17px 8px}.portrait{width:120px;height:120px}.investor-grid h3{font-size:.9rem}}@media(max-width:340px){.portrait{width:102px;height:102px}}
+.investors-section {
+  background: linear-gradient(135deg, #072717 0%, #0e422a 50%, #051a0f 100%);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 8px 24px rgba(0, 0, 0, 0.2);
+  padding: 60px 0;
+}
+
+.investors-section::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(201, 168, 76, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.investor-sec-label {
+  justify-content: center;
+  color: #c9a84c !important;
+  background: rgba(201, 168, 76, 0.15);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  padding: 4px 14px;
+  border-radius: 99px;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.text-gold { color: #c9a84c !important; }
+.text-gold-lt { color: #e8c97a !important; }
+.text-gold-sub { color: rgba(232, 201, 122, 0.85); }
+.text-gold-dark { color: #d4b55c !important; }
+
+/* ── MULTI-ROW FLEX CONTAINER WITH STRICT CENTER ALIGNMENT ── */
+.investor-rows-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.investor-row {
+  width: 100%;
+  display: flex;
+  justify-content: center; /* STRICT CENTER ALIGNMENT FOR EVERY ROW */
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ── COMMON INVESTOR CARD STYLES ───────────────────────── */
+.investor-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 16px;
+  text-align: center;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.investor-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #c9a84c;
+  box-shadow: 0 12px 30px rgba(201, 168, 76, 0.3);
+}
+
+.investor-card.rank-top3 {
+  border-color: #c9a84c;
+  background: linear-gradient(180deg, rgba(201, 168, 76, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+  box-shadow: 0 6px 20px rgba(201, 168, 76, 0.25);
+}
+
+.rank-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #c9a84c;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1px 5px;
+  border-radius: 99px;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+}
+
+.portrait-wrap {
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, #c9a84c 0%, #ffe89e 100%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.investor-card:hover .portrait-wrap {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(201, 168, 76, 0.45);
+}
+
+.portrait-wrap img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.inv-name {
+  font-family: var(--ff-display);
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.inv-amount {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.investor-role-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  background: rgba(201, 168, 76, 0.15);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 99px;
+  color: #e8c97a;
+  font-weight: 700;
+}
+
+/* ── DYNAMIC SIZING MODIFIERS ──────────────────────────── */
+
+/* 1. LARGE CARDS (1–2 Investors) */
+.investor-card.card-lg {
+  width: clamp(210px, 35%, 260px);
+  padding: 24px 18px;
+}
+
+.investor-card.card-lg .portrait-wrap {
+  width: 140px;
+  height: 140px;
+  margin-bottom: 16px;
+}
+
+.investor-card.card-lg .inv-name {
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+}
+
+.investor-card.card-lg .inv-amount {
+  font-size: 1rem;
+}
+
+.investor-card.card-lg .investor-role-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+}
+
+/* 2. MEDIUM CARDS (3–5 Investors) */
+.investor-card.card-md {
+  width: clamp(160px, 20%, 200px);
+  padding: 16px 12px;
+}
+
+.investor-card.card-md .portrait-wrap {
+  width: 95px;
+  height: 95px;
+  margin-bottom: 10px;
+}
+
+.investor-card.card-md .inv-name {
+  font-size: 0.98rem;
+  margin-bottom: 4px;
+}
+
+.investor-card.card-md .inv-amount {
+  font-size: 0.88rem;
+}
+
+.investor-card.card-md .investor-role-tag {
+  font-size: 9.5px;
+  padding: 2px 8px;
+}
+
+/* 3. COMPACT CARDS (6+ Investors / Max 10 per row) */
+.investor-card.card-sm {
+  width: clamp(92px, 9.2%, 118px);
+  padding: 10px 5px;
+}
+
+.investor-card.card-sm .portrait-wrap {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 6px;
+}
+
+.investor-card.card-sm .inv-name {
+  font-size: 10.5px;
+  margin-bottom: 2px;
+}
+
+.investor-card.card-sm .inv-amount {
+  font-size: 9.5px;
+}
+
+.investor-card.card-sm .investor-role-tag {
+  font-size: 8px;
+  padding: 1px 5px;
+}
+
+/* ── VIEW ALL INVESTORS BUTTON ───────────────────────── */
+.btn-view-all-investors {
+  background: linear-gradient(135deg, #c9a84c 0%, #d4b55c 100%);
+  color: #072717;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 10px 24px;
+  border-radius: 99px;
+  border: none;
+  box-shadow: 0 6px 20px rgba(201, 168, 76, 0.3);
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-view-all-investors:hover {
+  background: linear-gradient(135deg, #e8c97a 0%, #c9a84c 100%);
+  color: #072717;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(201, 168, 76, 0.45);
+}
+
+.investor-loading,
+.investor-empty {
+  text-align: center;
+  color: #c9a84c;
+  padding: 40px 20px;
+}
+
+.investor-empty {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(201, 168, 76, 0.3);
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ── MOBILE / TABLET RESPONSIVE ──────────────────────── */
+@media (max-width: 768px) {
+  .investor-card.card-lg { width: clamp(160px, 45%, 220px); padding: 16px; }
+  .investor-card.card-lg .portrait-wrap { width: 100px; height: 100px; }
+  
+  .investor-card.card-md { width: clamp(130px, 30%, 160px); padding: 12px 8px; }
+  .investor-card.card-md .portrait-wrap { width: 75px; height: 75px; }
+
+  .investor-card.card-sm { width: clamp(80px, 22%, 100px); padding: 8px 4px; }
+  .investor-card.card-sm .portrait-wrap { width: 48px; height: 48px; }
+}

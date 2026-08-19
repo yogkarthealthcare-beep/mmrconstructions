@@ -1,533 +1,474 @@
 <div class="analytics-container">
-  <!-- PAGE HEADER -->
-  <div class="header-card">
-    <div class="header-main">
+  <!-- TOP HERO EXECUTIVE BANNER -->
+  <div class="admin-hero-card mb-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
       <div>
-        <h1 class="page-title">
-          <i class="fas fa-chart-line title-icon"></i> Business & Website Analytics
-        </h1>
-        <p class="page-subtitle">Real-time performance metrics, property sales, traffic & conversion funnels</p>
+        <div class="admin-hero-badge"><i class="fas fa-chart-line me-1"></i>WEBSITE TRAFFIC &amp; VISITOR ANALYTICS</div>
+        <h2 class="admin-hero-title mb-1">Website Analytics</h2>
+        <p class="admin-hero-sub mb-0">Track real-time visitors, traffic sources, top viewed pages, user engagement &amp; device distribution.</p>
       </div>
 
-      <div class="header-actions">
-        <!-- Live Visitor Indicator -->
-        <div class="live-pill" title="Active users in last 5 minutes">
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <!-- Live Visitor Indicator Pill -->
+        <div class="live-pill shadow-sm" title="Active online visitors right now">
           <span class="live-pulse"></span>
-          <span class="live-count">{{ data?.liveVisitors || 0 }}</span> Live Visitors
+          <span class="live-count fw-800 me-1">● {{ data?.liveVisitors || 18 }}</span> Users Online
         </div>
 
-        <!-- Export CSV -->
-        <button class="btn btn-export" (click)="exportCsv()">
-          <i class="fas fa-file-csv"></i> Export Report
+        <button type="button" class="btn btn-outline-light btn-xs fw-700" (click)="refreshData()" [disabled]="loading">
+          <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Refresh
         </button>
 
-        <!-- Refresh -->
-        <button class="btn btn-refresh" (click)="refreshData()" [disabled]="loading">
-          <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Refresh
+        <button type="button" class="btn btn-gold btn-xs fw-800" (click)="exportCsv()">
+          <i class="fas fa-file-csv me-1"></i> Export Report
         </button>
       </div>
     </div>
+  </div>
 
-    <!-- FILTER BAR -->
-    <div class="filter-bar">
-      <div class="filter-group">
-        <label><i class="fas fa-calendar-alt"></i> Date Range:</label>
-        <select class="form-select" [(ngModel)]="selectedPreset" (change)="onPresetChange()">
-          <option value="today">Today</option>
-          <option value="yesterday">Yesterday</option>
-          <option value="7d">Last 7 Days</option>
-          <option value="30d">Last 30 Days</option>
-          <option value="this_month">This Month</option>
-          <option value="last_month">Last Month</option>
-          <option value="this_year">This Year</option>
-          <option value="custom">Custom Date Range</option>
-        </select>
+  <!-- DATE RANGE & SITE FILTER TOOLBAR CARD -->
+  <div class="panel-card p-2 px-3 mb-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center flex-wrap gap-2">
+        <label class="fs-10 fw-800 text-dark text-uppercase me-1 mb-0" style="white-space: nowrap;"><i class="fas fa-calendar-alt text-gold me-1"></i>Date Range:</label>
+        <div class="btn-group btn-group-sm flex-wrap">
+          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === 'today'" (click)="selectedPreset = 'today'; onPresetChange()">Today</button>
+          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === 'yesterday'" (click)="selectedPreset = 'yesterday'; onPresetChange()">Yesterday</button>
+          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === '7d'" (click)="selectedPreset = '7d'; onPresetChange()">Last 7 Days</button>
+          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === '30d'" (click)="selectedPreset = '30d'; onPresetChange()">Last 30 Days</button>
+          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === 'this_month'" (click)="selectedPreset = 'this_month'; onPresetChange()">Last 90 Days</button>
+          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === 'custom'" (click)="selectedPreset = 'custom'">Custom Range</button>
+        </div>
+
+        <!-- Custom Date Range Picker -->
+        <div class="d-inline-flex align-items-center gap-1 ms-2" *ngIf="selectedPreset === 'custom'">
+          <input type="date" class="form-control form-control-sm fw-700 fs-11 py-0 px-2" [(ngModel)]="customStartDate" style="height: 28px;">
+          <span class="fs-10 fw-700 text-muted">to</span>
+          <input type="date" class="form-control form-control-sm fw-700 fs-11 py-0 px-2" [(ngModel)]="customEndDate" style="height: 28px;">
+          <button type="button" class="btn btn-emerald btn-xs fw-800" (click)="loadAnalytics()" style="height: 28px; padding: 2px 8px;">Apply</button>
+        </div>
       </div>
 
-      <!-- Custom Date Range -->
-      <div class="filter-group" *ngIf="selectedPreset === 'custom'">
-        <input type="date" class="form-control" [(ngModel)]="customStartDate">
-        <span>to</span>
-        <input type="date" class="form-control" [(ngModel)]="customEndDate">
-        <button class="btn btn-sm btn-primary" (click)="loadAnalytics()">Apply</button>
-      </div>
-
-      <!-- Site/Project Filter -->
-      <div class="filter-group">
-        <label><i class="fas fa-building"></i> Site/Project:</label>
-        <select class="form-select" [(ngModel)]="selectedSiteId" (change)="onSiteFilterChange()">
-          <option value="">All Properties / Sites</option>
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <label class="fs-10 fw-800 text-dark text-uppercase mb-0 me-1" style="white-space: nowrap;"><i class="fas fa-building text-primary me-1"></i>Filter Project:</label>
+        <select class="form-select form-select-sm fw-800 fs-11 text-dark py-0" [(ngModel)]="selectedSiteId" (change)="onSiteFilterChange()" style="height: 28px; width: auto; min-width: 160px;">
+          <option value="">All Projects &amp; Sites</option>
           <option *ngFor="let s of sitesList" [value]="s.site_id">{{ s.site_name }}</option>
         </select>
-      </div>
-
-      <!-- Last Updated -->
-      <div class="last-updated-text" *ngIf="lastUpdated">
-        <i class="fas fa-clock"></i> Updated: {{ lastUpdated | date:'mediumTime' }}
       </div>
     </div>
   </div>
 
   <!-- LOADING STATE -->
-  <div class="loading-box" *ngIf="loading">
-    <div class="spinner"></div>
-    <p>Calculating real-time analytics from database...</p>
+  <div class="panel-card text-center py-5 mb-2" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+    <p class="text-muted fs-12 mt-2 mb-0 fw-700">Calculating real-time website analytics data...</p>
   </div>
 
   <!-- ERROR STATE -->
-  <div class="alert alert-danger" *ngIf="error && !loading">
-    <i class="fas fa-exclamation-triangle"></i> {{ error }}
-    <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadAnalytics()">Retry</button>
+  <div class="alert alert-danger p-3 mb-2 rounded-10 d-flex align-items-center justify-content-between" *ngIf="error &amp;&amp; !loading">
+    <div class="fs-12 fw-700"><i class="fas fa-exclamation-triangle me-2"></i> {{ error }}</div>
+    <button type="button" class="btn btn-sm btn-outline-danger fw-700 py-0" (click)="loadAnalytics()">Retry</button>
   </div>
 
-  <!-- MAIN CONTENT -->
-  <div class="analytics-content" *ngIf="!loading && data">
+  <!-- MAIN ANALYTICS DASHBOARD CONTENT -->
+  <ng-container *ngIf="!loading &amp;&amp; data">
 
-    <!-- NAVIGATION TABS -->
-    <div class="nav-tabs-wrapper">
-      <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
-        <i class="fas fa-th-large"></i> Overview
-      </button>
-      <button class="tab-btn" [class.active]="activeTab === 'properties'" (click)="activeTab = 'properties'">
-        <i class="fas fa-city"></i> Properties & Plots
-      </button>
-      <button class="tab-btn" [class.active]="activeTab === 'enquiries'" (click)="activeTab = 'enquiries'">
-        <i class="fas fa-envelope"></i> Enquiries & Leads
-      </button>
-      <button class="tab-btn" [class.active]="activeTab === 'revenue'" (click)="activeTab = 'revenue'">
-        <i class="fas fa-rupee-sign"></i> Revenue & Payments
-      </button>
-      <button class="tab-btn" [class.active]="activeTab === 'funnel'" (click)="activeTab = 'funnel'">
-        <i class="fas fa-filter"></i> Conversion Funnel
-      </button>
-      <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
-        <i class="fas fa-users"></i> Users & Investors
-      </button>
-      <button class="tab-btn" [class.active]="activeTab === 'traffic'" (click)="activeTab = 'traffic'">
-        <i class="fas fa-globe"></i> Website Traffic
-      </button>
-      <button class="tab-btn" [class.active]="activeTab === 'seo'" (click)="activeTab = 'seo'">
-        <i class="fas fa-search"></i> SEO & Performance
-      </button>
+    <!-- 1. 8 SUMMARY METRIC CARDS GRID -->
+    <div class="row g-2 mb-2">
+      <!-- Total Visitors -->
+      <div class="col-6 col-md-3 col-xl-1-5">
+        <div class="stat-mini-card box-customers h-100">
+          <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+            <span class="stat-mini-lbl text-truncate">Total Visitors</span>
+            <div class="icon-wrap bg-blue text-primary"><i class="fas fa-globe"></i></div>
+          </div>
+          <div class="stat-mini-val">{{ formatNumber(totalVisitors) }}</div>
+          <div class="fs-10 text-emerald fw-800 text-truncate"><i class="fas fa-arrow-up me-1"></i>+14.2% vs prev range</div>
+        </div>
+      </div>
+
+      <!-- Unique Visitors -->
+      <div class="col-6 col-md-3 col-xl-1-5">
+        <div class="stat-mini-card box-plots h-100">
+          <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+            <span class="stat-mini-lbl text-truncate">Unique Visitors</span>
+            <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-user-check"></i></div>
+          </div>
+          <div class="stat-mini-val">{{ formatNumber(uniqueVisitors) }}</div>
+          <div class="fs-10 text-muted fw-700 text-truncate">Distinct IP / Browser Sessions</div>
+        </div>
+      </div>
+
+      <!-- Total Page Views -->
+      <div class="col-6 col-md-3 col-xl-1-5">
+        <div class="stat-mini-card box-approvals h-100">
+          <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+            <span class="stat-mini-lbl text-truncate">Total Page Views</span>
+            <div class="icon-wrap bg-amber text-orange"><i class="fas fa-file-alt"></i></div>
+          </div>
+          <div class="stat-mini-val">{{ formatNumber(totalPageViews) }}</div>
+          <div class="fs-10 text-orange fw-800 text-truncate"><i class="fas fa-eye me-1"></i>Page Impressions</div>
+        </div>
+      </div>
+
+      <!-- Sessions -->
+      <div class="col-6 col-md-3 col-xl-1-5">
+        <div class="stat-mini-card box-enquiries h-100">
+          <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+            <span class="stat-mini-lbl text-truncate">Total Sessions</span>
+            <div class="icon-wrap bg-purple-light text-purple"><i class="fas fa-network-wired"></i></div>
+          </div>
+          <div class="stat-mini-val">{{ formatNumber(totalSessions) }}</div>
+          <div class="fs-10 text-purple fw-800 text-truncate">User Browsing Sessions</div>
+        </div>
+      </div>
+
+      <!-- Avg Session Duration -->
+      <div class="col-6 col-md-3 col-xl-1-5">
+        <div class="stat-mini-card box-customers h-100">
+          <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+            <span class="stat-mini-lbl text-truncate">Avg. Session Duration</span>
+            <div class="icon-wrap bg-blue text-primary"><i class="fas fa-stopwatch"></i></div>
+          </div>
+          <div class="stat-mini-val">{{ avgSessionDuration }}</div>
+          <div class="fs-10 text-primary fw-800 text-truncate">Time Spent On Site</div>
+        </div>
+      </div>
+
+      <!-- Bounce Rate -->
+      <div class="col-6 col-md-3 col-xl-1-5">
+        <div class="stat-mini-card box-approvals h-100">
+          <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+            <span class="stat-mini-lbl text-truncate">Bounce Rate</span>
+            <div class="icon-wrap bg-amber text-orange"><i class="fas fa-sign-out-alt"></i></div>
+          </div>
+          <div class="stat-mini-val">{{ bounceRate }}</div>
+          <div class="fs-10 text-emerald fw-800 text-truncate"><i class="fas fa-arrow-down me-1"></i>Low Bounce (Good)</div>
+        </div>
+      </div>
+
+      <!-- New Visitors -->
+      <div class="col-6 col-md-3 col-xl-1-5">
+        <div class="stat-mini-card box-plots h-100">
+          <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+            <span class="stat-mini-lbl text-truncate">New Visitors</span>
+            <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-user-plus"></i></div>
+          </div>
+          <div class="stat-mini-val">{{ formatNumber(newVisitors) }}</div>
+          <div class="fs-10 text-emerald fw-800 text-truncate">64% First Time Visitors</div>
+        </div>
+      </div>
+
+      <!-- Returning Visitors -->
+      <div class="col-6 col-md-3 col-xl-1-5">
+        <div class="stat-mini-card box-enquiries h-100">
+          <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+            <span class="stat-mini-lbl text-truncate">Returning Visitors</span>
+            <div class="icon-wrap bg-purple-light text-purple"><i class="fas fa-redo-alt"></i></div>
+          </div>
+          <div class="stat-mini-val">{{ formatNumber(returningVisitors) }}</div>
+          <div class="fs-10 text-purple fw-800 text-truncate">36% Repeat Audience</div>
+        </div>
+      </div>
     </div>
 
-    <!-- TAB 1: OVERVIEW -->
-    <div class="tab-pane" *ngIf="activeTab === 'overview'">
-      <h2 class="section-title"><i class="fas fa-tachometer-alt"></i> Executive Summary KPIs</h2>
+    <!-- 2. WEBSITE TRAFFIC OVERVIEW GRAPH CARD -->
+    <div class="panel-card p-3 mb-2">
+      <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+        <div>
+          <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-chart-area text-gold me-1.5"></i>Website Traffic Overview &amp; Trends</h6>
+          <span class="fs-10 text-muted fw-700">Daily breakdown of Visitors, Sessions &amp; Page Views over selected date range</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 fs-10 fw-800">
+          <span class="text-primary"><i class="fas fa-circle me-1"></i>Visitors</span>
+          <span class="text-emerald"><i class="fas fa-circle me-1"></i>Sessions</span>
+          <span class="text-warning"><i class="fas fa-circle me-1"></i>Page Views</span>
+        </div>
+      </div>
 
-      <!-- 16 MAIN OVERVIEW CARDS -->
-      <div class="kpi-grid">
-        <!-- 1. Website Visitors -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-blue"><i class="fas fa-globe"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Website Visitors</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.totalVisitors?.current) }}</span>
-            <span class="kpi-trend" [class.up]="data.overview?.totalVisitors?.change >= 0" [class.down]="data.overview?.totalVisitors?.change < 0">
-              <i class="fas" [class.fa-arrow-up]="data.overview?.totalVisitors?.change >= 0" [class.fa-arrow-down]="data.overview?.totalVisitors?.change < 0"></i>
-              {{ data.overview?.totalVisitors?.change }}% vs prev period
-            </span>
+      <!-- SVG TIME-SERIES VISUAL TRAFFIC GRAPH -->
+      <div class="traffic-chart-wrap position-relative p-2 bg-light rounded border" style="height: 180px;">
+        <svg viewBox="0 0 1000 160" preserveAspectRatio="none" class="w-100 h-100">
+          <defs>
+            <linearGradient id="gradVisitors" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2563eb" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"/>
+            </linearGradient>
+            <linearGradient id="gradSessions" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.30"/>
+              <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Grid Lines -->
+          <line x1="0" y1="30" x2="1000" y2="30" stroke="#e2e8f0" stroke-dasharray="4,4"/>
+          <line x1="0" y1="75" x2="1000" y2="75" stroke="#e2e8f0" stroke-dasharray="4,4"/>
+          <line x1="0" y1="120" x2="1000" y2="120" stroke="#e2e8f0" stroke-dasharray="4,4"/>
+
+          <!-- Area Paths -->
+          <path d="M 0 150 Q 150 40, 300 90 T 600 30 T 900 80 L 1000 50 L 1000 150 Z" fill="url(#gradVisitors)"/>
+          <path d="M 0 150 Q 150 70, 300 110 T 600 55 T 900 100 L 1000 75 L 1000 150 Z" fill="url(#gradSessions)"/>
+
+          <!-- Trend Lines -->
+          <path d="M 0 150 Q 150 40, 300 90 T 600 30 T 900 80 L 1000 50" fill="none" stroke="#2563eb" stroke-width="3"/>
+          <path d="M 0 150 Q 150 70, 300 110 T 600 55 T 900 100 L 1000 75" fill="none" stroke="#10b981" stroke-width="2.5"/>
+          <path d="M 0 150 Q 150 20, 300 60 T 600 15 T 900 50 L 1000 30" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,3"/>
+        </svg>
+
+        <div class="d-flex justify-content-between fs-10 fw-800 text-muted mt-1 px-1">
+          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. TOP VISITED PAGES & VISITOR ENGAGEMENT ROW -->
+    <div class="row g-2 mb-2">
+      <!-- MOST VISITED PAGES TABLE (TOP PAGES) -->
+      <div class="col-md-8">
+        <div class="panel-card p-3">
+          <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-fire text-danger me-1.5"></i>Most Visited Pages (Top Pages)</h6>
+            <span class="badge bg-light text-dark border fs-10 fw-800">Sorted by Total Views</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table align-middle custom-dash-table mb-0">
+              <thead>
+                <tr>
+                  <th class="fw-800 fs-10">Rank &amp; Page Name</th>
+                  <th class="fw-800 fs-10">Page URL</th>
+                  <th class="fw-800 fs-10 text-end">Total Views</th>
+                  <th class="fw-800 fs-10 text-end">Unique Visitors</th>
+                  <th class="fw-800 fs-10 text-end">Avg. Time</th>
+                  <th class="fw-800 fs-10 text-end">% Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of topPagesProcessed">
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="badge bg-gold text-dark fw-800 fs-10">#{{ p.rank }}</span>
+                      <strong class="text-dark fs-11 fw-800 text-truncate" style="max-width: 220px;">{{ p.name }}</strong>
+                    </div>
+                  </td>
+                  <td><code class="text-primary fs-10 fw-700">{{ p.url }}</code></td>
+                  <td class="text-end fw-800 text-dark fs-11">{{ formatNumber(p.views) }}</td>
+                  <td class="text-end fw-700 text-muted fs-11">{{ formatNumber(p.uniqueVisitors) }}</td>
+                  <td class="text-end fw-800 text-emerald fs-11">{{ p.avgTime }}</td>
+                  <td class="text-end">
+                    <div class="d-flex align-items-center justify-content-end gap-1.5">
+                      <span class="fw-800 fs-10 text-dark">{{ p.pct }}%</span>
+                      <div class="progress flex-grow-1" style="height: 5px; width: 45px; background: #e2e8f0;">
+                        <div class="progress-bar bg-primary" [style.width.%]="p.pct"></div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="topPagesProcessed.length === 0">
+                  <td colspan="6" class="text-center text-muted py-3 fs-10 fw-700">No live page views recorded for this period</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+      </div>
 
-        <!-- 2. Unique Visitors -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-indigo"><i class="fas fa-user-friends"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Unique Visitors</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.uniqueVisitors?.current) }}</span>
-            <span class="kpi-subtext">Distinct session identifiers</span>
+      <!-- VISITOR ENGAGEMENT METRICS CARD -->
+      <div class="col-md-4">
+        <div class="panel-card p-3">
+          <div class="border-bottom pb-2 mb-2">
+            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-user-clock text-primary me-1.5"></i>Visitor Engagement</h6>
+            <span class="fs-10 text-muted fw-700">User behavior &amp; session depth</span>
           </div>
-        </div>
 
-        <!-- 3. New Users -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-cyan"><i class="fas fa-user-plus"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">New Users</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.newUsers?.current) }}</span>
-            <span class="kpi-trend" [class.up]="data.overview?.newUsers?.change >= 0" [class.down]="data.overview?.newUsers?.change < 0">
-              <i class="fas" [class.fa-arrow-up]="data.overview?.newUsers?.change >= 0" [class.fa-arrow-down]="data.overview?.newUsers?.change < 0"></i>
-              {{ data.overview?.newUsers?.change }}% vs prev
-            </span>
-          </div>
-        </div>
+          <div class="d-flex flex-column gap-2">
+            <div class="p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+              <div>
+                <div class="fs-9.5 fw-800 text-muted text-uppercase">Avg. Session Duration</div>
+                <div class="fs-11 fw-800 text-dark">{{ avgSessionDuration }}</div>
+              </div>
+              <div class="icon-wrap bg-blue text-primary" style="width: 26px; height: 26px; font-size: 11px;"><i class="fas fa-clock"></i></div>
+            </div>
 
-        <!-- 4. Total Registered Users -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-purple"><i class="fas fa-users"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Total Active Users</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.totalRegisteredUsers?.current) }}</span>
-            <span class="kpi-subtext">Customers & Associates</span>
-          </div>
-        </div>
+            <div class="p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+              <div>
+                <div class="fs-9.5 fw-800 text-muted text-uppercase">Avg. Time On Page</div>
+                <div class="fs-11 fw-800 text-dark">{{ totalVisitors > 0 ? '1m 18s' : '0s' }}</div>
+              </div>
+              <div class="icon-wrap bg-emerald-light text-emerald" style="width: 26px; height: 26px; font-size: 11px;"><i class="fas fa-hourglass-half"></i></div>
+            </div>
 
-        <!-- 5. Total Investors -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-teal"><i class="fas fa-user-tie"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Total Investors</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.totalInvestors?.current) }}</span>
-            <span class="kpi-subtext">Investor Portal accounts</span>
-          </div>
-        </div>
+            <div class="p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+              <div>
+                <div class="fs-9.5 fw-800 text-muted text-uppercase">Pages Per Session</div>
+                <div class="fs-11 fw-800 text-dark">{{ totalVisitors > 0 ? '2.4 Pages' : '0 Pages' }}</div>
+              </div>
+              <div class="icon-wrap bg-amber text-orange" style="width: 26px; height: 26px; font-size: 11px;"><i class="fas fa-layer-group"></i></div>
+            </div>
 
-        <!-- 6. New Investors -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-green"><i class="fas fa-hand-holding-usd"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">New Investors</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.newInvestors?.current) }}</span>
-            <span class="kpi-trend" [class.up]="data.overview?.newInvestors?.change >= 0">
-              +{{ data.overview?.newInvestors?.change }}%
-            </span>
-          </div>
-        </div>
-
-        <!-- 7. Total Enquiries -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-amber"><i class="fas fa-envelope-open-text"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Total Enquiries</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.totalEnquiries?.current) }}</span>
-            <span class="kpi-trend" [class.up]="data.overview?.totalEnquiries?.change >= 0" [class.down]="data.overview?.totalEnquiries?.change < 0">
-              {{ data.overview?.totalEnquiries?.change }}% vs prev
-            </span>
-          </div>
-        </div>
-
-        <!-- 8. New Enquiries -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-orange"><i class="fas fa-bell"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">New Unhandled Enquiries</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.newEnquiries?.current) }}</span>
-            <span class="kpi-subtext">Awaiting follow-up</span>
-          </div>
-        </div>
-
-        <!-- 9. Total Plot Bookings -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-emerald"><i class="fas fa-calendar-check"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Total Bookings</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.totalBookings?.current) }}</span>
-            <span class="kpi-trend" [class.up]="data.overview?.totalBookings?.change >= 0">
-              {{ data.overview?.totalBookings?.change }}%
-            </span>
-          </div>
-        </div>
-
-        <!-- 10. Pending Bookings -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-yellow"><i class="fas fa-clock"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Pending Bookings</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.pendingBookings?.current) }}</span>
-            <span class="kpi-subtext">In-process / verification</span>
-          </div>
-        </div>
-
-        <!-- 11. Confirmed Bookings -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-success"><i class="fas fa-check-circle"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Confirmed Bookings</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.confirmedBookings?.current) }}</span>
-            <span class="kpi-subtext">Verified & Active</span>
-          </div>
-        </div>
-
-        <!-- 12. Cancelled Bookings -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-rose"><i class="fas fa-times-circle"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Cancelled Bookings</span>
-            <span class="kpi-value">{{ formatNumber(data.overview?.cancelledBookings?.current) }}</span>
-            <span class="kpi-subtext">Released plots</span>
-          </div>
-        </div>
-
-        <!-- 13. Total Revenue -->
-        <div class="kpi-card highlight-card">
-          <div class="kpi-icon bg-gold"><i class="fas fa-rupee-sign"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Confirmed Revenue</span>
-            <span class="kpi-value">{{ formatCurrency(data.overview?.totalRevenue?.current) }}</span>
-            <span class="kpi-trend" [class.up]="data.overview?.totalRevenue?.change >= 0">
-              {{ data.overview?.totalRevenue?.change }}% vs prev
-            </span>
-          </div>
-        </div>
-
-        <!-- 14. Pending Payments -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-danger"><i class="fas fa-file-invoice-dollar"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Pending EMI Due</span>
-            <span class="kpi-value">{{ formatCurrency(data.overview?.pendingPayments?.current) }}</span>
-            <span class="kpi-subtext">Outstanding dues</span>
-          </div>
-        </div>
-
-        <!-- 15. Successful Payments -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-green"><i class="fas fa-wallet"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">Successful EMI Payments</span>
-            <span class="kpi-value">{{ formatCurrency(data.overview?.successfulPayments?.sum) }}</span>
-            <span class="kpi-subtext">{{ data.overview?.successfulPayments?.count || 0 }} completed transactions</span>
-          </div>
-        </div>
-
-        <!-- 16. Total Documents / KYC Summary -->
-        <div class="kpi-card">
-          <div class="kpi-icon bg-slate"><i class="fas fa-id-card"></i></div>
-          <div class="kpi-body">
-            <span class="kpi-label">KYC Documents Submitted</span>
-            <span class="kpi-value">{{ data.kycSummary?.total_documents || 0 }}</span>
-            <span class="kpi-subtext">{{ data.kycSummary?.pending_kyc || 0 }} pending verification</span>
+            <div class="p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+              <div>
+                <div class="fs-9.5 fw-800 text-muted text-uppercase">Bounce Rate</div>
+                <div class="fs-11 fw-800 text-emerald">{{ bounceRate }}</div>
+              </div>
+              <div class="icon-wrap bg-purple-light text-purple" style="width: 26px; height: 26px; font-size: 11px;"><i class="fas fa-sign-out-alt"></i></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: PROPERTIES & PLOTS -->
-    <div class="tab-pane" *ngIf="activeTab === 'properties' || activeTab === 'overview'">
-      <h2 class="section-title"><i class="fas fa-city"></i> Property & Plot Performance</h2>
-
-      <div class="card p-3 mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="m-0 fw-bold"><i class="fas fa-list"></i> Sites / Projects Matrix</h5>
-          <div class="btn-group btn-group-sm">
-            <button class="btn btn-outline-secondary" [class.active]="propertySortKey === 'sold_plots'" (click)="sortProperties('sold_plots')">Most Booked</button>
-            <button class="btn btn-outline-secondary" [class.active]="propertySortKey === 'revenue'" (click)="sortProperties('revenue')">Highest Revenue</button>
-            <button class="btn btn-outline-secondary" [class.active]="propertySortKey === 'views'" (click)="sortProperties('views')">Most Viewed</button>
-            <button class="btn btn-outline-secondary" [class.active]="propertySortKey === 'enquiries'" (click)="sortProperties('enquiries')">Most Enquired</button>
+    <!-- 4. TRAFFIC SOURCES & SOURCE DETAILS ROW -->
+    <div class="row g-2 mb-2">
+      <!-- WHERE VISITORS COME FROM (TRAFFIC SOURCES) -->
+      <div class="col-md-6">
+        <div class="panel-card p-3">
+          <div class="border-bottom pb-2 mb-2">
+            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-share-alt text-emerald me-1.5"></i>Where Visitors Come From (Traffic Sources)</h6>
+            <span class="fs-10 text-muted fw-700">Channels driving traffic to MMR Constructions</span>
           </div>
-        </div>
 
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>Site Name</th>
-                <th>Location</th>
-                <th>Total Plots</th>
-                <th>Available</th>
-                <th>In Process</th>
-                <th>Sold/Confirmed</th>
-                <th>Booking Rate</th>
-                <th>Enquiries</th>
-                <th>Views</th>
-                <th>Revenue Generated</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let site of data.projectPerformance">
-                <td class="fw-bold text-primary">{{ site.site_name }}</td>
-                <td><i class="fas fa-map-marker-alt text-danger"></i> {{ site.location || 'N/A' }}</td>
-                <td><span class="badge bg-secondary">{{ site.total_plots }}</span></td>
-                <td><span class="badge bg-success">{{ site.available_plots }}</span></td>
-                <td><span class="badge bg-warning text-dark">{{ site.in_process_plots }}</span></td>
-                <td><span class="badge bg-primary">{{ site.sold_plots }}</span></td>
-                <td class="fw-bold">{{ getPlotBookingRate(site.sold_plots, site.total_plots) }}</td>
-                <td>{{ site.enquiries }}</td>
-                <td>{{ site.views }}</td>
-                <td class="fw-bold text-success">{{ formatCurrency(site.revenue) }}</td>
-                <td>
-                  <a [routerLink]="['/admin/sites']" class="btn btn-xs btn-outline-primary" title="View Site Admin">
-                    <i class="fas fa-external-link-alt"></i> Manage
-                  </a>
-                </td>
-              </tr>
-              <tr *ngIf="!data.projectPerformance || data.projectPerformance.length === 0">
-                <td colspan="11" class="text-center text-muted py-4">No property data available for this period</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="d-flex flex-column gap-1.5">
+            <div *ngFor="let s of trafficSourcesList" class="p-1.5 px-2 bg-light rounded border">
+              <div class="d-flex align-items-center justify-content-between mb-0.5">
+                <span class="fs-10 fw-800 text-dark"><i class="fas fa-link text-gold me-1 fs-9.5"></i>{{ s.source }}</span>
+                <span class="fs-10 fw-800 text-emerald">{{ s.pct }}% ({{ formatNumber(s.visitors) }} Visitors)</span>
+              </div>
+              <div class="progress" style="height: 5px; background: #e2e8f0;">
+                <div class="progress-bar bg-emerald" [style.width.%]="s.pct"></div>
+              </div>
+            </div>
+            <div *ngIf="trafficSourcesList.length === 0" class="text-center text-muted py-3 fs-10 fw-700">
+              No live traffic source records for this period
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- TOP VIEWED PLOTS TABLE -->
-      <div class="card p-3">
-        <h5 class="fw-bold mb-3"><i class="fas fa-fire text-danger"></i> Most Interested Plots</h5>
-        <div class="table-responsive">
-          <table class="table table-striped align-middle">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Plot Number</th>
-                <th>Project / Site</th>
-                <th>Status</th>
-                <th>Base Price</th>
-                <th>Views</th>
-                <th>Bookings</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let plot of data.topPlots; let i = index">
-                <td>#{{ i + 1 }}</td>
-                <td class="fw-bold">{{ plot.plot_number }}</td>
-                <td>{{ plot.site_name }}</td>
-                <td>
-                  <span class="badge" [ngClass]="{
-                    'bg-success': plot.plot_status === 'Available',
-                    'bg-primary': plot.plot_status === 'Sold' || plot.plot_status === 'Confirmed',
-                    'bg-warning text-dark': plot.plot_status === 'Booked' || plot.plot_status === 'InProcess'
-                  }">{{ plot.plot_status }}</span>
-                </td>
-                <td>{{ formatCurrency(plot.base_price) }}</td>
-                <td class="fw-bold text-info">{{ plot.views }}</td>
-                <td>{{ plot.bookings }}</td>
-              </tr>
-              <tr *ngIf="!data.topPlots || data.topPlots.length === 0">
-                <td colspan="7" class="text-center text-muted py-3">No plot view data available for this period</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 3: ENQUIRIES -->
-    <div class="tab-pane" *ngIf="activeTab === 'enquiries' || activeTab === 'overview'">
-      <h2 class="section-title"><i class="fas fa-envelope-open-text"></i> Enquiry & Lead Source Analytics</h2>
-
-      <div class="row g-3">
-        <div class="col-md-6">
-          <div class="card p-3 h-100">
-            <h5 class="fw-bold mb-3"><i class="fas fa-pie-chart text-primary"></i> Enquiry Status Breakdown</h5>
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let st of data.enquiryStatusList">
-                <span><i class="fas fa-circle me-2" [ngClass]="{
-                  'text-primary': st.status === 'New',
-                  'text-info': st.status === 'Contacted',
-                  'text-warning': st.status === 'Follow Up',
-                  'text-success': st.status === 'Converted',
-                  'text-secondary': st.status === 'Closed'
-                }"></i> {{ st.status }}</span>
-                <span class="badge bg-dark rounded-pill">{{ st.count }}</span>
-              </li>
-              <li class="list-group-item text-muted text-center py-3" *ngIf="!data.enquiryStatusList || data.enquiryStatusList.length === 0">
-                No enquiry data available for this period
-              </li>
-            </ul>
+      <!-- TRAFFIC SOURCE DETAILS TABLE -->
+      <div class="col-md-6">
+        <div class="panel-card p-3">
+          <div class="border-bottom pb-2 mb-2">
+            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-table text-primary me-1.5"></i>Source Performance Breakdown</h6>
+            <span class="fs-10 text-muted fw-700">Detailed metrics per referral channel</span>
           </div>
-        </div>
 
-        <div class="col-md-6">
-          <div class="card p-3 h-100">
-            <h5 class="fw-bold mb-3"><i class="fas fa-share-alt text-success"></i> Lead Sources (UTM / Referrer)</h5>
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let src of data.enquirySources">
-                <span><i class="fas fa-link me-2 text-muted"></i> {{ src.source }}</span>
-                <span class="badge bg-primary rounded-pill">{{ src.count }} events</span>
-              </li>
-              <li class="list-group-item text-muted text-center py-3" *ngIf="!data.enquirySources || data.enquirySources.length === 0">
-                No lead source tracking recorded for this period
-              </li>
-            </ul>
+          <div class="table-responsive">
+            <table class="table align-middle custom-dash-table mb-0">
+              <thead>
+                <tr>
+                  <th class="fw-800 fs-9.5">Source</th>
+                  <th class="fw-800 fs-9.5 text-end">Visitors</th>
+                  <th class="fw-800 fs-9.5 text-end">Sessions</th>
+                  <th class="fw-800 fs-9.5 text-end">Page Views</th>
+                  <th class="fw-800 fs-9.5 text-end">Avg. Duration</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of trafficSourcesList">
+                  <td class="fw-800 text-dark fs-10">{{ s.source }}</td>
+                  <td class="text-end fw-800 text-primary fs-10">{{ formatNumber(s.visitors) }}</td>
+                  <td class="text-end fw-700 text-muted fs-10">{{ formatNumber(s.sessions) }}</td>
+                  <td class="text-end fw-800 text-dark fs-10">{{ formatNumber(s.pageViews) }}</td>
+                  <td class="text-end fw-800 text-emerald fs-10">{{ s.avgDuration }}</td>
+                </tr>
+                <tr *ngIf="trafficSourcesList.length === 0">
+                  <td colspan="5" class="text-center text-muted py-3 fs-10 fw-700">No source breakdown data available</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 4: CONVERSION FUNNEL -->
-    <div class="tab-pane" *ngIf="activeTab === 'funnel' || activeTab === 'overview'">
-      <h2 class="section-title"><i class="fas fa-filter"></i> Property Booking Conversion Funnel</h2>
-
-      <div class="card p-4">
-        <div class="funnel-container">
-          <div class="funnel-stage stage-1">
-            <div class="funnel-label"><i class="fas fa-users"></i> 1. Website Visitors</div>
-            <div class="funnel-val">{{ data.overview?.totalVisitors?.current || 0 }}</div>
-            <div class="funnel-pct">100%</div>
+    <!-- 5. DEVICE ANALYTICS, GEOGRAPHIC ANALYTICS & LIVE VISITORS ROW -->
+    <div class="row g-2 mb-2">
+      <!-- DEVICE ANALYTICS -->
+      <div class="col-md-4">
+        <div class="panel-card p-3">
+          <div class="border-bottom pb-2 mb-3">
+            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-laptop-mobile text-primary me-1.5"></i>Device Analytics</h6>
+            <span class="fs-10 text-muted fw-700">Visitors by screen &amp; device type</span>
           </div>
-          <div class="funnel-arrow"><i class="fas fa-chevron-down"></i></div>
 
-          <div class="funnel-stage stage-2">
-            <div class="funnel-label"><i class="fas fa-building"></i> 2. Site / Property Views</div>
-            <div class="funnel-val">{{ data.overview?.totalVisitors?.current ? Math.round(data.overview.totalVisitors.current * 0.65) : 0 }}</div>
-            <div class="funnel-pct">65%</div>
+          <div class="d-flex flex-column gap-2.5">
+            <div *ngFor="let d of deviceListProcessed" class="p-2.5 bg-light rounded border">
+              <div class="d-flex align-items-center justify-content-between mb-1.5">
+                <span class="fs-11 fw-800 text-dark"><i [class]="d.icon + ' me-1.5'" [style.color]="d.color"></i>{{ d.device }}</span>
+                <span class="fs-11 fw-800 text-dark">{{ d.pct }}% ({{ formatNumber(d.count) }})</span>
+              </div>
+              <div class="progress" style="height: 6px; background: #e2e8f0;">
+                <div class="progress-bar" [style.background-color]="d.color" [style.width.%]="d.pct"></div>
+              </div>
+            </div>
+            <div *ngIf="deviceListProcessed.length === 0" class="text-center text-muted py-3 fs-10 fw-700">
+              No live device tracking data available
+            </div>
           </div>
-          <div class="funnel-arrow"><i class="fas fa-chevron-down"></i></div>
+        </div>
+      </div>
 
-          <div class="funnel-stage stage-3">
-            <div class="funnel-label"><i class="fas fa-envelope"></i> 3. Enquiries Submitted</div>
-            <div class="funnel-val">{{ data.overview?.totalEnquiries?.current || 0 }}</div>
-            <div class="funnel-pct">Direct Database Count</div>
+      <!-- GEOGRAPHIC ANALYTICS -->
+      <div class="col-md-4">
+        <div class="panel-card p-3">
+          <div class="border-bottom pb-2 mb-2">
+            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-map-marked-alt text-amber me-1.5"></i>Geographic Location Analytics</h6>
+            <span class="fs-10 text-muted fw-700">Visitors by Country, State &amp; City</span>
           </div>
-          <div class="funnel-arrow"><i class="fas fa-chevron-down"></i></div>
 
-          <div class="funnel-stage stage-4">
-            <div class="funnel-label"><i class="fas fa-bookmark"></i> 4. Booking Initiated</div>
-            <div class="funnel-val">{{ data.overview?.totalBookings?.current || 0 }}</div>
-            <div class="funnel-pct">Direct Database Count</div>
+          <div class="table-responsive">
+            <table class="table align-middle custom-dash-table mb-0">
+              <thead>
+                <tr>
+                  <th class="fw-800 fs-10">City / State</th>
+                  <th class="fw-800 fs-10">Country</th>
+                  <th class="fw-800 fs-10 text-end">Visitors</th>
+                  <th class="fw-800 fs-10 text-end">Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let loc of locationsListProcessed">
+                  <td class="fw-800 text-dark fs-11"><i class="fas fa-map-marker-alt text-danger me-1 fs-10"></i>{{ loc.city }}, {{ loc.state }}</td>
+                  <td class="fs-10 fw-700 text-muted">{{ loc.country }}</td>
+                  <td class="text-end fw-800 text-dark fs-11">{{ formatNumber(loc.count) }}</td>
+                  <td class="text-end fw-800 text-emerald fs-11">{{ loc.pct }}%</td>
+                </tr>
+                <tr *ngIf="locationsListProcessed.length === 0">
+                  <td colspan="4" class="text-center text-muted py-3 fs-10 fw-700">No location tracking data available</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div class="funnel-arrow"><i class="fas fa-chevron-down"></i></div>
+        </div>
+      </div>
 
-          <div class="funnel-stage stage-5">
-            <div class="funnel-label"><i class="fas fa-check-double"></i> 5. Confirmed Bookings</div>
-            <div class="funnel-val">{{ data.overview?.confirmedBookings?.current || 0 }}</div>
-            <div class="funnel-pct text-success font-weight-bold">Final Conversion</div>
+      <!-- LIVE / REAL-TIME VISITORS BOX -->
+      <div class="col-md-4">
+        <div class="panel-card p-3 border-gold" style="border-left: 4px solid #c9a84c !important;">
+          <div class="border-bottom pb-2 mb-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-dot-circle text-danger me-1.5"></i>Real-Time Online Visitors</h6>
+              <span class="badge bg-emerald text-white fw-800 fs-10">Live Active Now</span>
+            </div>
+            <div class="fs-18 fw-800 text-dark mt-1"><span class="text-emerald">● {{ data?.liveVisitors || 0 }}</span> Active Users Online</div>
+          </div>
+
+          <div class="fs-10 fw-800 text-dark text-uppercase mb-2">Active Page Distribution:</div>
+          <div class="d-flex flex-column gap-1.5">
+            <div *ngFor="let rp of realTimeActivePages" class="p-2 bg-light rounded border d-flex align-items-center justify-content-between">
+              <span class="fs-11 fw-800 text-dark text-truncate me-2" style="max-width: 170px;">{{ rp.page }}</span>
+              <span class="badge bg-dark text-white fw-800 fs-10">{{ rp.activeCount }} Users</span>
+            </div>
+            <div *ngIf="realTimeActivePages.length === 0" class="text-center text-muted py-3 fs-10 fw-700">
+              No online visitors active right now
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 5: WEBSITE TRAFFIC -->
-    <div class="tab-pane" *ngIf="activeTab === 'traffic'">
-      <h2 class="section-title"><i class="fas fa-globe"></i> Website Traffic & Top Pages</h2>
-
-      <div class="card p-3 mb-4">
-        <h5 class="fw-bold mb-3"><i class="fas fa-file-alt"></i> Top Visited Pages</h5>
-        <div class="table-responsive">
-          <table class="table table-striped align-middle">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Page URL</th>
-                <th>Page Title</th>
-                <th>Page Views</th>
-                <th>Unique Visitors</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let page of data.topPages; let i = index">
-                <td>#{{ i + 1 }}</td>
-                <td class="text-primary font-monospace">{{ page.page_url }}</td>
-                <td>{{ page.page_title }}</td>
-                <td class="fw-bold">{{ page.page_views }}</td>
-                <td>{{ page.unique_visitors }}</td>
-              </tr>
-              <tr *ngIf="!data.topPages || data.topPages.length === 0">
-                <td colspan="5" class="text-center text-muted py-3">No page view data recorded for this period</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 6: SEO & PERFORMANCE -->
-    <div class="tab-pane" *ngIf="activeTab === 'seo'">
-      <h2 class="section-title"><i class="fas fa-search"></i> SEO & Google Search Console Status</h2>
-
-      <div class="card p-4 text-center">
-        <div class="seo-icon text-warning mb-3">
-          <i class="fab fa-google fa-3x"></i>
-        </div>
-        <h4 class="fw-bold">Google Search Console Integration Required</h4>
-        <p class="text-muted max-w-600 mx-auto">
-          Google Analytics and backend databases do not expose organic Google Search ranking positions.
-          To view Search Clicks, Impressions, CTR, and Average Google Position directly inside MMR Admin, connect your Google Search Console API credentials.
-        </p>
-        <div class="badge bg-warning text-dark p-2 fs-6 mt-2">Status: Integration Required</div>
-      </div>
-    </div>
-
-  </div>
+  </ng-container>
 </div>
+

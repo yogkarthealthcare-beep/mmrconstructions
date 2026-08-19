@@ -14,6 +14,16 @@ export class InvestorDashboardComponent implements OnInit {
   loading = true;
   errorMessage = '';
   dashboardData: any = null;
+  copiedLink = false;
+
+  get referralCode() {
+    return this.dashboardData?.investor?.referral_code || this.dashboardData?.investor?.invitation_code || this.dashboardData?.investor?.member_id || '';
+  }
+
+  get referralLink() {
+    const code = this.referralCode;
+    return code ? `https://mmrconstructions.in/register?ref=${code}` : 'https://mmrconstructions.in/register';
+  }
 
   constructor(private api: ApiService) {}
 
@@ -39,6 +49,17 @@ export class InvestorDashboardComponent implements OnInit {
         this.errorMessage = err.error?.message || 'Failed to fetch dashboard data.';
       }
     });
+  }
+
+  copyReferralLink() {
+    navigator.clipboard.writeText(this.referralLink);
+    this.copiedLink = true;
+    setTimeout(() => this.copiedLink = false, 2500);
+  }
+
+  shareOnWhatsapp() {
+    const text = encodeURIComponent(`MMR Constructions में Invest / Plot Registration के लिए मेरा Referral Link: ${this.referralLink}`);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   }
 
   getStatusClass(status: string): string {

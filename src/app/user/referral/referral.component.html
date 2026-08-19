@@ -1,52 +1,247 @@
-<div class="pg-header"><h4>Referral & Invite Code</h4><p>Share your code and earn 12-year commission</p></div>
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+<div class="pg-header mb-4">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h3 class="fw-700 text-dark mb-1">Referral &amp; MLM Team Network</h3>
+      <p class="text-muted fs-13 mb-0">Share your referral link, grow your multi-tier downline team and earn 12-year commission bonuses</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a routerLink="/associate/my-team" class="btn btn-gold btn-sm">
+        <i class="fas fa-sitemap me-1"></i> Full Team Tree
+      </a>
+      <a routerLink="/associate/commission" class="btn btn-outline-green btn-sm">
+        <i class="fas fa-chart-line me-1"></i> Commission Tracker
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="panel-loading" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+  <span class="mt-2 text-muted">Loading referral network and tree structure...</span>
+</div>
 
 <ng-container *ngIf="!loading">
-  <!-- Invite Code Card -->
-  <div class="welcome-banner mb-4" style="text-align:center;">
-    <p style="color:rgba(255,255,255,.6);font-size:13px;margin:0 0 8px;position:relative;z-index:1;">Your Invitation Code</p>
-    <div style="font-family:monospace;font-size:2.5rem;font-weight:700;color:var(--clr-gold-lt);letter-spacing:.15em;margin-bottom:20px;position:relative;z-index:1;">
-      {{ inviteData.invitation_code || 'N/A' }}
-    </div>
-    <div class="d-flex justify-content-center gap-3 flex-wrap" style="position:relative;z-index:1;">
-      <button class="btn btn-gold" (click)="copyCode()"><i class="fas fa-copy me-2"></i>{{ copied ? '✓ Copied!' : 'Copy Code' }}</button>
-      <button class="btn btn-outline-white" (click)="shareWhatsApp()"><i class="fab fa-whatsapp me-2"></i>Share on WhatsApp</button>
+
+  <!-- Invite Code Hero Banner -->
+  <div class="referral-hero-card mb-2 text-center">
+    <p class="ref-hero-tag">YOUR UNIQUE SPONSOR / INVITATION CODE</p>
+    <div class="ref-code-display">{{ invitationCode || 'N/A' }}</div>
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+      <button class="btn btn-gold btn-sm px-3" (click)="copyCode()">
+        <i [class]="copied ? 'fas fa-check text-success me-1' : 'fas fa-copy me-1'"></i>
+        {{ copied ? 'Copied Code!' : 'Copy Code' }}
+      </button>
+      <button class="btn btn-whatsapp btn-sm px-3" (click)="shareWhatsApp()">
+        <i class="fab fa-whatsapp me-1"></i> Share on WhatsApp
+      </button>
     </div>
   </div>
 
-  <div class="row g-4 mb-4">
+  <div class="row g-2 mb-2">
+    <!-- Referral Link Box -->
     <div class="col-lg-5">
-      <div class="panel-card">
-        <div class="panel-card-title">Referral Link</div>
-        <div style="background:var(--bg-section);border:1px solid var(--bdr);border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:14px;word-break:break-all;">
-          <span class="fs-12 text-muted flex-fill">{{ referralLink }}</span>
-          <button class="action-btn flex-shrink-0" (click)="copyCode()" title="Copy"><i class="fas fa-copy"></i></button>
+      <div class="panel-card h-100">
+        <div class="panel-card-title d-flex align-items-center justify-content-between mb-3">
+          <span><i class="fas fa-link text-gold me-2"></i>Referral Direct Link</span>
+          <span class="badge bg-green-subtle text-success">Active</span>
         </div>
+
+        <p class="fs-12 text-muted mb-3">Share this direct link with prospective buyers or new associates to register under your team tree:</p>
+
+        <div class="ref-url-box mb-3">
+          <span class="fs-11 text-dark font-monospace flex-fill text-truncate me-2">{{ referralLink }}</span>
+          <button class="btn btn-xs btn-gold-icon flex-shrink-0" (click)="copyLink()" title="Copy Link">
+            <i [class]="copiedLink ? 'fas fa-check text-success' : 'fas fa-copy'"></i>
+          </button>
+        </div>
+
         <div class="d-flex gap-2">
-          <button class="btn btn-green flex-fill btn-sm" (click)="shareWhatsApp()"><i class="fab fa-whatsapp me-1"></i>WhatsApp</button>
-          <button class="btn btn-outline-green flex-fill btn-sm"><i class="fas fa-sms me-1"></i>SMS</button>
+          <button class="btn btn-whatsapp flex-fill btn-xs" (click)="shareWhatsApp()">
+            <i class="fab fa-whatsapp me-1"></i> WhatsApp
+          </button>
+          <button class="btn btn-outline-secondary flex-fill btn-xs" (click)="copyLink()">
+            <i class="fas fa-paperclip me-1"></i> Copy Link
+          </button>
         </div>
       </div>
     </div>
+
+    <!-- Quick Team Network Stats -->
     <div class="col-lg-7">
-      <div class="panel-card">
-        <div class="panel-card-title">My Network ({{ network.length }})</div>
-        <div *ngIf="network.length===0" class="panel-empty" style="padding:20px;"><i class="fas fa-users"></i><p>No referrals yet. Share your code!</p></div>
-        <div class="table-responsive" *ngIf="network.length>0">
-          <table class="table">
-            <thead><tr><th>Name</th><th>Member ID</th><th>Gaj</th><th>Level</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let n of network">
-                <td><strong style="color:var(--txt-h);">{{ n.full_name }}</strong><div class="fs-12 text-muted">{{ n.mobile_no }}</div></td>
-                <td class="fs-12 text-primary">{{ n.member_id }}</td>
-                <td class="fw-700 text-primary">{{ n.total_gaj_sold || 0 }}</td>
-                <td><span class="sbadge sbadge-gold">L{{ n.level }}</span></td>
-                <td><span class="sbadge" [class.sbadge-green]="n.account_status==='Active'">{{ n.account_status }}</span></td>
-              </tr>
-            </tbody>
-          </table>
+      <div class="panel-card h-100">
+        <div class="panel-card-title d-flex justify-content-between align-items-center mb-3">
+          <span><i class="fas fa-users text-emerald me-2"></i>Network Overview</span>
+          <span class="fs-11 text-muted fw-600">Multi-Tier Downline</span>
+        </div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="p-3 bg-light rounded-3 text-center border">
+              <div class="fs-11 text-muted uppercase fw-600">Total Team Size</div>
+              <div class="fs-3 fw-700 text-primary mt-1">{{ network.length }} <small class="fs-12 text-muted">Members</small></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 bg-light rounded-3 text-center border">
+              <div class="fs-11 text-muted uppercase fw-600">Direct Level 1 Team</div>
+              <div class="fs-3 fw-700 text-emerald mt-1">{{ treeRoot?.children?.length || 0 }} <small class="fs-12 text-muted">Directs</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3 p-3 bg-gold-subtle rounded-3 border border-gold-light">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <span class="fw-700 text-dark fs-13">Build Your Associate Tree 🌳</span><br/>
+              <span class="fs-11 text-muted">Every active plot booking by your team earns you commission.</span>
+            </div>
+            <a routerLink="/associate/my-team" class="btn btn-xs btn-gold">Explore Network</a>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- INTERACTIVE HIERARCHICAL TREE VIEW SECTION -->
+  <div class="panel-card mb-2">
+    <div class="panel-card-title d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-sitemap text-gold"></i>
+        <span class="fw-700 fs-15">Referral Team Tree Diagram</span>
+      </div>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+        <button class="btn btn-outline-secondary btn-xs" (click)="expandAll()" *ngIf="viewMode==='tree'">
+          <i class="fas fa-expand-alt me-1"></i> Expand All
+        </button>
+        <button class="btn btn-outline-secondary btn-xs" (click)="collapseAll()" *ngIf="viewMode==='tree'">
+          <i class="fas fa-compress-alt me-1"></i> Collapse All
+        </button>
+
+        <div class="btn-group btn-group-xs">
+          <button class="btn btn-xs" [class.btn-gold]="viewMode==='tree'" [class.btn-outline-secondary]="viewMode!=='tree'" (click)="viewMode='tree'">
+            <i class="fas fa-project-diagram me-1"></i> Tree View
+          </button>
+          <button class="btn btn-xs" [class.btn-gold]="viewMode==='list'" [class.btn-outline-secondary]="viewMode!=='list'" (click)="viewMode='list'">
+            <i class="fas fa-table me-1"></i> Direct List
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TREE CANVAS VIEW -->
+    <div class="tree-viewport-container py-4" *ngIf="viewMode==='tree' && treeRoot">
+      <div class="tree-canvas">
+
+        <!-- RECURSIVE TREE TEMPLATE -->
+        <ng-template #treeNodeTemplate let-node let-isRoot="isRoot">
+          <div class="tree-node-wrapper" [class.root-wrapper]="isRoot">
+            
+            <!-- NODE CARD (SQUARE BOX) -->
+            <div class="tree-card" [class.card-root]="isRoot" [class.card-active]="node.status==='Active'" [class.card-inactive]="node.status!=='Active'">
+              
+              <!-- Default Visible Content: Profile Icon, Name, ID & Account Type -->
+              <div class="node-main-box">
+                <div class="node-avatar" [class.avatar-root]="isRoot">
+                  {{ getNodeInitials(node.full_name) }}
+                  <span class="status-pulse" [class.bg-success]="node.status==='Active'" [class.bg-danger]="node.status!=='Active'" [title]="node.status"></span>
+                </div>
+                <h6 class="node-name" [title]="node.full_name">{{ node.full_name }}</h6>
+                <span class="node-id-chip">{{ node.member_id }}</span>
+                <span class="node-role-badge" [class.badge-root]="isRoot">
+                  {{ isRoot ? 'Root Associate' : (node.user_type || node.rank || 'Associate') }}
+                </span>
+              </div>
+
+              <!-- HOVER TOOLTIP POPUP OVERLAY FOR FULL DETAILS -->
+              <div class="node-hover-tooltip">
+                <div class="tooltip-header">
+                  <div class="tooltip-title">{{ node.full_name }}</div>
+                  <span class="badge" [class.bg-success]="node.status==='Active'" [class.bg-danger]="node.status!=='Active'">
+                    {{ node.status || 'Active' }}
+                  </span>
+                </div>
+                <div class="tooltip-body">
+                  <div class="tt-row"><span>ID:</span> <strong>{{ node.member_id }}</strong></div>
+                  <div class="tt-row"><span>Role:</span> <strong>{{ node.user_type || node.rank || 'Associate' }}</strong></div>
+                  <div class="tt-row" *ngIf="node.mobile_no"><span>Mobile:</span> <strong>{{ node.mobile_no }}</strong></div>
+                  <div class="tt-row" *ngIf="node.email"><span>Email:</span> <strong>{{ node.email }}</strong></div>
+                  <div class="tt-divider"></div>
+                  <div class="tt-row"><span>Sales:</span> <strong class="text-success">{{ node.total_gaj_sold || 0 }} Gaj</strong></div>
+                  <div class="tt-row"><span>Earned:</span> <strong class="text-warning">₹{{ (node.commission_earned || 0) | number }}</strong></div>
+                </div>
+              </div>
+
+              <!-- Expand / Collapse Action Toggle -->
+              <div class="node-footer" *ngIf="node.children && node.children.length > 0">
+                <button type="button" class="toggle-btn" (click)="toggleNode(node)">
+                  <i [class]="node.collapsed ? 'fas fa-chevron-down me-1' : 'fas fa-chevron-up me-1'"></i>
+                  {{ node.collapsed ? ('Team (' + node.children.length + ')') : ('Hide (' + node.children.length + ')') }}
+                </button>
+              </div>
+            </div>
+
+            <!-- CHILDREN CONNECTOR & RECURSIVE SUB-TREE -->
+            <div class="tree-children-container" *ngIf="node.children && node.children.length > 0 && !node.collapsed">
+              <div class="connector-line-vertical"></div>
+              <div class="children-row">
+                <div class="child-col" *ngFor="let child of node.children">
+                  <div class="connector-line-top"></div>
+                  <ng-container *ngTemplateOutlet="treeNodeTemplate; context: { $implicit: child, isRoot: false }"></ng-container>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </ng-template>
+
+        <!-- ROOT NODE EXECUTION -->
+        <ng-container *ngTemplateOutlet="treeNodeTemplate; context: { $implicit: treeRoot, isRoot: true }"></ng-container>
+
+      </div>
+    </div>
+
+    <!-- COMPACT TABLE DIRECT LIST VIEW -->
+    <div class="table-responsive" *ngIf="viewMode==='list'">
+      <table class="table align-middle custom-team-table mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Member Name</th>
+            <th>Member ID</th>
+            <th>Gaj Sold</th>
+            <th>Level</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="network.length===0">
+            <td colspan="5" class="text-center py-4 text-muted">
+              No team referrals registered under your code yet.
+            </td>
+          </tr>
+          <tr *ngFor="let n of network">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="mini-avatar">{{ getNodeInitials(n.full_name) }}</div>
+                <div>
+                  <strong class="text-dark">{{ n.full_name }}</strong>
+                  <div class="fs-12 text-muted" *ngIf="n.mobile_no"><i class="fas fa-phone-alt me-1"></i>{{ n.mobile_no }}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="member-code-badge"><i class="fas fa-id-badge me-1"></i>{{ n.member_id }}</span></td>
+            <td><span class="fw-700 text-success">{{ n.total_gaj_sold || 0 }} Gaj</span></td>
+            <td><span class="sbadge sbadge-gold">Level {{ n.level || 1 }}</span></td>
+            <td>
+              <span class="sbadge" [class.sbadge-green]="n.account_status==='Active'" [class.sbadge-yellow]="n.account_status!=='Active'">
+                {{ n.account_status || 'Active' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
 </ng-container>

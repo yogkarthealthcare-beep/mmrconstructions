@@ -1,263 +1,267 @@
-<div class="backup-toast" *ngIf="toast" [class.error]="toastType === 'error'">
-  <i [class]="toastType === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle'"></i>
+<!-- Toast Notification -->
+<div *ngIf="toast" class="toast-popup" [class.error]="toastType === 'error'" style="position:fixed;top:76px;right:24px;z-index:9999;animation:slideIn .25s ease;">
+  <i [class]="toastType === 'error' ? 'fas fa-exclamation-circle text-danger me-2' : 'fas fa-check-circle text-emerald me-2'"></i>
   {{ toast }}
 </div>
 
-<div class="backup-head">
-  <div class="pg-header">
-    <h4>Database Backup</h4>
-    <p>Secure PostgreSQL database backup and restore management for BigRock VPS Primary Database.</p>
-  </div>
-  <div class="head-actions">
-    <button type="button" class="btn btn-outline-green btn-sm" (click)="refreshStatus()" [disabled]="loading">
-      <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i>Refresh Status
-    </button>
-    <button type="button" class="btn btn-green btn-sm" (click)="createBackup()" [disabled]="creating || loading">
-      <i [class]="creating ? 'fas fa-spinner fa-spin me-1' : 'fas fa-database me-1'"></i>Create Backup
-    </button>
+<!-- TOP HERO EXECUTIVE BANNER -->
+<div class="admin-hero-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+    <div>
+      <div class="admin-hero-badge"><i class="fas fa-database me-1"></i>SYSTEM DATABASE BACKUP &amp; RECOVERY CONTROL</div>
+      <h2 class="admin-hero-title mb-1">Database Backup &amp; Recovery</h2>
+      <p class="admin-hero-sub mb-0">Generate instant PostgreSQL database dumps, configure automated daily backups &amp; easily restore database snapshots.</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <button type="button" class="btn btn-outline-light btn-xs" (click)="refreshStatus()" [disabled]="loading">
+        <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Refresh Status
+      </button>
+      <button type="button" class="btn btn-gold btn-xs" (click)="createBackup()" [disabled]="creating || loading">
+        <i [class]="creating ? 'fas fa-spinner fa-spin me-1' : 'fas fa-download me-1'"></i>
+        {{ creating ? 'Exporting SQL Dump...' : '⚡ Generate Fresh Backup Now' }}
+      </button>
+    </div>
   </div>
 </div>
 
-<div class="panel-loading" *ngIf="loading">
-  <i class="fas fa-spinner fa-spin"></i>
-  <span>Loading backup status...</span>
+<!-- 4 STAT SUMMARY MINI CARDS -->
+<div class="row g-2 mb-2">
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-customers h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Active Database</span>
+        <div class="icon-wrap bg-blue text-primary"><i class="fas fa-server"></i></div>
+      </div>
+      <div class="stat-mini-val text-truncate" style="font-size: 1.1rem !important;">{{ status?.database_name || 'postgresql' }}</div>
+      <div class="fs-11 text-muted fw-600 text-truncate"><i class="fas fa-network-wired text-primary me-1"></i>{{ status?.database_host || 'localhost' }}</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-plots h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Live Database Size</span>
+        <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-hstack"></i></div>
+      </div>
+      <div class="stat-mini-val">{{ status?.backup_size || '0 B' }}</div>
+      <div class="fs-11 text-muted fw-600 text-truncate"><i class="fas fa-shield-alt text-emerald me-1"></i>Full SQL Dump Data</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-approvals h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Last Backup Date</span>
+        <div class="icon-wrap bg-amber text-orange"><i class="fas fa-history"></i></div>
+      </div>
+      <div class="stat-mini-val text-truncate" style="font-size: 1.05rem !important;">{{ formatDate(status?.last_backup_time) }}</div>
+      <div class="fs-11 text-muted fw-600 text-truncate"><i class="fas fa-clock text-orange me-1"></i>Latest Export Snapshot</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-enquiries h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Automated Daily Schedule</span>
+        <div class="icon-wrap bg-purple-light text-purple"><i class="fas fa-calendar-check"></i></div>
+      </div>
+      <div class="stat-mini-val text-truncate" style="font-size: 1.1rem !important;">{{ status?.automatic_backup_status || 'Disabled' }}</div>
+      <div class="fs-11 text-muted fw-600 text-truncate"><i class="fas fa-cog text-purple me-1"></i>{{ settings.daily_backup_enabled ? ('Daily at ' + settings.backup_time) : 'Manual Backups' }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-5 mb-2" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+  <p class="text-muted fs-12 mt-2 mb-0">Loading database configuration and backup records...</p>
 </div>
 
 <ng-container *ngIf="!loading">
-  <section class="status-grid">
-    <div class="status-tile">
-      <span>Active Database</span>
-      <strong>{{ status?.active_database || '-' }}</strong>
-    </div>
-    <div class="status-tile">
-      <span>Database Host</span>
-      <strong>{{ status?.database_host || '-' }}</strong>
-    </div>
-    <div class="status-tile">
-      <span>Database Name</span>
-      <strong>{{ status?.database_name || '-' }}</strong>
-    </div>
-    <div class="status-tile">
-      <span>Last Backup Time</span>
-      <strong>{{ formatDate(status?.last_backup_time) }}</strong>
-    </div>
-    <div class="status-tile">
-      <span>Automatic Backup Status</span>
-      <strong>{{ status?.automatic_backup_status || 'Disabled' }}</strong>
-    </div>
-    <div class="status-tile">
-      <span>Storage Location</span>
-      <strong>{{ status?.storage_location || '-' }}</strong>
-    </div>
-    <div class="status-tile">
-      <span>Backup Size</span>
-      <strong>{{ status?.backup_size || '0 B' }}</strong>
-    </div>
-  </section>
 
-  <section class="panel-card settings-card">
-    <div class="panel-card-title">
-      <span><i class="fas fa-clock me-2"></i>Automatic Backup</span>
+  <!-- AUTOMATED BACKUP SCHEDULE SETTINGS CARD -->
+  <div class="panel-card p-3 mb-2">
+    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+      <h6 class="fw-800 text-dark mb-0 text-uppercase" style="font-size: 11px !important; font-weight: 800 !important; font-family: system-ui, -apple-system, sans-serif !important; letter-spacing: 0.04em !important;"><i class="fas fa-cogs text-gold me-1.5"></i>Automated Daily Backup Schedule &amp; Retention</h6>
+      <span class="badge bg-light text-dark border" style="font-size: 9.5px !important; font-weight: 800 !important; font-family: system-ui, sans-serif !important;">Cron Schedule: Daily Server Time</span>
     </div>
-    <div class="settings-grid">
-      <label class="toggle-row">
-        <span>
-          <strong>Enable Daily Backup</strong>
-          <small>Run one backup every day at the selected server time.</small>
-        </span>
-        <input type="checkbox" [(ngModel)]="settings.daily_backup_enabled">
-      </label>
-      <div>
-        <label class="f-label">Backup Time</label>
-        <input type="time" class="f-input" [(ngModel)]="settings.backup_time">
+
+    <div class="row g-3 align-items-center">
+      <div class="col-md-4">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="dailyBackupSwitch" [(ngModel)]="settings.daily_backup_enabled">
+          <label class="form-check-label text-dark" for="dailyBackupSwitch" style="font-size: 11px !important; font-weight: 800 !important; font-family: system-ui, sans-serif !important;">Enable Daily Automatic Backup</label>
+        </div>
+        <div class="text-secondary mt-0.5" style="font-size: 9.5px !important; font-weight: 700 !important; font-family: system-ui, sans-serif !important;">Runs background PostgreSQL SQL dump every night.</div>
       </div>
-      <div>
-        <label class="f-label">Keep Last Backups</label>
-        <input type="number" min="1" max="365" class="f-input" [(ngModel)]="settings.keep_last_backups">
+
+      <div class="col-md-3">
+        <label class="form-label text-dark text-uppercase mb-1" style="font-size: 10px !important; font-weight: 800 !important; font-family: system-ui, sans-serif !important;">Execution Time (HH:MM)</label>
+        <input type="time" class="form-control form-control-sm text-dark" [(ngModel)]="settings.backup_time" style="font-size: 10.5px !important; font-weight: 800 !important; font-family: system-ui, sans-serif !important; height: 28px !important;">
       </div>
-      <label class="toggle-row compact">
-        <span>
-          <strong>Delete Older Backups</strong>
-          <small>Automatically remove files beyond the retention limit.</small>
-        </span>
-        <input type="checkbox" [(ngModel)]="settings.auto_delete_older">
-      </label>
-      <div class="settings-action">
-        <button type="button" class="btn btn-green" (click)="saveSettings()" [disabled]="savingSettings">
-          <i [class]="savingSettings ? 'fas fa-spinner fa-spin me-2' : 'fas fa-save me-2'"></i>
+
+      <div class="col-md-3">
+        <label class="form-label text-dark text-uppercase mb-1" style="font-size: 10px !important; font-weight: 800 !important; font-family: system-ui, sans-serif !important;">Keep Last (Days / Backups)</label>
+        <input type="number" min="1" max="365" class="form-control form-control-sm text-dark" [(ngModel)]="settings.keep_last_backups" style="font-size: 10.5px !important; font-weight: 800 !important; font-family: system-ui, sans-serif !important; height: 28px !important;">
+      </div>
+
+      <div class="col-md-2 text-end">
+        <button type="button" class="btn btn-emerald btn-xs w-100" (click)="saveSettings()" [disabled]="savingSettings" style="font-size: 10.5px !important; font-weight: 800 !important; font-family: system-ui, sans-serif !important;">
+          <i [class]="savingSettings ? 'fas fa-spinner fa-spin me-1' : 'fas fa-save me-1'"></i>
           {{ savingSettings ? 'Saving...' : 'Save Settings' }}
         </button>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section class="panel-card restore-card">
-    <div class="panel-card-title">
-      <span><i class="fas fa-upload me-2"></i>Restore Database</span>
+  <!-- BACKUP HISTORY DIRECTORY TABLE CARD -->
+  <div class="panel-card p-3 mb-2">
+    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+      <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-history text-emerald me-1.5"></i>Database Backup History Directory ({{ backups.length }})</h6>
+      <button type="button" class="btn btn-outline-secondary btn-xs fw-700 fs-10" (click)="loadHistory()">
+        <i class="fas fa-sync me-1"></i> Refresh History
+      </button>
     </div>
 
-    <div class="restore-grid">
-      <div class="restore-file-field">
-        <label class="f-label">Upload PostgreSQL Backup File</label>
-        <input class="f-input" type="file" accept=".sql,.backup,.dump,.tar" (change)="onRestoreFileSelected($event)">
-        <small class="help-text">Supported formats: .sql, .backup, .dump, .tar. Files are validated before restore.</small>
-      </div>
-      <div class="restore-upload-action">
-        <button type="button" class="btn btn-outline-green" (click)="uploadRestoreFile()" [disabled]="uploadingRestore || !selectedRestoreFile">
-          <i [class]="uploadingRestore ? 'fas fa-spinner fa-spin me-2' : 'fas fa-cloud-upload-alt me-2'"></i>
-          {{ uploadingRestore ? 'Uploading...' : 'Upload & Validate' }}
-        </button>
-      </div>
-      <div class="restore-select-field">
-        <label class="f-label">Select Uploaded Backup</label>
-        <select class="f-input" [(ngModel)]="selectedRestoreUploadId">
-          <option [ngValue]="null">Select backup file</option>
-          <option *ngFor="let item of restoreUploads" [ngValue]="item.id">
-            {{ item.original_file_name }} - {{ item.file_size }}
-          </option>
-        </select>
-      </div>
-      <div class="restore-mode-field">
-        <label class="f-label">Restore Option</label>
-        <select class="f-input" [(ngModel)]="restoreMode">
-          <option value="replace">Replace Current Database</option>
-          <option value="without_drop">Restore Without Dropping</option>
-        </select>
-      </div>
-      <div class="restore-run-action">
-        <button type="button" class="btn btn-green" (click)="restoreSelectedUpload()" [disabled]="restoringDatabase || !selectedRestoreUploadId">
-          <i [class]="restoringDatabase ? 'fas fa-spinner fa-spin me-2' : 'fas fa-undo-alt me-2'"></i>
-          {{ restoringDatabase ? 'Restoring...' : 'Restore Database' }}
-        </button>
-      </div>
+    <div *ngIf="backups.length === 0" class="text-center py-5">
+      <i class="fas fa-database text-muted fs-1 mb-2"></i>
+      <h6 class="fw-800 text-dark mb-1 fs-12">No Backups Generated Yet</h6>
+      <p class="text-secondary fs-11 fw-600 mb-0">Click "⚡ Generate Fresh Backup Now" to create your first restorable SQL database dump.</p>
     </div>
 
-    <div class="restore-progress" *ngIf="restoringDatabase">
-      <div class="progress-bar-wrap"><div class="progress-bar-fill restore-active"></div></div>
-      <span>Restore process is running. Keep this page open until the status is updated.</span>
-    </div>
-
-    <div class="restore-result" *ngIf="restoreResult">
-      <div><span>Restore Status</span><strong>{{ restoreResult.status }}</strong></div>
-      <div><span>Start Time</span><strong>{{ formatDate(restoreResult.started_at) }}</strong></div>
-      <div><span>End Time</span><strong>{{ formatDate(restoreResult.ended_at) }}</strong></div>
-      <div><span>Duration</span><strong>{{ restoreResult.duration || '-' }}</strong></div>
-      <div class="wide"><span>Message</span><strong>{{ restoreResult.message || '-' }}</strong></div>
-      <div class="wide error-detail" *ngIf="restoreResult.error_details"><span>Error Details</span><strong>{{ restoreResult.error_details }}</strong></div>
-    </div>
-
-    <div class="restore-upload-list" *ngIf="restoreUploads.length">
-      <h6>Validated Restore Files</h6>
-      <div class="table-responsive">
-        <table class="table">
-          <thead><tr><th>Backup File Name</th><th>File Size</th><th>Status</th><th>Uploaded At</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let item of restoreUploads">
-              <td><strong class="file-name">{{ item.original_file_name }}</strong><small>{{ item.file_format }}</small></td>
-              <td>{{ item.file_size }}</td>
-              <td><span class="sbadge" [ngClass]="statusClass(item.status)">{{ item.status }}</span></td>
-              <td>{{ formatDate(item.uploaded_at) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <section class="data-table-wrap restore-history-wrap">
-    <div class="data-table-head">
-      <h5><i class="fas fa-clipboard-list me-2"></i>Restore History</h5>
-      <div class="dtable-actions">
-        <button type="button" class="btn btn-outline-green btn-sm" (click)="loadRestoreHistory(true)">
-          <i class="fas fa-rotate me-1"></i>Refresh
-        </button>
-      </div>
-    </div>
-    <div class="table-responsive" *ngIf="restoreHistory.length; else emptyRestoreHistory">
-      <table class="table">
+    <div class="table-responsive" *ngIf="backups.length > 0">
+      <table class="table align-middle custom-dash-table mb-0">
         <thead>
           <tr>
-            <th>Backup File Name</th>
-            <th>Restore Date & Time</th>
-            <th>Admin User</th>
-            <th>Mode</th>
-            <th>Status</th>
+            <th class="fw-800 fs-10">Backup File Name</th>
+            <th class="fw-800 fs-10">Engine / Format</th>
+            <th class="fw-800 fs-10">Date &amp; Time Created</th>
+            <th class="fw-800 fs-10">File Size</th>
+            <th class="fw-800 fs-10">Status</th>
+            <th class="text-end fw-800 fs-10">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of backups">
+            <td>
+              <div class="fw-800 text-primary fs-11 font-monospace">{{ b.file_name || b.backup_file_name }}</div>
+              <div class="fs-10 fw-700 text-secondary"><i class="fas fa-database me-1 text-gold"></i>DB: {{ b.database_name || 'PostgreSQL' }}</div>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border fw-800 fs-10">
+                {{ b.database_type || 'PostgreSQL SQL Dump' }}
+              </span>
+            </td>
+            <td>
+              <div class="fs-11 text-dark fw-700">{{ formatDate(b.created_at) }}</div>
+            </td>
+            <td>
+              <div class="fw-800 text-emerald fs-11">{{ b.file_size }}</div>
+            </td>
+            <td>
+              <span class="sbadge" [ngClass]="statusClass(b.status)">{{ b.status }}</span>
+            </td>
+            <td class="text-end">
+              <div class="dropdown d-inline-block position-relative">
+                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8 fw-800 fs-10" (click)="$event.stopPropagation(); activeRowId = (activeRowId === b.id ? null : b.id)">
+                  <i class="fas fa-ellipsis-v text-muted fs-10 me-1"></i> <span class="fs-10 fw-800">Actions</span>
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-end show shadow-sm border position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 140px; border-radius: 8px; padding: 3px 0;" *ngIf="activeRowId === b.id" (click)="$event.stopPropagation()">
+                  <button type="button" class="dropdown-item py-1 px-2.5 text-emerald fw-800 d-flex align-items-center fs-11" (click)="downloadBackup(b); activeRowId = null" [disabled]="actionFile === b.file_name || b.status !== 'Completed'">
+                    <i class="fas fa-download text-emerald me-1.5 fs-10"></i> Download SQL
+                  </button>
+                  <button type="button" class="dropdown-item py-1 px-2.5 text-primary fw-800 d-flex align-items-center fs-11" (click)="restoreBackup(b); activeRowId = null" [disabled]="actionFile === b.file_name || b.status !== 'Completed'">
+                    <i class="fas fa-undo-alt text-primary me-1.5 fs-10"></i> Restore DB
+                  </button>
+                  <div class="dropdown-divider my-1"></div>
+                  <button type="button" class="dropdown-item py-1 px-2.5 text-danger fw-800 d-flex align-items-center fs-11" (click)="deleteBackup(b); activeRowId = null" [disabled]="actionFile === b.file_name">
+                    <i class="fas fa-trash-alt text-danger me-1.5 fs-10"></i> Delete Backup
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DATABASE RESTORE & UPLOAD CARD -->
+  <div class="panel-card p-3 mb-2">
+    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+      <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-upload text-primary me-1.5"></i>Upload External SQL Dump &amp; Restore Database</h6>
+      <span class="badge bg-warning text-dark fw-800 fs-10"><i class="fas fa-exclamation-triangle me-1"></i>Caution: Overwrites Tables</span>
+    </div>
+
+    <div class="row g-3 align-items-center">
+      <div class="col-md-5">
+        <label class="form-label fs-10 fw-800 text-dark text-uppercase mb-1">Upload .SQL / .Dump File</label>
+        <input class="form-control form-control-sm fw-800 fs-11 text-dark" type="file" accept=".sql,.backup,.dump,.tar" (change)="onRestoreFileSelected($event)">
+        <div class="fs-10 fw-600 text-secondary mt-0.5">Supported extensions: .sql, .backup, .dump, .tar</div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fs-10 fw-800 text-dark text-uppercase mb-1">Restore Execution Option</label>
+        <select class="form-select form-select-sm fw-800 fs-11 text-dark" [(ngModel)]="restoreMode">
+          <option value="replace">Replace Current Database (Full Drop &amp; Restore)</option>
+          <option value="without_drop">Restore Without Dropping Existing Tables</option>
+        </select>
+      </div>
+
+      <div class="col-md-3 text-end">
+        <button type="button" class="btn btn-outline-primary btn-xs w-100 mb-1.5 fw-800 fs-11" (click)="uploadRestoreFile()" [disabled]="uploadingRestore || !selectedRestoreFile">
+          <i [class]="uploadingRestore ? 'fas fa-spinner fa-spin me-1' : 'fas fa-cloud-upload-alt me-1'"></i>
+          {{ uploadingRestore ? 'Validating...' : 'Upload &amp; Validate File' }}
+        </button>
+
+        <button type="button" class="btn btn-emerald btn-xs w-100 fw-800 fs-11" (click)="restoreSelectedUpload()" [disabled]="restoringDatabase || !selectedRestoreUploadId">
+          <i [class]="restoringDatabase ? 'fas fa-spinner fa-spin me-1' : 'fas fa-undo-alt me-1'"></i>
+          {{ restoringDatabase ? 'Restoring DB...' : 'Execute Restore' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- RESTORE PROGRESS INDICATOR -->
+    <div class="p-3 bg-light rounded border mt-3" *ngIf="restoringDatabase">
+      <div class="progress-bar-wrap mb-2"><div class="progress-bar-fill gold-gradient"></div></div>
+      <div class="fs-11 fw-800 text-dark"><i class="fas fa-spinner fa-spin me-1 text-gold"></i> Database restore is in progress. Please do not close or refresh this page.</div>
+    </div>
+  </div>
+
+  <!-- RESTORE HISTORY TABLE CARD -->
+  <div class="panel-card p-3 mb-2" *ngIf="restoreHistory.length > 0">
+    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+      <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-clipboard-list text-gold me-1.5"></i>Database Restore Audit Log History</h6>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table align-middle custom-dash-table mb-0">
+        <thead>
+          <tr>
+            <th class="fw-800 fs-10">Restored File Name</th>
+            <th class="fw-800 fs-10">Date &amp; Time</th>
+            <th class="fw-800 fs-10">Admin Operator</th>
+            <th class="fw-800 fs-10">Restore Mode</th>
+            <th class="fw-800 fs-10">Result Status</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of restoreHistory">
-            <td><strong class="file-name">{{ item.backup_file_name }}</strong><small *ngIf="item.error_details">{{ item.error_details }}</small></td>
-            <td>{{ formatDate(item.started_at) }}</td>
-            <td>{{ item.admin_name || item.admin_id || 'System' }}</td>
-            <td>{{ item.restore_mode === 'replace' ? 'Replace Current Database' : 'Restore Without Dropping' }}</td>
+            <td>
+              <strong class="text-dark fs-11 font-monospace fw-800">{{ item.backup_file_name }}</strong>
+              <div class="fs-10 text-danger fw-700" *ngIf="item.error_details">{{ item.error_details }}</div>
+            </td>
+            <td><div class="fs-11 text-dark fw-700">{{ formatDate(item.started_at) }}</div></td>
+            <td><div class="fs-11 text-secondary fw-700">{{ item.admin_name || item.admin_id || 'SuperAdmin' }}</div></td>
+            <td><span class="badge bg-light text-dark border fs-10 fw-800">{{ item.restore_mode === 'replace' ? 'Full Replace' : 'Merge Without Drop' }}</span></td>
             <td><span class="sbadge" [ngClass]="statusClass(item.status)">{{ item.status }}</span></td>
           </tr>
         </tbody>
       </table>
     </div>
-    <ng-template #emptyRestoreHistory>
-      <div class="panel-empty">
-        <i class="fas fa-clipboard-check"></i>
-        <h6>No restore history yet</h6>
-        <p>Completed and failed restore attempts will appear here.</p>
-      </div>
-    </ng-template>
-  </section>
+  </div>
 
-  <section class="data-table-wrap">
-    <div class="data-table-head">
-      <h5><i class="fas fa-history me-2"></i>Backup History</h5>
-      <div class="dtable-actions">
-        <button type="button" class="btn btn-outline-green btn-sm" (click)="loadHistory()">
-          <i class="fas fa-rotate me-1"></i>Refresh
-        </button>
-      </div>
-    </div>
-
-    <div class="table-responsive" *ngIf="backups.length; else emptyBackups">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Backup File Name</th>
-            <th>Database Type</th>
-            <th>Date & Time</th>
-            <th>File Size</th>
-            <th>Status</th>
-            <th class="text-end">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let backup of backups">
-            <td>
-              <strong class="file-name">{{ backup.file_name }}</strong>
-              <small>{{ backup.database_name }}</small>
-            </td>
-            <td>{{ backup.database_type }}</td>
-            <td>{{ formatDate(backup.created_at) }}</td>
-            <td>{{ backup.file_size }}</td>
-            <td><span class="sbadge" [ngClass]="statusClass(backup.status)">{{ backup.status }}</span></td>
-            <td class="text-end action-cell">
-              <button type="button" class="action-btn" title="Download backup" (click)="downloadBackup(backup)" [disabled]="actionFile === backup.file_name || backup.status !== 'Completed'">
-                <i class="fas fa-download"></i>
-              </button>
-              <button type="button" class="action-btn success" title="Restore backup" (click)="restoreBackup(backup)" [disabled]="actionFile === backup.file_name || backup.status !== 'Completed'">
-                <i class="fas fa-undo-alt"></i>
-              </button>
-              <button type="button" class="action-btn danger" title="Delete backup" (click)="deleteBackup(backup)" [disabled]="actionFile === backup.file_name">
-                <i class="fas fa-trash"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <ng-template #emptyBackups>
-      <div class="panel-empty">
-        <i class="fas fa-database"></i>
-        <h6>No backups created yet</h6>
-        <p>Create the first PostgreSQL backup to see it here.</p>
-      </div>
-    </ng-template>
-  </section>
 </ng-container>
+

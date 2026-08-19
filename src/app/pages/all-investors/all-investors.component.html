@@ -1,0 +1,62 @@
+<app-topbar></app-topbar>
+<app-navbar></app-navbar>
+
+<div class="all-investors-hero py-5 text-center position-relative">
+  <div class="mmr-container">
+    <div class="hero-badge mb-2"><i class="fas fa-award me-1"></i>OUR VALUED PARTNERS</div>
+    <h1 class="hero-title text-white mb-2">All Registered Investors</h1>
+    <p class="hero-sub text-gold-lt mx-auto">Explore our esteemed network of real estate investors sorted by highest investment contribution.</p>
+  </div>
+</div>
+
+<section class="all-investors-section py-5">
+  <div class="mmr-container">
+
+    <!-- SEARCH & METRICS TOOLBAR -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 p-3 bg-dark-card rounded-3 border border-gold-subtle">
+      <div class="search-box-wrap flex-fill max-w-400">
+        <i class="fas fa-search search-icon text-muted"></i>
+        <input type="text" class="form-control form-control-sm search-input" placeholder="Search investor by name..." [(ngModel)]="searchTerm" (input)="filterInvestors()" />
+      </div>
+
+      <div class="d-flex align-items-center gap-3 text-white fs-13">
+        <span><i class="fas fa-users text-gold me-1"></i> Total Investors: <strong>{{ investors.length }}</strong></span>
+        <span class="text-muted">|</span>
+        <span class="text-gold-lt"><i class="fas fa-sort-amount-down me-1"></i> Sorted by Highest Investment</span>
+      </div>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div class="text-center py-5" *ngIf="loading">
+      <i class="fas fa-spinner fa-spin text-gold fs-2"></i>
+      <div class="mt-2 text-muted">Loading complete investor directory...</div>
+    </div>
+
+    <!-- INVESTOR GRID (10 CARDS PER ROW) -->
+    <div class="investor-grid-10" *ngIf="!loading && filteredInvestors.length > 0">
+      <article *ngFor="let investor of filteredInvestors; let idx = index" class="investor-card-sm" [class.rank-top3]="idx < 3">
+        <div class="rank-badge" *ngIf="idx < 3" [title]="'Rank #' + (idx + 1)">
+          <i class="fas fa-crown text-gold"></i> #{{ idx + 1 }}
+        </div>
+        <div class="portrait-wrap">
+          <img [src]="getImageUrl(investor.profile_image_url)" [alt]="investor.name" width="100" height="100" loading="lazy" (error)="imageError($event)">
+        </div>
+        <h6 class="inv-name" [title]="investor.name">{{ investor.name }}</h6>
+        <div class="inv-amount text-gold-dark" *ngIf="investor.investment_amount">
+          ₹{{ investor.investment_amount | number }}
+        </div>
+        <span class="badge-role">Key Partner</span>
+      </article>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div class="text-center py-5 panel-empty-dark" *ngIf="!loading && filteredInvestors.length === 0">
+      <i class="fas fa-user-slash text-gold fs-1 mb-3"></i>
+      <h5 class="text-white">No Investors Found</h5>
+      <p class="text-muted fs-14">No registered investors matched your search criteria.</p>
+    </div>
+
+  </div>
+</section>
+
+<app-footer></app-footer>

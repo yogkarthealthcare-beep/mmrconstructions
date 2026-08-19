@@ -1,24 +1,41 @@
-<div *ngIf="toast" class="panel-alert mb-3" [class.panel-alert-success]="toastType==='success'" [class.panel-alert-error]="toastType==='error'" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;">
-  <i [class]="toastType==='success' ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i> {{ toast }}
+<!-- Toast Floating Banner -->
+<div *ngIf="toast" class="toast-floating-banner shadow-lg" [class.border-emerald]="toastType==='success'" [class.border-danger]="toastType==='error'">
+  <i [class]="toastType==='success' ? 'fas fa-check-circle text-emerald me-2' : 'fas fa-times-circle text-danger me-2'"></i> {{ toast }}
 </div>
 
-<div class="pg-header"><h4>Buyback Guarantee</h4><p>2-year buyback window — Original price + ₹1,00,000</p></div>
+<div class="pg-header mb-4">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h3 class="fw-700 text-dark mb-1">100% Guaranteed Buyback Program</h3>
+      <p class="text-muted fs-13 mb-0">2-Year Buyback Window — Original Purchase Price + ₹1,00,000 Return Bonus</p>
+    </div>
+    <a [routerLink]="[basePrefix, 'my-plots']" class="btn btn-outline-green btn-sm">
+      <i class="fas fa-map-marked-alt me-1"></i> My Plots
+    </a>
+  </div>
+</div>
 
 <!-- Info Card -->
-<div style="background:var(--grad-green);border-radius:16px;padding:24px 28px;margin-bottom:24px;position:relative;overflow:hidden;">
-  <div style="position:relative;z-index:1;">
-    <div class="row g-4 align-items-center">
-      <div class="col-lg-8">
-        <h4 style="font-family:var(--ff-display);color:#fff;margin-bottom:10px;">100% Safe Investment Guarantee</h4>
-        <p style="color:rgba(255,255,255,.7);font-size:13.5px;margin:0;">Registration के 2 साल के अंदर buyback apply करें। आपको मिलेगा <strong style="color:var(--clr-gold-lt);">Original Price + ₹1,00,000 extra</strong>। Disability पर: remaining EMIs माफ + possession।</p>
+<div class="buyback-hero-card mb-4 p-4 rounded-4 shadow-sm">
+  <div class="row g-4 align-items-center">
+    <div class="col-lg-8">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="badge bg-gold-subtle text-gold fw-800 tracking-wider text-uppercase">100% SAFE INVESTMENT</span>
+        <span class="badge bg-green-subtle text-emerald fw-800">ACTIVE GUARANTEE</span>
       </div>
-      <div class="col-lg-4">
-        <div class="row g-2 text-center">
-          <div class="col-6" *ngFor="let s of [['2 Yr','Buyback Window'],['₹1L','Extra Amount'],['100%','Safe Investment'],['0 Risk','Guaranteed']]">
-            <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:12px 8px;">
-              <div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700;color:var(--clr-gold-lt);">{{ s[0] }}</div>
-              <div style="font-size:10px;color:rgba(255,255,255,.55);">{{ s[1] }}</div>
-            </div>
+      <h4 class="fw-700 text-white font-display mb-2">2-Year Buyback Protection Policy</h4>
+      <p class="text-white-80 fs-13 mb-0">
+        Plot registration के 2 साल के अंदर Buyback claim कर सकते हैं। आपको मिलेगा 
+        <strong class="text-gold">Original Plot Price + ₹1,00,000 Extra Guaranteed Return</strong>। 
+        Disability होने पर: सभी बाकी EMIs माफ़ और प्लॉट का संपूर्ण कब्ज़ा।
+      </p>
+    </div>
+    <div class="col-lg-4">
+      <div class="row g-2 text-center">
+        <div class="col-6" *ngFor="let s of [['2 Years','Buyback Window'],['₹1,00,000','Extra Return'],['100%','Capital Protection'],['0 Risk','Guaranteed']]">
+          <div class="stat-pill-box p-2 rounded-3">
+            <div class="fs-16 fw-700 text-gold font-display">{{ s[0] }}</div>
+            <div class="fs-10 text-white-60 text-uppercase fw-600">{{ s[1] }}</div>
           </div>
         </div>
       </div>
@@ -27,68 +44,82 @@
 </div>
 
 <div class="row g-4">
-  <!-- Apply Buyback -->
+  <!-- Apply Buyback Form -->
   <div class="col-lg-5">
-    <div class="panel-card">
-      <div class="panel-card-title">Apply Buyback</div>
+    <div class="panel-card h-100 rounded-4 shadow-sm border p-4">
+      <h5 class="fw-700 text-dark border-bottom pb-3 mb-3">
+        <i class="fas fa-shield-alt text-gold me-2"></i>Apply Buyback Claim
+      </h5>
 
-      <div *ngIf="bookings.length===0" class="panel-empty" style="padding:24px;">
-        <i class="fas fa-map"></i>
-        <h6>No confirmed plots</h6>
-        <p class="fs-13">Buyback के लिए confirmed booking होनी चाहिए</p>
-        <a routerLink="/user/my-plots" class="btn btn-outline-green btn-sm mt-2">View My Plots</a>
+      <div *ngIf="bookings.length === 0" class="panel-empty py-4 text-center">
+        <i class="fas fa-map-marked-alt text-muted fs-1 mb-2"></i>
+        <h6 class="fw-700 text-dark">No Confirmed Plot Bookings</h6>
+        <p class="fs-13 text-muted">Buyback apply करने के लिए आपके पास Confirmed Plot Booking होनी चाहिए।</p>
+        <a [routerLink]="[basePrefix, 'my-plots']" class="btn btn-outline-green btn-sm mt-2">View My Plots</a>
       </div>
 
-      <ng-container *ngIf="bookings.length>0">
-        <div class="panel-alert panel-alert-warning mb-4">
-          <i class="fas fa-info-circle"></i>
-          <span class="fs-13">Buyback apply करने से पहले सुनिश्चित करें कि 2-year window अभी active है।</span>
+      <ng-container *ngIf="bookings.length > 0">
+        <div class="panel-alert panel-alert-info p-3 rounded-3 mb-4 d-flex align-items-center gap-2">
+          <i class="fas fa-info-circle text-primary fs-5"></i>
+          <span class="fs-13">आवेदन सबमिट करने के बाद हमारी टीम 2-साल की पात्रता समयावधि का सत्यापन करेगी।</span>
         </div>
 
         <div class="mb-4">
-          <label class="f-label">Select Plot/Booking *</label>
-          <select class="f-select" [(ngModel)]="selectedBookingId">
-            <option [value]="null">-- Select booking --</option>
+          <label class="form-label fw-700 fs-12 text-dark">Select Confirmed Plot Booking *</label>
+          <select class="form-select custom-select-box" [(ngModel)]="selectedBookingId">
+            <option [value]="null">-- Choose a booking --</option>
             <option *ngFor="let b of bookings" [value]="b.booking_id" [disabled]="alreadyApplied(b.booking_id)">
-              {{ b.plot_number }} — {{ b.site_name }} {{ alreadyApplied(b.booking_id) ? '(Applied)' : '' }}
+              Plot {{ b.plot_number }} — {{ b.site_name }} {{ alreadyApplied(b.booking_id) ? '(Already Applied)' : '' }}
             </option>
           </select>
         </div>
 
-        <button class="btn btn-gold btn-lg w-100" [disabled]="!selectedBookingId || applying" (click)="apply()">
+        <button class="btn btn-gold btn-lg w-100 fw-700 shadow-sm" [disabled]="!selectedBookingId || applying" (click)="apply()">
           <i [class]="applying ? 'fas fa-spinner fa-spin me-2' : 'fas fa-shield-alt me-2'"></i>
-          {{ applying ? 'Applying...' : 'Apply Buyback' }}
+          {{ applying ? 'Submitting Application...' : 'Confirm Buyback Application' }}
         </button>
       </ng-container>
     </div>
   </div>
 
-  <!-- Application History -->
+  <!-- Application History Table -->
   <div class="col-lg-7">
-    <div class="panel-card">
-      <div class="panel-card-title">Buyback Applications ({{ applications.length }})</div>
-      <div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
-      <div *ngIf="!loading && applications.length===0" class="panel-empty" style="padding:24px;">
-        <i class="fas fa-shield-alt"></i>
-        <h6>No applications yet</h6>
-        <p class="fs-13">Aapne abhi tak buyback apply nahi kiya hai</p>
+    <div class="panel-card h-100 rounded-4 shadow-sm border p-0 overflow-hidden">
+      <div class="p-3 bg-white border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-700 text-dark mb-0"><i class="fas fa-history text-emerald me-2"></i>My Buyback Applications ({{ applications.length }})</h5>
       </div>
-      <div class="table-responsive" *ngIf="!loading && applications.length>0">
-        <table class="table">
-          <thead><tr><th>Plot</th><th>Site</th><th>Original Price</th><th>Buyback Amt</th><th>Eligible</th><th>Status</th><th>Applied</th></tr></thead>
+
+      <div class="panel-loading text-center py-4" *ngIf="loading">
+        <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+        <p class="text-muted mt-2">Loading applications...</p>
+      </div>
+
+      <div *ngIf="!loading && applications.length === 0" class="panel-empty py-5 text-center">
+        <i class="fas fa-shield-alt text-muted fs-1 mb-2"></i>
+        <h6 class="fw-700 text-dark">No applications submitted yet</h6>
+        <p class="fs-13 text-muted">आपने अभी तक किसी प्लॉट के लिए Buyback Claim सबमिट नहीं किया है।</p>
+      </div>
+
+      <div class="table-responsive" *ngIf="!loading && applications.length > 0">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-3">Plot</th>
+              <th>Site</th>
+              <th>Original Price</th>
+              <th>Buyback Amount</th>
+              <th>Status</th>
+              <th class="pe-3">Applied Date</th>
+            </tr>
+          </thead>
           <tbody>
             <tr *ngFor="let a of applications">
-              <td class="fw-700 text-primary">{{ a.plot_number }}</td>
+              <td class="ps-3 fw-700 text-primary">Plot {{ a.plot_number }}</td>
               <td class="fs-12 text-muted">{{ a.site_name }}</td>
-              <td class="fw-700">₹{{ a.original_price | number }}</td>
-              <td style="font-weight:700;color:#16a34a;">₹{{ a.buyback_amount | number }}</td>
-              <td>
-                <span class="sbadge" [class.sbadge-green]="a.eligibility_check" [class.sbadge-red]="!a.eligibility_check">
-                  {{ a.eligibility_check ? 'Eligible' : 'Check Required' }}
-                </span>
-              </td>
+              <td class="fw-700 text-dark">₹{{ a.original_price | number }}</td>
+              <td class="fw-700 text-emerald fs-14">₹{{ a.buyback_amount | number }}</td>
               <td><span class="sbadge" [class]="'sbadge ' + statusColor(a.buyback_status)">{{ a.buyback_status }}</span></td>
-              <td class="fs-12 text-muted">{{ a.applied_at | date:'dd MMM yyyy' }}</td>
+              <td class="pe-3 fs-12 text-muted">{{ a.applied_at | date:'dd MMM yyyy' }}</td>
             </tr>
           </tbody>
         </table>

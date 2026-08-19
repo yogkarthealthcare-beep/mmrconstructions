@@ -1,100 +1,117 @@
-<!-- Loading -->
-<div class="panel-loading" *ngIf="loading">
-  <i class="fas fa-spinner"></i>
-  <span>Loading dashboard...</span>
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-5 mb-2" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+  <p class="text-muted fs-12 mt-2 mb-0">Loading executive admin control panel...</p>
 </div>
 
 <ng-container *ngIf="!loading">
-  <!-- Page Header -->
-  <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
-    <div class="pg-header" style="margin-bottom:0;">
-      <h4>Dashboard Overview</h4>
-      <p>Welcome back, Admin</p>
-    </div>
-    <div class="d-flex gap-2 flex-wrap">
-      <button class="btn btn-outline-green btn-sm" (click)="loadDashboard()">
-        <i class="fas fa-sync me-1"></i>Refresh
-      </button>
-      <a routerLink="/admin/approvals" class="btn btn-green btn-sm">
-        <i class="fas fa-user-check me-1"></i>Pending Approvals
-        <span class="ms-1 sl-badge">{{ stats.pending_approvals || '!' }}</span>
-      </a>
+
+  <!-- TOP HERO EXECUTIVE BANNER -->
+  <div class="admin-hero-card mb-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
+      <div>
+        <div class="admin-hero-badge"><i class="fas fa-shield-alt me-1"></i>SYSTEM EXECUTIVE CONTROL PANEL</div>
+        <h2 class="admin-hero-title mb-1">Admin Dashboard Overview</h2>
+        <p class="admin-hero-sub mb-0">Monitor live plot bookings, site occupancy, customer KYC approvals & financial revenue.</p>
+      </div>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+        <button class="btn btn-outline-light btn-xs" (click)="loadDashboard()">
+          <i class="fas fa-sync me-1"></i> Refresh Data
+        </button>
+        <a routerLink="/admin/approvals" class="btn btn-gold btn-xs position-relative">
+          <i class="fas fa-user-check me-1"></i> Pending Approvals
+          <span class="badge bg-danger text-white rounded-pill ms-1 fs-10 px-1.5">{{ stats.pending_approvals || 0 }}</span>
+        </a>
+      </div>
     </div>
   </div>
 
-  <!-- Stat Cards -->
-  <div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3" *ngFor="let s of statCards">
-      <div class="stat-card">
-        <div class="sc-icon" [style.background]="s.bg" [style.color]="s.color">
-          <i [class]="s.icon"></i>
+  <!-- 8 METRIC STAT CARDS GRID -->
+  <div class="row g-2 mb-2">
+    <div class="col-6 col-xl-3" *ngFor="let s of statCards">
+      <div class="stat-mini-card h-100" [class]="s.boxClass">
+        <div class="d-flex align-items-center justify-content-between mb-1.5 w-100">
+          <span class="stat-mini-lbl text-truncate">{{ s.lbl }}</span>
+          <div class="icon-wrap" [style.background]="s.bg" [style.color]="s.color">
+            <i [class]="s.icon"></i>
+          </div>
         </div>
-        <div class="sc-val">{{ getStatVal(s.key) }}</div>
-        <div class="sc-lbl">{{ s.lbl }}</div>
-        <div class="sc-delta" [class.up]="s.up" [class.down]="!s.up">
-          <i [class]="s.up ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
-          {{ s.delta }}
+        <div class="stat-mini-val mb-1">{{ getStatVal(s.key) }}</div>
+        <div class="d-flex align-items-center gap-1.5 fs-11">
+          <span [style.color]="s.color" class="fw-700 fs-10"><i [class]="s.up ? 'fas fa-arrow-up' : 'fas fa-exclamation-circle'"></i></span>
+          <span class="text-muted fw-600 fs-11 text-truncate">{{ s.delta }}</span>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="row g-4 mb-4">
-    <!-- Site Occupancy -->
+  <!-- ROW 2: SITE OCCUPANCY & RECENT BOOKINGS -->
+  <div class="row g-2 mb-2">
+    
+    <!-- LEFT: LIVE SITE OCCUPANCY -->
     <div class="col-lg-5">
-      <div class="panel-card">
-        <div class="panel-card-title">
-          Site Occupancy
-          <span class="fs-12 text-muted">Live plot availability</span>
+      <div class="panel-card p-3 h-100">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <h6 class="fw-700 text-dark mb-0"><i class="fas fa-map-marked-alt text-emerald me-2"></i>Live Site Occupancy</h6>
+          <a routerLink="/admin/sites" class="btn btn-link btn-xs text-gold-dark text-decoration-none p-0 fw-700">Manage Sites →</a>
         </div>
 
-        <div *ngIf="sites.length === 0" class="panel-empty" style="padding:24px;">
-          <i class="fas fa-map-marked-alt"></i>
-          <p>No site data available</p>
+        <div *ngIf="sites.length === 0" class="text-center py-4">
+          <i class="fas fa-map-marked-alt text-muted fs-2 mb-2"></i>
+          <p class="text-muted fs-12 mb-0">No active site data available</p>
         </div>
 
-        <div *ngFor="let s of sites" style="margin-bottom:18px;">
-          <div class="d-flex justify-content-between align-items-start mb-1">
-            <span class="fw-700 fs-13" style="color:var(--txt-h);max-width:65%;">{{ s.site_name }}</span>
-            <span class="fs-12 text-muted">{{ s.sold || 0 }}/{{ s.total_plots || 0 }}</span>
+        <div *ngFor="let s of sites" class="site-occ-item mb-2.5">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-700 fs-12 text-dark text-truncate" style="max-width: 65%;">{{ s.site_name }}</span>
+            <span class="fs-11 fw-700 text-muted">{{ s.sold || 0 }}/{{ s.total_plots || 0 }} Sold</span>
           </div>
           <div class="progress-bar-wrap">
-            <div class="progress-bar-fill" [class.gold]="occupancyPct(s) > 70" [style.width]="occupancyPct(s) + '%'"></div>
+            <div class="progress-bar-fill" [class.gold-gradient]="occupancyPct(s) >= 50" [style.width]="occupancyPct(s) + '%'"></div>
           </div>
           <div class="d-flex justify-content-between mt-1">
-            <span class="fs-12" style="color:var(--txt-muted);">{{ occupancyPct(s) }}% occupied</span>
-            <span class="fs-12 text-success">{{ s.vacant || 0 }} vacant</span>
+            <span class="fs-10 text-muted fw-600">{{ occupancyPct(s) }}% Occupied</span>
+            <span class="fs-10 text-success fw-700"><i class="fas fa-check-circle me-1"></i>{{ s.vacant || 0 }} Vacant Plots</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Recent Bookings -->
+    <!-- RIGHT: RECENT PLOT BOOKINGS -->
     <div class="col-lg-7">
-      <div class="panel-card">
-        <div class="panel-card-title">
-          Recent Bookings
-          <a routerLink="/admin/emi-payments" class="pc-link">View All →</a>
+      <div class="panel-card p-3 h-100">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <h6 class="fw-700 text-dark mb-0"><i class="fas fa-calendar-alt text-gold me-2"></i>Recent Plot Bookings</h6>
+          <a routerLink="/admin/emi-payments" class="btn btn-link btn-xs text-gold-dark text-decoration-none p-0 fw-700">View All Receipts →</a>
         </div>
 
-        <div *ngIf="recentBookings.length === 0" class="panel-empty" style="padding:24px;">
-          <i class="fas fa-calendar-times"></i>
-          <p>No recent bookings</p>
+        <div *ngIf="recentBookings.length === 0" class="text-center py-4">
+          <i class="fas fa-calendar-times text-muted fs-2 mb-2"></i>
+          <p class="text-muted fs-12 mb-0">No recent plot bookings recorded</p>
         </div>
 
         <div class="table-responsive" *ngIf="recentBookings.length > 0">
-          <table class="table">
+          <table class="table align-middle custom-dash-table mb-0">
             <thead>
-              <tr><th>Booking</th><th>Customer</th><th>Plot</th><th>Status</th></tr>
+              <tr>
+                <th>Booking #</th>
+                <th>Customer</th>
+                <th>Plot &amp; Site</th>
+                <th>Status</th>
+              </tr>
             </thead>
             <tbody>
               <tr *ngFor="let b of recentBookings">
-                <td><span class="fw-700 text-primary" style="font-size:12px;">{{ b.booking_serial }}</span></td>
+                <td><span class="fw-700 text-primary fs-12">#{{ b.booking_serial || b.booking_id }}</span></td>
                 <td>
-                  <strong style="color:var(--txt-h);">{{ b.full_name }}</strong>
-                  <div class="fs-12 text-muted">{{ b.booking_date | date:'dd MMM yyyy' }}</div>
+                  <div class="fw-700 text-dark fs-12">{{ b.full_name }}</div>
+                  <div class="fs-10 text-muted"><i class="fas fa-clock me-1 text-gold"></i>{{ b.booking_date | date:'dd MMM yyyy' }}</div>
                 </td>
-                <td class="fs-12">{{ b.plot_number }} · {{ b.site_name }}</td>
+                <td class="fs-12">
+                  <span class="fw-700 text-dark">Plot #{{ b.plot_number }}</span>
+                  <div class="fs-10 text-muted">{{ b.site_name }}</div>
+                </td>
                 <td>
                   <span class="sbadge"
                     [class.sbadge-green]="b.booking_status==='Confirmed'"
@@ -110,24 +127,31 @@
         </div>
       </div>
     </div>
+
   </div>
 
-  <!-- Quick Actions -->
-  <div class="row g-3">
-    <div class="col-sm-6 col-lg-3" *ngFor="let qa of [
-      {icon:'fas fa-user-check',label:'Approve Users',    route:'/admin/approvals',   bg:'#eaf4ee',clr:'#1a5c3a'},
-      {icon:'fas fa-envelope',  label:'View Enquiries',   route:'/admin/enquiries',   bg:'#eff6ff',clr:'#1d4ed8'},
-      {icon:'fas fa-rupee-sign',label:'Overdue EMIs',     route:'/admin/emi-payments',bg:'#fef2f2',clr:'#dc2626'},
-      {icon:'fas fa-map',       label:'Manage Sites',     route:'/admin/sites',       bg:'#fdf8ec',clr:'#a07c2a'}]">
-      <a [routerLink]="qa.route" style="text-decoration:none;">
-        <div class="stat-card" style="display:flex;align-items:center;gap:14px;padding:16px 20px;">
-          <div class="sc-icon" [style.background]="qa.bg" [style.color]="qa.clr" style="margin:0;flex-shrink:0;">
+  <!-- ROW 3: QUICK MANAGEMENT TILES -->
+  <div class="row g-2 mb-2">
+    <div class="col-6 col-md-3" *ngFor="let qa of [
+      {icon:'fas fa-user-check', label:'Approve Registrations', sub:'KYC & Accounts',  route:'/admin/approvals',   boxClass:'tile-approvals', bg:'#dbeafe', clr:'#1e40af'},
+      {icon:'fas fa-users',      label:'Customer Directory',   sub:'Buyers & Profiles', route:'/admin/customers',   boxClass:'tile-customers', bg:'#bbf7d0', clr:'#166534'},
+      {icon:'fas fa-map',        label:'Manage Sites & Maps',  sub:'Plots & Layouts',  route:'/admin/sites',       boxClass:'tile-sites',     bg:'#fef08a', clr:'#854d0e'},
+      {icon:'fas fa-hand-holding-usd', label:'Commission Payouts', sub:'Rewards & Ledger', route:'/admin/commissions', boxClass:'tile-commissions', bg:'#e9d5ff', clr:'#6b21a8'}]">
+      <a [routerLink]="qa.route" class="quick-tile-link text-decoration-none">
+        <div class="quick-action-tile" [class]="qa.boxClass">
+          <div class="icon-wrap" [style.background]="qa.bg" [style.color]="qa.clr">
             <i [class]="qa.icon"></i>
           </div>
-          <span class="fw-700 fs-13" style="color:var(--txt-h);">{{ qa.label }}</span>
-          <i class="fas fa-chevron-right ms-auto fs-12 text-muted"></i>
+          <div class="flex-fill min-w-0 ms-1">
+            <div class="tile-title text-truncate">{{ qa.label }}</div>
+            <div class="tile-sub text-truncate">{{ qa.sub }}</div>
+          </div>
+          <div class="action-arrow-circle">
+            <i class="fas fa-arrow-right"></i>
+          </div>
         </div>
       </a>
     </div>
   </div>
+
 </ng-container>

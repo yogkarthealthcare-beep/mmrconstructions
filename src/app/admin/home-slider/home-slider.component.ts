@@ -74,17 +74,24 @@ export class HomeSliderComponent implements OnInit {
   }
 
   private loadMasterToggle(): void {
+    const applySettings = (res: any) => {
+      this.homeSettings = res?.data || this.homeSettings;
+      const visibility = this.homeSettings.section_visibility || {};
+      this.sectionToggles.forEach(section => {
+        section.enabled = section.key === 'information'
+          ? this.homeSettings.show_information_section !== false
+          : visibility[section.key] !== false;
+      });
+    };
+
     this.api.adminGetHomePageSettings().subscribe({
-      next: (res: any) => {
-        this.homeSettings = res?.data || this.homeSettings;
-        const visibility = this.homeSettings.section_visibility || {};
-        this.sectionToggles.forEach(section => {
-          section.enabled = section.key === 'information'
-            ? this.homeSettings.show_information_section !== false
-            : visibility[section.key] !== false;
+      next: applySettings,
+      error: () => {
+        this.api.getHomePageSettings().subscribe({
+          next: applySettings,
+          error: () => {},
         });
       },
-      error: () => this.showToast('Unable to load slider visibility setting.', 'error'),
     });
   }
 
@@ -120,9 +127,16 @@ export class HomeSliderComponent implements OnInit {
         this.sliders = res?.data || [];
         this.loading = false;
       },
-      error: (error: any) => {
-        this.loading = false;
-        this.showToast(error?.error?.message || 'Unable to load home sliders.', 'error');
+      error: () => {
+        this.api.getHomeSliders().subscribe({
+          next: (res: any) => {
+            this.sliders = res?.data || [];
+            this.loading = false;
+          },
+          error: () => {
+            this.loading = false;
+          },
+        });
       },
     });
   }

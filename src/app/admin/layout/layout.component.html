@@ -2,40 +2,39 @@
   <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="sidebarOpen=false"></div>
 
   <aside class="sidebar" [class.open]="sidebarOpen">
-    <div class="sidebar-header">
-      <div class="sidebar-brand">
-        <div class="sidebar-brand-icon"><span>M</span></div>
-        <div class="sidebar-brand-text">
-          <span class="name">M.M.R. Constructions</span>
-          <span class="role">Admin Panel</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Admin info card -->
     <div class="sidebar-user-card">
       <div class="d-flex align-items-center gap-3">
         <div class="sidebar-avatar">{{ initials }}</div>
         <div>
-          <div class="sidebar-user-name">{{ adminUser?.full_name || 'Admin' }}</div>
+          <div class="sidebar-user-name">{{ adminUser?.full_name || 'MMR Admin' }}</div>
           <div class="sidebar-user-id">{{ adminUser?.role || 'SuperAdmin' }}</div>
         </div>
       </div>
     </div>
 
+    <!-- Accordion Nav Groups -->
     <nav class="sidebar-nav">
-      <ng-container *ngFor="let group of navGroups">
-        <div class="nav-group-label">{{ group.label }}</div>
-        <a *ngFor="let item of group.items"
-           [routerLink]="item.route"
-           routerLinkActive="active"
-           class="sidebar-link"
-           (click)="sidebarOpen=false">
-          <i [class]="item.icon"></i>
-          <span class="sl-label">{{ item.label }}</span>
-          <span *ngIf="item.badge" class="sl-badge" [class.red]="item.red">{{ item.badge }}</span>
-        </a>
-      </ng-container>
+      <div *ngFor="let group of navGroups" class="nav-group-wrapper">
+        <div class="nav-group-header" (click)="toggleGroup(group)">
+          <span class="nav-group-title">
+            <i [class]="group.icon + ' me-1.5'"></i>{{ group.label }}
+          </span>
+          <i class="fas" [class.fa-chevron-down]="group.expanded" [class.fa-chevron-right]="!group.expanded"></i>
+        </div>
+
+        <div class="nav-group-children" *ngIf="group.expanded">
+          <a *ngFor="let item of group.items"
+             [routerLink]="item.route"
+             routerLinkActive="active"
+             class="sidebar-link sub-link"
+             (click)="sidebarOpen=false">
+            <i [class]="item.icon"></i>
+            <span class="sl-label">{{ item.label }}</span>
+            <span *ngIf="item.badge" class="sl-badge" [class.red]="item.red">{{ item.badge }}</span>
+          </a>
+        </div>
+      </div>
     </nav>
 
     <div class="sidebar-footer">
@@ -54,7 +53,7 @@
         <i class="fas fa-bars"></i>
       </button>
       <div class="flex-fill" style="min-width:0;">
-        <div class="topbar-page-title">Admin Panel</div>
+        <div class="topbar-page-title">Admin Management Console</div>
       </div>
       <div class="topbar-actions">
         <div class="topbar-icon-btn" title="Notifications">

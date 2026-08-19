@@ -1,75 +1,202 @@
-<div *ngIf="toast" class="panel-alert panel-alert-success mb-3" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;">
-  <i class="fas fa-check-circle"></i> {{ toast }}
+<!-- TOAST NOTIFICATION BANNER -->
+<div *ngIf="toast" class="toast-floating-banner shadow-lg">
+  <i class="fas fa-check-circle text-success me-2"></i> {{ toast }}
 </div>
 
-<div class="pg-header"><h4>My Plots</h4><p>All your booked plots and repayment status</p></div>
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+<!-- PAGE HERO HEADER BANNER -->
+<div class="plots-hero-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
+    <div>
+      <div class="plots-hero-badge"><i class="fas fa-map-marked-alt me-1"></i>PROPERTY PORTFOLIO</div>
+      <h2 class="plots-hero-title mb-1">My Booked Plots</h2>
+      <p class="plots-hero-sub mb-0">Overview of all active plot bookings, installment schedules &amp; buyback options.</p>
+    </div>
 
-<div *ngIf="!loading && bookings.length===0" class="panel-empty" style="padding:60px;">
-  <i class="fas fa-map" style="font-size:3rem;"></i>
-  <h6>No plots booked yet</h6>
-  <p>Contact us to book your dream plot</p>
-  <a routerLink="/" class="btn btn-green btn-sm mt-2"><i class="fas fa-home me-1"></i>Explore Plots</a>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <a [routerLink]="[basePrefix, 'emi-history']" class="btn btn-gold btn-xs px-3 shadow-sm">
+        <i class="fas fa-calendar-check me-1"></i> EMI Schedule
+      </a>
+    </div>
+  </div>
 </div>
 
-<div class="row g-4" *ngIf="!loading && bookings.length>0">
-  <div class="col-lg-6" *ngFor="let b of bookings">
-    <div class="panel-card" style="padding:0;overflow:hidden;border-radius:14px;">
-      <!-- Header -->
-      <div style="background:var(--grad-green);padding:18px 20px;display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-family:var(--ff-display);font-size:1.2rem;font-weight:700;color:#fff;">{{ b.plot_number }}</div>
-          <div class="fs-12" style="color:rgba(255,255,255,.7);">{{ b.site_name }} · {{ b.city }}</div>
-        </div>
-        <span class="sbadge" [class.sbadge-green]="b.booking_status==='Confirmed'" [class.sbadge-yellow]="b.booking_status==='PaymentPending'">{{ b.booking_status }}</span>
+<!-- METRIC STAT SUMMARY CARDS -->
+<div class="row g-2 mb-2">
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card h-100">
+      <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-layer-group"></i></div>
+      <div>
+        <div class="stat-mini-val text-success">{{ bookings.length }}</div>
+        <div class="stat-mini-lbl">Total Bookings</div>
       </div>
+    </div>
+  </div>
 
-      <div style="padding:20px;">
-        <!-- Meta grid -->
-        <div class="row g-2 mb-3">
-          <div class="col-6" *ngFor="let d of [
-            ['Booking ID',  b.booking_serial],
-            ['Plot Size',   (b.plot_area||'—')+' gaj'],
-            ['Payment',     b.payment_type],
-            ['Advance Paid','₹'+(b.advance_amount||(0)|number)]
-          ]">
-            <div class="fs-12 text-muted">{{ d[0] }}</div>
-            <div class="fw-700 fs-13" style="color:var(--txt-h);">{{ d[1] }}</div>
-          </div>
-        </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card h-100">
+      <div class="icon-wrap bg-blue-light text-blue"><i class="fas fa-check-circle"></i></div>
+      <div>
+        <div class="stat-mini-val text-primary">{{ confirmedCount }}</div>
+        <div class="stat-mini-lbl">Confirmed Plots</div>
+      </div>
+    </div>
+  </div>
 
-        <!-- Booking date -->
-        <div class="panel-alert panel-alert-info mb-3" style="padding:10px 14px;">
-          <i class="fas fa-calendar"></i>
-          <span class="fs-12">Booked on <strong>{{ b.booking_date | date:'dd MMM yyyy' }}</strong></span>
-        </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card h-100">
+      <div class="icon-wrap bg-gold-light text-gold-dark"><i class="fas fa-vector-square"></i></div>
+      <div>
+        <div class="stat-mini-val text-gold-dark">{{ totalGaj | number }} <small class="fs-12">Gaj</small></div>
+        <div class="stat-mini-lbl">Total Plot Area</div>
+      </div>
+    </div>
+  </div>
 
-        <!-- Actions -->
-        <div class="d-flex gap-2 flex-wrap">
-          <a routerLink="/user/emi-history" class="btn btn-green btn-sm flex-fill text-center">
-            <i class="fas fa-calendar-check me-1"></i>EMI Schedule
-          </a>
-          <button *ngIf="b.booking_status==='Confirmed'" class="btn btn-outline-green btn-sm flex-fill"
-            (click)="buybackModal=b">
-            <i class="fas fa-shield-alt me-1"></i>Apply Buyback
-          </button>
-        </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card h-100">
+      <div class="icon-wrap bg-purple-light text-purple"><i class="fas fa-wallet"></i></div>
+      <div>
+        <div class="stat-mini-val text-purple">₹{{ totalAdvance | number }}</div>
+        <div class="stat-mini-lbl">Total Advance Paid</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Buyback Modal -->
-<div *ngIf="buybackModal" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#fff;border-radius:16px;padding:28px;max-width:420px;width:100%;">
-    <h5 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:12px;">Apply Buyback</h5>
-    <div class="panel-alert panel-alert-warning mb-4">
-      <i class="fas fa-info-circle"></i>
-      <span class="fs-13">Plot <strong>{{ buybackModal.plot_number }}</strong> ke liye buyback apply karein? 2-year window check ki jaegi.</span>
+<!-- SEARCH & FILTER TOOLBAR -->
+<div class="toolbar-card mb-2" *ngIf="!loading && bookings.length > 0">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-width: 500px;">
+      <div class="search-input-wrap flex-fill">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="form-control form-control-sm search-field" placeholder="Search by Plot No, Site Name, or Serial #..." [(ngModel)]="searchTerm" />
+      </div>
+
+      <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 150px;">
+        <option value="all">All Status</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="pending">Pending / Process</option>
+      </select>
     </div>
+
+    <button class="btn btn-outline-secondary btn-sm ms-auto" (click)="loadBookings()">
+      <i class="fas fa-sync-alt me-1"></i> Refresh
+    </button>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-5 mb-4" *ngIf="loading">
+  <div class="spinner-border text-gold me-2" role="status"></div>
+  <span class="text-muted">Loading plot booking records...</span>
+</div>
+
+<!-- EMPTY STATE -->
+<div *ngIf="!loading && bookings.length === 0" class="panel-card py-5 text-center my-4">
+  <div class="empty-icon-box mx-auto mb-3">
+    <i class="fas fa-map-marked-alt text-gold fs-1"></i>
+  </div>
+  <h4 class="fw-700 text-dark mb-2">No Plots Booked Yet</h4>
+  <p class="text-muted max-w-500 mx-auto fs-14 mb-4">
+    Explore our prime township plot locations across UP &amp; Delhi NCR to book your plot today!
+  </p>
+  <a routerLink="/" class="btn btn-green btn-md">
+    <i class="fas fa-compass me-1"></i> Explore Sites &amp; Plots
+  </a>
+</div>
+
+<!-- PLOTS CARDS GRID -->
+<div class="row g-4 mb-4" *ngIf="!loading && bookings.length > 0">
+  <div class="col-lg-6" *ngFor="let b of filteredBookings">
+    <div class="plot-property-card">
+      
+      <!-- Card Top Header -->
+      <div class="plot-card-header p-3 bg-dark-green text-white d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fs-18 fw-700 text-gold font-display mb-1">
+            <i class="fas fa-map-pin me-1"></i>Plot {{ b.plot_number }}
+          </div>
+          <div class="fs-12 opacity-85">
+            <i class="fas fa-city me-1"></i>{{ b.site_name }} &bull; {{ b.city || 'Unnao / Kanpur' }}
+          </div>
+        </div>
+        <span class="sbadge" [class.sbadge-green]="b.booking_status==='Confirmed'||b.booking_status==='Active'" [class.sbadge-yellow]="b.booking_status==='PaymentPending'" [class.sbadge-blue]="b.booking_status==='InProcess'">
+          {{ b.booking_status === 'Active' ? 'Confirmed' : b.booking_status }}
+        </span>
+      </div>
+
+      <!-- Card Body -->
+      <div class="p-3 bg-white">
+        <!-- 4-Grid Detail Box -->
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <div class="detail-box p-2">
+              <span class="lbl">Booking Serial</span>
+              <span class="val text-dark">{{ b.booking_serial || ('#BK-' + b.booking_id) }}</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="detail-box p-2">
+              <span class="lbl">Plot Area</span>
+              <span class="val text-success">{{ (b.plot_area || '—') }} Gaj</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="detail-box p-2">
+              <span class="lbl">Payment Plan</span>
+              <span class="val text-dark">{{ b.payment_type || 'EMI Plan' }}</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="detail-box p-2">
+              <span class="lbl">Advance Paid</span>
+              <span class="val text-gold-dark">₹{{ (b.advance_amount || 0) | number }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Booking Date Banner -->
+        <div class="panel-date-banner p-2 px-3 rounded-3 mb-3 d-flex align-items-center gap-2">
+          <i class="fas fa-calendar-check text-primary fs-14"></i>
+          <span class="fs-12 text-muted">Confirmation Date: <strong class="text-dark">{{ (b.booking_date || b.created_at) | date:'dd MMM yyyy' }}</strong></span>
+        </div>
+
+        <!-- Card Action Buttons -->
+        <div class="d-flex gap-2 flex-wrap">
+          <a [routerLink]="[basePrefix, 'emi-history']" class="btn btn-outline-green btn-sm flex-fill text-center">
+            <i class="fas fa-calendar-alt me-1"></i> EMI Schedule
+          </a>
+          <button *ngIf="b.booking_status === 'Confirmed' || b.booking_status === 'Active'" class="btn btn-gold btn-sm flex-fill" (click)="buybackModal = b">
+            <i class="fas fa-shield-alt me-1"></i> Apply Buyback
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BUYBACK APPLICATION MODAL -->
+<div *ngIf="buybackModal" class="modal-backdrop-custom">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-700 text-dark mb-0"><i class="fas fa-shield-alt text-gold me-2"></i>Apply 2-Year Buyback</h5>
+      <button type="button" class="btn-close" (click)="buybackModal = null"></button>
+    </div>
+
+    <div class="panel-alert-banner mb-4 p-3 rounded-3">
+      <i class="fas fa-info-circle text-gold me-2 fs-5"></i>
+      <span class="fs-13 text-dark">
+        Confirm buyback guarantee application for Plot <strong>{{ buybackModal.plot_number }}</strong>?
+        Our team will verify the 2-year purchase eligibility window (+₹1,00,000 return bonus).
+      </span>
+    </div>
+
     <div class="d-flex gap-2">
-      <button class="btn btn-green flex-fill" (click)="applyBuyback(buybackModal)"><i class="fas fa-check me-1"></i>Confirm Apply</button>
-      <button class="btn btn-outline-green flex-fill" (click)="buybackModal=null">Cancel</button>
+      <button class="btn btn-green flex-fill" (click)="applyBuyback(buybackModal)">
+        <i class="fas fa-check me-1"></i> Confirm Application
+      </button>
+      <button class="btn btn-outline-secondary flex-fill" (click)="buybackModal = null">Cancel</button>
     </div>
   </div>
 </div>

@@ -1,23 +1,56 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { TopbarComponent } from '../../shared/topbar/topbar.component';
+import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TopbarComponent, NavbarComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   mobile = ''; password = ''; otp = ['','','','','',''];
   showPassword = false; loginMode: 'password' | 'otp' = 'password';
   loading = false; otpSent = false; error = '';
+  mobileMenuOpen = false;
+  returnUrl = '';
 
-  constructor(private api: ApiService, private auth: AuthService, private router: Router) {}
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private location: Location
+  ) {}
+
+  ngOnInit() {
+    const rawReturnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')) {
+      this.returnUrl = rawReturnUrl;
+    }
+  }
+
+  toggleMobileMenu() {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu() {
+    this.mobileMenuOpen = false;
+  }
+
+  goBack() {
+    if (this.returnUrl && this.returnUrl !== '/login') {
+      this.router.navigateByUrl(this.returnUrl);
+    } else {
+      this.router.navigate(['/']);
+    }
+  }
 
   sendOtp() {
     if (!this.mobile) { this.error = 'Mobile number required'; return; }
@@ -37,24 +70,58 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    if (!this.mobile) { this.error = 'Mobile number required'; return; }
+    if (!this.mobile) { this.error = 'Email or Mobile number required'; return; }
     this.loading = true; this.error = '';
 
+    const cleanInput = this.mobile.trim();
     const otpCode  = this.loginMode === 'otp' ? this.otp.join('') : undefined;
     const password = this.loginMode === 'password' ? this.password : undefined;
 
-    this.api.login(this.mobile, otpCode, password).subscribe({
+    this.api.login(cleanInput, otpCode, password).subscribe({
       next: (res: any) => {
-        if (res.success) {
-          this.auth.setUserSession(res.data);
-          this.router.navigate(['/user/dashboard']);
+        if (res && res.success) {
+          this.auth.setUserSession(res.data || res);
+
+          const userObj = res.data?.user || res.user || res.data || {};
+          const userType = String(userObj.user_type || userObj.role || res.data?.user_type || res.user_type || '').toLowerCase();
+          
+          let targetDashboard = '/customer/dashboard';
+          if (userType.includes('associate')) {
+            targetDashboard = '/associate/dashboard';
+          } else if (userType.includes('investor')) {
+            targetDashboard = '/investor/dashboard';
+          } else if (userType.includes('admin')) {
+            targetDashboard = '/admin/dashboard';
+          } else {
+            targetDashboard = '/customer/dashboard';
+          }
+
+          const isInvalidReturn = (url?: string) => !url || url === '/' || url === '/home' || url === '/login' || url.includes('/login');
+
+          let destination = targetDashboard;
+          if (this.returnUrl && !isInvalidReturn(this.returnUrl)) {
+            destination = this.returnUrl;
+          } else if (res.data?.redirect && !isInvalidReturn(res.data.redirect)) {
+            destination = res.data.redirect;
+          }
+
+          setTimeout(() => {
+            this.router.navigateByUrl(destination).then(navigated => {
+              if (!navigated) {
+                this.router.navigate([destination]);
+              }
+            }).catch(() => {
+              this.router.navigate([destination]);
+            });
+          }, 50);
+
         } else {
-          this.error = res.message || 'Login failed';
+          this.error = res?.message || 'Login failed. Please check your credentials.';
         }
         this.loading = false;
       },
       error: (e: any) => {
-        this.error = e?.error?.message || 'Invalid credentials';
+        this.error = e?.error?.message || e?.message || 'Invalid credentials or connection error';
         this.loading = false;
       }
     });

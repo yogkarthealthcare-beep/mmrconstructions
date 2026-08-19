@@ -1,5 +1,37 @@
 <div class="investor-dashboard">
-  <!-- Welcome Banner -->
+
+  <!-- TOP REFERRAL LINK BANNER -->
+  <div class="referral-banner-card mb-4" *ngIf="referralCode">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="referral-icon-circle">
+          <i class="fas fa-share-alt"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="ref-badge">INVESTOR REFERRAL LINK</span>
+            <span class="ref-code-chip"><i class="fas fa-key me-1"></i>{{ referralCode }}</span>
+          </div>
+          <div class="referral-link-display mt-1">
+            <i class="fas fa-link me-2 text-gold"></i>
+            <span class="ref-url-text">{{ referralLink }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+        <button type="button" class="btn btn-copy-link" (click)="copyReferralLink()">
+          <i [class]="copiedLink ? 'fas fa-check text-success me-1' : 'fas fa-copy me-1'"></i>
+          {{ copiedLink ? 'Copied!' : 'Copy Link' }}
+        </button>
+        <button type="button" class="btn btn-whatsapp-share" (click)="shareOnWhatsapp()">
+          <i class="fab fa-whatsapp me-1"></i> Share on WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WELCOME BANNER -->
   <div class="welcome-banner mb-4">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
       <div>
@@ -34,61 +66,68 @@
   <div *ngIf="!loading">
     <!-- Summary Cards Grid -->
     <div class="row g-4 mb-4">
-      <!-- Total Investment Card -->
+      <!-- Current Wallet Balance Card -->
       <div class="col-xl-3 col-md-6">
-        <div class="card stat-card border-0 shadow-sm overflow-hidden h-100">
+        <div class="card stat-card border-0 shadow-sm overflow-hidden h-100 border-start border-4 border-success">
           <div class="card-body p-4 d-flex align-items-center justify-content-between">
             <div>
-              <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Total Investment</span>
-              <h3 class="fw-bold text-dark mb-0">₹{{ (dashboardData?.summary?.total_investment || 0) | number:'1.2-2' }}</h3>
+              <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Wallet Balance</span>
+              <h3 class="fw-bold text-success mb-0">₹{{ (dashboardData?.summary?.available_balance || 0) | number:'1.2-2' }}</h3>
+              <div class="mt-2 fs-12">
+                <a routerLink="/investor/deposit" class="text-success text-decoration-none fw-bold me-2"><i class="fas fa-plus-circle me-1"></i>Add Fund</a>
+                <a routerLink="/investor/withdrawal" class="text-secondary text-decoration-none fw-bold"><i class="fas fa-arrow-up me-1"></i>Withdraw</a>
+              </div>
             </div>
             <div class="stat-icon bg-success-subtle text-success">
-              <i class="fas fa-chart-line"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Total Withdraw Amount Card -->
-      <div class="col-xl-3 col-md-6">
-        <div class="card stat-card border-0 shadow-sm overflow-hidden h-100">
-          <div class="card-body p-4 d-flex align-items-center justify-content-between">
-            <div>
-              <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Total Withdraw Amount</span>
-              <h3 class="fw-bold text-dark mb-0">₹{{ (dashboardData?.summary?.total_withdrawals || 0) | number:'1.2-2' }}</h3>
-            </div>
-            <div class="stat-icon bg-warning-subtle text-warning">
-              <i class="fas fa-arrow-up-long"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Current Balance Card -->
-      <div class="col-xl-3 col-md-6">
-        <div class="card stat-card border-0 shadow-sm overflow-hidden h-100">
-          <div class="card-body p-4 d-flex align-items-center justify-content-between">
-            <div>
-              <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Current Balance</span>
-              <h3 class="fw-bold text-success mb-0">₹{{ (dashboardData?.summary?.available_balance || 0) | number:'1.2-2' }}</h3>
-            </div>
-            <div class="stat-icon bg-emerald-subtle text-emerald">
               <i class="fas fa-wallet"></i>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Total Transactions Card -->
+      <!-- Total Investment / Fund Card -->
       <div class="col-xl-3 col-md-6">
-        <div class="card stat-card border-0 shadow-sm overflow-hidden h-100">
+        <div class="card stat-card border-0 shadow-sm overflow-hidden h-100 border-start border-4 border-primary">
           <div class="card-body p-4 d-flex align-items-center justify-content-between">
             <div>
-              <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Total Transactions</span>
-              <h3 class="fw-bold text-dark mb-0">{{ (dashboardData?.summary?.total_transactions || dashboardData?.recent_transactions?.length || 0) }}</h3>
+              <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Total Fund / Investment</span>
+              <h3 class="fw-bold text-dark mb-0">₹{{ (dashboardData?.summary?.total_investment || dashboardData?.summary?.total_deposits || 0) | number:'1.2-2' }}</h3>
+              <small class="text-muted">Total deposited capital</small>
             </div>
             <div class="stat-icon bg-primary-subtle text-primary">
-              <i class="fas fa-list-check"></i>
+              <i class="fas fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Earnings Card -->
+      <div class="col-xl-3 col-md-6">
+        <div class="card stat-card border-0 shadow-sm overflow-hidden h-100 border-start border-4 border-warning">
+          <div class="card-body p-4 d-flex align-items-center justify-content-between">
+            <div>
+              <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Total Earnings</span>
+              <h3 class="fw-bold text-dark mb-0">₹{{ (dashboardData?.summary?.total_earnings || 0) | number:'1.2-2' }}</h3>
+              <small class="text-muted">Profit &amp; yield earned</small>
+            </div>
+            <div class="stat-icon bg-warning-subtle text-warning">
+              <i class="fas fa-coins"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Withdrawals Card -->
+      <div class="col-xl-3 col-md-6">
+        <div class="card stat-card border-0 shadow-sm overflow-hidden h-100 border-start border-4 border-info">
+          <div class="card-body p-4 d-flex align-items-center justify-content-between">
+            <div>
+              <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Total Withdrawals</span>
+              <h3 class="fw-bold text-dark mb-0">₹{{ (dashboardData?.summary?.total_withdrawals || 0) | number:'1.2-2' }}</h3>
+              <small class="text-muted">Approved payouts released</small>
+            </div>
+            <div class="stat-icon bg-info-subtle text-info">
+              <i class="fas fa-arrow-up-long"></i>
             </div>
           </div>
         </div>

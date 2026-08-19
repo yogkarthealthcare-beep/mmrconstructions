@@ -1,13 +1,18 @@
 <div class="detector-head">
   <div class="pg-header">
     <h4>Plot Detector Tool</h4>
-    <p>Upload a plot map image, detect numeric plot labels, preview boundaries, and export coordinates.</p>
+    <p>Select a site, run detection API, adjust boundaries, and save plot coordinates directly to the site map.</p>
   </div>
   <div class="detector-actions">
+    <select class="f-input compact-select" [(ngModel)]="selectedSiteId" (change)="onSiteChange()" style="width: auto; max-width: 220px; display: inline-block;">
+      <option [ngValue]="null">-- Select Project / Site --</option>
+      <option *ngFor="let s of sites" [value]="s.site_id">{{ s.site_name }}</option>
+    </select>
+    <button type="button" class="btn btn-green btn-sm" (click)="saveDetectionsToSite()" [disabled]="!selectedSiteId || !detections.length || savingDetections">
+      <i class="fas fa-save me-1"></i>{{ savingDetections ? 'Saving...' : 'Save to Site' }}
+    </button>
     <input #fileInput type="file" accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml" (change)="onFileSelected($event)" hidden>
-    <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">📷 Upload Site Map</button>
-    <button type="button" class="btn btn-outline-green btn-sm" (click)="copyPrompt()">📋 Copy Prompt</button>
-    <button type="button" class="btn btn-outline-green btn-sm" (click)="openCloudAiDetector()">☁ Open Cloud AI Detector</button>
+    <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">📷 Upload Custom Image</button>
     <button type="button" class="btn btn-outline-green btn-sm" (click)="detectAgain()" [disabled]="!imageUrl || loading"><i class="fas fa-magic me-1"></i>Detect Again</button>
     <button type="button" class="tool-btn" title="Zoom out" aria-label="Zoom out" (click)="zoomOut()" [disabled]="!imageUrl"><i class="fas fa-search-minus"></i></button>
     <button type="button" class="tool-btn" title="Fit to screen" aria-label="Fit to screen" (click)="fitToScreen()" [disabled]="!imageUrl"><i class="fas fa-compress-arrows-alt"></i></button>
@@ -18,8 +23,6 @@
     <button type="button" class="btn btn-outline-green btn-sm" (click)="exportJson()" [disabled]="!detections.length">Export JSON</button>
     <button type="button" class="btn btn-outline-green btn-sm" (click)="exportCsv()" [disabled]="!detections.length">Export CSV</button>
     <button type="button" class="btn btn-outline-green btn-sm" (click)="exportMasterSvg()" [disabled]="!detections.length">Export Master SVG</button>
-    <button type="button" class="btn btn-outline-green btn-sm" (click)="downloadMasterSvgTemplate()">Master SVG Format</button>
-    <button type="button" class="btn btn-outline-green btn-sm" (click)="copyJson()" [disabled]="!detections.length">Copy JSON</button>
   </div>
 </div>
 

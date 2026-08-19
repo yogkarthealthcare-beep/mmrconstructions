@@ -52,6 +52,17 @@ export class PaymentGatewaySettingsComponent implements OnInit {
     this.loadData();
   }
 
+  get activeGatewaysCount(): number {
+    return (this.gateways || []).filter(gw => gw.status === 'active' || gw.is_enabled === true).length;
+  }
+
+  get primaryDefaultName(): string {
+    const defaultCode = this.globalForm.get('default_gateway')?.value;
+    if (!defaultCode) return '';
+    const match = (this.gateways || []).find(gw => gw.gateway_name === defaultCode);
+    return match ? match.display_name : defaultCode;
+  }
+
   private initForm() {
     this.globalForm = this.fb.group({
       user_gateway_selection: [false],
@@ -65,8 +76,8 @@ export class PaymentGatewaySettingsComponent implements OnInit {
         display_name: ['Razorpay', [Validators.required]],
         public_key: ['', [Validators.required]],
         secret_key: ['', [Validators.required]],
-        callback_url: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]],
-        webhook_url: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]],
+        callback_url: [''],
+        webhook_url: [''],
         status: ['inactive', [Validators.required]],
         environment_mode: ['test'],
         priority: [1],
@@ -76,8 +87,8 @@ export class PaymentGatewaySettingsComponent implements OnInit {
         display_name: ['Cashfree', [Validators.required]],
         public_key: ['', [Validators.required]],
         client_secret: ['', [Validators.required]],
-        callback_url: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]],
-        webhook_url: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]],
+        callback_url: [''],
+        webhook_url: [''],
         environment_mode: ['sandbox', [Validators.required]],
         status: ['inactive', [Validators.required]],
         priority: [2],
@@ -87,7 +98,7 @@ export class PaymentGatewaySettingsComponent implements OnInit {
         display_name: ['PayU', [Validators.required]],
         public_key: ['', [Validators.required]],
         secret_key: ['', [Validators.required]],
-        callback_url: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]],
+        callback_url: [''],
         webhook_url: [''],
         environment_mode: ['test', [Validators.required]],
         status: ['inactive', [Validators.required]],
@@ -100,18 +111,19 @@ export class PaymentGatewaySettingsComponent implements OnInit {
     this.loading = true;
     this.errorMessage = '';
 
-    // Fetch gateways list
+    // Fetch gateways list from database API
     this.adminService.getGateways().subscribe({
-      next: (gwRes) => {
-        if (gwRes.success) {
-          this.gateways = this.mergeSupportedGateways(gwRes.data || []);
-          this.patchGatewayForms();
-        }
+      next: (gwRes: any) => {
+        const rows = Array.isArray(gwRes) ? gwRes : (gwRes?.data || []);
+        this.gateways = this.mergeSupportedGateways(rows);
+        this.patchGatewayForms();
         this.loadGlobalSettings();
       },
       error: (err) => {
         console.error('Failed to load gateways', err);
-        this.errorMessage = 'Failed to load payment gateways. Please try again.';
+        this.errorMessage = 'Failed to load payment gateways. Showing default configuration.';
+        this.gateways = this.mergeSupportedGateways([]);
+        this.patchGatewayForms();
         this.loadGlobalSettings();
       }
     });
@@ -125,7 +137,7 @@ export class PaymentGatewaySettingsComponent implements OnInit {
         status: 'inactive',
         mode: 'test',
         environment_mode: 'test',
-        logo: 'https://razorpay.com/favicon.ico',
+        logo: 'https://rzp-mobile.s3.amazonaws.com/images/rzp.png',
         priority: 1,
       },
       {
@@ -134,7 +146,7 @@ export class PaymentGatewaySettingsComponent implements OnInit {
         status: 'inactive',
         mode: 'sandbox',
         environment_mode: 'sandbox',
-        logo: 'https://www.cashfree.com/favicon.ico',
+        logo: 'https://cashfree.com/favicon.ico',
         priority: 2,
       },
       {
@@ -148,10 +160,28 @@ export class PaymentGatewaySettingsComponent implements OnInit {
       }
     ];
 
-    return defaults.map((fallback) => {
-      const existing = rows.find((gw) => gw.gateway_name === fallback.gateway_name);
-      return existing ? { ...fallback, ...existing } : fallback;
+    const result = [...defaults];
+    (rows || []).forEach(dbRow => {
+      const idx = result.findIndex(item => item.gateway_name.toLowerCase() === dbRow.gateway_name?.toLowerCase());
+      if (idx >= 0) {
+        result[idx] = {
+          ...result[idx],
+          ...dbRow,
+          display_name: dbRow.display_name || result[idx].display_name,
+          logo: dbRow.logo || result[idx].logo,
+          status: dbRow.status || (dbRow.is_enabled ? 'active' : 'inactive'),
+          mode: dbRow.environment_mode || dbRow.mode || result[idx].mode,
+        };
+      } else {
+        result.push({
+          ...dbRow,
+          logo: dbRow.logo || 'https://cdn-icons-png.flaticon.com/512/893/893097.png',
+          status: dbRow.status || (dbRow.is_enabled ? 'active' : 'inactive'),
+        });
+      }
     });
+
+    return result.sort((a, b) => (a.priority || 99) - (b.priority || 99));
   }
 
   private patchGatewayForms() {
@@ -169,7 +199,7 @@ export class PaymentGatewaySettingsComponent implements OnInit {
         callback_url: gateway.callback_url || '',
         webhook_url: gateway.webhook_url || '',
         environment_mode: gateway.environment_mode || gateway.mode || (name === 'cashfree' ? 'sandbox' : 'test'),
-        status: gateway.status || 'inactive',
+        status: gateway.status || (gateway.is_enabled ? 'active' : 'inactive'),
         priority: gateway.priority || (name === 'razorpay' ? 1 : name === 'cashfree' ? 2 : 3),
       });
     });
@@ -182,7 +212,7 @@ export class PaymentGatewaySettingsComponent implements OnInit {
   }
 
   gatewayExists(name: 'razorpay' | 'cashfree' | 'payu') {
-    return Boolean(this.gateways.find((gw) => gw.gateway_name === name && gw.id));
+    return Boolean(this.gateways.find((gw) => gw.gateway_name === name && (gw.id || gw.public_key || gw.key_id)));
   }
 
   toggleSecret(name: 'razorpay' | 'cashfree' | 'payu') {
@@ -193,7 +223,7 @@ export class PaymentGatewaySettingsComponent implements OnInit {
     const form = this.gatewayForms[name];
     if (form.invalid) {
       form.markAllAsTouched();
-      this.errorMessage = `Please complete required ${this.getGatewayLabel(name)} fields before saving.`;
+      this.errorMessage = `Please fill required fields (API Key / Secret) for ${this.getGatewayLabel(name)}.`;
       return;
     }
 
@@ -206,8 +236,8 @@ export class PaymentGatewaySettingsComponent implements OnInit {
       gateway_name: name,
       display_name: raw.display_name,
       public_key: raw.public_key,
-      callback_url: raw.callback_url,
-      webhook_url: raw.webhook_url,
+      callback_url: raw.callback_url || undefined,
+      webhook_url: raw.webhook_url || undefined,
       environment_mode: raw.environment_mode,
       status: raw.status,
       priority: raw.priority,
@@ -227,8 +257,8 @@ export class PaymentGatewaySettingsComponent implements OnInit {
       : this.adminService.createGateway(payload);
 
     request$.subscribe({
-      next: (res) => {
-        if (res.success) {
+      next: (res: any) => {
+        if (res.success || res.status === 'success') {
           this.successMessage = `${this.getGatewayLabel(name)} configuration saved successfully.`;
           this.loadData();
           this.showToast();
@@ -247,9 +277,14 @@ export class PaymentGatewaySettingsComponent implements OnInit {
 
   private loadGlobalSettings() {
     this.adminService.getSettings().subscribe({
-      next: (settingsRes) => {
-        if (settingsRes.success && settingsRes.data) {
-          this.globalForm.patchValue(settingsRes.data);
+      next: (settingsRes: any) => {
+        const data = settingsRes?.data || settingsRes;
+        if (data && typeof data === 'object') {
+          this.globalForm.patchValue({
+            user_gateway_selection: Boolean(data.user_gateway_selection),
+            default_gateway: data.default_gateway || '',
+            fallback_gateway: Boolean(data.fallback_gateway)
+          });
         }
         this.loading = false;
       },
@@ -268,9 +303,9 @@ export class PaymentGatewaySettingsComponent implements OnInit {
     const payload: PaymentSettings = this.globalForm.value;
 
     this.adminService.updateSettings(payload).subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.successMessage = 'Global payment configurations updated successfully.';
+      next: (res: any) => {
+        if (res.success || res.status === 'success') {
+          this.successMessage = 'Global payment settings updated successfully.';
           this.showToast();
         } else {
           this.errorMessage = res.message || 'Failed to update settings.';
@@ -286,7 +321,6 @@ export class PaymentGatewaySettingsComponent implements OnInit {
   }
 
   handleToggleStatus(gateway: PaymentGatewayAdmin) {
-    // Determine next status in cycle: active -> maintenance -> inactive -> active
     let nextStatus: 'active' | 'inactive' | 'maintenance';
     if (gateway.status === 'active') {
       nextStatus = 'maintenance';
@@ -297,20 +331,20 @@ export class PaymentGatewaySettingsComponent implements OnInit {
     }
 
     const triggerUpdate = () => {
-      this.adminService.updateGateway(gateway.gateway_name, { status: nextStatus }).subscribe({
-        next: (res) => {
-          if (res.success) {
+      this.adminService.updateGateway(gateway.gateway_name, { status: nextStatus, is_enabled: nextStatus === 'active' }).subscribe({
+        next: (res: any) => {
+          if (res.success || res.status === 'success') {
             gateway.status = nextStatus;
+            gateway.is_enabled = nextStatus === 'active';
             this.successMessage = `${gateway.display_name} status updated to ${nextStatus}.`;
             this.showToast();
-            
-            // If we deactivated the default gateway, we must clear it or resolve settings
+
             if (nextStatus !== 'active' && this.globalForm.get('default_gateway')?.value === gateway.gateway_name) {
               this.globalForm.patchValue({ default_gateway: '' });
               this.saveGlobalSettings();
             }
           } else {
-            this.errorMessage = res.message;
+            this.errorMessage = res.message || 'Failed to update status.';
           }
         },
         error: (err) => {
@@ -320,10 +354,9 @@ export class PaymentGatewaySettingsComponent implements OnInit {
       });
     };
 
-    // Warn if disabling active gateway
     if (gateway.status === 'active') {
       this.dialogTitle = 'Change Gateway Status';
-      this.dialogMessage = `Are you sure you want to shift ${gateway.display_name} into maintenance mode? Active checkouts for this gateway will fail.`;
+      this.dialogMessage = `Are you sure you want to shift ${gateway.display_name} into maintenance mode? Active checkouts for this gateway will pause.`;
       this.pendingAction = triggerUpdate;
       this.dialogOpen = true;
     } else {
@@ -349,8 +382,8 @@ export class PaymentGatewaySettingsComponent implements OnInit {
 
   handleUpdatePriority(event: { gateway: PaymentGatewayAdmin, priority: number }) {
     this.adminService.updateGateway(event.gateway.gateway_name, { priority: event.priority }).subscribe({
-      next: (res) => {
-        if (res.success) {
+      next: (res: any) => {
+        if (res.success || res.status === 'success') {
           event.gateway.priority = event.priority;
           this.successMessage = `Priority for ${event.gateway.display_name} updated successfully.`;
           this.showToast();

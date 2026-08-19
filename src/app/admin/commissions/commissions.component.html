@@ -1,41 +1,234 @@
-<div *ngIf="toast" class="panel-alert panel-alert-success mb-3" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;">
-  <i class="fas fa-check-circle"></i> {{ toast }}
+<!-- Toast Notification -->
+<div *ngIf="toast" class="toast-popup" style="position:fixed;top:76px;right:24px;z-index:9999;animation:slideIn .25s ease;">
+  <i class="fas fa-check-circle text-emerald me-2"></i> {{ toast }}
 </div>
 
-<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
-  <div class="pg-header" style="margin-bottom:0;"><h4>Commission Management</h4><p>Associate monthly commissions — 12-year program</p></div>
-  <button class="btn btn-outline-green btn-sm" (click)="load()"><i class="fas fa-sync me-1"></i>Refresh</button>
+<!-- TOP HERO EXECUTIVE BANNER -->
+<div class="admin-hero-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+    <div>
+      <div class="admin-hero-badge"><i class="fas fa-hand-holding-usd me-1"></i>ASSOCIATE PAYOUTS &amp; COMMISSION CONTROL</div>
+      <h2 class="admin-hero-title mb-1">Commission Management</h2>
+      <p class="admin-hero-sub mb-0">Track associate downline referral earnings, approve monthly commission payouts &amp; log bank UTR references.</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <button class="btn btn-outline-light btn-xs" (click)="load()">
+        <i class="fas fa-sync me-1"></i> Refresh Commissions
+      </button>
+    </div>
+  </div>
 </div>
 
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+<!-- 4 STAT SUMMARY MINI CARDS -->
+<div class="row g-2 mb-2">
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-commission h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Pending Payouts</span>
+        <div class="icon-wrap bg-amber text-orange"><i class="fas fa-hourglass-half"></i></div>
+      </div>
+      <div class="stat-mini-val">₹{{ totalPendingAmount | number:'1.0-0' }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-clock text-orange me-1"></i>{{ pendingCount }} Pending Requests</div>
+    </div>
+  </div>
 
-<div class="data-table-wrap" *ngIf="!loading">
-  <div class="data-table-head">
-    <h5>Pending Commissions ({{ commissions.length }})</h5>
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-plots h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Paid Disbursed</span>
+        <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-check-circle"></i></div>
+      </div>
+      <div class="stat-mini-val">₹{{ totalPaidAmount | number:'1.0-0' }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-check-double text-emerald me-1"></i>{{ paidCount }} Completed Payouts</div>
+    </div>
   </div>
-  <div *ngIf="commissions.length===0" class="panel-empty">
-    <i class="fas fa-hand-holding-usd"></i>
-    <h6>No pending commissions</h6>
-    <p>All commissions are paid</p>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-customers h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Total Transactions</span>
+        <div class="icon-wrap bg-blue text-primary"><i class="fas fa-list-ol"></i></div>
+      </div>
+      <div class="stat-mini-val">{{ commissions.length }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-file-invoice text-primary me-1"></i>Commission Records</div>
+    </div>
   </div>
-  <div class="table-responsive" *ngIf="commissions.length>0">
-    <table class="table">
-      <thead><tr><th>Associate</th><th>Type</th><th>Month</th><th>Gross</th><th>Deductions</th><th>Net Payable</th><th>Booking</th><th>Status</th><th></th></tr></thead>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-revenue h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Total Volume</span>
+        <div class="icon-wrap bg-gold-light text-gold-dark"><i class="fas fa-coins"></i></div>
+      </div>
+      <div class="stat-mini-val">₹{{ (totalPendingAmount + totalPaidAmount) | number:'1.0-0' }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-award text-gold-dark me-1"></i>Gross Referral Payout</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR CARD -->
+<div class="panel-card p-3 mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="filter-tabs">
+      <button class="filter-tab" [class.active]="statusFilter==='all'"      (click)="statusFilter='all'">All Commissions ({{ commissions.length }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='pending'"  (click)="statusFilter='pending'">Pending Approval ({{ pendingCount }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='paid'"     (click)="statusFilter='paid'">Paid / Disbursed ({{ paidCount }})</button>
+    </div>
+
+    <div class="search-box position-relative ms-auto" style="min-width: 240px;">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" placeholder="Search associate, plot #, UTR...">
+    </div>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-5 mb-2" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+  <p class="text-muted fs-12 mt-2 mb-0">Loading commission payout records...</p>
+</div>
+
+<!-- MAIN DATA TABLE CARD -->
+<div class="panel-card p-3 mb-2" *ngIf="!loading">
+  
+  <div *ngIf="filtered.length === 0" class="text-center py-5">
+    <i class="fas fa-hand-holding-usd text-muted fs-1 mb-2"></i>
+    <h6 class="fw-700 text-dark mb-1">No Commission Records Found</h6>
+    <p class="text-muted fs-12 mb-0">No associate commission payouts match your current search query.</p>
+  </div>
+
+  <div class="table-responsive" *ngIf="filtered.length > 0">
+    <table class="table align-middle custom-dash-table mb-0">
+      <thead>
+        <tr>
+          <th>Associate Agent</th>
+          <th>Type &amp; Level</th>
+          <th>Gross / Net Payable</th>
+          <th>Plot &amp; Booking Info</th>
+          <th>Payment UTR / Ref</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
       <tbody>
-        <tr *ngFor="let c of commissions">
-          <td><strong style="color:var(--txt-h);">{{ c.associate_name }}</strong><div class="fs-12 text-muted">{{ c.member_id }}</div></td>
-          <td><span class="sbadge sbadge-blue">{{ c.commission_type }}</span></td>
-          <td class="fs-12 text-muted">{{ c.commission_month }}</td>
-          <td class="fw-700">₹{{ c.gross_amount | number }}</td>
-          <td class="text-danger fs-12">-₹{{ c.deduction_amount | number }}</td>
-          <td><span class="fw-700" style="color:#16a34a;font-size:1rem;">₹{{ c.net_amount | number }}</span></td>
-          <td class="fs-12 text-muted">{{ c.booking_serial || '—' }}</td>
-          <td><span class="sbadge" [class.sbadge-yellow]="c.commission_status==='Pending'" [class.sbadge-green]="c.commission_status==='Paid'">{{ c.commission_status }}</span></td>
+        <tr *ngFor="let c of filtered">
           <td>
-            <button *ngIf="c.commission_status==='Pending'" class="action-btn success" (click)="approve(c)" title="Approve & Pay"><i class="fas fa-check"></i></button>
+            <div class="d-flex align-items-center gap-2.5">
+              <div class="user-avatar-circle bg-gold-avatar">
+                {{ getInitials(c.associate_name || c.full_name) }}
+              </div>
+              <div>
+                <div class="fw-700 text-dark fs-12">{{ c.associate_name || c.full_name }}</div>
+                <div class="fs-10 text-muted"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ c.member_id || '—' }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge bg-light text-dark border fw-600">
+              {{ c.commission_type || 'Referral Commission' }}
+            </span>
+            <div class="fs-10 text-muted" *ngIf="c.commission_month">Month: {{ c.commission_month }}</div>
+          </td>
+          <td>
+            <div class="fw-800 text-emerald fs-13">₹{{ (c.net_amount || c.commission_amount || c.amount || 0) | number:'1.0-0' }}</div>
+            <div class="fs-10 text-muted" *ngIf="c.gross_amount">Gross: ₹{{ c.gross_amount | number }}</div>
+          </td>
+          <td>
+            <div class="fw-700 text-primary fs-12" *ngIf="c.plot_number">Plot #{{ c.plot_number }}</div>
+            <div class="fs-10 text-muted">{{ c.site_name || c.booking_serial || 'Direct Sale' }}</div>
+          </td>
+          <td>
+            <span class="utr-code-pill" *ngIf="c.payment_reference">{{ c.payment_reference }}</span>
+            <span class="fs-11 text-muted" *ngIf="!c.payment_reference">—</span>
+          </td>
+          <td>
+            <span class="sbadge"
+              [class.sbadge-green]="c.commission_status==='Paid'||c.commission_status==='Approved'"
+              [class.sbadge-yellow]="c.commission_status==='Pending'"
+              [class.sbadge-red]="c.commission_status==='Rejected'">
+              {{ c.commission_status || 'Pending' }}
+            </span>
+          </td>
+          <td class="text-end">
+            <div class="dropdown d-inline-block position-relative">
+              <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === c.commission_id ? null : c.commission_id)">
+                <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
+              </button>
+
+              <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 170px; border-radius: 10px;" *ngIf="activeRowId === c.commission_id" (click)="$event.stopPropagation()">
+                <button type="button" class="dropdown-item py-1.5 px-3 text-emerald fw-700 d-flex align-items-center" (click)="openApproveModal(c); activeRowId = null" *ngIf="c.commission_status==='Pending'">
+                  <i class="fas fa-check-circle text-emerald me-2 width-16"></i> Approve &amp; Pay
+                </button>
+                <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="openRejectModal(c); activeRowId = null" *ngIf="c.commission_status==='Pending'">
+                  <i class="fas fa-times-circle text-danger me-2 width-16"></i> Reject Payout
+                </button>
+                <div class="dropdown-divider my-1" *ngIf="c.commission_status==='Pending' &amp;&amp; c.mobile_no"></div>
+                <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + c.mobile_no" target="_blank" *ngIf="c.mobile_no">
+                  <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Agent
+                </a>
+              </div>
+            </div>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
+
+<!-- APPROVE PAYOUT MODAL -->
+<div class="modal-backdrop fade show" *ngIf="showApproveModal"></div>
+<div class="modal d-block fade show" tabIndex="-1" *ngIf="showApproveModal" (click)="closeModals()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 rounded-14 shadow-lg">
+      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
+        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-check-circle text-gold me-2"></i>Approve Commission Payout</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="p-3 bg-light rounded-10 border mb-3">
+          <div class="fs-12 mb-1"><strong>Associate:</strong> {{ selectedComm?.associate_name || selectedComm?.full_name }}</div>
+          <div class="fs-12 mb-1"><strong>Net Payout Amount:</strong> <span class="fw-800 text-emerald">₹{{ (selectedComm?.net_amount || selectedComm?.commission_amount || 0) | number }}</span></div>
+        </div>
+
+        <label class="form-label fs-11 fw-700 text-dark">Bank UTR / Transaction Reference Number</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="paymentRef" placeholder="e.g. UTR1234567890">
+        <div class="form-text fs-10 text-muted">Enter the bank transfer UTR number for associate records.</div>
+      </div>
+
+      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-emerald btn-xs" (click)="confirmApprove()" [disabled]="actionLoading">
+          <i class="fas fa-check me-1"></i> Confirm &amp; Mark Paid
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REJECT PAYOUT MODAL -->
+<div class="modal-backdrop fade show" *ngIf="showRejectModal"></div>
+<div class="modal d-block fade show" tabIndex="-1" *ngIf="showRejectModal" (click)="closeModals()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 rounded-14 shadow-lg">
+      <div class="modal-header bg-danger text-white rounded-top-14 py-3 px-4">
+        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-times-circle me-2"></i>Reject Commission Payout</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <label class="form-label fs-11 fw-700 text-dark">Rejection Reason</label>
+        <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="rejectReason" placeholder="Enter reason for rejecting this commission..."></textarea>
+      </div>
+
+      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-danger btn-xs" (click)="confirmReject()" [disabled]="actionLoading">
+          <i class="fas fa-ban me-1"></i> Reject Payout
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

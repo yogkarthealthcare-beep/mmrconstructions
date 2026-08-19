@@ -1,27 +1,192 @@
-<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
-  <div class="pg-header" style="margin-bottom:0;"><h4>Associate Management</h4><p>All associates and their commission info</p></div>
+<!-- Toast Notification -->
+<div *ngIf="toast" class="toast-popup" style="position:fixed;top:76px;right:24px;z-index:9999;animation:slideIn .25s ease;">
+  <i class="fas fa-check-circle text-emerald me-2"></i> {{ toast }}
 </div>
-<div class="data-table-wrap">
-  <div class="data-table-head">
-    <h5>Associates ({{ total }})</h5>
-    <div class="search-box"><i class="fas fa-search"></i><input [(ngModel)]="search" placeholder="Search..." (input)="load()"/></div>
+
+<!-- TOP HERO EXECUTIVE BANNER -->
+<div class="admin-hero-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+    <div>
+      <div class="admin-hero-badge"><i class="fas fa-sitemap me-1"></i>NETWORK AGENT &amp; ASSOCIATE DIRECTORY</div>
+      <h2 class="admin-hero-title mb-1">Associate Management</h2>
+      <p class="admin-hero-sub mb-0">Manage network partners, commission ranks, downline team structures &amp; create new associate accounts.</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <button class="btn btn-outline-light btn-xs" (click)="load()">
+        <i class="fas fa-sync me-1"></i> Refresh List
+      </button>
+      <button class="btn btn-gold btn-xs" (click)="openAddModal()">
+        <i class="fas fa-user-plus me-1"></i> Add New Associate
+      </button>
+    </div>
   </div>
-  <div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
-  <div *ngIf="!loading && associates.length===0" class="panel-empty"><i class="fas fa-user-tie"></i><h6>No associates found</h6></div>
-  <div class="table-responsive" *ngIf="!loading && associates.length>0">
-    <table class="table">
-      <thead><tr><th>Member ID</th><th>Name & Mobile</th><th>Invite Code</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+</div>
+
+<!-- 4 STAT SUMMARY MINI CARDS -->
+<div class="row g-2 mb-2">
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-associates h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Total Associates</span>
+        <div class="icon-wrap bg-gold-light text-gold-dark">
+          <i class="fas fa-user-tie"></i>
+        </div>
+      </div>
+      <div class="stat-mini-val">{{ total }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-sitemap text-gold-dark me-1"></i>Network Agents</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-plots h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Active Agents</span>
+        <div class="icon-wrap bg-emerald-light text-emerald">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+      <div class="stat-mini-val">{{ activeCount }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-user-check text-emerald me-1"></i>Active Downlines</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-approvals h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Pending Approvals</span>
+        <div class="icon-wrap bg-amber text-orange">
+          <i class="fas fa-hourglass-half"></i>
+        </div>
+      </div>
+      <div class="stat-mini-val">{{ pendingCount }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-clock text-orange me-1"></i>Awaiting Verification</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-enquiries h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Suspended Accounts</span>
+        <div class="icon-wrap bg-purple-light text-purple">
+          <i class="fas fa-user-slash"></i>
+        </div>
+      </div>
+      <div class="stat-mini-val">{{ suspendedCount }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-ban text-purple me-1"></i>On Hold</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR CARD -->
+<div class="panel-card p-3 mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="filter-tabs">
+      <button class="filter-tab" [class.active]="statusFilter==='all'"       (click)="statusFilter='all'; onSearch()">All Associates ({{ total }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='Active'"    (click)="statusFilter='Active'; onSearch()">Active</button>
+      <button class="filter-tab" [class.active]="statusFilter==='Pending'"   (click)="statusFilter='Pending'; onSearch()">Pending</button>
+      <button class="filter-tab" [class.active]="statusFilter==='Suspended'" (click)="statusFilter='Suspended'; onSearch()">Suspended</button>
+    </div>
+
+    <div class="search-box position-relative ms-auto" style="min-width: 240px;">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" (input)="onSearch()" placeholder="Search name, phone, code, rank...">
+    </div>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-5 mb-2" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+  <p class="text-muted fs-12 mt-2 mb-0">Loading associate directory...</p>
+</div>
+
+<!-- MAIN DATA TABLE CARD -->
+<div class="panel-card p-3 mb-2" *ngIf="!loading">
+  
+  <div *ngIf="filtered.length === 0" class="text-center py-5">
+    <i class="fas fa-user-tie text-muted fs-1 mb-2"></i>
+    <h6 class="fw-700 text-dark mb-1">No Associates Found</h6>
+    <p class="text-muted fs-12 mb-0">No registered associates match your current search query.</p>
+  </div>
+
+  <div class="table-responsive" *ngIf="filtered.length > 0">
+    <table class="table align-middle custom-dash-table mb-0">
+      <thead>
+        <tr>
+          <th>Associate Profile</th>
+          <th>Contact &amp; Mobile</th>
+          <th>Invite Code</th>
+          <th>Rank &amp; Role</th>
+          <th>Joined</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
       <tbody>
-        <tr *ngFor="let a of associates">
-          <td><span class="fw-700 text-gold fs-12">{{ a.member_id || '—' }}</span></td>
-          <td><strong style="color:var(--txt-h);">{{ a.full_name }}</strong><div class="fs-12 text-muted">{{ a.mobile_no }}</div></td>
-          <td><span *ngIf="a.invitation_code" style="font-family:monospace;font-size:11px;background:var(--clr-primary-bg);padding:2px 8px;border-radius:6px;color:var(--clr-primary);">{{ a.invitation_code }}</span><span *ngIf="!a.invitation_code" class="text-muted fs-12">—</span></td>
-          <td><span class="sbadge" [class.sbadge-green]="a.account_status==='Active'" [class.sbadge-yellow]="a.account_status==='Pending'" [class.sbadge-gray]="a.account_status==='Suspended'">{{ a.account_status }}</span></td>
-          <td class="fs-12 text-muted">{{ a.registered_at | date:'dd MMM yyyy' }}</td>
+        <tr *ngFor="let a of filtered">
           <td>
-            <div class="d-flex gap-1">
-              <button class="action-btn" title="View"><i class="fas fa-eye"></i></button>
-              <a [href]="'https://wa.me/91'+a.mobile_no" target="_blank" class="action-btn" style="color:#16a34a;"><i class="fab fa-whatsapp"></i></a>
+            <div class="d-flex align-items-center gap-2.5">
+              <div class="user-avatar-circle bg-gold-avatar">
+                {{ getInitials(a.full_name) }}
+              </div>
+              <div>
+                <div class="fw-700 text-dark fs-12">{{ a.full_name }}</div>
+                <div class="fs-10 text-muted"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ a.member_id || '—' }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="fw-700 text-dark fs-12"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ a.mobile_no }}</div>
+            <div class="fs-10 text-muted"><i class="fas fa-envelope me-1 text-gold"></i>{{ a.email || 'No email' }}</div>
+          </td>
+          <td>
+            <span class="invite-code-pill" *ngIf="a.invitation_code">{{ a.invitation_code }}</span>
+            <span class="fs-11 text-muted" *ngIf="!a.invitation_code">—</span>
+          </td>
+          <td>
+            <span class="badge bg-warning-subtle text-warning-emphasis">
+              <i class="fas fa-award me-1"></i>{{ a.rank_name || 'Associate' }}
+            </span>
+          </td>
+          <td>
+            <div class="fs-11 text-dark fw-600">{{ a.registered_at | date:'dd MMM yyyy' }}</div>
+            <div class="fs-10 text-muted">{{ a.registered_at | date:'hh:mm a' }}</div>
+          </td>
+          <td>
+            <span class="sbadge"
+              [class.sbadge-green]="a.account_status==='Active'"
+              [class.sbadge-yellow]="a.account_status==='Pending'"
+              [class.sbadge-red]="a.account_status==='Suspended'||a.account_status==='Blacklisted'">
+              {{ a.account_status }}
+            </span>
+          </td>
+          <td class="text-end">
+            <div class="dropdown d-inline-block position-relative">
+              <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === a.user_id ? null : a.user_id)">
+                <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
+              </button>
+
+              <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 175px; border-radius: 10px;" *ngIf="activeRowId === a.user_id" (click)="$event.stopPropagation()">
+                <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openDetailModal(a); activeRowId = null">
+                  <i class="fas fa-sitemap text-primary me-2 width-16"></i> KYC &amp; Network
+                </button>
+                <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openEditModal(a); activeRowId = null">
+                  <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Rank/Details
+                </button>
+                <div class="dropdown-divider my-1"></div>
+                <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + a.mobile_no">
+                  <i class="fas fa-phone text-secondary me-2 width-16"></i> Call Associate
+                </a>
+                <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + a.mobile_no" target="_blank">
+                  <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
+                </a>
+                <div class="dropdown-divider my-1"></div>
+                <button type="button" class="dropdown-item py-1.5 px-3 fw-600 d-flex align-items-center" [class.text-danger]="a.account_status==='Active'" [class.text-success]="a.account_status!=='Active'" (click)="toggleAssociateStatus(a); activeRowId = null">
+                  <i [class]="a.account_status==='Active' ? 'fas fa-ban me-2 width-16' : 'fas fa-check me-2 width-16'"></i>
+                  {{ a.account_status==='Active' ? 'Suspend Agent' : 'Activate Agent' }}
+                </button>
+              </div>
             </div>
           </td>
         </tr>
@@ -29,3 +194,242 @@
     </table>
   </div>
 </div>
+
+<!-- ADD NEW ASSOCIATE MODAL -->
+<div class="modal-backdrop fade show" *ngIf="showAddModal"></div>
+<div class="modal d-block fade show" tabIndex="-1" *ngIf="showAddModal" (click)="closeModals()">
+  <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 rounded-14 shadow-lg">
+      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
+        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-user-plus text-gold me-2"></i>Create New Associate Account</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Full Name *</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.full_name" placeholder="e.g. Anil Sharma">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Mobile Number *</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.mobile_no" placeholder="10-digit phone number">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Email Address *</label>
+            <input type="email" class="form-control form-control-sm" [(ngModel)]="associateForm.email" placeholder="associate@example.com">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Sponsor / Referral Code</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.sponsor_code" placeholder="Optional sponsor code">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Rank / Designation</label>
+            <select class="form-select form-select-sm" [(ngModel)]="associateForm.rank_name">
+              <option value="Associate">Associate</option>
+              <option value="Executive">Executive</option>
+              <option value="Manager">Manager</option>
+              <option value="Director">Director</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Account Status</label>
+            <select class="form-select form-select-sm" [(ngModel)]="associateForm.account_status">
+              <option value="Active">Active</option>
+              <option value="Pending">Pending</option>
+              <option value="Suspended">Suspended</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fs-11 fw-700 text-dark">Address Line</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.address" placeholder="House no, Street name...">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">City</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.city" placeholder="Kanpur / Lucknow">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">State</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.state" placeholder="Uttar Pradesh">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">Pin Code</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.pin_code" placeholder="208001">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-emerald btn-xs" (click)="saveNewAssociate()" [disabled]="actionLoading">
+          <i class="fas fa-save me-1"></i> Save Associate
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT ASSOCIATE MODAL -->
+<div class="modal-backdrop fade show" *ngIf="showEditModal"></div>
+<div class="modal d-block fade show" tabIndex="-1" *ngIf="showEditModal" (click)="closeModals()">
+  <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 rounded-14 shadow-lg">
+      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
+        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-edit text-gold me-2"></i>Edit Associate Details</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Full Name *</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.full_name">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Mobile Number *</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.mobile_no">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Email Address *</label>
+            <input type="email" class="form-control form-control-sm" [(ngModel)]="associateForm.email">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Rank / Designation</label>
+            <select class="form-select form-select-sm" [(ngModel)]="associateForm.rank_name">
+              <option value="Associate">Associate</option>
+              <option value="Executive">Executive</option>
+              <option value="Manager">Manager</option>
+              <option value="Director">Director</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Account Status</label>
+            <select class="form-select form-select-sm" [(ngModel)]="associateForm.account_status">
+              <option value="Active">Active</option>
+              <option value="Pending">Pending</option>
+              <option value="Suspended">Suspended</option>
+              <option value="Blacklisted">Blacklisted</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fs-11 fw-700 text-dark">Address Line</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.address">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">City</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.city">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">State</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.state">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">Pin Code</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.pin_code">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-emerald btn-xs" (click)="updateAssociate()" [disabled]="actionLoading">
+          <i class="fas fa-check me-1"></i> Update Changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ASSOCIATE DETAIL KYC MODAL -->
+<div class="modal-backdrop fade show" *ngIf="showDetailModal"></div>
+<div class="modal d-block fade show" tabIndex="-1" *ngIf="showDetailModal" (click)="closeModals()">
+  <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 rounded-14 shadow-lg">
+      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
+        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-sitemap text-gold me-2"></i>Associate Profile &amp; Payout Overview</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
+      </div>
+
+      <div class="modal-body p-4 position-relative">
+        <div class="text-center py-4" *ngIf="detailLoading">
+          <i class="fas fa-spinner fa-spin fs-3 text-gold"></i>
+          <p class="text-muted fs-12 mt-2 mb-0">Loading associate network record...</p>
+        </div>
+
+        <ng-container *ngIf="!detailLoading &amp;&amp; selectedAssociate">
+          
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-10 border">
+                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-user-tie text-gold-dark me-2"></i>Agent Profile</h6>
+                <div class="fs-12 mb-1"><strong>Member ID:</strong> {{ selectedAssociate.member_id || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>Invite Code:</strong> <span class="invite-code-pill">{{ selectedAssociate.invitation_code || '—' }}</span></div>
+                <div class="fs-12 mb-1"><strong>Name:</strong> {{ selectedAssociate.full_name }}</div>
+                <div class="fs-12 mb-1"><strong>Mobile:</strong> {{ selectedAssociate.mobile_no }}</div>
+                <div class="fs-12 mb-1"><strong>Email:</strong> {{ selectedAssociate.email || '—' }}</div>
+                <div class="fs-12"><strong>Rank:</strong> <span class="badge bg-warning text-dark">{{ selectedAssociate.rank_name || 'Associate' }}</span></div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-10 border">
+                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-university text-warning me-2"></i>Commission Bank Payout</h6>
+                <div class="fs-12 mb-1"><strong>Holder:</strong> {{ selectedAssociate.bank?.account_holder_name || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>Bank:</strong> {{ selectedAssociate.bank?.bank_name || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>Account #:</strong> {{ selectedAssociate.bank?.account_number || '—' }}</div>
+                <div class="fs-12"><strong>IFSC:</strong> {{ selectedAssociate.bank?.ifsc_code || '—' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-10 border">
+                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-user-heart text-purple me-2"></i>Nominee Details</h6>
+                <div class="fs-12 mb-1"><strong>Name:</strong> {{ selectedAssociate.nominee?.nominee_name || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>Relation:</strong> {{ selectedAssociate.nominee?.relationship || '—' }}</div>
+                <div class="fs-12"><strong>Mobile:</strong> {{ selectedAssociate.nominee?.nominee_mobile || '—' }}</div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-10 border">
+                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-map-marker-alt text-emerald me-2"></i>Address Info</h6>
+                <div class="fs-12 mb-1"><strong>Line 1:</strong> {{ selectedAssociate.address?.address_line1 || selectedAssociate.address_line1 || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>City:</strong> {{ selectedAssociate.city || selectedAssociate.address?.city || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>State:</strong> {{ selectedAssociate.state || selectedAssociate.address?.state || '—' }}</div>
+                <div class="fs-12"><strong>Pincode:</strong> {{ selectedAssociate.pin_code || selectedAssociate.address?.pin_code || '—' }}</div>
+              </div>
+            </div>
+          </div>
+
+        </ng-container>
+      </div>
+
+      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Close</button>
+        <button type="button" class="btn btn-warning btn-xs" (click)="openEditModal(selectedAssociate)">
+          <i class="fas fa-pencil-alt me-1"></i> Edit Associate
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { RazorpayService } from '../../services/razorpay.service';
+import { SiteToggleService } from '../../services/site-toggle.service';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 declare var Razorpay: any;
@@ -50,6 +51,7 @@ export class SiteMapComponent implements OnInit, OnDestroy {
   statusFilter = 'All';
   zoom = 1;
   pan = { x: 0, y: 0 };
+  imageAspectRatio: number | null = null;
   // Restored legacy layout-map overlays: plots render directly over the uploaded site image.
   readonly legacyOverlayEnabled = true;
   private isPanning = false;
@@ -71,6 +73,7 @@ export class SiteMapComponent implements OnInit, OnDestroy {
     private api: ApiService,
     private auth: AuthService,
     private razorpayService: RazorpayService,
+    private siteToggle: SiteToggleService,
   ) {}
 
   ngOnInit() {
@@ -80,6 +83,7 @@ export class SiteMapComponent implements OnInit, OnDestroy {
       this.loading = false;
       return;
     }
+    this.siteToggle.setActiveSiteId(id);
     this.loadMap(id);
     this.loadSiteDocuments(id);
     this.refreshTimer = setInterval(() => {
@@ -87,6 +91,10 @@ export class SiteMapComponent implements OnInit, OnDestroy {
         this.loadMap(this.site.site_id, false);
       }
     }, 15000);
+  }
+
+  get isInteractive(): boolean {
+    return this.siteToggle.isSiteInteractive(this.site?.site_id);
   }
 
   loadSiteDocuments(siteId: number) {
@@ -118,12 +126,24 @@ export class SiteMapComponent implements OnInit, OnDestroy {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
   }
 
+  get siteMapUrl(): string {
+    const url = this.site?.layout_map_url || this.site?.map_image_url || '';
+    return url ? this.api.url(url) : '';
+  }
+
   get transform() {
     return `translate(${this.pan.x} ${this.pan.y}) scale(${this.zoom})`;
   }
 
   get imageTransform() {
     return `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.zoom})`;
+  }
+
+  onSiteImageLoad(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img && img.naturalWidth && img.naturalHeight) {
+      this.imageAspectRatio = img.naturalWidth / img.naturalHeight;
+    }
   }
 
   get filteredPlots() {
@@ -193,6 +213,16 @@ export class SiteMapComponent implements OnInit, OnDestroy {
         this.resumePendingBookingIfNeeded();
       },
     });
+  }
+
+  openGeneralSiteBooking() {
+    const available = this.plots.find(p => this.isBookable(p)) || this.plots[0];
+    if (available) {
+      this.selectPlot(available);
+      this.bookSelectedPlot();
+    } else {
+      this.showToast('No available plots at this moment. Please contact sales office.', 'error');
+    }
   }
 
   closePlot() {
@@ -415,12 +445,13 @@ export class SiteMapComponent implements OnInit, OnDestroy {
   }
 
   onPlotHover(plot: any, event: MouseEvent) {
+    if (!this.isInteractive) return;
     this.hoverPlot = plot;
     this.tooltip = { x: event.clientX + 12, y: event.clientY + 12 };
   }
 
   moveTooltip(event: MouseEvent) {
-    if (!this.hoverPlot) return;
+    if (!this.hoverPlot || !this.isInteractive) return;
     this.tooltip = { x: event.clientX + 12, y: event.clientY + 12 };
   }
 
@@ -585,15 +616,18 @@ export class SiteMapComponent implements OnInit, OnDestroy {
     const plot = this.selectedPlotDetail || this.selectedPlot;
     const shouldResumeFromUrl = action === 'book' && plotId && Number(plot?.plot_id) === plotId;
     const shouldResumeFromSession = stored?.action === 'book' && Number(stored.plotId) === Number(plot?.plot_id);
-      if (shouldResumeFromUrl || shouldResumeFromSession) {
-        this.autoBookingAttempted = true;
-        sessionStorage.removeItem(PENDING_BOOKING_KEY);
-        this.router.navigate([], {
+    if (shouldResumeFromUrl || shouldResumeFromSession) {
+      this.autoBookingAttempted = true;
+      sessionStorage.removeItem(PENDING_BOOKING_KEY);
+      this.router.navigate([], {
         relativeTo: this.route,
         queryParams: { action: null },
         queryParamsHandling: 'merge',
         replaceUrl: true,
       });
+      if (plot) {
+        this.validateBookingEligibility(plot);
+      }
     }
   }
 

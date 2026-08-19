@@ -144,12 +144,22 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
             this.verified = true;
             setTimeout(() => {
               const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+              const userType = res.data?.user?.user_type || res.data?.user_type || this.userType;
+              let targetDashboard = '/customer/dashboard';
+              if (userType === 'Associate') {
+                targetDashboard = '/associate/dashboard';
+              } else if (userType === 'Investor') {
+                targetDashboard = '/investor/dashboard';
+              }
+
               if (returnUrl) {
                 this.router.navigateByUrl(returnUrl);
-              } else if (this.userType === 'Investor') {
+              } else if (res.data?.redirect) {
+                this.router.navigateByUrl(res.data.redirect);
+              } else if (userType === 'Investor') {
                 this.router.navigate(['/login'], { queryParams: { verified: 'true' } });
               } else {
-                this.router.navigateByUrl(res.data?.redirect || '/user/dashboard');
+                this.router.navigateByUrl(targetDashboard);
               }
             }, 1500);
           } else {

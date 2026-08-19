@@ -1,0 +1,320 @@
+<div class="withdrawal-page-container">
+
+  <!-- PAGE HEADER -->
+  <div class="pg-header-wrapper">
+    <div class="d-flex align-items-center gap-3">
+      <div class="header-badge-icon">
+        <i class="fas fa-hand-holding-usd"></i>
+      </div>
+      <div>
+        <h1 class="pg-title">Withdrawal Requests Command Center</h1>
+        <p class="pg-sub">Review, approve, release, or reject payout requests for Associates, Investors, and Customers.</p>
+      </div>
+    </div>
+
+    <div>
+      <span class="security-tag">
+        <i class="fas fa-shield-alt"></i> PAYOUT ENGINE ACTIVE
+      </span>
+    </div>
+  </div>
+
+  <!-- QUICK METRICS BAR -->
+  <div class="metrics-row" *ngIf="!loading">
+
+    <!-- Metric 1: Pending Requests -->
+    <div class="metric-card card-amber">
+      <div>
+        <div class="metric-label">Pending Requests</div>
+        <div class="metric-value text-amber">₹{{ pendingTotal | number:'1.2-2' }}</div>
+        <div class="metric-subtext"><i class="fas fa-clock me-1 text-warning"></i>{{ pendingCount }} requests waiting</div>
+      </div>
+      <div class="metric-icon-wrap icon-amber">
+        <i class="fas fa-hourglass-half"></i>
+      </div>
+    </div>
+
+    <!-- Metric 2: Approved (Ready for Release) -->
+    <div class="metric-card card-blue">
+      <div>
+        <div class="metric-label">Approved (Ready)</div>
+        <div class="metric-value text-primary">₹{{ approvedTotal | number:'1.2-2' }}</div>
+        <div class="metric-subtext"><i class="fas fa-check-double me-1 text-primary"></i>{{ approvedCount }} requests approved</div>
+      </div>
+      <div class="metric-icon-wrap icon-blue">
+        <i class="fas fa-check-double"></i>
+      </div>
+    </div>
+
+    <!-- Metric 3: Released Payouts -->
+    <div class="metric-card card-emerald">
+      <div>
+        <div class="metric-label">Released Payouts</div>
+        <div class="metric-value text-success">₹{{ releasedTotal | number:'1.2-2' }}</div>
+        <div class="metric-subtext"><i class="fas fa-hand-holding-usd me-1 text-success"></i>{{ releasedCount }} payouts completed</div>
+      </div>
+      <div class="metric-icon-wrap icon-emerald">
+        <i class="fas fa-hand-holding-usd"></i>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FILTER FORM CARD -->
+  <div class="filter-card-modern">
+    <form [formGroup]="filterForm" class="row g-2 align-items-end">
+
+      <!-- Status Filter -->
+      <div class="col-md-2 col-sm-6">
+        <label class="f-label-sm">Status</label>
+        <select formControlName="status" class="f-select-compact" (change)="loadRequests()">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="released">Released</option>
+          <option value="rejected">Rejected</option>
+          <option value="failed">Failed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <!-- Role Filter -->
+      <div class="col-md-2 col-sm-6">
+        <label class="f-label-sm">Role</label>
+        <select formControlName="user_role" class="f-select-compact" (change)="loadRequests()">
+          <option value="">All Roles</option>
+          <option value="Associate">Associate</option>
+          <option value="Investor">Investor</option>
+          <option value="Customer">Customer</option>
+        </select>
+      </div>
+
+      <!-- Search Input -->
+      <div class="col-md-3 col-sm-12">
+        <label class="f-label-sm">Search User</label>
+        <div class="search-box-compact">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            formControlName="search"
+            class="search-input-compact"
+            placeholder="Name, email, mobile..."
+            (input)="onSearchInput()"
+          />
+        </div>
+      </div>
+
+      <!-- Start Date -->
+      <div class="col-md-2 col-sm-6">
+        <label class="f-label-sm">Start Date</label>
+        <input type="date" formControlName="start_date" class="f-select-compact" (change)="loadRequests()" />
+      </div>
+
+      <!-- End Date -->
+      <div class="col-md-2 col-sm-6">
+        <label class="f-label-sm">End Date</label>
+        <input type="date" formControlName="end_date" class="f-select-compact" (change)="loadRequests()" />
+      </div>
+
+      <!-- Reset Filter Button -->
+      <div class="col-md-1 col-sm-12 text-end">
+        <button type="button" class="btn-reset-filter w-100" (click)="resetFilters()" title="Reset Filters">
+          <i class="fas fa-redo-alt me-1"></i> Reset
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" class="py-5 text-center bg-white rounded-4 border border-1 border-light shadow-sm mb-4">
+    <i class="fas fa-circle-notch fa-spin fa-2x text-emerald"></i>
+    <span class="d-block mt-2 text-muted fw-semibold fs-13">Fetching withdrawal requests data...</span>
+  </div>
+
+  <!-- ERROR ALERT -->
+  <div *ngIf="!loading && errorMsg" class="alert alert-danger d-flex align-items-center gap-2 mb-4 rounded-3">
+    <i class="fas fa-exclamation-circle fs-5"></i>
+    <span>{{ errorMsg }}</span>
+  </div>
+
+  <!-- DATA TABLE WRAP -->
+  <div class="data-table-wrap-compact" *ngIf="!loading && !errorMsg">
+    <div class="data-table-head-bar">
+      <h5 class="mb-0">
+        <i class="fas fa-list-check me-1"></i> Payout Submissions ({{ requests.length }})
+      </h5>
+    </div>
+
+    <div class="table-responsive" *ngIf="requests.length > 0">
+      <table class="table-withdrawal">
+        <thead>
+          <tr>
+            <th>Request ID</th>
+            <th>User Details</th>
+            <th>Role</th>
+            <th class="text-end">Amount</th>
+            <th>Bank / UPI Details</th>
+            <th>Status</th>
+            <th>Requested Date</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of requests">
+            <td>
+              <span class="font-monospace text-muted fs-12 fw-bold">#{{ r.id.slice(0, 8) }}</span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar-chip">
+                  {{ getInitials(r.user_name) }}
+                </div>
+                <div>
+                  <div class="user-name-title">{{ r.user_name || 'Valued User' }}</div>
+                  <div class="user-contact-sub">{{ r.user_mobile || r.user_email || '—' }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="role-badge-pill" [ngClass]="{
+                'role-associate': r.user_role === 'Associate',
+                'role-investor': r.user_role === 'Investor',
+                'role-customer': r.user_role === 'Customer' || !r.user_role
+              }">
+                {{ r.user_role || 'User' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <span class="fw-bold text-danger fs-14">− ₹{{ r.amount | number:'1.2-2' }}</span>
+            </td>
+            <td>
+              <div class="fs-12">
+                <span class="fw-bold text-dark"><i class="fas fa-university me-1 text-muted"></i>{{ r.bank_name || 'Bank' }}</span>
+                <div class="text-muted fs-11 mt-0.5">
+                  A/C: <span class="fw-semibold text-dark">{{ r.bank_account_number || '-' }}</span> | IFSC: <span class="fw-semibold text-dark">{{ r.ifsc_code || '-' }}</span>
+                </div>
+                <div *ngIf="r.upi_id" class="fs-11 text-primary fw-semibold mt-0.5">
+                  <i class="fas fa-mobile-alt me-1"></i>UPI: {{ r.upi_id }}
+                </div>
+                <div *ngIf="r.payout_reference_id" class="fs-11 text-success fw-bold mt-0.5">
+                  <i class="fas fa-check-circle me-1"></i>Ref: {{ r.payout_reference_id }}
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="status-pill-custom" [ngClass]="{
+                'status-pending': r.status === 'pending',
+                'status-approved': r.status === 'approved',
+                'status-released': r.status === 'released',
+                'status-rejected': r.status === 'rejected' || r.status === 'failed'
+              }">
+                <i [class]="{
+                  'fas fa-clock': r.status === 'pending',
+                  'fas fa-check-double': r.status === 'approved',
+                  'fas fa-hand-holding-usd': r.status === 'released',
+                  'fas fa-times-circle': r.status === 'rejected' || r.status === 'failed'
+                }"></i>
+                {{ r.status | titlecase }}
+              </span>
+            </td>
+            <td>
+              <span class="fs-12 text-muted">{{ r.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
+            </td>
+            <td class="text-center">
+              <div class="d-flex align-items-center justify-content-center gap-1">
+
+                <!-- Quick Approve Button -->
+                <button
+                  *ngIf="r.status === 'pending'"
+                  class="action-btn-micro btn-approve-emerald"
+                  (click)="openApprove(r)"
+                  title="Approve Request">
+                  <i class="fas fa-check"></i> Approve
+                </button>
+
+                <!-- Quick Release Button -->
+                <button
+                  *ngIf="r.status === 'approved' || r.status === 'pending'"
+                  class="action-btn-micro btn-release-blue"
+                  (click)="openRelease(r)"
+                  title="Release Funds">
+                  <i class="fas fa-paper-plane"></i> Release
+                </button>
+
+                <!-- Quick Reject Button -->
+                <button
+                  *ngIf="r.status === 'pending' || r.status === 'approved'"
+                  class="action-btn-micro btn-reject-red"
+                  (click)="openReject(r)"
+                  title="Reject Request">
+                  <i class="fas fa-times"></i> Reject
+                </button>
+
+                <!-- View Details Link -->
+                <a [routerLink]="['/admin/withdrawal-requests', r.id]" class="btn-icon-only" title="View Details">
+                  <i class="fas fa-eye"></i>
+                </a>
+
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="requests.length === 0" class="py-5 text-center">
+      <i class="fas fa-inbox fa-3x text-muted mb-3 opacity-40"></i>
+      <h6 class="fw-bold text-dark">No Withdrawal Requests Found</h6>
+      <p class="text-muted fs-13">No payout requests match the selected filters or date range.</p>
+    </div>
+  </div>
+
+  <!-- APPROVAL MODAL DIALOG -->
+  <app-withdrawal-approval-dialog
+    [isOpen]="approveOpen"
+    [amount]="selectedRequest?.amount || 0"
+    (confirm)="submitApprove($event)"
+    (cancel)="approveOpen = false">
+  </app-withdrawal-approval-dialog>
+
+  <!-- RELEASE MODAL DIALOG -->
+  <app-withdrawal-release-dialog
+    [isOpen]="releaseOpen"
+    [amount]="selectedRequest?.amount || 0"
+    (confirm)="submitRelease($event)"
+    (cancel)="releaseOpen = false">
+  </app-withdrawal-release-dialog>
+
+  <!-- REJECTION MODAL DIALOG -->
+  <div class="confirm-dialog-overlay" *ngIf="rejectOpen" (click)="rejectOpen = false">
+    <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+      <div class="cd-header">
+        <h5 class="m-0 text-danger"><i class="fas fa-times-circle me-2"></i>Reject Withdrawal Request</h5>
+        <button type="button" class="btn-close" (click)="rejectOpen = false"></button>
+      </div>
+      <div class="cd-body">
+        <p class="mb-3 fs-13 text-secondary">
+          Are you sure you want to reject this payout request for <strong class="text-danger">₹{{ selectedRequest?.amount | number:'1.2-2' }}</strong>? The held balance will be returned to the user's available wallet balance.
+        </p>
+        <div class="mb-2">
+          <label class="f-label-sm">Rejection Reason *</label>
+          <textarea
+            [(ngModel)]="rejectionReason"
+            class="form-control form-control-sm"
+            rows="3"
+            placeholder="Provide rejection reason (e.g. Bank name mismatch, invalid IFSC code)..."
+          ></textarea>
+        </div>
+      </div>
+      <div class="cd-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary px-3" (click)="rejectOpen = false">Cancel</button>
+        <button type="button" class="btn btn-sm btn-danger px-3 fw-bold" (click)="submitReject()" [disabled]="!rejectionReason.trim()">
+          Confirm Rejection
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

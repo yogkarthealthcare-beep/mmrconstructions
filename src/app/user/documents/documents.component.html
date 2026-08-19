@@ -1,45 +1,140 @@
-<div *ngIf="toast" class="panel-alert panel-alert-success mb-3" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;"><i class="fas fa-check-circle"></i> {{ toast }}</div>
-<div class="pg-header"><h4>My Documents</h4><p>KYC documents and verification status</p></div>
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+<!-- TOAST FLOATING BANNER -->
+<div *ngIf="toast" class="toast-floating-banner shadow-lg">
+  <i class="fas fa-check-circle text-success me-2"></i> {{ toast }}
+</div>
 
-<div class="row g-3 mb-4" *ngIf="!loading">
-  <div class="col-sm-6 col-lg-3" *ngFor="let dt of docTypes">
-    <div class="panel-card" style="padding:20px;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
-        <div style="width:44px;height:44px;border-radius:11px;background:var(--clr-primary-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i [class]="dt.icon" style="color:var(--clr-primary);font-size:18px;"></i>
-        </div>
-        <div>
-          <div class="fw-700 fs-13" style="color:var(--txt-h);">{{ dt.label }}</div>
-          <div *ngIf="docStatus(dt.key) as doc">
-            <span class="sbadge" [class.sbadge-green]="doc.is_verified" [class.sbadge-yellow]="!doc.is_verified">{{ doc.is_verified ? 'Verified' : 'Pending Verification' }}</span>
-          </div>
-          <span *ngIf="!docStatus(dt.key)" class="sbadge sbadge-gray">Not Uploaded</span>
-        </div>
+<!-- PAGE HERO HEADER BANNER -->
+<div class="docs-hero-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
+    <div>
+      <div class="docs-hero-badge"><i class="fas fa-user-shield me-1"></i>KYC &amp; COMPLIANCE VERIFICATION</div>
+      <h2 class="docs-hero-title mb-1">My Verification Documents</h2>
+      <p class="plots-hero-sub mb-0">Upload PAN Card, Aadhaar Card, Photo &amp; Bank Proof for commission payout &amp; identity verification.</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <div class="kyc-status-pill" [class.verified]="verifiedCount === 4">
+        <i [class]="verifiedCount === 4 ? 'fas fa-shield-alt text-success' : 'fas fa-hourglass-half text-gold'"></i>
+        <span>KYC Status: <strong>{{ verifiedCount }}/4 Verified</strong></span>
       </div>
-      <label class="btn btn-outline-green btn-sm w-100" style="cursor:pointer;">
-        <input type="file" accept="image/*,.pdf" style="display:none;" (change)="upload(dt.key, $event)" [disabled]="uploading"/>
-        <i [class]="uploading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-cloud-upload-alt me-1'"></i>
-        {{ docStatus(dt.key) ? 'Replace' : 'Upload' }}
-      </label>
     </div>
   </div>
 </div>
 
-<!-- Docs Table -->
-<div class="data-table-wrap" *ngIf="!loading && docs.length>0">
-  <div class="data-table-head"><h5>Uploaded Documents ({{ docs.length }})</h5></div>
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-4 mb-2" *ngIf="loading">
+  <div class="spinner-border text-gold me-2" role="status"></div>
+  <span class="text-muted">Loading document verification status...</span>
+</div>
+
+<!-- DOCUMENT CARDS GRID (4 REQUIRED DOC TYPES) -->
+<div class="row g-2 mb-2" *ngIf="!loading">
+  <div class="col-sm-6 col-lg-3" *ngFor="let dt of docTypes">
+    <div class="doc-upload-card p-3 bg-white rounded-4 shadow-sm border h-100 d-flex flex-column justify-content-between">
+      <div>
+        <div class="d-flex align-items-start justify-content-between mb-3">
+          <div class="doc-icon-circle">
+            <i [class]="dt.icon" class="text-emerald fs-5"></i>
+          </div>
+          <div *ngIf="docStatus(dt.key) as doc">
+            <span class="sbadge" [class.sbadge-green]="doc.is_verified" [class.sbadge-yellow]="!doc.is_verified">
+              {{ doc.is_verified ? 'Verified' : 'Under Review' }}
+            </span>
+          </div>
+          <span *ngIf="!docStatus(dt.key)" class="sbadge sbadge-gray">Not Uploaded</span>
+        </div>
+
+        <h6 class="fw-700 text-dark mb-1">{{ dt.label }}</h6>
+        <p class="fs-12 text-muted mb-3">{{ dt.desc }}</p>
+      </div>
+
+      <div>
+        <label class="btn btn-outline-green btn-xs w-100 mb-2" style="cursor:pointer;">
+          <input type="file" accept="image/*,.pdf" style="display:none;" (change)="upload(dt.key, $event)" [disabled]="uploadingType === dt.key"/>
+          <i [class]="uploadingType === dt.key ? 'fas fa-spinner fa-spin me-1' : 'fas fa-cloud-upload-alt me-1'"></i>
+          {{ docStatus(dt.key) ? 'Replace File' : 'Upload File' }}
+        </label>
+
+        <button *ngIf="docStatus(dt.key) as doc" class="btn btn-link btn-xs w-100 text-gold-dark text-decoration-none" (click)="previewDoc(doc)">
+          <i class="fas fa-eye me-1"></i> View Uploaded File
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOADED DOCUMENTS LEDGER TABLE -->
+<div class="panel-card p-0 rounded-4 overflow-hidden shadow-sm border mb-2" *ngIf="!loading && docs.length > 0">
+  <div class="p-3 bg-white border-bottom d-flex justify-content-between align-items-center">
+    <h5 class="fw-700 text-dark mb-0"><i class="fas fa-folder-open text-gold me-2"></i>Uploaded Documents Log ({{ docs.length }})</h5>
+  </div>
+
   <div class="table-responsive">
-    <table class="table">
-      <thead><tr><th>Type</th><th>Uploaded On</th><th>Verified</th><th>Rejection Note</th></tr></thead>
+    <table class="table align-middle custom-docs-table mb-0">
+      <thead>
+        <tr>
+          <th class="ps-3">Document Type</th>
+          <th>Uploaded Date</th>
+          <th>Verification Status</th>
+          <th>Review / Rejection Notes</th>
+          <th class="pe-3 text-end">Action</th>
+        </tr>
+      </thead>
       <tbody>
         <tr *ngFor="let d of docs">
-          <td class="fw-700 fs-13" style="color:var(--txt-h);">{{ d.document_type }}</td>
-          <td class="fs-12 text-muted">{{ d.uploaded_at | date:'dd MMM yyyy' }}</td>
-          <td><span class="sbadge" [class.sbadge-green]="d.is_verified" [class.sbadge-yellow]="!d.is_verified">{{ d.is_verified ? 'Verified' : 'Pending' }}</span></td>
-          <td class="fs-12 text-danger">{{ d.rejection_note || '—' }}</td>
+          <td class="ps-3 fw-700 text-dark">
+            <i class="fas fa-file-alt text-emerald me-2"></i>{{ d.document_type }}
+          </td>
+          <td class="fs-12 text-muted">{{ d.uploaded_at | date:'dd MMM yyyy, hh:mm a' }}</td>
+          <td>
+            <span class="sbadge" [class.sbadge-green]="d.is_verified" [class.sbadge-yellow]="!d.is_verified">
+              <i [class]="d.is_verified ? 'fas fa-check-circle me-1' : 'fas fa-clock me-1'"></i>
+              {{ d.is_verified ? 'Verified' : 'Under Review' }}
+            </span>
+          </td>
+          <td class="fs-12">
+            <span *ngIf="d.rejection_note" class="text-danger fw-600"><i class="fas fa-exclamation-circle me-1"></i>{{ d.rejection_note }}</span>
+            <span *ngIf="!d.rejection_note" class="text-muted">No issues noted</span>
+          </td>
+          <td class="pe-3 text-end">
+            <button class="btn btn-sm btn-outline-secondary btn-xs" (click)="previewDoc(d)">
+              <i class="fas fa-eye me-1"></i> View File
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- DOCUMENT PREVIEW MODAL -->
+<div *ngIf="selectedDoc" class="modal-backdrop-custom">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+      <h5 class="fw-700 text-dark mb-0"><i class="fas fa-file-alt text-gold me-2"></i>{{ selectedDoc.document_type }}</h5>
+      <button type="button" class="btn-close" (click)="selectedDoc = null"></button>
+    </div>
+
+    <div class="text-center py-3 bg-light rounded-3 mb-3">
+      <img [src]="getImageUrl(selectedDoc.document_url)" [alt]="selectedDoc.document_type" class="img-fluid rounded border shadow-sm max-h-350" (error)="selectedDoc.loadError = true" *ngIf="!selectedDoc.loadError">
+      <div *ngIf="selectedDoc.loadError" class="py-4 text-muted">
+        <i class="fas fa-file-pdf fs-1 text-danger d-block mb-2"></i>
+        <span>PDF / File Document Attached</span>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center fs-12 text-muted mb-3">
+      <span>Uploaded: <strong>{{ selectedDoc.uploaded_at | date:'dd MMM yyyy' }}</strong></span>
+      <span class="sbadge" [class.sbadge-green]="selectedDoc.is_verified" [class.sbadge-yellow]="!selectedDoc.is_verified">
+        {{ selectedDoc.is_verified ? 'Verified' : 'Under Review' }}
+      </span>
+    </div>
+
+    <div class="d-flex gap-2">
+      <a [href]="getImageUrl(selectedDoc.document_url)" target="_blank" class="btn btn-green flex-fill text-center">
+        <i class="fas fa-external-link-alt me-1"></i> Open Original File
+      </a>
+      <button class="btn btn-outline-secondary flex-fill" (click)="selectedDoc = null">Close</button>
+    </div>
   </div>
 </div>

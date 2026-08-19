@@ -56,7 +56,7 @@ import { ApiService } from '../../services/api.service';
             </thead>
             <tbody>
               <tr *ngFor="let r of requests">
-                <td class="fw-bold fs-12 text-muted" [title]="r.id">{{ r.id.slice(0, 8) }}...</td>
+                <td class="font-monospace fw-bold fs-12 text-dark">{{ r.id }}</td>
                 <td class="fw-700 text-danger text-end">− ₹{{ r.amount | number:'1.2-2' }}</td>
                 <td>
                   <div class="fw-500">{{ r.bank_account_holder_name }}</div>
@@ -75,7 +75,7 @@ import { ApiService } from '../../services/api.service';
                     {{ r.status | titlecase }}
                   </span>
                 </td>
-                <td>{{ r.created_at | date:'medium' }}</td>
+                <td class="fs-12 text-muted fw-semibold">{{ r.created_at | date:'dd MMM yyyy' }}</td>
                 <td>
                   <span class="text-muted fs-12" *ngIf="r.status === 'rejected' && r.rejection_reason">
                     <strong>Reason:</strong> {{ r.rejection_reason }}

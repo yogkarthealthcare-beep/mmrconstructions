@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -150,7 +150,9 @@ export class AddFundComponent implements OnInit {
     private paymentService: PaymentService,
     private razorpayService: RazorpayService,
     private cashfreeService: CashfreeService,
-    private payuService: PayuService
+    private payuService: PayuService,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {
     this.fundForm = this.fb.group({
       amount: ['', [Validators.required, Validators.min(1)]]
@@ -265,37 +267,51 @@ export class AddFundComponent implements OnInit {
         const options = {
           ...details,
           handler: (response: any) => {
-            // Verify payment on backend wallet verification API
-            this.api.verifyAddFund({
-              order_id: orderId,
-              gateway_name: 'razorpay',
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            }).subscribe({
-              next: (verifyRes) => {
-                if (verifyRes.success) {
-                  this.successMessage = `Successfully added ₹${this.fundForm.value.amount.toFixed(2)} to your wallet!`;
-                  setTimeout(() => this.router.navigate([this.walletHomePath()]), 2500);
-                } else {
-                  this.errorMessage = verifyRes.message || 'Payment verification failed.';
+            this.ngZone.run(() => {
+              // Verify payment on backend wallet verification API
+              this.api.verifyAddFund({
+                order_id: orderId,
+                gateway_name: 'razorpay',
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              }).subscribe({
+                next: (verifyRes) => {
+                  this.ngZone.run(() => {
+                    if (verifyRes.success) {
+                      this.successMessage = `Successfully added ₹${this.fundForm.value.amount.toFixed(2)} to your wallet!`;
+                      this.cdr.detectChanges();
+                      setTimeout(() => {
+                        this.router.navigate([this.walletHomePath()], { queryParams: { _t: Date.now() } });
+                      }, 1200);
+                    } else {
+                      this.errorMessage = verifyRes.message || 'Payment verification failed.';
+                    }
+                    this.submitting = false;
+                    this.cdr.detectChanges();
+                  });
+                },
+                error: (verifyErr) => {
+                  this.ngZone.run(() => {
+                    console.error('Verification error', verifyErr);
+                    this.errorMessage = verifyErr?.error?.message || 'Payment verification failed.';
+                    this.submitting = false;
+                    this.cdr.detectChanges();
+                  });
                 }
-                this.submitting = false;
-              },
-              error: (verifyErr) => {
-                console.error('Verification error', verifyErr);
-                this.errorMessage = verifyErr?.error?.message || 'Payment verification failed.';
-                this.submitting = false;
-              }
+              });
             });
           },
           modal: {
             ondismiss: () => {
-              this.errorMessage = 'Payment window cancelled.';
-              if (this.activeOrderId) {
-                this.api.cancelAddFund(this.activeOrderId).subscribe({ error: () => {} });
-              }
-              this.submitting = false;
+              this.ngZone.run(() => {
+                this.errorMessage = 'Payment window cancelled.';
+                if (this.activeOrderId) {
+                  this.api.cancelAddFund(this.activeOrderId).subscribe({ error: () => {} });
+                }
+                this.submitting = false;
+                this.cdr.detectChanges();
+              });
             }
           },
           theme: {

@@ -1,34 +1,185 @@
-<div class="pg-header"><h4>Payment History</h4><p>All confirmed EMI receipts</p></div>
-<div class="row g-3 mb-4">
-  <div class="col-sm-4">
-    <div class="stat-card"><div class="sc-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check-circle"></i></div><div class="sc-val">{{ emis.length }}</div><div class="sc-lbl">Payments Made</div></div>
-  </div>
-  <div class="col-sm-4">
-    <div class="stat-card"><div class="sc-icon" style="background:#eaf4ee;color:#1a5c3a;"><i class="fas fa-rupee-sign"></i></div><div class="sc-val">₹{{ (totalPaid/1000)|number:'1.0-0' }}K</div><div class="sc-lbl">Total Paid</div></div>
-  </div>
-  <div class="col-sm-4">
-    <div class="stat-card"><div class="sc-icon" style="background:#fdf8ec;color:#a07c2a;"><i class="fas fa-calendar"></i></div><div class="sc-val">{{ emis[0]?.paid_date ? (emis[0].paid_date | date:'MMM yy') : '—' }}</div><div class="sc-lbl">Last Payment</div></div>
+<!-- PAGE HERO HEADER BANNER -->
+<div class="payments-hero-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
+    <div>
+      <div class="payments-hero-badge"><i class="fas fa-file-invoice-dollar me-1"></i>FINANCIAL LEDGER</div>
+      <h2 class="payments-hero-title mb-1">Payment Receipts &amp; Ledger</h2>
+      <p class="payments-hero-sub mb-0">Overview of verified financial transactions, payment receipts, and deposit history.</p>
+    </div>
   </div>
 </div>
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
-<div class="data-table-wrap" *ngIf="!loading">
-  <div class="data-table-head"><h5>All Receipts ({{ emis.length }})</h5><button class="btn btn-outline-green btn-sm"><i class="fas fa-download me-1"></i>Download All</button></div>
-  <div *ngIf="emis.length===0" class="panel-empty"><i class="fas fa-receipt"></i><h6>No payments yet</h6></div>
-  <div class="table-responsive" *ngIf="emis.length>0">
-    <table class="table">
-      <thead><tr><th>#</th><th>Plot</th><th>Due Date</th><th>Paid Date</th><th>Amount</th><th>Late Fee</th><th>Status</th><th></th></tr></thead>
+
+<!-- METRIC STAT SUMMARY CARDS -->
+<div class="row g-2 mb-2">
+  <div class="col-md-4">
+    <div class="stat-mini-card h-100">
+      <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-check-double"></i></div>
+      <div>
+        <div class="stat-mini-val text-success">{{ emis.length }}</div>
+        <div class="stat-mini-lbl">Payments Completed</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="stat-mini-card h-100">
+      <div class="icon-wrap bg-gold-light text-gold-dark"><i class="fas fa-wallet"></i></div>
+      <div>
+        <div class="stat-mini-val text-gold-dark">₹{{ totalPaid | number }}</div>
+        <div class="stat-mini-lbl">Total Amount Deposited</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="stat-mini-card h-100">
+      <div class="icon-wrap bg-blue-light text-blue"><i class="fas fa-calendar-check"></i></div>
+      <div>
+        <div class="stat-mini-val text-primary">
+          {{ emis[0]?.paid_date ? (emis[0].paid_date | date:'dd MMM yyyy') : '—' }}
+        </div>
+        <div class="stat-mini-lbl">Last Payment Date</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH & TOOLBAR CONTROLS -->
+<div class="toolbar-card mb-2" *ngIf="!loading && emis.length > 0">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="search-input-wrap flex-fill max-w-400">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="form-control form-control-sm search-field" placeholder="Search by Plot No, Site Name, or Installment #..." [(ngModel)]="searchTerm" />
+    </div>
+
+    <button class="btn btn-outline-secondary btn-xs ms-auto" (click)="loadData()">
+      <i class="fas fa-sync-alt me-1"></i> Refresh Ledger
+    </button>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-5 mb-4" *ngIf="loading">
+  <div class="spinner-border text-gold me-2" role="status"></div>
+  <span class="text-muted">Loading verified financial receipts...</span>
+</div>
+
+<!-- EMPTY STATE -->
+<div *ngIf="!loading && emis.length === 0" class="panel-card py-5 text-center my-4">
+  <div class="empty-icon-box mx-auto mb-3">
+    <i class="fas fa-receipt text-gold fs-1"></i>
+  </div>
+  <h4 class="fw-700 text-dark mb-2">No Confirmed Receipts Recorded Yet</h4>
+  <p class="text-muted max-w-500 mx-auto fs-14">
+    Once your installment payments are verified by admin, your official vouchers and receipts will appear here.
+  </p>
+</div>
+
+<!-- CONFIRMED RECEIPTS LEDGER TABLE -->
+<div class="panel-card p-0 overflow-hidden mb-4" *ngIf="!loading && emis.length > 0">
+  <div class="p-3 bg-white border-bottom d-flex justify-content-between align-items-center">
+    <h5 class="fw-700 text-dark mb-0"><i class="fas fa-receipt text-gold me-2"></i>Confirmed Payment Vouchers ({{ filteredEmis.length }})</h5>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle custom-payments-table mb-0">
+      <thead>
+        <tr>
+          <th class="ps-3">Installment #</th>
+          <th>Plot &amp; Site</th>
+          <th>Due Date</th>
+          <th>Paid Date</th>
+          <th>Amount Paid</th>
+          <th>Late Fee</th>
+          <th>Status</th>
+          <th class="pe-3 text-end">Voucher Action</th>
+        </tr>
+      </thead>
       <tbody>
-        <tr *ngFor="let e of emis">
-          <td class="fw-700 text-primary">{{ e.installment_no }}</td>
-          <td class="fs-12">{{ e.plot_number }}<div class="text-muted">{{ e.site_name }}</div></td>
-          <td class="fs-12 text-muted">{{ e.due_date | date:'dd MMM' }}</td>
-          <td class="fs-12">{{ e.paid_date | date:'dd MMM yyyy' }}</td>
-          <td class="fw-700">₹{{ e.paid_amount | number }}</td>
-          <td class="text-danger fs-12">{{ e.late_fee_amount > 0 ? '₹'+(e.late_fee_amount | number) : '—' }}</td>
-          <td><span class="sbadge sbadge-green">Paid</span></td>
-          <td><button class="action-btn" title="Download Voucher"><i class="fas fa-download"></i></button></td>
+        <tr *ngIf="filteredEmis.length === 0">
+          <td colspan="8" class="text-center py-5 text-muted">
+            <i class="fas fa-search fs-2 text-gold mb-2 d-block"></i>
+            No payment receipts matched your search query.
+          </td>
+        </tr>
+        <tr *ngFor="let e of filteredEmis">
+          <td class="ps-3">
+            <span class="inst-num-badge">#{{ e.installment_no }}</span>
+          </td>
+          <td>
+            <div class="fw-700 text-dark">Plot {{ e.plot_number }}</div>
+            <div class="fs-12 text-muted" *ngIf="e.site_name"><i class="fas fa-map-marker-alt me-1 text-gold"></i>{{ e.site_name }}</div>
+          </td>
+          <td><span class="fs-12 text-muted">{{ e.due_date | date:'dd MMM yyyy' }}</span></td>
+          <td><span class="fs-12 fw-700 text-dark"><i class="fas fa-calendar-check text-success me-1"></i>{{ e.paid_date | date:'dd MMM yyyy' }}</span></td>
+          <td><span class="fw-700 text-success fs-14">₹{{ e.paid_amount || e.emi_amount | number }}</span></td>
+          <td>
+            <span *ngIf="e.late_fee_amount > 0" class="text-danger fs-12 fw-600">₹{{ e.late_fee_amount | number }}</span>
+            <span *ngIf="!(e.late_fee_amount > 0)" class="text-muted fs-12">&mdash;</span>
+          </td>
+          <td>
+            <span class="sbadge sbadge-green"><i class="fas fa-check-circle me-1"></i>Verified Paid</span>
+          </td>
+          <td class="pe-3 text-end">
+            <button class="btn btn-sm btn-outline-green btn-xs" (click)="viewReceipt(e)" title="View &amp; Print Receipt Voucher">
+              <i class="fas fa-file-invoice me-1"></i> View Receipt
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- RECEIPT VOUCHER PREVIEW MODAL -->
+<div *ngIf="selectedReceipt" class="modal-backdrop-custom">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border printable-area">
+    
+    <!-- Receipt Header -->
+    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+      <div>
+        <div class="fw-800 fs-16 text-dark font-display">M.M.R. CONSTRUCTIONS</div>
+        <div class="fs-11 text-muted">&amp; Developers Pvt. Ltd. (CIN: U68200UP2025PTC229203)</div>
+        <div class="fs-11 text-gold-dark fw-700 mt-1">PAYMENT RECEIPT VOUCHER</div>
+      </div>
+      <button type="button" class="btn-close no-print" (click)="selectedReceipt = null"></button>
+    </div>
+
+    <!-- Receipt Details -->
+    <div class="bg-light p-3 rounded-3 mb-3 fs-13">
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">Voucher No:</span>
+        <strong class="text-dark">#MMR-RC-{{ selectedReceipt.emi_id }}</strong>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">Installment No:</span>
+        <strong class="text-primary">Installment #{{ selectedReceipt.installment_no }}</strong>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">Plot &amp; Site:</span>
+        <strong class="text-dark">Plot {{ selectedReceipt.plot_number }} ({{ selectedReceipt.site_name }})</strong>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">Payment Date:</span>
+        <strong class="text-dark">{{ selectedReceipt.paid_date | date:'dd MMMM yyyy' }}</strong>
+      </div>
+      <div class="d-flex justify-content-between border-top pt-2 mt-2">
+        <span class="fw-700 text-dark">Amount Paid:</span>
+        <strong class="text-success fs-16">₹{{ selectedReceipt.paid_amount || selectedReceipt.emi_amount | number }}</strong>
+      </div>
+    </div>
+
+    <!-- Verified Watermark Banner -->
+    <div class="text-center p-2 rounded-3 bg-emerald-light border border-success mb-4 text-success fs-12 fw-700">
+      <i class="fas fa-shield-alt me-1"></i> VERIFIED &amp; APPROVED PAYMENT RECEIPT
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2 no-print">
+      <button class="btn btn-green flex-fill" (click)="printReceipt()">
+        <i class="fas fa-print me-1"></i> Print / Download PDF
+      </button>
+      <button class="btn btn-outline-secondary flex-fill" (click)="selectedReceipt = null">Close</button>
+    </div>
   </div>
 </div>

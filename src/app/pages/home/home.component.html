@@ -1,17 +1,17 @@
 <app-topbar></app-topbar>
 <app-navbar></app-navbar>
 
-<app-hero-slider></app-hero-slider>
+<app-hero-slider *ngIf="showHeroSlider"></app-hero-slider>
 
 <!-- Trust Strip -->
-<div class="trust-strip">
+<div class="trust-strip" *ngIf="sectionVisibility['information'] !== false">
   <div class="mmr-container">
     <div class="d-flex align-items-center justify-content-center flex-wrap gap-3 gap-md-4">
       <div class="item"><i class="fas fa-certificate"></i> Govt. Registered</div>
       <div class="trust-sep d-none d-md-block"></div>
       <div class="item"><i class="fas fa-university"></i> Bank Finance</div>
       <div class="trust-sep d-none d-md-block"></div>
-      <div class="item"><i class="fas fa-shield-alt"></i> Buyback Guarantee</div>
+      <div class="item"><i class="fas fa-award"></i> 10 Years of Trust</div>
       <div class="trust-sep d-none d-md-block"></div>
       <div class="item"><i class="fas fa-mobile-alt"></i> Android App</div>
       <div class="trust-sep d-none d-md-block"></div>
@@ -20,10 +20,11 @@
   </div>
 </div>
 
-<app-sites></app-sites>
+<app-sites *ngIf="sectionVisibility['sites'] !== false"></app-sites>
+<app-investors *ngIf="sectionVisibility['investors'] !== false"></app-investors>
 
 <!-- Why Choose Us -->
-<section class="sec-py why-section">
+<section class="sec-py why-section" *ngIf="sectionVisibility['why_choose'] !== false">
   <div class="mmr-container">
     <div class="text-center mb-5">
       <div class="sec-label" style="justify-content:center;">Why MMR</div>
@@ -41,12 +42,12 @@
   </div>
 </section>
 
-<app-emi-calculator></app-emi-calculator>
-<app-buyback></app-buyback>
-<app-earn></app-earn>
+<app-emi-calculator *ngIf="sectionVisibility['emi_calculator'] !== false"></app-emi-calculator>
+<app-buyback *ngIf="sectionVisibility['buyback'] !== false"></app-buyback>
+<app-earn *ngIf="sectionVisibility['earn'] !== false"></app-earn>
 
 <!-- Facilities -->
-<section id="facilities" class="sec-py" style="background:#fff;">
+<section id="facilities" class="sec-py" style="background:#fff;" *ngIf="sectionVisibility['facilities'] !== false">
   <div class="mmr-container">
     <div class="text-center mb-5">
       <div class="sec-label" style="justify-content:center;">Infrastructure</div>
@@ -61,7 +62,7 @@
 </section>
 
 <!-- CTA Banner -->
-<section class="sec-py-sm cta-banner">
+<section class="sec-py-sm cta-banner" *ngIf="sectionVisibility['cta'] !== false">
   <div class="mmr-container" style="position:relative;z-index:1;">
     <div class="row align-items-center g-4">
       <div class="col-lg-8">
@@ -72,12 +73,12 @@
       <div class="col-lg-4 text-lg-end">
         <div class="d-flex flex-column flex-sm-row flex-lg-column gap-3 justify-content-lg-end">
           <a routerLink="/register" class="btn btn-gold btn-lg"><i class="fas fa-user-plus me-2"></i>Register Free</a>
-          <a href="tel:+917071951011" class="btn btn-outline-white btn-lg"><i class="fas fa-phone me-2"></i>Call Now</a>
+          <a href="tel:+919511119879" class="btn btn-outline-white btn-lg"><i class="fas fa-phone me-2"></i>Call Now</a>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<app-contact></app-contact>
+<app-contact *ngIf="sectionVisibility['contact'] !== false"></app-contact>
 <app-footer></app-footer>

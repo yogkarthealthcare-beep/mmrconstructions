@@ -112,7 +112,7 @@ export class MlmAdminPageComponent implements OnInit {
       : (this.selected ? this.api.adminUpdateCommissionRule(this.selected.rule_id, this.form) : this.api.adminCreateCommissionRule(this.form));
     request.subscribe({
       next: () => { this.toast = 'Saved successfully'; this.resetForm(); this.load(); },
-      error: (e) => this.toast = e?.error?.message || 'Save failed'
+      error: (e: any) => this.toast = e?.error?.message || 'Save failed'
     });
   }
 

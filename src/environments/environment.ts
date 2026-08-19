@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  apiBaseUrl: 'https://api.mmrconstructions.in',
   firebase: {
     apiKey: "AIzaSyBJrCusoIBj92-mMHut2UgI7JQ2Ol9tTag",
     authDomain: "mmrconstructions-adeb0.firebaseapp.com",

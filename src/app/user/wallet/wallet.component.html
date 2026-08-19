@@ -1,0 +1,280 @@
+<div class="wallet-console-container">
+
+  <!-- HERO WALLET BANNER CARD -->
+  <div class="wallet-hero-card">
+    <div class="hero-tag">
+      <span class="hero-tag-dot"></span>
+      MMR CONSTRUCTIONS &bull; MY WALLET
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <div class="hero-balance-label">Total Available Wallet Balance</div>
+        <div class="hero-balance-value">
+          <span class="hero-balance-currency">₹</span>{{ getAvailableBalance() | number:'1.2-2' }}
+        </div>
+      </div>
+
+      <!-- Action Buttons Group -->
+      <div class="hero-actions-wrap">
+        <a [routerLink]="walletPath('add-fund')" class="btn-hero-add">
+          <i class="fas fa-plus-circle"></i> Add Fund
+        </a>
+        <a [routerLink]="walletPath('withdraw')" class="btn-hero-withdraw">
+          <i class="fas fa-arrow-alt-circle-up"></i> Withdraw Fund
+        </a>
+        <a [routerLink]="walletPath('transactions')" class="btn-hero-nav">
+          <i class="fas fa-history"></i> History
+        </a>
+        <a [routerLink]="walletPath('withdrawal-history')" class="btn-hero-nav">
+          <i class="fas fa-list-check"></i> Payout Status
+        </a>
+        <button type="button" class="btn-hero-nav border-0 cursor-pointer" (click)="loadData()" title="Refresh Wallet Data">
+          <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading && !balance" class="py-5 text-center bg-white rounded-4 border border-light shadow-sm mb-4">
+    <i class="fas fa-circle-notch fa-spin fa-2x text-success"></i>
+    <span class="d-block mt-2 text-muted fw-semibold fs-13">Loading wallet balance and transactions...</span>
+  </div>
+
+  <!-- ERROR ALERT -->
+  <div *ngIf="errorMsg" class="alert alert-warning d-flex align-items-center justify-content-between gap-2 mb-4 rounded-3">
+    <div class="d-flex align-items-center gap-2">
+      <i class="fas fa-exclamation-triangle fs-5 text-warning"></i>
+      <span>{{ errorMsg }}</span>
+    </div>
+    <button class="btn btn-sm btn-outline-dark" (click)="loadData()">Retry Now</button>
+  </div>
+
+  <!-- MAIN WALLET CONTENT -->
+  <div>
+
+    <!-- 4 METRICS BREAKDOWN GRID -->
+    <div class="wallet-cards-grid">
+
+      <!-- Card 1: Available Balance -->
+      <div class="w-card w-emerald">
+        <div class="w-card-header">
+          <div class="w-card-icon w-icon-emerald">
+            <i class="fas fa-wallet"></i>
+          </div>
+          <span class="w-card-tag tag-emerald">Available</span>
+        </div>
+        <h4 class="w-card-val text-success">₹{{ getAvailableBalance() | number:'1.2-2' }}</h4>
+        <div class="w-card-lbl">Available Balance</div>
+        <div class="w-card-footer">
+          <a [routerLink]="walletPath('add-fund')" class="w-link text-success"><i class="fas fa-plus-circle me-1"></i>+ Add Money</a>
+          <a [routerLink]="walletPath('withdraw')" class="w-link text-secondary"><i class="fas fa-arrow-up me-1"></i>Withdraw</a>
+        </div>
+      </div>
+
+      <!-- Card 2: Pending Withdrawal -->
+      <div class="w-card w-amber">
+        <div class="w-card-header">
+          <div class="w-card-icon w-icon-amber">
+            <i class="fas fa-hourglass-half"></i>
+          </div>
+          <span class="w-card-tag tag-amber">Pending</span>
+        </div>
+        <h4 class="w-card-val text-warning">₹{{ getPendingBalance() | number:'1.2-2' }}</h4>
+        <div class="w-card-lbl">Pending Approval / Payout</div>
+        <div class="w-card-footer text-muted">
+          <span><i class="fas fa-clock me-1"></i>Held in request</span>
+          <a [routerLink]="walletPath('withdrawal-history')" class="w-link text-amber">Check Status</a>
+        </div>
+      </div>
+
+      <!-- Card 3: Total Added Fund -->
+      <div class="w-card w-blue">
+        <div class="w-card-header">
+          <div class="w-card-icon w-icon-blue">
+            <i class="fas fa-arrow-down"></i>
+          </div>
+          <span class="w-card-tag tag-blue">Total Fund</span>
+        </div>
+        <h4 class="w-card-val text-primary">₹{{ getTotalAddedFund() | number:'1.2-2' }}</h4>
+        <div class="w-card-lbl">Total Added Wallet Fund</div>
+        <div class="w-card-footer text-muted">
+          <span><i class="fas fa-check-circle me-1 text-primary"></i>Online top-ups</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Total Withdrawn -->
+      <div class="w-card w-gold">
+        <div class="w-card-header">
+          <div class="w-card-icon w-icon-gold">
+            <i class="fas fa-check-double"></i>
+          </div>
+          <span class="w-card-tag tag-gold">Withdrawn</span>
+        </div>
+        <h4 class="w-card-val text-gold">₹{{ getTotalWithdrawn() | number:'1.2-2' }}</h4>
+        <div class="w-card-lbl">Total Payouts Released</div>
+        <div class="w-card-footer text-muted">
+          <span><i class="fas fa-university me-1 text-gold"></i>Bank &amp; UPI transfers</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECTION 1: RECENT TRANSACTIONS TABLE (FULL WIDTH) -->
+    <div class="tx-table-container mb-4">
+      <div class="tx-table-head">
+        <h5>
+          <i class="fas fa-receipt me-1"></i> Recent Wallet Transactions
+        </h5>
+        <a [routerLink]="walletPath('transactions')" class="btn-view-all">
+          View All Transactions <i class="fas fa-chevron-right ms-1"></i>
+        </a>
+      </div>
+
+      <!-- Table -->
+      <div class="table-responsive" *ngIf="recentTransactions && recentTransactions.length > 0">
+        <table class="table-tx">
+          <thead>
+            <tr>
+              <th class="text-center" style="width: 50px;">S.No.</th>
+              <th>Order / TX ID</th>
+              <th>Type</th>
+              <th class="text-end">Amount</th>
+              <th>Status</th>
+              <th class="text-end">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tx of recentTransactions; let i = index">
+              <!-- S.No. -->
+              <td class="text-center font-monospace text-muted fw-bold fs-12 text-nowrap">
+                {{ i + 1 }}
+              </td>
+              <td class="text-nowrap">
+                <span class="font-monospace fw-bold text-dark fs-12 text-nowrap">
+                  {{ tx.payment_order_id || tx.id }}
+                </span>
+              </td>
+              <td class="text-nowrap">
+                <span class="tx-type-badge text-nowrap" [ngClass]="isCredit(tx) ? 'tx-credit' : 'tx-debit'">
+                  <i [class]="isCredit(tx) ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
+                  {{ (tx.transaction_type || (isCredit(tx) ? 'CREDIT' : 'DEBIT')) | uppercase }}
+                </span>
+              </td>
+              <td class="text-end text-nowrap">
+                <span class="fw-bold fs-13 text-nowrap" [class.text-success]="isCredit(tx)" [class.text-danger]="!isCredit(tx)">
+                  {{ isCredit(tx) ? '+' : '−' }} ₹{{ (tx.amount < 0 ? -tx.amount : tx.amount) | number:'1.2-2' }}
+                </span>
+              </td>
+              <td class="text-nowrap">
+                <span class="status-chip text-nowrap" [ngClass]="{
+                  'chip-success': tx.status === 'success',
+                  'chip-pending': tx.status === 'pending',
+                  'chip-failed': tx.status === 'failed' || tx.status === 'cancelled'
+                }">
+                  {{ (tx.status || 'success') | titlecase }}
+                </span>
+              </td>
+              <td class="text-end text-nowrap position-relative">
+                <button
+                  type="button"
+                  class="btn btn-outline-success btn-sm px-2.5 py-1 fs-11 fw-bold rounded-pill"
+                  (click)="toggleDropdown(tx.id || tx.payment_order_id, $event)"
+                >
+                  <i class="fas fa-eye me-1"></i> Details
+                </button>
+
+                <!-- DROPDOWN DETAILS CARD -->
+                <div
+                  class="dropdown-details-card shadow-lg rounded-3 border"
+                  *ngIf="activeDropdownId === (tx.id || tx.payment_order_id)"
+                  (click)="$event.stopPropagation()"
+                >
+                  <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                    <span class="fw-bold fs-12 text-dark"><i class="fas fa-receipt me-1 text-success"></i> Transaction Info</span>
+                    <span class="badge bg-light text-secondary border fs-11 text-capitalize">{{ tx.payment_gateway || 'Online' }}</span>
+                  </div>
+                  
+                  <div class="mb-2 text-start">
+                    <div class="text-muted fs-10 uppercase fw-extrabold text-secondary">Date &amp; Time</div>
+                    <div class="fw-semibold text-dark fs-12">{{ tx.created_at | date:'dd MMM yyyy, hh:mm a' }}</div>
+                  </div>
+
+                  <div class="mb-2 text-start">
+                    <div class="text-muted fs-10 uppercase fw-extrabold text-secondary">Source / Description</div>
+                    <div class="fw-semibold text-dark fs-12">{{ tx.source || 'Wallet Activity' }}</div>
+                  </div>
+
+                  <div *ngIf="tx.remarks" class="mb-0 text-start">
+                    <div class="text-muted fs-10 uppercase fw-extrabold text-secondary">Remarks</div>
+                    <div class="fs-12 text-secondary">{{ tx.remarks }}</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!recentTransactions || recentTransactions.length === 0" class="py-5 text-center">
+        <i class="fas fa-exchange-alt fa-3x text-muted mb-3 opacity-40"></i>
+        <h6 class="fw-bold text-dark">No Transactions Yet</h6>
+        <p class="text-muted fs-13">Add funds online or request a payout to get started.</p>
+      </div>
+    </div>
+
+    <!-- SECTION 2: WALLET GUIDELINES & SECURITY (BELOW TRANSACTION LIST) -->
+    <div class="info-card-modern">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <h6 class="fw-bold text-dark m-0 fs-14">
+          <i class="fas fa-shield-alt text-success me-1"></i> Wallet Guidelines &amp; Security
+        </h6>
+        <span class="fs-12 text-muted fw-semibold">
+          <i class="fas fa-lock me-1 text-success"></i> 256-bit Encrypted Operations
+        </span>
+      </div>
+
+      <div class="row g-3">
+        <!-- Item 1 -->
+        <div class="col-md-4">
+          <div class="info-box-item info-gold h-100 mb-0">
+            <div class="info-box-title">
+              <i class="fas fa-coins"></i> Minimum Withdrawal Limit
+            </div>
+            <p class="info-box-desc">
+              Payout requests require a minimum amount of <strong>₹100.00</strong> per request.
+            </p>
+          </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="col-md-4">
+          <div class="info-box-item info-green h-100 mb-0">
+            <div class="info-box-title">
+              <i class="fas fa-shield-alt"></i> Instant Online Add Fund
+            </div>
+            <p class="info-box-desc">
+              Add funds securely using <strong>Razorpay, Cashfree, or PayU</strong>. Updated instantly upon verification.
+            </p>
+          </div>
+        </div>
+
+        <!-- Item 3 -->
+        <div class="col-md-4">
+          <div class="info-box-item info-blue h-100 mb-0">
+            <div class="info-box-title">
+              <i class="fas fa-university"></i> Direct Bank &amp; UPI Payouts
+            </div>
+            <p class="info-box-desc">
+              Held safely in Pending Balance until verified by Admin. Payouts are transferred directly to your bank account or UPI ID.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

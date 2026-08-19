@@ -1,82 +1,135 @@
-<div *ngIf="toast" class="panel-alert mb-3" [class.panel-alert-success]="toastType==='success'" [class.panel-alert-error]="toastType==='error'" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;">
-  <i [class]="toastType==='success' ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i> {{ toast }}
+<!-- Toast Floating Banner -->
+<div *ngIf="toast" class="toast-floating-banner shadow-lg" [class.border-emerald]="toastType==='success'" [class.border-danger]="toastType==='error'">
+  <i [class]="toastType==='success' ? 'fas fa-check-circle text-emerald me-2' : 'fas fa-times-circle text-danger me-2'"></i> {{ toast }}
 </div>
 
-<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
-  <div class="pg-header" style="margin-bottom:0;"><h4>Profile & KYC</h4><p>Your personal and account details</p></div>
-  <button class="btn btn-sm" [class.btn-green]="!editMode" [class.btn-gold]="editMode"
-    (click)="editMode ? save() : editMode=true" [disabled]="saving">
+<div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+  <div>
+    <h3 class="fw-700 text-dark mb-0.5 fs-18">Profile &amp; Account KYC Settings</h3>
+    <p class="text-muted fs-12 mb-0">Personal information, bank details for payouts &amp; nominee records</p>
+  </div>
+  <button class="btn btn-xs px-3 fw-700 shadow-sm" [class.btn-emerald]="!editMode" [class.btn-gold]="editMode" (click)="editMode ? save() : editMode = true" [disabled]="saving">
     <i [class]="saving ? 'fas fa-spinner fa-spin me-1' : editMode ? 'fas fa-save me-1' : 'fas fa-edit me-1'"></i>
-    {{ saving ? 'Saving...' : editMode ? 'Save Changes' : 'Edit Profile' }}
+    {{ saving ? 'Saving Changes...' : editMode ? 'Save Profile' : 'Edit Details' }}
   </button>
 </div>
 
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+<div class="panel-loading text-center py-4" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+  <p class="text-muted fs-12 mt-2">Loading profile details...</p>
+</div>
 
 <ng-container *ngIf="!loading">
-  <!-- Member Card -->
-  <div class="welcome-banner mb-4">
-    <div class="d-flex align-items-center gap-4 flex-wrap" style="position:relative;z-index:1;">
-      <div style="width:64px;height:64px;background:var(--grad-gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-size:1.5rem;font-weight:700;color:#0a2e1b;flex-shrink:0;">{{ initials }}</div>
+  <!-- Member Profile Hero Banner -->
+  <div class="profile-hero-card mb-2 p-3 px-4 rounded-4 shadow-sm">
+    <div class="d-flex align-items-center gap-3 flex-wrap position-relative z-1">
+      <div class="profile-avatar-circle fs-4 fw-700 text-dark">
+        {{ initials }}
+      </div>
       <div>
-        <h4 style="font-family:var(--ff-display);color:#fff;margin:0 0 5px;">{{ profile.full_name }}</h4>
-        <p style="color:rgba(255,255,255,.65);font-size:13px;margin:0;">
-          <i class="fas fa-id-badge me-2"></i>{{ profile.member_id || '—' }}
-          &nbsp;·&nbsp;<span class="sbadge sbadge-green fs-12">{{ profile.user_type }}</span>
-          &nbsp;·&nbsp;<span class="sbadge fs-12" [class.sbadge-green]="profile.account_status==='Active'" [class.sbadge-yellow]="profile.account_status==='Pending'">{{ profile.account_status }}</span>
-        </p>
+        <h4 class="fw-700 text-white mb-1">{{ profile.full_name }}</h4>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <span class="badge bg-white-15 text-white"><i class="fas fa-id-badge me-1"></i>ID: {{ profile.member_id || '—' }}</span>
+          <span class="badge bg-gold text-dark fw-800">{{ profile.user_type || 'Associate' }}</span>
+          <span class="sbadge" [class.sbadge-green]="profile.account_status==='Active'" [class.sbadge-yellow]="profile.account_status==='Pending'">
+            {{ profile.account_status }} Account
+          </span>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="row g-4">
-    <!-- Personal Info (read-only) -->
+  <div class="row g-2 mb-2">
+    <!-- Box 1: Personal Info (Read-only System Verification) - Soft Blue Theme -->
     <div class="col-lg-6">
-      <div class="panel-card">
-        <div class="panel-card-title">Personal Information <span class="sbadge sbadge-gray" style="font-size:10px;">Read-only</span></div>
-        <div class="row g-3">
+      <div class="box-card box-personal-info h-100 p-3 rounded-4 border shadow-sm">
+        <div class="panel-card-title d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <span class="fw-700 text-blue-dark"><i class="fas fa-id-card text-blue me-2"></i>Verified Personal Info</span>
+          <span class="sbadge sbadge-blue">System Verified</span>
+        </div>
+        <div class="row g-2">
           <div class="col-sm-6" *ngFor="let f of [
-            ['Full Name',    profile.full_name],
-            ['Father Name',  profile.father_name],
-            ['Date of Birth',profile.date_of_birth | date:'dd MMM yyyy'],
-            ['Gender',       profile.gender],
-            ['Mobile',       profile.mobile_no],
-            ['Aadhar',       profile.aadhar_number],
-            ['PAN',          profile.pan_number],
-            ['Sponsor',      profile.sponsor_name || 'Direct']]">
-            <div><div class="f-label">{{ f[0] }}</div>
-            <div class="f-input" style="background:var(--bg-section);font-size:13px;padding:9px 12px;">{{ f[1] || '—' }}</div></div>
+            ['Full Name', profile.full_name],
+            ['Father Name', profile.father_name],
+            ['Date of Birth', (profile.date_of_birth | date:'dd MMM yyyy')],
+            ['Gender', profile.gender],
+            ['Mobile Number', profile.mobile_no],
+            ['Aadhaar Number', profile.aadhar_number],
+            ['PAN Number', profile.pan_number],
+            ['Sponsor', profile.sponsor_name || 'Direct Associate']
+          ]">
+            <div>
+              <label class="form-label-custom mb-1">{{ f[0] }}</label>
+              <div class="form-control-static p-1.5 px-2.5 rounded-3 bg-white fs-12 text-dark fw-600 border">
+                {{ f[1] || '—' }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Editable Fields -->
-    <div class="col-lg-6">
-      <div class="panel-card mb-4">
-        <div class="panel-card-title">Contact & Personal</div>
-        <div class="row g-3">
-          <div class="col-sm-6"><label class="f-label">Email</label><input type="email" class="f-input" [(ngModel)]="editable.email" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/></div>
-          <div class="col-sm-6"><label class="f-label">Alt Mobile</label><input type="tel" class="f-input" [(ngModel)]="editable.alternate_mobile" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/></div>
-          <div class="col-sm-6"><label class="f-label">Spouse Name</label><input type="text" class="f-input" [(ngModel)]="editable.spouse_name" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/></div>
-        </div>
-      </div>
-      <div class="panel-card mb-4">
-        <div class="panel-card-title">Bank Details</div>
-        <div class="row g-3">
-          <div class="col-sm-6"><label class="f-label">Bank Name</label><input type="text" class="f-input" [(ngModel)]="editable.bank_name" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/></div>
-          <div class="col-12">
-            <div class="f-label fs-12 text-muted">Account: {{ profile.account_number || '—' }} &nbsp;·&nbsp; IFSC: {{ profile.ifsc_code || '—' }}</div>
+    <!-- Right Side Cards: Contact, Bank & Nominee -->
+    <div class="col-lg-6 d-flex flex-column gap-2">
+      
+      <!-- Box 2: Contact Details - Soft Emerald Green Theme -->
+      <div class="box-card box-contact-info p-3 rounded-4 border shadow-sm">
+        <h6 class="fw-700 text-emerald-dark border-bottom pb-2 mb-2.5"><i class="fas fa-envelope text-emerald me-2"></i>Contact Details</h6>
+        <div class="row g-2">
+          <div class="col-sm-6">
+            <label class="form-label-custom mb-1">Email Address</label>
+            <input type="email" class="form-control custom-input" [(ngModel)]="editable.email" [disabled]="!editMode"/>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label-custom mb-1">Alternate Phone</label>
+            <input type="tel" class="form-control custom-input" [(ngModel)]="editable.alternate_mobile" [disabled]="!editMode"/>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label-custom mb-1">Spouse Name</label>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.spouse_name" [disabled]="!editMode"/>
           </div>
         </div>
       </div>
-      <div class="panel-card">
-        <div class="panel-card-title">Nominee Details</div>
-        <div class="row g-3">
-          <div class="col-sm-6"><label class="f-label">Nominee Name</label><input type="text" class="f-input" [(ngModel)]="editable.nominee_name" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/></div>
-          <div class="col-sm-6"><label class="f-label">Relation</label><input type="text" class="f-input" [(ngModel)]="editable.nominee_relationship" [disabled]="!editMode" [style.background]="!editMode?'var(--bg-section)':'#fff'"/></div>
+
+      <!-- Box 3: Bank Payout Details - Soft Warm Gold Theme -->
+      <div class="box-card box-bank-info p-3 rounded-4 border shadow-sm">
+        <h6 class="fw-700 text-gold-dark border-bottom pb-2 mb-2.5"><i class="fas fa-university text-gold-icon me-2"></i>Bank Payout Details</h6>
+        <div class="row g-2">
+          <div class="col-sm-6">
+            <label class="form-label-custom mb-1">Account Holder Name</label>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.account_holder_name" [disabled]="!editMode"/>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label-custom mb-1">Bank Name</label>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.bank_name" [disabled]="!editMode"/>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label-custom mb-1">Branch Name</label>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.branch_name" [disabled]="!editMode"/>
+          </div>
+          <div class="col-12">
+            <div class="p-2 px-3 bg-white rounded-3 border fs-12 text-dark fw-600">
+              Account No: <strong>{{ profile.account_number || '—' }}</strong> &nbsp;·&nbsp; IFSC Code: <strong>{{ profile.ifsc_code || '—' }}</strong>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Box 4: Nominee Details - Soft Royal Purple Theme -->
+      <div class="box-card box-nominee-info p-3 rounded-4 border shadow-sm">
+        <h6 class="fw-700 text-purple-dark border-bottom pb-2 mb-2.5"><i class="fas fa-users text-purple me-2"></i>Nominee Details</h6>
+        <div class="row g-2">
+          <div class="col-sm-6">
+            <label class="form-label-custom mb-1">Nominee Name</label>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.nominee_name" [disabled]="!editMode"/>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label-custom mb-1">Relationship</label>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.nominee_relationship" [disabled]="!editMode"/>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </ng-container>

@@ -1,36 +1,187 @@
-<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
-  <div class="pg-header" style="margin-bottom:0;"><h4>Enquiries Management</h4><p>All website enquiries from potential customers</p></div>
-  <button class="btn btn-green btn-sm"><i class="fas fa-download me-1"></i>Export CSV</button>
+<!-- Toast Notification -->
+<div *ngIf="toast" class="toast-popup" style="position:fixed;top:76px;right:24px;z-index:9999;animation:slideIn .25s ease;">
+  <i class="fas fa-check-circle text-emerald me-2"></i> {{ toast }}
 </div>
 
-<div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
-  <div class="filter-tabs">
-    <div class="filter-tab" [class.active]="filter==='all'"    (click)="filter='all'">All ({{ enquiries.length }})</div>
-    <div class="filter-tab" [class.active]="filter==='open'"   (click)="filter='open'">Open</div>
-    <div class="filter-tab" [class.active]="filter==='called'" (click)="filter='called'">Called</div>
-    <div class="filter-tab" [class.active]="filter==='closed'" (click)="filter='closed'">Closed</div>
+<!-- TOP HERO EXECUTIVE BANNER -->
+<div class="admin-hero-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+    <div>
+      <div class="admin-hero-badge"><i class="fas fa-headset me-1"></i>CRM LEADS &amp; INQUIRY CONTROL</div>
+      <h2 class="admin-hero-title mb-1">Enquiries &amp; Lead Management</h2>
+      <p class="admin-hero-sub mb-0">Track incoming buyer requests, assign priority tags, log follow-up notes &amp; dispatch notifications.</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <button class="btn btn-gold btn-xs" (click)="openAddLeadModal()">
+        <i class="fas fa-plus me-1"></i> + Log New Lead
+      </button>
+    </div>
   </div>
-  <div class="search-box ms-auto"><i class="fas fa-search"></i><input [(ngModel)]="search" placeholder="Search..."/></div>
 </div>
 
-<div class="data-table-wrap">
-  <div class="table-responsive">
-    <table class="table">
-      <thead><tr><th>Name & Mobile</th><th>Interest</th><th>Message</th><th>Priority</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+<!-- 4 STAT SUMMARY MINI CARDS -->
+<div class="row g-2 mb-2">
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-customers h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Total CRM Leads</span>
+        <div class="icon-wrap bg-blue text-primary"><i class="fas fa-address-card"></i></div>
+      </div>
+      <div class="stat-mini-val">{{ enquiries.length }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-inbox text-primary me-1"></i>Customer Inquiries</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-approvals h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Open Enquiries</span>
+        <div class="icon-wrap bg-amber text-orange"><i class="fas fa-envelope-open-text"></i></div>
+      </div>
+      <div class="stat-mini-val">{{ openCount }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-clock text-orange me-1"></i>Awaiting First Call</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-enquiries h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">In Follow-Up</span>
+        <div class="icon-wrap bg-purple-light text-purple"><i class="fas fa-phone-volume"></i></div>
+      </div>
+      <div class="stat-mini-val">{{ calledCount }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-comments text-purple me-1"></i>Contacted / Discussed</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-plots h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Closed / Converted</span>
+        <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-user-check"></i></div>
+      </div>
+      <div class="stat-mini-val">{{ closedCount }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-check-circle text-emerald me-1"></i>Deal Finalized</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR CARD -->
+<div class="panel-card p-3 mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="filter-tabs">
+      <button class="filter-tab" [class.active]="statusFilter==='all'"    (click)="statusFilter='all'">All Leads ({{ enquiries.length }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='open'"   (click)="statusFilter='open'">Open ({{ openCount }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='called'" (click)="statusFilter='called'">In Follow-Up ({{ calledCount }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='closed'" (click)="statusFilter='closed'">Closed ({{ closedCount }})</button>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <select class="form-select form-select-sm py-1" style="width: 130px; font-size: 11px;" [(ngModel)]="priorityFilter">
+        <option value="all">All Priorities</option>
+        <option value="high">🔥 High</option>
+        <option value="medium">⚡ Medium</option>
+        <option value="low">🌱 Low</option>
+      </select>
+
+      <div class="search-box position-relative" style="min-width: 220px;">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" placeholder="Search name, phone, topic...">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN DATA TABLE CARD -->
+<div class="panel-card p-3 mb-2">
+  
+  <div *ngIf="filtered.length === 0" class="text-center py-5">
+    <i class="fas fa-headset text-muted fs-1 mb-2"></i>
+    <h6 class="fw-700 text-dark mb-1">No CRM Leads Found</h6>
+    <p class="text-muted fs-12 mb-0">No customer enquiries match your current search query.</p>
+  </div>
+
+  <div class="table-responsive" *ngIf="filtered.length > 0">
+    <table class="table align-middle custom-dash-table mb-0">
+      <thead>
+        <tr>
+          <th>Lead Customer Profile</th>
+          <th>Topic &amp; Interest</th>
+          <th>Message Note</th>
+          <th>Priority</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
       <tbody>
         <tr *ngFor="let e of filtered">
-          <td><strong style="color:var(--txt-h);">{{ e.name }}</strong><div class="fs-12 text-muted">{{ e.mobile }}</div></td>
-          <td class="fs-12" style="max-width:140px;">{{ e.interest }}</td>
-          <td class="fs-12 text-muted" style="max-width:180px;">{{ e.message }}</td>
-          <td><span class="sbadge" [class.sbadge-red]="e.priority==='high'" [class.sbadge-yellow]="e.priority==='medium'" [class.sbadge-gray]="e.priority==='low'">{{ e.priority }}</span></td>
-          <td class="fs-12 text-muted">{{ e.date | date:'dd MMM' }}</td>
-          <td><span class="sbadge" [class.sbadge-blue]="e.status==='open'" [class.sbadge-yellow]="e.status==='called'" [class.sbadge-gray]="e.status==='closed'">{{ e.status }}</span></td>
           <td>
-            <div class="d-flex gap-1">
-              <a [href]="'tel:'+e.mobile" class="action-btn" title="Call"><i class="fas fa-phone"></i></a>
-              <a [href]="'https://wa.me/91'+e.mobile" target="_blank" class="action-btn" style="color:#16a34a;" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-              <button class="action-btn" title="Mark Called" (click)="updateStatus(e,'called')"><i class="fas fa-phone-volume"></i></button>
-              <button class="action-btn danger" title="Close" (click)="updateStatus(e,'closed')"><i class="fas fa-times"></i></button>
+            <div class="d-flex align-items-center gap-2.5">
+              <div class="user-avatar-circle bg-purple-avatar">
+                {{ getInitials(e.name) }}
+              </div>
+              <div>
+                <div class="fw-700 text-dark fs-12">{{ e.name }}</div>
+                <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ e.mobile }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge bg-light text-dark border fw-600">
+              <i class="fas fa-tag text-gold me-1"></i>{{ e.interest }}
+            </span>
+          </td>
+          <td>
+            <div class="fs-11 text-dark text-truncate" style="max-width: 200px;" [title]="e.message">
+              "{{ e.message }}"
+            </div>
+          </td>
+          <td>
+            <span class="sbadge"
+              [class.sbadge-red]="e.priority==='high'"
+              [class.sbadge-yellow]="e.priority==='medium'"
+              [class.sbadge-green]="e.priority==='low'">
+              {{ e.priority | uppercase }}
+            </span>
+          </td>
+          <td>
+            <div class="fs-11 text-dark fw-600">{{ e.date | date:'dd MMM yyyy' }}</div>
+          </td>
+          <td>
+            <select class="status-select-pill"
+              [ngModel]="e.status"
+              (change)="updateStatus(e, $any($event.target).value)"
+              [class.status-open]="e.status==='open'"
+              [class.status-called]="e.status==='called'"
+              [class.status-closed]="e.status==='closed'">
+              <option value="open">Open</option>
+              <option value="called">Follow-Up</option>
+              <option value="closed">Closed</option>
+            </select>
+          </td>
+          <td class="text-end">
+            <div class="dropdown d-inline-block position-relative">
+              <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === e.id ? null : e.id)">
+                <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
+              </button>
+
+              <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 165px; border-radius: 10px;" *ngIf="activeRowId === e.id" (click)="$event.stopPropagation()">
+                <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + e.mobile">
+                  <i class="fas fa-phone text-primary me-2 width-16"></i> Call Lead
+                </a>
+                <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + e.mobile" target="_blank">
+                  <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
+                </a>
+                <div class="dropdown-divider my-1"></div>
+                <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openDetailModal(e); activeRowId = null">
+                  <i class="fas fa-sticky-note text-info me-2 width-16"></i> Follow-up Notes
+                </button>
+                <button type="button" class="dropdown-item py-1.5 px-3 text-warning fw-600 d-flex align-items-center" (click)="sendFollowUpNotification(e); activeRowId = null" [disabled]="actionLoading">
+                  <i class="fas fa-bell text-warning me-2 width-16"></i> Push Notification
+                </button>
+              </div>
             </div>
           </td>
         </tr>
@@ -38,3 +189,126 @@
     </table>
   </div>
 </div>
+
+<!-- LOG NEW LEAD MODAL -->
+<div class="modal-backdrop fade show" *ngIf="showAddModal"></div>
+<div class="modal d-block fade show" tabIndex="-1" *ngIf="showAddModal" (click)="closeModals()">
+  <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 rounded-14 shadow-lg">
+      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
+        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-user-plus text-gold me-2"></i>Log New Customer Lead</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Customer Name *</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newLead.name" placeholder="e.g. Suresh Patel">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Mobile Number *</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newLead.mobile" placeholder="10-digit phone number">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Email Address</label>
+            <input type="email" class="form-control form-control-sm" [(ngModel)]="newLead.email" placeholder="customer@example.com">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Topic of Interest</label>
+            <select class="form-select form-select-sm" [(ngModel)]="newLead.interest">
+              <option value="Plot Booking — 100 Gaj">Plot Booking — 100 Gaj</option>
+              <option value="Plot Booking — 50 Gaj">Plot Booking — 50 Gaj</option>
+              <option value="Site Visit Request">Site Visit Request</option>
+              <option value="Associate Program">Associate Program</option>
+              <option value="General Enquiry">General Enquiry</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Priority Tag</label>
+            <select class="form-select form-select-sm" [(ngModel)]="newLead.priority">
+              <option value="high">🔥 High Priority</option>
+              <option value="medium">⚡ Medium Priority</option>
+              <option value="low">🌱 Low Priority</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fs-11 fw-700 text-dark">Customer Message / Inquiry Notes</label>
+            <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="newLead.message" placeholder="Details of customer requirement..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-emerald btn-xs" (click)="saveNewLead()">
+          <i class="fas fa-save me-1"></i> Save Lead
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEAD FOLLOW-UP NOTES & TIMELINE MODAL -->
+<div class="modal-backdrop fade show" *ngIf="showDetailModal"></div>
+<div class="modal d-block fade show" tabIndex="-1" *ngIf="showDetailModal" (click)="closeModals()">
+  <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 rounded-14 shadow-lg">
+      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
+        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-sticky-note text-gold me-2"></i>CRM Lead Notes &amp; Follow-up History</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
+      </div>
+
+      <div class="modal-body p-4" *ngIf="selectedEnquiry">
+        
+        <div class="p-3 bg-light rounded-10 border mb-3">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <div class="fs-12 mb-1"><strong>Name:</strong> {{ selectedEnquiry.name }}</div>
+              <div class="fs-12 mb-1"><strong>Mobile:</strong> {{ selectedEnquiry.mobile }}</div>
+              <div class="fs-12"><strong>Email:</strong> {{ selectedEnquiry.email || '—' }}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fs-12 mb-1"><strong>Topic:</strong> {{ selectedEnquiry.interest }}</div>
+              <div class="fs-12 mb-1"><strong>Priority:</strong> <span class="badge bg-warning text-dark">{{ selectedEnquiry.priority | uppercase }}</span></div>
+              <div class="fs-12"><strong>Status:</strong> <span class="badge bg-success">{{ selectedEnquiry.status | uppercase }}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="fw-700 text-dark fs-12 mb-1"><i class="fas fa-comment-alt text-primary me-1.5"></i>Original Customer Message</h6>
+          <div class="p-2.5 bg-white rounded border fs-12 text-muted italic">
+            "{{ selectedEnquiry.message }}"
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="fw-700 text-dark fs-12 mb-1"><i class="fas fa-history text-emerald me-1.5"></i>Agent Notes Log</h6>
+          <pre class="p-2.5 bg-dark text-light rounded fs-11 font-monospace mb-0" style="max-height: 140px; overflow-y: auto;">{{ selectedEnquiry.notes || 'No follow-up notes recorded yet.' }}</pre>
+        </div>
+
+        <div>
+          <label class="form-label fs-11 fw-700 text-dark">Add Follow-up Call Note</label>
+          <div class="d-flex gap-2">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newNoteText" placeholder="e.g. Called customer. Confirmed site visit for Sunday 11 AM...">
+            <button class="btn btn-emerald btn-xs" (click)="addNoteToLead()">
+              <i class="fas fa-paper-plane me-1"></i> Add Note
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+

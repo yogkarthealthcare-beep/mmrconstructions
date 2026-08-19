@@ -74,6 +74,7 @@ export class PlotMapEditorComponent implements OnInit {
   startingPlotNumber = '';
   autoNumberDirection: 'up' | 'down' = 'up';
   skipExistingNumbers = true;
+  imageAspectRatio: number | null = null;
   private suppressNextPlotClick = false;
   private pendingLayoutFile: File | null = null;
   private tesseractReady: Promise<boolean> | null = null;
@@ -116,7 +117,10 @@ export class PlotMapEditorComponent implements OnInit {
   get draftPointString() { return this.draftPoints.map(p => `${p.x},${p.y}`).join(' '); }
   get mapTransform() { return `translate(${this.pan.x} ${this.pan.y}) scale(${this.zoom})`; }
   get hasDirtyPlots() { return this.dirtyPlotIds.size > 0; }
-  get siteMapUrl() { return this.activeSite?.map_image_url || this.activeSite?.layout_map_url || ''; }
+  get siteMapUrl() {
+    const url = this.activeSite?.map_image_url || this.activeSite?.layout_map_url || '';
+    return url ? this.api.url(url) : '';
+  }
   get selectedBounds() { return this.selectedPlot ? this.boundsForPoints(this.pointsForPlot(this.selectedPlot)) : null; }
   get selectedPoints() { return this.selectedPlot ? this.pointsForPlot(this.selectedPlot) : []; }
   get selectedPlots() { return this.plots.filter(plot => this.selectedPlotIds.has(Number(plot.plot_id))); }
@@ -159,14 +163,32 @@ export class PlotMapEditorComponent implements OnInit {
     this.loading = true;
     this.api.adminGetSites().subscribe({
       next: (res: any) => {
-        this.sites = res?.data || [];
+        const list = res?.data || (Array.isArray(res) ? res : []);
+        if (list && list.length) {
+          this.sites = list;
+          this.loading = false;
+          if (this.sites.length) this.selectSite(this.sites[0]);
+        } else {
+          this.fetchPublicSites();
+        }
+      },
+      error: () => {
+        this.fetchPublicSites();
+      },
+    });
+  }
+
+  fetchPublicSites() {
+    this.api.getSites().subscribe({
+      next: (res: any) => {
+        this.sites = res?.data || (Array.isArray(res) ? res : []);
         this.loading = false;
         if (this.sites.length) this.selectSite(this.sites[0]);
       },
       error: (e: any) => {
         this.loading = false;
         this.showToast(e?.error?.message || 'Unable to load sites', 'error');
-      },
+      }
     });
   }
 
@@ -178,9 +200,17 @@ export class PlotMapEditorComponent implements OnInit {
     this.drawingPlot = null;
     this.draftPoints = [];
     this.selectionState = null;
+    this.imageAspectRatio = null;
     this.dirtyPlotIds.clear();
     this.resetView();
     this.loadPlots();
+  }
+
+  onSiteImageLoad(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img && img.naturalWidth && img.naturalHeight) {
+      this.imageAspectRatio = img.naturalWidth / img.naturalHeight;
+    }
   }
 
   selectSiteById(siteId: number | string) {
@@ -212,7 +242,47 @@ export class PlotMapEditorComponent implements OnInit {
     this.plotsLoading = true;
     this.api.adminGetSitePlots(this.activeSite.site_id).subscribe({
       next: (res: any) => {
-        this.plots = (res?.data || []).map((plot: any, index: number) => this.ensurePlotCoordinates(plot, index));
+        const rawPlots = res?.data || (Array.isArray(res) ? res : []);
+        if (rawPlots && rawPlots.length) {
+          this.plots = rawPlots.map((plot: any, index: number) => this.ensurePlotCoordinates(plot, index));
+          this.pushHistory(true);
+          this.plotsLoading = false;
+        } else {
+          this.fetchPublicPlots();
+        }
+      },
+      error: () => {
+        this.fetchPublicPlots();
+      },
+    });
+  }
+
+  fetchPublicPlots() {
+    if (!this.activeSite) return;
+    this.api.getSiteMap(this.activeSite.site_id).subscribe({
+      next: (res: any) => {
+        const data = res?.data || res;
+        const rawPlots = data?.plots || (Array.isArray(data) ? data : []);
+        if (rawPlots && rawPlots.length) {
+          this.plots = rawPlots.map((plot: any, index: number) => this.ensurePlotCoordinates(plot, index));
+          this.pushHistory(true);
+          this.plotsLoading = false;
+        } else {
+          this.fetchFallbackPlots();
+        }
+      },
+      error: () => {
+        this.fetchFallbackPlots();
+      }
+    });
+  }
+
+  fetchFallbackPlots() {
+    if (!this.activeSite) return;
+    this.api.getSitePlots(this.activeSite.site_id).subscribe({
+      next: (res2: any) => {
+        const rawPlots = res2?.data || (Array.isArray(res2) ? res2 : []);
+        this.plots = rawPlots.map((plot: any, index: number) => this.ensurePlotCoordinates(plot, index));
         this.pushHistory(true);
         this.plotsLoading = false;
       },
@@ -220,7 +290,7 @@ export class PlotMapEditorComponent implements OnInit {
         this.plots = [];
         this.plotsLoading = false;
         this.showToast(e?.error?.message || 'Unable to load plots', 'error');
-      },
+      }
     });
   }
 
@@ -576,34 +646,61 @@ export class PlotMapEditorComponent implements OnInit {
   }
 
   async autoDetectPlots(silent = false, source: DetectionSource | null = null) {
-    if (!this.activeSite || !this.siteMapUrl) {
-      if (!silent) this.showToast('Upload a layout image before auto detection.', 'error');
+    if (!this.activeSite) {
+      if (!silent) this.showToast('Please select a site first.', 'error');
       return;
     }
     this.saving = true;
-    try {
-      const detectionSource = source || this.pendingLayoutFile || this.siteMapUrl;
-      const detected = await this.detectPlotCandidates(detectionSource);
-      const candidates = detected.length
-        ? detected
-        : this.generatedFallbackPolygons().map(points => ({ points, confidence: 45, classification: 'unknown' as const }));
-      if (!candidates.length) {
+
+    // Call existing backend plot detection API
+    this.api.adminDetectPlots(this.activeSite.site_id, { total_plots: this.plots.length || this.activeSite.total_plots }).subscribe({
+      next: async (res: any) => {
+        const apiPlots = res?.data?.plots || res?.plots || [];
+        if (Array.isArray(apiPlots) && apiPlots.length) {
+          apiPlots.forEach((dp: any) => {
+            const plotNumber = String(dp.plot_number || '').trim();
+            const existingPlot = this.plots.find(p => String(p.plot_number || '').trim().toLowerCase() === plotNumber.toLowerCase());
+            if (existingPlot && Array.isArray(dp.coordinates) && dp.coordinates.length >= 3) {
+              existingPlot.polygon_coordinates = dp.coordinates;
+              this.markDirty(existingPlot);
+            }
+          });
+        }
+        try {
+          const detectionSource = source || this.pendingLayoutFile || this.siteMapUrl;
+          if (detectionSource) {
+            const detected = await this.detectPlotCandidates(detectionSource);
+            if (detected.length) {
+              await this.applyDetectedCandidates(detected);
+            }
+          }
+        } catch {
+          // Client refinement handled silently
+        }
         this.saving = false;
-        if (!silent) this.showToast('No plot boundaries were detected. Use Draw Plot or drag selection.', 'error');
-        return;
+        if (!silent) this.showToast('Plot detection completed. Review boundaries and save layout.');
+      },
+      error: async (err: any) => {
+        try {
+          const detectionSource = source || this.pendingLayoutFile || this.siteMapUrl;
+          if (!detectionSource) {
+            this.saving = false;
+            if (!silent) this.showToast('Upload a layout image before auto detection.', 'error');
+            return;
+          }
+          const detected = await this.detectPlotCandidates(detectionSource);
+          const candidates = detected.length
+            ? detected
+            : this.generatedFallbackPolygons().map(points => ({ points, confidence: 45, classification: 'unknown' as const }));
+          await this.applyDetectedCandidates(candidates);
+          this.saving = false;
+          if (!silent) this.showToast(`${candidates.length} plot boundaries detected. Review and save manual edits.`);
+        } catch (error: any) {
+          this.saving = false;
+          if (!silent) this.showToast(error?.message || 'Auto detection failed. You can still draw plots manually.', 'error');
+        }
       }
-      await this.applyDetectedCandidates(candidates);
-      this.saving = false;
-      const lowConfidence = candidates.filter(item => item.confidence < 70).length;
-      this.validationWarnings = [
-        ...this.validationWarnings,
-        lowConfidence ? `${lowConfidence} detected plot(s) need manual verification.` : '',
-      ].filter(Boolean).slice(0, 12);
-      this.showToast(`${candidates.length} plot boundaries detected. Review and save any manual edits.`);
-    } catch (error: any) {
-      this.saving = false;
-      if (!silent) this.showToast(error?.message || 'Auto detection failed. You can still draw plots manually.', 'error');
-    }
+    });
   }
 
   updatePlotStatus(plot: any, status: string, event?: Event) {

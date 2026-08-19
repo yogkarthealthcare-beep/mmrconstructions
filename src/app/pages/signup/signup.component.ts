@@ -1,10 +1,11 @@
-// signup.component.ts  (NEW)
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiService } from '../../services/api.service';
+
+export type UserRole = 'Customer' | 'Investor' | 'Associate';
 
 @Component({
   selector: 'app-signup',
@@ -14,54 +15,53 @@ import { ApiService } from '../../services/api.service';
   styleUrls: ['./signup.component.css'],
 })
 export class SignupComponent implements OnInit {
-  // ── User type received from /register page ──
-  userType: 'Customer' | 'Associate' | 'Investor' = 'Customer';
+  // ── Step 1 vs Step 2 State ──
+  roleSelected = false;
+  userType: UserRole = 'Customer';
 
-  // ── Form fields ──
+  // ── Form Model (Initialised completely empty, autofill disabled) ──
   form = {
-    full_name:        '',
-    email:            '',
-    mobile_no:        '',
-    password:         '',
-    confirmPassword:  '',
-    sponsor_invite_code: 'MMR0001',
-    address: '',
-    city: '',
-    state: '',
-    country: 'India',
-    pan_number: '',
-    aadhar_number: '',
-    passport_number: '',
+    full_name: '',
+    email: '',
+    mobile_no: '',
+    password: '',
+    confirmPassword: '',
+    sponsor_invite_code: '',
+    terms_accepted: false
   };
 
   // ── UI state ──
-  showPass      = false;
-  showConfPass  = false;
-  loading       = false;
-  error         = '';
+  showPass = false;
+  showConfPass = false;
+  loading = false;
+  error = '';
   referralLocked = false;
 
-  // ── Sponsor state ──
+  // ── Sponsor validation state ──
   sponsorChecking = false;
-  sponsorValid    = false;
-  sponsorName     = '';
+  sponsorValid = false;
+  sponsorName = '';
   sponsorCodeFormatted = '';
 
-  // ── Validation errors (per-field) ──
+  // ── Per-field validation errors (Form data NOT cleared on error) ──
   v: Record<string, string> = {};
 
   constructor(
-    private api:    ApiService,
+    private api: ApiService,
     private router: Router,
-    private route:  ActivatedRoute,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit() {
-    // Read ?type=Customer|Associate|Investor from query params
     this.route.queryParams.subscribe(params => {
-      if (params['type'] === 'Associate') this.userType = 'Associate';
-      else if (params['type'] === 'Investor') this.userType = 'Investor';
-      else this.userType = 'Customer';
+      const typeParam = params['type'];
+      if (typeParam === 'Associate') {
+        this.selectRole('Associate');
+      } else if (typeParam === 'Investor') {
+        this.selectRole('Investor');
+      } else if (typeParam === 'Customer') {
+        this.selectRole('Customer');
+      }
 
       const referralCode = params['ref'] || params['sponsor'] || params['sponsor_invite_code'];
       if (referralCode) {
@@ -69,16 +69,31 @@ export class SignupComponent implements OnInit {
         this.referralLocked = true;
         localStorage.setItem('mmr_referral_code', this.form.sponsor_invite_code);
         this.api.trackReferralCode(this.form.sponsor_invite_code).subscribe({ error: () => {} });
-      } else if (!this.form.sponsor_invite_code) {
-        this.form.sponsor_invite_code = (localStorage.getItem('mmr_referral_code') || 'MMR0001').toUpperCase();
-        this.referralLocked = false;
+        this.verifySponsor();
+      } else {
+        const cached = localStorage.getItem('mmr_referral_code');
+        if (cached) {
+          this.form.sponsor_invite_code = cached.toUpperCase();
+          this.verifySponsor();
+        }
       }
-
-      this.verifySponsor();
     });
   }
 
-  // ── Sponsor validation ──────────────────────────────────
+  // ── Step 1: Role Selection ──
+  selectRole(role: UserRole) {
+    this.userType = role;
+    this.roleSelected = true;
+    this.error = '';
+    this.verifySponsor();
+  }
+
+  goBackToRoleSelection() {
+    this.roleSelected = false;
+    this.error = '';
+  }
+
+  // ── Sponsor Live Validation & Role Rules ──
   onSponsorCodeInput(value: string) {
     this.form.sponsor_invite_code = value.replace(/\*/g, '').trim().toUpperCase();
     this.verifySponsor();
@@ -86,12 +101,27 @@ export class SignupComponent implements OnInit {
 
   verifySponsor(code?: string) {
     const rawCode = code !== undefined ? code : this.form.sponsor_invite_code;
-    const cleanCode = (rawCode || '').replace(/\*/g, '').trim().toUpperCase() || 'MMR0001';
-    this.form.sponsor_invite_code = cleanCode;
+    const cleanCode = (rawCode || '').replace(/\*/g, '').trim().toUpperCase();
+
+    if (!cleanCode) {
+      if (this.userType === 'Customer') {
+        // Customer: Sponsor is optional with Admin fallback
+        this.sponsorValid = true;
+        this.sponsorName = 'Admin Sponsor (Default)';
+        this.sponsorCodeFormatted = 'MMR0001';
+        delete this.v['sponsor_invite_code'];
+      } else {
+        // Investor / Associate: Sponsor is mandatory
+        this.sponsorValid = false;
+        this.sponsorName = '';
+        this.sponsorCodeFormatted = '';
+      }
+      return;
+    }
 
     this.sponsorChecking = true;
-    this.sponsorValid    = false;
-    this.sponsorName     = '';
+    this.sponsorValid = false;
+    this.sponsorName = '';
     delete this.v['sponsor_invite_code'];
 
     this.api.verifySponsorCode(cleanCode).subscribe({
@@ -103,91 +133,52 @@ export class SignupComponent implements OnInit {
           this.sponsorCodeFormatted = res.data.invitation_code || res.data.member_id || cleanCode;
         } else {
           this.sponsorValid = false;
-          this.v['sponsor_invite_code'] = res?.message || 'Invalid sponsor code. Associate sponsor not found.';
+          this.v['sponsor_invite_code'] = '✕ Sponsor not available';
         }
       },
-      error: (err: HttpErrorResponse) => {
+      error: () => {
         this.sponsorChecking = false;
         this.sponsorValid = false;
-        const backendMsg = err?.error?.message;
-        this.v['sponsor_invite_code'] = backendMsg || 'Invalid sponsor code. Associate sponsor not found.';
+        this.v['sponsor_invite_code'] = '✕ Sponsor not available';
       }
     });
   }
 
-  // ── Field-level validation ──────────────────────────────
   onMobileInput(value: string) {
     this.form.mobile_no = value.replace(/\D/g, '').slice(0, 10);
   }
 
-  validate(): boolean {
-    this.v = {};
+  // ── Password Strength Calculation ──
+  get passwordMetrics() {
+    const p = this.form.password || '';
+    const hasMinLength = p.length >= 8;
+    const hasUpper = /[A-Z]/.test(p);
+    const hasLower = /[a-z]/.test(p);
+    const hasDigit = /[0-9]/.test(p);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(p);
 
-    if (!this.form.full_name.trim())
-      this.v['full_name'] = 'Full name is required.';
+    let score = 0;
+    if (p.length >= 8) score++;
+    if (hasUpper) score++;
+    if (hasLower) score++;
+    if (hasDigit) score++;
+    if (hasSpecial) score++;
 
-    if (!this.form.email)
-      this.v['email'] = 'Email address is required.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email))
-      this.v['email'] = 'Enter a valid email address.';
+    const isStrong = hasMinLength && hasUpper && hasLower && hasDigit && hasSpecial;
+    const isMedium = p.length >= 6 && score >= 3;
 
-    if (!this.form.mobile_no)
-      this.v['mobile_no'] = 'Mobile number is required.';
-    else if (!/^[6-9]\d{9}$/.test(this.form.mobile_no))
-      this.v['mobile_no'] = 'Enter a valid 10-digit mobile number.';
-
-    if (!this.form.password)
-      this.v['password'] = 'Password is required.';
-    else if (this.form.password.length < 6)
-      this.v['password'] = 'Password must be at least 6 characters.';
-
-    if (!this.form.confirmPassword)
-      this.v['confirmPassword'] = 'Please confirm your password.';
-    else if (this.form.password !== this.form.confirmPassword)
-      this.v['confirmPassword'] = 'Passwords do not match.';
-
-    if (!this.form.sponsor_invite_code.trim()) {
-      this.form.sponsor_invite_code = 'MMR0001';
-      this.verifySponsor('MMR0001');
+    if (p.length === 0) {
+      return { score: 0, label: '', color: '#94a3b8', width: '0%', isStrong: false, isMedium: false };
     }
-
-    if (!this.sponsorValid) {
-      if (!this.v['sponsor_invite_code']) {
-        this.v['sponsor_invite_code'] = 'Invalid sponsor code. Associate sponsor not found.';
-      }
+    if (isStrong) {
+      return { score: 5, label: 'Strong', color: '#16a34a', width: '100%', isStrong: true, isMedium: true };
     }
-
-    return Object.keys(this.v).length === 0;
+    if (isMedium) {
+      return { score: 3, label: 'Medium', color: '#f59e0b', width: '66%', isStrong: false, isMedium: true };
+    }
+    return { score: 1, label: 'Weak', color: '#ef4444', width: '33%', isStrong: false, isMedium: false };
   }
 
-  private registrationErrorMessage(error: HttpErrorResponse): string {
-    const backendMessage = error?.error?.message;
-    if (backendMessage && !/duplicate key|unique constraint|violates/i.test(backendMessage)) return backendMessage;
-
-    if (error.status === 0) {
-      return 'Unable to reach the server. Please check backend deployment, API URL, or CORS settings.';
-    }
-    if (error.status === 400) return 'Invalid registration details. Please check the form and try again.';
-    if (error.status === 401) return 'Unauthorized request. Please refresh and try again.';
-    if (error.status === 403) return 'Registration is blocked by server permissions.';
-    if (error.status === 404) return 'Registration API was not found.';
-    if (error.status === 409) return 'Email or mobile number is already registered.';
-    if (error.status === 422) return 'Registration data could not be processed.';
-    if (error.status >= 500) return 'Server error during registration. Please check backend logs.';
-
-    return 'Registration failed. Please try again.';
-  }
-
-  // ── Password strength indicator ──────────────────────────
-  get passwordStrength(): { label: string; color: string; width: string } {
-    const len = this.form.password.length;
-    if (len === 0)  return { label: '', color: '', width: '0%' };
-    if (len < 6)    return { label: '❌ Too short',       color: '#ef4444', width: '25%' };
-    if (len < 9)    return { label: '⚠️ Medium strength', color: '#f59e0b', width: '60%' };
-    return              { label: '✅ Strong password',  color: '#16a34a', width: '100%' };
-  }
-
-  // ── Submit ───────────────────────────────────────────────
   get passwordsMatch(): boolean {
     return !!this.form.password
       && !!this.form.confirmPassword
@@ -199,24 +190,80 @@ export class SignupComponent implements OnInit {
       && this.form.password !== this.form.confirmPassword;
   }
 
-  private cleanSponsorCode(): string {
+  // ── Validation (Strict: DO NOT CLEAR FORM VALUES ON ERROR) ──
+  validate(): boolean {
+    this.v = {};
+
+    // 1. Full Name
+    if (!this.form.full_name.trim()) {
+      this.v['full_name'] = 'Full Name is required.';
+    }
+
+    // 2. Email Address
+    if (!this.form.email.trim()) {
+      this.v['email'] = 'Email Address is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email.trim())) {
+      this.v['email'] = 'Enter a valid email address.';
+    }
+
+    // 3. Mobile Number
+    if (!this.form.mobile_no) {
+      this.v['mobile_no'] = 'Mobile Number is required.';
+    } else if (!/^[6-9]\d{9}$/.test(this.form.mobile_no)) {
+      this.v['mobile_no'] = 'Enter a valid 10-digit mobile number.';
+    }
+
+    // 4. Password Requirements
+    if (!this.form.password) {
+      this.v['password'] = 'Password is required.';
+    } else if (this.form.password.length < 8) {
+      this.v['password'] = 'Password must be at least 8 characters long.';
+    } else if (!this.passwordMetrics.isStrong) {
+      this.v['password'] = 'Password must contain uppercase, lowercase, number, and special character.';
+    }
+
+    // 5. Confirm Password Requirements
+    if (!this.form.confirmPassword) {
+      this.v['confirmPassword'] = 'Confirm Password is required.';
+    } else if (this.form.password !== this.form.confirmPassword) {
+      this.v['confirmPassword'] = 'Passwords do not match.';
+    }
+
+    // 6. Sponsor ID Rule per Role
+    const cleanSponsor = this.form.sponsor_invite_code.replace(/\*/g, '').trim().toUpperCase();
+    if (this.userType === 'Customer') {
+      // Optional for Customer. If provided, must be valid.
+      if (cleanSponsor && !this.sponsorValid) {
+        this.v['sponsor_invite_code'] = '✕ Sponsor not available';
+      }
+    } else {
+      // Mandatory for Investor & Associate
+      if (!cleanSponsor) {
+        this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
+      } else if (!this.sponsorValid) {
+        this.v['sponsor_invite_code'] = '✕ Sponsor not available';
+      }
+    }
+
+    // 7. Terms & Conditions
+    if (!this.form.terms_accepted) {
+      this.v['terms_accepted'] = 'You must agree to the Terms & Conditions to proceed.';
+    }
+
+    return Object.keys(this.v).length === 0;
+  }
+
+  private getEffectiveSponsorCode(): string {
     const code = this.form.sponsor_invite_code.replace(/\*/g, '').trim().toUpperCase();
-    return code || 'MMR0001';
+    return code || 'MMR0001'; // Admin fallback for Customer
   }
 
   submit() {
     this.error = '';
 
-    if (!this.sponsorValid) {
-      this.verifySponsor();
-    }
-
     const isValid = this.validate();
-
-    if (!isValid || !this.sponsorValid) {
-      if (!this.sponsorValid) {
-        this.error = 'Invalid sponsor code. Please enter a valid associate code to proceed.';
-      }
+    if (!isValid) {
+      // DO NOT CLEAR FORM DATA. Form inputs stay intact!
       return;
     }
 
@@ -227,24 +274,21 @@ export class SignupComponent implements OnInit {
       email:               this.form.email.toLowerCase().trim(),
       mobile_no:           this.form.mobile_no,
       password:            this.form.password,
-      sponsor_invite_code: this.cleanSponsorCode(),
-      address: null,
-      city: null,
-      state: null,
-      country: null,
-      pan_number: null,
-      aadhar_number: null,
-      passport_number: null,
+      sponsor_invite_code: this.getEffectiveSponsorCode(),
     };
 
     this.api.post('/api/auth/register-quick', payload).subscribe({
       next: (res: any) => {
         this.loading = false;
         if (res.success) {
-          // Navigate to OTP verification page; pass email as query param
           const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
           this.router.navigate(['/verify-otp'], {
-            queryParams: { email: payload.email, type: this.userType, ...(returnUrl ? { returnUrl } : {}) },
+            queryParams: {
+              email: payload.email,
+              mobile: payload.mobile_no,
+              type: this.userType,
+              ...(returnUrl ? { returnUrl } : {})
+            },
           });
         } else {
           this.error = res.message || 'Registration failed. Please try again.';
@@ -252,7 +296,7 @@ export class SignupComponent implements OnInit {
       },
       error: (e: HttpErrorResponse) => {
         this.loading = false;
-        this.error = this.registrationErrorMessage(e);
+        this.error = e?.error?.message || 'Registration failed. Please try again.';
       },
     });
   }

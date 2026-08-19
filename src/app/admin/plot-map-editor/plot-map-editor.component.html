@@ -61,15 +61,15 @@
   </aside>
 
   <section class="panel-card map-card" *ngIf="activeSite">
-    <div class="panel-card-title">
-      <span>{{ activeSite.site_name }}</span>
-      <div class="map-card-actions">
-        <button type="button" class="upload-btn" (click)="openSiteMap()">
-          <i class="fas fa-map"></i> View Plot Site Image
+    <div class="panel-card-title d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <h4 class="site-title-serif mb-0">{{ activeSite.site_name }}</h4>
+      <div class="map-card-actions d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-outline-emerald-pill btn-xs" (click)="openSiteMap()">
+          <i class="fas fa-map-marked-alt me-1"></i> View Plot Site Image
         </button>
-      <label class="upload-btn">
-          <i class="fas fa-upload"></i> Upload Layout
-          <input type="file" accept=".jpg,.jpeg,.png,.pdf,.svg,image/jpeg,image/png,image/svg+xml,application/pdf" (change)="uploadLayout($event)">
+        <label class="btn btn-emerald-pill btn-xs mb-0" style="cursor: pointer;">
+          <i class="fas fa-upload me-1"></i> Upload Layout
+          <input type="file" hidden accept=".jpg,.jpeg,.png,.pdf,.svg,image/jpeg,image/png,image/svg+xml,application/pdf" (change)="uploadLayout($event)">
         </label>
       </div>
     </div>
@@ -209,6 +209,7 @@
         *ngIf="!plotsLoading"
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
+        [style.aspect-ratio]="imageAspectRatio || '16/10'"
         (click)="onMapClick($event)"
         (dblclick)="onMapDoubleClick($event)"
         (pointerdown)="onPointerDown($event)"
@@ -227,6 +228,7 @@
             width="100"
             height="100"
             preserveAspectRatio="none"
+            (load)="onSiteImageLoad($event)"
             class="site-layout-image"></image>
           <g class="grid-layer" *ngIf="showGrid">
             <line *ngFor="let line of gridLines" [attr.x1]="line" y1="0" [attr.x2]="line" y2="100"></line>
@@ -329,6 +331,69 @@
     </div>
     </div>
   </section>
+
+    <!-- RIGHT PLOTS SIDEBAR PANEL -->
+  <aside class="panel-card plot-sidebar" *ngIf="activeSite">
+    <div class="panel-card-title d-flex align-items-center justify-content-between mb-3">
+      <span class="fs-18 fw-700">Plots</span>
+      <span class="badge bg-emerald-subtle text-emerald fs-11 fw-700 px-2 py-1" style="border-radius: 99px; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;">
+        {{ filteredPlots.length }} Plots
+      </span>
+    </div>
+
+    <div class="plot-sidebar-filters">
+      <div class="search-box mb-2">
+        <input
+          type="text"
+          class="f-input search-input"
+          placeholder="Search plot"
+          [(ngModel)]="search"
+          [ngModelOptions]="{standalone:true}"
+          aria-label="Search plot">
+      </div>
+      <select
+        class="f-input status-filter-select mb-3"
+        [(ngModel)]="statusFilter"
+        [ngModelOptions]="{standalone:true}"
+        aria-label="All Status">
+        <option value="">All Status</option>
+        <option *ngFor="let item of statusItems" [value]="item.value">{{ item.label }}</option>
+      </select>
+    </div>
+
+    <div class="plot-list">
+      <div
+        *ngFor="let p of filteredPlots"
+        class="plot-card-item"
+        [class.active]="selectedPlot?.plot_id === p.plot_id"
+        (click)="selectPlot(p)">
+        <div class="plot-card-left">
+          <div class="status-indicator-box" [style.background]="plotColor(p.plot_status)"></div>
+          <div class="plot-details-meta">
+            <div class="d-flex align-items-center gap-1">
+              <strong class="plot-code">Plot {{ p.plot_number }}</strong>
+              <span class="plot-area-subtext">({{ p.plot_area ? (p.plot_area | number:'1.0-0') + ' sq.ft' : (p.dimensions || '120 sq.ft') }})</span>
+            </div>
+            <span class="plot-status-label" [style.color]="plotColor(p.plot_status)">{{ statusLabel(p.plot_status) }}</span>
+          </div>
+        </div>
+
+        <div class="plot-card-right" (click)="$event.stopPropagation()">
+          <select
+            class="plot-status-pill-select"
+            [ngModel]="normalizedStatus(p.plot_status)"
+            (ngModelChange)="updatePlotStatus(p, $event, $event)"
+            aria-label="Change plot status">
+            <option *ngFor="let item of statusItems" [value]="item.value">{{ item.label }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="empty-plots-msg text-center text-muted py-4 fs-12" *ngIf="!filteredPlots.length">
+        <i class="fas fa-search me-1"></i> No plots match your search
+      </div>
+    </div>
+  </aside>
 
   <section id="plot-details-panel" class="panel-card details-card" *ngIf="selectedPlot">
     <div class="panel-card-title">

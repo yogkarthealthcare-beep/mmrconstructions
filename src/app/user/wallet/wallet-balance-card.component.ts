@@ -70,9 +70,14 @@ import { Router, RouterLink } from '@angular/router';
     .bg-danger-light { background: #ffebee; }
     .wallet-stats-grid {
       display: grid;
-      gap: 16px;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+      gap: 12px;
+      grid-template-columns: repeat(4, 1fr);
       max-width: 100%;
+    }
+    @media (max-width: 991px) {
+      .wallet-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
     .wallet-stats-grid .stat-card {
       height: 100%;

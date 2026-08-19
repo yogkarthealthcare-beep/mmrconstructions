@@ -1,51 +1,143 @@
-<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
-  <div class="pg-header" style="margin-bottom:0;">
-    <h4>Notifications
-      <span *ngIf="unreadCount>0" style="background:#ef4444;color:#fff;font-size:11px;padding:2px 8px;border-radius:99px;font-family:var(--ff-ui);font-weight:700;margin-left:8px;">{{ unreadCount }} new</span>
-    </h4>
-    <p>System messages, EMI reminders and updates</p>
-  </div>
-  <div class="d-flex gap-2">
-    <button class="btn btn-outline-green btn-sm" (click)="load()"><i class="fas fa-sync me-1"></i>Refresh</button>
-    <button *ngIf="unreadCount>0" class="btn btn-green btn-sm" (click)="markAll()" [disabled]="markingAll">
-      <i [class]="markingAll ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check-double me-1'"></i>Mark All Read
-    </button>
-  </div>
-</div>
-
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
-
-<div *ngIf="!loading && notifications.length===0" class="panel-empty" style="padding:60px;">
-  <i class="fas fa-bell-slash" style="font-size:3rem;"></i>
-  <h6>No notifications yet</h6>
-  <p>You'll see EMI reminders, approval updates and announcements here</p>
-</div>
-
-<div *ngIf="!loading && notifications.length>0" style="display:flex;flex-direction:column;gap:8px;">
-  <div *ngFor="let n of notifications"
-    style="background:#fff;border-radius:12px;border:1px solid var(--bdr);padding:16px 18px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:all .2s;"
-    [style.border-left]="n.is_read ? '' : '4px solid var(--clr-primary)'"
-    [style.background]="n.is_read ? '#fff' : '#fafcfb'"
-    (click)="markRead(n)">
-
-    <div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"
-      [style.background]="colorFor(n.channel)+'18'">
-      <i [class]="iconFor(n.channel)" [style.color]="colorFor(n.channel)" style="font-size:16px;"></i>
+<!-- HERO BANNER -->
+<div class="notif-hero-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-0.5">
+        <h3 class="notif-hero-title mb-0">System Alerts & Notifications</h3>
+        <span *ngIf="unreadCount > 0" class="badge bg-danger rounded-pill fs-11 fw-700 px-2 py-0.5">
+          {{ unreadCount }} New
+        </span>
+      </div>
+      <p class="notif-hero-sub mb-0">Real-time alerts for EMI schedules, plot bookings, commission rewards & announcements.</p>
     </div>
 
-    <div class="flex-fill" style="min-width:0;">
-      <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
-        <div class="fw-700 fs-13" style="color:var(--txt-h);">{{ n.title || 'Notification' }}</div>
-        <div class="d-flex align-items-center gap-2 flex-shrink-0">
-          <span class="sbadge sbadge-gray fs-12">{{ n.channel }}</span>
-          <span *ngIf="!n.is_read" class="sbadge sbadge-green fs-12">New</span>
+    <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+      <button class="btn btn-outline-light btn-xs" (click)="load()">
+        <i class="fas fa-sync me-1"></i> Refresh
+      </button>
+      <button *ngIf="unreadCount > 0" class="btn btn-gold btn-xs" (click)="markAll()" [disabled]="markingAll">
+        <i [class]="markingAll ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check-double me-1'"></i> Mark All Read
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- STAT MINI CARDS -->
+<div class="row g-2 mb-2">
+  <div class="col-6 col-md-4">
+    <div class="stat-mini-card h-100">
+      <div class="icon-wrap bg-blue-light text-blue"><i class="fas fa-bell"></i></div>
+      <div>
+        <div class="stat-mini-val">{{ notifications.length }}</div>
+        <div class="stat-mini-lbl">Total Alerts</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4">
+    <div class="stat-mini-card h-100">
+      <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-envelope-open-text"></i></div>
+      <div>
+        <div class="stat-mini-val">{{ unreadCount }}</div>
+        <div class="stat-mini-lbl">Unread Notifications</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="stat-mini-card h-100">
+      <div class="icon-wrap bg-gold-light text-gold-dark"><i class="fas fa-filter"></i></div>
+      <div>
+        <div class="stat-mini-val text-capitalize fs-13">{{ filterChannel }}</div>
+        <div class="stat-mini-lbl">Active Filter Category</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR SEARCH & FILTER CATEGORIES CARD -->
+<div class="toolbar-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    
+    <!-- Search Bar -->
+    <div class="search-input-wrap flex-fill" style="max-width: 380px;">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="form-control form-control-sm search-field" placeholder="Search notification title or text..." [(ngModel)]="searchTerm" />
+      <button type="button" class="btn-clear-search" *ngIf="searchTerm" (click)="searchTerm=''" title="Clear search">
+        <i class="fas fa-times-circle"></i>
+      </button>
+    </div>
+
+    <!-- Filter Channel Tabs -->
+    <div class="d-flex align-items-center gap-1 flex-wrap ms-auto">
+      <button class="btn btn-xs" [class.btn-gold]="filterChannel==='all'" [class.btn-outline-secondary]="filterChannel!=='all'" (click)="filterChannel='all'">
+        All Feed
+      </button>
+      <button class="btn btn-xs" [class.btn-gold]="filterChannel==='unread'" [class.btn-outline-secondary]="filterChannel!=='unread'" (click)="filterChannel='unread'">
+        Unread ({{ unreadCount }})
+      </button>
+      <button class="btn btn-xs" [class.btn-gold]="filterChannel==='Push'" [class.btn-outline-secondary]="filterChannel!=='Push'" (click)="filterChannel='Push'">
+        <i class="fas fa-bell me-1"></i> Push
+      </button>
+      <button class="btn btn-xs" [class.btn-gold]="filterChannel==='SMS'" [class.btn-outline-secondary]="filterChannel!=='SMS'" (click)="filterChannel='SMS'">
+        <i class="fas fa-sms me-1"></i> SMS
+      </button>
+      <button class="btn btn-xs" [class.btn-gold]="filterChannel==='Email'" [class.btn-outline-secondary]="filterChannel!=='Email'" (click)="filterChannel='Email'">
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-3 mb-2" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+  <p class="text-muted fs-12 mt-1 mb-0">Loading system notifications...</p>
+</div>
+
+<!-- EMPTY STATE -->
+<div *ngIf="!loading && filteredNotifications.length === 0" class="panel-card py-3 text-center mb-2">
+  <div class="empty-icon-box mx-auto mb-2">
+    <i class="fas fa-bell-slash text-gold fs-2"></i>
+  </div>
+  <h6 class="fw-700 text-dark mb-1">No Notifications Found</h6>
+  <p class="text-muted fs-12 max-w-400 mx-auto mb-2">
+    {{ searchTerm || filterChannel !== 'all' ? 'No notifications match your current search criteria.' : 'You have no system notifications or alerts at this time.' }}
+  </p>
+  <button class="btn btn-outline-secondary btn-xs" *ngIf="searchTerm || filterChannel!=='all'" (click)="searchTerm=''; filterChannel='all'">
+    <i class="fas fa-redo me-1"></i> Reset Filters
+  </button>
+</div>
+
+<!-- NOTIFICATION FEED LIST -->
+<div *ngIf="!loading && filteredNotifications.length > 0" class="d-flex flex-column gap-1.5 mb-2">
+  <div *ngFor="let n of filteredNotifications"
+       class="notif-item-card"
+       [class.notif-unread]="!n.is_read"
+       (click)="markRead(n)">
+
+    <div class="notif-icon-wrap" [style.background]="colorFor(n.channel) + '18'">
+      <i [class]="iconFor(n.channel)" [style.color]="colorFor(n.channel)"></i>
+    </div>
+
+    <div class="flex-fill min-w-0">
+      <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-0.5">
+        <h6 class="notif-title mb-0">{{ n.title || 'System Notification' }}</h6>
+        <div class="d-flex align-items-center gap-2">
+          <span class="sbadge sbadge-gray">{{ n.channel || 'System' }}</span>
+          <span *ngIf="!n.is_read" class="sbadge sbadge-green"><i class="fas fa-circle me-1 fs-9"></i>NEW</span>
         </div>
       </div>
-      <p class="fs-13 text-muted mt-1 mb-1">{{ n.message }}</p>
-      <div class="fs-12 text-muted">
-        <i class="fas fa-clock me-1"></i>{{ n.sent_at | date:'dd MMM yyyy, hh:mm a' }}
-        <span *ngIf="n.is_read && n.read_at" class="ms-3"><i class="fas fa-check-double me-1" style="color:#16a34a;"></i>Read {{ n.read_at | date:'dd MMM' }}</span>
+
+      <p class="notif-msg mb-1">{{ n.message }}</p>
+
+      <div class="notif-meta">
+        <span><i class="fas fa-clock me-1 text-gold"></i>{{ n.sent_at | date:'dd MMM yyyy, hh:mm a' }}</span>
+        <span *ngIf="n.is_read && n.read_at" class="text-success ms-3">
+          <i class="fas fa-check-double me-1"></i>Read {{ n.read_at | date:'dd MMM' }}
+        </span>
       </div>
     </div>
+
   </div>
 </div>

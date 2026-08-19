@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 
@@ -22,6 +22,13 @@ export class DatabaseBackupComponent implements OnInit {
   backups: any[] = [];
   restoreUploads: any[] = [];
   restoreHistory: any[] = [];
+  activeRowId: any = null;
+
+  @HostListener('document:click')
+  closeDropdowns() {
+    this.activeRowId = null;
+  }
+
   settings: BackupSettings = {
     daily_backup_enabled: false,
     backup_time: '02:00',

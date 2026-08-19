@@ -69,7 +69,7 @@ export class EmiCalculatorMgmtComponent implements OnInit {
         this.totalPages = data.total_pages || 1;
         this.loading = false;
       },
-      error: (e) => {
+      error: (e: any) => {
         this.loading = false;
         this.showToast(e?.error?.message || 'Unable to load EMI plans', 'error');
       }
@@ -99,7 +99,7 @@ export class EmiCalculatorMgmtComponent implements OnInit {
         this.resetForm();
         this.loadPlans();
       },
-      error: (e) => {
+      error: (e: any) => {
         this.saving = false;
         const status = e?.status ? ` (${e.status})` : '';
         this.showToast(`${e?.error?.message || e?.message || 'Unable to save EMI plan'}${status}`, 'error');
@@ -132,7 +132,7 @@ export class EmiCalculatorMgmtComponent implements OnInit {
         if (this.editingId === plan.id) this.resetForm();
         this.loadPlans();
       },
-      error: (e) => this.showToast(e?.error?.message || 'Unable to delete EMI plan', 'error')
+      error: (e: any) => this.showToast(e?.error?.message || 'Unable to delete EMI plan', 'error')
     });
   }
 

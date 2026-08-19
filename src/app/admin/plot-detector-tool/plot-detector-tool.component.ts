@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../services/api.service';
 
 type Point = { x: number; y: number };
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -61,7 +62,7 @@ declare const cv: any;
   templateUrl: './plot-detector-tool.component.html',
   styleUrls: ['./plot-detector-tool.component.css']
 })
-export class PlotDetectorToolComponent {
+export class PlotDetectorToolComponent implements OnInit {
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
   @ViewChild('sourceCanvas') sourceCanvas?: ElementRef<HTMLCanvasElement>;
 
@@ -94,6 +95,126 @@ export class PlotDetectorToolComponent {
   validationReport: PlotValidationIssue[] = [];
   unknownPlotCount = 0;
   missingPlotCount = 0;
+  sites: any[] = [];
+  selectedSiteId: number | null = null;
+  savingDetections = false;
+
+  constructor(private api: ApiService) {}
+
+  ngOnInit() {
+    this.loadSites();
+  }
+
+  loadSites() {
+    this.api.adminGetSites().subscribe({
+      next: (res: any) => {
+        this.sites = res?.data || (Array.isArray(res) ? res : []);
+      },
+      error: () => {
+        this.api.getSites().subscribe({
+          next: (res: any) => {
+            this.sites = res?.data || (Array.isArray(res) ? res : []);
+          }
+        });
+      }
+    });
+  }
+
+  onSiteChange() {
+    if (!this.selectedSiteId) return;
+    const site = this.sites.find(s => Number(s.site_id) === Number(this.selectedSiteId));
+    const mapUrl = site?.map_image_url || site?.layout_map_url;
+    if (mapUrl) {
+      const fullUrl = this.api.url(mapUrl);
+      this.imageUrl = fullUrl;
+      this.imageName = site.site_name;
+      this.loadImage(fullUrl).then(() => {
+        this.triggerBackendDetectPlots();
+      });
+    }
+  }
+
+  triggerBackendDetectPlots() {
+    if (!this.selectedSiteId) return;
+    this.loading = true;
+    this.progress = 'Running API plot detection...';
+    this.api.adminDetectPlots(Number(this.selectedSiteId)).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+        const apiPlots = res?.data?.plots || res?.plots || [];
+        if (Array.isArray(apiPlots) && apiPlots.length) {
+          const w = this.imageWidth || 1000;
+          const h = this.imageHeight || 800;
+          this.detections = apiPlots.map((dp: any, idx: number) => {
+            const rawCoords = Array.isArray(dp.coordinates) ? dp.coordinates : [];
+            const points = rawCoords.map((pt: any) => ({
+              x: Math.round(((pt.x || 0) / 100) * w),
+              y: Math.round(((pt.y || 0) / 100) * h)
+            }));
+            const bbox = this.boundsFromPoints(points);
+            return {
+              id: dp.plot_id || (idx + 1),
+              plot_no: dp.plot_number || `PLOT-${idx + 1}`,
+              ocr_confidence: Math.round((dp.confidence || 0.8) * 100),
+              boundary_confidence: Math.round((dp.confidence || 0.8) * 100),
+              boundary_type: 'polygon',
+              points: points.length >= 3 ? points : [
+                { x: bbox.x, y: bbox.y },
+                { x: bbox.x + bbox.width, y: bbox.y },
+                { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
+                { x: bbox.x, y: bbox.y + bbox.height }
+              ],
+              bounding_box: bbox,
+              ocr_box: bbox,
+              status: 'detected',
+              valid: true,
+              detection_source: 'master-svg'
+            };
+          });
+          this.selected = this.detections[0] || null;
+          this.refreshValidation();
+          this.warning = `Loaded ${apiPlots.length} plots from backend Plot Detector API.`;
+        } else {
+          this.detectPlots();
+        }
+      },
+      error: () => {
+        this.detectPlots();
+      }
+    });
+  }
+
+  saveDetectionsToSite() {
+    if (!this.selectedSiteId || !this.detections.length) {
+      this.error = 'Select a site and detect plot boundaries before saving.';
+      return;
+    }
+    this.savingDetections = true;
+    const w = this.imageWidth || 1;
+    const h = this.imageHeight || 1;
+    const plotsPayload = this.detections.map(d => ({
+      plot_id: d.id > 0 ? d.id : undefined,
+      plot_number: d.plot_no,
+      coordinates: d.points.map(p => ({
+        x: Number(((p.x / w) * 100).toFixed(2)),
+        y: Number(((p.y / h) * 100).toFixed(2)),
+      })),
+      label_x: Number((((d.ocr_box?.x || d.bounding_box?.x || 0) / w) * 100).toFixed(2)),
+      label_y: Number((((d.ocr_box?.y || d.bounding_box?.y || 0) / h) * 100).toFixed(2)),
+    }));
+
+    this.api.adminSaveDetectedPlots(Number(this.selectedSiteId), { plots: plotsPayload }).subscribe({
+      next: () => {
+        this.savingDetections = false;
+        this.warning = 'Plot boundaries successfully saved to backend database!';
+      },
+      error: (e: any) => {
+        this.savingDetections = false;
+        this.error = e?.error?.message || 'Unable to save detected plot boundaries.';
+      }
+    });
+  }
+
   private vertexDrag: { plot: DetectedPlot; index: number } | null = null;
   private unknownCounter = 1;
   private readonly minOcrConfidence = 60;

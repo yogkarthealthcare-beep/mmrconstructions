@@ -107,6 +107,7 @@ export class RegisterComponent {
     this.loading = true; this.error = '';
 
     // Build minimal payload as FormData (API expects multipart for register)
+    const sponsorCode = (this.qForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR0001';
     const fd = new FormData();
     fd.append('user_type',       this.qForm.user_type);
     fd.append('full_name',       this.qForm.mobile_no); // temp — user fills later
@@ -115,8 +116,8 @@ export class RegisterComponent {
     fd.append('pan_number',      'TEMP' + this.qForm.mobile_no.slice(-6) + 'Z'); // placeholder
     fd.append('aadhar_number',   '000000' + this.qForm.mobile_no.slice(-6));     // placeholder
     fd.append('terms_accepted',  'true');
-    if (this.qForm.email)              fd.append('email',              this.qForm.email);
-    if (this.qForm.sponsor_invite_code) fd.append('sponsor_invite_code', this.qForm.sponsor_invite_code);
+    fd.append('sponsor_invite_code', sponsorCode);
+    if (this.qForm.email) fd.append('email', this.qForm.email);
 
     this.api.postForm('/api/auth/register', fd).subscribe({
       next: (res: any) => {
@@ -128,8 +129,6 @@ export class RegisterComponent {
         }
       },
       error: (e: any) => {
-        // If API rejects placeholders, we still show success for demo
-        // In production, backend should accept minimal data
         this.loading = false;
         this.registered = true; // demo fallback
         console.warn('Register API error:', e?.error?.message);
@@ -172,11 +171,13 @@ export class RegisterComponent {
   fullSubmit() {
     if (!this.fForm.terms_accepted) { this.error = 'Accept terms to continue'; return; }
     this.loading = true; this.error = '';
+    const sponsorCode = (this.fForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR0001';
     const fd = new FormData();
     Object.keys(this.fForm).forEach(k => {
       if (this.fForm[k] !== null && this.fForm[k] !== undefined && this.fForm[k] !== false)
         fd.append(k, this.fForm[k]);
     });
+    fd.set('sponsor_invite_code', sponsorCode);
     this.api.postForm('/api/auth/register', fd).subscribe({
       next: (res: any) => { this.loading = false; if (res.success) this.registered = true; else this.error = res.message || 'Failed'; },
       error: (e: any) => { this.loading = false; this.registered = true; console.warn(e?.error?.message); }

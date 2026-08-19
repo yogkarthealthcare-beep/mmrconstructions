@@ -1,35 +1,103 @@
 <nav class="navbar" [class.scrolled]="isScrolled">
   <div class="mmr-container navbar-inner">
     <a routerLink="/" class="brand">
-      <div class="brand-icon"><span>M</span></div>
+      <img src="assets/mmr-logo.png" alt="M.M.R. Constructions Logo" />
       <div class="brand-text-wrap">
         <span class="brand-name">M.M.R. Constructions</span>
-        <span class="brand-sub">& Developers Pvt. Ltd.</span>
+        <span class="brand-sub">&amp; Developers Pvt. Ltd.</span>
       </div>
     </a>
 
     <ul class="nav-list">
       <li class="nav-item"><a class="nav-link" (click)="scrollTo('home')">Home</a></li>
       <li class="nav-item">
-        <a class="nav-link">Sites <i class="fas fa-chevron-down"></i></a>
+        <a class="nav-link" (click)="scrollTo('sites')">Sites <i class="fas fa-chevron-down"></i></a>
         <div class="dd-menu">
-          <a class="dd-item"><i class="fas fa-map-marker-alt"></i>AIMA Site, Kanpur</a>
-          <a class="dd-item"><i class="fas fa-map-marker-alt"></i>Tribhuwan Khera, Unnao</a>
-          <a class="dd-item"><i class="fas fa-map-marker-alt"></i>Gadan Khera, Unnao</a>
-          <a class="dd-item"><i class="fas fa-map-marker-alt"></i>Ajgain Site</a>
-          <a class="dd-item"><i class="fas fa-map-marker-alt"></i>Lucknow Site</a>
+          <a routerLink="/site-map/2" class="dd-item" (click)="closeDrawer()"><i class="fas fa-map-marked-alt text-gold"></i>Interactive Site Layout (/site-map/2)</a>
+          <div style="border-top: 1px solid var(--bdr-lt); margin: 4px 0;"></div>
+          <a class="dd-item" (click)="scrollTo('sites')"><i class="fas fa-map-marker-alt"></i>AIMA Site, Kanpur</a>
+          <a class="dd-item" (click)="scrollTo('sites')"><i class="fas fa-map-marker-alt"></i>Tribhuwan Khera, Unnao</a>
+          <a class="dd-item" (click)="scrollTo('sites')"><i class="fas fa-map-marker-alt"></i>Gadan Khera, Unnao</a>
+          <a class="dd-item" (click)="scrollTo('sites')"><i class="fas fa-map-marker-alt"></i>Ajgain Site</a>
+          <a class="dd-item" (click)="scrollTo('sites')"><i class="fas fa-map-marker-alt"></i>Lucknow Site</a>
+          <div style="border-top: 1px solid var(--bdr-lt); margin: 4px 0;"></div>
+          <a routerLink="/site-map/2" class="dd-item" style="font-weight: 600; color: var(--clr-primary);" (click)="closeDrawer()"><i class="fas fa-th-list"></i>View Site Map (/site-map/2)</a>
         </div>
       </li>
-      <li class="nav-item"><a class="nav-link" (click)="scrollTo('emi')">Pricing & EMI</a></li>
-      <li class="nav-item"><a class="nav-link" (click)="scrollTo('buyback')">Buyback</a></li>
+      <li class="nav-item"><a class="nav-link" (click)="scrollTo('emi')">Pricing &amp; EMI</a></li>
+      <li class="nav-item"><a class="nav-link" (click)="scrollTo('facilities')">Our Services</a></li>
       <li class="nav-item"><a class="nav-link" (click)="scrollTo('earn')">Earn With Us</a></li>
+      <li class="nav-item"><a routerLink="/blog" class="nav-link" (click)="closeDrawer()">Blog</a></li>
+      <li class="nav-item">
+        <a class="nav-link">Policies <i class="fas fa-chevron-down"></i></a>
+        <div class="dd-menu">
+          <a routerLink="/privacy-policy" class="dd-item" (click)="closeDrawer()"><i class="fas fa-user-shield"></i>Privacy Policy</a>
+          <a routerLink="/company-documents" class="dd-item" (click)="closeDrawer()"><i class="fas fa-file-contract"></i>Company Documents</a>
+          <a routerLink="/terms-and-conditions" class="dd-item" (click)="closeDrawer()"><i class="fas fa-file-signature"></i>Terms and Conditions</a>
+        </div>
+      </li>
+      <li class="nav-item"><a class="nav-link" (click)="scrollTo('buyback')">About Us</a></li>
       <li class="nav-item"><a class="nav-link" (click)="scrollTo('contact')">Contact</a></li>
     </ul>
 
     <div class="nav-actions">
-      <a routerLink="/login" class="btn btn-outline-green btn-sm">Login</a>
-      <a routerLink="/register" class="btn btn-green btn-sm">Register</a>
-      <div class="hamburger" (click)="toggleDrawer()">
+      <!-- Unauthenticated State: Show Login & Register -->
+      <ng-container *ngIf="!isLoggedIn">
+        <a routerLink="/login" class="btn btn-outline-green btn-sm">Login</a>
+        <a routerLink="/register" class="btn btn-green btn-sm">Register</a>
+      </ng-container>
+
+      <!-- Authenticated Session State: Show Profile & Dropdown -->
+      <div *ngIf="isLoggedIn" class="user-profile-menu-wrap position-relative">
+        <button type="button" class="user-profile-trigger d-flex align-items-center gap-2 border-0 bg-transparent p-1" (click)="toggleUserDropdown($event)">
+          <div class="avatar-circle-sm">
+            {{ userInitials }}
+          </div>
+          <div class="user-meta-text d-none d-sm-flex flex-column text-start">
+            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-role-badge" [class.badge-associate]="userRole==='Associate'" [class.badge-customer]="userRole==='Customer'" [class.badge-investor]="userRole==='Investor'" [class.badge-admin]="userRole==='Admin'">
+              {{ userRole }}
+            </span>
+          </div>
+          <i class="fas fa-chevron-down fs-11 text-muted ms-1"></i>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div class="user-dd-menu shadow-lg rounded-3 border" [class.show]="userDropdownOpen">
+          <div class="user-dd-header p-3 border-bottom bg-light rounded-top-3">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <div class="avatar-circle-md">{{ userInitials }}</div>
+              <div>
+                <div class="fw-700 fs-13 text-dark">{{ userName }}</div>
+                <span class="badge bg-gold text-dark fs-10 fw-800">{{ userRole }}</span>
+              </div>
+            </div>
+            <div *ngIf="currentUser?.member_id" class="fs-11 text-muted mt-1">
+              ID: <strong>{{ currentUser.member_id }}</strong>
+            </div>
+          </div>
+          <div class="user-dd-body p-2">
+            <a [routerLink]="dashboardUrl" (click)="userDropdownOpen=false" class="user-dd-link">
+              <i class="fas fa-th-large text-emerald me-2"></i> Go to Dashboard
+            </a>
+            <a [routerLink]="profileUrl" (click)="userDropdownOpen=false" class="user-dd-link">
+              <i class="fas fa-user-circle text-gold me-2"></i> Edit Profile &amp; KYC
+            </a>
+            <a *ngIf="userRole==='Associate'" routerLink="/associate/my-plots" (click)="userDropdownOpen=false" class="user-dd-link">
+              <i class="fas fa-map-marked-alt text-primary me-2"></i> My Booked Plots
+            </a>
+            <a *ngIf="userRole==='Associate'" routerLink="/associate/commission" (click)="userDropdownOpen=false" class="user-dd-link">
+              <i class="fas fa-wallet text-emerald me-2"></i> Commission &amp; Target
+            </a>
+            <div class="border-top my-1"></div>
+            <button type="button" class="user-dd-link text-danger w-100 text-start border-0 bg-transparent" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-2"></i> Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hamburger ms-2" (click)="toggleDrawer()">
         <span class="hb-line"></span>
         <span class="hb-line"></span>
         <span class="hb-line"></span>
@@ -42,25 +110,61 @@
 <div class="drawer" [class.open]="drawerOpen">
   <div class="drawer-head">
     <a routerLink="/" class="brand" (click)="closeDrawer()">
-      <div class="brand-icon"><span>M</span></div>
+      <img src="assets/mmr-logo.png" alt="M.M.R. Constructions Logo" style="height: 34px; width: auto; object-fit: contain; margin-right: 8px; border-radius: 25%;" />
       <div class="brand-text-wrap">
         <span class="brand-name" style="color:#fff;">M.M.R. Constructions</span>
-        <span class="brand-sub">& Developers Pvt. Ltd.</span>
+        <span class="brand-sub">&amp; Developers Pvt. Ltd.</span>
       </div>
     </a>
     <button class="drawer-close" (click)="closeDrawer()"><i class="fas fa-times"></i></button>
   </div>
+
   <nav class="drawer-nav">
+    <!-- User Profile Header in Mobile Drawer if Logged In -->
+    <div *ngIf="isLoggedIn" class="p-3 mb-3 bg-dark-green rounded-3 text-white">
+      <div class="d-flex align-items-center gap-3">
+        <div class="avatar-circle-md bg-gold text-dark font-display fw-700 fs-5">{{ userInitials }}</div>
+        <div>
+          <div class="fw-700 fs-14 text-gold">{{ userName }}</div>
+          <span class="badge bg-white-20 text-white fs-11">{{ userRole }}</span>
+        </div>
+      </div>
+      <div class="d-grid gap-2 mt-3">
+        <a [routerLink]="dashboardUrl" (click)="closeDrawer()" class="btn btn-gold btn-sm fw-700">
+          <i class="fas fa-th-large me-1"></i> Go to Dashboard
+        </a>
+      </div>
+    </div>
+
     <a class="drawer-link" (click)="scrollTo('home')">Home <i class="fas fa-chevron-right"></i></a>
-    <a class="drawer-link" (click)="scrollTo('sites')">Our Sites <i class="fas fa-chevron-right"></i></a>
-    <a class="drawer-link" (click)="scrollTo('emi')">Pricing & EMI <i class="fas fa-chevron-right"></i></a>
-    <a class="drawer-link" (click)="scrollTo('buyback')">Buyback Guarantee <i class="fas fa-chevron-right"></i></a>
+    <a class="drawer-link" (click)="scrollTo('sites')">Sites <i class="fas fa-chevron-right"></i></a>
+    <a class="drawer-link" (click)="scrollTo('emi')">Pricing &amp; EMI <i class="fas fa-chevron-right"></i></a>
+    <a class="drawer-link" (click)="scrollTo('facilities')">Our Services <i class="fas fa-chevron-right"></i></a>
     <a class="drawer-link" (click)="scrollTo('earn')">Earn With Us <i class="fas fa-chevron-right"></i></a>
-    <a class="drawer-link" (click)="scrollTo('facilities')">Facilities <i class="fas fa-chevron-right"></i></a>
-    <a class="drawer-link" (click)="scrollTo('contact')">Contact Us <i class="fas fa-chevron-right"></i></a>
-    <div class="d-flex gap-2 mt-4 px-2">
-      <a routerLink="/login" class="btn btn-outline-green flex-fill text-center" (click)="closeDrawer()">Login</a>
-      <a routerLink="/register" class="btn btn-green flex-fill text-center" (click)="closeDrawer()">Register</a>
+    <a routerLink="/blog" class="drawer-link" (click)="closeDrawer()">Blog <i class="fas fa-chevron-right"></i></a>
+    <a class="drawer-link" (click)="docOpen = !docOpen" style="cursor: pointer;">
+      Policies
+      <i [class]="docOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
+    </a>
+    <div *ngIf="docOpen" class="drawer-subgroup ps-4 py-2" style="background: rgba(0,0,0,0.03); border-bottom: 1px solid var(--bdr-lt);">
+      <a routerLink="/privacy-policy" (click)="closeDrawer()" class="d-block py-2 fs-13 text-decoration-none" style="color: var(--txt-body);"><i class="fas fa-user-shield me-2 text-gold"></i>Privacy Policy</a>
+      <a routerLink="/company-documents" (click)="closeDrawer()" class="d-block py-2 fs-13 text-decoration-none" style="color: var(--txt-body);"><i class="fas fa-file-contract me-2 text-gold"></i>Company Documents</a>
+      <a routerLink="/terms-and-conditions" (click)="closeDrawer()" class="d-block py-2 fs-13 text-decoration-none" style="color: var(--txt-body);"><i class="fas fa-file-signature me-2 text-gold"></i>Terms and Conditions</a>
+    </div>
+    <a class="drawer-link" (click)="scrollTo('buyback')">About Us <i class="fas fa-chevron-right"></i></a>
+    <a class="drawer-link" (click)="scrollTo('contact')">Contact <i class="fas fa-chevron-right"></i></a>
+
+    <!-- Bottom Actions in Mobile Drawer -->
+    <div class="mt-4 px-2">
+      <div *ngIf="!isLoggedIn" class="d-flex gap-2">
+        <a routerLink="/login" class="btn btn-outline-green flex-fill text-center" (click)="closeDrawer()">Login</a>
+        <a routerLink="/register" class="btn btn-green flex-fill text-center" (click)="closeDrawer()">Register</a>
+      </div>
+      <div *ngIf="isLoggedIn">
+        <button class="btn btn-outline-danger w-100 text-center fw-700" (click)="logout()">
+          <i class="fas fa-sign-out-alt me-1"></i> Logout
+        </button>
+      </div>
     </div>
   </nav>
 </div>

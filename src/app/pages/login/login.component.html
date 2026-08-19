@@ -1,104 +1,238 @@
-<div class="login-page">
-  <div class="login-left">
-    <a routerLink="/" class="brand mb-5 d-inline-flex text-decoration-none">
-      <div class="brand-icon me-3"><span>M</span></div>
-      <div>
-        <span class="brand-name" style="color:#fff;">M.M.R. Constructions</span>
-        <span class="brand-sub">& Developers Pvt. Ltd.</span>
-      </div>
-    </a>
-    <div>
-      <div style="color:var(--clr-gold-lt);font-family:var(--ff-ui);letter-spacing:.2em;font-size:.75rem;text-transform:uppercase;margin-bottom:10px;">Welcome Back</div>
-      <h2 style="font-family:var(--ff-display);color:#fff;font-size:2.4rem;line-height:1.15;margin-bottom:16px;">Your Dream Plot<br/>Awaits You</h2>
-      <p style="color:rgba(255,255,255,.55);line-height:1.8;max-width:320px;font-size:13.5px;">Dashboard पर login करें — plots browse करें, EMI track करें, और commission check करें।</p>
-    </div>
-    <div class="d-flex gap-4 mt-5">
-      <div class="text-center"><div style="font-family:var(--ff-display);font-size:1.8rem;font-weight:700;color:var(--clr-gold-lt);">5+</div><div style="color:rgba(255,255,255,.5);font-size:11px;">Active Sites</div></div>
-      <div class="vr opacity-20"></div>
-      <div class="text-center"><div style="font-family:var(--ff-display);font-size:1.8rem;font-weight:700;color:var(--clr-gold-lt);">500+</div><div style="color:rgba(255,255,255,.5);font-size:11px;">Happy Customers</div></div>
-      <div class="vr opacity-20"></div>
-      <div class="text-center"><div style="font-family:var(--ff-display);font-size:1.8rem;font-weight:700;color:var(--clr-gold-lt);">2019</div><div style="color:rgba(255,255,255,.5);font-size:11px;">Established</div></div>
-    </div>
-  </div>
+<!-- Standard Application Topbar and Navbar (Same as all other pages) -->
+<app-topbar></app-topbar>
+<app-navbar></app-navbar>
 
-  <div class="login-right">
-    <div class="login-box">
-      <div class="mb-5">
-        <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:6px;">Login to Account</h3>
-        <p class="fs-13 text-muted">Mobile number से login करें</p>
-      </div>
+<div class="login-page-wrapper">
 
-      <div *ngIf="error" class="panel-alert panel-alert-error mb-4"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+  <!-- MAIN LOGIN SECTION -->
+  <div class="login-main-container">
 
-      <form (ngSubmit)="onSubmit()">
-        <div class="mb-3">
-          <label class="f-label">Mobile Number *</label>
-          <div style="position:relative;">
-            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-muted);"><i class="fas fa-mobile-alt"></i></span>
-            <input type="tel" class="f-input" style="padding-left:38px;" placeholder="10-digit mobile number" [(ngModel)]="mobile" name="mobile" required maxlength="10"/>
+    <!-- DESKTOP LEFT PANEL / HERO BRANDING -->
+    <div class="login-hero-panel d-none d-lg-flex">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <!-- Logo & Back Button -->
+        <div class="d-flex align-items-center justify-content-between mb-5">
+          <div class="brand-logo-wrap">
+            <img src="assets/mmr-logo.png" alt="MMR Constructions" class="brand-logo-img" />
           </div>
-        </div>
-
-        <!-- Password Mode -->
-        <div class="mb-3" *ngIf="loginMode==='password'">
-          <label class="f-label">Password *</label>
-          <div style="position:relative;">
-            <input [type]="showPassword ? 'text' : 'password'" class="f-input" style="padding-right:44px;" placeholder="Enter password" [(ngModel)]="password" name="password"/>
-            <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--txt-muted);" (click)="showPassword=!showPassword">
-              <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-            </button>
-          </div>
-          <div class="text-end mt-1"><a href="#" class="fs-12" style="color:var(--clr-primary);">Forgot Password?</a></div>
-        </div>
-
-        <!-- OTP Mode -->
-        <div class="mb-3" *ngIf="loginMode==='otp'">
-          <label class="f-label">OTP *</label>
-          <div *ngIf="!otpSent">
-            <button type="button" class="btn btn-outline-green w-100" (click)="sendOtp()" [disabled]="loading">
-              <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sms me-2'"></i>
-              {{ loading ? 'Sending...' : 'Send OTP to Mobile' }}
-            </button>
-          </div>
-          <div *ngIf="otpSent">
-            <div class="otp-inputs mb-2">
-              <input *ngFor="let o of otp; let i=index" [id]="'otp'+i" type="text" maxlength="1" [(ngModel)]="otp[i]" [name]="'otp'+i" (input)="onOtpInput($event,i)" style="width:44px;height:48px;text-align:center;font-weight:700;font-size:1.1rem;border-radius:9px;border:1.5px solid var(--bdr);outline:none;"/>
-            </div>
-            <div class="fs-12 text-muted">OTP sent to {{ mobile }}</div>
-          </div>
-          <button type="button" class="fs-12 mt-2 border-0 bg-transparent" style="color:var(--clr-primary);" (click)="loginMode='password'">← Use Password</button>
-        </div>
-
-        <button type="submit" class="btn btn-green btn-lg w-100 mb-3" [disabled]="loading">
-          <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sign-in-alt me-2'"></i>
-          {{ loading ? 'Logging in...' : 'Login' }}
-        </button>
-
-        <div *ngIf="loginMode==='password'" class="text-center">
-          <div class="d-flex align-items-center gap-3 my-3">
-            <div class="flex-fill border-bottom"></div><span class="fs-12 text-muted">या</span><div class="flex-fill border-bottom"></div>
-          </div>
-          <button type="button" class="btn btn-outline-green w-100 mb-3" (click)="loginMode='otp';otpSent=false">
-            <i class="fas fa-mobile-alt me-2"></i>Login with OTP
+          <button type="button" class="btn-hero-back" (click)="goBack()" title="Back to Home Page">
+            <i class="fas fa-arrow-left me-2"></i>Back to Home
           </button>
         </div>
 
-        <div class="text-center mt-2">
-          <span class="fs-12 text-muted">Account नहीं है? </span>
-          <a routerLink="/register" class="fs-12 fw-700" style="color:var(--clr-primary);">Register Free</a>
+        <div class="hero-text-block mb-auto">
+          <div class="hero-tag">WELCOME BACK</div>
+          <h1 class="hero-title">Your Dream Plot<br />Awaits You</h1>
+          <p class="hero-desc">
+            Login to your account to explore plots, track EMI,<br />
+            check commission and much more.
+          </p>
         </div>
-      </form>
 
-      <div class="mt-5 pt-4 border-top">
-        <div class="d-flex gap-2">
-          <a routerLink="/admin-login" class="btn btn-outline-green btn-sm flex-fill text-center" style="font-size:11px;">
-            <i class="fas fa-user-shield me-1"></i>Admin Login
-          </a>
-          <a routerLink="/user/dashboard" class="btn btn-outline-green btn-sm flex-fill text-center" style="font-size:11px;">
-            <i class="fas fa-user me-1"></i>Demo User Panel
-          </a>
+        <!-- 3 Feature Badges -->
+        <div class="hero-features-row">
+          <div class="feature-item">
+            <div class="feat-icon-circle"><i class="fas fa-map-marker-alt"></i></div>
+            <h6>Premium Locations</h6>
+            <p>Best locations in Kanpur &amp; nearby</p>
+          </div>
+          <div class="feature-item">
+            <div class="feat-icon-circle"><i class="fas fa-shield-alt"></i></div>
+            <h6>Secure &amp; Trusted</h6>
+            <p>100% transparent and secure process</p>
+          </div>
+          <div class="feature-item">
+            <div class="feat-icon-circle"><i class="fas fa-headset"></i></div>
+            <h6>24/7 Support</h6>
+            <p>We're here to help you anytime</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE BODY HERO BANNER (Center Logo with Smooth Curved Corners) -->
+    <div class="mobile-hero-banner d-block d-lg-none text-center">
+      <div class="d-flex align-items-center justify-content-between mb-3 px-2">
+        <button type="button" class="btn-card-back" (click)="goBack()" title="Back to Home Page">
+          <i class="fas fa-arrow-left me-1"></i> Back to Home
+        </button>
+      </div>
+
+      <!-- Centered Logo with Smooth Curved Corners -->
+      <div class="mobile-logo-center-wrapper mb-3">
+        <div class="mobile-logo-center-circle">
+          <img src="assets/mmr-logo.png" alt="MMR Logo" class="page-body-logo-img" />
+        </div>
+      </div>
+      <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+        <div class="gold-line"></div>
+        <span class="mobile-tag">Welcome Back</span>
+        <div class="gold-line"></div>
+      </div>
+      <h2 class="mobile-hero-title">Your Dream Plot<br />Awaits You</h2>
+      <div class="gold-line-center mb-3"></div>
+      <p class="mobile-hero-desc">
+        Login to your account to explore plots,<br />
+        track EMI, check commission and much more.
+      </p>
+    </div>
+
+    <!-- RIGHT PANEL / LOGIN FORM CARD -->
+    <div class="login-form-panel">
+      <div style="width: 100%; max-width: 480px;">
+
+        <div class="login-card">
+
+          <!-- Form Title -->
+          <div class="text-center mb-4">
+            <h2 class="card-title mb-1">Login to Your Account</h2>
+            <p class="card-subtitle mb-0">Enter your credentials to access your account</p>
+          </div>
+
+          <!-- Error banner -->
+          <div *ngIf="error" class="panel-alert panel-alert-error mb-4">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+          </div>
+
+          <!-- FORM -->
+          <form (ngSubmit)="onSubmit()">
+            <!-- Email / Mobile input -->
+            <div class="mb-3">
+              <div class="f-field-wrap">
+                <span class="f-field-icon"><i class="fas fa-user"></i></span>
+                <input
+                  type="text"
+                  class="f-field-input"
+                  placeholder="Email or Mobile Number"
+                  [(ngModel)]="mobile"
+                  name="mobile"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Password mode -->
+            <div class="mb-3" *ngIf="loginMode==='password'">
+              <div class="f-field-wrap">
+                <span class="f-field-icon"><i class="fas fa-lock"></i></span>
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="f-field-input"
+                  style="padding-right:44px;"
+                  placeholder="Password"
+                  [(ngModel)]="password"
+                  name="password"
+                />
+                <button
+                  type="button"
+                  class="f-eye-toggle"
+                  (click)="showPassword = !showPassword"
+                  aria-label="Toggle password visibility"
+                >
+                  <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              <div class="text-end mt-2">
+                <a routerLink="/forgot-password" class="forgot-link">Forgot Password?</a>
+              </div>
+            </div>
+
+            <!-- OTP mode -->
+            <div class="mb-3" *ngIf="loginMode==='otp'">
+              <div *ngIf="!otpSent" class="mb-3">
+                <button type="button" class="btn btn-outline-green w-100" (click)="sendOtp()" [disabled]="loading">
+                  <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sms me-2'"></i>
+                  {{ loading ? 'Sending...' : 'Send OTP to Mobile' }}
+                </button>
+              </div>
+              <div *ngIf="otpSent">
+                <label class="f-label text-center d-block mb-2">Enter 6-Digit OTP</label>
+                <div class="otp-inputs justify-content-center mb-2">
+                  <input
+                    *ngFor="let o of otp; let i=index"
+                    [id]="'otp'+i"
+                    type="text"
+                    maxlength="1"
+                    [(ngModel)]="otp[i]"
+                    [name]="'otp'+i"
+                    (input)="onOtpInput($event,i)"
+                  />
+                </div>
+                <div class="fs-12 text-center text-muted">OTP sent to {{ mobile }}</div>
+              </div>
+              <div class="text-center mt-2">
+                <button type="button" class="border-0 bg-transparent fs-12 text-green fw-600" (click)="loginMode='password'">
+                  ← Use Password
+                </button>
+              </div>
+            </div>
+
+            <!-- Login Submit Button -->
+            <button type="submit" class="btn btn-submit-login w-100 mb-3" [disabled]="loading">
+              <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sign-in-alt me-2'"></i>
+              {{ loading ? 'Logging in...' : 'Login' }}
+            </button>
+
+            <!-- Divider -->
+            <div class="or-divider mb-3">
+              <span>or</span>
+            </div>
+
+            <!-- Don't have account section -->
+            <div class="text-center mb-3">
+              <div class="no-account-text mb-3">Don't have an account?</div>
+              <a routerLink="/register" class="btn btn-create-account w-100">
+                <i class="fas fa-user-plus me-2"></i>Create New Account
+              </a>
+            </div>
+
+            <!-- Security Badge -->
+            <div class="security-badge">
+              <i class="fas fa-shield-alt text-green me-2"></i>
+              <span>Your data is safe and secure with us.</span>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MOBILE BOTTOM FEATURES SECTION -->
+  <div class="mobile-features-section d-block d-lg-none text-center">
+    <div class="row g-3 justify-content-center">
+      <div class="col-4">
+        <div class="mobile-feat-item">
+          <div class="mobile-feat-icon"><i class="fas fa-map-marker-alt"></i></div>
+          <h6>Premium Locations</h6>
+          <p>Best locations in Kanpur &amp; nearby</p>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="mobile-feat-item">
+          <div class="mobile-feat-icon"><i class="fas fa-shield-alt"></i></div>
+          <h6>Secure &amp; Trusted</h6>
+          <p>100% transparent and secure process</p>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="mobile-feat-item">
+          <div class="mobile-feat-icon"><i class="fas fa-headset"></i></div>
+          <h6>24/7 Support</h6>
+          <p>We're here to help you anytime</p>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- MOBILE FOOTER -->
+  <div class="mobile-footer d-block d-lg-none text-center py-3">
+    <div class="fs-12 text-white opacity-85">
+      <i class="fas fa-shield-alt me-1 text-gold"></i>
+      © 2025 MMR Constructions &amp; Developers Pvt. Ltd. All Rights Reserved
+    </div>
+  </div>
+
 </div>

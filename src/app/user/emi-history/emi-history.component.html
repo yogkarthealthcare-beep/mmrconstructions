@@ -1,59 +1,169 @@
-<div *ngIf="toast" class="panel-alert panel-alert-success mb-3" style="position:fixed;top:72px;right:20px;z-index:999;min-width:280px;">
-  <i class="fas fa-check-circle"></i> {{ toast }}
+<!-- TOAST NOTIFICATION -->
+<div *ngIf="toast" class="toast-floating-banner shadow-lg">
+  <i class="fas fa-check-circle text-success me-2"></i> {{ toast }}
 </div>
 
-<div class="pg-header"><h4>EMI Schedule & History</h4><p>All installments and payment records</p></div>
-
-<div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3">
-    <div class="stat-card"><div class="sc-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check-circle"></i></div><div class="sc-val">{{ paidCount }}</div><div class="sc-lbl">EMIs Paid</div></div>
-  </div>
-  <div class="col-6 col-lg-3">
-    <div class="stat-card"><div class="sc-icon" style="background:#eaf4ee;color:#1a5c3a;"><i class="fas fa-rupee-sign"></i></div><div class="sc-val">₹{{ (totalPaid/1000)|number:'1.0-0' }}K</div><div class="sc-lbl">Total Paid</div></div>
-  </div>
-  <div class="col-6 col-lg-3">
-    <div class="stat-card"><div class="sc-icon" style="background:#fdf8ec;color:#a07c2a;"><i class="fas fa-hourglass"></i></div><div class="sc-val">{{ nextDue ? '₹'+nextDue.emi_amount : '—' }}</div><div class="sc-lbl">Next EMI</div></div>
-  </div>
-  <div class="col-6 col-lg-3">
-    <div class="stat-card"><div class="sc-icon" style="background:#fee2e2;color:#dc2626;"><i class="fas fa-exclamation-triangle"></i></div><div class="sc-val">{{ overdueCount }}</div><div class="sc-lbl">Overdue</div></div>
+<!-- PAGE HERO HEADER BANNER -->
+<div class="emi-hero-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
+    <div>
+      <div class="emi-hero-badge"><i class="fas fa-calculator me-1"></i>INSTALLMENT LEDGER</div>
+      <h2 class="emi-hero-title mb-1">EMI Schedule &amp; Repayment History</h2>
+      <p class="emi-hero-sub mb-0">Track all plot installment schedules, upload payment proofs &amp; download vouchers.</p>
+    </div>
   </div>
 </div>
 
-<div *ngIf="nextDue" class="panel-alert panel-alert-warning mb-4">
-  <i class="fas fa-bell"></i>
-  <div class="flex-fill">
-    <strong>Next EMI Due: {{ nextDue.due_date | date:'dd MMM yyyy' }}</strong><br/>
-    <span class="fs-13">Amount: <strong>₹{{ nextDue.emi_amount | number }}</strong> — {{ nextDue.site_name }} · {{ nextDue.plot_number }}</span>
+<!-- METRIC STAT SUMMARY CARDS -->
+<div class="row g-2 mb-2">
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card">
+      <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-check-circle"></i></div>
+      <div>
+        <div class="stat-mini-val text-success">{{ paidCount }}</div>
+        <div class="stat-mini-lbl">EMIs Paid</div>
+      </div>
+    </div>
   </div>
-  <label class="btn btn-gold btn-sm" style="cursor:pointer;">
-    <i class="fas fa-upload me-1"></i>Upload Proof
-    <input type="file" accept="image/*,.pdf" style="display:none;" (change)="uploadProof(nextDue.emi_id, $event)"/>
-  </label>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card">
+      <div class="icon-wrap bg-gold-light text-gold-dark"><i class="fas fa-wallet"></i></div>
+      <div>
+        <div class="stat-mini-val text-gold-dark">₹{{ totalPaid | number }}</div>
+        <div class="stat-mini-lbl">Total Amount Paid</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card">
+      <div class="icon-wrap bg-blue-light text-blue"><i class="fas fa-hourglass-half"></i></div>
+      <div>
+        <div class="stat-mini-val text-primary">{{ nextDue ? ('₹' + (nextDue.emi_amount | number)) : '—' }}</div>
+        <div class="stat-mini-lbl">Next EMI Amount</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card">
+      <div class="icon-wrap bg-crimson-light text-danger"><i class="fas fa-exclamation-triangle"></i></div>
+      <div>
+        <div class="stat-mini-val text-danger">{{ overdueCount }}</div>
+        <div class="stat-mini-lbl">Overdue Installments</div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+<!-- UPCOMING DUE ALERT BANNER -->
+<div *ngIf="nextDue" class="panel-alert-banner mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="alert-icon-wrap"><i class="fas fa-bell text-gold"></i></div>
+      <div>
+        <div class="fw-700 text-dark fs-15">Upcoming EMI Due: {{ nextDue.due_date | date:'dd MMM yyyy' }}</div>
+        <div class="fs-13 text-muted">
+          Amount: <strong class="text-success">₹{{ nextDue.emi_amount | number }}</strong> &bull; Plot <strong>#{{ nextDue.plot_number }}</strong> ({{ nextDue.site_name }})
+        </div>
+      </div>
+    </div>
 
-<div class="data-table-wrap" *ngIf="!loading">
-  <div class="data-table-head"><h5>EMI Records ({{ emis.length }})</h5></div>
-  <div *ngIf="emis.length===0" class="panel-empty"><i class="fas fa-calendar"></i><h6>No EMI records yet</h6></div>
-  <div class="table-responsive" *ngIf="emis.length>0">
-    <table class="table">
-      <thead><tr><th>#</th><th>Plot</th><th>Due Date</th><th>EMI Amt</th><th>Paid Date</th><th>Overdue Days</th><th>Status</th><th></th></tr></thead>
+    <label class="btn btn-gold btn-sm px-4 shadow-sm" style="cursor:pointer;">
+      <i [class]="uploadingId===nextDue.emi_id ? 'fas fa-spinner fa-spin me-1' : 'fas fa-upload me-1'"></i>
+      Upload Receipt
+      <input type="file" accept="image/*,.pdf" style="display:none;" (change)="uploadProof(nextDue.emi_id, $event)"/>
+    </label>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-5 mb-4" *ngIf="loading">
+  <div class="spinner-border text-gold me-2" role="status"></div>
+  <span class="text-muted">Loading installment ledger records...</span>
+</div>
+
+<!-- SEARCH & TOOLBAR CONTROLS -->
+<div class="panel-card p-3 mb-4" *ngIf="!loading">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-width: 500px;">
+      <div class="search-input-wrap flex-fill">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="form-control form-control-sm search-field" placeholder="Search by Plot No, Site Name, or Installment #..." [(ngModel)]="searchTerm" />
+      </div>
+
+      <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 140px;">
+        <option value="all">All Status</option>
+        <option value="paid">Paid</option>
+        <option value="pending">Pending / Due</option>
+        <option value="overdue">Overdue</option>
+      </select>
+    </div>
+
+    <button class="btn btn-outline-secondary btn-sm ms-auto" (click)="loadData()">
+      <i class="fas fa-sync-alt me-1"></i> Refresh List
+    </button>
+  </div>
+</div>
+
+<!-- INSTALLMENTS LEDGER TABLE -->
+<div class="panel-card p-0 overflow-hidden mb-4" *ngIf="!loading">
+  <div class="table-responsive">
+    <table class="table align-middle custom-emi-table mb-0">
+      <thead>
+        <tr>
+          <th class="ps-3">Installment #</th>
+          <th>Plot &amp; Site</th>
+          <th>Due Date</th>
+          <th>EMI Amount</th>
+          <th>Paid Date</th>
+          <th>Overdue</th>
+          <th>Status</th>
+          <th class="pe-3 text-end">Action</th>
+        </tr>
+      </thead>
       <tbody>
-        <tr *ngFor="let e of emis">
-          <td class="fw-700 text-primary">{{ e.installment_no }}</td>
-          <td class="fs-12">{{ e.plot_number }}<div class="text-muted">{{ e.site_name }}</div></td>
-          <td class="fs-12 text-muted">{{ e.due_date | date:'dd MMM yyyy' }}</td>
-          <td class="fw-700">₹{{ e.emi_amount | number }}</td>
-          <td class="fs-12">{{ e.paid_date ? (e.paid_date | date:'dd MMM yyyy') : '—' }}</td>
-          <td><span *ngIf="e.overdue_days>0" class="sbadge sbadge-red">{{ e.overdue_days }}d</span><span *ngIf="!(e.overdue_days>0)" class="text-muted fs-12">—</span></td>
-          <td><span class="sbadge" [class.sbadge-green]="e.emi_status==='Paid'" [class.sbadge-yellow]="e.emi_status==='Pending'||e.emi_status==='ProofSubmitted'" [class.sbadge-red]="e.emi_status==='Overdue'">{{ e.emi_status }}</span></td>
+        <tr *ngIf="filteredEmis.length === 0">
+          <td colspan="8" class="text-center py-5 text-muted">
+            <i class="fas fa-calendar-times fs-1 text-gold mb-2 d-block"></i>
+            No matching EMI installment records found.
+          </td>
+        </tr>
+        <tr *ngFor="let e of filteredEmis">
+          <td class="ps-3">
+            <span class="inst-num-badge">#{{ e.installment_no }}</span>
+          </td>
           <td>
-            <label *ngIf="e.emi_status==='Pending'||e.emi_status==='Overdue'" class="action-btn" style="cursor:pointer;" title="Upload Proof">
+            <div class="fw-700 text-dark">Plot {{ e.plot_number }}</div>
+            <div class="fs-12 text-muted" *ngIf="e.site_name"><i class="fas fa-map-marker-alt me-1 text-gold"></i>{{ e.site_name }}</div>
+          </td>
+          <td><span class="fs-13 text-muted fw-600">{{ e.due_date | date:'dd MMM yyyy' }}</span></td>
+          <td><span class="fw-700 text-dark">₹{{ e.emi_amount | number }}</span></td>
+          <td>
+            <span class="fs-12 text-muted" *ngIf="e.paid_date"><i class="fas fa-check text-success me-1"></i>{{ e.paid_date | date:'dd MMM yyyy' }}</span>
+            <span class="fs-12 text-muted" *ngIf="!e.paid_date">&mdash;</span>
+          </td>
+          <td>
+            <span *ngIf="e.overdue_days > 0" class="sbadge sbadge-red"><i class="fas fa-clock me-1"></i>{{ e.overdue_days }} Days</span>
+            <span *ngIf="!(e.overdue_days > 0)" class="text-muted fs-12">&mdash;</span>
+          </td>
+          <td>
+            <span class="sbadge" [class.sbadge-green]="e.emi_status==='Paid'" [class.sbadge-yellow]="e.emi_status==='Pending'||e.emi_status==='ProofSubmitted'" [class.sbadge-red]="e.emi_status==='Overdue'">
+              {{ e.emi_status === 'ProofSubmitted' ? 'Proof Submitted' : e.emi_status }}
+            </span>
+          </td>
+          <td class="pe-3 text-end">
+            <label *ngIf="e.emi_status==='Pending'||e.emi_status==='Overdue'" class="btn btn-sm btn-outline-green btn-xs" style="cursor:pointer;" title="Upload Payment Receipt">
               <input type="file" accept="image/*,.pdf" style="display:none;" (change)="uploadProof(e.emi_id, $event)"/>
-              <i [class]="uploadingId===e.emi_id ? 'fas fa-spinner fa-spin' : 'fas fa-upload'"></i>
+              <i [class]="uploadingId===e.emi_id ? 'fas fa-spinner fa-spin me-1' : 'fas fa-upload me-1'"></i> Upload Receipt
             </label>
-            <button *ngIf="e.emi_status==='Paid'" class="action-btn" title="Voucher"><i class="fas fa-file-invoice"></i></button>
+            <span *ngIf="e.emi_status==='ProofSubmitted'" class="badge bg-gold-subtle text-dark fs-11 fw-700">
+              <i class="fas fa-clock me-1"></i> Pending Verification
+            </span>
+            <button *ngIf="e.emi_status==='Paid'" class="btn btn-sm btn-outline-secondary btn-xs" title="Download Receipt Voucher">
+              <i class="fas fa-file-invoice me-1"></i> Receipt
+            </button>
           </td>
         </tr>
       </tbody>

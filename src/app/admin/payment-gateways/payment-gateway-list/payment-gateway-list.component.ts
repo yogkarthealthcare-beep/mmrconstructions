@@ -19,6 +19,17 @@ export class PaymentGatewayListComponent {
   @Output() setDefault = new EventEmitter<PaymentGatewayAdmin>();
   @Output() updatePriority = new EventEmitter<{ gateway: PaymentGatewayAdmin, priority: number }>();
 
+  getLogoUrl(gw: PaymentGatewayAdmin): string {
+    if (gw?.logo) return gw.logo;
+    const name = (gw?.gateway_name || '').toLowerCase();
+    if (name.includes('razorpay')) return 'https://rzp-mobile.s3.amazonaws.com/images/rzp.png';
+    if (name.includes('cashfree')) return 'https://cashfree.com/favicon.ico';
+    if (name.includes('payu')) return 'https://payu.in/favicon.ico';
+    if (name.includes('phonepe')) return 'https://www.phonepe.com/favicon.ico';
+    if (name.includes('paytm')) return 'https://paytm.com/favicon.ico';
+    return 'https://cdn-icons-png.flaticon.com/512/893/893097.png';
+  }
+
   onToggleStatus(gateway: PaymentGatewayAdmin) {
     this.toggleStatus.emit(gateway);
   }

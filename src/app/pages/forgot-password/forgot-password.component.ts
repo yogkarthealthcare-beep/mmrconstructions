@@ -1,15 +1,17 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { TopbarComponent } from '../../shared/topbar/topbar.component';
+import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TopbarComponent, NavbarComponent],
   templateUrl: './forgot-password.component.html',
-  styleUrls: ['../login/login.component.css']
+  styleUrls: ['./forgot-password.component.css']
 })
 export class ForgotPasswordComponent {
   email = '';
@@ -32,7 +34,7 @@ export class ForgotPasswordComponent {
     this.error = ''; this.success = '';
     const email = this.email.toLowerCase().trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      this.error = 'Enter your registered email address';
+      this.error = 'Enter a valid registered email address';
       return;
     }
 
@@ -42,12 +44,12 @@ export class ForgotPasswordComponent {
         this.loading = false;
         this.email = res?.data?.email || email;
         this.step = 'reset';
-        this.success = res?.message || 'OTP sent to your registered email';
+        this.success = res?.message || '6-digit OTP sent to your registered email';
         setTimeout(() => this.focusOtp(0));
       },
       error: (e: any) => {
         this.loading = false;
-        this.error = e?.error?.message || 'Unable to send OTP';
+        this.error = e?.error?.message || 'Unable to send OTP. Please verify your email.';
       }
     });
   }
@@ -79,7 +81,7 @@ export class ForgotPasswordComponent {
       },
       error: (e: any) => {
         this.loading = false;
-        this.error = e?.error?.message || 'Password reset failed';
+        this.error = e?.error?.message || 'Password reset failed. Invalid or expired OTP.';
       }
     });
   }

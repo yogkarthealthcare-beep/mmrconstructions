@@ -1,87 +1,169 @@
-<div class="pg-header"><h4>Commission Tracker</h4><p>12-year Associate Commission Program</p></div>
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+<div class="pg-header mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h3 class="fw-700 text-dark mb-1">Associate Commission &amp; Incentive Tracker</h3>
+      <p class="text-muted fs-13 mb-0">Track your monthly sales, team network, 12-year incentive program &amp; payouts</p>
+    </div>
+    <a routerLink="/user/referral" class="btn btn-outline-green btn-xs">
+      <i class="fas fa-sitemap me-1"></i> View MLM Tree
+    </a>
+  </div>
+</div>
+
+<div class="panel-loading" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+  <span class="mt-2 text-muted">Loading commission performance metrics...</span>
+</div>
 
 <ng-container *ngIf="!loading">
+
   <!-- Summary Banner -->
-  <div class="welcome-banner mb-4">
-    <div class="row g-4" style="position:relative;z-index:1;">
-      <div class="col-6 col-md-3" *ngFor="let s of [
-        ['₹'+(dashData.current_monthly_net||0|number)+'/mo','Monthly Income'],
-        [(tracker.total_gaj_sold||0)+' gaj','Total Gaj Sold'],
-        ['₹'+(tracker.total_commission_earned||0|number),'Total Earned'],
-        [dashData.direct_network_count||0,'Network Size']]">
-        <div class="text-center">
-          <div style="font-family:var(--ff-display);font-size:1.4rem;font-weight:700;color:var(--clr-gold-lt);">{{ s[0] }}</div>
-          <div class="fs-12" style="color:rgba(255,255,255,.55);margin-top:2px;">{{ s[1] }}</div>
+  <div class="summary-hero-card mb-2">
+    <div class="row g-2 position-relative z-1">
+      <div class="col-6 col-md-3">
+        <div class="summary-item text-center">
+          <div class="summary-val text-gold">₹{{ (monthlyNet | number) }}/mo</div>
+          <div class="summary-lbl">Monthly Guaranteed Income</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-item text-center">
+          <div class="summary-val text-white">{{ totalGajSold }} <small class="fs-13">Gaj</small></div>
+          <div class="summary-lbl">Total Gaj Sold</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-item text-center">
+          <div class="summary-val text-emerald">₹{{ (totalEarned | number) }}</div>
+          <div class="summary-lbl">Total Earned Commission</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-item text-center">
+          <div class="summary-val text-white">{{ dashData.direct_network_count || network.length || 0 }}</div>
+          <div class="summary-lbl">Network Team Members</div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="row g-4 mb-4">
+  <div class="row g-2 mb-2">
+    <!-- Milestone Target Progress -->
     <div class="col-lg-4">
-      <div class="panel-card">
-        <div class="panel-card-title">Target Progress (2000 gaj)</div>
-        <div style="text-align:center;margin-bottom:16px;">
-          <div style="font-family:var(--ff-display);font-size:3rem;font-weight:700;color:var(--clr-primary);">{{ pct }}%</div>
-          <div class="fs-12 text-muted">{{ tracker.total_gaj_sold || 0 }} / 2000 gaj sold</div>
+      <div class="panel-card h-100">
+        <div class="panel-card-title d-flex align-items-center justify-content-between">
+          <span><i class="fas fa-trophy text-gold me-2"></i>2,000 Gaj Target Progress</span>
+          <span class="badge bg-gold-subtle text-gold fw-700">12-Year Plan</span>
         </div>
-        <div class="progress-bar-wrap" style="height:10px;margin-bottom:16px;"><div class="progress-bar-fill gold" [style.width]="pct+'%'"></div></div>
-        <div *ngIf="dashData.milestone_achieved" class="panel-alert panel-alert-success">
-          <i class="fas fa-trophy"></i><span class="fs-13">🎉 Target achieved! Bonus in 12 years: <strong>₹3,00,000</strong></span>
+
+        <div class="progress-circle-wrap text-center my-3">
+          <div class="target-pct-text">{{ pct }}%</div>
+          <div class="fs-13 text-muted fw-600 mt-1">{{ totalGajSold }} / 2,000 Gaj Sold</div>
         </div>
-        <div *ngIf="!dashData.milestone_achieved" class="panel-alert panel-alert-info">
-          <i class="fas fa-info-circle"></i><span class="fs-13">{{ 2000 - (tracker.total_gaj_sold||0) }} gaj more to unlock ₹12,000/month!</span>
+
+        <div class="progress-bar-wrap mb-3">
+          <div class="progress-bar-fill gold-gradient" [style.width]="pct+'%'"></div>
+        </div>
+
+        <div *ngIf="dashData.milestone_achieved" class="panel-alert panel-alert-success d-flex align-items-center gap-2">
+          <i class="fas fa-trophy text-gold fs-4"></i>
+          <span class="fs-13">🎉 <strong>2,000 Gaj Target Achieved!</strong> Guaranteed 12-Year Incentive Bonus Active: <strong>₹3,00,000</strong></span>
+        </div>
+
+        <div *ngIf="!dashData.milestone_achieved" class="panel-alert panel-alert-info d-flex align-items-center gap-2">
+          <i class="fas fa-info-circle text-primary fs-4"></i>
+          <span class="fs-13">Sell <strong>{{ gajRemaining }} Gaj</strong> more to unlock <strong>₹12,000 / month guaranteed income</strong> for 12 years!</span>
         </div>
       </div>
     </div>
+
+    <!-- Main Commission & Network Tabs Panel -->
     <div class="col-lg-8">
-      <div class="panel-card">
-        <div class="panel-card-title">
+      <div class="panel-card h-100">
+        <div class="panel-card-title d-flex justify-content-between align-items-center mb-3">
           <div class="d-flex gap-2">
-            <span class="filter-tab" [class.active]="activeTab==='commissions'" (click)="activeTab='commissions'" style="cursor:pointer;">Commissions</span>
-            <span class="filter-tab" [class.active]="activeTab==='network'" (click)="activeTab='network'" style="cursor:pointer;">My Network</span>
+            <button type="button" class="filter-tab-btn" [class.active]="activeTab==='commissions'" (click)="activeTab='commissions'">
+              <i class="fas fa-rupee-sign me-1"></i> Commission History ({{ commissions.length }})
+            </button>
+            <button type="button" class="filter-tab-btn" [class.active]="activeTab==='network'" (click)="activeTab='network'">
+              <i class="fas fa-users me-1"></i> Team Network ({{ network.length }})
+            </button>
           </div>
         </div>
 
-        <!-- Commissions -->
+        <!-- Commissions Table -->
         <div *ngIf="activeTab==='commissions'">
-          <div *ngIf="commissions.length===0" class="panel-empty" style="padding:24px;"><i class="fas fa-rupee-sign"></i><p>No commission records yet</p></div>
-          <div class="table-responsive" *ngIf="commissions.length>0">
-            <table class="table">
-              <thead><tr><th>Month</th><th>Type</th><th>Net Amount</th><th>Status</th><th>Paid On</th></tr></thead>
+          <div *ngIf="commissions.length===0" class="panel-empty py-4 text-center">
+            <i class="fas fa-wallet text-muted fs-1 mb-2"></i>
+            <p class="text-muted">No commission records generated yet.</p>
+          </div>
+          <div class="table-responsive" *ngIf="commissions.length > 0">
+            <table class="table align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Month</th>
+                  <th>Type</th>
+                  <th>Net Amount</th>
+                  <th>Status</th>
+                  <th>Paid Date</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr *ngFor="let c of commissions">
-                  <td class="fw-700 fs-13">{{ c.commission_month }}</td>
-                  <td><span class="sbadge sbadge-blue">{{ c.commission_type }}</span></td>
-                  <td style="font-size:1rem;font-weight:700;color:#16a34a;">₹{{ c.net_amount | number }}</td>
-                  <td><span class="sbadge" [class.sbadge-green]="c.commission_status==='Paid'" [class.sbadge-yellow]="c.commission_status==='Pending'">{{ c.commission_status }}</span></td>
-                  <td class="fs-12 text-muted">{{ c.paid_at ? (c.paid_at | date:'dd MMM') : '—' }}</td>
+                  <td class="fw-700 text-dark">{{ c.commission_month || 'Current' }}</td>
+                  <td><span class="sbadge sbadge-blue">{{ c.commission_type || 'Direct' }}</span></td>
+                  <td class="fw-700 text-success fs-14">₹{{ c.net_amount | number }}</td>
+                  <td>
+                    <span class="sbadge" [class.sbadge-green]="c.commission_status==='Paid'" [class.sbadge-yellow]="c.commission_status==='Pending'">
+                      {{ c.commission_status }}
+                    </span>
+                  </td>
+                  <td class="fs-12 text-muted">{{ c.paid_at ? (c.paid_at | date:'dd MMM yyyy') : 'Pending Payout' }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Network -->
+        <!-- Network Table -->
         <div *ngIf="activeTab==='network'">
-          <div *ngIf="network.length===0" class="panel-empty" style="padding:24px;"><i class="fas fa-users"></i><p>No referrals yet</p></div>
-          <div class="table-responsive" *ngIf="network.length>0">
-            <table class="table">
-              <thead><tr><th>Name</th><th>Member ID</th><th>Gaj Sold</th><th>Level</th><th>Status</th></tr></thead>
+          <div *ngIf="network.length===0" class="panel-empty py-4 text-center">
+            <i class="fas fa-users text-muted fs-1 mb-2"></i>
+            <p class="text-muted">No direct referral team members yet. Share your referral link to grow your team!</p>
+          </div>
+          <div class="table-responsive" *ngIf="network.length > 0">
+            <table class="table align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Member Name</th>
+                  <th>Member ID</th>
+                  <th>Gaj Sold</th>
+                  <th>Level</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr *ngFor="let n of network">
-                  <td><strong style="color:var(--txt-h);">{{ n.full_name }}</strong><div class="fs-12 text-muted">{{ n.mobile_no }}</div></td>
-                  <td class="fs-12 text-primary">{{ n.member_id }}</td>
-                  <td class="fw-700 text-primary">{{ n.total_gaj_sold || 0 }} gaj</td>
-                  <td><span class="sbadge sbadge-gold">Level {{ n.level }}</span></td>
-                  <td><span class="sbadge" [class.sbadge-green]="n.account_status==='Active'" [class.sbadge-yellow]="n.account_status==='Pending'">{{ n.account_status }}</span></td>
+                  <td>
+                    <strong class="text-dark">{{ n.full_name }}</strong>
+                    <div class="fs-12 text-muted"><i class="fas fa-phone-alt me-1"></i>{{ n.mobile_no }}</div>
+                  </td>
+                  <td class="fs-12 fw-700 text-primary">{{ n.member_id }}</td>
+                  <td class="fw-700 text-dark">{{ n.total_gaj_sold || 0 }} Gaj</td>
+                  <td><span class="sbadge sbadge-gold">Level {{ n.level || 1 }}</span></td>
+                  <td>
+                    <span class="sbadge" [class.sbadge-green]="n.account_status==='Active'" [class.sbadge-yellow]="n.account_status==='Pending'">
+                      {{ n.account_status }}
+                    </span>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
+
       </div>
     </div>
   </div>
+
 </ng-container>
