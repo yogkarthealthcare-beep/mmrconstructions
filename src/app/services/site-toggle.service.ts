@@ -61,6 +61,31 @@ export class SiteToggleService {
     }
   }
 
+  private masterToggleSubject = new BehaviorSubject<boolean>(this.isMasterPropertyPlotEnabled());
+  public masterToggleState$: Observable<boolean> = this.masterToggleSubject.asObservable();
+
+  /**
+   * Master toggle for Admin Property & Plot tools menu items
+   */
+  isMasterPropertyPlotEnabled(): boolean {
+    try {
+      const stored = localStorage.getItem('mmr_master_property_plot');
+      if (stored === 'off') return false;
+      return true;
+    } catch {
+      return true;
+    }
+  }
+
+  setMasterPropertyPlotEnabled(enabled: boolean): void {
+    try {
+      localStorage.setItem('mmr_master_property_plot', enabled ? 'on' : 'off');
+      this.masterToggleSubject.next(enabled);
+    } catch (e) {
+      console.error('Error setting master property plot toggle:', e);
+    }
+  }
+
   /**
    * Sets current active site context for global UI listeners.
    */

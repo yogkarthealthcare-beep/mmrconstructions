@@ -32,7 +32,9 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   sidebarOpen = false;
   adminUser: any = null;
   activeSiteInteractive = true;
+  propertyPlotMasterEnabled = true;
   private toggleSub?: Subscription;
+  private masterToggleSub?: Subscription;
 
   rawNavGroups: NavGroup[] = [
     {
@@ -152,6 +154,11 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.propertyPlotMasterEnabled = this.siteToggle.isMasterPropertyPlotEnabled();
+    this.masterToggleSub = this.siteToggle.masterToggleState$.subscribe(enabled => {
+      this.propertyPlotMasterEnabled = enabled;
+    });
+
     this.checkActiveGroup(this.router.url);
 
     this.router.events.pipe(
@@ -163,20 +170,22 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.toggleSub?.unsubscribe();
+    this.masterToggleSub?.unsubscribe();
+  }
+
+  togglePropertyPlotMaster(enabled: boolean) {
+    this.siteToggle.setMasterPropertyPlotEnabled(enabled);
   }
 
   get navGroups(): NavGroup[] {
     return this.rawNavGroups.map(group => {
-      if (group.label === 'PROPERTY & PLOT' && !this.activeSiteInteractive) {
-        return {
-          ...group,
-          items: group.items.filter(item =>
-            item.route === '/admin/sites' ||
-            item.route === '/admin/new-site-area' ||
-            item.route === '/admin/booking-management' ||
-            item.route === '/admin/booking-workflow'
-          )
-        };
+      if (group.label === 'PROPERTY & PLOT') {
+        if (!this.propertyPlotMasterEnabled) {
+          return {
+            ...group,
+            items: group.items.filter(item => item.route === '/admin/new-site-area')
+          };
+        }
       }
       return group;
     });
