@@ -48,6 +48,10 @@ export class NewSiteAreaComponent implements OnInit {
     this.loadExistingSiteAreas();
   }
 
+  get activePlotModeSitesCount(): number {
+    return this.sites.filter(s => s.is_booking_enabled !== false).length;
+  }
+
   async loadExistingSiteAreas() {
     this.sitesLoading = true;
     try {
