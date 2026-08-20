@@ -189,42 +189,10 @@ export class SitesMgmtComponent implements OnInit {
       this.plotsLoading = true;
       this.plotsError = null;
 
-      // 1. Fetch Site Map Details API
-      try {
-        const res: any = await firstValueFrom(this.api.getSiteMap(siteId));
-        const data = res?.data || res;
-        if (data?.site) {
-          this.activeSite = {
-            ...this.activeSite,
-            ...data.site,
-            site_id: siteId
-          };
-          this.sites[idx] = this.activeSite;
-
-          const newPath = this.activeSite?.map_image_url || this.activeSite?.layout_map_url || this.activeSite?.property_image_url || '';
-          this.siteMapUrl = newPath ? (typeof this.api?.url === 'function' ? this.api.url(newPath) : newPath) : '';
-
-          if (data.site.is_booking_enabled !== undefined) {
-            this.isInteractive = Boolean(data.site.is_booking_enabled);
-          }
-        }
-
-        const plots = data?.plots || (Array.isArray(data) ? data : []);
-        this.siteMapLoading = false;
-
-        if (plots && plots.length > 0) {
-          this.sitePlots = this.processPlots(plots);
-          this.applyPlotFilter();
-          this.plotsLoading = false;
-        } else {
-          await this.fetchPlotsAsync(siteId);
-        }
-      } catch (mapErr: any) {
-        console.warn('getSiteMap API error:', mapErr);
-        this.siteMapError = `Site Map API Warning (${mapErr?.status || '500'}). Loading direct plots API...`;
-        this.siteMapLoading = false;
-        await this.fetchPlotsAsync(siteId);
-      }
+      // The admin sites response already contains the map fields. Avoid the
+      // public map endpoint here because it repeats the plot and booking joins.
+      this.siteMapLoading = false;
+      await this.fetchPlotsAsync(siteId);
     } catch (err: any) {
       console.error('Error selecting site:', err);
       this.siteMapLoading = false;
