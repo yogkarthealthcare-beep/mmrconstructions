@@ -137,6 +137,8 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     private siteToggle: SiteToggleService
   ) {}
 
+  filteredNavGroups: NavGroup[] = [];
+
   ngOnInit() {
     this.auth.adminUser$.subscribe(u => this.adminUser = u);
     
@@ -145,18 +147,23 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       const activeId = this.siteToggle.getActiveSiteId();
       if (activeId === ev.siteId || !activeId) {
         this.activeSiteInteractive = ev.enabled;
+        this.updateNavGroups();
       }
     });
 
     this.siteToggle.activeSiteId$.subscribe(siteId => {
       if (siteId) {
         this.activeSiteInteractive = this.siteToggle.isSiteInteractive(siteId);
+        this.updateNavGroups();
       }
     });
 
     this.propertyPlotMasterEnabled = this.siteToggle.isMasterPropertyPlotEnabled();
+    this.updateNavGroups();
+
     this.masterToggleSub = this.siteToggle.masterToggleState$.subscribe(enabled => {
       this.propertyPlotMasterEnabled = enabled;
+      this.updateNavGroups();
     });
 
     this.checkActiveGroup(this.router.url);
@@ -177,15 +184,13 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     this.siteToggle.setMasterPropertyPlotEnabled(enabled);
   }
 
-  get navGroups(): NavGroup[] {
-    return this.rawNavGroups.map(group => {
-      if (group.label === 'PROPERTY & PLOT') {
-        if (!this.propertyPlotMasterEnabled) {
-          return {
-            ...group,
-            items: group.items.filter(item => item.route === '/admin/new-site-area')
-          };
-        }
+  updateNavGroups() {
+    this.filteredNavGroups = this.rawNavGroups.map(group => {
+      if (group.label === 'PROPERTY & PLOT' && !this.propertyPlotMasterEnabled) {
+        return {
+          ...group,
+          items: group.items.filter(item => item.route === '/admin/new-site-area')
+        };
       }
       return group;
     });
