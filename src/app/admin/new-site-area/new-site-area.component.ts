@@ -48,6 +48,14 @@ export class NewSiteAreaComponent implements OnInit {
     this.loadExistingSiteAreas();
   }
 
+  get propertyPlotMasterEnabled(): boolean {
+    return this.siteToggle.isMasterPropertyPlotEnabled();
+  }
+
+  togglePropertyPlotMaster(enabled: boolean) {
+    this.siteToggle.setMasterPropertyPlotEnabled(enabled);
+  }
+
   get activePlotModeSitesCount(): number {
     return this.sites.filter(s => s.is_booking_enabled !== false).length;
   }

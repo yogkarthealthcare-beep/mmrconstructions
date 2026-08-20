@@ -96,6 +96,14 @@ export class SitesMgmtComponent implements OnInit {
     this.loadSites();
   }
 
+  get propertyPlotMasterEnabled(): boolean {
+    return this.siteToggle.isMasterPropertyPlotEnabled();
+  }
+
+  togglePropertyPlotMaster(enabled: boolean) {
+    this.siteToggle.setMasterPropertyPlotEnabled(enabled);
+  }
+
   // --- ASYNC API LOADERS ---
 
   async loadSites() {
