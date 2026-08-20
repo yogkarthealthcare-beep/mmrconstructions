@@ -94,7 +94,10 @@ export class SiteMapComponent implements OnInit, OnDestroy {
   }
 
   get isInteractive(): boolean {
-    return this.siteToggle.isSiteInteractive(this.site?.site_id);
+    return this.siteToggle.isSiteInteractive(
+      this.site?.site_id,
+      this.site?.is_booking_enabled !== undefined ? Boolean(this.site.is_booking_enabled) : undefined
+    );
   }
 
   loadSiteDocuments(siteId: number) {
@@ -175,6 +178,9 @@ export class SiteMapComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         const data = res?.data || res || {};
         this.site = data.site || null;
+        if (this.site?.site_id && this.site?.is_booking_enabled !== undefined) {
+          this.siteToggle.syncSiteInteractive(Number(this.site.site_id), Boolean(this.site.is_booking_enabled));
+        }
         this.plots = this.mergeSelectedPlotStatus(data.plots || []);
         this.stats = data.stats || {};
         this.loading = false;

@@ -164,14 +164,15 @@ export class SitesMgmtComponent implements OnInit {
       const mapPath = this.activeSite?.map_image_url || this.activeSite?.layout_map_url || this.activeSite?.property_image_url || '';
       this.siteMapUrl = mapPath ? (typeof this.api?.url === 'function' ? this.api.url(mapPath) : mapPath) : '';
 
-      if (siteId) {
-        this.siteToggle.setActiveSiteId(siteId);
-      }
-
       const storedToggle = this.activeSite.is_booking_enabled !== undefined
         ? Boolean(this.activeSite.is_booking_enabled)
         : (siteId ? this.siteToggle.isSiteInteractive(siteId) : true);
       this.isInteractive = storedToggle;
+
+      if (siteId) {
+        this.siteToggle.setActiveSiteId(siteId);
+        this.siteToggle.syncSiteInteractive(siteId, storedToggle);
+      }
 
       this.selectedPlot = null;
       this.resetView();

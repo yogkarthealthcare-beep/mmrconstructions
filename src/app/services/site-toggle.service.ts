@@ -20,17 +20,19 @@ export class SiteToggleService {
 
   /**
    * Checks if interactive plot mode is enabled for a given site.
-   * Default is true (ON) unless explicitly set to 'off' in localStorage.
+   * Checks localStorage first. If no stored value exists, uses dbValue if provided, defaulting to true.
    */
-  isSiteInteractive(siteId: number | string | undefined | null): boolean {
-    if (!siteId) return true;
+  isSiteInteractive(siteId: number | string | undefined | null, dbValue?: boolean): boolean {
+    if (!siteId) return dbValue !== undefined ? Boolean(dbValue) : true;
     try {
       const key = `mmr_site_toggle_${siteId}`;
       const stored = localStorage.getItem(key);
       if (stored === 'off') return false;
+      if (stored === 'on') return true;
+      if (dbValue !== undefined) return Boolean(dbValue);
       return true;
     } catch {
-      return true;
+      return dbValue !== undefined ? Boolean(dbValue) : true;
     }
   }
 
@@ -42,6 +44,20 @@ export class SiteToggleService {
       this.toggleSubject.next({ siteId, enabled });
     } catch (e) {
       console.error('Error setting site interactive toggle:', e);
+    }
+  }
+
+  /**
+   * Synchronizes API/DB site toggle state into local storage and notifies subscribers.
+   */
+  syncSiteInteractive(siteId: number, dbValue: boolean): void {
+    if (!siteId) return;
+    try {
+      const key = `mmr_site_toggle_${siteId}`;
+      localStorage.setItem(key, dbValue ? 'on' : 'off');
+      this.toggleSubject.next({ siteId, enabled: dbValue });
+    } catch (e) {
+      console.error('Error syncing site interactive toggle:', e);
     }
   }
 
