@@ -24,20 +24,25 @@ export class SiteToggleService {
    */
   isSiteInteractive(siteId: number | string | undefined | null): boolean {
     if (!siteId) return true;
-    const key = `mmr_site_toggle_${siteId}`;
-    const stored = localStorage.getItem(key);
-    if (stored === 'off') return false;
-    return true; // Default ON
+    try {
+      const key = `mmr_site_toggle_${siteId}`;
+      const stored = localStorage.getItem(key);
+      if (stored === 'off') return false;
+      return true;
+    } catch {
+      return true;
+    }
   }
 
-  /**
-   * Sets interactive plot mode for a given site (ON or OFF).
-   */
   setSiteInteractive(siteId: number, enabled: boolean): void {
     if (!siteId) return;
-    const key = `mmr_site_toggle_${siteId}`;
-    localStorage.setItem(key, enabled ? 'on' : 'off');
-    this.toggleSubject.next({ siteId, enabled });
+    try {
+      const key = `mmr_site_toggle_${siteId}`;
+      localStorage.setItem(key, enabled ? 'on' : 'off');
+      this.toggleSubject.next({ siteId, enabled });
+    } catch (e) {
+      console.error('Error setting site interactive toggle:', e);
+    }
   }
 
   /**

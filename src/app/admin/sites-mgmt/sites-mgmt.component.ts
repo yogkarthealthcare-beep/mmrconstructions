@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ApiService } from '../../services/api.service';
+import { firstValueFrom } from 'rxjs';
+import { ApiService, BASE_URL } from '../../services/api.service';
 import { SiteToggleService } from '../../services/site-toggle.service';
 
 @Component({
@@ -13,24 +14,44 @@ import { SiteToggleService } from '../../services/site-toggle.service';
   styleUrls: ['./sites-mgmt.component.css']
 })
 export class SitesMgmtComponent implements OnInit {
-  loading = true;
-  activeSiteIdx = 0;
-  sites: any[] = [];
-  sitePlots: any[] = [];
-  plotsLoading = false;
-  toast = '';
-  isInteractive = true;
+  // --- API LOADER & ERROR STATES ---
+  sitesLoading = false;
+  sitesError: string | null = null;
 
-  // Filter & Search
+  siteMapLoading = false;
+  siteMapError: string | null = null;
+
+  plotsLoading = false;
+  plotsError: string | null = null;
+
+  actionLoading = false;
+  toast = '';
+
+  // --- COMPONENT DATA STATE ---
+  sites: any[] = [];
+  activeSiteIdx = 0;
+  activeSite: any = {};
+  siteMapUrl = '';
+
+  sitePlots: any[] = [];
+  filteredPlots: any[] = [];
+
+  isInteractive = true;
+  selectedPlot: any = null;
+
+  // --- FILTER & SEARCH ---
   plotFilter = 'all';
   plotSearch = '';
 
-  // Modal Visibility Flags
+  // --- VIEWPORT ZOOM & PAN ---
+  zoom = 1;
+  pan = { x: 0, y: 0 };
+
+  // --- MODAL FLAGS & MODELS ---
   showAddSite = false;
   showEditSite = false;
   showAddPlot = false;
 
-  // Form Models
   newSite = {
     site_name: '',
     city: '',
@@ -66,14 +87,6 @@ export class SitesMgmtComponent implements OnInit {
     khasra_number: ''
   };
 
-  actionLoading = false;
-
-  // Site Map Base Layer & Coordinates
-  selectedPlot: any = null;
-  imageAspectRatio: number | null = null;
-  zoom = 1;
-  pan = { x: 0, y: 0 };
-
   constructor(
     private api: ApiService,
     private siteToggle: SiteToggleService
@@ -83,151 +96,276 @@ export class SitesMgmtComponent implements OnInit {
     this.loadSites();
   }
 
-  get siteMapUrl(): string {
-    const s = this.activeSite;
-    const path = s?.map_image_url || s?.layout_map_url || s?.property_image_url || '';
-    return path ? this.api.url(path) : '';
-  }
+  // --- ASYNC API LOADERS ---
 
-  get activeSite(): any {
-    return this.sites[this.activeSiteIdx] || {};
-  }
+  async loadSites() {
+    this.sitesLoading = true;
+    this.sitesError = null;
 
-  get filteredPlots(): any[] {
-    return this.sitePlots.filter(p => {
-      const matchFilter =
-        this.plotFilter === 'all' ? true :
-        this.plotFilter === 'vacant' ? (p.plot_status === 'Available' || p.plot_status === 'Vacant') :
-        p.plot_status?.toLowerCase() === this.plotFilter.toLowerCase();
+    let hasAdminToken = false;
+    try {
+      const token = localStorage.getItem('mmr_admin_token');
+      hasAdminToken = Boolean(token && token !== 'null' && token !== 'undefined');
+    } catch (_) {}
 
-      const q = this.plotSearch.trim().toLowerCase();
-      const matchSearch = !q ||
-        p.plot_number?.toString().toLowerCase().includes(q) ||
-        p.sqft?.toString().includes(q) ||
-        p.facing_direction?.toLowerCase().includes(q);
+    try {
+      let res: any;
+      if (hasAdminToken) {
+        try {
+          res = await firstValueFrom(this.api.adminGetSites());
+        } catch (adminErr: any) {
+          console.warn('GET /api/admin/sites failed/rejected:', adminErr);
+          const status = adminErr?.status;
+          const msg = adminErr?.error?.message || adminErr?.message || 'Unauthorized / Token Rejected';
+          
+          if (status === 401 || status === 403) {
+            const alertText = `⚠️ Admin Session Token Rejected (HTTP ${status})\nReason: ${msg}\n\nYour Admin Session Token is invalid or expired. Showing fallback public site data. Please log in again as Admin.`;
+            this.showToast('Admin Token Rejected: Session Expired');
+            alert(alertText);
+            this.sitesError = `Admin Token Rejected (HTTP ${status}): ${msg}. Showing public fallback.`;
+          } else {
+            this.sitesError = `Admin Sites API Error (HTTP ${status || 500}): ${msg}. Showing public fallback.`;
+          }
+          res = await firstValueFrom(this.api.getSites());
+        }
+      } else {
+        this.sitesError = 'No Admin Token Found. Loaded public sites...';
+        res = await firstValueFrom(this.api.getSites());
+      }
 
-      return matchFilter && matchSearch;
-    });
-  }
-
-  loadSites() {
-    this.loading = true;
-    const hasAdminToken = Boolean(localStorage.getItem('mmr_admin_token'));
-
-    const safetyTimer = setTimeout(() => {
-      if (this.loading) this.loading = false;
-    }, 2000);
-
-    const onSitesLoaded = (list: any[]) => {
-      clearTimeout(safetyTimer);
+      const list = res?.data || (Array.isArray(res) ? res : []);
       this.sites = Array.isArray(list) ? list : [];
-      this.loading = false;
-      if (this.sites.length > 0) {
-        this.selectSite(0);
-      }
-    };
+      this.sitesLoading = false;
 
-    if (hasAdminToken) {
-      this.api.adminGetSites().subscribe({
-        next: (res: any) => {
-          const list = res?.data || (Array.isArray(res) ? res : []);
-          if (list && list.length) {
-            onSitesLoaded(list);
-          } else {
-            this.fetchPublicSites(onSitesLoaded);
-          }
-        },
-        error: () => {
-          this.fetchPublicSites(onSitesLoaded);
-        }
-      });
-    } else {
-      this.fetchPublicSites(onSitesLoaded);
+      if (this.sites.length > 0) {
+        await this.selectSite(0);
+      } else {
+        this.activeSite = {};
+        this.siteMapUrl = '';
+        this.sitePlots = [];
+        this.filteredPlots = [];
+      }
+    } catch (err: any) {
+      console.error('Failed to load sites:', err);
+      const msg = err?.error?.message || err?.message || 'Server connection failed';
+      this.sitesError = `Sites API Error: ${msg}`;
+      this.sitesLoading = false;
+      alert(`⚠️ Connection Error\n${msg}`);
     }
   }
 
-  fetchPublicSites(callback?: (list: any[]) => void) {
-    this.api.getSites().subscribe({
-      next: (res: any) => {
-        const list = res?.data || (Array.isArray(res) ? res : []);
-        if (callback) {
-          callback(list);
-        } else {
-          this.sites = list;
-          this.loading = false;
-          if (this.sites.length) this.selectSite(0);
+  async selectSite(idx: number) {
+    try {
+      this.activeSiteIdx = idx;
+      this.activeSite = this.sites[idx] || {};
+      const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
+
+      // Update Site Map Image URL
+      const mapPath = this.activeSite?.map_image_url || this.activeSite?.layout_map_url || this.activeSite?.property_image_url || '';
+      this.siteMapUrl = mapPath ? (typeof this.api?.url === 'function' ? this.api.url(mapPath) : mapPath) : '';
+
+      if (siteId) {
+        this.siteToggle.setActiveSiteId(siteId);
+      }
+
+      const storedToggle = this.activeSite.is_booking_enabled !== undefined
+        ? Boolean(this.activeSite.is_booking_enabled)
+        : (siteId ? this.siteToggle.isSiteInteractive(siteId) : true);
+      this.isInteractive = storedToggle;
+
+      this.selectedPlot = null;
+      this.resetView();
+
+      if (!siteId) {
+        this.siteMapLoading = false;
+        this.plotsLoading = false;
+        this.sitePlots = [];
+        this.filteredPlots = [];
+        return;
+      }
+
+      this.siteMapLoading = true;
+      this.siteMapError = null;
+      this.plotsLoading = true;
+      this.plotsError = null;
+
+      // 1. Fetch Site Map Details API
+      try {
+        const res: any = await firstValueFrom(this.api.getSiteMap(siteId));
+        const data = res?.data || res;
+        if (data?.site) {
+          this.activeSite = {
+            ...this.activeSite,
+            ...data.site,
+            site_id: siteId
+          };
+          this.sites[idx] = this.activeSite;
+
+          const newPath = this.activeSite?.map_image_url || this.activeSite?.layout_map_url || this.activeSite?.property_image_url || '';
+          this.siteMapUrl = newPath ? (typeof this.api?.url === 'function' ? this.api.url(newPath) : newPath) : '';
+
+          if (data.site.is_booking_enabled !== undefined) {
+            this.isInteractive = Boolean(data.site.is_booking_enabled);
+          }
         }
-      },
-      error: () => {
-        if (callback) {
-          callback([]);
+
+        const plots = data?.plots || (Array.isArray(data) ? data : []);
+        this.siteMapLoading = false;
+
+        if (plots && plots.length > 0) {
+          this.sitePlots = this.processPlots(plots);
+          this.applyPlotFilter();
+          this.plotsLoading = false;
         } else {
-          this.loading = false;
+          await this.fetchPlotsAsync(siteId);
         }
+      } catch (mapErr: any) {
+        console.warn('getSiteMap API error:', mapErr);
+        this.siteMapError = `Site Map API Warning (${mapErr?.status || '500'}). Loading direct plots API...`;
+        this.siteMapLoading = false;
+        await this.fetchPlotsAsync(siteId);
+      }
+    } catch (err: any) {
+      console.error('Error selecting site:', err);
+      this.siteMapLoading = false;
+      this.plotsLoading = false;
+    }
+  }
+
+  async fetchPlotsAsync(siteId: number) {
+    if (!siteId) return;
+    this.plotsLoading = true;
+    this.plotsError = null;
+
+    try {
+      let res: any;
+      try {
+        res = await firstValueFrom(this.api.adminGetSitePlots(siteId));
+      } catch (adminPlotErr: any) {
+        console.warn('adminGetSitePlots API failed/rejected:', adminPlotErr);
+        const status = adminPlotErr?.status;
+        const msg = adminPlotErr?.error?.message || adminPlotErr?.message || 'Admin plots request failed';
+        if (status === 401 || status === 403) {
+          this.plotsError = `Admin Token Rejected for Plots (${status}: ${msg}). Loaded fallback...`;
+        } else {
+          this.plotsError = `Admin Plots API Warning (${status || 500}). Loaded public plots...`;
+        }
+        res = await firstValueFrom(this.api.getSitePlots(siteId));
+      }
+
+      const plots = res?.data || (Array.isArray(res) ? res : []);
+      this.sitePlots = this.processPlots(plots);
+      this.applyPlotFilter();
+      this.plotsLoading = false;
+    } catch (err: any) {
+      console.error('Failed to fetch plots:', err);
+      this.plotsError = `Plots API Error: ${err?.error?.message || err?.message || 'Unable to fetch plot records'}`;
+      this.plotsLoading = false;
+    }
+  }
+
+  // --- FILTER & SEARCH LOGIC ---
+
+  onFilterChange(filter: string) {
+    this.plotFilter = filter;
+    this.applyPlotFilter();
+  }
+
+  onSearchChange() {
+    this.applyPlotFilter();
+  }
+
+  applyPlotFilter() {
+    try {
+      if (!Array.isArray(this.sitePlots)) {
+        this.filteredPlots = [];
+        return;
+      }
+      const q = String(this.plotSearch || '').trim().toLowerCase();
+      this.filteredPlots = this.sitePlots.filter(p => {
+        if (!p) return false;
+        const matchFilter =
+          this.plotFilter === 'all' ? true :
+          this.plotFilter === 'vacant' ? (p.plot_status === 'Available' || p.plot_status === 'Vacant') :
+          String(p.plot_status || '').toLowerCase() === String(this.plotFilter || '').toLowerCase();
+
+        const matchSearch = !q ||
+          String(p.plot_number || '').toLowerCase().includes(q) ||
+          String(p.sqft || '').includes(q) ||
+          String(p.facing_direction || '').toLowerCase().includes(q);
+
+        return matchFilter && matchSearch;
+      });
+    } catch (e) {
+      console.error('Error applying plot filter:', e);
+      this.filteredPlots = [];
+    }
+  }
+
+  // --- PLOT DATA PRE-PROCESSING ---
+
+  processPlots(plots: any[]): any[] {
+    if (!Array.isArray(plots)) return [];
+    return plots.map(p => {
+      try {
+        const points = this.pointsForPlot(p);
+        const polyStr = points.map(pt => `${pt.x},${pt.y}`).join(' ');
+        const labelPt = points.length
+          ? points.reduce((acc, pt) => ({ x: acc.x + pt.x / points.length, y: acc.y + pt.y / points.length }), { x: 0, y: 0 })
+          : { x: 0, y: 0 };
+        return {
+          ...p,
+          _polygonPoints: polyStr,
+          _labelPoint: labelPt,
+          _color: this.plotColor(p?.plot_status)
+        };
+      } catch (e) {
+        return {
+          ...p,
+          _polygonPoints: '',
+          _labelPoint: { x: 0, y: 0 },
+          _color: '#16a34a'
+        };
       }
     });
   }
 
-  selectSite(idx: number) {
-    this.activeSiteIdx = idx;
-    const site = this.sites[idx];
-    if (!site) {
-      this.plotsLoading = false;
-      return;
-    }
-
-    const siteId = Number(site.site_id || site.id || 0);
-    if (siteId) {
-      this.siteToggle.setActiveSiteId(siteId);
-    }
-    const storedToggle = site.is_booking_enabled !== undefined ? Boolean(site.is_booking_enabled) : (siteId ? this.siteToggle.isSiteInteractive(siteId) : true);
-    this.isInteractive = storedToggle;
-
-    this.selectedPlot = null;
-    this.resetView();
-    this.plotsLoading = true;
-
-    if (siteId) {
-      const plotTimeout = setTimeout(() => {
-        if (this.plotsLoading) this.plotsLoading = false;
-      }, 2000);
-
-      this.api.getSiteMap(siteId).subscribe({
-        next: (res: any) => {
-          clearTimeout(plotTimeout);
-          const data = res?.data || res;
-          if (data?.site) {
-            this.sites[idx] = {
-              ...site,
-              ...data.site,
-              site_id: siteId,
-              nearest_place: data.site.nearest_place || site.nearest_place,
-              landmark: data.site.landmark || site.landmark,
-              highway_distance: data.site.highway_distance || site.highway_distance,
-              airport_distance: data.site.airport_distance || site.airport_distance,
-              is_booking_enabled: data.site.is_booking_enabled !== undefined ? Boolean(data.site.is_booking_enabled) : storedToggle
-            };
-            if (data.site.is_booking_enabled !== undefined) {
-              this.isInteractive = Boolean(data.site.is_booking_enabled);
-            }
+  pointsForPlot(plot: any): { x: number; y: number }[] {
+    try {
+      if (!plot) return [];
+      const raw = plot?.polygon_coordinates || plot?.polygon?.coordinates || plot?.coordinates;
+      if (typeof raw === 'string' && raw.trim()) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length) {
+            return parsed.map((p: any) => Array.isArray(p) ? { x: Number(p[0]), y: Number(p[1]) } : { x: Number(p.x), y: Number(p.y) })
+              .filter((p: any) => Number.isFinite(p.x) && Number.isFinite(p.y));
           }
-          const plots = data?.plots || (Array.isArray(data) ? data : []);
-          if (plots && plots.length) {
-            this.sitePlots = this.processPlots(plots);
-            this.plotsLoading = false;
-          } else {
-            this.fetchAdminSitePlots(siteId);
-          }
-        },
-        error: () => {
-          clearTimeout(plotTimeout);
-          this.fetchAdminSitePlots(siteId);
-        }
-      });
-    } else {
-      this.plotsLoading = false;
-    }
+        } catch (_) {}
+      }
+      if (Array.isArray(raw) && raw.length) {
+        return raw.map((p: any) => Array.isArray(p) ? { x: Number(p[0]), y: Number(p[1]) } : { x: Number(p.x), y: Number(p.y) })
+          .filter((p: any) => Number.isFinite(p.x) && Number.isFinite(p.y));
+      }
+      const xs = String(plot?.coordinates_x || '').split(',').map(v => Number(v.trim()));
+      const ys = String(plot?.coordinates_y || '').split(',').map(v => Number(v.trim()));
+      if (xs.length >= 3 && xs.length === ys.length && xs.every(Number.isFinite) && ys.every(Number.isFinite)) {
+        return xs.map((x, i) => ({ x, y: ys[i] }));
+      }
+    } catch (_) {}
+    return [];
   }
+
+  plotColor(status: string): string {
+    const clean = String(status || '').replace(/\s|_/g, '').toLowerCase();
+    if (clean === 'vacant' || clean === 'available') return '#16a34a';
+    if (clean === 'inprocess' || clean === 'paymentpending' || clean === 'processing') return '#eab308';
+    if (clean === 'booked' || clean === 'hold') return '#ef4444';
+    if (clean === 'sold') return '#6b7280';
+    return '#16a34a';
+  }
+
+  // --- ACTIONS & MODALS ---
 
   toggleInteractiveMode(enabled: boolean) {
     const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
@@ -248,57 +386,140 @@ export class SitesMgmtComponent implements OnInit {
     });
   }
 
-  fetchAdminSitePlots(siteId: number) {
-    if (!siteId) return;
-    this.api.adminGetSitePlots(siteId).subscribe({
-      next: (res: any) => {
-        const plots = res?.data || (Array.isArray(res) ? res : []);
-        this.sitePlots = this.processPlots(plots);
-        this.plotsLoading = false;
-      },
-      error: () => {
-        this.fetchFallbackSitePlots(siteId);
+  async addSite() {
+    if (!this.newSite.site_name || !this.newSite.city) {
+      this.showToast('Site name and city are required');
+      return;
+    }
+    this.actionLoading = true;
+    try {
+      const res: any = await firstValueFrom(this.api.adminCreateSite(this.newSite));
+      if (res?.success || res?.site_id || res?.id) {
+        this.showToast('Site created successfully!');
+        this.showAddSite = false;
+        await this.loadSites();
+        this.newSite = {
+          site_name: '',
+          city: '',
+          state: 'Uttar Pradesh',
+          full_address: '',
+          description: '',
+          nearest_place: '',
+          landmark: '',
+          highway_distance: '',
+          airport_distance: '',
+          is_booking_enabled: true
+        };
       }
-    });
-  }
-
-  fetchFallbackSitePlots(siteId: number) {
-    if (!siteId) return;
-    this.api.getSitePlots(siteId).subscribe({
-      next: (res: any) => {
-        const plots = res?.data || (Array.isArray(res) ? res : []);
-        this.sitePlots = this.processPlots(plots);
-        this.plotsLoading = false;
-      },
-      error: () => {
-        this.plotsLoading = false;
+      this.actionLoading = false;
+    } catch (e: any) {
+      const msg = e?.error?.message || 'Error creating site';
+      this.showToast(msg);
+      if (e?.status === 401 || e?.status === 403) {
+        alert(`⚠️ Admin Action Unauthorized (HTTP ${e?.status})\nReason: ${msg}\n\nPlease re-login as Admin.`);
       }
-    });
-  }
-
-  processPlots(plots: any[]): any[] {
-    if (!Array.isArray(plots)) return [];
-    return plots.map(p => {
-      const points = this.pointsForPlot(p);
-      const polyStr = points.map(pt => `${pt.x},${pt.y}`).join(' ');
-      const labelPt = points.length ? points.reduce((acc, pt) => ({ x: acc.x + pt.x / points.length, y: acc.y + pt.y / points.length }), { x: 0, y: 0 }) : { x: 0, y: 0 };
-      return {
-        ...p,
-        _polygonPoints: polyStr,
-        _labelPoint: labelPt,
-        _color: this.plotColor(p.plot_status)
-      };
-    });
-  }
-
-  onSiteImageLoad(event: Event) {
-    const img = event.target as HTMLImageElement;
-    if (img && img.naturalWidth && img.naturalHeight) {
-      this.imageAspectRatio = img.naturalWidth / img.naturalHeight;
+      this.actionLoading = false;
     }
   }
 
-  uploadSiteImage(event: Event) {
+  openEditSiteModal() {
+    const s = this.activeSite;
+    this.editSiteForm = {
+      site_name: s?.site_name || '',
+      city: s?.city || '',
+      state: s?.state || 'Uttar Pradesh',
+      full_address: s?.full_address || s?.address || '',
+      description: s?.description || '',
+      nearest_place: s?.nearest_place || '',
+      landmark: s?.landmark || '',
+      highway_distance: s?.highway_distance || '',
+      airport_distance: s?.airport_distance || '',
+      is_booking_enabled: s?.is_booking_enabled !== undefined ? Boolean(s.is_booking_enabled) : this.isInteractive
+    };
+    this.showEditSite = true;
+  }
+
+  async updateSite() {
+    const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
+    if (!siteId) return;
+    this.actionLoading = true;
+    try {
+      const res: any = await firstValueFrom(this.api.adminUpdateSite(siteId, this.editSiteForm));
+      if (res?.success) {
+        this.showToast('Site details updated!');
+        this.showEditSite = false;
+        this.isInteractive = Boolean(this.editSiteForm.is_booking_enabled);
+        this.activeSite.is_booking_enabled = this.editSiteForm.is_booking_enabled;
+        this.siteToggle.setSiteInteractive(siteId, this.editSiteForm.is_booking_enabled);
+        await this.loadSites();
+      }
+      this.actionLoading = false;
+    } catch (e: any) {
+      const msg = e?.error?.message || 'Failed to update site';
+      this.showToast(msg);
+      if (e?.status === 401 || e?.status === 403) {
+        alert(`⚠️ Admin Action Unauthorized (HTTP ${e?.status})\nReason: ${msg}\n\nPlease re-login as Admin.`);
+      }
+      this.actionLoading = false;
+    }
+  }
+
+  openAddPlotModal() {
+    this.newPlot = {
+      plot_number: '',
+      sqft: 1000,
+      rate_per_sqft: 1200,
+      facing_direction: 'East',
+      plot_status: 'Available',
+      khasra_number: ''
+    };
+    this.showAddPlot = true;
+  }
+
+  async saveNewPlot() {
+    const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
+    if (!this.newPlot.plot_number || !siteId) {
+      this.showToast('Plot number is required');
+      return;
+    }
+    this.actionLoading = true;
+    try {
+      const res: any = await firstValueFrom(this.api.adminCreateSitePlot(siteId, this.newPlot));
+      if (res?.success) {
+        this.showToast(`Plot #${this.newPlot.plot_number} created successfully!`);
+        this.showAddPlot = false;
+        await this.selectSite(this.activeSiteIdx);
+      }
+      this.actionLoading = false;
+    } catch (e: any) {
+      const msg = e?.error?.message || 'Error creating plot';
+      this.showToast(msg);
+      if (e?.status === 401 || e?.status === 403) {
+        alert(`⚠️ Admin Action Unauthorized (HTTP ${e?.status})\nReason: ${msg}\n\nPlease re-login as Admin.`);
+      }
+      this.actionLoading = false;
+    }
+  }
+
+  async changePlotStatus(plot: any, newStatus: string) {
+    if (!plot?.plot_id) return;
+    try {
+      const res: any = await firstValueFrom(this.api.adminUpdatePlotStatus(plot.plot_id, newStatus, 'Status changed by Admin'));
+      if (res?.success) {
+        plot.plot_status = newStatus;
+        plot._color = this.plotColor(newStatus);
+        this.showToast(`Plot #${plot.plot_number} status updated to ${newStatus}`);
+      }
+    } catch (e: any) {
+      const msg = e?.error?.message || 'Failed to update plot status';
+      this.showToast(msg);
+      if (e?.status === 401 || e?.status === 403) {
+        alert(`⚠️ Admin Action Unauthorized (HTTP ${e?.status})\nReason: ${msg}\n\nPlease re-login as Admin.`);
+      }
+    }
+  }
+
+  async uploadSiteImage(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
     if (!file || !siteId) return;
@@ -311,27 +532,27 @@ export class SitesMgmtComponent implements OnInit {
     form.append('site_map', file);
     form.append('map_image', file);
     this.actionLoading = true;
-    this.api.adminUploadSiteMap(siteId, form).subscribe({
-      next: (res: any) => {
-        this.actionLoading = false;
-        const url = res?.data?.map_image_url || res?.data?.url || res?.map_image_url;
-        if (url) {
-          this.activeSite.map_image_url = url;
-        }
-        this.showToast('Site layout image uploaded successfully!');
-        this.selectSite(this.activeSiteIdx);
-      },
-      error: (e: any) => {
-        this.actionLoading = false;
-        this.showToast(e?.error?.message || 'Failed to upload site image');
+    try {
+      const res: any = await firstValueFrom(this.api.adminUploadSiteMap(siteId, form));
+      this.actionLoading = false;
+      const url = res?.data?.map_image_url || res?.data?.url || res?.map_image_url;
+      if (url) {
+        this.activeSite.map_image_url = url;
+        this.siteMapUrl = typeof this.api?.url === 'function' ? this.api.url(url) : url;
       }
-    });
+      this.showToast('Site layout image uploaded successfully!');
+      await this.selectSite(this.activeSiteIdx);
+    } catch (e: any) {
+      this.actionLoading = false;
+      this.showToast(e?.error?.message || 'Failed to upload site image');
+    }
   }
 
   removeSiteImage() {
     if (!this.activeSite) return;
     this.activeSite.map_image_url = '';
     this.activeSite.layout_map_url = '';
+    this.siteMapUrl = '';
     this.showToast('Site image removed.');
   }
 
@@ -353,163 +574,6 @@ export class SitesMgmtComponent implements OnInit {
     this.selectedPlot = plot;
   }
 
-  pointsForPlot(plot: any): { x: number; y: number }[] {
-    const raw = plot?.polygon_coordinates || plot?.polygon?.coordinates || plot?.coordinates || [];
-    if (Array.isArray(raw) && raw.length) {
-      return raw.map((p: any) => Array.isArray(p) ? { x: Number(p[0]), y: Number(p[1]) } : { x: Number(p.x), y: Number(p.y) })
-        .filter((p: any) => Number.isFinite(p.x) && Number.isFinite(p.y));
-    }
-    const xs = String(plot?.coordinates_x || '').split(',').map(v => Number(v.trim()));
-    const ys = String(plot?.coordinates_y || '').split(',').map(v => Number(v.trim()));
-    if (xs.length >= 3 && xs.length === ys.length && xs.every(Number.isFinite) && ys.every(Number.isFinite)) {
-      return xs.map((x, i) => ({ x, y: ys[i] }));
-    }
-    return [];
-  }
-
-  polygonPoints(plot: any): string {
-    return plot?._polygonPoints || this.pointsForPlot(plot).map(p => `${p.x},${p.y}`).join(' ');
-  }
-
-  labelPoint(plot: any): { x: number; y: number } {
-    return plot?._labelPoint || { x: 0, y: 0 };
-  }
-
-  plotColor(status: string): string {
-    const clean = String(status || '').replace(/\s|_/g, '').toLowerCase();
-    if (clean === 'vacant' || clean === 'available') return '#16a34a';
-    if (clean === 'inprocess' || clean === 'paymentpending' || clean === 'processing') return '#eab308';
-    if (clean === 'booked' || clean === 'hold') return '#ef4444';
-    if (clean === 'sold') return '#6b7280';
-    return '#16a34a';
-  }
-
-  // --- ACTIONS & MODALS ---
-
-  addSite() {
-    if (!this.newSite.site_name || !this.newSite.city) {
-      this.showToast('Site name and city are required');
-      return;
-    }
-    this.actionLoading = true;
-    this.api.adminCreateSite(this.newSite).subscribe({
-      next: (res: any) => {
-        if (res.success || res.site_id || res.id) {
-          this.showToast('Site created successfully!');
-          this.showAddSite = false;
-          this.loadSites();
-          this.newSite = {
-            site_name: '',
-            city: '',
-            state: 'Uttar Pradesh',
-            full_address: '',
-            description: '',
-            nearest_place: '',
-            landmark: '',
-            highway_distance: '',
-            airport_distance: '',
-            is_booking_enabled: true
-          };
-        }
-        this.actionLoading = false;
-      },
-      error: (e: any) => {
-        this.showToast(e?.error?.message || 'Error creating site');
-        this.actionLoading = false;
-      }
-    });
-  }
-
-  openEditSiteModal() {
-    const s = this.activeSite;
-    this.editSiteForm = {
-      site_name: s.site_name || '',
-      city: s.city || '',
-      state: s.state || 'Uttar Pradesh',
-      full_address: s.full_address || s.address || '',
-      description: s.description || '',
-      nearest_place: s.nearest_place || '',
-      landmark: s.landmark || '',
-      highway_distance: s.highway_distance || '',
-      airport_distance: s.airport_distance || '',
-      is_booking_enabled: s.is_booking_enabled !== undefined ? Boolean(s.is_booking_enabled) : this.isInteractive
-    };
-    this.showEditSite = true;
-  }
-
-  updateSite() {
-    const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
-    if (!siteId) return;
-    this.actionLoading = true;
-    this.api.adminUpdateSite(siteId, this.editSiteForm).subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          this.showToast('Site details updated!');
-          this.showEditSite = false;
-          this.isInteractive = Boolean(this.editSiteForm.is_booking_enabled);
-          this.activeSite.is_booking_enabled = this.editSiteForm.is_booking_enabled;
-          this.siteToggle.setSiteInteractive(siteId, this.editSiteForm.is_booking_enabled);
-          this.loadSites();
-        }
-        this.actionLoading = false;
-      },
-      error: (e: any) => {
-        this.showToast(e?.error?.message || 'Failed to update site');
-        this.actionLoading = false;
-      }
-    });
-  }
-
-  openAddPlotModal() {
-    this.newPlot = {
-      plot_number: '',
-      sqft: 1000,
-      rate_per_sqft: 1200,
-      facing_direction: 'East',
-      plot_status: 'Available',
-      khasra_number: ''
-    };
-    this.showAddPlot = true;
-  }
-
-  saveNewPlot() {
-    const siteId = Number(this.activeSite?.site_id || this.activeSite?.id || 0);
-    if (!this.newPlot.plot_number || !siteId) {
-      this.showToast('Plot number is required');
-      return;
-    }
-    this.actionLoading = true;
-    this.api.adminCreateSitePlot(siteId, this.newPlot).subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          this.showToast(`Plot #${this.newPlot.plot_number} created successfully!`);
-          this.showAddPlot = false;
-          this.selectSite(this.activeSiteIdx);
-        }
-        this.actionLoading = false;
-      },
-      error: (e: any) => {
-        this.showToast(e?.error?.message || 'Error creating plot');
-        this.actionLoading = false;
-      }
-    });
-  }
-
-  changePlotStatus(plot: any, newStatus: string) {
-    this.api.adminUpdatePlotStatus(plot.plot_id, newStatus, 'Status changed by Admin').subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          plot.plot_status = newStatus;
-          plot._color = this.plotColor(newStatus);
-          this.showToast(`Plot #${plot.plot_number} status updated to ${newStatus}`);
-        }
-      },
-      error: (e: any) => {
-        this.showToast(e?.error?.message || 'Failed to update plot status');
-      }
-    });
-  }
-
   closeModals() {
     this.showAddSite = false;
     this.showEditSite = false;
@@ -517,6 +581,7 @@ export class SitesMgmtComponent implements OnInit {
   }
 
   pct(s: any): number {
+    if (!s) return 0;
     const t = Number(s.total_plots || 0);
     if (!t) return 0;
     const occupied = Number(s.booked || 0) + Number(s.sold || 0);
