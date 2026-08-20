@@ -61,6 +61,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       expanded: false,
       items: [
         { icon: 'fas fa-map-marked-alt', label: 'Add Sites', route: '/admin/sites' },
+        { icon: 'fas fa-layer-group', label: 'New Site Area', route: '/admin/new-site-area', badge: 'NEW' },
         { icon: 'fas fa-vector-square', label: 'Plot Detector Tool', route: '/admin/plot-detector-tool', badge: 'AI' },
         { icon: 'fas fa-th', label: 'Plot Detector 2', route: '/admin/plot-detector-2', badge: 'GRID' },
         { icon: 'fas fa-draw-polygon', label: 'Plot Map Editor', route: '/admin/plot-map-editor' },
@@ -171,6 +172,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
           ...group,
           items: group.items.filter(item =>
             item.route === '/admin/sites' ||
+            item.route === '/admin/new-site-area' ||
             item.route === '/admin/booking-management' ||
             item.route === '/admin/booking-workflow'
           )

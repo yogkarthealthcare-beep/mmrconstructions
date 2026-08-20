@@ -191,6 +191,7 @@ export class ApiService {
   // ── ADMIN — Sites & Plots ─────────────────────────
   adminGetSites()                  { return this.get('/api/admin/sites', {}, true); }
   adminCreateSite(data: any)       { return this.post('/api/admin/sites', data, true); }
+  adminCreateSiteArea(data: any)   { return this.post('/api/admin/new-site-area', data, true); }
   adminUpdateSite(id: number, data: any) { return this.put(`/api/admin/sites/${id}`, data, true); }
   adminGetSitePlots(siteId: number) { return this.get(`/api/admin/sites/${siteId}/plots`, {}, true); }
   adminCreateSitePlot(siteId: number, data: any) { return this.post(`/api/admin/sites/${siteId}/plots`, data, true); }

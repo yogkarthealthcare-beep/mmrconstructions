@@ -18,6 +18,7 @@ import { CustomersComponent } from './admin/customers/customers.component';
 import { AssociatesComponent } from './admin/associates/associates.component';
 import { AssociateDetailComponent } from './admin/associate-detail/associate-detail.component';
 import { SitesMgmtComponent } from './admin/sites-mgmt/sites-mgmt.component';
+import { NewSiteAreaComponent } from './admin/new-site-area/new-site-area.component';
 import { PlotDetectorToolComponent } from './admin/plot-detector-tool/plot-detector-tool.component';
 import { PlotDetector2Component } from './admin/plot-detector-2/plot-detector-2.component';
 import { PlotMapEditorComponent } from './admin/plot-map-editor/plot-map-editor.component';
@@ -109,6 +110,7 @@ export const routes: Routes = [
       { path: 'associates',          component: AssociatesComponent },
       { path: 'associate-detail',     component: AssociateDetailComponent },
       { path: 'sites',               component: SitesMgmtComponent },
+      { path: 'new-site-area',        component: NewSiteAreaComponent },
       { path: 'plot-detector-tool',  component: PlotDetectorToolComponent },
       { path: 'plot-detector-2',     component: PlotDetector2Component },
       { path: 'plot-map-editor',     component: PlotMapEditorComponent },

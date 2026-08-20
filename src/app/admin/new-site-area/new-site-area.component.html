@@ -1,0 +1,287 @@
+<!-- Toast Notification -->
+<div *ngIf="toast" class="toast-popup position-fixed top-0 end-0 p-3" style="z-index:9999;">
+  <div class="toast show align-items-center text-white border-0 shadow-lg" [ngClass]="toastType === 'error' ? 'bg-danger' : 'bg-emerald'" style="border-radius:10px;">
+    <div class="d-flex">
+      <div class="toast-body fs-12 fw-600">
+        <i class="fas me-2" [ngClass]="toastType === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'"></i>
+        {{ toast }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" (click)="toast=''"></button>
+    </div>
+  </div>
+</div>
+
+<!-- EXECUTIVE TOP HERO BANNER -->
+<div class="admin-hero-card mb-4">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+    <div>
+      <div class="admin-hero-badge"><i class="fas fa-layer-group me-1"></i>REAL ESTATE SITE AREA MANAGEMENT</div>
+      <h2 class="admin-hero-title mb-1">New Site Area Registration</h2>
+      <p class="admin-hero-sub mb-0">Create new project site areas, define land metrics, upload layout maps, and initialize plot directory.</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <a routerLink="/admin/sites" class="btn btn-outline-light btn-xs">
+        <i class="fas fa-th me-1"></i> View All Sites
+      </a>
+      <a routerLink="/admin/plot-detector-tool" class="btn btn-outline-gold btn-xs">
+        <i class="fas fa-wand-magic-sparkles me-1"></i> Plot Detector Tool
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY STAT CARDS -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl">Active Site Areas</span>
+        <div class="icon-wrap bg-blue text-primary"><i class="fas fa-map-marked-alt"></i></div>
+      </div>
+      <div class="stat-mini-val">{{ sites.length }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-city me-1 text-primary"></i>Registered Projects</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl">Interactive Booking</span>
+        <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-bolt"></i></div>
+      </div>
+      <div class="stat-mini-val">{{ sites.length }} Sites</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-check-circle me-1 text-emerald"></i>Plot Directory Ready</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl">Default State</span>
+        <div class="icon-wrap bg-amber text-orange"><i class="fas fa-location-dot"></i></div>
+      </div>
+      <div class="stat-mini-val">Uttar Pradesh</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-compass me-1 text-orange"></i>Regional Sector</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl">Map Engine</span>
+        <div class="icon-wrap bg-forest-light text-forest"><i class="fas fa-draw-polygon"></i></div>
+      </div>
+      <div class="stat-mini-val">Vector SVG</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-shield-alt me-1 text-forest"></i>Interactive Overlays</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2-COLUMN MAIN CONTENT: FORM + REGISTERED SITE AREAS -->
+<div class="row g-4 mb-4">
+  
+  <!-- LEFT: NEW SITE AREA FORM -->
+  <div class="col-lg-7">
+    <div class="panel-card p-4 h-100">
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <h5 class="fs-15 fw-700 text-dark mb-0">
+          <i class="fas fa-plus-circle text-gold me-2"></i>Add New Site Area Form
+        </h5>
+        <span class="badge bg-gold text-dark fs-11 font-mono">* Required Fields</span>
+      </div>
+
+      <form (ngSubmit)="createNewSiteArea()" #siteForm="ngForm">
+        <div class="row g-3">
+          <!-- SITE NAME -->
+          <div class="col-md-7">
+            <label class="form-label fs-11 fw-700 text-dark">Site Area Name *</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-light text-muted"><i class="fas fa-building"></i></span>
+              <input type="text" class="form-control" [(ngModel)]="newSiteArea.site_name" name="site_name" required placeholder="e.g. MMR Green Valley / Royal City">
+            </div>
+          </div>
+
+          <!-- CITY -->
+          <div class="col-md-5">
+            <label class="form-label fs-11 fw-700 text-dark">City *</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-light text-muted"><i class="fas fa-city"></i></span>
+              <input type="text" class="form-control" [(ngModel)]="newSiteArea.city" name="city" required placeholder="Kanpur / Unnao">
+            </div>
+          </div>
+
+          <!-- STATE -->
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">State</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newSiteArea.state" name="state" placeholder="Uttar Pradesh">
+          </div>
+
+          <!-- TOTAL AREA -->
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">Total Site Area</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newSiteArea.total_area" name="total_area" placeholder="e.g. 25 Acres / 50,000 sqft">
+          </div>
+
+          <!-- ESTIMATED PLOTS -->
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">Total Plots Planned</label>
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="newSiteArea.total_plots" name="total_plots" placeholder="50">
+          </div>
+
+          <!-- STARTING PRICE RATE -->
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Base Rate per sq.ft (₹)</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-light text-muted">₹</span>
+              <input type="number" class="form-control" [(ngModel)]="newSiteArea.starting_price" name="starting_price" placeholder="1200">
+            </div>
+          </div>
+
+          <!-- NEAREST PLACE -->
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Nearest Place</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newSiteArea.nearest_place" name="nearest_place" placeholder="e.g. Ganga Barrage / Highway Toll">
+          </div>
+
+          <!-- FULL ADDRESS -->
+          <div class="col-12">
+            <label class="form-label fs-11 fw-700 text-dark">Full Address & Location</label>
+            <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="newSiteArea.full_address" name="full_address" placeholder="Complete site location address, sector / ward details..."></textarea>
+          </div>
+
+          <!-- LANDMARK & DISTANCES -->
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">Landmark</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newSiteArea.landmark" name="landmark" placeholder="Near IIT / Highway">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">Highway Distance</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newSiteArea.highway_distance" name="highway_distance" placeholder="500m from NH-27">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fs-11 fw-700 text-dark">Airport Distance</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newSiteArea.airport_distance" name="airport_distance" placeholder="15 km from Airport">
+          </div>
+
+          <!-- DESCRIPTION & HIGHLIGHTS -->
+          <div class="col-12">
+            <label class="form-label fs-11 fw-700 text-dark">Description & Amenities</label>
+            <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="newSiteArea.description" name="description" placeholder="Project highlights, park facing plots, 30ft wide roads..."></textarea>
+          </div>
+
+          <!-- MASTER LAYOUT IMAGE UPLOAD -->
+          <div class="col-12 border-top pt-3">
+            <label class="form-label fs-11 fw-700 text-dark"><i class="fas fa-file-image text-emerald me-1"></i>Master Layout Map Image / Document (Optional)</label>
+            <div class="upload-drop-zone p-3 text-center border rounded-12 bg-light">
+              <input type="file" id="siteMapFileInput" hidden accept=".jpg,.jpeg,.png,.pdf,.svg,image/*,application/pdf" (change)="onFileSelected($event)">
+              
+              <div *ngIf="!imagePreviewUrl" class="py-2">
+                <i class="fas fa-cloud-arrow-up fs-2 text-gold mb-2"></i>
+                <div class="fs-12 fw-700 text-dark">Upload Layout Map Plan</div>
+                <div class="fs-11 text-muted mb-2">JPG, PNG, SVG or PDF blueprint layout map file</div>
+                <label for="siteMapFileInput" class="btn btn-emerald btn-xs mb-0 cursor-pointer">
+                  <i class="fas fa-folder-open me-1"></i> Browse File
+                </label>
+              </div>
+
+              <div *ngIf="imagePreviewUrl" class="d-flex align-items-center justify-content-between p-2 bg-white rounded border">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                  <img [src]="imagePreviewUrl" alt="Map preview" class="rounded border" style="width:48px; height:48px; object-fit:cover;">
+                  <span class="fs-12 fw-700 text-dark text-truncate">{{ selectedFile?.name }}</span>
+                </div>
+                <button type="button" class="btn btn-outline-danger btn-xs" (click)="removeSelectedFile()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- PLOT BOOKING ENABLE TOGGLE -->
+          <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-12 border">
+              <div>
+                <div class="fw-700 text-dark fs-12"><i class="fas fa-bolt text-gold me-2"></i>Enable Interactive Plot Booking</div>
+                <div class="fs-11 text-muted">When ON, plots can be interactively selected and booked by users on public site map.</div>
+              </div>
+              <div class="form-check form-switch fs-4 mb-0">
+                <input class="form-check-input cursor-pointer" type="checkbox" role="switch" [(ngModel)]="newSiteArea.is_booking_enabled" name="is_booking_enabled">
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="col-12 d-flex align-items-center justify-content-end gap-2 pt-2">
+            <button type="button" class="btn btn-outline-secondary btn-xs" (click)="resetForm()">Reset Form</button>
+            <button type="submit" class="btn btn-emerald btn-sm px-4" [disabled]="saving || !newSiteArea.site_name || !newSiteArea.city">
+              <i class="fas" [ngClass]="saving ? 'fa-spinner fa-spin me-1' : 'fa-check-circle me-1'"></i>
+              {{ saving ? 'Creating Site Area...' : 'Save New Site Area' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- RIGHT: EXISTING SITE AREAS DIRECTORY -->
+  <div class="col-lg-5">
+    <div class="panel-card p-4 h-100">
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <h5 class="fs-15 fw-700 text-dark mb-0">
+          <i class="fas fa-building text-emerald me-2"></i>Existing Site Areas ({{ sites.length }})
+        </h5>
+        <button type="button" class="btn btn-outline-light text-dark btn-xs" (click)="loadExistingSiteAreas()">
+          <i class="fas fa-sync" [class.fa-spin]="sitesLoading"></i> Refresh
+        </button>
+      </div>
+
+      <div *ngIf="sitesLoading" class="text-center py-5 text-gold">
+        <i class="fas fa-spinner fa-spin fs-2"></i>
+        <div class="fs-12 text-muted mt-2">Loading registered site areas...</div>
+      </div>
+
+      <div *ngIf="!sitesLoading && sites.length === 0" class="text-center py-5 text-muted">
+        <i class="fas fa-folder-open fs-1 text-gold mb-2"></i>
+        <div class="fw-700">No Site Areas Registered Yet</div>
+        <div class="fs-11">Use the form on the left to add your first site area.</div>
+      </div>
+
+      <div *ngIf="!sitesLoading && sites.length > 0" class="site-area-list" style="max-height: 620px; overflow-y: auto;">
+        <div class="site-area-card p-3 mb-3 border rounded-12 bg-white shadow-xs" *ngFor="let s of sites">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="fw-700 text-dark fs-13">{{ s.site_name }}</span>
+            <span class="badge" [ngClass]="s.is_booking_enabled ? 'bg-emerald' : 'bg-secondary'">
+              {{ s.is_booking_enabled ? 'Plot Mode ON' : 'OFF' }}
+            </span>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between text-muted fs-11 mb-2">
+            <span><i class="fas fa-map-marker-alt text-gold me-1"></i>{{ s.city || 'U.P.' }}, {{ s.state || 'India' }}</span>
+            <span class="fw-700 text-dark">{{ s.total_plots || 0 }} Total Plots</span>
+          </div>
+
+          <div class="fs-11 text-muted text-truncate mb-2" *ngIf="s.full_address">
+            {{ s.full_address }}
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+            <span class="fs-11 fw-700 text-emerald">
+              ₹{{ s.starting_price || 1200 }}/sqft
+            </span>
+            <div class="d-flex gap-1">
+              <a [routerLink]="['/site-map', s.site_id || s.id]" target="_blank" class="btn btn-outline-gold btn-xs py-0 px-2">
+                <i class="fas fa-eye me-1"></i> Map
+              </a>
+              <a routerLink="/admin/sites" class="btn btn-outline-secondary btn-xs py-0 px-2">
+                <i class="fas fa-sliders me-1"></i> Manage
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
