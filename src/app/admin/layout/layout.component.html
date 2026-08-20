@@ -16,17 +16,11 @@
     <!-- Accordion Nav Groups -->
     <nav class="sidebar-nav">
       <div *ngFor="let group of filteredNavGroups" class="nav-group-wrapper">
-        <div class="nav-group-header d-flex align-items-center justify-content-between" (click)="toggleGroup(group)">
+        <div class="nav-group-header" (click)="toggleGroup(group)">
           <span class="nav-group-title">
             <i [class]="group.icon + ' me-1.5'"></i>{{ group.label }}
           </span>
-          <div class="d-flex align-items-center gap-2">
-            <!-- Master Toggle Switch inside PROPERTY & PLOT Title Section -->
-            <div *ngIf="group.label === 'PROPERTY & PLOT'" class="form-check form-switch mb-0 p-0 ms-1" (click)="$event.stopPropagation()" title="Toggle Property & Plot Tools">
-              <input class="form-check-input cursor-pointer" type="checkbox" role="switch" [checked]="propertyPlotMasterEnabled" (change)="togglePropertyPlotMaster($any($event.target).checked)">
-            </div>
-            <i class="fas" [class.fa-chevron-down]="group.expanded" [class.fa-chevron-right]="!group.expanded"></i>
-          </div>
+          <i class="fas" [class.fa-chevron-down]="group.expanded" [class.fa-chevron-right]="!group.expanded"></i>
         </div>
 
         <div class="nav-group-children" *ngIf="group.expanded">
