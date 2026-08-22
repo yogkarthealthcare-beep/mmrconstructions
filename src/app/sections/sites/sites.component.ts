@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { SiteToggleService } from '../../services/site-toggle.service';
 
 interface SiteCardItem {
   site_id?: number;
@@ -19,7 +20,16 @@ interface SiteCardItem {
 
 @Component({ selector: 'app-sites', standalone: true, imports: [CommonModule, RouterLink], templateUrl: './sites.component.html' })
 export class SitesComponent implements OnInit {
-  private api = inject(ApiService);
+  private api: any = inject(ApiService);
+  private siteToggle = inject(SiteToggleService);
+
+  get isMasterPropertyToolsOn(): boolean {
+    return this.siteToggle.isMasterPropertyPlotEnabled();
+  }
+
+  get displaySites(): SiteCardItem[] {
+    return (this.sites || []).slice(0, 5);
+  }
 
   sites: SiteCardItem[] = [
     { site_id: 1, name: 'AIMA Site', loc: 'Dhodi Ghaat Road, Rooma, Kanpur', city: 'Kanpur', badgeClass: 'badge-green', img: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=75', tags: ['fas fa-plane:Airport 6km', 'fas fa-graduation-cap:KIT Eng. 5km', 'fas fa-road:Highway'] },

@@ -56,7 +56,36 @@ export class EnquiriesComponent implements OnInit {
   constructor(private api: ApiService) {}
 
   ngOnInit() {
-    this.loading = false;
+    this.fetchInquiries();
+  }
+
+  fetchInquiries() {
+    this.loading = true;
+    this.api.getAdminInquiries({ pageSize: 100 }).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+        const raw = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+        if (raw && raw.length > 0) {
+          this.enquiries = raw.map((item: any) => ({
+            id: item.inquiry_id || item.id,
+            name: item.full_name || item.name || 'Lead Customer',
+            mobile: item.mobile_no || item.mobile || '',
+            email: item.email || '',
+            site_id: item.site_id || null,
+            site_name: item.site_name || item.property_name || null,
+            interest: item.inquiry_type || item.interest || 'Plot Inquiry',
+            message: item.inquiry_message || item.message || '',
+            date: item.created_at || new Date().toISOString(),
+            status: String(item.status || 'open').toLowerCase() === 'new' ? 'open' : String(item.status || 'open').toLowerCase(),
+            priority: item.priority || 'high',
+            notes: item.remarks || item.notes || 'Submitted from ' + (item.source_page || 'Website')
+          }));
+        }
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
   }
 
   get openCount(): number {

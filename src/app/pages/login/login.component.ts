@@ -56,7 +56,13 @@ export class LoginComponent implements OnInit {
     if (!this.mobile) { this.error = 'Mobile number required'; return; }
     this.loading = true; this.error = '';
     this.api.sendOtp(this.mobile, 'Login').subscribe({
-      next: () => { this.otpSent = true; this.loading = false; },
+      next: (res: any) => { 
+        if (res?.data?.otpBypassed) {
+           this.onSubmit(); // By-pass OTP input, directly submit
+        } else {
+           this.otpSent = true; this.loading = false; 
+        }
+      },
       error: (e: any) => { this.error = e?.error?.message || 'Failed to send OTP'; this.loading = false; }
     });
   }

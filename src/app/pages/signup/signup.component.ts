@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 export type UserRole = 'Customer' | 'Investor' | 'Associate';
 
@@ -48,6 +49,7 @@ export class SignupComponent implements OnInit {
 
   constructor(
     private api: ApiService,
+    private auth: AuthService,
     private router: Router,
     private route: ActivatedRoute,
   ) {}
@@ -281,6 +283,21 @@ export class SignupComponent implements OnInit {
       next: (res: any) => {
         this.loading = false;
         if (res.success) {
+          if (res.data && res.data.otpBypassed) {
+            // OTP bypassed by admin, complete registration directly
+            this.auth.setUserSession(res.data);
+            const userObj = res.data.user || {};
+            const userType = String(userObj.user_type || userObj.role || '').toLowerCase();
+            let targetDashboard = '/customer/dashboard';
+            if (userType.includes('associate')) {
+              targetDashboard = '/associate/dashboard';
+            } else if (userType.includes('investor')) {
+              targetDashboard = '/investor/dashboard';
+            }
+            this.router.navigateByUrl(targetDashboard);
+            return;
+          }
+
           const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
           this.router.navigate(['/verify-otp'], {
             queryParams: {

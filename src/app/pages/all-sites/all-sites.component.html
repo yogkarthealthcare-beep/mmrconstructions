@@ -1,0 +1,67 @@
+<app-navbar></app-navbar>
+
+<main class="all-sites-page py-5">
+  <div class="container">
+    <!-- PAGE TITLE HEADER -->
+    <div class="text-center mb-5">
+      <span class="badge bg-gold-subtle text-amber border px-3 py-1.5 rounded-pill fs-12 fw-700 uppercase mb-2">
+        <i class="fas fa-layer-group me-1.5 text-gold"></i>All Project Sites
+      </span>
+      <h2 class="fw-800 text-dark display-6 mb-2">Explore All MMR Construction Sites</h2>
+      <p class="text-muted fs-14 max-w-600 mx-auto">
+        Kanpur, Unnao और Lucknow के सभी prime locations पर उपलब्ध plots, master layouts एवं site map देखें।
+      </p>
+    </div>
+
+    <!-- LOADING SPINNER -->
+    <div *ngIf="loading" class="text-center py-5 text-muted">
+      <i class="fas fa-spinner fa-spin fs-1 text-emerald mb-2"></i>
+      <p class="fs-13">Loading all project sites...</p>
+    </div>
+
+    <!-- SITE CARDS GRID -->
+    <div class="row g-4" *ngIf="!loading">
+      <div class="col-md-6 col-lg-4" *ngFor="let site of sites">
+        <div class="site-card h-100 shadow-sm rounded-16 border bg-white overflow-hidden d-flex flex-column">
+          <div class="site-img position-relative overflow-hidden" style="height: 200px;">
+            <img [src]="site.img" [alt]="site.name" class="w-100 h-100 object-cover"/>
+            <div class="site-img-badge position-absolute top-0 start-0 m-3">
+              <span [class]="site.badgeClass" class="badge px-3 py-1.5 rounded-pill fw-700 shadow-xs">{{ site.city }}</span>
+            </div>
+          </div>
+          <div class="site-body p-4 d-flex flex-column flex-grow-1">
+            <h5 class="site-name fw-700 text-dark mb-1">{{ site.name }}</h5>
+            <div class="site-loc text-muted fs-12 mb-3"><i class="fas fa-map-marker-alt text-gold me-1"></i> {{ site.loc }}</div>
+            
+            <div class="site-meta d-flex align-items-center justify-content-between p-2.5 bg-light rounded-10 mb-3 fs-12">
+              <div class="text-center">
+                <div class="fw-700 text-dark">50 Gaj</div>
+                <div class="fs-10 text-muted">Plot Size</div>
+              </div>
+              <div class="vr opacity-25"></div>
+              <div class="text-center">
+                <div class="fw-700 text-dark">100 Gaj</div>
+                <div class="fs-10 text-muted">Plot Size</div>
+              </div>
+              <div class="vr opacity-25"></div>
+              <div class="text-center">
+                <div class="fw-700 text-emerald"><i class="fas fa-check-circle me-1"></i>Available</div>
+                <div class="fs-10 text-muted">Booking Status</div>
+              </div>
+            </div>
+
+            <div class="site-tags d-flex flex-wrap gap-1.5 mb-4 mt-auto">
+              <span class="badge bg-light text-dark border fs-11 px-2.5 py-1" *ngFor="let tag of parseTags(site.tags)">
+                <i [class]="tag.icon" class="text-gold me-1"></i> {{ tag.label }}
+              </span>
+            </div>
+
+            <a [routerLink]="['/site-map-new', site.site_id || 1]" class="btn btn-green w-100 py-2.5 fw-700 shadow-sm">
+              <i class="fas fa-bookmark me-2"></i>Book Your Site Now
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

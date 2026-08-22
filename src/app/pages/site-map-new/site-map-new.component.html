@@ -1,0 +1,208 @@
+<app-navbar></app-navbar>
+
+<section class="plot-map-page">
+  <!-- TOPBAR HEADER -->
+  <div class="map-topbar">
+    <a routerLink="/" fragment="sites" class="back-link" title="Back to sites"><i class="fas fa-arrow-left"></i></a>
+    <div class="map-title">
+      <span class="map-kicker">Project Site Directory</span>
+      <h1>{{ site?.site_name || 'Project Site Details' }}</h1>
+      <p>{{ site?.full_address || site?.city || 'Prime Location' }}</p>
+      <div class="quick-stats" *ngIf="!loading && !error">
+        <span><strong>{{ plots.length }}</strong>Total Plots</span>
+        <span><strong>{{ availableCount }}</strong>Available</span>
+        <span><strong>{{ bookedCount }}</strong>Booked/Sold</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GREEN STATUS STRIP -->
+  <div class="status-legend">
+    <span><i style="background:#16a34a;"></i>Available Plots</span>
+    <span><i style="background:#f97316;"></i>Booking Open</span>
+    <span><i style="background:#c9a84c;"></i>Prime Location</span>
+    <span><i style="background:#0284c7;"></i>Verified Site</span>
+  </div>
+
+  <div *ngIf="loading" class="map-loading"><i class="fas fa-spinner fa-spin"></i> Loading site information...</div>
+  <div *ngIf="error" class="map-error">{{ error }}</div>
+
+  <div class="map-layout" *ngIf="!loading && !error">
+    
+    <!-- LEFT PANEL: SITE DETAILS & INQUIRY FORM -->
+    <section class="plot-layout-panel">
+      <div class="plot-layout-head mb-3">
+        <div>
+          <h2>{{ site?.site_name || 'Project Site' }}</h2>
+          <p>{{ site?.full_address || site?.city || 'Master Layout Overview' }}</p>
+        </div>
+      </div>
+
+      <!-- SITE INFORMATION CARD -->
+      <div class="p-3.5 bg-white rounded-12 border shadow-xs mb-3">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="site-icon-box text-emerald fs-3"><i class="fas fa-building-circle-check"></i></div>
+          <div>
+            <h5 class="fw-700 text-dark mb-0.5">{{ site?.site_name }}</h5>
+            <span class="fs-12 text-muted"><i class="fas fa-map-marker-alt me-1 text-gold"></i>{{ site?.full_address || site?.city }}</span>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+          <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-11 fw-700">
+            <i class="fas fa-th me-1 text-primary"></i>{{ plots.length || site?.total_plots || 0 }} Total Plots
+          </span>
+          <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle px-2.5 py-1.5 fs-11 fw-700">
+            <i class="fas fa-check-circle me-1"></i>Booking Open
+          </span>
+          <span class="badge bg-amber-subtle text-dark border border-warning px-2.5 py-1.5 fs-11 fw-700">
+            <i class="fas fa-tag me-1 text-gold"></i>₹{{ site?.starting_price || 1200 }}/sqft
+          </span>
+        </div>
+
+        <p class="fs-12 text-muted mb-0" style="color: #475569 !important; line-height: 1.5;">
+          {{ site?.description || site?.highlights || (site?.site_name ? site.site_name + ' — Prime location residential & commercial plot area with highway touch connectivity.' : 'Kanpur, Unnao और Lucknow के prime locations पर affordable plots। Highway और airport के नजदीक master plan layout.') }}
+        </p>
+      </div>
+
+      <!-- PLOT BOOKING FORM WITH LOCKED SITE DROPDOWN -->
+      <div id="newSiteInquiryFormCard" class="p-2 bg-light rounded-12 border shadow-xs">
+        <h5 class="fw-700 text-dark mb-1 d-flex align-items-center">
+          <i class="fas fa-bookmark me-2 text-emerald"></i>Plot Booking
+        </h5>
+        <p class="fs-11 text-muted mb-3">Submit your details to book a plot or request a site visit.</p>
+
+        <div *ngIf="inquirySubmitted" class="p-3 bg-emerald-subtle border border-emerald-subtle rounded-8 mb-3 text-emerald fs-12 fw-600">
+          <i class="fas fa-check-circle me-2"></i>Thank you! Your plot booking request has been received. Our team will contact you shortly.
+        </div>
+
+        <div *ngIf="inquiryErrorMessage" class="p-3 bg-danger-subtle border border-danger-subtle rounded-8 mb-3 text-danger fs-12">
+          <i class="fas fa-exclamation-circle me-2"></i>{{ inquiryErrorMessage }}
+        </div>
+
+        <form (ngSubmit)="submitInquiry()">
+          <div class="mb-2.5">
+            <label class="form-label fs-11 fw-700 text-dark mb-1">Your Full Name *</label>
+            <input type="text" class="form-control form-control-sm" placeholder="e.g. Rahul Sharma" [(ngModel)]="inquiryForm.name" name="name" required>
+          </div>
+
+          <div class="mb-2.5">
+            <label class="form-label fs-11 fw-700 text-dark mb-1">Mobile Number *</label>
+            <input type="tel" class="form-control form-control-sm" placeholder="10-digit mobile number" [(ngModel)]="inquiryForm.mobile" name="mobile" required>
+          </div>
+
+          <!-- LOCKED SITE FIELD (PRE-SELECTED TO CURRENT SITE) -->
+          <div class="mb-2.5">
+            <label class="form-label fs-11 fw-700 text-dark mb-1">
+              Selected Project Site
+            </label>
+            <div>
+              <input type="text"
+                     class="form-control form-control-sm locked-site-input"
+                     [value]="site?.site_name ? (site.site_name + ' (' + (site.city || 'Uttar Pradesh') + ')') : 'AIMA Site (Kanpur)'"
+                     readonly disabled>
+            </div>
+            <div class="fs-10 text-muted mt-1">
+              <i class="fas fa-info-circle me-1 text-gold"></i>Site is locked to your selected property. To select another site, go back to the Home Page.
+            </div>
+          </div>
+
+          <div class="mb-2.5">
+            <label class="form-label fs-11 fw-700 text-dark mb-1">Interested In</label>
+            <select class="form-select form-select-sm" [(ngModel)]="inquiryForm.interest" name="interest">
+              <option>Plot Booking — 100 Gaj</option>
+              <option>Plot Booking — 50 Gaj</option>
+              <option>Site Visit Request</option>
+              <option>General Inquiry</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fs-11 fw-700 text-dark mb-1">Message / Requirements (Optional)</label>
+            <textarea class="form-control form-control-sm" rows="2" placeholder="Mention plot preference, visit timing..." [(ngModel)]="inquiryForm.message" name="message"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-emerald w-100 py-2 fs-12 fw-700 shadow-sm" [disabled]="inquirySubmitting">
+            <i class="fas" [ngClass]="inquirySubmitting ? 'fa-spinner fa-spin me-2' : 'fa-bookmark me-2'"></i>
+            {{ inquirySubmitting ? 'Submitting...' : 'Book Plot Now' }}
+          </button>
+        </form>
+      </div>
+
+    </section>
+
+    <!-- RIGHT PANEL: SITE IMAGE LAYOUT -->
+    <section #siteImageStage class="site-image-panel">
+      <div class="image-toolbar">
+        <button type="button" class="tool-btn" (click)="zoomOut()" title="Zoom out"><i class="fas fa-minus"></i></button>
+        <button type="button" class="tool-btn" (click)="resetView()" title="Reset view"><i class="fas fa-rotate-right"></i></button>
+        <button type="button" class="tool-btn" (click)="zoomIn()" title="Zoom in"><i class="fas fa-plus"></i></button>
+      </div>
+
+      <div class="image-caption">
+        <span>Master Layout Plan</span>
+        <strong>{{ zoom * 100 | number:'1.0-0' }}%</strong>
+      </div>
+
+      <div class="map-stage">
+        <svg
+          class="map-canvas"
+          *ngIf="siteMapUrl"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          [style.aspect-ratio]="imageAspectRatio || '16/10'"
+          [style.transform]="imageTransform"
+          [attr.aria-label]="(site?.site_name || 'Project') + ' site layout'">
+          <image
+            [attr.href]="siteMapUrl"
+            x="0"
+            y="0"
+            width="100"
+            height="100"
+            preserveAspectRatio="none"
+            (load)="onSiteImageLoad($event)"></image>
+        </svg>
+        <div class="map-empty" *ngIf="!siteMapUrl">
+          <i class="fas fa-map fs-1 text-gold mb-2"></i>
+          <p class="fs-12 text-muted mb-0">Master layout plan image is being updated.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- SITE DOCUMENTS SECTION -->
+  <section class="public-site-documents" *ngIf="!loading && !error">
+    <div class="documents-heading">
+      <div>
+        <span>Project Records</span>
+        <h2>Site Documents</h2>
+      </div>
+      <i class="fas fa-shield-halved"></i>
+    </div>
+
+    <div class="documents-state" *ngIf="documentsLoading">
+      <i class="fas fa-spinner fa-spin me-2"></i> Loading documents...
+    </div>
+    <div class="documents-state error" *ngIf="!documentsLoading && documentsError">
+      <i class="fas fa-circle-exclamation me-2"></i> {{ documentsError }}
+    </div>
+    <div class="documents-state" *ngIf="!documentsLoading && !documentsError && !siteDocuments.length">
+      No public documents available for this site.
+    </div>
+
+    <div class="public-document-grid" *ngIf="!documentsLoading && !documentsError && siteDocuments.length">
+      <article class="public-document-card" *ngFor="let document of siteDocuments">
+        <i [class]="documentIcon(document)"></i>
+        <div>
+          <strong>{{ document.document_name }}</strong>
+          <span>{{ document.document_type || 'Site document' }}</span>
+          <p *ngIf="document.description">{{ document.description }}</p>
+        </div>
+        <a [href]="documentUrl(document)" target="_blank" rel="noopener" class="btn btn-outline-green btn-sm">
+          View Document <i class="fas fa-arrow-up-right-from-square ms-1"></i>
+        </a>
+      </article>
+    </div>
+  </section>
+</section>

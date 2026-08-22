@@ -45,18 +45,10 @@ export class ApiService {
     return this.delete(path, admin);
   }
   postForm(path: string, form: FormData, admin = false): Observable<any> {
-    const token = admin
-      ? localStorage.getItem('mmr_admin_token')
-      : localStorage.getItem('mmr_user_token');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
-    return this.http.post(`${BASE_URL}${path}`, form, { headers });
+    return this.http.post(`${BASE_URL}${path}`, form, { headers: this.headers(admin) });
   }
   putForm(path: string, form: FormData, admin = false): Observable<any> {
-    const token = admin
-      ? localStorage.getItem('mmr_admin_token')
-      : localStorage.getItem('mmr_user_token');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
-    return this.http.put(`${BASE_URL}${path}`, form, { headers });
+    return this.http.put(`${BASE_URL}${path}`, form, { headers: this.headers(admin) });
   }
 
   // ── AUTH — User ──────────────────────────────────
@@ -335,6 +327,11 @@ export class ApiService {
   testEmail(email: string) { return this.post('/api/admin/settings/test-email', { email }, true); }
   getRegistrationToggle() { return this.get('/api/admin/settings/registration-toggle', {}, true); }
   setRegistrationToggle(enabled: boolean) { return this.post('/api/admin/settings/registration-toggle', { enabled }, true); }
+
+  // Inquiries API
+  submitInquiry(data: any) { return this.post('/api/inquiries', data); }
+  getCaptchaChallenge() { return this.get('/api/captcha/enquiry'); }
+  getAdminInquiries(params: any = {}) { return this.get('/api/admin/inquiries', params, true); }
 
   // Wallet & Withdrawals (Admin)
   adminGetWalletTransactions(params: any = {}) { return this.get('/api/admin/wallet/transactions', params, true); }

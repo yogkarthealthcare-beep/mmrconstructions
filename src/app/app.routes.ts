@@ -6,6 +6,7 @@ import { AdminLoginComponent } from './pages/admin-login/admin-login.component';
 import { CompanyDocumentsComponent } from './pages/company-documents/company-documents.component';
 import { LegalPageComponent } from './pages/legal-page/legal-page.component';
 import { SiteMapComponent } from './pages/site-map/site-map.component';
+import { SiteMapNewComponent } from './pages/site-map-new/site-map-new.component';
 import { SignupComponent } from './pages/signup/signup.component';
 import { VerifyOtpComponent } from './pages/verify-otp/verify-otp.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
@@ -17,6 +18,7 @@ import { ApprovalsComponent } from './admin/approvals/approvals.component';
 import { CustomersComponent } from './admin/customers/customers.component';
 import { AssociatesComponent } from './admin/associates/associates.component';
 import { AssociateDetailComponent } from './admin/associate-detail/associate-detail.component';
+import { BookingReportComponent } from './admin/booking-report/booking-report.component';
 import { SitesMgmtComponent } from './admin/sites-mgmt/sites-mgmt.component';
 import { NewSiteAreaComponent } from './admin/new-site-area/new-site-area.component';
 import { PlotDetectorToolComponent } from './admin/plot-detector-tool/plot-detector-tool.component';
@@ -80,6 +82,7 @@ import { InvestorProfileComponent } from './investor/investor-profile/investor-p
 import { BlogListComponent } from './pages/blog-list/blog-list.component';
 import { BlogDetailComponent } from './pages/blog-detail/blog-detail.component';
 import { AllInvestorsComponent } from './pages/all-investors/all-investors.component';
+import { AllSitesComponent } from './pages/all-sites/all-sites.component';
 
 export const routes: Routes = [
   { path: '',                     component: HomeComponent },
@@ -98,6 +101,9 @@ export const routes: Routes = [
   { path: 'terms-and-conditions', component: LegalPageComponent, data: { type: 'terms' } },
   { path: 'site-map/:id',         component: SiteMapComponent },
   { path: 'site-map',             component: SiteMapComponent },
+  { path: 'site-map-new/:id',     component: SiteMapNewComponent },
+  { path: 'site-map-new',         component: SiteMapNewComponent },
+  { path: 'all-sites',            component: AllSitesComponent },
 
   {
     path: 'admin', component: AdminLayoutComponent,
@@ -109,6 +115,7 @@ export const routes: Routes = [
       { path: 'customers',           component: CustomersComponent },
       { path: 'associates',          component: AssociatesComponent },
       { path: 'associate-detail',     component: AssociateDetailComponent },
+      { path: 'booking-report',      component: BookingReportComponent },
       { path: 'sites',               component: SitesMgmtComponent },
       { path: 'new-site-area',        component: NewSiteAreaComponent },
       { path: 'plot-detector-tool',  component: PlotDetectorToolComponent },

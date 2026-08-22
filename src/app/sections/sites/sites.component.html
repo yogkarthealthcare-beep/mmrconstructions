@@ -16,7 +16,7 @@
       </div>
     </div>
     <div class="row g-4">
-      <div class="col-sm-6 col-xl-4" *ngFor="let site of sites">
+      <div class="col-sm-6 col-xl-4" *ngFor="let site of displaySites">
         <div class="site-card">
           <div class="site-img">
             <img [src]="site.img" [alt]="site.name" loading="lazy"/>
@@ -37,18 +37,21 @@
                 <i [class]="tag.icon"></i> {{ tag.label }}
               </span>
             </div>
-            <a [routerLink]="['/site-map', site.site_id || 1]" class="btn btn-green w-100"><i class="fas fa-map me-2"></i>View Plot Map</a>
+            <a *ngIf="isMasterPropertyToolsOn" [routerLink]="['/site-map', site.site_id || 1]" class="btn btn-green w-100"><i class="fas fa-map me-2"></i>View Plot Map</a>
+            <a *ngIf="!isMasterPropertyToolsOn" [routerLink]="['/site-map-new', site.site_id || 1]" class="btn btn-green w-100"><i class="fas fa-bookmark me-2"></i>Book Your Plot Now</a>
           </div>
         </div>
       </div>
       <div class="col-sm-6 col-xl-4">
-        <div class="site-card d-flex flex-column justify-content-center align-items-center text-center h-100" style="background:var(--grad-green);min-height:340px;border:none;">
+        <div class="site-card d-flex flex-column justify-content-center align-items-center text-center h-100 p-4" style="background:var(--grad-green);min-height:340px;border:none;">
           <div style="width:60px;height:60px;background:rgba(201,168,76,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
-            <i class="fas fa-calendar-check" style="color:var(--clr-gold-lt);font-size:24px;"></i>
+            <i class="fas fa-layer-group" style="color:var(--clr-gold-lt);font-size:24px;"></i>
           </div>
-          <h5 class="fw-bold text-white mb-2" style="font-family:var(--ff-display);">Site Visit करें</h5>
-          <p style="color:rgba(255,255,255,.65);font-size:13px;margin-bottom:20px;">Personal visit fix करें और plot खुद देखें।</p>
-          <button class="btn btn-gold" (click)="scrollTo('contact')"><i class="fas fa-calendar-alt me-2"></i>Book Visit</button>
+          <h5 class="fw-bold text-white mb-2" style="font-family:var(--ff-display);font-size:18px;">Or site dekhne ke liye click kare</h5>
+          <p style="color:rgba(255,255,255,.75);font-size:13px;margin-bottom:20px;">सभी MMR प्रोजेक्ट साइट्स और प्लॉट्स की जानकारी देखें।</p>
+          <a [routerLink]="['/all-sites']" class="btn btn-gold w-100 py-2.5 fw-700 shadow-sm">
+            <i class="fas fa-arrow-right me-2"></i>Or site dekhne ke liye click kare
+          </a>
         </div>
       </div>
     </div>

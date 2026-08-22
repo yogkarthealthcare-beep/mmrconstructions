@@ -1,0 +1,247 @@
+<div class="booking-report-page p-3">
+  <!-- PAGE TOP BAR -->
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-800 text-dark mb-0.5 d-flex align-items-center">
+        <i class="fas fa-file-signature text-emerald me-2"></i>Booking Report
+      </h4>
+      <p class="text-muted fs-12 mb-0">All plot booking requests submitted from website site maps &amp; property cards</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="fetchBookingReports()">
+        <i class="fas fa-rotate me-1"></i> Refresh List
+      </button>
+    </div>
+  </div>
+
+  <!-- SUMMARY STAT CARDS -->
+  <div class="row g-2 mb-3">
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-box bg-white p-3 rounded-12 border shadow-xs">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="fs-11 fw-700 text-muted uppercase">Total Booking Leads</span>
+            <h3 class="fw-800 text-dark mb-0 mt-1">{{ bookings.length }}</h3>
+          </div>
+          <div class="icon-circle bg-emerald-subtle text-emerald"><i class="fas fa-bookmark"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-box bg-white p-3 rounded-12 border shadow-xs">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="fs-11 fw-700 text-muted uppercase">Open Requests</span>
+            <h3 class="fw-800 text-amber mb-0 mt-1">{{ openCount }}</h3>
+          </div>
+          <div class="icon-circle bg-amber-subtle text-amber"><i class="fas fa-clock"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-box bg-white p-3 rounded-12 border shadow-xs">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="fs-11 fw-700 text-muted uppercase">Followed Up</span>
+            <h3 class="fw-800 text-primary mb-0 mt-1">{{ followUpCount }}</h3>
+          </div>
+          <div class="icon-circle bg-primary-subtle text-primary"><i class="fas fa-phone"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-box bg-white p-3 rounded-12 border shadow-xs">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="fs-11 fw-700 text-muted uppercase">Closed / Confirmed</span>
+            <h3 class="fw-800 text-emerald mb-0 mt-1">{{ closedCount }}</h3>
+          </div>
+          <div class="icon-circle bg-emerald-subtle text-emerald"><i class="fas fa-check-circle"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div *ngIf="toast" class="alert alert-success py-2 px-3 fs-12 mb-3 shadow-sm border-0 d-flex align-items-center">
+    <i class="fas fa-check-circle me-2"></i>{{ toast }}
+  </div>
+
+  <!-- SEARCH & FILTER CONTROLS -->
+  <div class="bg-white p-3 rounded-12 border shadow-xs mb-3">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-5">
+        <div class="position-relative">
+          <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted fs-12"></i>
+          <input type="text" class="form-control form-control-sm ps-4.5" [(ngModel)]="search" placeholder="Search customer name, phone, site name...">
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <select class="form-select form-select-sm" [(ngModel)]="siteFilter">
+          <option value="all">All Sites</option>
+          <option *ngFor="let site of availableSites" [value]="site">{{ site }}</option>
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <select class="form-select form-select-sm" [(ngModel)]="statusFilter">
+          <option value="all">All Status</option>
+          <option value="open">Open Requests</option>
+          <option value="called">Followed Up</option>
+          <option value="closed">Closed / Confirmed</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA TABLE PANEL -->
+  <div class="bg-white rounded-12 border shadow-xs p-3">
+    <div *ngIf="loading" class="text-center py-5 text-muted">
+      <i class="fas fa-spinner fa-spin fs-2 mb-2"></i>
+      <p class="fs-12 mb-0">Loading booking report records...</p>
+    </div>
+
+    <div *ngIf="!loading && filtered.length === 0" class="text-center py-5 text-muted">
+      <i class="fas fa-clipboard-list fs-1 mb-2 text-gold opacity-50"></i>
+      <h6 class="fw-700 text-dark mb-1">No Plot Booking Records Found</h6>
+      <p class="fs-12 mb-0">No booking requests match your current search/filter parameters.</p>
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading && filtered.length > 0">
+      <table class="table align-middle table-hover mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="fs-11 fw-700 text-muted uppercase">Customer Profile</th>
+            <th class="fs-11 fw-700 text-muted uppercase">Selected Project Site</th>
+            <th class="fs-11 fw-700 text-muted uppercase">Plot Preference</th>
+            <th class="fs-11 fw-700 text-muted uppercase">Message / Notes</th>
+            <th class="fs-11 fw-700 text-muted uppercase">Booking Date</th>
+            <th class="fs-11 fw-700 text-muted uppercase">Status</th>
+            <th class="fs-11 fw-700 text-muted uppercase text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of filtered">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-sm bg-emerald-subtle text-emerald fw-700 rounded-circle d-flex align-items-center justify-content-center fs-11">
+                  {{ getInitials(b.name) }}
+                </div>
+                <div>
+                  <div class="fw-700 text-dark fs-12">{{ b.name }}</div>
+                  <div class="fs-11 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ b.mobile }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fw-700 fs-11">
+                <i class="fas fa-building text-gold me-1"></i>{{ b.site_name }}
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border fw-600 fs-11">
+                <i class="fas fa-tag text-gold me-1"></i>{{ b.interest }}
+              </span>
+            </td>
+            <td>
+              <div class="fs-11 text-dark text-truncate" style="max-width: 200px;" [title]="b.message">
+                "{{ b.message || 'Plot booking requested' }}"
+              </div>
+            </td>
+            <td>
+              <div class="fs-11 text-dark fw-600">{{ b.date | date:'mediumDate' }}</div>
+              <div class="fs-10 text-muted">{{ b.source_page }}</div>
+            </td>
+            <td>
+              <select class="form-select form-select-xs status-select"
+                [ngModel]="b.status"
+                (change)="updateStatus(b, $any($event.target).value)"
+                [class.bg-amber-subtle]="b.status==='open'"
+                [class.bg-primary-subtle]="b.status==='called'||b.status==='follow-up'"
+                [class.bg-emerald-subtle]="b.status==='closed'">
+                <option value="open">Open</option>
+                <option value="called">Follow-Up</option>
+                <option value="closed">Closed</option>
+              </select>
+            </td>
+            <td class="text-end">
+              <div class="dropdown d-inline-block position-relative">
+                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === b.id ? null : b.id)">
+                  <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 165px; border-radius: 10px;" *ngIf="activeRowId === b.id" (click)="$event.stopPropagation()">
+                  <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + b.mobile">
+                    <i class="fas fa-phone text-primary me-2 width-16"></i> Call Customer
+                  </a>
+                  <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + b.mobile" target="_blank">
+                    <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
+                  </a>
+                  <div class="dropdown-divider my-1"></div>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openDetailModal(b); activeRowId = null">
+                    <i class="fas fa-sticky-note text-info me-2 width-16"></i> Follow-up Notes
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING FOLLOW-UP NOTES MODAL -->
+<div class="modal-backdrop fade show" *ngIf="showDetailModal"></div>
+<div class="modal d-block fade show" tabIndex="-1" *ngIf="showDetailModal" (click)="closeModals()">
+  <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 rounded-14 shadow-lg">
+      <div class="modal-header bg-dark text-white rounded-top-14 py-3 px-4">
+        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-file-signature text-emerald me-2"></i>Booking Lead Details &amp; Follow-up</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
+      </div>
+
+      <div class="modal-body p-4" *ngIf="selectedBooking">
+        <div class="p-3 bg-light rounded-10 border mb-3">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <div class="fs-12 mb-1"><strong>Customer Name:</strong> {{ selectedBooking.name }}</div>
+              <div class="fs-12 mb-1"><strong>Mobile:</strong> {{ selectedBooking.mobile }}</div>
+              <div class="fs-12"><strong>Email:</strong> {{ selectedBooking.email || '—' }}</div>
+            </div>
+            <div class="col-md-6">
+              <div class="fs-12 mb-1"><strong>Selected Project Site:</strong> <span class="badge bg-emerald-subtle text-emerald border ms-1"><i class="fas fa-building text-gold me-1"></i>{{ selectedBooking.site_name }}</span></div>
+              <div class="fs-12 mb-1"><strong>Plot Preference:</strong> {{ selectedBooking.interest }}</div>
+              <div class="fs-12"><strong>Status:</strong> <span class="badge bg-emerald-subtle text-emerald">{{ selectedBooking.status | uppercase }}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="fw-700 text-dark fs-12 mb-1"><i class="fas fa-comment-alt text-emerald me-1.5"></i>Original Customer Requirement</h6>
+          <div class="p-2.5 bg-white rounded border fs-12 text-muted italic">
+            "{{ selectedBooking.message || 'Plot booking requested via site map' }}"
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="fw-700 text-dark fs-12 mb-1"><i class="fas fa-history text-primary me-1.5"></i>Follow-up Call Notes</h6>
+          <pre class="p-2.5 bg-dark text-light rounded fs-11 font-monospace mb-0" style="max-height: 140px; overflow-y: auto;">{{ selectedBooking.notes || 'No follow-up notes recorded yet.' }}</pre>
+        </div>
+
+        <div>
+          <label class="form-label fs-11 fw-700 text-dark">Add Call / Site Visit Note</label>
+          <div class="d-flex gap-2">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newNoteText" placeholder="e.g. Spoke to customer. Site visit fixed for Saturday...">
+            <button class="btn btn-emerald btn-xs px-3" (click)="addNoteToBooking()">
+              <i class="fas fa-paper-plane me-1"></i> Save Note
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

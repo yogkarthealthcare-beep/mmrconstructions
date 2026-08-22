@@ -58,6 +58,14 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       ]
     },
     {
+      label: 'BOOKING REPORT',
+      icon: 'fas fa-file-signature',
+      expanded: false,
+      items: [
+        { icon: 'fas fa-clipboard-list', label: 'Booking Report', route: '/admin/booking-report', badge: 'NEW' },
+      ]
+    },
+    {
       label: 'PROPERTY & PLOT',
       icon: 'fas fa-building',
       expanded: false,
@@ -126,6 +134,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fab fa-whatsapp', label: 'WhatsApp Automation', route: '/admin/whatsapp' },
         { icon: 'fas fa-credit-card', label: 'Payment Gateways', route: '/admin/payment-gateways' },
         { icon: 'fas fa-sliders-h', label: 'General Settings', route: '/admin/settings' },
+        { icon: 'fas fa-shield-alt', label: 'Control', route: '/admin/control' },
         { icon: 'fas fa-key', label: 'Change Password', route: '/admin/change-password' },
       ]
     }

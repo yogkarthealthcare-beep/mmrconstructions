@@ -107,6 +107,7 @@
       <thead>
         <tr>
           <th>Lead Customer Profile</th>
+          <th>Selected Site</th>
           <th>Topic &amp; Interest</th>
           <th>Message Note</th>
           <th>Priority</th>
@@ -129,13 +130,18 @@
             </div>
           </td>
           <td>
+            <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fw-600 fs-11">
+              <i class="fas fa-building text-gold me-1"></i>{{ e.site_name || 'General Inquiry' }}
+            </span>
+          </td>
+          <td>
             <span class="badge bg-light text-dark border fw-600">
               <i class="fas fa-tag text-gold me-1"></i>{{ e.interest }}
             </span>
           </td>
           <td>
-            <div class="fs-11 text-dark text-truncate" style="max-width: 200px;" [title]="e.message">
-              "{{ e.message }}"
+            <div class="fs-11 text-dark text-truncate" style="max-width: 180px;" [title]="e.message">
+              "{{ e.message || '-' }}"
             </div>
           </td>
           <td>
@@ -274,6 +280,7 @@
               <div class="fs-12"><strong>Email:</strong> {{ selectedEnquiry.email || '—' }}</div>
             </div>
             <div class="col-md-6">
+              <div class="fs-12 mb-1"><strong>Selected Site:</strong> <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle ms-1"><i class="fas fa-building text-gold me-1"></i>{{ selectedEnquiry.site_name || 'General Inquiry' }}</span></div>
               <div class="fs-12 mb-1"><strong>Topic:</strong> {{ selectedEnquiry.interest }}</div>
               <div class="fs-12 mb-1"><strong>Priority:</strong> <span class="badge bg-warning text-dark">{{ selectedEnquiry.priority | uppercase }}</span></div>
               <div class="fs-12"><strong>Status:</strong> <span class="badge bg-success">{{ selectedEnquiry.status | uppercase }}</span></div>

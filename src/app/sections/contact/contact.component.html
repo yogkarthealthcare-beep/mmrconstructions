@@ -41,6 +41,9 @@
           <div *ngIf="submitted" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r-md);padding:12px 16px;margin-bottom:20px;">
             <i class="fas fa-check-circle" style="color:#16a34a;margin-right:8px;"></i><span style="font-size:14px;">Thank you! We'll contact you shortly.</span>
           </div>
+          <div *ngIf="errorMessage" style="background:#fef2f2;border:1px solid #fecaca;border-radius:var(--r-md);padding:12px 16px;margin-bottom:20px;color:#dc2626;font-size:13px;">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ errorMessage }}
+          </div>
           <form (ngSubmit)="onSubmit()" #contactForm="ngForm">
             <div class="row g-3">
               <div class="col-sm-6">
@@ -51,7 +54,14 @@
                 <label class="f-label">Mobile Number *</label>
                 <input type="tel" class="f-input" placeholder="10-digit mobile" [(ngModel)]="form.mobile" name="mobile" required/>
               </div>
-              <div class="col-12">
+              <div class="col-sm-6">
+                <label class="f-label">Select Project / Site</label>
+                <select class="f-select" [(ngModel)]="form.site_id" name="site_id">
+                  <option [ngValue]="null">-- Select Project Site --</option>
+                  <option *ngFor="let s of sites" [ngValue]="s.site_id">{{ s.site_name }} ({{ s.city }})</option>
+                </select>
+              </div>
+              <div class="col-sm-6">
                 <label class="f-label">Interested In</label>
                 <select class="f-select" [(ngModel)]="form.interest" name="interest">
                   <option>Plot Booking — 100 Gaj</option>
@@ -66,7 +76,10 @@
                 <textarea class="f-input" rows="3" placeholder="Your message..." [(ngModel)]="form.message" name="message"></textarea>
               </div>
               <div class="col-12 mt-1">
-                <button type="submit" class="btn btn-green btn-lg w-100"><i class="fas fa-paper-plane me-2"></i>Send Enquiry</button>
+                <button type="submit" class="btn btn-green btn-lg w-100" [disabled]="submitting">
+                  <i class="fas" [ngClass]="submitting ? 'fa-spinner fa-spin me-2' : 'fa-paper-plane me-2'"></i>
+                  {{ submitting ? 'Submitting...' : 'Send Enquiry' }}
+                </button>
               </div>
             </div>
           </form>
