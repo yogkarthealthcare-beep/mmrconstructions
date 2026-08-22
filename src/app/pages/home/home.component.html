@@ -86,52 +86,105 @@
 <!-- ENQUIRY POPUP MODAL -->
 <div *ngIf="showEnquiryModal" class="modal-backdrop-custom">
   <div class="modal-card-custom">
-    <div class="contact-box position-relative">
-      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" (click)="closeEnquiryModal()"></button>
-      <h5 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:24px;">Send Enquiry</h5>
+    <!-- Left Side -->
+    <div class="modal-left">
+      <div class="modal-left-content">
+        <img src="assets/images/mmr-logo.png" alt="MMR Constructions" class="modal-logo">
+        <h2>Let's Find the<br><span>Perfect Plot</span>for You!</h2>
+        <div class="modal-divider"><i class="fas fa-leaf"></i></div>
+        <p>Fill out the form and our team will get back to you shortly.</p>
+      </div>
+    </div>
+    
+    <!-- Right Side -->
+    <div class="modal-right">
+      <button type="button" class="btn-close-custom" (click)="closeEnquiryModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      <h3 class="modal-title">Send Enquiry</h3>
+      
       <div *ngIf="submitted" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r-md);padding:12px 16px;margin-bottom:20px;">
         <i class="fas fa-check-circle" style="color:#16a34a;margin-right:8px;"></i><span style="font-size:14px;">Thank you! We'll contact you shortly.</span>
       </div>
       <div *ngIf="errorMessage" style="background:#fef2f2;border:1px solid #fecaca;border-radius:var(--r-md);padding:12px 16px;margin-bottom:20px;color:#dc2626;font-size:13px;">
         <i class="fas fa-exclamation-circle me-2"></i>{{ errorMessage }}
       </div>
+
       <form (ngSubmit)="onSubmitEnquiry()" #enquiryPopupForm="ngForm" *ngIf="!submitted">
         <div class="row g-3">
           <div class="col-sm-6">
-            <label class="f-label">Your Name *</label>
-            <input type="text" class="f-input" placeholder="Full Name" [(ngModel)]="form.name" name="name" required/>
+            <div class="input-with-icon">
+              <label class="f-label">Your Name *</label>
+              <i class="far fa-user icon"></i>
+              <input type="text" class="f-input" placeholder="Full Name" [(ngModel)]="form.name" name="name" required/>
+            </div>
           </div>
           <div class="col-sm-6">
-            <label class="f-label">Mobile Number *</label>
-            <input type="tel" class="f-input" placeholder="10-digit mobile" [(ngModel)]="form.mobile" name="mobile" required/>
+            <div class="input-with-icon">
+              <label class="f-label">Mobile Number *</label>
+              <i class="fas fa-phone-alt icon" style="font-size: 13px;"></i>
+              <input type="tel" class="f-input" placeholder="10-digit mobile" [(ngModel)]="form.mobile" name="mobile" required/>
+            </div>
           </div>
           <div class="col-sm-6">
-            <label class="f-label">Select Project / Site</label>
-            <select class="f-select" [(ngModel)]="form.site_id" name="site_id">
-              <option [ngValue]="null">-- Select Project Site --</option>
-              <option *ngFor="let s of sites" [ngValue]="s.site_id">{{ s.site_name }} ({{ s.city }})</option>
-            </select>
+            <div class="input-with-icon">
+              <label class="f-label">Select Project / Site</label>
+              <i class="fas fa-map-marker-alt icon"></i>
+              <select class="f-select" [(ngModel)]="form.site_id" name="site_id">
+                <option [ngValue]="null">-- Select Project Site --</option>
+                <option *ngFor="let s of sites" [ngValue]="s.site_id">{{ s.site_name }} ({{ s.city }})</option>
+              </select>
+            </div>
           </div>
           <div class="col-sm-6">
-            <label class="f-label">Interested In</label>
-            <select class="f-select" [(ngModel)]="form.interest" name="interest">
-              <option>Plot Booking — 100 Gaj</option>
-              <option>Plot Booking — 50 Gaj</option>
-              <option>Associate / Commission Program</option>
-              <option>Site Visit Request</option>
-              <option>General Enquiry</option>
-            </select>
+            <div class="input-with-icon">
+              <label class="f-label">Interested In</label>
+              <i class="far fa-building icon"></i>
+              <select class="f-select" [(ngModel)]="form.interest" name="interest">
+                <option>Plot Booking — 100 Gaj</option>
+                <option>Plot Booking — 50 Gaj</option>
+                <option>Associate / Commission Program</option>
+                <option>Site Visit Request</option>
+                <option>General Enquiry</option>
+              </select>
+            </div>
           </div>
           <div class="col-12">
-            <label class="f-label">Message</label>
-            <textarea class="f-input" rows="3" placeholder="Your message..." [(ngModel)]="form.message" name="message"></textarea>
+            <div class="input-with-icon">
+              <label class="f-label">Message</label>
+              <i class="far fa-comment-dots icon"></i>
+              <textarea class="f-input" placeholder="Your message..." [(ngModel)]="form.message" name="message"></textarea>
+              <div class="char-count">{{ form.message?.length || 0 }}/500</div>
+            </div>
           </div>
-          <div class="col-12 mt-1">
-            <button type="submit" class="btn btn-green btn-lg w-100" [disabled]="submitting">
-              <i class="fas" [ngClass]="submitting ? 'fa-spinner fa-spin me-2' : 'fa-paper-plane me-2'"></i>
-              {{ submitting ? 'Submitting...' : 'Send Enquiry' }}
-            </button>
+        </div>
+
+        <div class="feature-badges">
+          <div class="badge-item">
+            <i class="fas fa-shield-alt"></i>
+            <span>Trusted<br>Developers</span>
           </div>
+          <div class="badge-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>Prime<br>Locations</span>
+          </div>
+          <div class="badge-item">
+            <i class="fas fa-award"></i>
+            <span>Best Price<br>Guarantee</span>
+          </div>
+          <div class="badge-item">
+            <i class="fas fa-headset"></i>
+            <span>Quick<br>Support</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit-enquiry" [disabled]="submitting">
+          <i class="fas" [ngClass]="submitting ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+          {{ submitting ? 'Submitting...' : 'Send Enquiry' }}
+        </button>
+
+        <div class="safe-info">
+          <i class="fas fa-lock"></i> Your information is safe with us. We never share your details.
         </div>
       </form>
     </div>
