@@ -93,12 +93,13 @@ export class HomeComponent implements OnInit {
       error: () => {}
     });
 
-    // Show popup after a short delay
+    // Show popup after a short delay (temporarily disabled sessionStorage check for testing)
     setTimeout(() => {
-      if (!sessionStorage.getItem('enquiryPopupShown')) {
-        this.showEnquiryModal = true;
-        sessionStorage.setItem('enquiryPopupShown', 'true');
-      }
+      this.showEnquiryModal = true;
+      // if (!sessionStorage.getItem('enquiryPopupShown')) {
+      //   this.showEnquiryModal = true;
+      //   sessionStorage.setItem('enquiryPopupShown', 'true');
+      // }
     }, 1500);
   }
 
