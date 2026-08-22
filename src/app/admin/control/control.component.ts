@@ -29,7 +29,7 @@ export class ControlComponent implements OnInit {
 
   loadSettings() {
     this.loading = true;
-    this.api.get('/api/admin/auth-settings').subscribe({
+    this.api.get('/api/admin/auth-settings', {}, true).subscribe({
       next: (res: any) => {
         this.loading = false;
         if (res && res.success) {
@@ -53,7 +53,7 @@ export class ControlComponent implements OnInit {
     this.message = '';
     this.error = '';
     
-    this.api.post('/api/admin/auth-settings', this.settings).subscribe({
+    this.api.post('/api/admin/auth-settings', this.settings, true).subscribe({
       next: (res: any) => {
         this.saving = false;
         if (res && res.success) {

@@ -14,6 +14,7 @@ import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password
 // Admin
 import { AdminLayoutComponent } from './admin/layout/layout.component';
 import { AdminDashboardComponent } from './admin/dashboard/dashboard.component';
+import { ControlComponent } from './admin/control/control.component';
 import { ApprovalsComponent } from './admin/approvals/approvals.component';
 import { CustomersComponent } from './admin/customers/customers.component';
 import { AssociatesComponent } from './admin/associates/associates.component';
@@ -145,6 +146,7 @@ export const routes: Routes = [
       { path: 'whatsapp',            component: WhatsappAdminComponent },
       { path: 'payment-gateways',    component: PaymentGatewaySettingsComponent },
       { path: 'settings',            component: AdminSettingsComponent },
+      { path: 'control',             component: ControlComponent },
       { path: 'change-password',     component: ChangePasswordComponent },
     ]
   },

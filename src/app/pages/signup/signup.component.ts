@@ -110,7 +110,7 @@ export class SignupComponent implements OnInit {
         // Customer: Sponsor is optional with Admin fallback
         this.sponsorValid = true;
         this.sponsorName = 'Admin Sponsor (Default)';
-        this.sponsorCodeFormatted = 'MMR0001';
+        this.sponsorCodeFormatted = 'MMR00001';
         delete this.v['sponsor_invite_code'];
       } else {
         // Investor / Associate: Sponsor is mandatory
@@ -257,7 +257,7 @@ export class SignupComponent implements OnInit {
 
   private getEffectiveSponsorCode(): string {
     const code = this.form.sponsor_invite_code.replace(/\*/g, '').trim().toUpperCase();
-    return code || 'MMR0001'; // Admin fallback for Customer
+    return code || 'MMR00001'; // Admin fallback for Customer
   }
 
   submit() {

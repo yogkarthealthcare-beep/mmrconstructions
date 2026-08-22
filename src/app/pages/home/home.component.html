@@ -82,3 +82,58 @@
 
 <app-contact *ngIf="sectionVisibility['contact'] !== false"></app-contact>
 <app-footer></app-footer>
+
+<!-- ENQUIRY POPUP MODAL -->
+<div *ngIf="showEnquiryModal" class="modal-backdrop-custom">
+  <div class="modal-card-custom">
+    <div class="contact-box position-relative">
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" (click)="closeEnquiryModal()"></button>
+      <h5 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:24px;">Send Enquiry</h5>
+      <div *ngIf="submitted" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r-md);padding:12px 16px;margin-bottom:20px;">
+        <i class="fas fa-check-circle" style="color:#16a34a;margin-right:8px;"></i><span style="font-size:14px;">Thank you! We'll contact you shortly.</span>
+      </div>
+      <div *ngIf="errorMessage" style="background:#fef2f2;border:1px solid #fecaca;border-radius:var(--r-md);padding:12px 16px;margin-bottom:20px;color:#dc2626;font-size:13px;">
+        <i class="fas fa-exclamation-circle me-2"></i>{{ errorMessage }}
+      </div>
+      <form (ngSubmit)="onSubmitEnquiry()" #enquiryPopupForm="ngForm" *ngIf="!submitted">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="f-label">Your Name *</label>
+            <input type="text" class="f-input" placeholder="Full Name" [(ngModel)]="form.name" name="name" required/>
+          </div>
+          <div class="col-sm-6">
+            <label class="f-label">Mobile Number *</label>
+            <input type="tel" class="f-input" placeholder="10-digit mobile" [(ngModel)]="form.mobile" name="mobile" required/>
+          </div>
+          <div class="col-sm-6">
+            <label class="f-label">Select Project / Site</label>
+            <select class="f-select" [(ngModel)]="form.site_id" name="site_id">
+              <option [ngValue]="null">-- Select Project Site --</option>
+              <option *ngFor="let s of sites" [ngValue]="s.site_id">{{ s.site_name }} ({{ s.city }})</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="f-label">Interested In</label>
+            <select class="f-select" [(ngModel)]="form.interest" name="interest">
+              <option>Plot Booking — 100 Gaj</option>
+              <option>Plot Booking — 50 Gaj</option>
+              <option>Associate / Commission Program</option>
+              <option>Site Visit Request</option>
+              <option>General Enquiry</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="f-label">Message</label>
+            <textarea class="f-input" rows="3" placeholder="Your message..." [(ngModel)]="form.message" name="message"></textarea>
+          </div>
+          <div class="col-12 mt-1">
+            <button type="submit" class="btn btn-green btn-lg w-100" [disabled]="submitting">
+              <i class="fas" [ngClass]="submitting ? 'fa-spinner fa-spin me-2' : 'fa-paper-plane me-2'"></i>
+              {{ submitting ? 'Submitting...' : 'Send Enquiry' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

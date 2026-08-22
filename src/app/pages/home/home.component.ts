@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TopbarComponent } from '../../shared/topbar/topbar.component';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
@@ -16,11 +17,26 @@ import { ApiService } from '../../services/api.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, TopbarComponent, NavbarComponent, FooterComponent,
+  imports: [CommonModule, RouterLink, FormsModule, TopbarComponent, NavbarComponent, FooterComponent,
     HeroSliderComponent, SitesComponent, InvestorsComponent, EmiCalculatorComponent, BuybackComponent, EarnComponent, ContactComponent],
-  templateUrl: './home.component.html'
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css'
 })
 export class HomeComponent implements OnInit {
+  showEnquiryModal = false;
+  sites: any[] = [];
+  form = {
+    name: '',
+    mobile: '',
+    email: '',
+    site_id: null as number | null,
+    interest: 'Plot Booking — 100 Gaj',
+    message: ''
+  };
+  submitting = false;
+  submitted = false;
+  errorMessage = '';
+
   showHeroSlider = true;
   sectionVisibility: Record<string, boolean> = {
     investors: true,
@@ -64,5 +80,68 @@ export class HomeComponent implements OnInit {
       },
       error: () => {}
     });
+
+    this.api.getSites().subscribe({
+      next: (res: any) => {
+        const raw = Array.isArray(res) ? res : (res?.data || []);
+        this.sites = raw.map((s: any) => ({
+          site_id: Number(s.site_id || s.id),
+          site_name: s.site_name || s.name || 'Project Site',
+          city: s.city || 'Uttar Pradesh'
+        }));
+      },
+      error: () => {}
+    });
+
+    // Show popup after a short delay
+    setTimeout(() => {
+      if (!sessionStorage.getItem('enquiryPopupShown')) {
+        this.showEnquiryModal = true;
+        sessionStorage.setItem('enquiryPopupShown', 'true');
+      }
+    }, 1500);
+  }
+
+  onSubmitEnquiry() {
+    this.errorMessage = '';
+    const name = this.form.name.trim();
+    const mobile = this.form.mobile.replace(/\D/g, '');
+    if (name.length < 2) {
+      this.errorMessage = 'Please enter your full name.';
+      return;
+    }
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+      this.errorMessage = 'Please enter a valid 10-digit mobile number.';
+      return;
+    }
+
+    const selectedSite = this.sites.find(s => Number(s.site_id) === Number(this.form.site_id));
+    this.submitting = true;
+
+    this.api.submitInquiry({
+      full_name: name,
+      mobile_no: mobile,
+      email: this.form.email || null,
+      site_id: selectedSite ? selectedSite.site_id : null,
+      site_name: selectedSite ? selectedSite.site_name : null,
+      inquiry_message: this.form.message || null,
+      inquiry_type: this.form.interest || 'General Enquiry',
+      source_page: 'Home Page Popup'
+    }).subscribe({
+      next: () => {
+        this.submitting = false;
+        this.submitted = true;
+        this.form = { name: '', mobile: '', email: '', site_id: null, interest: 'Plot Booking — 100 Gaj', message: '' };
+        setTimeout(() => this.showEnquiryModal = false, 3000); // Close after 3s on success
+      },
+      error: (err: any) => {
+        this.submitting = false;
+        this.errorMessage = err?.error?.message || 'Unable to submit inquiry. Please try again.';
+      }
+    });
+  }
+
+  closeEnquiryModal() {
+    this.showEnquiryModal = false;
   }
 }
