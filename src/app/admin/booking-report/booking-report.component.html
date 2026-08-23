@@ -73,17 +73,17 @@
       <div class="col-md-5">
         <div class="position-relative">
           <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted fs-12"></i>
-          <input type="text" class="form-control form-control-sm ps-4.5" [(ngModel)]="search" placeholder="Search customer name, phone, site name...">
+          <input type="text" class="form-control form-control-sm ps-4.5" [(ngModel)]="search" (ngModelChange)="onFilterChange()" placeholder="Search customer name, phone, site name...">
         </div>
       </div>
       <div class="col-sm-6 col-md-3">
-        <select class="form-select form-select-sm" [(ngModel)]="siteFilter">
+        <select class="form-select form-select-sm" [(ngModel)]="siteFilter" (ngModelChange)="onFilterChange()">
           <option value="all">All Sites</option>
           <option *ngFor="let site of availableSites" [value]="site">{{ site }}</option>
         </select>
       </div>
       <div class="col-sm-6 col-md-3">
-        <select class="form-select form-select-sm" [(ngModel)]="statusFilter">
+        <select class="form-select form-select-sm" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
           <option value="all">All Status</option>
           <option value="open">Open Requests</option>
           <option value="called">Followed Up</option>
@@ -120,7 +120,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let b of filtered">
+          <tr *ngFor="let b of pagedBookings">
             <td>
               <div class="d-flex align-items-center gap-2">
                 <div class="avatar-sm bg-emerald-subtle text-emerald fw-700 rounded-circle d-flex align-items-center justify-content-center fs-11">
@@ -186,6 +186,20 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    
+    <!-- PAGINATION -->
+    <div class="d-flex align-items-center justify-content-between p-3 border-top bg-light rounded-bottom-12" *ngIf="!loading && filtered.length > 0">
+      <div class="text-muted fs-12 fw-600">
+        Showing {{ (page - 1) * pageSize + 1 }} to {{ page * pageSize > filtered.length ? filtered.length : page * pageSize }} of {{ filtered.length }} entries
+      </div>
+      <div class="d-flex gap-1">
+        <button class="btn btn-outline-secondary btn-sm px-3 rounded-6 fs-12 fw-600" [disabled]="page === 1" (click)="changePage(page - 1)">Prev</button>
+        <button class="btn btn-sm rounded-6 fs-12 fw-600 px-3" *ngFor="let p of [].constructor(totalPages); let i = index" 
+                [class.btn-gold]="page === i + 1" [class.btn-outline-secondary]="page !== i + 1" 
+                (click)="changePage(i + 1)">{{ i + 1 }}</button>
+        <button class="btn btn-outline-secondary btn-sm px-3 rounded-6 fs-12 fw-600" [disabled]="page === totalPages" (click)="changePage(page + 1)">Next</button>
+      </div>
     </div>
   </div>
 </div>

@@ -19,6 +19,9 @@ export class BookingReportComponent implements OnInit {
   siteFilter = 'all';
   activeRowId: any = null;
 
+  page = 1;
+  pageSize = 10;
+
   bookings: any[] = [];
   availableSites: string[] = [];
   toast = '';
@@ -98,6 +101,25 @@ export class BookingReportComponent implements OnInit {
 
       return matchStatus && matchSite && matchSearch;
     });
+  }
+
+  get pagedBookings(): any[] {
+    const startIndex = (this.page - 1) * this.pageSize;
+    return this.filtered.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filtered.length / this.pageSize) || 1;
+  }
+
+  changePage(p: number) {
+    if (p >= 1 && p <= this.totalPages) {
+      this.page = p;
+    }
+  }
+
+  onFilterChange() {
+    this.page = 1;
   }
 
   updateStatus(b: any, newStatus: string) {
