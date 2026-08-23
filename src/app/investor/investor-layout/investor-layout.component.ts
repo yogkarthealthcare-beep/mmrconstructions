@@ -25,6 +25,7 @@ export class InvestorLayoutComponent implements OnInit {
     { icon: 'fas fa-chart-line', label: 'Dashboard', route: '/investor/dashboard' },
     { icon: 'fas fa-list-alt', label: 'Transaction History', route: '/investor/transactions' },
     { icon: 'fas fa-user-circle', label: 'Edit Profile', route: '/investor/profile' },
+    { icon: 'fas fa-file-contract', label: 'Enrollment Form', route: '/investor/enrollment' },
     { icon: 'fas fa-file-upload', label: 'Document Upload', route: '/investor/documents' },
     { icon: 'fas fa-hand-holding-usd', label: 'Deposit', route: '/investor/deposit' },
     { icon: 'fas fa-wallet', label: 'Wallet', route: '/investor/wallet' },

@@ -116,6 +116,7 @@ export class UserLayoutComponent implements OnInit {
         expanded: false,
         items: [
           { icon: 'fas fa-folder-open', label: 'My Documents', route: `${p}/documents` },
+          { icon: 'fas fa-file-contract', label: 'Enrollment Form', route: `${p}/enrollment` },
           { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` },
           { icon: 'fas fa-user-circle', label: 'Profile & KYC', route: `${p}/profile` },
         ]

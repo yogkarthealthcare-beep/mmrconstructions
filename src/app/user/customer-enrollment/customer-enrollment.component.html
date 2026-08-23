@@ -1,0 +1,341 @@
+<div class="sheet">
+  <!-- ============ HEADER ============ -->
+  <div class="company-header">
+    <div class="logo">MMR</div>
+    <div class="company-text">
+      <h1>M.M.R. CONSTRUCTION &amp; DEVELOPERS PRIVATE LIMITED</h1>
+      <div class="sub">
+        <b>Head Office:</b> 00, Tribhuvan Khera, Sheshpur Nari &nbsp;|&nbsp;
+        <b>Corporate Office:</b> Unnao, Uttar Pradesh, India 209801<br>
+        <b>Ph No.</b> 9511119879 | 8429823067 &nbsp;|&nbsp;
+        <b>GST No.</b> 09AATCM6753A1Z5 &nbsp;|&nbsp; <b>CIN No.</b> U68200UP2025PTC229203
+      </div>
+    </div>
+  </div>
+
+  <form [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()">
+    <div class="title-banner">
+      <div class="en">CUSTOMER ENROLLMENT FORM (PROPERTY BUYER)</div>
+      <div class="hi">ग्राहक नामांकन फॉर्म (संपति खरीदार)</div>
+    </div>
+
+    <div class="meta-grid">
+      <div class="field"><label>Date</label><input type="date" formControlName="formDate"></div>
+      <div class="field app-no"><label>Application No.</label><input type="text" formControlName="applicationNo" placeholder="Auto-generated if left blank"></div>
+    </div>
+
+    <!-- ============ 1. PROPERTY & PROJECT DETAILS ============ -->
+    <section class="block">
+      <h2>1. Property &amp; Project Details</h2>
+      <div class="field"><label>Project Name</label><input type="text" formControlName="projectName"></div>
+
+      <fieldset class="inline-choices">
+        <legend>Property Type</legend>
+        <div class="choice-wrap">
+          <label><input type="radio" formControlName="propertyType" value="Residential Plot"> Residential Plot</label>
+          <label><input type="radio" formControlName="propertyType" value="Commercial Plot"> Commercial Plot</label>
+          <label><input type="radio" formControlName="propertyType" value="Flat/Apt"> Flat / Apt</label>
+          <label><input type="radio" formControlName="propertyType" value="Villa/House"> Villa / House</label>
+          <label><input type="radio" formControlName="propertyType" value="Other"> Other:
+            <input type="text" class="other-text" formControlName="propertyTypeOther">
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="row2">
+        <div class="field"><label>Plot / Flat No.</label><input type="text" formControlName="plotFlatNo"></div>
+        <div class="field"><label>Block / Tower</label><input type="text" formControlName="blockTower"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Size / Area</label><input type="text" formControlName="sizeArea"></div>
+        <div class="field"><label>Rate (per Sq. Ft./Yd.)</label><input type="number" formControlName="rate"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Basic Sale Price (BSP)</label><input type="number" formControlName="bsp"></div>
+        <div class="field"><label>PLC / Dev. Charges</label><input type="number" formControlName="plcDev"></div>
+      </div>
+      <div class="field"><label style="color:#b3261e;">Total Property Value (₹)</label>
+        <input type="number" [value]="totalPropertyValue" disabled style="background:#f2f6fb; padding:8px;">
+      </div>
+    </section>
+
+    <!-- ============ 2. FIRST APPLICANT DETAILS ============ -->
+    <section class="block">
+      <h2>2. First Applicant Details</h2>
+
+      <div class="photo-box" title="Click to attach passport size photo" (click)="photoInput1.click()">
+        <ng-container *ngIf="!photo1DataUrl">Affix Passport<br>Size Photo<br>(First Applicant)</ng-container>
+        <img *ngIf="photo1DataUrl" [src]="photo1DataUrl">
+        <input type="file" #photoInput1 accept="image/*" style="display:none;" (change)="onPhotoSelect($event, 1)">
+      </div>
+
+      <div class="field"><label>Applicant Name <span class="text-danger">*</span></label><input type="text" formControlName="applicantName" required></div>
+      <div class="field"><label>Father / Husband's Name</label><input type="text" formControlName="fhName"></div>
+
+      <div class="row2">
+        <div class="field"><label>Date of Birth</label><input type="date" formControlName="dob"></div>
+        <div class="field"><label>Age</label><input type="number" min="18" formControlName="age"></div>
+      </div>
+
+      <fieldset class="inline-choices">
+        <legend>Gender</legend>
+        <div class="choice-wrap">
+          <label><input type="radio" formControlName="gender" value="M"> M</label>
+          <label><input type="radio" formControlName="gender" value="F"> F</label>
+          <label><input type="radio" formControlName="gender" value="Other"> Other</label>
+        </div>
+      </fieldset>
+
+      <fieldset class="inline-choices">
+        <legend>Marital Status</legend>
+        <div class="choice-wrap">
+          <label><input type="radio" formControlName="maritalStatus" value="Single"> Single</label>
+          <label><input type="radio" formControlName="maritalStatus" value="Married"> Married</label>
+        </div>
+      </fieldset>
+
+      <fieldset class="inline-choices">
+        <legend>Nationality</legend>
+        <div class="choice-wrap">
+          <label><input type="radio" formControlName="nationality" value="Indian"> Indian</label>
+          <label><input type="radio" formControlName="nationality" value="NRI"> NRI</label>
+          <label><input type="radio" formControlName="nationality" value="PIO"> PIO</label>
+          <label><input type="radio" formControlName="nationality" value="Other"> Other:
+            <input type="text" class="other-text" formControlName="nationalityOther">
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="row2">
+        <div class="field"><label>PAN No.</label><input type="text" formControlName="pan" maxlength="10" style="text-transform:uppercase"></div>
+        <div class="field"><label>Aadhar No.</label><input type="text" formControlName="aadhar" maxlength="12"></div>
+      </div>
+      <div class="field"><label>Occupation</label><input type="text" formControlName="occupation"></div>
+
+      <div class="field"><label>Present Address</label><textarea formControlName="presentAddress" rows="2"></textarea></div>
+      <div class="row2">
+        <div class="field"><label>City / Dist.</label><input type="text" formControlName="presentCity"></div>
+        <div class="field"><label>State &amp; Pin Code</label><input type="text" formControlName="presentStatePin"></div>
+      </div>
+
+      <div class="field"><label>Permanent Address</label><textarea formControlName="permanentAddress" rows="2"></textarea></div>
+      <div class="row2">
+        <div class="field"><label>City / Dist.</label><input type="text" formControlName="permanentCity"></div>
+        <div class="field"><label>State &amp; Pin Code</label><input type="text" formControlName="permanentStatePin"></div>
+      </div>
+
+      <div class="row2">
+        <div class="field"><label>Mobile No. 1 <span class="text-danger">*</span></label><input type="tel" formControlName="mobile1" required></div>
+        <div class="field"><label>Mobile No. 2</label><input type="tel" formControlName="mobile2"></div>
+      </div>
+      <div class="field"><label>Email ID</label><input type="email" formControlName="email1"></div>
+    </section>
+
+    <!-- ============ 3. CO-APPLICANT DETAILS ============ -->
+    <section class="block">
+      <h2>3. Co-Applicant Details (if any)</h2>
+
+      <div class="photo-box" title="Click to attach passport size photo" (click)="photoInput2.click()">
+        <ng-container *ngIf="!photo2DataUrl">Affix Passport<br>Size Photo<br>(Co-Applicant)</ng-container>
+        <img *ngIf="photo2DataUrl" [src]="photo2DataUrl">
+        <input type="file" #photoInput2 accept="image/*" style="display:none;" (change)="onPhotoSelect($event, 2)">
+      </div>
+
+      <div class="field"><label>Co-Applicant Name</label><input type="text" formControlName="coApplicantName"></div>
+      <div class="field"><label>Father / Husband's Name</label><input type="text" formControlName="coFhName"></div>
+      <div class="field"><label>Relation with Applicant</label><input type="text" formControlName="coRelation"></div>
+
+      <div class="row2">
+        <div class="field"><label>Date of Birth</label><input type="date" formControlName="coDob"></div>
+        <div class="field"><label>Age</label><input type="number" formControlName="coAge"></div>
+      </div>
+
+      <fieldset class="inline-choices">
+        <legend>Gender</legend>
+        <div class="choice-wrap">
+          <label><input type="radio" formControlName="coGender" value="M"> M</label>
+          <label><input type="radio" formControlName="coGender" value="F"> F</label>
+          <label><input type="radio" formControlName="coGender" value="Other"> Other</label>
+        </div>
+      </fieldset>
+
+      <div class="row2">
+        <div class="field"><label>PAN No.</label><input type="text" formControlName="coPan" maxlength="10" style="text-transform:uppercase"></div>
+        <div class="field"><label>Aadhar No.</label><input type="text" formControlName="coAadhar" maxlength="12"></div>
+      </div>
+
+      <div class="field"><label>Present Address</label><textarea formControlName="coPresentAddress" rows="2"></textarea></div>
+      <div class="row2">
+        <div class="field"><label>Mobile No.</label><input type="tel" formControlName="coMobile"></div>
+        <div class="field"><label>Email ID</label><input type="email" formControlName="coEmail"></div>
+      </div>
+    </section>
+
+    <!-- ============ 4. NOMINEE DETAILS ============ -->
+    <section class="block">
+      <h2>4. Nominee Details</h2>
+      <div formArrayName="nominees">
+        <div *ngFor="let nom of nominees.controls; let i=index" [formGroupName]="i">
+          <div class="row2">
+            <div class="field"><label>Nominee Name</label><input type="text" formControlName="nomineeName"></div>
+            <div class="field"><label>Relation</label><input type="text" formControlName="nomineeRelation"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Age / DOB</label><input type="text" formControlName="nomineeAgeDob"></div>
+            <div class="field"><label>Aadhar No.</label><input type="text" formControlName="nomineeAadhar" maxlength="12"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 5. PAYMENT DETAILS ============ -->
+    <section class="block">
+      <h2>5. Payment Details (Initial Booking Amount)</h2>
+      <div class="row2">
+        <div class="field"><label>Booking Amount Paid (₹)</label><input type="number" formControlName="bookingAmount"></div>
+        <div class="field"><label>In Words</label><input type="text" formControlName="bookingAmountWords"></div>
+      </div>
+
+      <fieldset class="inline-choices">
+        <legend>Mode of Payment</legend>
+        <div class="choice-wrap">
+          <label><input type="radio" formControlName="paymentMode" value="Cash"> Cash</label>
+          <label><input type="radio" formControlName="paymentMode" value="Cheque"> Cheque</label>
+          <label><input type="radio" formControlName="paymentMode" value="Demand Draft"> Demand Draft</label>
+          <label><input type="radio" formControlName="paymentMode" value="NEFT/RTGS"> NEFT / RTGS</label>
+          <label><input type="radio" formControlName="paymentMode" value="UPI"> UPI</label>
+        </div>
+      </fieldset>
+
+      <div class="row3">
+        <div class="field"><label>Cheque / DD / Txn No.</label><input type="text" formControlName="txnNo"></div>
+        <div class="field"><label>Date</label><input type="date" formControlName="txnDate"></div>
+        <div class="field"><label>Drawn on Bank/Branch</label><input type="text" formControlName="drawnBankBranch"></div>
+      </div>
+    </section>
+
+    <!-- ============ 6. BANK ACCOUNT DETAILS ============ -->
+    <section class="block">
+      <h2>6. Bank Account Details (for Refund / Cancellation)</h2>
+      <div class="row2">
+        <div class="field"><label>Account Holder Name</label><input type="text" formControlName="accHolderName"></div>
+        <div class="field"><label>Bank Name &amp; Branch</label><input type="text" formControlName="accBankBranch"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Account Number</label><input type="text" formControlName="accNumber"></div>
+        <div class="field"><label>IFSC Code</label><input type="text" formControlName="ifscCode" style="text-transform:uppercase"></div>
+      </div>
+    </section>
+
+    <!-- ============ 7. ASSOCIATE DETAILS ============ -->
+    <section class="block">
+      <h2>7. Associate / Channel Partner Details</h2>
+      <div class="row2">
+        <div class="field"><label>Associate Name</label><input type="text" formControlName="associateName"></div>
+        <div class="field"><label>Associate ID</label><input type="text" formControlName="associateId"></div>
+      </div>
+      <div class="field"><label>Mobile Number</label><input type="tel" formControlName="associateMobile"></div>
+      <div class="field"><label>Signature</label><input type="text" formControlName="associateSignatureName" placeholder="Type name as signature"></div>
+    </section>
+
+    <!-- ============ TERMS ============ -->
+    <section class="block">
+      <h2>Terms and Conditions of Allotment &amp; Sale</h2>
+      <div class="terms-box">
+        <ol>
+          <li><b>Allotment &amp; Booking:</b> The allotment of the property is purely provisional and is subject to realization of the initial booking amount. The company reserves the right to accept or reject any application without assigning any reason.</li>
+          <li><b>Payment Schedule &amp; Liability:</b> Timely payment is the essence of this allotment. The applicant must make payments exactly as per the agreed payment plan. All payments must be deposited directly into the company's official bank account or at the corporate office — funds should never be handed over in cash to any associate or agent.</li>
+          <li><b>100% Upfront Payment Benefit:</b> If the customer pays 100% of the entire property value upfront at the time of purchase, the company will completely bear the registry expenses (registry will be free).</li>
+          <li><b>EMI Plan &amp; Registry:</b> If purchasing on installments, a minimum down payment of 25% to 30% of the plot cost must be deposited. In this case, registry expenses will be entirely borne by the customer.</li>
+          <li><b>Delayed Payments &amp; Default:</b> If the applicant defaults on installments, interest &#64; 18% per month will be charged on the delayed amount. If installments remain unpaid beyond the agreed grace period, the company reserves the right to cancel the allotment and re-allot the plot to another customer at the then-prevailing market rate.</li>
+          <li><b>Medical Grace Period:</b> If the customer falls severely ill, a grace period of 1 to 3 months for EMI payments may be granted based on verifiable medical conditions.</li>
+          <li><b>Disability Benefit:</b> In the event of the customer suffering a permanent disability, the company will grant a 20% discount on the total property value, based on the total payments made till date.</li>
+          <li><b>Demise Waiver Benefit:</b> In the unfortunate event of the customer's death, if 50% of the total property value has already been deposited, the company will waive off the remaining 50%; the co-applicant/nominee will only need to pay the registry and associated expenses.</li>
+          <li><b>Cancellation Policy:</b> In the event of cancellation by the applicant(s) for any reason, 10% of the Total Property Value (or the booking amount, whichever is lower) will be deducted as administrative charges. The balance will be refunded without interest within 90 days.</li>
+          <li><b>Statutory &amp; Development Charges:</b> All extra charges such as Stamp Duty, Registration Fees, GST, development charges, electricity/water connection, and maintenance are not included in the basic sale price and will be borne exclusively by the applicant(s).</li>
+          <li><b>Possession &amp; Modifications:</b> Physical possession will be handed over only after the complete receipt of the Total Property Value and all associated charges. The company reserves the right to alter the layout plan or design as per competent authorities' requirements.</li>
+          <li><b>Home Loan &amp; Transfer:</b> The company may provide documents required for home loan approvals, but securing the loan rests strictly with the applicant. Transfer of the booking to a third party is allowed only after realizing a certain percentage of the value and paying the applicable transfer charges.</li>
+          <li><b>Dispute Resolution &amp; Jurisdiction:</b> Any dispute arising out of or in connection with this transaction shall be settled through mutual arbitration. All legal matters shall be subject to the exclusive jurisdiction of the courts at Unnao / Lucknow, Uttar Pradesh.</li>
+        </ol>
+      </div>
+      <div class="terms-note">Note: In case of any discrepancy, the signed physical copy of the Terms &amp; Conditions of Allotment &amp; Sale held by M.M.R. Construction &amp; Developers Pvt. Ltd. shall prevail.</div>
+    </section>
+
+    <!-- ============ DECLARATION ============ -->
+    <section class="block">
+      <h2>Declaration</h2>
+      <div class="declaration-text">
+        I/We do hereby declare that all the particulars and information given by me/us in this application form are true and correct to the best of my/our knowledge. I/We have carefully read, understood, and agreed to abide by all the Terms &amp; Conditions of the company mentioned above, and further changes made from time to time.
+      </div>
+
+      <label class="agree-line">
+        <input type="checkbox" formControlName="declarationCheck" required>
+        <span>I/We confirm the above declaration is true and correct, and agree to abide by the Terms &amp; Conditions of M.M.R. Construction &amp; Developers Private Limited.</span>
+      </label>
+
+      <div class="sig-grid">
+        <div class="sig-block">
+          <canvas id="sigSole" width="330" height="100"></canvas>
+          <div class="cap">Signature of Sole / First Applicant</div>
+          <button type="button" class="sig-clear" (click)="clearSig('sole')">Clear</button>
+        </div>
+        <div class="sig-block">
+          <canvas id="sigCo" width="330" height="100"></canvas>
+          <div class="cap">Signature of Co-Applicant</div>
+          <button type="button" class="sig-clear" (click)="clearSig('co')">Clear</button>
+        </div>
+        <div class="sig-block">
+          <canvas id="sigAuth" width="330" height="100"></canvas>
+          <div class="cap">Authorized Signatory (For Company)</div>
+          <button type="button" class="sig-clear" (click)="clearSig('auth')">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="submit-wrap">
+      <button type="submit" class="submit-btn" [disabled]="enrollmentForm.invalid || submitting">
+        {{ submitting ? 'Submitting...' : 'Submit Application' }}
+      </button>
+    </div>
+  </form>
+
+  <footer class="company-footer">
+    Website: <a href="https://mmrconstructions.in/" target="_blank">https://mmrconstructions.in/</a> &nbsp;|&nbsp;
+    Email: <a href="mailto:mmrconstructions&#64;hotmail.com">mmrconstructions&#64;hotmail.com</a>
+  </footer>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" [class.open]="showModal">
+  <div class="modal-box">
+    <h3>Terms &amp; Conditions of Allotment &amp; Sale</h3>
+    <div class="hindi-note">Submit karne se pehle neeche diye gaye terms &amp; conditions dhyaan se padhein aur checkbox par tick karein.</div>
+    <div class="modal-terms">
+      <ol>
+        <li>Allotment is purely provisional and subject to realization of the initial booking amount; the company may accept or reject any application without assigning reason.</li>
+        <li>Timely payment is essential; all payments must go directly into the company's official bank account or corporate office — never in cash to an associate.</li>
+        <li>100% upfront payment makes the registry completely free.</li>
+        <li>Installment purchases need a 25–30% down payment; registry expenses are borne by the customer.</li>
+        <li>Delayed installments attract 18% per month interest; prolonged default may lead to cancellation and re-allotment.</li>
+        <li>A 1–3 month EMI grace period may be granted on verifiable medical grounds.</li>
+        <li>Permanent disability entitles the customer to a 20% discount on the total property value.</li>
+        <li>On the customer's demise, if 50% is already paid, the remaining 50% is waived off for the co-applicant/nominee.</li>
+        <li>Cancellation attracts a 10% deduction (of value or booking amount, whichever is lower); balance refunded within 90 days, without interest.</li>
+        <li>Stamp duty, registration, GST, development and connection charges are extra, borne by the applicant(s).</li>
+        <li>Possession is handed over only after full payment; the company may alter layout/design per authority requirements.</li>
+        <li>Home loan approval is the applicant's responsibility; third-party transfer is allowed only after meeting company conditions.</li>
+        <li>Disputes are resolved via mutual arbitration, under the exclusive jurisdiction of Unnao / Lucknow, Uttar Pradesh courts.</li>
+      </ol>
+    </div>
+    <label class="modal-agree">
+      <input type="checkbox" [(ngModel)]="modalAgreed">
+      <span>Maine Terms and Conditions dhyaan se padh liye hain / I have read the Terms &amp; Conditions carefully.</span>
+    </label>
+    <div class="modal-btns">
+      <button type="button" class="btn-cancel" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn-confirm" [class.enabled]="modalAgreed" (click)="confirmSubmit()">Confirm &amp; Submit</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" [class.show]="showToast">{{ toastMsg }}</div>

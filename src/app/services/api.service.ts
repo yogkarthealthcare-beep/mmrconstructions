@@ -145,6 +145,18 @@ export class ApiService {
   getBuybackStatus()               { return this.get('/api/buyback/status'); }
   applyBuyback(booking_id: number) { return this.post('/api/buyback/apply', { booking_id }); }
 
+  // ── Customer Enrollment ───────────────────────────
+  submitCustomerEnrollment(data: any) { return this.post('/api/customer-enrollment', data); }
+  getMyCustomerEnrollments()          { return this.get('/api/customer-enrollment/me'); }
+  adminGetCustomerEnrollments()       { return this.get('/api/customer-enrollment', {}, true); }
+  adminGetCustomerEnrollment(id: string) { return this.get(`/api/customer-enrollment/${id}`, {}, true); }
+  adminUpdateCustomerEnrollment(id: string, data: any) { return this.patch(`/api/customer-enrollment/${id}/office-use`, data, true); }
+
+  // ── ADMIN — Investor Enrollments ──────────────────
+  adminGetInvestorEnrollments()       { return this.get('/api/admin/investor-enrollment', {}, true); }
+  adminGetInvestorEnrollment(id: string) { return this.get(`/api/admin/investor-enrollment/${id}`, {}, true); }
+  adminUpdateInvestorEnrollment(id: string, data: any) { return this.put(`/api/admin/investor-enrollment/${id}`, data, true); }
+
   // ── ADMIN — Users & Customers ─────────────────────
   adminGetPendingUsers()           { return this.get('/api/admin/users/pending', {}, true); }
   adminGetUsers(q: any = {})       { return this.get('/api/admin/users', q, true); }

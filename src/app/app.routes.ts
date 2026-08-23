@@ -7,6 +7,7 @@ import { CompanyDocumentsComponent } from './pages/company-documents/company-doc
 import { LegalPageComponent } from './pages/legal-page/legal-page.component';
 import { SiteMapComponent } from './pages/site-map/site-map.component';
 import { SiteMapNewComponent } from './pages/site-map-new/site-map-new.component';
+import { CustomerEnrollmentComponent } from './user/customer-enrollment/customer-enrollment.component';
 import { SignupComponent } from './pages/signup/signup.component';
 import { VerifyOtpComponent } from './pages/verify-otp/verify-otp.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
@@ -19,6 +20,10 @@ import { ApprovalsComponent } from './admin/approvals/approvals.component';
 import { CustomersComponent } from './admin/customers/customers.component';
 import { AssociatesComponent } from './admin/associates/associates.component';
 import { AssociateDetailComponent } from './admin/associate-detail/associate-detail.component';
+import { AdminInvestorEnrollmentsListComponent } from './admin/investor-enrollments/admin-investor-enrollments-list.component';
+import { AdminInvestorEnrollmentDetailComponent } from './admin/investor-enrollments/admin-investor-enrollment-detail.component';
+import { CustomerApplicationsListComponent } from './admin/customer-applications/customer-applications-list.component';
+import { CustomerApplicationDetailComponent } from './admin/customer-applications/customer-application-detail.component';
 import { BookingReportComponent } from './admin/booking-report/booking-report.component';
 import { SitesMgmtComponent } from './admin/sites-mgmt/sites-mgmt.component';
 import { NewSiteAreaComponent } from './admin/new-site-area/new-site-area.component';
@@ -79,6 +84,7 @@ import { InvestorDepositComponent } from './investor/investor-deposit/investor-d
 import { InvestorWithdrawalComponent } from './investor/investor-withdrawal/investor-withdrawal.component';
 import { InvestorPaymentsComponent } from './investor/investor-payments/investor-payments.component';
 import { InvestorProfileComponent } from './investor/investor-profile/investor-profile.component';
+import { InvestorEnrollmentComponent } from './investor/investor-enrollment/investor-enrollment.component';
 
 import { BlogListComponent } from './pages/blog-list/blog-list.component';
 import { BlogDetailComponent } from './pages/blog-detail/blog-detail.component';
@@ -114,9 +120,13 @@ export const routes: Routes = [
       { path: 'analytics',           component: AdminAnalyticsComponent },
       { path: 'approvals',           component: ApprovalsComponent },
       { path: 'customers',           component: CustomersComponent },
+      { path: 'customer-applications', component: CustomerApplicationsListComponent, title: 'Customer Enrollments' },
+      { path: 'customer-applications/:id', component: CustomerApplicationDetailComponent, title: 'Customer Enrollment Detail' },
+      { path: 'investor-enrollments', component: AdminInvestorEnrollmentsListComponent, title: 'Investor Enrollments' },
+      { path: 'investor-enrollments/:id', component: AdminInvestorEnrollmentDetailComponent, title: 'Investor Enrollment Detail' },
       { path: 'associates',          component: AssociatesComponent },
       { path: 'associate-detail',     component: AssociateDetailComponent },
-      { path: 'booking-report',      component: BookingReportComponent },
+      { path: 'booking-report',      component: BookingReportComponent, title: 'Booking Report' },
       { path: 'sites',               component: SitesMgmtComponent },
       { path: 'new-site-area',        component: NewSiteAreaComponent },
       { path: 'plot-detector-tool',  component: PlotDetectorToolComponent },
@@ -217,6 +227,7 @@ export const routes: Routes = [
       { path: 'profile',                component: ProfileComponent },
       { path: 'notifications',          component: NotificationsComponent },
       { path: 'buyback',                component: BuybackComponent },
+      { path: 'enrollment',             component: CustomerEnrollmentComponent },
     ]
   },
 
@@ -231,6 +242,7 @@ export const routes: Routes = [
       { path: 'payments',      component: InvestorPaymentsComponent },
       { path: 'payment-history', component: InvestorPaymentsComponent },
       { path: 'profile',       component: InvestorProfileComponent },
+      { path: 'enrollment',    component: InvestorEnrollmentComponent },
     ]
   },
 

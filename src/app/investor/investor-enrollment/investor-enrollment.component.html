@@ -1,0 +1,286 @@
+<div class="sheet">
+  <!-- ============ HEADER ============ -->
+  <div class="company-header">
+    <div class="logo">MMR</div>
+    <div class="company-text">
+      <h1>M.M.R. CONSTRUCTION & DEVELOPERS PRIVATE LIMITED</h1>
+      <div class="sub">
+        <b>Head Office:</b> 05, Tribhuvan Khera, Sheshpur Nari &nbsp;|&nbsp;
+        <b>Corporate Office:</b> Unnao, Uttar Pradesh, India 209801<br>
+        <b>Ph No.</b> 9511119879 | 8429823067 &nbsp;|&nbsp;
+        <b>GST No.</b> 09AATCM6753A1Z5 &nbsp;|&nbsp; <b>CIN No.</b> U68200UP2025PTC229203
+      </div>
+    </div>
+  </div>
+
+  <form class="form-body" [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()">
+    <h2 class="form-title">Investor Enrollment Form</h2>
+
+    <div class="photo-box" title="Click to attach passport size photo" (click)="photoInput.click()">
+      <ng-container *ngIf="photoDataUrl; else photoPlaceholder">
+        <img [src]="photoDataUrl" alt="Passport Photo">
+      </ng-container>
+      <ng-template #photoPlaceholder>
+        Please Affix<br>Passport Size<br>Self Attested<br>Photograph
+      </ng-template>
+      <input type="file" #photoInput accept="image/*" style="display:none;" (change)="onPhotoChange($event)">
+    </div>
+
+    <div class="meta-grid">
+      <div class="field"><label>Form No.</label><input type="text" formControlName="formNo"></div>
+      <div class="field"><label>Date</label><input type="date" formControlName="formDate"></div>
+      <div class="field"><label>Branch Code</label><input type="text" formControlName="branchCode"></div>
+      <div class="field"><label>Branch Name</label><input type="text" formControlName="branchName"></div>
+      <div class="field"><label>Investor ID</label><input type="text" formControlName="investorId"></div>
+      <div class="field"><label>Project Name</label><input type="text" formControlName="projectName"></div>
+    </div>
+
+    <!-- ============ 1. PERSONAL PARTICULARS ============ -->
+    <section class="block">
+      <h2>1. Personal Particulars</h2>
+
+      <div class="row3">
+        <div class="field"><label>Name of Investor — First Name</label><input type="text" formControlName="invFirstName" required></div>
+        <div class="field"><label>Middle Name</label><input type="text" formControlName="invMiddleName"></div>
+        <div class="field"><label>Surname</label><input type="text" formControlName="invSurname"></div>
+      </div>
+
+      <div class="row3">
+        <div class="field"><label>Father's / Husband's — First Name</label><input type="text" formControlName="fhFirstName"></div>
+        <div class="field"><label>Middle Name</label><input type="text" formControlName="fhMiddleName"></div>
+        <div class="field"><label>Surname</label><input type="text" formControlName="fhSurname"></div>
+      </div>
+
+      <div class="row3">
+        <div class="field"><label>Date of Birth</label><input type="date" formControlName="dob"></div>
+        <div class="field"><label>Age (Yrs)</label><input type="number" min="18" formControlName="age"></div>
+        <fieldset class="inline-choices">
+          <legend>Gender</legend>
+          <div class="choice-wrap">
+            <label><input type="radio" formControlName="gender" value="M"> M</label>
+            <label><input type="radio" formControlName="gender" value="F"> F</label>
+            <label><input type="radio" formControlName="gender" value="Other"> Other</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <fieldset class="inline-choices">
+        <legend>Occupation</legend>
+        <div class="choice-wrap">
+          <label><input type="radio" formControlName="occupation" value="Service"> Service</label>
+          <label><input type="radio" formControlName="occupation" value="Business"> Business</label>
+          <label><input type="radio" formControlName="occupation" value="Farmer"> Farmer</label>
+          <label><input type="radio" formControlName="occupation" value="Self Emp."> Self Emp.</label>
+          <label><input type="radio" formControlName="occupation" value="Other"> Other:
+            <input type="text" class="other-text" formControlName="occupationOther" [disabled]="enrollmentForm.value.occupation !== 'Other'">
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="field"><label>Permanent Address</label><textarea formControlName="address" rows="2"></textarea></div>
+
+      <div class="row3">
+        <div class="field"><label>City</label><input type="text" formControlName="city"></div>
+        <div class="field"><label>State</label><input type="text" formControlName="state"></div>
+        <div class="field"><label>Pin Code</label><input type="text" formControlName="pinCode"></div>
+      </div>
+
+      <div class="row3">
+        <div class="field"><label>Mobile No.</label><input type="tel" formControlName="mobile" required></div>
+        <div class="field"><label>Alt. Tel. No.</label><input type="tel" formControlName="altTel"></div>
+        <div class="field"><label>Email ID</label><input type="email" formControlName="email"></div>
+      </div>
+
+      <div class="row2">
+        <div class="field"><label>PAN Card No.</label><input type="text" formControlName="pan" maxlength="10" style="text-transform:uppercase"></div>
+        <div class="field"><label>Aadhar Card No.</label><input type="text" formControlName="aadhar" maxlength="12"></div>
+      </div>
+    </section>
+
+    <!-- ============ 2. INVESTMENT DETAILS ============ -->
+    <section class="block">
+      <h2>2. Investment Details</h2>
+      <div class="row2">
+        <div class="field"><label>Investment Amount (₹)</label><input type="number" formControlName="amount" min="0"></div>
+        <div class="field"><label>Amount in Words</label><input type="text" formControlName="amountWords"></div>
+      </div>
+
+      <fieldset class="inline-choices">
+        <legend>Mode of Payment</legend>
+        <div class="choice-wrap">
+          <label><input type="radio" formControlName="paymentMode" value="Cash"> Cash</label>
+          <label><input type="radio" formControlName="paymentMode" value="Cheque"> Cheque</label>
+          <label><input type="radio" formControlName="paymentMode" value="DD"> DD</label>
+          <label><input type="radio" formControlName="paymentMode" value="NEFT/RTGS/UPI"> NEFT / RTGS / UPI</label>
+        </div>
+      </fieldset>
+
+      <div class="row3">
+        <div class="field"><label>Txn / Cheque No.</label><input type="text" formControlName="txnNo"></div>
+        <div class="field"><label>Date</label><input type="date" formControlName="txnDate"></div>
+        <div class="field"><label>Bank & Branch</label><input type="text" formControlName="bankBranch"></div>
+      </div>
+    </section>
+
+    <!-- ============ 3. NOMINEE DETAILS ============ -->
+    <section class="block">
+      <h2>3. Nominee Details</h2>
+      <table class="nominee-table">
+        <thead>
+          <tr>
+            <th style="width:40px;">S.No</th>
+            <th>Name of Nominee</th>
+            <th>Relationship</th>
+            <th style="width:70px;">Age</th>
+            <th style="width:110px;">Proportion (%)</th>
+            <th style="width:50px;"></th>
+          </tr>
+        </thead>
+        <tbody formArrayName="nominees">
+          <tr *ngFor="let nominee of nominees.controls; let i=index" [formGroupName]="i">
+            <td>{{i+1}}.</td>
+            <td><input type="text" formControlName="name"></td>
+            <td><input type="text" formControlName="relationship"></td>
+            <td><input type="number" formControlName="age"></td>
+            <td><input type="number" formControlName="proportion"></td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeNominee(i)" *ngIf="nominees.length > 1" style="border:none;background:none;color:red;">&times;</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="button" class="add-row-btn" (click)="addNominee()">+ Add Nominee</button>
+    </section>
+
+    <!-- ============ TERMS AND CONDITIONS OF INVESTMENT ============ -->
+    <section class="block">
+      <h2>Terms and Conditions of Investment</h2>
+      <div class="terms-box">
+        <ol>
+          <li><b>Eligibility:</b> Any individual who has attained the age of 18 years, Hindu Undivided Family (HUF), Partnership Firm, Limited Liability Partnership (LLP), or Corporate Body registered in India is eligible to invest. The investor must be competent to contract under the Indian Contract Act, 1872.</li>
+          <li><b>KYC Compliance:</b> The investor must submit self-attested copies of valid PAN Card, Aadhaar Card, and recent passport-size photographs along with the enrollment form. The company reserves the right to reject the application if KYC documents are found incomplete or invalid.</li>
+          <li><b>Mode of Payment:</b> Investments shall be accepted only through legitimate banking channels (Cheque, Demand Draft, NEFT, RTGS, or UPI) drawn in favor of "M.M.R. Construction & Developers Private Limited". Cash deposits will be accepted strictly subject to limits defined by the Income Tax Act, 1961.</li>
+          <li><b>Declaration of Source of Funds:</b> The investor declares that the funds invested are from legitimate sources and are not derived from any illegal activities. The investor shall comply with the Anti-Money Laundering (AML) laws of India.</li>
+          <li><b>Lock-in Period & Returns:</b> Investments are subject to a minimum lock-in period as mutually agreed upon in the scheme offering document. The expected returns or profit-sharing ratio will be calculated strictly based on the specific performance and terms of the chosen investment plan.</li>
+          <li><b>Withdrawal & Pre-mature Redemption:</b> Pre-mature withdrawal before completion of the lock-in period may attract penalty charges or deductions as per the company's prevailing policies. A written notice period of at least 30 days is mandatory for any withdrawal request.</li>
+          <li><b>Nomination:</b> The investor has the right to nominate one or more persons to receive the investment proceeds in the unfortunate event of the investor's demise. If the nominee is a minor, the details of a legal guardian must be provided.</li>
+          <li><b>Communication:</b> All communications, statements, and notices will be sent to the registered email address and postal address provided in this form. It is the investor's responsibility to notify the company of any changes in contact details.</li>
+          <li><b>Amendments:</b> The Management of M.M.R. Construction & Developers Pvt. Ltd. reserves the right to amend, alter, or modify these terms and conditions. Any significant changes will be communicated to the investors via official notice or publication.</li>
+          <li><b>Dispute Resolution & Jurisdiction:</b> In the event of any dispute arising out of or in connection with this investment, the matter shall be resolved through arbitration. All legal proceedings shall be subject to the exclusive jurisdiction of the competent courts in Unnao / Lucknow, Uttar Pradesh.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ 4. DECLARATION ============ -->
+    <section class="block">
+      <h2>4. Declaration</h2>
+      <div class="declaration-text">
+        I/We hereby declare that all the information provided in this Investor Enrollment Form is true, correct, and complete to the best of my/our knowledge and belief. I/We confirm that I/We have carefully read, understood, and agreed to abide by the <b>Terms and Conditions</b> mentioned on Page 2 of this document. I/We further declare that the funds utilized for this investment and the details mentioned in this form are legally acquired. I/We authorize <b>M.M.R. Construction & Developers Private Limited</b> to verify my/our details and KYC documents as required by law.
+      </div>
+
+      <label class="agree-line">
+        <input type="checkbox" formControlName="declarationCheck" required>
+        <span>I/We confirm the above declaration is true and correct, and agree to abide by the Terms & Conditions of M.M.R. Construction & Developers Private Limited.</span>
+      </label>
+
+      <div class="row3">
+        <div class="field"><label>Date</label><input type="date" formControlName="declDate"></div>
+        <div class="field"><label>Place</label><input type="text" formControlName="declPlace"></div>
+        <div class="field"><label>Signature of Investor</label><input type="text" formControlName="declSignatureName" placeholder="Type full name as signature"></div>
+      </div>
+    </section>
+
+    <!-- ============ 5. SPECIMEN SIGNATURE FORM ============ -->
+    <section class="block">
+      <h2>5. Specimen Signature Form</h2>
+      <div class="row2">
+        <div class="field">
+          <label>Form No. / Investor ID</label>
+          <input type="text" [value]="enrollmentForm.get('investorId')?.value" disabled style="background-color: #f4f4f4;">
+        </div>
+        <div class="field"><label>First / Sole Investor Name</label><input type="text" formControlName="firstApplicantName"></div>
+      </div>
+      <div class="field"><label>Joint Investor Name (if any)</label><input type="text" formControlName="jointApplicantName"></div>
+
+      <div class="sig-grid">
+        <div class="sig-block">
+          <canvas #sigFirstCanvas width="380" height="110"></canvas>
+          <div class="cap">Specimen Signature (First / Sole Applicant)</div>
+          <button type="button" class="sig-clear" (click)="clearSignature(1)">Clear</button>
+        </div>
+        <div class="sig-block">
+          <canvas #sigJointCanvas width="380" height="110"></canvas>
+          <div class="cap">Specimen Signature (Joint Applicant)</div>
+          <button type="button" class="sig-clear" (click)="clearSignature(2)">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 6. FOR OFFICE USE ONLY ============ -->
+    <section class="block office-block">
+      <h2>6. For Office Use Only</h2>
+      <div class="office-use">
+        <span class="tag">Staff Use Only</span>
+
+        <div class="field"><label>Application Status</label></div>
+        <div class="radio-row">
+          <label><input type="radio" formControlName="appStatus" value="Approved"> Approved</label>
+          <label><input type="radio" formControlName="appStatus" value="Rejected"> Rejected</label>
+          <label><input type="radio" formControlName="appStatus" value="Hold/Pending KYC"> Hold / Pending KYC</label>
+        </div>
+
+        <div class="field"><label>Verified By (Name & Emp Code)</label><input type="text" formControlName="verifiedBy"></div>
+
+        <div class="field"><label>Payment Realization Status</label></div>
+        <div class="radio-row">
+          <label><input type="radio" formControlName="paymentStatus" value="Cleared"> Cleared</label>
+          <label><input type="radio" formControlName="paymentStatus" value="Bounced"> Bounced</label>
+          <span style="margin-left:8px;">Date: <input type="date" formControlName="paymentStatusDate" style="border:none;border-bottom:1px solid #999;background:transparent;"></span>
+        </div>
+
+        <div class="field"><label>Authorized Signatory (with Stamp)</label><input type="text" formControlName="authorizedSignatory"></div>
+      </div>
+    </section>
+
+    <div class="submit-wrap no-print">
+      <button type="submit" class="submit-btn" [disabled]="enrollmentForm.invalid || submitting">
+        {{ submitting ? 'Submitting...' : 'Submit Application' }}
+      </button>
+    </div>
+  </form>
+
+  <footer class="company-footer">
+    Website: <a href="https://mmrconstructions.in/" target="_blank">https://mmrconstructions.in/</a> &nbsp;|&nbsp;
+    Email: <a href="mailto:mmrconstructions&#64;hotmail.com">mmrconstructions&#64;hotmail.com</a>
+  </footer>
+</div>
+
+<!-- ============ MODAL: Terms & Conditions confirmation ============ -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-box">
+    <h3>Terms & Conditions of Investment</h3>
+    <div class="hindi-note">Submit karne se pehle neeche diye gaye terms & conditions dhyaan se padhein aur checkbox par tick karein.</div>
+    <div class="modal-terms">
+      <ol>
+        <li>Any individual who has attained the age of 18 years, HUF, Partnership Firm, LLP, or Corporate Body registered in India is eligible to invest.</li>
+        <li>The investor must submit self-attested KYC documents (PAN, Aadhaar, photograph); incomplete or invalid KYC may lead to rejection.</li>
+        <li>Investments shall be accepted only through legitimate banking channels, subject to Income Tax Act, 1961 cash limits.</li>
+        <li>The investor declares that invested funds are from legitimate sources and complies with AML laws of India.</li>
+        <li>Investments are subject to a minimum lock-in period; returns are calculated per the specific investment plan.</li>
+        <li>Pre-mature withdrawal may attract penalty charges; at least 30 days' written notice is mandatory.</li>
+        <li>The investor may nominate one or more persons to receive proceeds in case of demise.</li>
+        <li>All communications will be sent to the registered email/postal address on this form.</li>
+        <li>The Management reserves the right to amend these terms; changes will be communicated officially.</li>
+        <li>Disputes shall be resolved through arbitration, subject to the exclusive jurisdiction of courts in Unnao / Lucknow, Uttar Pradesh.</li>
+      </ol>
+    </div>
+    <label class="modal-agree">
+      <input type="checkbox" [(ngModel)]="modalAgreeCheck">
+      <span>Maine Terms and Conditions dhyaan se padh liye hain / I have read the Terms & Conditions carefully.</span>
+    </label>
+    <div class="modal-btns">
+      <button type="button" class="btn-cancel" (click)="showModal = false">Cancel</button>
+      <button type="button" class="btn-confirm" [class.enabled]="modalAgreeCheck" (click)="confirmAndSubmit()">Confirm & Submit</button>
+    </div>
+  </div>
+</div>
