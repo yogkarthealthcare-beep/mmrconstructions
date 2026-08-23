@@ -17,6 +17,9 @@ export class EnquiriesComponent implements OnInit {
   priorityFilter = 'all';
   activeRowId: any = null;
 
+  page = 1;
+  pageSize = 10;
+
   @HostListener('document:click')
   closeDropdowns() {
     this.activeRowId = null;
@@ -119,6 +122,25 @@ export class EnquiriesComponent implements OnInit {
 
       return matchStatus && matchPriority && matchSearch;
     });
+  }
+
+  get pagedEnquiries(): any[] {
+    const startIndex = (this.page - 1) * this.pageSize;
+    return this.filtered.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filtered.length / this.pageSize) || 1;
+  }
+
+  changePage(p: number) {
+    if (p >= 1 && p <= this.totalPages) {
+      this.page = p;
+    }
+  }
+
+  onFilterChange() {
+    this.page = 1;
   }
 
   updateStatus(e: any, newStatus: string) {

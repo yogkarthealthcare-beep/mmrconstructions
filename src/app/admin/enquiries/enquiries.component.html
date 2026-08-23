@@ -71,14 +71,14 @@
 <div class="panel-card p-3 mb-2">
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
     <div class="filter-tabs">
-      <button class="filter-tab" [class.active]="statusFilter==='all'"    (click)="statusFilter='all'">All Leads ({{ enquiries.length }})</button>
-      <button class="filter-tab" [class.active]="statusFilter==='open'"   (click)="statusFilter='open'">Open ({{ openCount }})</button>
-      <button class="filter-tab" [class.active]="statusFilter==='called'" (click)="statusFilter='called'">In Follow-Up ({{ calledCount }})</button>
-      <button class="filter-tab" [class.active]="statusFilter==='closed'" (click)="statusFilter='closed'">Closed ({{ closedCount }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='all'"    (click)="statusFilter='all'; onFilterChange()">All Leads ({{ enquiries.length }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='open'"   (click)="statusFilter='open'; onFilterChange()">Open ({{ openCount }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='called'" (click)="statusFilter='called'; onFilterChange()">In Follow-Up ({{ calledCount }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='closed'" (click)="statusFilter='closed'; onFilterChange()">Closed ({{ closedCount }})</button>
     </div>
 
     <div class="d-flex align-items-center gap-2 ms-auto">
-      <select class="form-select form-select-sm py-1" style="width: 130px; font-size: 11px;" [(ngModel)]="priorityFilter">
+      <select class="form-select form-select-sm py-1" style="width: 130px; font-size: 11px;" [(ngModel)]="priorityFilter" (ngModelChange)="onFilterChange()">
         <option value="all">All Priorities</option>
         <option value="high">🔥 High</option>
         <option value="medium">⚡ Medium</option>
@@ -87,7 +87,7 @@
 
       <div class="search-box position-relative" style="min-width: 220px;">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" placeholder="Search name, phone, topic...">
+        <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" (ngModelChange)="onFilterChange()" placeholder="Search name, phone, topic...">
       </div>
     </div>
   </div>
@@ -117,7 +117,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let e of filtered">
+        <tr *ngFor="let e of pagedEnquiries">
           <td>
             <div class="d-flex align-items-center gap-2.5">
               <div class="user-avatar-circle bg-purple-avatar">
@@ -193,6 +193,20 @@
         </tr>
       </tbody>
     </table>
+  </div>
+  
+  <!-- PAGINATION -->
+  <div class="d-flex align-items-center justify-content-between p-3 border-top bg-light rounded-bottom-12" *ngIf="!loading && filtered.length > 0">
+    <div class="text-muted fs-12 fw-600">
+      Showing {{ (page - 1) * pageSize + 1 }} to {{ page * pageSize > filtered.length ? filtered.length : page * pageSize }} of {{ filtered.length }} entries
+    </div>
+    <div class="d-flex gap-1">
+      <button class="btn btn-outline-secondary btn-sm px-3 rounded-6 fs-12 fw-600" [disabled]="page === 1" (click)="changePage(page - 1)">Prev</button>
+      <button class="btn btn-sm rounded-6 fs-12 fw-600 px-3" *ngFor="let p of [].constructor(totalPages); let i = index" 
+              [class.btn-primary]="page === i + 1" [class.btn-outline-secondary]="page !== i + 1" 
+              (click)="changePage(i + 1)">{{ i + 1 }}</button>
+      <button class="btn btn-outline-secondary btn-sm px-3 rounded-6 fs-12 fw-600" [disabled]="page === totalPages" (click)="changePage(page + 1)">Next</button>
+    </div>
   </div>
 </div>
 
