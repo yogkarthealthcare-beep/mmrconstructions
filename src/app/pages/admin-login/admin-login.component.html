@@ -23,16 +23,9 @@
 
   <div class="al-right">
     <div class="al-box">
-      
-      <!-- Top Logo (Mobile & Desktop) -->
-      <div class="text-center mb-4">
-        <img src="assets/mmr-logo.png" alt="MMR Constructions" class="admin-top-logo">
-      </div>
-
-      <div class="text-center mb-5">
-        <h2 class="admin-welcome-text">Welcome Back,</h2>
-        <h2 class="admin-role-text">Admin</h2>
-        <p class="text-muted mt-2 fs-13">Enter your admin credentials to continue</p>
+      <div class="mb-5">
+        <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:6px;">Welcome Back, Admin</h3>
+        <p class="fs-13 text-muted">Enter your admin credentials to continue</p>
       </div>
 
       <div *ngIf="error" class="panel-alert panel-alert-error mb-4">
@@ -40,44 +33,33 @@
       </div>
 
       <form (ngSubmit)="login()">
-        <div class="mb-4">
-          <label class="custom-f-label">Admin Email <span class="text-danger">*</span></label>
-          <div class="custom-input-wrapper email-wrapper">
-            <div class="input-icon-box bg-green">
-              <i class="fas fa-envelope"></i>
-            </div>
-            <input type="email" class="custom-input" placeholder="admin@mmrconstructions.in" [(ngModel)]="email" name="email" required/>
-            <div class="input-action-icon text-green">
-              <i class="fas fa-check-circle"></i>
-            </div>
+        <div class="mb-3">
+          <label class="f-label">Admin Email *</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-muted);font-size:13px;"><i class="fas fa-envelope"></i></span>
+            <input type="email" class="f-input" style="padding-left:38px;" placeholder="admin@mmr.com" [(ngModel)]="email" name="email" required/>
           </div>
         </div>
 
-        <div class="mb-5">
-          <label class="custom-f-label">Password <span class="text-danger">*</span></label>
-          <div class="custom-input-wrapper password-wrapper">
-            <div class="input-icon-box bg-gold">
-              <i class="fas fa-lock"></i>
-            </div>
-            <input [type]="showPass ? 'text' : 'password'" class="custom-input" placeholder="Enter password" [(ngModel)]="password" name="password" required/>
-            <button type="button" class="input-action-icon btn-action text-gold" (click)="showPass=!showPass">
+        <div class="mb-4">
+          <label class="f-label">Password *</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-muted);font-size:13px;"><i class="fas fa-lock"></i></span>
+            <input [type]="showPass ? 'text' : 'password'" class="f-input" style="padding-left:38px;padding-right:44px;" placeholder="Enter password" [(ngModel)]="password" name="password"/>
+            <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--txt-muted);" (click)="showPass=!showPass">
               <i [class]="showPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
             </button>
           </div>
         </div>
 
-        <button type="submit" class="btn-custom-submit" [disabled]="loading">
+        <button type="submit" class="btn btn-green btn-lg w-100" [disabled]="loading">
           <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sign-in-alt me-2'"></i>
           {{ loading ? 'Authenticating...' : 'Login to Admin Panel' }}
         </button>
       </form>
 
-      <div class="custom-divider">
-        <span>OR</span>
-      </div>
-
-      <div class="text-center mt-3">
-        <a routerLink="/login" class="back-link-custom"><i class="fas fa-arrow-left me-2"></i>Back to User Login</a>
+      <div class="mt-4 text-center">
+        <a routerLink="/login" class="fs-12 text-muted"><i class="fas fa-arrow-left me-1"></i>Back to User Login</a>
       </div>
     </div>
   </div>
