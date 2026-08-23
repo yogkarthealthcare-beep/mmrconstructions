@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterLink, RouterOutlet, RouterLinkActive, Router } from '@angular/router';
+import { RouterLink, RouterOutlet, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
@@ -21,19 +22,66 @@ export class InvestorLayoutComponent implements OnInit {
     this.sidebarCollapsed = !this.sidebarCollapsed;
   }
 
-  navItems = [
-    { icon: 'fas fa-chart-line', label: 'Dashboard', route: '/investor/dashboard' },
-    { icon: 'fas fa-list-alt', label: 'Transaction History', route: '/investor/transactions' },
-    { icon: 'fas fa-user-circle', label: 'Edit Profile', route: '/investor/profile' },
-    { icon: 'fas fa-file-contract', label: 'Enrollment Form', route: '/investor/enrollment' },
-    { icon: 'fas fa-file-upload', label: 'Document Upload', route: '/investor/documents' },
-    { icon: 'fas fa-hand-holding-usd', label: 'Deposit', route: '/investor/deposit' },
-    { icon: 'fas fa-wallet', label: 'Wallet', route: '/investor/wallet' },
-    { icon: 'fas fa-receipt', label: 'Payment History', route: '/investor/payment-history' },
-    { icon: 'fas fa-calendar-check', label: 'Settlement Details', route: '/investor/settlement' },
-    { icon: 'fas fa-bell', label: 'Notifications', route: '/investor/notifications' },
-    { icon: 'fas fa-key', label: 'Change Password', route: '/investor/change-password' },
+  navGroups = [
+    {
+      label: 'OVERVIEW',
+      icon: 'fas fa-chart-pie',
+      expanded: false,
+      items: [
+        { icon: 'fas fa-chart-line', label: 'Dashboard', route: '/investor/dashboard' },
+        { icon: 'fas fa-bell', label: 'Notifications', route: '/investor/notifications' }
+      ]
+    },
+    {
+      label: 'FINANCE & WALLET',
+      icon: 'fas fa-wallet',
+      expanded: false,
+      items: [
+        { icon: 'fas fa-hand-holding-usd', label: 'Deposit', route: '/investor/deposit' },
+        { icon: 'fas fa-wallet', label: 'Wallet', route: '/investor/wallet' },
+        { icon: 'fas fa-list-alt', label: 'Transaction History', route: '/investor/transactions' },
+        { icon: 'fas fa-receipt', label: 'Payment History', route: '/investor/payment-history' },
+        { icon: 'fas fa-calendar-check', label: 'Settlement Details', route: '/investor/settlement' }
+      ]
+    },
+    {
+      label: 'FORMS & DOCUMENTS',
+      icon: 'fas fa-file-contract',
+      expanded: false,
+      items: [
+        { icon: 'fas fa-file-contract', label: 'Enrollment Form', route: '/investor/enrollment' },
+        { icon: 'fas fa-file-upload', label: 'Document Upload', route: '/investor/documents' }
+      ]
+    },
+    {
+      label: 'SETTINGS',
+      icon: 'fas fa-cog',
+      expanded: false,
+      items: [
+        { icon: 'fas fa-user-circle', label: 'Edit Profile', route: '/investor/profile' },
+        { icon: 'fas fa-key', label: 'Change Password', route: '/investor/change-password' }
+      ]
+    }
   ];
+
+  toggleGroup(group: any) {
+    if (this.sidebarCollapsed) {
+      this.sidebarCollapsed = false;
+    }
+    this.navGroups.forEach(g => {
+      if (g !== group) g.expanded = false;
+    });
+    group.expanded = !group.expanded;
+  }
+
+  expandGroupForCurrentRoute() {
+    const currentUrl = this.router.url;
+    for (const group of this.navGroups) {
+      if (group.items.some(item => currentUrl.includes(item.route))) {
+        group.expanded = true;
+      }
+    }
+  }
 
   constructor(private auth: AuthService, private api: ApiService, private router: Router) {}
 
@@ -41,6 +89,10 @@ export class InvestorLayoutComponent implements OnInit {
     this.auth.investorUser$.subscribe(user => {
       this.investorData = user;
     });
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+      this.expandGroupForCurrentRoute();
+    });
+    this.expandGroupForCurrentRoute();
   }
 
   getImageUrl(url: string | undefined): string {

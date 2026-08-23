@@ -34,16 +34,27 @@
 
     <!-- Navigation Menu -->
     <nav class="sidebar-nav">
-      <div class="nav-group-label" *ngIf="!sidebarCollapsed">INVESTOR MENU</div>
-      <a *ngFor="let item of navItems"
-         [routerLink]="item.route"
-         routerLinkActive="active"
-         class="sidebar-link"
-         [title]="sidebarCollapsed ? item.label : ''"
-         (click)="sidebarOpen = false">
-        <i [class]="item.icon"></i>
-        <span class="sl-label" *ngIf="!sidebarCollapsed">{{ item.label }}</span>
-      </a>
+      <div *ngFor="let group of navGroups" class="nav-group-wrapper">
+        <div class="nav-group-header" (click)="toggleGroup(group)" [title]="sidebarCollapsed ? group.label : ''">
+          <span class="nav-group-title" *ngIf="!sidebarCollapsed">
+            <i [class]="group.icon + ' me-1.5'"></i>{{ group.label }}
+          </span>
+          <i *ngIf="sidebarCollapsed" [class]="group.icon" style="font-size: 16px;"></i>
+          <i class="fas" *ngIf="!sidebarCollapsed" [class.fa-chevron-down]="group.expanded" [class.fa-chevron-right]="!group.expanded"></i>
+        </div>
+
+        <div class="nav-group-children" *ngIf="group.expanded || sidebarCollapsed">
+          <a *ngFor="let item of group.items"
+             [routerLink]="item.route"
+             routerLinkActive="active"
+             class="sidebar-link sub-link"
+             [title]="sidebarCollapsed ? item.label : ''"
+             (click)="sidebarOpen = false">
+            <i [class]="item.icon"></i>
+            <span class="sl-label" *ngIf="!sidebarCollapsed">{{ item.label }}</span>
+          </a>
+        </div>
+      </div>
     </nav>
 
     <!-- Sidebar Footer -->
