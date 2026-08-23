@@ -13,6 +13,7 @@ import { BuybackComponent } from '../../sections/buyback/buyback.component';
 import { EarnComponent } from '../../sections/earn/earn.component';
 import { ContactComponent } from '../../sections/contact/contact.component';
 import { ApiService } from '../../services/api.service';
+import { SiteToggleService } from '../../services/site-toggle.service';
 
 @Component({
   selector: 'app-home',
@@ -66,7 +67,7 @@ export class HomeComponent implements OnInit {
     { icon: 'fas fa-file-invoice', title: 'PDF Vouchers',    desc: 'Downloadable receipt हर payment पर।' },
   ];
 
-  constructor(private api: ApiService, private siteToggle: import('../../services/site-toggle.service').SiteToggleService) {}
+  constructor(private api: ApiService, private siteToggle: SiteToggleService) {}
 
   ngOnInit() {
     this.api.getHomePageSettings().subscribe({

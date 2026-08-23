@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { ApiService } from './api.service';
 
 export interface SiteToggleEvent {
   siteId: number;
@@ -16,7 +17,7 @@ export class SiteToggleService {
   private activeSiteIdSubject = new BehaviorSubject<number | null>(null);
   public activeSiteId$: Observable<number | null> = this.activeSiteIdSubject.asObservable();
 
-  constructor(private api: import('./api.service').ApiService) {}
+  constructor(private api: ApiService) {}
 
   /**
    * Checks if interactive plot mode is enabled for a given site.
