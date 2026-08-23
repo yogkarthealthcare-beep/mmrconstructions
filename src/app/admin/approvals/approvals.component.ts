@@ -64,6 +64,10 @@ export class ApprovalsComponent implements OnInit {
     return this.users.filter(u => u.account_status === 'Pending').length;
   }
 
+  get investorCount(): number {
+    return this.users.filter(u => u.user_type === 'Investor').length;
+  }
+
   get customerCount(): number {
     return this.users.filter(u => u.user_type === 'Customer').length;
   }
@@ -78,6 +82,7 @@ export class ApprovalsComponent implements OnInit {
         this.filter === 'all' ? true :
         this.filter === 'customer' ? u.user_type?.toLowerCase() === 'customer' :
         this.filter === 'associate' ? u.user_type?.toLowerCase() === 'associate' :
+        this.filter === 'investor' ? u.user_type?.toLowerCase() === 'investor' :
         this.filter === 'inforequested' ? u.account_status?.toLowerCase() === 'inforequested' :
         u.account_status?.toLowerCase() === this.filter;
 
