@@ -66,7 +66,7 @@ export class HomeComponent implements OnInit {
     { icon: 'fas fa-file-invoice', title: 'PDF Vouchers',    desc: 'Downloadable receipt हर payment पर।' },
   ];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private siteToggle: import('../../services/site-toggle.service').SiteToggleService) {}
 
   ngOnInit() {
     this.api.getHomePageSettings().subscribe({
@@ -76,6 +76,11 @@ export class HomeComponent implements OnInit {
         this.sectionVisibility['information'] = data.show_information_section !== false;
         if (data.section_visibility && typeof data.section_visibility === 'object') {
           this.sectionVisibility = { ...this.sectionVisibility, ...data.section_visibility };
+          
+          // Sync global master property tools toggle from DB
+          if (data.section_visibility.master_property_tools !== undefined) {
+             this.siteToggle.syncMasterPropertyPlotEnabled(data.section_visibility.master_property_tools);
+          }
         }
       },
       error: () => {}

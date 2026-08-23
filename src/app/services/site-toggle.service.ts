@@ -16,7 +16,7 @@ export class SiteToggleService {
   private activeSiteIdSubject = new BehaviorSubject<number | null>(null);
   public activeSiteId$: Observable<number | null> = this.activeSiteIdSubject.asObservable();
 
-  constructor() {}
+  constructor(private api: import('./api.service').ApiService) {}
 
   /**
    * Checks if interactive plot mode is enabled for a given site.
@@ -61,29 +61,39 @@ export class SiteToggleService {
     }
   }
 
-  private masterToggleSubject = new BehaviorSubject<boolean>(this.isMasterPropertyPlotEnabled());
+  private masterToggleSubject = new BehaviorSubject<boolean>(true); // default true
   public masterToggleState$: Observable<boolean> = this.masterToggleSubject.asObservable();
 
   /**
    * Master toggle for Admin Property & Plot tools menu items
    */
   isMasterPropertyPlotEnabled(): boolean {
-    try {
-      const stored = localStorage.getItem('mmr_master_property_plot');
-      if (stored === 'off') return false;
-      return true;
-    } catch {
-      return true;
-    }
+    return this.masterToggleSubject.value;
   }
 
   setMasterPropertyPlotEnabled(enabled: boolean): void {
-    try {
-      localStorage.setItem('mmr_master_property_plot', enabled ? 'on' : 'off');
-      this.masterToggleSubject.next(enabled);
-    } catch (e) {
-      console.error('Error setting master property plot toggle:', e);
-    }
+    this.masterToggleSubject.next(enabled);
+    
+    // Save to backend so public site sees it
+    this.api.adminGetHomePageSettings().subscribe({
+      next: (res: any) => {
+        const data = res?.data || {};
+        const currentVisibility = data.section_visibility || {};
+        currentVisibility.master_property_tools = enabled;
+        
+        const payload = {
+           show_information_section: data.show_information_section !== false,
+           section_visibility: currentVisibility
+        };
+        
+        this.api.adminUpdateHomePageSettings(payload).subscribe();
+      }
+    });
+  }
+
+  // Allow setting state from API response
+  syncMasterPropertyPlotEnabled(enabled: boolean): void {
+    this.masterToggleSubject.next(enabled);
   }
 
   /**
