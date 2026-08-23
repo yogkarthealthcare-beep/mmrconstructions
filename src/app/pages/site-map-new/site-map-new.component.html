@@ -66,14 +66,16 @@
       </div>
 
       <!-- PLOT BOOKING FORM WITH LOCKED SITE DROPDOWN -->
-      <div id="newSiteInquiryFormCard" class="p-2 bg-light rounded-12 border shadow-xs">
-        <h5 class="fw-700 text-dark mb-1 d-flex align-items-center">
-          <i class="fas fa-bookmark me-2 text-emerald"></i>Plot Booking
-        </h5>
-        <p class="fs-11 text-muted mb-3">Submit your details to book a plot or request a site visit.</p>
+      <div id="newSiteInquiryFormCard" class="p-4 bg-white rounded-14 border shadow-sm mt-3">
+        <div class="form-header-premium">
+          <h5 class="fw-800 text-dark mb-1 d-flex align-items-center">
+            <i class="fas fa-bookmark me-2 text-emerald"></i>Plot Booking
+          </h5>
+          <p class="fs-11 text-muted mb-0">Submit your details to book a plot or request a site visit.</p>
+        </div>
 
         <div *ngIf="inquirySubmitted" class="p-3 bg-emerald-subtle border border-emerald-subtle rounded-8 mb-3 text-emerald fs-12 fw-600">
-          <i class="fas fa-check-circle me-2"></i>Thank you! Your plot booking request has been received. Our team will contact you shortly.
+          <i class="fas fa-check-circle me-2"></i>Thank you! Your request has been received. Our team will contact you shortly.
         </div>
 
         <div *ngIf="inquiryErrorMessage" class="p-3 bg-danger-subtle border border-danger-subtle rounded-8 mb-3 text-danger fs-12">
@@ -81,35 +83,35 @@
         </div>
 
         <form (ngSubmit)="submitInquiry()">
-          <div class="mb-2.5">
-            <label class="form-label fs-11 fw-700 text-dark mb-1">Your Full Name *</label>
-            <input type="text" class="form-control form-control-sm" placeholder="e.g. Rahul Sharma" [(ngModel)]="inquiryForm.name" name="name" required>
+          <div class="mb-3">
+            <label class="premium-label">Your Full Name *</label>
+            <input type="text" class="premium-form-input w-100" placeholder="e.g. Rahul Sharma" [(ngModel)]="inquiryForm.name" name="name" required>
           </div>
 
-          <div class="mb-2.5">
-            <label class="form-label fs-11 fw-700 text-dark mb-1">Mobile Number *</label>
-            <input type="tel" class="form-control form-control-sm" placeholder="10-digit mobile number" [(ngModel)]="inquiryForm.mobile" name="mobile" required>
+          <div class="mb-3">
+            <label class="premium-label">Mobile Number *</label>
+            <input type="tel" class="premium-form-input w-100" placeholder="10-digit mobile number" [(ngModel)]="inquiryForm.mobile" name="mobile" required>
           </div>
 
           <!-- LOCKED SITE FIELD (PRE-SELECTED TO CURRENT SITE) -->
-          <div class="mb-2.5">
-            <label class="form-label fs-11 fw-700 text-dark mb-1">
+          <div class="mb-3">
+            <label class="premium-label">
               Selected Project Site
             </label>
             <div>
               <input type="text"
-                     class="form-control form-control-sm locked-site-input"
+                     class="premium-form-input w-100 locked-site-input"
                      [value]="site?.site_name ? (site.site_name + ' (' + (site.city || 'Uttar Pradesh') + ')') : 'AIMA Site (Kanpur)'"
                      readonly disabled>
             </div>
-            <div class="fs-10 text-muted mt-1">
-              <i class="fas fa-info-circle me-1 text-gold"></i>Site is locked to your selected property. To select another site, go back to the Home Page.
+            <div class="fs-10 text-muted mt-1.5">
+              <i class="fas fa-info-circle me-1 text-gold"></i>Site is locked to your selected property.
             </div>
           </div>
 
-          <div class="mb-2.5">
-            <label class="form-label fs-11 fw-700 text-dark mb-1">Interested In</label>
-            <select class="form-select form-select-sm" [(ngModel)]="inquiryForm.interest" name="interest">
+          <div class="mb-3">
+            <label class="premium-label">Interested In</label>
+            <select class="premium-form-input w-100" [(ngModel)]="inquiryForm.interest" name="interest">
               <option>Plot Booking — 100 Gaj</option>
               <option>Plot Booking — 50 Gaj</option>
               <option>Site Visit Request</option>
@@ -117,13 +119,13 @@
             </select>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fs-11 fw-700 text-dark mb-1">Message / Requirements (Optional)</label>
-            <textarea class="form-control form-control-sm" rows="2" placeholder="Mention plot preference, visit timing..." [(ngModel)]="inquiryForm.message" name="message"></textarea>
+          <div class="mb-4">
+            <label class="premium-label">Message / Requirements (Optional)</label>
+            <textarea class="premium-form-input w-100" rows="2" placeholder="Mention plot preference, visit timing..." [(ngModel)]="inquiryForm.message" name="message"></textarea>
           </div>
 
-          <button type="submit" class="btn btn-emerald w-100 py-2 fs-12 fw-700 shadow-sm" [disabled]="inquirySubmitting">
-            <i class="fas" [ngClass]="inquirySubmitting ? 'fa-spinner fa-spin me-2' : 'fa-bookmark me-2'"></i>
+          <button type="submit" class="btn-premium-submit w-100" [disabled]="inquirySubmitting">
+            <i class="fas" [ngClass]="inquirySubmitting ? 'fa-spinner fa-spin me-2' : 'fa-paper-plane me-2'"></i>
             {{ inquirySubmitting ? 'Submitting...' : 'Book Plot Now' }}
           </button>
         </form>
