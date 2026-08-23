@@ -77,7 +77,7 @@ export class AssociatesComponent implements OnInit {
     this.api.adminGetAssociates(queryParams).subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
-          const list = res.data.users || res.data.associates || (Array.isArray(res.data) ? res.data : []);
+          const list = res.data.users || res.data.associates || res.data.items || (Array.isArray(res.data) ? res.data : []);
           this.associates = list;
           this.total = res.data.total || res.data.totalRecords || list.length;
         } else {

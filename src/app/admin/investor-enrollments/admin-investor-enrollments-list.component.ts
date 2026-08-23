@@ -61,10 +61,10 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
   }
 
   loadInvestors() {
-    this.api.adminGetUsers({ user_type: 'Investor', pageSize: 1000 }).subscribe({
+    this.api.get('/api/admin/investors-portal', { pageSize: 1000 }, true).subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
-          this.investors = res.data.users || res.data || [];
+          this.investors = res.data.users || res.data.items || res.data || [];
         } else {
           this.investors = [];
         }
