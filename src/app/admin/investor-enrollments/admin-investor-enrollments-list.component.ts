@@ -9,44 +9,40 @@ import { ApiService } from '../../services/api.service';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="panel-header">
-      <h2>Investor Enrollments</h2>
-      <button class="btn btn-primary" (click)="loadApplications()"><i class="fas fa-sync"></i> Refresh</button>
+      <h2>Registered Investors</h2>
+      <button class="btn btn-primary" (click)="loadInvestors()"><i class="fas fa-sync"></i> Refresh</button>
     </div>
     
     <div class="table-responsive mt-3">
       <table class="table table-bordered table-hover">
         <thead class="table-dark">
           <tr>
-            <th>Date</th>
-            <th>Form No.</th>
+            <th>Reg. Date</th>
+            <th>Member ID</th>
             <th>Investor Name</th>
             <th>Mobile</th>
-            <th>Status</th>
-            <th>Payment Status</th>
-            <th>Actions</th>
+            <th>Email</th>
+            <th>Account Status</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let app of applications">
-            <td>{{ app.form_date | date }}</td>
-            <td>{{ app.form_no || app.investor_enrollment_id }}</td>
-            <td>{{ app.inv_first_name }} {{ app.inv_middle_name }} {{ app.inv_surname }}</td>
-            <td>{{ app.mobile }}</td>
+          <tr *ngFor="let inv of investors">
+            <td>{{ inv.registered_at | date }}</td>
+            <td>{{ inv.member_id || '-' }}</td>
+            <td>{{ inv.full_name }}</td>
+            <td>{{ inv.mobile_no }}</td>
+            <td>{{ inv.email || '-' }}</td>
             <td>
               <span class="badge" 
-                    [ngClass]="{'bg-success': app.app_status === 'Approved', 
-                                'bg-danger': app.app_status === 'Rejected', 
-                                'bg-warning text-dark': app.app_status === 'Hold/Pending KYC' || app.app_status === 'Pending'}">
-                {{ app.app_status }}
+                    [ngClass]="{'bg-success': inv.account_status === 'Active', 
+                                'bg-danger': inv.account_status === 'Suspended' || inv.account_status === 'Blacklisted', 
+                                'bg-warning text-dark': inv.account_status === 'Pending'}">
+                {{ inv.account_status }}
               </span>
             </td>
-            <td>{{ app.payment_status || 'Pending' }}</td>
-            <td>
-              <a [routerLink]="['/admin/investor-enrollments', app.id]" class="btn btn-sm btn-info">View / Edit</a>
-            </td>
           </tr>
-          <tr *ngIf="applications.length === 0">
-            <td colspan="7" class="text-center">No applications found.</td>
+          <tr *ngIf="investors.length === 0">
+            <td colspan="6" class="text-center">No investors found.</td>
           </tr>
         </tbody>
       </table>
@@ -54,20 +50,24 @@ import { ApiService } from '../../services/api.service';
   `
 })
 export class AdminInvestorEnrollmentsListComponent implements OnInit {
-  applications: any[] = [];
+  investors: any[] = [];
 
   private api = (inject as any)(ApiService) || inject(ApiService);
 
   constructor() {}
 
   ngOnInit() {
-    this.loadApplications();
+    this.loadInvestors();
   }
 
-  loadApplications() {
-    this.api.get('/api/admin/investor-enrollment', {}, true).subscribe({
+  loadInvestors() {
+    this.api.adminGetUsers({ user_type: 'Investor', pageSize: 1000 }).subscribe({
       next: (res: any) => {
-        this.applications = res.data || [];
+        if (res.success && res.data) {
+          this.investors = res.data.users || res.data || [];
+        } else {
+          this.investors = [];
+        }
       },
       error: (err: any) => console.error(err)
     });
