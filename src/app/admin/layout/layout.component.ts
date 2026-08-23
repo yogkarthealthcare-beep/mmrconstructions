@@ -29,7 +29,8 @@ interface NavGroup {
   styleUrls: ['./layout.component.css']
 })
 export class AdminLayoutComponent implements OnInit, OnDestroy {
-  sidebarOpen = false;
+  sidebarOpen = false; // Mobile slide-in
+  sidebarCollapsed = false; // Desktop shrink
   adminUser: any = null;
   activeSiteInteractive = true;
   propertyPlotMasterEnabled = true;
@@ -193,6 +194,10 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   togglePropertyPlotMaster(enabled: boolean) {
     this.siteToggle.setMasterPropertyPlotEnabled(enabled);
+  }
+
+  toggleDesktopSidebar() {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
   }
 
   updateNavGroups() {
