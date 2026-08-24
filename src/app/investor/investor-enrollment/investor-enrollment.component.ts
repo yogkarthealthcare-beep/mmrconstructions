@@ -19,6 +19,7 @@ export class InvestorEnrollmentComponent implements OnInit {
   showModal: boolean = false;
   modalAgreeCheck: boolean = false;
   submitting: boolean = false;
+  isSubmitted: boolean = false;
 
   @ViewChild('sigFirstCanvas', { static: false }) sigFirstCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('sigJointCanvas', { static: false }) sigJointCanvas!: ElementRef<HTMLCanvasElement>;
@@ -305,11 +306,9 @@ export class InvestorEnrollmentComponent implements OnInit {
       next: (res: any) => {
         this.submitting = false;
         this.showModal = false;
+        this.isSubmitted = true;
+        this.enrollmentForm.disable(); // Lock the form to show it's finalized
         alert('Application submitted successfully!');
-        this.enrollmentForm.reset();
-        this.photoDataUrl = '';
-        this.clearSignature(1);
-        this.clearSignature(2);
       },
       error: (err: any) => {
         this.submitting = false;
