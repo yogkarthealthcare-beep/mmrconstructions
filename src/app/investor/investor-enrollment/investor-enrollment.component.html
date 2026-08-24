@@ -21,7 +21,7 @@
         <img [src]="photoDataUrl" alt="Passport Photo">
       </ng-container>
       <ng-template #photoPlaceholder>
-        Please Affix<br>Passport Size<br>Self Attested<br>Photograph
+        Please Affix<br>Passport Size<br>Self Attested<br>Photograph <span style="color:red; font-size: 18px; font-weight: bold;">*</span>
       </ng-template>
       <input type="file" #photoInput accept="image/*" style="display:none;" (change)="onPhotoChange($event)">
     </div>
@@ -129,10 +129,10 @@
         <thead>
           <tr>
             <th style="width:40px;">S.No</th>
-            <th>Name of Nominee</th>
-            <th>Relationship</th>
-            <th style="width:70px;">Age</th>
-            <th style="width:110px;">Proportion (%)</th>
+            <th>Name of Nominee <span style="color:red; font-size:16px;">*</span></th>
+            <th>Relationship <span style="color:red; font-size:16px;">*</span></th>
+            <th style="width:70px;">Age <span style="color:red; font-size:16px;">*</span></th>
+            <th style="width:110px;">Proportion (%) <span style="color:red; font-size:16px;">*</span></th>
             <th style="width:50px;"></th>
           </tr>
         </thead>
@@ -180,7 +180,7 @@
 
       <label class="agree-line">
         <input type="checkbox" formControlName="declarationCheck" required>
-        <span>I/We confirm the above declaration is true and correct, and agree to abide by the Terms & Conditions of M.M.R. Construction & Developers Private Limited.</span>
+        <span>I/We confirm the above declaration is true and correct, and agree to abide by the Terms & Conditions of M.M.R. Construction & Developers Private Limited. <span style="color:red; font-size:18px; font-weight:bold;">*</span></span>
       </label>
 
       <div class="row3">
@@ -243,7 +243,7 @@
     </section>
 
     <div class="submit-wrap no-print">
-      <button type="submit" class="submit-btn" [disabled]="enrollmentForm.invalid || submitting">
+      <button type="submit" class="submit-btn" [disabled]="enrollmentForm.invalid || !photoDataUrl || submitting" style="background-color: #198754; color: white;">
         {{ submitting ? 'Submitting...' : 'Submit Application' }}
       </button>
     </div>
