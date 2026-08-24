@@ -19,7 +19,7 @@
       <button type="button" class="btn btn-sm btn-info no-print" (click)="fillDummyData()">Auto Fill (Test)</button>
     </div>
 
-    <div class="photo-box" title="Click to attach passport size photo" (click)="photoInput.click()">
+    <div class="photo-box" [class.invalid-photo]="!photoDataUrl && enrollmentForm.touched" title="Click to attach passport size photo" (click)="photoInput.click()">
       <ng-container *ngIf="photoDataUrl; else photoPlaceholder">
         <img [src]="photoDataUrl" alt="Passport Photo">
       </ng-container>

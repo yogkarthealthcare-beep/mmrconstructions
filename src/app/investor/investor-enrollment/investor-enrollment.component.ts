@@ -48,10 +48,10 @@ export class InvestorEnrollmentComponent implements OnInit {
       projectName: ['', Validators.required],
       invFirstName: ['', Validators.required],
       invMiddleName: [''],
-      invSurname: ['', Validators.required],
+      invSurname: [''],
       fhFirstName: ['', Validators.required],
       fhMiddleName: [''],
-      fhSurname: ['', Validators.required],
+      fhSurname: [''],
       dob: ['', Validators.required],
       age: ['', Validators.required],
       gender: ['', Validators.required],
@@ -63,15 +63,15 @@ export class InvestorEnrollmentComponent implements OnInit {
       pinCode: ['', Validators.required],
       mobile: ['', Validators.required],
       altTel: [''],
-      email: ['', [Validators.required, Validators.email]],
-      pan: ['', Validators.required],
-      aadhar: ['', Validators.required],
+      email: ['', Validators.email],
+      pan: [''],
+      aadhar: [''],
       amount: ['', Validators.required],
       amountWords: ['', Validators.required],
       paymentMode: ['', Validators.required],
-      txnNo: ['', Validators.required],
-      txnDate: ['', Validators.required],
-      bankBranch: ['', Validators.required],
+      txnNo: [''],
+      txnDate: [''],
+      bankBranch: [''],
       nominees: this.fb.array([this.createNomineeGroup()]),
       declarationCheck: [false, Validators.requiredTrue],
       declDate: ['', Validators.required],
@@ -266,10 +266,20 @@ export class InvestorEnrollmentComponent implements OnInit {
     return canvas.toDataURL() === blank.toDataURL();
   }
 
+  private focusFirstInvalidControl() {
+    setTimeout(() => {
+      const invalidControl = document.querySelector('.ng-invalid[formControlName], input.ng-invalid, select.ng-invalid, textarea.ng-invalid');
+      if (invalidControl) {
+        (invalidControl as HTMLElement).focus();
+        invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  }
+
   onSubmit() {
-    if (this.enrollmentForm.invalid) {
+    if (this.enrollmentForm.invalid || !this.photoDataUrl) {
       this.enrollmentForm.markAllAsTouched();
-      alert('Please fill out all required fields and accept the declaration.');
+      this.focusFirstInvalidControl();
       return;
     }
     this.modalAgreeCheck = false;
