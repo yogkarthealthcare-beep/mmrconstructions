@@ -20,6 +20,7 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
   totalItems = 0;
   totalPages = 1;
   searchQuery = '';
+  Math = Math;
 
   loading = false;
   loginLoadingId: number | null = null;

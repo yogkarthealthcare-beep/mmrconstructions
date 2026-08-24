@@ -19,11 +19,8 @@ import { ControlComponent } from './admin/control/control.component';
 import { ApprovalsComponent } from './admin/approvals/approvals.component';
 import { CustomersComponent } from './admin/customers/customers.component';
 import { AssociatesComponent } from './admin/associates/associates.component';
-import { AssociateDetailComponent } from './admin/associate-detail/associate-detail.component';
 import { AdminInvestorEnrollmentsListComponent } from './admin/investor-enrollments/admin-investor-enrollments-list.component';
 import { AdminInvestorEnrollmentDetailComponent } from './admin/investor-enrollments/admin-investor-enrollment-detail.component';
-import { CustomerApplicationsListComponent } from './admin/customer-applications/customer-applications-list.component';
-import { CustomerApplicationDetailComponent } from './admin/customer-applications/customer-application-detail.component';
 import { BookingReportComponent } from './admin/booking-report/booking-report.component';
 import { SitesMgmtComponent } from './admin/sites-mgmt/sites-mgmt.component';
 import { NewSiteAreaComponent } from './admin/new-site-area/new-site-area.component';
@@ -120,12 +117,9 @@ export const routes: Routes = [
       { path: 'analytics',           component: AdminAnalyticsComponent },
       { path: 'approvals',           component: ApprovalsComponent },
       { path: 'customers',           component: CustomersComponent },
-      { path: 'customer-applications', component: CustomerApplicationsListComponent, title: 'Customer Enrollments' },
-      { path: 'customer-applications/:id', component: CustomerApplicationDetailComponent, title: 'Customer Enrollment Detail' },
       { path: 'investor-enrollments', component: AdminInvestorEnrollmentsListComponent, title: 'Investor Enrollments' },
       { path: 'investor-enrollments/:id', component: AdminInvestorEnrollmentDetailComponent, title: 'Investor Enrollment Detail' },
       { path: 'associates',          component: AssociatesComponent },
-      { path: 'associate-detail',     component: AssociateDetailComponent },
       { path: 'booking-report',      component: BookingReportComponent, title: 'Booking Report' },
       { path: 'sites',               component: SitesMgmtComponent },
       { path: 'new-site-area',        component: NewSiteAreaComponent },
