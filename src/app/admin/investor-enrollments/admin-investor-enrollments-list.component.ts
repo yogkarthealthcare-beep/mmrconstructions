@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -60,6 +60,15 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
     });
   }
 
+  statusFilter = 'all';
+  activeRowId: any = null;
+  toast = '';
+
+  @HostListener('document:click')
+  closeDropdowns() {
+    this.activeRowId = null;
+  }
+
   onSearch() {
     this.currentPage = 1;
     this.loadInvestors();
@@ -69,6 +78,28 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
     this.searchQuery = '';
     this.currentPage = 1;
     this.loadInvestors();
+  }
+
+  getInitials(name: string): string {
+    if (!name) return 'I';
+    return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  }
+
+  get activeCount(): number {
+    return this.investors.filter(a => (a.status || a.account_status) === 'active' || (a.status || a.account_status) === 'Active').length;
+  }
+
+  get pendingCount(): number {
+    return this.investors.filter(a => (a.status || a.account_status) === 'pending' || (a.status || a.account_status) === 'Pending').length;
+  }
+
+  get suspendedCount(): number {
+    return this.investors.filter(a => (a.status || a.account_status) === 'suspended' || (a.status || a.account_status) === 'Suspended' || (a.status || a.account_status) === 'blacklisted').length;
+  }
+
+  showToast(msg: string) {
+    this.toast = msg;
+    setTimeout(() => { this.toast = ''; }, 3500);
   }
 
   changePage(page: number) {

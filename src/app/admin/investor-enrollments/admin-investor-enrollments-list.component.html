@@ -1,175 +1,221 @@
-<div class="investor-page-container">
-  <!-- Page Header -->
-  <div class="page-header d-flex justify-content-between align-items-center mb-3">
+<!-- Toast Notification -->
+<div *ngIf="toast" class="toast-popup" style="position:fixed;top:76px;right:24px;z-index:9999;animation:slideIn .25s ease;">
+  <i class="fas fa-check-circle text-emerald me-2"></i> {{ toast }}
+</div>
+
+<!-- TOP HERO EXECUTIVE BANNER -->
+<div class="admin-hero-card mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
     <div>
-      <h2 class="page-title m-0"><i class="fas fa-users-cog text-primary me-2"></i>Investor Directory</h2>
-      <p class="text-muted fs-12 mb-0 mt-1">Manage and view all registered investors.</p>
+      <div class="admin-hero-badge"><i class="fas fa-users-cog me-1"></i>INVESTOR DIRECTORY</div>
+      <h2 class="admin-hero-title mb-1">Investor Management</h2>
+      <p class="admin-hero-sub mb-0">Manage investor profiles, track investments, and manage user accounts.</p>
     </div>
-    <button class="btn btn-sm btn-primary shadow-sm px-3 d-flex align-items-center gap-2" (click)="loadInvestors()">
-      <i class="fas fa-sync" [class.fa-spin]="loading"></i> <span class="d-none d-sm-inline">Refresh</span>
-    </button>
-  </div>
 
-  <!-- Search & Toolbar -->
-  <div class="toolbar-card card shadow-sm border-0 mb-3">
-    <div class="card-body p-2">
-      <form (ngSubmit)="onSearch()" class="d-flex gap-2 w-100 m-0">
-        <div class="position-relative flex-grow-1">
-          <i class="fas fa-search position-absolute text-muted fs-13" style="left: 10px; top: 50%; transform: translateY(-50%);"></i>
-          <input type="text" class="form-control form-control-sm ps-4 compact-input" placeholder="Search by name, email, mobile, or PAN..." 
-                 [(ngModel)]="searchQuery" name="searchQuery">
-        </div>
-        <button type="submit" class="btn btn-sm btn-primary px-3 compact-btn">Search</button>
-        <button type="button" class="btn btn-sm btn-light px-2 compact-btn text-muted" (click)="clearSearch()" *ngIf="searchQuery">
-          <i class="fas fa-times"></i>
-        </button>
-      </form>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <button class="btn btn-outline-light btn-xs" (click)="loadInvestors()">
+        <i class="fas fa-sync me-1"></i> Refresh List
+      </button>
+      <button class="btn btn-gold btn-xs" routerLink="/admin/investor-enrollments/new">
+        <i class="fas fa-user-plus me-1"></i> Add New Investor
+      </button>
     </div>
   </div>
+</div>
 
-  <!-- Desktop Table View -->
-  <div class="card shadow-sm border-0 mb-3 d-none d-md-block">
-    <div class="table-responsive">
-      <table class="table table-hover mb-0 align-middle compact-table">
-        <thead class="table-light">
-          <tr>
-            <th class="text-center" style="width: 50px;">S.No.</th>
-            <th style="width: 90px;">ID</th>
-            <th>Name</th>
-            <th>Contact Details</th>
-            <th>Address</th>
-            <th class="text-center" style="width: 120px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let inv of investors; let i = index">
-            <td class="text-center fw-600 text-muted fs-12">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-            <td><span class="badge bg-light text-dark border fs-11">{{ inv.member_id || inv.id }}</span></td>
-            <td>
-              <div class="fw-600 text-dark fs-13">{{ inv.full_name }}</div>
-              <div class="fs-11 text-muted">Joined: {{ inv.created_at | date:'mediumDate' }}</div>
-            </td>
-            <td>
-              <div class="fs-12"><i class="fas fa-envelope text-muted me-1 w-12px text-center"></i> {{ inv.email || '-' }}</div>
-              <div class="fs-12 mt-1"><i class="fas fa-phone-alt text-muted me-1 w-12px text-center"></i> {{ inv.mobile_no || inv.mobile_number || '-' }}</div>
-            </td>
-            <td>
-              <div class="fs-12 text-truncate" style="max-width: 140px;" [title]="inv.city + ', ' + inv.state">
-                {{ inv.city ? inv.city + ', ' + inv.state : '-' }}
-              </div>
-            </td>
-            <td class="text-center">
-              <div class="d-flex gap-1 justify-content-center">
-                <button class="btn btn-xs btn-action btn-view" [routerLink]="['/admin/investor-enrollments', inv.id]" title="View Data">
-                  <i class="fas fa-eye fs-12"></i>
-                </button>
-                <button class="btn btn-xs btn-action btn-edit" [routerLink]="['/admin/investor-enrollments', inv.id]" title="Edit / Modify Data">
-                  <i class="fas fa-edit fs-12"></i>
-                </button>
-                <button class="btn btn-xs btn-action btn-login" (click)="loginAsInvestor(inv)" title="Direct Login to Investor Dashboard" [disabled]="loginLoadingId === inv.id">
-                  <i class="fas fs-12" [ngClass]="{'fa-sign-in-alt': loginLoadingId !== inv.id, 'fa-spinner fa-spin': loginLoadingId === inv.id}"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Empty State -->
-          <tr *ngIf="investors.length === 0 && !loading">
-            <td colspan="6" class="text-center py-4">
-              <div class="text-muted mb-2"><i class="fas fa-search fs-4 opacity-50"></i></div>
-              <h6 class="fw-600 text-dark m-0 fs-14">No Investors Found</h6>
-              <p class="fs-12 text-muted m-0">Try adjusting your search criteria.</p>
-            </td>
-          </tr>
-
-          <!-- Loading State -->
-          <tr *ngIf="loading">
-            <td colspan="6" class="text-center py-4">
-              <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Mobile Card View (Stacked Cards) -->
-  <div class="d-block d-md-none mb-3">
-    <ng-container *ngIf="!loading && investors.length > 0">
-      <div class="mobile-card card shadow-sm border-0 mb-2" *ngFor="let inv of investors; let i = index">
-        <div class="card-body p-3">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-              <div class="fw-700 text-dark fs-14">{{ inv.full_name }}</div>
-              <div class="fs-11 text-muted">ID: {{ inv.member_id || inv.id }}</div>
-            </div>
-            <span class="badge bg-light text-dark border fs-10 px-2 py-1">#{{ (currentPage - 1) * pageSize + i + 1 }}</span>
-          </div>
-          
-          <div class="d-flex flex-column gap-1 mb-3">
-            <div class="fs-12 text-muted d-flex align-items-center">
-              <i class="fas fa-envelope w-15px text-center me-2"></i> <span class="text-truncate">{{ inv.email || '-' }}</span>
-            </div>
-            <div class="fs-12 text-muted d-flex align-items-center">
-              <i class="fas fa-phone-alt w-15px text-center me-2"></i> <span>{{ inv.mobile_no || inv.mobile_number || '-' }}</span>
-            </div>
-            <div class="fs-12 text-muted d-flex align-items-center">
-              <i class="fas fa-map-marker-alt w-15px text-center me-2"></i> <span class="text-truncate">{{ inv.city ? inv.city + ', ' + inv.state : '-' }}</span>
-            </div>
-          </div>
-
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-action btn-view flex-grow-1" [routerLink]="['/admin/investor-enrollments', inv.id]">
-              <i class="fas fa-eye me-1"></i> View
-            </button>
-            <button class="btn btn-sm btn-action btn-edit flex-grow-1" [routerLink]="['/admin/investor-enrollments', inv.id]">
-              <i class="fas fa-edit me-1"></i> Edit
-            </button>
-            <button class="btn btn-sm btn-action btn-login flex-grow-1" (click)="loginAsInvestor(inv)" [disabled]="loginLoadingId === inv.id">
-              <i class="fas" [ngClass]="{'fa-sign-in-alt': loginLoadingId !== inv.id, 'fa-spinner fa-spin': loginLoadingId === inv.id}"></i> Login
-            </button>
-          </div>
+<!-- 4 STAT SUMMARY MINI CARDS -->
+<div class="row g-2 mb-2">
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-associates h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Total Investors</span>
+        <div class="icon-wrap bg-gold-light text-gold-dark">
+          <i class="fas fa-user-tie"></i>
         </div>
       </div>
+      <div class="stat-mini-val">{{ totalItems }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-users text-gold-dark me-1"></i>Registered Investors</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-plots h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Active Investors</span>
+        <div class="icon-wrap bg-emerald-light text-emerald">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+      <div class="stat-mini-val">{{ activeCount }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-user-check text-emerald me-1"></i>Active Accounts</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-approvals h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Pending Approvals</span>
+        <div class="icon-wrap bg-amber text-orange">
+          <i class="fas fa-hourglass-half"></i>
+        </div>
+      </div>
+      <div class="stat-mini-val">{{ pendingCount }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-clock text-orange me-1"></i>Awaiting Verification</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-mini-card box-enquiries h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+        <span class="stat-mini-lbl text-truncate">Suspended Accounts</span>
+        <div class="icon-wrap bg-purple-light text-purple">
+          <i class="fas fa-user-slash"></i>
+        </div>
+      </div>
+      <div class="stat-mini-val">{{ suspendedCount }}</div>
+      <div class="fs-11 text-muted fw-600"><i class="fas fa-ban text-purple me-1"></i>On Hold</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR CARD -->
+<div class="panel-card p-3 mb-2">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="filter-tabs">
+      <button class="filter-tab" [class.active]="statusFilter==='all'"       (click)="statusFilter='all'; onSearch()">All Investors ({{ totalItems }})</button>
+      <button class="filter-tab" [class.active]="statusFilter==='Active'"    (click)="statusFilter='Active'; onSearch()">Active</button>
+      <button class="filter-tab" [class.active]="statusFilter==='Pending'"   (click)="statusFilter='Pending'; onSearch()">Pending</button>
+      <button class="filter-tab" [class.active]="statusFilter==='Suspended'" (click)="statusFilter='Suspended'; onSearch()">Suspended</button>
+    </div>
+
+    <div class="search-box position-relative ms-auto" style="min-width: 240px;">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search name, phone, code, email...">
+    </div>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-5 mb-2" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+  <p class="text-muted fs-12 mt-2 mb-0">Loading investor directory...</p>
+</div>
+
+<!-- MAIN DATA TABLE CARD -->
+<div class="panel-card p-3 mb-2" *ngIf="!loading">
+  
+  <div *ngIf="investors.length === 0" class="text-center py-5">
+    <i class="fas fa-user-tie text-muted fs-1 mb-2"></i>
+    <h6 class="fw-700 text-dark mb-1">No Investors Found</h6>
+    <p class="text-muted fs-12 mb-0">No registered investors match your current search query.</p>
+  </div>
+
+  <div class="table-responsive" *ngIf="investors.length > 0">
+    <table class="table align-middle custom-dash-table mb-0">
+      <thead>
+        <tr>
+          <th>Investor Profile</th>
+          <th>Contact &amp; Mobile</th>
+          <th>ID / Reference</th>
+          <th>Role</th>
+          <th>Joined</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of investors">
+          <td>
+            <div class="d-flex align-items-center gap-2.5">
+              <div class="user-avatar-circle bg-gold-avatar">
+                {{ getInitials(a.full_name) }}
+              </div>
+              <div>
+                <div class="fw-700 text-dark fs-12">{{ a.full_name }}</div>
+                <div class="fs-10 text-muted"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ a.member_id || a.id || '—' }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="fw-700 text-dark fs-12"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ a.mobile_no || a.mobile_number || '—' }}</div>
+            <div class="fs-10 text-muted"><i class="fas fa-envelope me-1 text-gold"></i>{{ a.email || 'No email' }}</div>
+          </td>
+          <td>
+            <span class="invite-code-pill" *ngIf="a.member_id || a.id">{{ a.member_id || a.id }}</span>
+            <span class="fs-11 text-muted" *ngIf="!a.member_id && !a.id">—</span>
+          </td>
+          <td>
+            <span class="badge bg-warning-subtle text-warning-emphasis">
+              <i class="fas fa-award me-1"></i>Investor
+            </span>
+          </td>
+          <td>
+            <div class="fs-11 text-dark fw-600">{{ a.created_at || a.registered_at | date:'dd MMM yyyy' }}</div>
+            <div class="fs-10 text-muted">{{ a.created_at || a.registered_at | date:'hh:mm a' }}</div>
+          </td>
+          <td>
+            <span class="sbadge"
+              [class.sbadge-green]="(a.status || a.account_status | lowercase) === 'active'"
+              [class.sbadge-yellow]="(a.status || a.account_status | lowercase) === 'pending'"
+              [class.sbadge-red]="(a.status || a.account_status | lowercase) === 'suspended'||(a.status || a.account_status | lowercase) === 'blacklisted'">
+              {{ (a.status || a.account_status | uppercase) || 'ACTIVE' }}
+            </span>
+          </td>
+          <td class="text-end">
+            <div class="dropdown d-inline-block position-relative">
+              <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === a.id ? null : a.id)">
+                <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
+              </button>
+
+              <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 175px; border-radius: 10px;" *ngIf="activeRowId === a.id" (click)="$event.stopPropagation()">
+                <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="loginAsInvestor(a); activeRowId = null">
+                  <i class="fas fa-sign-in-alt text-primary me-2 width-16" [ngClass]="{'fa-spinner fa-spin': loginLoadingId === a.id}"></i> Login as User
+                </button>
+                <div class="dropdown-divider my-1"></div>
+                <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [routerLink]="['/admin/investor-enrollments', a.id]" (click)="activeRowId = null">
+                  <i class="fas fa-eye text-info me-2 width-16"></i> View Profile & Details
+                </button>
+                <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [routerLink]="['/admin/investor-enrollments', a.id]" (click)="activeRowId = null">
+                  <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Information
+                </button>
+                <div class="dropdown-divider my-1"></div>
+                <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + (a.mobile_no || a.mobile_number)">
+                  <i class="fas fa-phone text-secondary me-2 width-16"></i> Call Investor
+                </a>
+                <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + (a.mobile_no || a.mobile_number)" target="_blank">
+                  <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
+                </a>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-between align-items-center flex-wrap px-1" *ngIf="totalPages > 1 && !loading">
+  <div class="fs-12 text-muted mb-2 mb-sm-0">
+    Showing <span class="fw-600 text-dark">{{ (currentPage - 1) * pageSize + 1 }}</span>–<span class="fw-600 text-dark">{{ Math.min(currentPage * pageSize, totalItems) }}</span> of <span class="fw-600 text-dark">{{ totalItems }}</span>
+  </div>
+  
+  <ul class="pagination pagination-sm compact-pagination m-0">
+    <li class="page-item" [class.disabled]="currentPage === 1">
+      <a class="page-link" href="javascript:void(0)" (click)="changePage(currentPage - 1)"><i class="fas fa-chevron-left fs-10"></i></a>
+    </li>
+    
+    <ng-container *ngFor="let page of pagesArray">
+      <li class="page-item" *ngIf="page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)" [class.active]="currentPage === page">
+        <a class="page-link" href="javascript:void(0)" (click)="changePage(page)">{{ page }}</a>
+      </li>
+      <li class="page-item disabled" *ngIf="(page === currentPage - 2 && page > 1) || (page === currentPage + 2 && page < totalPages)">
+        <span class="page-link border-0 bg-transparent text-muted px-1">...</span>
+      </li>
     </ng-container>
-
-    <div *ngIf="investors.length === 0 && !loading" class="card shadow-sm border-0 p-4 text-center">
-      <div class="text-muted mb-2"><i class="fas fa-search fs-4 opacity-50"></i></div>
-      <h6 class="fw-600 text-dark m-0 fs-14">No Investors Found</h6>
-    </div>
     
-    <div *ngIf="loading" class="card shadow-sm border-0 p-4 text-center">
-      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-    </div>
-  </div>
-
-  <!-- Pagination -->
-  <div class="d-flex justify-content-between align-items-center flex-wrap" *ngIf="totalPages > 1">
-    <div class="fs-12 text-muted mb-2 mb-sm-0">
-      Showing <span class="fw-600 text-dark">{{ (currentPage - 1) * pageSize + 1 }}</span>–<span class="fw-600 text-dark">{{ Math.min(currentPage * pageSize, totalItems) }}</span> of <span class="fw-600 text-dark">{{ totalItems }}</span>
-    </div>
-    
-    <ul class="pagination pagination-sm compact-pagination m-0">
-      <li class="page-item" [class.disabled]="currentPage === 1">
-        <a class="page-link" href="javascript:void(0)" (click)="changePage(currentPage - 1)"><i class="fas fa-chevron-left fs-10"></i></a>
-      </li>
-      
-      <ng-container *ngFor="let page of pagesArray">
-        <!-- Show first, last, and current nearby pages -->
-        <li class="page-item" *ngIf="page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)" [class.active]="currentPage === page">
-          <a class="page-link" href="javascript:void(0)" (click)="changePage(page)">{{ page }}</a>
-        </li>
-        <!-- Show ellipsis -->
-        <li class="page-item disabled" *ngIf="(page === currentPage - 2 && page > 1) || (page === currentPage + 2 && page < totalPages)">
-          <span class="page-link border-0 bg-transparent text-muted px-1">...</span>
-        </li>
-      </ng-container>
-      
-      <li class="page-item" [class.disabled]="currentPage === totalPages">
-        <a class="page-link" href="javascript:void(0)" (click)="changePage(currentPage + 1)"><i class="fas fa-chevron-right fs-10"></i></a>
-      </li>
-    </ul>
-  </div>
+    <li class="page-item" [class.disabled]="currentPage === totalPages">
+      <a class="page-link" href="javascript:void(0)" (click)="changePage(currentPage + 1)"><i class="fas fa-chevron-right fs-10"></i></a>
+    </li>
+  </ul>
 </div>
