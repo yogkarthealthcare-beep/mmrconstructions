@@ -130,6 +130,56 @@ export class InvestorEnrollmentComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
+  fillDummyData() {
+    this.enrollmentForm.patchValue({
+      formNo: 'FORM-1001',
+      formDate: new Date().toISOString().split('T')[0],
+      branchCode: 'BR-01',
+      branchName: 'Main Branch',
+      investorId: 'INV-5555',
+      projectName: 'MMR Heights',
+      invFirstName: 'Rahul',
+      invMiddleName: 'Kumar',
+      invSurname: 'Sharma',
+      fhFirstName: 'Rajesh',
+      fhMiddleName: '',
+      fhSurname: 'Sharma',
+      dob: '1990-05-15',
+      age: 34,
+      gender: 'M',
+      occupation: 'Service',
+      address: '123 Test Street, New Extension',
+      city: 'Lucknow',
+      state: 'Uttar Pradesh',
+      pinCode: '226001',
+      mobile: '9876543210',
+      altTel: '0522-123456',
+      email: 'rahul.test@example.com',
+      pan: 'ABCDE1234F',
+      aadhar: '123456789012',
+      amount: 500000,
+      amountWords: 'Five Lakhs Only',
+      paymentMode: 'NEFT/RTGS/UPI',
+      txnNo: 'TXN987654321',
+      txnDate: new Date().toISOString().split('T')[0],
+      bankBranch: 'SBI, Main Branch',
+      declarationCheck: true,
+      declDate: new Date().toISOString().split('T')[0],
+      declPlace: 'Lucknow',
+      declSignatureName: 'Rahul Kumar Sharma',
+      firstApplicantName: 'Rahul Kumar Sharma',
+      jointApplicantName: ''
+    });
+
+    const nominees = this.enrollmentForm.get('nominees') as FormArray;
+    nominees.at(0).patchValue({
+      name: 'Priya Sharma',
+      relationship: 'Wife',
+      age: 30,
+      proportion: 100
+    });
+  }
+
   // --- Signature Pad Logic ---
   initSignaturePads() {
     const initPad = (canvas: HTMLCanvasElement) => {
