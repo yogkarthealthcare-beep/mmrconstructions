@@ -249,6 +249,27 @@ export class AssociatesComponent implements OnInit {
     });
   }
 
+  impersonateAssociate(a: any) {
+    if (!confirm(`Are you sure you want to login as ${a.full_name}?`)) return;
+    this.api.post(`/api/admin/impersonate/${a.user_id}`, {}, true).subscribe({
+      next: (res: any) => {
+        if (res.success && res.data?.token) {
+          localStorage.setItem('token', res.data.token);
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+          this.showToast(`Logged in as ${a.full_name}`);
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 1000);
+        } else {
+          this.showToast(res.message || 'Impersonation failed');
+        }
+      },
+      error: (e: any) => {
+        this.showToast(e?.error?.message || 'Failed to impersonate');
+      }
+    });
+  }
+
   closeModals() {
     this.showAddModal = false;
     this.showEditModal = false;
