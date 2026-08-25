@@ -14,6 +14,8 @@ export class AuthService {
 
   constructor(private router: Router) {}
 
+  private isLoggingOut = false;
+
   // ── Admin ──────────────────────
   clearAllAuthStorage() {
     const keys = [
@@ -49,12 +51,16 @@ export class AuthService {
   }
   isAdminLoggedIn() { return !!this.adminToken; }
   logoutAdmin() {
+    if (this.isLoggingOut) return;
+    this.isLoggingOut = true;
     ['mmr_admin_token','mmr_admin_refresh','mmr_admin_user'].forEach(k => {
       sessionStorage.removeItem(k);
       localStorage.removeItem(k);
     });
     this._adminUser$.next(null);
-    this.router.navigate(['/admin-login']);
+    this.router.navigate(['/admin-login']).then(() => {
+      this.isLoggingOut = false;
+    });
   }
 
   // ── User ──────────────────────
@@ -91,12 +97,16 @@ export class AuthService {
   }
   isUserLoggedIn() { return !!this.userToken; }
   logoutUser() {
+    if (this.isLoggingOut) return;
+    this.isLoggingOut = true;
     ['mmr_user_token','mmr_user_refresh','mmr_user'].forEach(k => {
       sessionStorage.removeItem(k);
       localStorage.removeItem(k);
     });
     this._user$.next(null);
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login']).then(() => {
+      this.isLoggingOut = false;
+    });
   }
 
   // ── Helpers ─────────────────────
@@ -117,12 +127,16 @@ export class AuthService {
     try { return JSON.parse(s); } catch { return null; }
   }
   logoutInvestor() {
+    if (this.isLoggingOut) return;
+    this.isLoggingOut = true;
     ['mmr_investor_token', 'mmr_investor_user'].forEach(k => {
       sessionStorage.removeItem(k);
       localStorage.removeItem(k);
     });
     this._investorUser$.next(null);
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login']).then(() => {
+      this.isLoggingOut = false;
+    });
   }
   setInvestorSession(tokenOrData: any, userObj?: any) {
     if (!tokenOrData) return;
