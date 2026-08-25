@@ -15,7 +15,20 @@ export class AuthService {
   constructor(private router: Router) {}
 
   // ── Admin ──────────────────────
+  clearAllAuthStorage() {
+    const keys = [
+      'mmr_admin_token', 'mmr_admin_refresh', 'mmr_admin_user',
+      'mmr_user_token', 'mmr_user_refresh', 'mmr_user',
+      'mmr_investor_token', 'mmr_investor_user'
+    ];
+    keys.forEach(k => {
+      sessionStorage.removeItem(k);
+      localStorage.removeItem(k);
+    });
+  }
+
   setAdminSession(data: any) {
+    this.clearAllAuthStorage();
     sessionStorage.setItem('mmr_admin_token', data.token);
     sessionStorage.setItem('mmr_admin_refresh', data.refresh_token);
     sessionStorage.setItem('mmr_admin_user', JSON.stringify(data.admin));
@@ -47,6 +60,7 @@ export class AuthService {
   // ── User ──────────────────────
   setUserSession(data: any) {
     if (!data) return;
+    this.clearAllAuthStorage();
     const token = data.token || data.access_token || data.jwt || (typeof data === 'string' ? data : null);
     const refreshToken = data.refresh_token || data.refreshToken || '';
     const userObj = data.user || data.data?.user || (data.user_id ? data : null);
@@ -112,6 +126,7 @@ export class AuthService {
   }
   setInvestorSession(tokenOrData: any, userObj?: any) {
     if (!tokenOrData) return;
+    this.clearAllAuthStorage();
     if (typeof tokenOrData === 'string') {
       sessionStorage.setItem('mmr_investor_token', tokenOrData);
       if (userObj) {
