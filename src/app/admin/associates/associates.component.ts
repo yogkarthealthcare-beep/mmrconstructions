@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-associates',
@@ -279,5 +280,33 @@ export class AssociatesComponent implements OnInit {
   showToast(msg: string) {
     this.toast = msg;
     setTimeout(() => { this.toast = ''; }, 3500);
+  }
+
+  deleteAssociate(associate: any) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to delete associate ${associate.full_name} and ALL their associated data (Network, Commission, Sales, Bookings). This action cannot be undone!`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.api.adminDeleteAssociate(associate.user_id).subscribe({
+          next: (res: any) => {
+            if (res.success || res.status === 'success') {
+              Swal.fire('Deleted!', 'Associate has been deleted.', 'success');
+              this.load();
+            } else {
+              Swal.fire('Error', res.message || 'Failed to delete associate', 'error');
+            }
+          },
+          error: (err) => {
+            Swal.fire('Error', err.error?.message || 'Delete failed', 'error');
+          }
+        });
+      }
+    });
   }
 }

@@ -156,12 +156,14 @@ export class ApiService {
   adminGetInvestorEnrollments()       { return this.get('/api/admin/investor-enrollment', {}, true); }
   adminGetInvestorEnrollment(id: string) { return this.get(`/api/admin/investor-enrollment/${id}`, {}, true); }
   adminUpdateInvestorEnrollment(id: string, data: any) { return this.put(`/api/admin/investor-enrollment/${id}`, data, true); }
+  adminDeleteInvestorEnrollment(id: string) { return this.delete(`/api/admin/investor-enrollment/${id}`, true); }
 
   // ── ADMIN — Users & Customers ─────────────────────
   adminGetPendingUsers()           { return this.get('/api/admin/users/pending', {}, true); }
   adminGetUsers(q: any = {})       { return this.get('/api/admin/users', q, true); }
   adminGetUser(id: number)         { return this.get(`/api/admin/users/${id}`, {}, true); }
   adminGetCustomers(q: any = {})   { return this.get('/api/admin/customers', q, true); }
+  adminImpersonateUser(userId: string) { return this.post(`/api/admin/impersonate/${userId}`, {}, true); }
   adminCreateCustomer(data: any)   { return this.post('/api/admin/customers', data, true); }
   adminUpdateCustomer(id: number, data: any) { return this.put(`/api/admin/customers/${id}`, data, true); }
   adminGetAssociates(q: any = {})  { return this.get('/api/admin/associates', q, true); }
@@ -295,6 +297,8 @@ export class ApiService {
   adminUpdateInvestor(id: number, data: any) { return this.putForm(`/api/admin/investors/${id}`, data, true); }
   adminCreateInvestor(data: any) { return this.postForm('/api/admin/investors', data, true); }
   adminSetInvestorStatus(id: number, status: boolean) { return this.patch(`/api/admin/investors/${id}/status`, { is_active: status }, true); }
+  adminDeleteCustomer(id: number) { return this.delete(`/api/admin/customers/${id}`, true); }
+  adminDeleteAssociate(id: number) { return this.delete(`/api/admin/associates/${id}`, true); }
   adminDeleteInvestor(id: number) { return this.delete(`/api/admin/investors/${id}`, true); }
 
   // MLM Pages & Ranks (Admin)

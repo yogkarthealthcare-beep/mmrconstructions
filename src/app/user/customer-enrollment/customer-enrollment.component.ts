@@ -215,10 +215,91 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   onSubmit() {
     if (this.enrollmentForm.invalid) {
       this.enrollmentForm.markAllAsTouched();
+      setTimeout(() => {
+        const firstInvalidControl = document.querySelector('.ng-invalid[formControlName], .ng-invalid[formArrayName], .ng-invalid[formGroupName]') as HTMLElement;
+        if (firstInvalidControl) {
+          firstInvalidControl.focus();
+        }
+      }, 100);
       return;
     }
     this.showModal = true;
     this.modalAgreed = false;
+  }
+
+  autoFillDemoData() {
+    this.enrollmentForm.patchValue({
+      formDate: new Date().toISOString().split('T')[0],
+      projectName: 'MMR Green City',
+      propertyType: 'Residential Plot',
+      plotFlatNo: 'A-101',
+      blockTower: 'Block A',
+      sizeArea: '1000 Sq. Ft.',
+      rate: '1500',
+      bsp: 1500000,
+      plcDev: 50000,
+      
+      applicantName: 'Rahul Sharma',
+      fhName: 'Ramesh Sharma',
+      dob: '1990-05-15',
+      age: 34,
+      gender: 'M',
+      maritalStatus: 'Married',
+      nationality: 'Indian',
+      pan: 'ABCDE1234F',
+      aadhar: '123456789012',
+      occupation: 'Software Engineer',
+      presentAddress: '123 Tech Park',
+      presentCity: 'Noida',
+      presentStatePin: 'UP 201301',
+      permanentAddress: '123 Tech Park',
+      permanentCity: 'Noida',
+      permanentStatePin: 'UP 201301',
+      mobile1: '9876543210',
+      mobile2: '9876543211',
+      email1: 'rahul.sharma@example.com',
+
+      coApplicantName: 'Priya Sharma',
+      coFhName: 'Rahul Sharma',
+      coRelation: 'Wife',
+      coDob: '1992-08-20',
+      coAge: 32,
+      coGender: 'F',
+      coPan: 'FGHIJ5678K',
+      coAadhar: '987654321098',
+      coPresentAddress: '123 Tech Park',
+      coMobile: '9876543212',
+      coEmail: 'priya.sharma@example.com',
+      
+      bookingAmount: 100000,
+      bookingAmountWords: 'One Lakh Only',
+      paymentMode: 'UPI',
+      txnNo: 'UPI123456789',
+      txnDate: new Date().toISOString().split('T')[0],
+      drawnBankBranch: 'HDFC Bank, Sector 18',
+      
+      accHolderName: 'Rahul Sharma',
+      accBankBranch: 'HDFC Noida Sector 18',
+      accNumber: '50100234567890',
+      ifscCode: 'HDFC0000123',
+
+      associateName: 'Amit Agent',
+      associateId: 'MMR-AGT-001',
+      associateMobile: '9988776655',
+      associateSignatureName: 'Amit Agent',
+      
+      declarationCheck: true
+    });
+
+    const nomineesArray = this.enrollmentForm.get('nominees') as FormArray;
+    if (nomineesArray.length > 0) {
+      nomineesArray.at(0).patchValue({
+        nomineeName: 'Aarav Sharma',
+        nomineeRelation: 'Son',
+        nomineeAgeDob: '2015-01-10',
+        nomineeAadhar: '112233445566'
+      });
+    }
   }
 
   closeModal() {

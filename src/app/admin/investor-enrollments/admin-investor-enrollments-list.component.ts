@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-investor-enrollments-list',
@@ -145,6 +146,34 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
         this.loginLoadingId = null;
         console.error('Login as investor failed', err);
         alert(err.error?.message || 'Failed to impersonate investor. Please check logs.');
+      }
+    });
+  }
+
+  deleteInvestor(investor: any) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to delete investor ${investor.full_name} and ALL their associated data. This action cannot be undone!`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.api.adminDeleteInvestorEnrollment(investor.id).subscribe({
+          next: (res: any) => {
+            if (res.success || res.status === 'success') {
+              Swal.fire('Deleted!', 'Investor has been deleted.', 'success');
+              this.loadInvestors();
+            } else {
+              Swal.fire('Error', res.message || 'Failed to delete investor', 'error');
+            }
+          },
+          error: (err) => {
+            Swal.fire('Error', err.error?.message || 'Delete failed', 'error');
+          }
+        });
       }
     });
   }

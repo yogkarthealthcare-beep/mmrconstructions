@@ -253,4 +253,49 @@ export class CustomersComponent implements OnInit {
     this.toast = msg;
     setTimeout(() => { this.toast = ''; }, 3500);
   }
+
+  loginAsCustomer(c: any) {
+    this.actionLoading = true;
+    this.api.adminImpersonateUser(c.user_id).subscribe({
+      next: (res: any) => {
+        this.actionLoading = false;
+        if (res.success && res.data) {
+          this.auth.setUserSession(res.data);
+          this.router.navigate(['/user/dashboard']);
+        }
+      },
+      error: (e: any) => {
+        this.actionLoading = false;
+        this.showToast(e?.error?.message || 'Failed to login as customer');
+      }
+    });
+  }
+
+  deleteCustomer(customer: any) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to delete customer ${customer.full_name} and ALL their associated data. This action cannot be undone!`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.api.adminDeleteCustomer(customer.user_id).subscribe({
+          next: (res: any) => {
+            if (res.success || res.status === 'success') {
+              Swal.fire('Deleted!', 'Customer has been deleted.', 'success');
+              this.load();
+            } else {
+              Swal.fire('Error', res.message || 'Failed to delete customer', 'error');
+            }
+          },
+          error: (err) => {
+            Swal.fire('Error', err.error?.message || 'Delete failed', 'error');
+          }
+        });
+      }
+    });
+  }
 }

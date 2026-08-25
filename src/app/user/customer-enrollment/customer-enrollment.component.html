@@ -14,9 +14,12 @@
   </div>
 
   <form [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()">
-    <div class="title-banner">
+    <div class="title-banner position-relative">
       <div class="en">CUSTOMER ENROLLMENT FORM (PROPERTY BUYER)</div>
       <div class="hi">ग्राहक नामांकन फॉर्म (संपति खरीदार)</div>
+      <button type="button" (click)="autoFillDemoData()" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: #ffc107; border: none; padding: 5px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; color: #000; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+        <i class="fas fa-bolt"></i> Auto-Fill Demo Data
+      </button>
     </div>
 
     <div class="meta-grid">
@@ -293,7 +296,7 @@
     </section>
 
     <div class="submit-wrap">
-      <button type="submit" class="submit-btn" [disabled]="enrollmentForm.invalid || submitting">
+      <button type="submit" class="submit-btn" [disabled]="submitting">
         {{ submitting ? 'Submitting...' : 'Submit Application' }}
       </button>
     </div>
