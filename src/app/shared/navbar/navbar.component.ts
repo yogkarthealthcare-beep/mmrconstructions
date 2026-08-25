@@ -37,6 +37,12 @@ export class NavbarComponent implements OnInit {
     return !!this.currentUser || !!this.investorUser || this.auth.isUserLoggedIn() || this.auth.isInvestorLoggedIn();
   }
 
+  get isPublicUserLoggedIn(): boolean {
+    if (!this.isLoggedIn) return false;
+    const role = this.userRole.toLowerCase();
+    return !['admin', 'superadmin', 'sitemanager'].includes(role);
+  }
+
   get userName(): string {
     if (this.currentUser?.full_name) return this.currentUser.full_name;
     if (this.currentUser?.name) return this.currentUser.name;

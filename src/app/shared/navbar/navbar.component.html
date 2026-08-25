@@ -42,13 +42,13 @@
 
     <div class="nav-actions">
       <!-- Unauthenticated State: Show Login & Register -->
-      <ng-container *ngIf="!isLoggedIn">
+      <ng-container *ngIf="!isPublicUserLoggedIn">
         <a routerLink="/login" class="btn btn-outline-green btn-sm">Login</a>
         <a routerLink="/register" class="btn btn-green btn-sm">Register</a>
       </ng-container>
 
       <!-- Authenticated Session State: Show Profile & Dropdown -->
-      <div *ngIf="isLoggedIn" class="user-profile-menu-wrap position-relative">
+      <div *ngIf="isPublicUserLoggedIn" class="user-profile-menu-wrap position-relative">
         <button type="button" class="user-profile-trigger d-flex align-items-center gap-2 border-0 bg-transparent p-1" (click)="toggleUserDropdown($event)">
           <div class="avatar-circle-sm">
             {{ userInitials }}
@@ -121,7 +121,7 @@
 
   <nav class="drawer-nav">
     <!-- User Profile Header in Mobile Drawer if Logged In -->
-    <div *ngIf="isLoggedIn" class="p-3 mb-3 bg-dark-green rounded-3 text-white">
+    <div *ngIf="isPublicUserLoggedIn" class="p-3 mb-3 bg-dark-green rounded-3 text-white">
       <div class="d-flex align-items-center gap-3">
         <div class="avatar-circle-md bg-gold text-dark font-display fw-700 fs-5">{{ userInitials }}</div>
         <div>
@@ -156,11 +156,11 @@
 
     <!-- Bottom Actions in Mobile Drawer -->
     <div class="mt-4 px-2">
-      <div *ngIf="!isLoggedIn" class="d-flex gap-2">
+      <div *ngIf="!isPublicUserLoggedIn" class="d-flex gap-2">
         <a routerLink="/login" class="btn btn-outline-green flex-fill text-center" (click)="closeDrawer()">Login</a>
         <a routerLink="/register" class="btn btn-green flex-fill text-center" (click)="closeDrawer()">Register</a>
       </div>
-      <div *ngIf="isLoggedIn">
+      <div *ngIf="isPublicUserLoggedIn">
         <button class="btn btn-outline-danger w-100 text-center fw-700" (click)="logout()">
           <i class="fas fa-sign-out-alt me-1"></i> Logout
         </button>
