@@ -291,7 +291,7 @@ export class AssociatesComponent implements OnInit {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
+    }).then((result: any) => {
       if (result.isConfirmed) {
         this.api.adminDeleteAssociate(associate.user_id).subscribe({
           next: (res: any) => {
@@ -302,7 +302,7 @@ export class AssociatesComponent implements OnInit {
               Swal.fire('Error', res.message || 'Failed to delete associate', 'error');
             }
           },
-          error: (err) => {
+          error: (err: any) => {
             Swal.fire('Error', err.error?.message || 'Delete failed', 'error');
           }
         });

@@ -2,6 +2,9 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-customers',
@@ -51,7 +54,11 @@ export class CustomersComponent implements OnInit {
   actionLoading = false;
   toast = '';
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.load();
@@ -280,7 +287,7 @@ export class CustomersComponent implements OnInit {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
+    }).then((result: any) => {
       if (result.isConfirmed) {
         this.api.adminDeleteCustomer(customer.user_id).subscribe({
           next: (res: any) => {
@@ -291,7 +298,7 @@ export class CustomersComponent implements OnInit {
               Swal.fire('Error', res.message || 'Failed to delete customer', 'error');
             }
           },
-          error: (err) => {
+          error: (err: any) => {
             Swal.fire('Error', err.error?.message || 'Delete failed', 'error');
           }
         });
