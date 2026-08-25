@@ -112,7 +112,7 @@ export class SitesMgmtComponent implements OnInit {
 
     let hasAdminToken = false;
     try {
-      const token = localStorage.getItem('mmr_admin_token');
+      const token = sessionStorage.getItem('mmr_admin_token');
       hasAdminToken = Boolean(token && token !== 'null' && token !== 'undefined');
     } catch (_) {}
 

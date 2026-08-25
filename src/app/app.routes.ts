@@ -13,6 +13,7 @@ import { VerifyOtpComponent } from './pages/verify-otp/verify-otp.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 
 // Admin
+import { adminGuard } from './shared/guards/admin.guard';
 import { AdminLayoutComponent } from './admin/layout/layout.component';
 import { AdminDashboardComponent } from './admin/dashboard/dashboard.component';
 import { ControlComponent } from './admin/control/control.component';
@@ -111,6 +112,7 @@ export const routes: Routes = [
 
   {
     path: 'admin', component: AdminLayoutComponent,
+    canActivate: [adminGuard],
     children: [
       { path: '',                     redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard',           component: AdminDashboardComponent },

@@ -13,5 +13,5 @@ export class BookPlotLeadsComponent implements OnInit {
   filter(){this.page=1;this.load();}
   go(delta:number){this.page=Math.min(this.pages,Math.max(1,this.page+delta));this.load();}
   update(row:any){this.api.adminUpdateBookPlotLeadStatus(row.id,row.status).subscribe();}
-  export(){const url=this.api.adminBookPlotLeadsExportUrl({search:this.search,status:this.status});const token=localStorage.getItem('mmr_admin_token')||'';this.http.get(url,{responseType:'blob',headers:new HttpHeaders({Authorization:`Bearer ${token}`})}).subscribe(blob=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`book-plot-leads-${new Date().toISOString().slice(0,10)}.xlsx`;a.click();URL.revokeObjectURL(a.href);});}
+  export(){const url=this.api.adminBookPlotLeadsExportUrl({search:this.search,status:this.status});const token=sessionStorage.getItem('mmr_admin_token')||'';this.http.get(url,{responseType:'blob',headers:new HttpHeaders({Authorization:`Bearer ${token}`})}).subscribe(blob=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`book-plot-leads-${new Date().toISOString().slice(0,10)}.xlsx`;a.click();URL.revokeObjectURL(a.href);});}
 }

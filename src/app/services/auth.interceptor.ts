@@ -13,10 +13,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   const isAdminApi = req.url.includes('/api/admin/');
+  const isInvestorApi = req.url.includes('/api/investor/');
   const isAuthApi = req.url.includes('/api/auth/') || req.url.includes('/api/admin/auth/');
-  const token = isAdminApi
-    ? localStorage.getItem('mmr_admin_token')
-    : localStorage.getItem('mmr_user_token');
+  
+  let token;
+  if (isAdminApi) {
+    token = sessionStorage.getItem('mmr_admin_token');
+  } else if (isInvestorApi) {
+    token = sessionStorage.getItem('mmr_investor_token');
+  } else {
+    token = sessionStorage.getItem('mmr_user_token');
+  }
 
   const request = !token || req.headers.has('Authorization')
     ? req

@@ -16,7 +16,7 @@ export class NavbarComponent implements OnInit {
   docOpen = false;
   userDropdownOpen = false;
   currentUser: any = null;
-  adminUser: any = null;
+  investorUser: any = null;
 
   constructor(
     public router: Router,
@@ -28,25 +28,26 @@ export class NavbarComponent implements OnInit {
     this.auth.user$.subscribe(u => {
       this.currentUser = u || this.auth.getUser();
     });
-    this.auth.adminUser$.subscribe(a => {
-      this.adminUser = a || this.auth.getAdminUser();
+    this.auth.investorUser$.subscribe(i => {
+      this.investorUser = i || this.auth.getInvestorUser();
     });
   }
 
   get isLoggedIn(): boolean {
-    return !!this.currentUser || !!this.adminUser || this.auth.isUserLoggedIn() || this.auth.isAdminLoggedIn();
+    return !!this.currentUser || !!this.investorUser || this.auth.isUserLoggedIn() || this.auth.isInvestorLoggedIn();
   }
 
   get userName(): string {
     if (this.currentUser?.full_name) return this.currentUser.full_name;
     if (this.currentUser?.name) return this.currentUser.name;
-    if (this.adminUser?.name) return this.adminUser.name;
+    if (this.investorUser?.full_name) return this.investorUser.full_name;
+    if (this.investorUser?.name) return this.investorUser.name;
     return 'User';
   }
 
   get userRole(): string {
-    if (this.adminUser || this.auth.isAdminLoggedIn()) return 'Admin';
-    return this.currentUser?.user_type || 'Customer';
+    if (this.investorUser || this.auth.isInvestorLoggedIn()) return 'Investor';
+    return this.currentUser?.user_type || this.currentUser?.role || 'Customer';
   }
 
   get userInitials(): string {
@@ -59,7 +60,6 @@ export class NavbarComponent implements OnInit {
     const role = this.userRole;
     if (role === 'Associate') return '/associate/dashboard';
     if (role === 'Investor') return '/investor/dashboard';
-    if (role === 'Admin') return '/admin/dashboard';
     return '/customer/dashboard';
   }
 
@@ -67,7 +67,6 @@ export class NavbarComponent implements OnInit {
     const role = this.userRole;
     if (role === 'Associate') return '/associate/profile';
     if (role === 'Investor') return '/investor/profile';
-    if (role === 'Admin') return '/admin/dashboard';
     return '/customer/profile';
   }
 
@@ -98,8 +97,8 @@ export class NavbarComponent implements OnInit {
   logout() {
     this.userDropdownOpen = false;
     this.closeDrawer();
-    if (this.adminUser || this.auth.isAdminLoggedIn()) {
-      this.auth.logoutAdmin();
+    if (this.investorUser || this.auth.isInvestorLoggedIn()) {
+      this.auth.logoutInvestor();
     } else {
       this.auth.logoutUser();
     }

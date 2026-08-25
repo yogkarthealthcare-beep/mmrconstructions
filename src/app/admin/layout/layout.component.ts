@@ -102,7 +102,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       expanded: false,
       items: [
         { icon: 'fas fa-envelope-open-text', label: 'Enquiries', route: '/admin/enquiries' },
-        { icon: 'fas fa-user-tag', label: 'Book Plot Leads', route: '/admin/book-plot-leads' },
+        // { icon: 'fas fa-user-tag', label: 'Book Plot Leads', route: '/admin/book-plot-leads' },
       ]
     },
     {
