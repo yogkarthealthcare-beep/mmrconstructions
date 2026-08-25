@@ -36,7 +36,10 @@ export class AuthService {
   }
   isAdminLoggedIn() { return !!this.adminToken; }
   logoutAdmin() {
-    ['mmr_admin_token','mmr_admin_refresh','mmr_admin_user'].forEach(k => sessionStorage.removeItem(k));
+    ['mmr_admin_token','mmr_admin_refresh','mmr_admin_user'].forEach(k => {
+      sessionStorage.removeItem(k);
+      localStorage.removeItem(k);
+    });
     this._adminUser$.next(null);
     this.router.navigate(['/admin-login']);
   }
@@ -74,7 +77,10 @@ export class AuthService {
   }
   isUserLoggedIn() { return !!this.userToken; }
   logoutUser() {
-    ['mmr_user_token','mmr_user_refresh','mmr_user'].forEach(k => sessionStorage.removeItem(k));
+    ['mmr_user_token','mmr_user_refresh','mmr_user'].forEach(k => {
+      sessionStorage.removeItem(k);
+      localStorage.removeItem(k);
+    });
     this._user$.next(null);
     this.router.navigate(['/login']);
   }
@@ -97,7 +103,10 @@ export class AuthService {
     try { return JSON.parse(s); } catch { return null; }
   }
   logoutInvestor() {
-    ['mmr_investor_token', 'mmr_investor_user'].forEach(k => sessionStorage.removeItem(k));
+    ['mmr_investor_token', 'mmr_investor_user'].forEach(k => {
+      sessionStorage.removeItem(k);
+      localStorage.removeItem(k);
+    });
     this._investorUser$.next(null);
     this.router.navigate(['/login']);
   }
@@ -124,8 +133,12 @@ export class AuthService {
       this._investorUser$.next(user);
     }
   }
-  handleAuthExpired(_req?: any, _next?: any) {
-    this.logoutUser();
-    this.logoutAdmin();
+  handleAuthExpired(scope?: string, url?: string) {
+    if (scope === 'admin') {
+      this.logoutAdmin();
+    } else {
+      this.logoutUser();
+      this.logoutInvestor();
+    }
   }
 }
