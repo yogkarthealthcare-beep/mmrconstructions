@@ -17,7 +17,7 @@ export class AboutUsComponent implements OnInit {
 
   highlights = [
     { value: '2019', label: 'Established' },
-    { value: 'UNNO/0011132', label: 'Registration No.' },
+    { value: 'U68200UP2025PTC229203', label: 'CIN No.' },
     { value: '3+', label: 'Core Cities' },
     { value: '360°', label: 'Property Support' },
   ];
