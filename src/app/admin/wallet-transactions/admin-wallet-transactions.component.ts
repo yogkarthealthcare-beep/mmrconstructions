@@ -372,7 +372,7 @@ import { ApiService } from '../../services/api.service';
       padding: 0.5rem 1rem;
       vertical-align: middle;
       border-bottom: 1px solid var(--ft-border);
-      font-size: 13px;
+      font-size: 12px;
       background-color: transparent;
       transition: background-color 0.15s;
     }
