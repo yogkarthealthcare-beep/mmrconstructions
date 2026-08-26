@@ -140,8 +140,17 @@ export class AdminWithdrawalRequestsComponent implements OnInit {
   }
 
   getInitials(name: string): string {
-    if (!name) return 'U';
-    return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    if (!name) return '??';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  copyText(text: string | null | undefined): void {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      // Could show a toast, but keeping it simple for now
+    }).catch(err => console.error('Failed to copy text: ', err));
   }
 
   // Dialog Trigger Methods
