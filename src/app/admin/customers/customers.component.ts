@@ -268,7 +268,7 @@ export class CustomersComponent implements OnInit {
         this.actionLoading = false;
         if (res.success && res.data) {
           this.auth.setUserSession(res.data);
-          this.router.navigate(['/user/dashboard']);
+          window.open('/user/dashboard', '_blank');
         }
       },
       error: (e: any) => {

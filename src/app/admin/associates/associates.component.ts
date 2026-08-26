@@ -255,12 +255,11 @@ export class AssociatesComponent implements OnInit {
     this.api.post(`/api/admin/impersonate/${a.user_id}`, {}, true).subscribe({
       next: (res: any) => {
         if (res.success && res.data?.token) {
-          localStorage.setItem('token', res.data.token);
-          localStorage.setItem('user', JSON.stringify(res.data.user));
+          this.auth.setUserSession(res.data);
           this.showToast(`Logged in as ${a.full_name}`);
           setTimeout(() => {
-            window.location.href = '/dashboard';
-          }, 1000);
+            window.open('/associate/dashboard', '_blank');
+          }, 500);
         } else {
           this.showToast(res.message || 'Impersonation failed');
         }
