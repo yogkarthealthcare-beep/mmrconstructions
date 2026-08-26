@@ -148,13 +148,12 @@ import { ApiService } from '../../services/api.service';
             <thead>
               <tr>
                 <th class="ps-4" style="width: 5%;">#</th>
-                <th style="width: 15%;">User Details</th>
-                <th style="width: 22%;">Transaction Details</th>
-                <th class="text-end" style="width: 11%;">Amount</th>
-                <th class="text-end" style="width: 12%;">Balance After</th>
-                <th class="text-center" style="width: 10%;">Status</th>
-                <th style="width: 15%;">Date</th>
-                <th class="text-end pe-4" style="width: 10%;">Actions</th>
+                <th style="width: 17%;">User Details</th>
+                <th style="width: 25%;">Transaction Details</th>
+                <th class="text-end" style="width: 12%;">Amount</th>
+                <th class="text-end" style="width: 13%;">Balance After</th>
+                <th class="text-center" style="width: 12%;">Status</th>
+                <th style="width: 16%;">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -194,9 +193,6 @@ import { ApiService } from '../../services/api.service';
                 <td>
                   <div class="fw-semibold text-dark fs-13">{{ t.created_at | date:'MMM dd, yyyy' }}</div>
                   <div class="text-muted fs-12">{{ t.created_at | date:'hh:mm a' }}</div>
-                </td>
-                <td class="text-end pe-4">
-                  <button class="btn btn-icon text-muted"><i class="fas fa-ellipsis-v"></i></button>
                 </td>
               </tr>
             </tbody>

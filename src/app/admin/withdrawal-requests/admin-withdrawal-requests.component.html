@@ -151,14 +151,13 @@
         <thead>
           <tr>
             <th class="ps-4" style="width: 5%;">#</th>
-            <th style="width: 10%;">Request ID</th>
-            <th style="width: 18%;">User Details</th>
+            <th style="width: 11%;">Request ID</th>
+            <th style="width: 19%;">User Details</th>
             <th style="width: 11%;">Role</th>
-            <th class="text-end" style="width: 12%;">Amount</th>
-            <th style="width: 13%;">Bank / UPI Details</th>
-            <th style="width: 11%;">Status</th>
-            <th style="width: 11%;">Requested Date</th>
-            <th class="text-center" style="width: 9%;">Actions</th>
+            <th class="text-end" style="width: 13%;">Amount</th>
+            <th style="width: 15%;">Bank / UPI Details</th>
+            <th style="width: 12%;">Status</th>
+            <th style="width: 14%;">Requested Date</th>
           </tr>
         </thead>
         <tbody>
@@ -239,43 +238,6 @@
             <td class="text-nowrap">
               <div class="fs-12 fw-semibold text-dark">{{ r.created_at | date:'dd MMM yyyy' }}</div>
               <div class="fs-11 text-muted">{{ r.created_at | date:'hh:mm a' }}</div>
-            </td>
-            <td class="text-center text-nowrap">
-              <div class="d-flex align-items-center justify-content-center gap-1">
-
-                <!-- Quick Approve Button -->
-                <button
-                  *ngIf="r.status === 'pending'"
-                  class="action-btn-micro btn-approve-emerald"
-                  (click)="openApprove(r)"
-                  title="Approve Request">
-                  <i class="fas fa-check"></i> Approve
-                </button>
-
-                <!-- Quick Release Button -->
-                <button
-                  *ngIf="r.status === 'approved' || r.status === 'pending'"
-                  class="action-btn-micro btn-release-blue"
-                  (click)="openRelease(r)"
-                  title="Release Funds">
-                  <i class="fas fa-paper-plane"></i> Release
-                </button>
-
-                <!-- Quick Reject Button -->
-                <button
-                  *ngIf="r.status === 'pending' || r.status === 'approved'"
-                  class="action-btn-micro btn-reject-red"
-                  (click)="openReject(r)"
-                  title="Reject Request">
-                  <i class="fas fa-times"></i> Reject
-                </button>
-
-                <!-- View Details Link -->
-                <a [routerLink]="['/admin/withdrawal-requests', r.id]" class="btn-icon-only" title="View Details">
-                  <i class="fas fa-eye"></i>
-                </a>
-
-              </div>
             </td>
           </tr>
         </tbody>
