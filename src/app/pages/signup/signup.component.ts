@@ -77,6 +77,9 @@ export class SignupComponent implements OnInit {
         if (cached) {
           this.form.sponsor_invite_code = cached.toUpperCase();
           this.verifySponsor();
+        } else {
+          this.form.sponsor_invite_code = 'MMR00001';
+          this.verifySponsor();
         }
       }
     });
@@ -84,6 +87,9 @@ export class SignupComponent implements OnInit {
 
   // ── Step 1: Role Selection ──
   selectRole(role: UserRole) {
+    if (this.userType !== role && this.roleSelected) {
+      this.resetForm();
+    }
     this.userType = role;
     this.roleSelected = true;
     this.error = '';
@@ -93,6 +99,21 @@ export class SignupComponent implements OnInit {
   goBackToRoleSelection() {
     this.roleSelected = false;
     this.error = '';
+    this.resetForm();
+  }
+
+  resetForm() {
+    const currentSponsor = this.form.sponsor_invite_code;
+    this.form = {
+      full_name: '',
+      email: '',
+      mobile_no: '',
+      password: '',
+      confirmPassword: '',
+      sponsor_invite_code: currentSponsor,
+      terms_accepted: false
+    };
+    this.v = {};
   }
 
   // ── Sponsor Live Validation & Role Rules ──
@@ -285,13 +306,32 @@ export class SignupComponent implements OnInit {
         if (res.success) {
           if (res.data && res.data.otpBypassed) {
             // OTP bypassed by admin, complete registration directly
-            this.auth.setUserSession(res.data);
             const userObj = res.data.user || {};
             const userType = String(userObj.user_type || userObj.role || '').toLowerCase();
-            let targetDashboard = '/customer/dashboard';
+            
             if (userType.includes('associate')) {
-              targetDashboard = '/associate/dashboard';
-            } else if (userType.includes('investor')) {
+               import('sweetalert2').then(Swal => {
+                 Swal.default.fire({
+                   icon: 'success',
+                   title: 'Registration Successful',
+                   html: `Your account has been created but is pending admin approval.<br><br>
+                          Please contact MMR Construction support to activate your account:<br>
+                          <div style="margin-top: 15px; font-size: 16px;">
+                            <strong><i class="fas fa-phone-alt"></i> +91 95111 19879</strong><br>
+                            <strong><i class="fas fa-envelope"></i> official@mmrconstructions.in</strong>
+                          </div>`,
+                   confirmButtonColor: '#d4af37',
+                   confirmButtonText: 'Okay'
+                 }).then(() => {
+                   this.router.navigate(['/login']);
+                 });
+               });
+               return;
+            }
+            
+            this.auth.setUserSession(res.data);
+            let targetDashboard = '/customer/dashboard';
+            if (userType.includes('investor')) {
               targetDashboard = '/investor/dashboard';
             }
             this.router.navigateByUrl(targetDashboard);
