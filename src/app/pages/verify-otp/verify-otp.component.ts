@@ -138,30 +138,50 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
         next: (res: any) => {
           this.loading = false;
           if (res.success) {
-            if (res.data?.token) {
-              this.auth.setUserSession(res.data);
-            }
-            this.verified = true;
-            setTimeout(() => {
-              const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-              const userType = res.data?.user?.user_type || res.data?.user_type || this.userType;
-              let targetDashboard = '/customer/dashboard';
-              if (userType === 'Associate') {
-                targetDashboard = '/associate/dashboard';
-              } else if (userType === 'Investor') {
-                targetDashboard = '/investor/dashboard';
+            const userType = res.data?.user?.user_type || res.data?.user_type || this.userType;
+            
+            if (userType === 'Associate') {
+              // Associates are pending upon registration
+              this.verified = true;
+              import('sweetalert2').then(Swal => {
+                Swal.default.fire({
+                  icon: 'success',
+                  title: 'Registration Successful',
+                  html: `Your account has been created but is pending admin approval.<br><br>
+                         Please contact MMR Construction support to activate your account:<br>
+                         <div style="margin-top: 15px; font-size: 16px;">
+                           <strong><i class="fas fa-phone-alt"></i> +91 95111 19879</strong><br>
+                           <strong><i class="fas fa-envelope"></i> official@mmrconstructions.in</strong>
+                         </div>`,
+                  confirmButtonColor: '#d4af37',
+                  confirmButtonText: 'Okay'
+                }).then(() => {
+                  this.router.navigate(['/login']);
+                });
+              });
+            } else {
+              if (res.data?.token) {
+                this.auth.setUserSession(res.data);
               }
+              this.verified = true;
+              setTimeout(() => {
+                const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+                let targetDashboard = '/customer/dashboard';
+                if (userType === 'Investor') {
+                  targetDashboard = '/investor/dashboard';
+                }
 
-              if (returnUrl) {
-                this.router.navigateByUrl(returnUrl);
-              } else if (res.data?.redirect) {
-                this.router.navigateByUrl(res.data.redirect);
-              } else if (userType === 'Investor') {
-                this.router.navigate(['/login'], { queryParams: { verified: 'true' } });
-              } else {
-                this.router.navigateByUrl(targetDashboard);
-              }
-            }, 1500);
+                if (returnUrl) {
+                  this.router.navigateByUrl(returnUrl);
+                } else if (res.data?.redirect) {
+                  this.router.navigateByUrl(res.data.redirect);
+                } else if (userType === 'Investor') {
+                  this.router.navigate(['/login'], { queryParams: { verified: 'true' } });
+                } else {
+                  this.router.navigateByUrl(targetDashboard);
+                }
+              }, 1500);
+            }
           } else {
             this.error = res.message || 'Verification failed.';
             this.otpDigits = ['', '', '', '', '', ''];

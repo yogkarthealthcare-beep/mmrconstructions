@@ -15,6 +15,40 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  
+  <!-- Prevent stale index.html from being cached by the browser -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+
+  <!-- Auto-recovery for white screen (stale cache / missing chunk errors) -->
+  <script>
+    window.addEventListener('error', function(event) {
+      var msg = (event.message || '').toLowerCase();
+      var isSyntaxError = msg.indexOf('unexpected token') !== -1;
+      var isChunkError = msg.indexOf('chunkloaderror') !== -1 || msg.indexOf('loading chunk') !== -1;
+      var isScriptError = event.target && (event.target.nodeName === 'SCRIPT' || event.target.nodeName === 'LINK');
+      
+      if (isSyntaxError || isChunkError || isScriptError) {
+        if (!sessionStorage.getItem('mmr_app_reloaded')) {
+          sessionStorage.setItem('mmr_app_reloaded', 'true');
+          // Force fetch fresh index.html by appending a timestamp
+          var url = window.location.href;
+          var sep = url.indexOf('?') === -1 ? '?' : '&';
+          window.location.replace(url + sep + 'v=' + new Date().getTime());
+        }
+      }
+    }, true);
+
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        var appRoot = document.querySelector('app-root');
+        if (appRoot && appRoot.children.length > 0) {
+          sessionStorage.removeItem('mmr_app_reloaded');
+        }
+      }, 3000);
+    });
+  </script>
 </head>
 <body>
   <app-root></app-root>

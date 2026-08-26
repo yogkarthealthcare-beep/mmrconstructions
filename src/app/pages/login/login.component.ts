@@ -127,7 +127,28 @@ export class LoginComponent implements OnInit {
         this.loading = false;
       },
       error: (e: any) => {
-        this.error = e?.error?.message || e?.message || 'Invalid credentials or connection error';
+        const errorMsg = e?.error?.message || e?.message || 'Invalid credentials or connection error';
+        
+        if (errorMsg.toLowerCase().includes('pending admin approval') || errorMsg.toLowerCase().includes('not active')) {
+          this.error = ''; // Clear standard error message
+          import('sweetalert2').then(Swal => {
+            Swal.default.fire({
+              icon: 'warning',
+              title: 'Account Not Approved',
+              html: `Your account is pending admin approval.<br><br>
+                     Please contact MMR Construction support:<br>
+                     <div style="margin-top: 15px; font-size: 16px;">
+                       <strong><i class="fas fa-phone-alt"></i> +91 95111 19879</strong><br>
+                       <strong><i class="fas fa-envelope"></i> official@mmrconstructions.in</strong>
+                     </div>`,
+              confirmButtonColor: '#d4af37',
+              confirmButtonText: 'Okay'
+            });
+          });
+        } else {
+          this.error = errorMsg;
+        }
+        
         this.loading = false;
       }
     });
