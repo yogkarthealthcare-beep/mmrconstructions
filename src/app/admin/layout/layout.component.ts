@@ -3,6 +3,7 @@ import { RouterLink, RouterOutlet, RouterLinkActive, Router, NavigationEnd } fro
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { SiteToggleService } from '../../services/site-toggle.service';
+import { ApiService } from '../../services/api.service';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
@@ -144,7 +145,8 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   constructor(
     private auth: AuthService,
     private router: Router,
-    private siteToggle: SiteToggleService
+    private siteToggle: SiteToggleService,
+    private api: ApiService
   ) {}
 
   filteredNavGroups: NavGroup[] = [];
@@ -152,6 +154,17 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.auth.adminUser$.subscribe(u => this.adminUser = u);
     
+    // Fetch initial master toggle state from backend
+    this.api.adminGetHomePageSettings().subscribe({
+      next: (res: any) => {
+        const data = res?.data || {};
+        const currentVisibility = data.section_visibility || {};
+        if (currentVisibility.master_property_tools !== undefined) {
+          this.siteToggle.syncMasterPropertyPlotEnabled(currentVisibility.master_property_tools);
+        }
+      }
+    });
+
     // Subscribe to site toggle changes
     this.toggleSub = this.siteToggle.toggleState$.subscribe(ev => {
       const activeId = this.siteToggle.getActiveSiteId();
