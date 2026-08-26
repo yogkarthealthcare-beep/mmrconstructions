@@ -256,288 +256,219 @@
   min-height: 100%;
   min-width: 100%;
   padding: 24px;
-  transform-origin: 0 0;
+  transform-origin: top center;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   BINARY TREE STYLING
+   ORG CHART TREE STYLING (NEW ARCHITECTURE)
 ═══════════════════════════════════════════════════════════════ */
 
-.binary-tree {
-  display: inline-flex;
+.org-chart {
+  display: flex;
   justify-content: center;
-  min-width: 100%;
+  padding: 40px;
+  min-width: max-content;
 }
 
-.binary-branch {
-  align-items: center;
+.org-chart ul {
+  padding-top: 20px;
+  position: relative;
+  transition: all 0.5s;
   display: flex;
-  flex-direction: column;
-  gap: 0;
-  position: relative;
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
 }
 
-.binary-children {
-  --binary-gap: 28px;
-  display: flex;
-  gap: var(--binary-gap);
-  justify-content: center;
-  position: relative;
-  margin-top: 34px;
-}
-
-.binary-children::before {
-  content: '';
-  position: absolute;
-  top: -34px;
-  left: 50%;
-  width: 2px;
-  height: 18px;
-  background: #b8c7d6;
-  transform: translateX(-50%);
-}
-
-.binary-slot {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 170px;
-  position: relative;
-}
-
-.binary-slot::before {
-  content: '';
-  position: absolute;
-  top: -16px;
-  left: 50%;
-  width: 2px;
-  height: 46px;
-  background: #b8c7d6;
-  transform: translateX(-50%);
-  z-index: 0;
-}
-
-.binary-slot::after {
-  content: '';
-  position: absolute;
-  top: -16px;
-  height: 2px;
-  width: calc(50% + (var(--binary-gap) / 2));
-  background: #b8c7d6;
-}
-
-.binary-slot:first-child::after {
-  left: 50%;
-}
-
-.binary-slot:last-child::after {
-  right: 50%;
-}
-
-.slot-label {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  border-radius: 999px;
-  color: #047857;
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  position: relative;
-  z-index: 1;
-}
-
-.binary-slot > .binary-branch,
-.binary-slot > .empty-slot {
-  position: relative;
-  z-index: 1;
-}
-
-.empty-slot {
-  background: #f8fafc;
-  border: 2px dashed #cbd5e1;
-  border-radius: 8px;
-  color: #94a3b8;
-  font-size: 11px;
-  font-weight: 500;
-  padding: 14px 18px;
+.org-chart li {
+  float: left;
   text-align: center;
-  width: 100%;
-  transition: border-color .2s;
-}
-
-.empty-slot:hover {
-  border-color: #1a5c3a;
-  color: #1a5c3a;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   HIERARCHICAL TREE STYLING
-═══════════════════════════════════════════════════════════════ */
-
-.hier-tree {
-  display: inline-block;
-  min-width: 700px;
-}
-
-.hier-row {
-  align-items: flex-start;
-  display: flex;
-  gap: 14px;
-  margin-bottom: 8px;
+  list-style-type: none;
   position: relative;
+  padding: 20px 5px 0 5px;
+  transition: all 0.5s;
 }
 
-.hier-children {
-  border-left: 2px solid #cbd5e1;
-  display: grid;
-  gap: 6px;
-  padding-left: 18px;
-  margin-left: 0;
-  margin-top: 0;
-}
-
-.hier-children::before {
+/* Connectors */
+.org-chart li::before, .org-chart li::after {
   content: '';
   position: absolute;
-  left: -2px;
-  top: 36px;
-  width: 18px;
-  height: 2px;
-  background: #cbd5e1;
+  top: 0;
+  right: 50%;
+  border-top: 2px solid #cbd5e1;
+  width: 50%;
+  height: 20px;
+}
+.org-chart li::after {
+  right: auto;
+  left: 50%;
+  border-left: 2px solid #cbd5e1;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   TREE NODE STYLING
-═══════════════════════════════════════════════════════════════ */
+/* We need to remove left-right connectors from elements without any siblings */
+.org-chart li:only-child::after, .org-chart li:only-child::before {
+  display: none;
+}
+.org-chart li:only-child {
+  padding-top: 0;
+}
 
-.tree-node {
-  align-items: center;
-  background: #fff;
+/* Remove space from the top of single children */
+.org-chart li:first-child::before, .org-chart li:last-child::after {
+  border: 0 none;
+}
+/* Adding back the vertical connector to the last nodes */
+.org-chart li:last-child::before {
+  border-right: 2px solid #cbd5e1;
+  border-radius: 0 5px 0 0;
+}
+.org-chart li:first-child::after {
+  border-radius: 5px 0 0 0;
+}
+
+/* Downward connectors from parents */
+.org-chart ul ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 2px solid #cbd5e1;
+  width: 0;
+  height: 20px;
+}
+
+/* The node card */
+.org-node {
   border: 1px solid #e2e8f0;
-  border-radius: 9px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  display: grid;
-  gap: 9px;
-  grid-template-columns: 38px minmax(0, 1fr);
-  min-height: 84px;
-  min-width: 160px;
-  padding: 10px;
+  padding: 12px 10px;
+  text-decoration: none;
+  background-color: white;
+  border-radius: 12px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: all 0.2s;
   position: relative;
-  transition: all .2s;
+  min-width: 140px;
+  max-width: 160px;
+  cursor: pointer;
+  z-index: 2;
 }
 
-.tree-node:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+.org-node:hover {
+  border-color: #1a5c3a;
+  box-shadow: 0 4px 12px rgba(26, 92, 58, 0.1);
+  transform: translateY(-2px);
 }
-
-.tree-node.focused {
+.org-node.focused {
   border: 2px solid #1a5c3a;
-  box-shadow: 0 0 0 3px rgba(26, 92, 58, 0.1);
   background: #f0fdf4;
 }
-
-.tree-node.inactive {
+.org-node.inactive {
   opacity: 0.6;
   background: #f8fafc;
 }
 
-.avatar {
-  align-items: center;
+/* Circular Avatar */
+.org-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #1a5c3a 0%, #2e7d52 100%);
-  border-radius: 8px;
-  color: #fff;
+  color: white;
   display: flex;
-  font-family: var(--ff-display);
-  font-weight: 800;
-  height: 38px;
+  align-items: center;
   justify-content: center;
-  width: 38px;
+  font-size: 20px;
+  font-family: var(--ff-display);
+  font-weight: 700;
+  margin-bottom: 8px;
+  position: relative;
   flex-shrink: 0;
-  font-size: 0.85rem;
+}
+.active-badge {
+  position: absolute;
+  bottom: 0px;
+  right: -2px;
+  background: white;
+  border-radius: 50%;
+  font-size: 15px;
+}
+.empty-avatar {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 1px dashed #cbd5e1;
 }
 
-.node-info {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+/* Details */
+.org-details {
+  text-align: center;
+  width: 100%;
 }
-
-.node-info strong,
-.node-info span,
-.node-info small {
-  display: block;
+.org-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: #1e293b;
+  margin-bottom: 2px;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  width: 100%;
 }
-
-.node-info strong {
-  color: #1e293b;
+.org-id {
   font-size: 11px;
-  font-weight: 700;
-}
-
-.node-info span,
-.node-info small {
   color: #64748b;
-  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  font-weight: 600;
 }
 
-.rank {
-  border-radius: 999px;
-  display: inline-flex;
-  font-size: 8px;
-  font-style: normal;
-  font-weight: 700;
-  margin-top: 3px;
-  padding: 2px 7px;
-  align-items: center;
-  justify-content: center;
+.org-node.empty {
+  border: 2px dashed #cbd5e1;
+  background: #f8fafc;
+  box-shadow: none;
+}
+.org-node.empty .org-name {
+  color: #94a3b8;
+  font-weight: 500;
 }
 
-.rank-starter { background: #f1f5f9; color: #475569; }
-.rank-bronze { background: #fff7ed; color: #9a3412; }
-.rank-silver { background: #f1f5f9; color: #334155; }
-.rank-gold { background: #fef3c7; color: #92400e; }
-.rank-platinum { background: #e0f2fe; color: #0369a1; }
-.rank-diamond { background: #e0e7ff; color: #3730a3; }
-.rank-crown-diamond { background: #f3e8ff; color: #7e22ce; }
-
-.expand-dot {
-  align-items: center;
-  background: #1a5c3a;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  color: #fff;
-  display: flex;
-  font-size: 9px;
-  height: 22px;
-  justify-content: center;
+/* Expand dot */
+.org-toggle {
   position: absolute;
-  right: -8px;
-  top: -8px;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 22px;
-  z-index: 2;
+  height: 22px;
+  border-radius: 50%;
+  background: #1a5c3a;
+  color: white;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
   cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   transition: all .2s;
-  box-shadow: 0 1px 4px rgba(26, 92, 58, 0.15);
+  padding: 0;
 }
-
-.expand-dot:hover {
+.org-toggle:hover {
   background: #0f3d27;
-  transform: scale(1.08);
+  transform: translateX(-50%) scale(1.15);
 }
 
 .level-limit {
   color: #b91c1c;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  margin-top: 3px;
+  margin-top: 10px;
+  text-align: center;
 }
 
 /* ═══════════════════════════════════════════════════════════════

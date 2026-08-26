@@ -121,77 +121,86 @@
     (pointerup)="endPan()"
     (pointercancel)="endPan()"
     (mouseleave)="endPan(); hoveredNode=null">
-    <div class="tree-canvas" [style.transform]="transform">
-      <ng-container *ngIf="visibleRoot as root">
-        <div class="binary-tree" *ngIf="activeTree === 'binary'">
-          <ng-container *ngTemplateOutlet="binaryNode; context: { $implicit: root }"></ng-container>
-        </div>
-        <div class="hier-tree" *ngIf="activeTree === 'hierarchical'">
-          <ng-container *ngTemplateOutlet="hierNode; context: { $implicit: root }"></ng-container>
-        </div>
-      </ng-container>
+    <div class="tree-canvas org-chart" [style.transform]="transform">
+      <ul *ngIf="visibleRoot as root">
+        <ng-container *ngTemplateOutlet="orgNode; context: { $implicit: root }"></ng-container>
+      </ul>
     </div>
   </section>
 </ng-container>
 
 <app-commission-notes></app-commission-notes>
 
-<ng-template #nodeCard let-node>
-  <div
-    class="tree-node"
-    [class.focused]="focusedNode?.id === node.id"
-    [class.search-match]="isSearchMatch(node)"
-    [class.inactive]="node.status === 'Inactive'"
-    (mouseenter)="showTooltip(node, $event)"
-    (mousemove)="showTooltip(node, $event)"
-    (mouseleave)="hoveredNode=null"
-    (click)="focusNode(node); $event.stopPropagation()">
-    <button type="button" class="expand-dot" *ngIf="node.children.length" (click)="toggleNode(node, $event)">
-      <i [class]="node.expanded ? 'fas fa-minus' : 'fas fa-plus'"></i>
-    </button>
-    <div class="avatar">{{ node.name.charAt(0) || 'M' }}</div>
-    <div class="node-info">
-      <strong>{{ node.name }}</strong>
-      <span>ID: {{ node.userId }}</span>
-      <small>{{ node.memberCode }}</small>
-      <em [class]="'rank rank-' + node.rank.toLowerCase().replace(' ', '-')">{{ node.rank }}</em>
-    </div>
-  </div>
-</ng-template>
-
-<ng-template #binaryNode let-node>
-  <div class="binary-branch">
-    <ng-container *ngTemplateOutlet="nodeCard; context: { $implicit: node }"></ng-container>
-    <div class="binary-children" *ngIf="node.expanded && node.level < maxDepthAllowed">
-      <div class="binary-slot">
-        <span class="slot-label">Left</span>
-        <ng-container *ngIf="node.left; else emptyLeft">
-          <ng-container *ngTemplateOutlet="binaryNode; context: { $implicit: node.left }"></ng-container>
-        </ng-container>
-        <ng-template #emptyLeft><div class="empty-slot">Open Left</div></ng-template>
+<!-- New OrgChart Recursive Node Template -->
+<ng-template #orgNode let-node>
+  <li>
+    <div class="org-node"
+         [class.focused]="focusedNode?.id === node.id"
+         [class.search-match]="isSearchMatch(node)"
+         [class.inactive]="node.status === 'Inactive'"
+         (mouseenter)="showTooltip(node, $event)"
+         (mousemove)="showTooltip(node, $event)"
+         (mouseleave)="hoveredNode=null"
+         (click)="focusNode(node); $event.stopPropagation()">
+      
+      <!-- Circular Avatar -->
+      <div class="org-avatar">
+        <span>{{ node.name.charAt(0) || 'M' }}</span>
+        <i *ngIf="node.status === 'Active'" class="fas fa-check-circle active-badge text-success"></i>
+        <i *ngIf="node.status !== 'Active'" class="fas fa-times-circle active-badge text-danger"></i>
       </div>
-      <div class="binary-slot">
-        <span class="slot-label">Right</span>
-        <ng-container *ngIf="node.right; else emptyRight">
-          <ng-container *ngTemplateOutlet="binaryNode; context: { $implicit: node.right }"></ng-container>
-        </ng-container>
-        <ng-template #emptyRight><div class="empty-slot">Open Right</div></ng-template>
+      
+      <!-- Details -->
+      <div class="org-details">
+        <div class="org-name" [title]="node.name">{{ node.name }}</div>
+        <div class="org-id">{{ node.memberCode || node.userId }}</div>
       </div>
-    </div>
-    <div class="level-limit" *ngIf="node.level >= maxDepthAllowed">Level 12 limit reached</div>
-  </div>
-</ng-template>
 
-<ng-template #hierNode let-node>
-  <div class="hier-row">
-    <ng-container *ngTemplateOutlet="nodeCard; context: { $implicit: node }"></ng-container>
-    <div class="hier-children" *ngIf="node.expanded && node.loaded && node.children.length && node.level < maxDepthAllowed">
-      <ng-container *ngFor="let child of node.children">
-        <ng-container *ngTemplateOutlet="hierNode; context: { $implicit: child }"></ng-container>
-      </ng-container>
+      <!-- Expand Toggle -->
+      <button type="button" class="org-toggle" *ngIf="node.children.length || node.left || node.right || (activeTree === 'binary' && node.level < maxDepthAllowed)" (click)="toggleNode(node, $event)">
+        <i [class]="node.expanded ? 'fas fa-minus' : 'fas fa-plus'"></i>
+      </button>
     </div>
-    <div class="level-limit" *ngIf="node.level >= maxDepthAllowed">Level 12 limit reached</div>
-  </div>
+
+    <!-- Children container -->
+    <ul *ngIf="node.expanded && node.level < maxDepthAllowed && (node.children.length || activeTree === 'binary')">
+       <!-- Hierarchical children -->
+       <ng-container *ngIf="activeTree === 'hierarchical'">
+         <ng-container *ngFor="let child of node.children">
+            <ng-container *ngTemplateOutlet="orgNode; context: { $implicit: child }"></ng-container>
+         </ng-container>
+       </ng-container>
+
+       <!-- Binary children -->
+       <ng-container *ngIf="activeTree === 'binary'">
+         <ng-container *ngIf="node.left; else emptyLeft">
+            <ng-container *ngTemplateOutlet="orgNode; context: { $implicit: node.left }"></ng-container>
+         </ng-container>
+         <ng-template #emptyLeft>
+           <li class="empty-node">
+             <div class="org-node empty">
+               <div class="org-avatar empty-avatar"><i class="fas fa-user-plus"></i></div>
+               <div class="org-name">Open Left</div>
+             </div>
+           </li>
+         </ng-template>
+
+         <ng-container *ngIf="node.right; else emptyRight">
+            <ng-container *ngTemplateOutlet="orgNode; context: { $implicit: node.right }"></ng-container>
+         </ng-container>
+         <ng-template #emptyRight>
+           <li class="empty-node">
+             <div class="org-node empty">
+               <div class="org-avatar empty-avatar"><i class="fas fa-user-plus"></i></div>
+               <div class="org-name">Open Right</div>
+             </div>
+           </li>
+         </ng-template>
+       </ng-container>
+    </ul>
+    
+    <div class="level-limit" *ngIf="node.expanded && node.level >= maxDepthAllowed">Level 12 limit reached</div>
+  </li>
 </ng-template>
 
 <div class="node-tooltip" *ngIf="hoveredNode" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
