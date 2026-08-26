@@ -144,27 +144,27 @@ import { ApiService } from '../../services/api.service';
       <!-- Transactions Table -->
       <div class="table-card" *ngIf="!loading && !errorMsg">
         <div class="table-responsive">
-          <table class="table mb-0 text-nowrap">
+          <table class="table mb-0 text-nowrap" style="table-layout: fixed; width: 100%;">
             <thead>
               <tr>
-                <th class="ps-4">User Details</th>
-                <th>Transaction Details</th>
-                <th class="text-end">Amount</th>
-                <th class="text-end">Balance After</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th class="text-end pe-4">Actions</th>
+                <th class="ps-4" style="width: 16%;">User Details</th>
+                <th style="width: 25%;">Transaction Details</th>
+                <th class="text-end" style="width: 12%;">Amount</th>
+                <th class="text-end" style="width: 13%;">Balance After</th>
+                <th class="text-center" style="width: 11%;">Status</th>
+                <th style="width: 15%;">Date</th>
+                <th class="text-end pe-4" style="width: 8%;">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let t of transactions">
                 <td class="ps-4">
-                  <div class="fw-bold text-dark">{{ t.user_name || 'User #' + t.user_id }}</div>
-                  <div class="text-muted fs-12 mb-1">{{ t.user_email || t.user_mobile }}</div>
+                  <div class="fw-bold text-dark text-truncate" [title]="t.user_name || 'User #' + t.user_id">{{ t.user_name || 'User #' + t.user_id }}</div>
+                  <div class="text-muted fs-12 mb-1 text-truncate" [title]="t.user_email || t.user_mobile">{{ t.user_email || t.user_mobile }}</div>
                   <span class="badge-role">{{ t.user_role }}</span>
                 </td>
                 <td>
-                  <div class="fw-bold text-primary fs-13 mb-1">{{ t.payment_order_id || t.id }}</div>
+                  <div class="fw-bold text-primary fs-13 mb-1 text-truncate" [title]="t.payment_order_id || t.id">{{ t.payment_order_id || t.id }}</div>
                   <div class="d-flex align-items-center gap-1 flex-wrap">
                     <span [class]="isCredit(t) ? 'badge-pill bg-success-soft text-success' : 'badge-pill bg-danger-soft text-danger'">
                       {{ (t.transaction_type || (isCredit(t) ? 'credit' : 'debit')) | uppercase }}
@@ -180,12 +180,12 @@ import { ApiService } from '../../services/api.service';
                 <td class="text-end font-monospace fw-bold text-dark fs-13">
                   ₹{{ t.balance_after | number:'1.2-2' }}
                 </td>
-                <td>
+                <td class="text-center">
                   <span class="badge-status" [ngClass]="{
                     'status-success': t.status === 'success',
                     'status-pending': t.status === 'pending',
                     'status-failed': t.status === 'failed' || t.status === 'cancelled'
-                  }">
+                  }" style="width: 75px; text-align: center;">
                     {{ t.status | uppercase }}
                   </span>
                 </td>
