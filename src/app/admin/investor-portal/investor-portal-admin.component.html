@@ -14,27 +14,27 @@
 </div>
 
 <!-- Tabs Navigation -->
-<div class="card border-0 shadow-sm rounded-3 mb-4">
-  <div class="card-header bg-white p-2">
-    <ul class="nav nav-pills custom-admin-pills">
+<div class="card border-0 shadow-sm rounded-3 mb-3">
+  <div class="card-header bg-white p-1">
+    <ul class="nav nav-pills custom-admin-pills gap-1">
       <li class="nav-item">
-        <button class="nav-link px-4 py-2" [class.active]="activeTab === 'investors'" (click)="switchTab('investors')">
-          <i class="fas fa-users me-2"></i>Investor Accounts
+        <button class="nav-link px-3 py-1.5 fs-12" [class.active]="activeTab === 'investors'" (click)="switchTab('investors')">
+          <i class="fas fa-users me-1"></i>Investor Accounts
         </button>
       </li>
       <li class="nav-item">
-        <button class="nav-link px-4 py-2" [class.active]="activeTab === 'deposits'" (click)="switchTab('deposits')">
-          <i class="fas fa-arrow-down-long me-2"></i>Deposits
+        <button class="nav-link px-3 py-1.5 fs-12" [class.active]="activeTab === 'deposits'" (click)="switchTab('deposits')">
+          <i class="fas fa-arrow-down-long me-1"></i>Deposits
         </button>
       </li>
       <li class="nav-item">
-        <button class="nav-link px-4 py-2" [class.active]="activeTab === 'withdrawals'" (click)="switchTab('withdrawals')">
-          <i class="fas fa-arrow-up-long me-2"></i>Withdrawals
+        <button class="nav-link px-3 py-1.5 fs-12" [class.active]="activeTab === 'withdrawals'" (click)="switchTab('withdrawals')">
+          <i class="fas fa-arrow-up-long me-1"></i>Withdrawals
         </button>
       </li>
       <li class="nav-item">
-        <button class="nav-link px-4 py-2" [class.active]="activeTab === 'transactions'" (click)="switchTab('transactions')">
-          <i class="fas fa-receipt me-2"></i>All Transactions
+        <button class="nav-link px-3 py-1.5 fs-12" [class.active]="activeTab === 'transactions'" (click)="switchTab('transactions')">
+          <i class="fas fa-receipt me-1"></i>All Transactions
         </button>
       </li>
     </ul>
@@ -43,17 +43,17 @@
 
 <!-- Tab 1: Investors Accounts -->
 <div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'investors'">
-  <div class="card-header bg-white py-3">
-    <div class="row g-3 align-items-center">
+  <div class="card-header bg-white py-2">
+    <div class="row g-2 align-items-center">
       <div class="col-md-6">
-        <div class="input-group">
-          <span class="input-group-text"><i class="fas fa-search"></i></span>
-          <input type="text" class="form-control" [(ngModel)]="investorSearch" (keyup.enter)="loadData()" placeholder="Search investor by name, email, mobile, PAN..." />
-          <button class="btn btn-outline-secondary" (click)="loadData()">Search</button>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-muted border-end-0"><i class="fas fa-search"></i></span>
+          <input type="text" class="form-control form-control-sm border-start-0 fs-12" [(ngModel)]="investorSearch" (keyup.enter)="loadData()" placeholder="Search investor by name, email, mobile, PAN..." />
+          <button class="btn btn-outline-secondary btn-sm fs-12 px-3" (click)="loadData()">Search</button>
         </div>
       </div>
       <div class="col-md-4">
-        <select class="form-select" [(ngModel)]="investorStatusFilter" (change)="loadData()">
+        <select class="form-select form-select-sm fs-12" [(ngModel)]="investorStatusFilter" (change)="loadData()">
           <option value="all">All Statuses</option>
           <option value="pending">Pending Approval</option>
           <option value="approved">Approved / Active</option>
