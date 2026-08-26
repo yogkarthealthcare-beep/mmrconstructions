@@ -147,18 +147,20 @@ import { ApiService } from '../../services/api.service';
           <table class="table mb-0 text-nowrap" style="table-layout: fixed; width: 100%;">
             <thead>
               <tr>
-                <th class="ps-4" style="width: 16%;">User Details</th>
-                <th style="width: 25%;">Transaction Details</th>
-                <th class="text-end" style="width: 12%;">Amount</th>
-                <th class="text-end" style="width: 13%;">Balance After</th>
-                <th class="text-center" style="width: 11%;">Status</th>
+                <th class="ps-4" style="width: 5%;">#</th>
+                <th style="width: 15%;">User Details</th>
+                <th style="width: 22%;">Transaction Details</th>
+                <th class="text-end" style="width: 11%;">Amount</th>
+                <th class="text-end" style="width: 12%;">Balance After</th>
+                <th class="text-center" style="width: 10%;">Status</th>
                 <th style="width: 15%;">Date</th>
-                <th class="text-end pe-4" style="width: 8%;">Actions</th>
+                <th class="text-end pe-4" style="width: 10%;">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let t of transactions">
-                <td class="ps-4">
+              <tr *ngFor="let t of transactions; let i = index">
+                <td class="ps-4 fw-semibold text-muted">{{ i + 1 }}</td>
+                <td>
                   <div class="fw-bold text-dark text-truncate" [title]="t.user_name || 'User #' + t.user_id">{{ t.user_name || 'User #' + t.user_id }}</div>
                   <div class="text-muted fs-12 mb-1 text-truncate" [title]="t.user_email || t.user_mobile">{{ t.user_email || t.user_mobile }}</div>
                   <span class="badge-role">{{ t.user_role }}</span>
