@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -54,7 +55,7 @@ export class AssociatesComponent implements OnInit {
   actionLoading = false;
   toast = '';
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit() {
     this.load();
