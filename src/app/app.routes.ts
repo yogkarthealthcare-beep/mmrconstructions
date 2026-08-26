@@ -88,6 +88,7 @@ import { BlogListComponent } from './pages/blog-list/blog-list.component';
 import { BlogDetailComponent } from './pages/blog-detail/blog-detail.component';
 import { AllInvestorsComponent } from './pages/all-investors/all-investors.component';
 import { AllSitesComponent } from './pages/all-sites/all-sites.component';
+import { MlmTreeComponent } from './shared/mlm-tree/mlm-tree.component';
 
 export const routes: Routes = [
   { path: '',                     component: HomeComponent },
@@ -147,6 +148,7 @@ export const routes: Routes = [
       { path: 'home-page-settings',  component: HomePageSettingsComponent },
       { path: 'company-documents',   component: AdminCompanyDocumentsComponent },
       { path: 'mlm-pages',           component: MlmAdminPageComponent },
+      { path: 'network-tree',        component: MlmTreeComponent, data: { audience: 'admin' }, title: 'Network Tree' },
       { path: 'mobile-app',          component: MobileAppComponent },
       { path: 'database-backup',     component: DatabaseBackupComponent },
       { path: 'whatsapp',            component: WhatsappAdminComponent },
@@ -196,6 +198,7 @@ export const routes: Routes = [
       { path: 'payments',               component: PaymentHistoryComponent },
       { path: 'documents',              component: DocumentsComponent },
       { path: 'my-team',                component: MyTeamComponent },
+      { path: 'network-tree',           component: MlmTreeComponent, data: { audience: 'associate' }, title: 'My Network Tree' },
       { path: 'referral',               component: ReferralComponent },
       { path: 'profile',                component: ProfileComponent },
       { path: 'notifications',          component: NotificationsComponent },

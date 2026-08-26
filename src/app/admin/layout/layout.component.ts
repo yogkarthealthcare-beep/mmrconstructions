@@ -57,6 +57,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-users', label: 'Customers', route: '/admin/customers' },
         { icon: 'fas fa-file-invoice', label: 'Investors', route: '/admin/investor-enrollments' },
         { icon: 'fas fa-user-tie', label: 'Associates', route: '/admin/associates' },
+        { icon: 'fas fa-project-diagram', label: 'Network Tree', route: '/admin/network-tree', badge: 'NEW' },
       ]
     },
     {

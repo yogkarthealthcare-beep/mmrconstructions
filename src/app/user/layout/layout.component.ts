@@ -107,6 +107,7 @@ export class UserLayoutComponent implements OnInit {
         items: [
           { icon: 'fas fa-hand-holding-usd', label: 'Commission Tracker', route: `${p}/commission` },
           { icon: 'fas fa-sitemap', label: 'My Team Network', route: `${p}/my-team` },
+          { icon: 'fas fa-project-diagram', label: 'Network Tree', route: `${p}/network-tree`, badge: 'NEW' },
           { icon: 'fas fa-share-alt', label: 'Referral & Invite', route: `${p}/referral` },
         ]
       },
