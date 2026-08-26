@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -151,6 +151,23 @@ export class AdminWithdrawalRequestsComponent implements OnInit {
     navigator.clipboard.writeText(text).then(() => {
       // Could show a toast, but keeping it simple for now
     }).catch(err => console.error('Failed to copy text: ', err));
+  }
+
+  // Dropdown Toggle Logic
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.dropdown')) {
+      this.requests.forEach((r: any) => r.showDropdown = false);
+    }
+  }
+
+  toggleDropdown(r: any, event: Event): void {
+    event.stopPropagation();
+    this.requests.forEach((req: any) => {
+      if (req !== r) req.showDropdown = false;
+    });
+    r.showDropdown = !r.showDropdown;
   }
 
   // Dialog Trigger Methods
