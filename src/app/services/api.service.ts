@@ -286,13 +286,13 @@ export class ApiService {
   adminDeleteEmiCalculatorPlan(id: number) { return this.delete(`/api/admin/emi-calculator/${id}`, true); }
 
   // Investor Portal & Management (Admin)
-  adminGetInvestorsPortal(params: any = {}) { return this.get('/api/admin/investors/portal', params, true); }
-  adminGetInvestorPortalDeposits() { return this.get('/api/admin/investors/deposits', {}, true); }
-  adminGetInvestorPortalWithdrawals() { return this.get('/api/admin/investors/withdrawals', {}, true); }
-  adminGetInvestorPortalTransactions() { return this.get('/api/admin/investors/transactions', {}, true); }
-  adminUpdateInvestorPortalDepositStatus(id: number, data: any) { return this.put(`/api/admin/investors/deposits/${id}`, data, true); }
-  adminUpdateInvestorPortalWithdrawalStatus(id: number, data: any) { return this.put(`/api/admin/investors/withdrawals/${id}`, data, true); }
-  adminUpdateInvestorPortalStatus(id: number, data: any) { return this.put(`/api/admin/investors/${id}/status`, data, true); }
+  adminGetInvestorsPortal(params: any = {}) { return this.get('/api/admin/investors-portal', params, true); }
+  adminGetInvestorPortalDeposits() { return this.get('/api/admin/investors-portal/deposits', {}, true); }
+  adminGetInvestorPortalWithdrawals() { return this.get('/api/admin/investors-portal/withdrawals', {}, true); }
+  adminGetInvestorPortalTransactions() { return this.get('/api/admin/investors-portal/transactions', {}, true); }
+  adminUpdateInvestorPortalDepositStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/deposits/${id}`, data, true); }
+  adminUpdateInvestorPortalWithdrawalStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/withdrawals/${id}`, data, true); }
+  adminUpdateInvestorPortalStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/${id}/status`, data, true); }
   adminLoginAsUser(id: number, role: string) { return this.post('/api/admin/auth/impersonate', { user_id: id, role }, true); }
   adminGetInvestors() { return this.get('/api/admin/investors', {}, true); }
   adminUpdateInvestor(id: number, data: any) { return this.putForm(`/api/admin/investors/${id}`, data, true); }
