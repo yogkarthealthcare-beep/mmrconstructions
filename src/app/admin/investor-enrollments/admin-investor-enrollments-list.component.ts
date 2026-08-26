@@ -177,4 +177,31 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
       }
     });
   }
+
+  updateInvestorStatus(investor: any, status: string, is_verified: boolean) {
+    if (!investor.investor_id) return;
+    Swal.fire({
+      title: 'Update Status?',
+      text: `Are you sure you want to mark this investor as ${status}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, update it!'
+    }).then((result: any) => {
+      if (result.isConfirmed) {
+        this.api.adminUpdateInvestorUserStatus(investor.investor_id, { status, is_verified }).subscribe({
+          next: (res: any) => {
+            if (res.success || res.status === 'success') {
+              Swal.fire('Updated!', `Investor status is now ${status}.`, 'success');
+              this.loadInvestors();
+            } else {
+              Swal.fire('Error', res.message || 'Failed to update status', 'error');
+            }
+          },
+          error: (err: any) => {
+            Swal.fire('Error', err.error?.message || 'Failed to update status', 'error');
+          }
+        });
+      }
+    });
+  }
 }

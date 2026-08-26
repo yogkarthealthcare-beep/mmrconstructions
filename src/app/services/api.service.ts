@@ -157,6 +157,7 @@ export class ApiService {
   adminGetInvestorEnrollment(id: string) { return this.get(`/api/admin/investor-enrollment/${id}`, {}, true); }
   adminUpdateInvestorEnrollment(id: string, data: any) { return this.put(`/api/admin/investor-enrollment/${id}`, data, true); }
   adminDeleteInvestorEnrollment(id: string) { return this.delete(`/api/admin/investor-enrollment/${id}`, true); }
+  adminUpdateInvestorUserStatus(id: string, data: any) { return this.put(`/api/admin/investor-users/${id}/status`, data, true); }
 
   // ── ADMIN — Users & Customers ─────────────────────
   adminGetPendingUsers()           { return this.get('/api/admin/users/pending', {}, true); }
