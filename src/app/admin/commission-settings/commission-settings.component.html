@@ -24,7 +24,7 @@
     <div class="settings-grid">
       <div class="setting-field">
         <label>Commission Model</label>
-        <select class="f-input" [(ngModel)]="settings.commission_model">
+        <select class="form-select form-select-sm" [(ngModel)]="settings.commission_model">
           <option value="Upline">Upline Commission Model</option>
           <option value="LevelWise">Level Wise Commission Model</option>
           <option value="EqualDistribution">Equal Distribution Commission Model</option>
@@ -33,136 +33,158 @@
       </div>
       <div class="setting-field">
         <label>Maximum Levels</label>
-        <input class="f-input" type="number" min="1" max="50" [(ngModel)]="settings.maximum_levels" (change)="syncLevels()">
+        <input class="form-control form-control-sm" type="number" min="1" max="50" [(ngModel)]="settings.maximum_levels" (change)="syncLevels()">
         <small>Commission network में अधिकतम कितने levels तक distribute होगा।</small>
       </div>
     </div>
+  </section>
 
-    <div class="model-panel" *ngIf="settings.commission_model === 'EqualDistribution'">
-      <div class="panel-card-title">Equal Distribution Commission Configuration</div>
-      <div class="settings-grid">
-        <div class="setting-field">
-          <label>Seller Commission Percentage</label>
-          <div class="input-suffix"><input class="f-input" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.seller_percentage"><span>%</span></div>
-          <small>Seller ko har full payment ya EMI commission event par direct share milega.</small>
+  <section class="panel-card mb-4" *ngIf="settings.commission_model === 'EqualDistribution'">
+    <div class="panel-card-title">Equal Distribution Commission Configuration</div>
+    <div class="settings-grid">
+      <div class="setting-field">
+        <label>Seller Commission Percentage</label>
+        <div class="input-group input-group-sm">
+          <input class="form-control" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.seller_percentage">
+          <span class="input-group-text">%</span>
         </div>
-        <div class="setting-field">
-          <label>Equal Distribution Percentage</label>
-          <div class="input-suffix"><input class="f-input" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.equal_distribution_percentage"><span>%</span></div>
-          <small>Seller ko exclude karke eligible network members me equal share distribute hoga.</small>
+        <small>Seller ko har full payment ya EMI commission event par direct share milega.</small>
+      </div>
+      <div class="setting-field">
+        <label>Equal Distribution Percentage</label>
+        <div class="input-group input-group-sm">
+          <input class="form-control" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.equal_distribution_percentage">
+          <span class="input-group-text">%</span>
         </div>
-        <label class="check-card">
-          <input type="checkbox" [(ngModel)]="settings.equal_distribution_enabled">
-          <span><strong>Enable Equal Distribution</strong><small>Off karne par sirf seller share generate hoga.</small></span>
-        </label>
-        <div class="setting-field">
-          <label>Distribution Scope</label>
-          <select class="f-input" [(ngModel)]="settings.distribution_scope">
-            <option value="TopAssociateNetwork">Top Associate Network</option>
-          </select>
-          <small>Seller ke top associate network ke eligible associates dynamic count me aayenge.</small>
+        <small>Seller ko exclude karke eligible network members me equal share distribute hoga.</small>
+      </div>
+      <label class="check-card">
+        <input type="checkbox" [(ngModel)]="settings.equal_distribution_enabled">
+        <span><strong>Enable Equal Distribution</strong><small>Off karne par sirf seller share generate hoga.</small></span>
+      </label>
+      <div class="setting-field">
+        <label>Distribution Scope</label>
+        <select class="form-select form-select-sm" [(ngModel)]="settings.distribution_scope">
+          <option value="TopAssociateNetwork">Top Associate Network</option>
+        </select>
+        <small>Seller ke top associate network ke eligible associates dynamic count me aayenge.</small>
+      </div>
+      <div class="setting-field">
+        <label>Full Payment Handling</label>
+        <select class="form-select form-select-sm" [(ngModel)]="settings.payment_mode_rules.full_payment">
+          <option value="instant">Instant Distribution</option>
+        </select>
+      </div>
+      <div class="setting-field">
+        <label>EMI Handling</label>
+        <select class="form-select form-select-sm" [(ngModel)]="settings.payment_mode_rules.emi">
+          <option value="installment_wise">Installment-wise Distribution</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel-card mb-4" *ngIf="settings.commission_model === 'EqualDistribution'">
+    <div class="panel-card-title">Commission Preview Calculator</div>
+    <div class="settings-grid">
+      <div class="setting-field">
+        <label>Commission Amount</label>
+        <input class="form-control form-control-sm" type="number" min="0" [(ngModel)]="previewAmount">
+      </div>
+      <div class="setting-field">
+        <label>Equal Participants</label>
+        <input class="form-control form-control-sm" type="number" min="1" [(ngModel)]="previewParticipants">
+      </div>
+    </div>
+    <div class="formula-preview">
+      <div><span>Seller Share</span><strong>{{ sellerPreview | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+      <div><span>Equal Distribution Pool</span><strong>{{ equalPoolPreview | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+      <div><span>Each Participant</span><strong>{{ perParticipantPreview | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+    </div>
+    <p class="formula-copy">
+      Formula: Seller gets {{ settings.seller_percentage || 0 }}%. Remaining {{ settings.equal_distribution_percentage || 0 }}% is divided equally among eligible network members, excluding the seller.
+    </p>
+  </section>
+
+  <section class="panel-card mb-4" *ngIf="settings.commission_model === 'Upline'">
+    <div class="panel-card-title">Upline Commission Configuration</div>
+    <div class="settings-grid">
+      <div class="setting-field">
+        <label>Direct Seller Percentage</label>
+        <div class="input-group input-group-sm">
+          <input class="form-control" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.direct_percentage">
+          <span class="input-group-text">%</span>
         </div>
-        <div class="setting-field">
-          <label>Full Payment Handling</label>
-          <select class="f-input" [(ngModel)]="settings.payment_mode_rules.full_payment">
-            <option value="instant">Instant Distribution</option>
-          </select>
+        <small>जिस associate की referral chain से sale हुई, उसका percentage।</small>
+      </div>
+      <div class="setting-field">
+        <label>Each Upline Percentage</label>
+        <div class="input-group input-group-sm">
+          <input class="form-control" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.upline_percentage">
+          <span class="input-group-text">%</span>
         </div>
-        <div class="setting-field">
-          <label>EMI Handling</label>
-          <select class="f-input" [(ngModel)]="settings.payment_mode_rules.emi">
-            <option value="installment_wise">Installment-wise Distribution</option>
-          </select>
+        <small>Maximum depth तक हर eligible parent/upline का percentage।</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel-card mb-4" *ngIf="settings.commission_model === 'LevelWise'">
+    <div class="panel-card-title">Level Configuration Table</div>
+    <div class="table-responsive">
+      <table class="table level-table table-sm">
+        <thead><tr><th>Level</th><th>Percentage</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let level of settings.levels">
+            <td><strong>Level {{ level.level_no }}</strong></td>
+            <td>
+              <div class="input-group input-group-sm" style="max-width: 120px;">
+                <input class="form-control" type="number" min="0" max="100" step="0.01" [(ngModel)]="level.percentage">
+                <span class="input-group-text">%</span>
+              </div>
+            </td>
+            <td><label class="check-row mb-0"><input type="checkbox" [(ngModel)]="level.is_active"> Active</label></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel-card mb-4">
+    <div class="panel-card-title">Eligibility Rules</div>
+    <div class="settings-grid">
+      <label class="check-card"><input type="checkbox" [(ngModel)]="settings.eligibility_rules.require_active_associate"><span><strong>Active Associate Required</strong><small>Inactive associates commission receive नहीं करेंगे।</small></span></label>
+      <label class="check-card"><input type="checkbox" [(ngModel)]="settings.eligibility_rules.exclude_blacklisted"><span><strong>Exclude Blacklisted</strong><small>Blacklisted associates हमेशा excluded रहेंगे।</small></span></label>
+      <div class="setting-field"><label>Minimum Plot Amount</label><input class="form-control form-control-sm" type="number" min="0" [(ngModel)]="settings.eligibility_rules.minimum_plot_amount"></div>
+      <div class="setting-field"><label>Minimum Received Payment</label><input class="form-control form-control-sm" type="number" min="0" [(ngModel)]="settings.eligibility_rules.minimum_payment_amount"></div>
+    </div>
+  </section>
+
+  <section class="panel-card mb-4">
+    <div class="panel-card-title">Bonus Rules</div>
+    <div class="settings-grid">
+      <div class="setting-field">
+        <label>Bonus Description</label>
+        <input class="form-control form-control-sm" [(ngModel)]="settings.bonus_rules.description" placeholder="Example: Target achievement bonus">
+      </div>
+      <div class="setting-field">
+        <label>Bonus Percentage</label>
+        <div class="input-group input-group-sm">
+          <input class="form-control" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.bonus_rules.percentage">
+          <span class="input-group-text">%</span>
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="model-panel" *ngIf="settings.commission_model === 'EqualDistribution'">
-      <div class="panel-card-title">Commission Preview Calculator</div>
-      <div class="settings-grid">
-        <div class="setting-field">
-          <label>Commission Amount</label>
-          <input class="f-input" type="number" min="0" [(ngModel)]="previewAmount">
-        </div>
-        <div class="setting-field">
-          <label>Equal Participants</label>
-          <input class="f-input" type="number" min="1" [(ngModel)]="previewParticipants">
-        </div>
-      </div>
-      <div class="formula-preview">
-        <div><span>Seller Share</span><strong>{{ sellerPreview | currency:'INR':'symbol':'1.0-2' }}</strong></div>
-        <div><span>Equal Distribution Pool</span><strong>{{ equalPoolPreview | currency:'INR':'symbol':'1.0-2' }}</strong></div>
-        <div><span>Each Participant</span><strong>{{ perParticipantPreview | currency:'INR':'symbol':'1.0-2' }}</strong></div>
-      </div>
-      <p class="formula-copy">
-        Formula: Seller gets {{ settings.seller_percentage || 0 }}%. Remaining {{ settings.equal_distribution_percentage || 0 }}% is divided equally among eligible network members, excluding the seller.
-      </p>
-    </div>
-
-    <div class="model-panel" *ngIf="settings.commission_model === 'Upline'">
-      <div class="panel-card-title">Upline Commission Configuration</div>
-      <div class="settings-grid">
-        <div class="setting-field">
-          <label>Direct Seller Percentage</label>
-          <div class="input-suffix"><input class="f-input" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.direct_percentage"><span>%</span></div>
-          <small>जिस associate की referral chain से sale हुई, उसका percentage।</small>
-        </div>
-        <div class="setting-field">
-          <label>Each Upline Percentage</label>
-          <div class="input-suffix"><input class="f-input" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.upline_percentage"><span>%</span></div>
-          <small>Maximum depth तक हर eligible parent/upline का percentage।</small>
-        </div>
-      </div>
-    </div>
-
-    <div class="model-panel" *ngIf="settings.commission_model === 'LevelWise'">
-      <div class="panel-card-title">Level Configuration Table</div>
-      <div class="table-responsive">
-        <table class="table level-table">
-          <thead><tr><th>Level</th><th>Percentage</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let level of settings.levels">
-              <td><strong>Level {{ level.level_no }}</strong></td>
-              <td><div class="input-suffix compact"><input class="f-input" type="number" min="0" max="100" step="0.01" [(ngModel)]="level.percentage"><span>%</span></div></td>
-              <td><label class="check-row"><input type="checkbox" [(ngModel)]="level.is_active"> Active</label></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="model-panel">
-      <div class="panel-card-title">Eligibility Rules</div>
-      <div class="settings-grid">
-        <label class="check-card"><input type="checkbox" [(ngModel)]="settings.eligibility_rules.require_active_associate"><span><strong>Active Associate Required</strong><small>Inactive associates commission receive नहीं करेंगे।</small></span></label>
-        <label class="check-card"><input type="checkbox" [(ngModel)]="settings.eligibility_rules.exclude_blacklisted"><span><strong>Exclude Blacklisted</strong><small>Blacklisted associates हमेशा excluded रहेंगे।</small></span></label>
-        <div class="setting-field"><label>Minimum Plot Amount</label><input class="f-input" type="number" min="0" [(ngModel)]="settings.eligibility_rules.minimum_plot_amount"></div>
-        <div class="setting-field"><label>Minimum Received Payment</label><input class="f-input" type="number" min="0" [(ngModel)]="settings.eligibility_rules.minimum_payment_amount"></div>
-      </div>
-    </div>
-
-    <div class="model-panel">
-      <div class="panel-card-title">Bonus Rules</div>
-      <div class="settings-grid">
-        <div class="setting-field">
-          <label>Bonus Description</label>
-          <input class="f-input" [(ngModel)]="settings.bonus_rules.description" placeholder="Example: Target achievement bonus">
-        </div>
-        <div class="setting-field">
-          <label>Bonus Percentage</label>
-          <div class="input-suffix"><input class="f-input" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.bonus_rules.percentage"><span>%</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="settings-meta">
+  <section class="panel-card mb-4">
+    <div class="settings-meta mb-3">
       <span>Version <strong>{{ settings.version || 1 }}</strong></span>
       <span>Created {{ settings.created_at | date:'dd MMM yyyy, h:mm a' }}</span>
       <span>Updated {{ settings.updated_at | date:'dd MMM yyyy, h:mm a' }}</span>
       <span>Updated By <strong>{{ settings.updated_by || 'System' }}</strong></span>
     </div>
 
-    <button type="button" class="btn btn-green" (click)="requestSave()"><i class="fas fa-save me-2"></i>Review & Activate Changes</button>
+    <button type="button" class="btn btn-green btn-sm" (click)="requestSave()"><i class="fas fa-save me-2"></i>Review & Activate Changes</button>
   </section>
 
   <section class="panel-card mb-4">
