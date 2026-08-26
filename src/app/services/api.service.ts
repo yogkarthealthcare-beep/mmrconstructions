@@ -268,9 +268,9 @@ export class ApiService {
   adminChangePassword(data: any) { return this.post('/api/admin/auth/change-password', data, true); }
 
   // Commission Engine
-  adminGetCommissionEngineSettings() { return this.get('/api/admin/commission-settings', {}, true); }
-  adminGetCommissionEngineAudit(params: any = {}) { return this.get('/api/admin/commission-settings/audit', params, true); }
-  adminUpdateCommissionEngineSettings(data: any) { return this.put('/api/admin/commission-settings', data, true); }
+  adminGetCommissionEngineSettings() { return this.get('/api/admin/commission-engine/settings', {}, true); }
+  adminGetCommissionEngineAudit(params: any = {}) { return this.get('/api/admin/commission-engine/audit', params, true); }
+  adminUpdateCommissionEngineSettings(data: any) { return this.put('/api/admin/commission-engine/settings', data, true); }
   getCommissionEngineSummary() { return this.get('/api/commission-engine/summary'); }
 
   // Company Documents (Admin)
