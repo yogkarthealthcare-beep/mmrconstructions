@@ -22,32 +22,52 @@ import { ApiService } from '../../services/api.service';
 
       <!-- Stats Grid -->
       <div class="row g-3 mb-4">
+        <!-- Added -->
         <div class="col-sm-6 col-lg-3">
-          <div class="stat-card">
-            <div class="sc-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-arrow-down"></i></div>
-            <div class="sc-val">₹{{ totalAddedFund | number:'1.2-2' }}</div>
-            <div class="sc-lbl">Total Funds Added</div>
+          <div class="panel-card h-100 p-3 d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #dcfce7; color: #16a34a; font-size: 20px;">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div>
+              <div class="fs-12 fw-bold text-muted text-uppercase mb-1">Total Funds Added</div>
+              <div class="fs-4 fw-bold text-dark mb-0">₹{{ totalAddedFund | number:'1.2-2' }}</div>
+            </div>
           </div>
         </div>
+        <!-- Withdrawn -->
         <div class="col-sm-6 col-lg-3">
-          <div class="stat-card">
-            <div class="sc-icon" style="background:#ffebee;color:#dc2626;"><i class="fas fa-arrow-up"></i></div>
-            <div class="sc-val">₹{{ totalWithdrawnFund | number:'1.2-2' }}</div>
-            <div class="sc-lbl">Total Withdrawals</div>
+          <div class="panel-card h-100 p-3 d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #fee2e2; color: #dc2626; font-size: 20px;">
+              <i class="fas fa-arrow-up"></i>
+            </div>
+            <div>
+              <div class="fs-12 fw-bold text-muted text-uppercase mb-1">Total Withdrawals</div>
+              <div class="fs-4 fw-bold text-dark mb-0">₹{{ totalWithdrawnFund | number:'1.2-2' }}</div>
+            </div>
           </div>
         </div>
+        <!-- Records -->
         <div class="col-sm-6 col-lg-3">
-          <div class="stat-card">
-            <div class="sc-icon" style="background:#e0f2fe;color:#0284c7;"><i class="fas fa-exchange-alt"></i></div>
-            <div class="sc-val">{{ transactions.length }}</div>
-            <div class="sc-lbl">Total Records</div>
+          <div class="panel-card h-100 p-3 d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #e0f2fe; color: #0284c7; font-size: 20px;">
+              <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div>
+              <div class="fs-12 fw-bold text-muted text-uppercase mb-1">Total Records</div>
+              <div class="fs-4 fw-bold text-dark mb-0">{{ transactions.length }}</div>
+            </div>
           </div>
         </div>
+        <!-- Success Rate -->
         <div class="col-sm-6 col-lg-3">
-          <div class="stat-card">
-            <div class="sc-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-check-circle"></i></div>
-            <div class="sc-val">{{ successRate }}%</div>
-            <div class="sc-lbl">Success Rate</div>
+          <div class="panel-card h-100 p-3 d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #fef3c7; color: #d97706; font-size: 20px;">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div>
+              <div class="fs-12 fw-bold text-muted text-uppercase mb-1">Success Rate</div>
+              <div class="fs-4 fw-bold text-dark mb-0">{{ successRate }}%</div>
+            </div>
           </div>
         </div>
       </div>
@@ -130,54 +150,59 @@ import { ApiService } from '../../services/api.service';
       </div>
 
       <!-- Transactions Table -->
-      <div class="panel-card" *ngIf="!loading && !errorMsg">
+      <div class="panel-card p-0 overflow-hidden" *ngIf="!loading && !errorMsg">
         <div class="table-responsive">
-          <table class="table align-middle">
-            <thead>
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
               <tr>
-                <th>User Details</th>
-                <th>Transaction ID / Order ID</th>
+                <th class="ps-4">User Details</th>
+                <th>Transaction / Order ID</th>
                 <th>Type</th>
                 <th>Source</th>
                 <th>Gateway</th>
                 <th class="text-end">Amount</th>
-                <th class="text-end">Balance After</th>
+                <th class="text-end text-nowrap">Balance After</th>
                 <th>Status</th>
-                <th>Date</th>
+                <th class="pe-4">Date</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let t of transactions">
-                <td>
-                  <div class="fw-bold">{{ t.user_name || 'User #' + t.user_id }}</div>
-                  <div class="fs-12 text-muted">{{ t.user_email || t.user_mobile }}</div>
-                  <span class="badge bg-light text-dark fs-10">{{ t.user_role }}</span>
+                <td class="ps-4 py-3">
+                  <div class="fw-bold text-dark">{{ t.user_name || 'User #' + t.user_id }}</div>
+                  <div class="fs-12 text-muted mb-1">{{ t.user_email || t.user_mobile }}</div>
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle" style="font-size: 10px;">{{ t.user_role }}</span>
                 </td>
                 <td>
-                  <div class="fw-bold text-primary fs-12">{{ t.payment_order_id || t.id }}</div>
-                  <div class="fs-11 text-muted" *ngIf="t.payment_transaction_id">Txn: {{ t.payment_transaction_id }}</div>
+                  <div class="fw-bold text-primary fs-13">{{ t.payment_order_id || t.id }}</div>
+                  <div class="fs-11 text-muted mt-1" *ngIf="t.payment_transaction_id">Txn: <span class="font-monospace">{{ t.payment_transaction_id }}</span></div>
                 </td>
                 <td>
-                  <span [class]="isCredit(t) ? 'badge bg-success-subtle text-success' : 'badge bg-danger-subtle text-danger'">
+                  <span [class]="isCredit(t) ? 'badge bg-success bg-opacity-10 text-success border border-success-subtle' : 'badge bg-danger bg-opacity-10 text-danger border border-danger-subtle'">
                     {{ (t.transaction_type || (isCredit(t) ? 'credit' : 'debit')) | uppercase }}
                   </span>
                 </td>
-                <td class="fs-12 fw-semibold">{{ t.source }}</td>
-                <td class="fs-12 text-muted">{{ t.payment_gateway || 'Internal' }}</td>
-                <td class="fw-bold fs-13 text-end" [class.text-success]="isCredit(t)" [class.text-danger]="!isCredit(t)">
+                <td class="fs-13 fw-semibold text-dark">{{ t.source }}</td>
+                <td>
+                  <span class="badge bg-light text-dark border border-light-subtle text-capitalize">{{ t.payment_gateway || 'Internal' }}</span>
+                </td>
+                <td class="fw-bold fs-14 text-end" [class.text-success]="isCredit(t)" [class.text-danger]="!isCredit(t)">
                   {{ isCredit(t) ? '+' : '−' }} ₹{{ (t.amount < 0 ? -t.amount : t.amount) | number:'1.2-2' }}
                 </td>
-                <td class="fs-12 text-end fw-semibold">₹{{ t.balance_after | number:'1.2-2' }}</td>
+                <td class="fs-13 text-end fw-bold text-dark">₹{{ t.balance_after | number:'1.2-2' }}</td>
                 <td>
-                  <span class="sbadge" [ngClass]="{
-                    'sbadge-green': t.status === 'success',
-                    'sbadge-yellow': t.status === 'pending',
-                    'sbadge-red': t.status === 'failed' || t.status === 'cancelled'
+                  <span class="badge" [ngClass]="{
+                    'bg-success': t.status === 'success',
+                    'bg-warning text-dark': t.status === 'pending',
+                    'bg-danger': t.status === 'failed' || t.status === 'cancelled'
                   }">
-                    {{ t.status | titlecase }}
+                    {{ t.status | uppercase }}
                   </span>
                 </td>
-                <td class="fs-12 text-muted">{{ t.created_at | date:'dd MMM yyyy, hh:mm a' }}</td>
+                <td class="fs-12 text-muted pe-4">
+                  <div class="fw-semibold text-dark">{{ t.created_at | date:'dd MMM yyyy' }}</div>
+                  <div class="fs-11">{{ t.created_at | date:'hh:mm a' }}</div>
+                </td>
               </tr>
             </tbody>
           </table>
