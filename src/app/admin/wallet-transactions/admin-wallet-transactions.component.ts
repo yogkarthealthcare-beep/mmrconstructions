@@ -161,12 +161,12 @@ import { ApiService } from '../../services/api.service';
               <tr *ngFor="let t of transactions; let i = index">
                 <td class="ps-4 fw-semibold text-muted">{{ i + 1 }}</td>
                 <td>
-                  <div class="fw-bold text-dark text-truncate" [title]="t.user_name || 'User #' + t.user_id">{{ t.user_name || 'User #' + t.user_id }}</div>
-                  <div class="text-muted fs-12 mb-1 text-truncate" [title]="t.user_email || t.user_mobile">{{ t.user_email || t.user_mobile }}</div>
+                  <div class="fw-bold text-dark" style="word-break: break-all;">{{ t.user_name || 'User #' + t.user_id }}</div>
+                  <div class="text-muted fs-12 mb-1" style="word-break: break-all;">{{ t.user_email || t.user_mobile }}</div>
                   <span class="badge-role">{{ t.user_role }}</span>
                 </td>
                 <td>
-                  <div class="fw-bold text-primary fs-13 mb-1 text-truncate" [title]="t.payment_order_id || t.id">{{ t.payment_order_id || t.id }}</div>
+                  <div class="fw-bold text-primary fs-13 mb-1" style="word-break: break-all;">{{ t.payment_order_id || t.id }}</div>
                   <div class="d-flex align-items-center gap-1 flex-wrap">
                     <span [class]="isCredit(t) ? 'badge-pill bg-success-soft text-success' : 'badge-pill bg-danger-soft text-danger'">
                       {{ (t.transaction_type || (isCredit(t) ? 'credit' : 'debit')) | uppercase }}
