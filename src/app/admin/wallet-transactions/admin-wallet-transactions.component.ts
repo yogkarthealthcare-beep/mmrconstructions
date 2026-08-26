@@ -369,7 +369,7 @@ import { ApiService } from '../../services/api.service';
       border-top: none;
     }
     .table > tbody > tr > td {
-      padding: 1rem;
+      padding: 0.5rem 1rem;
       vertical-align: middle;
       border-bottom: 1px solid var(--ft-border);
       font-size: 13px;
