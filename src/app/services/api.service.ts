@@ -280,10 +280,10 @@ export class ApiService {
   adminDeleteCompanyDocument(id: number) { return this.delete(`/api/admin/company-documents/${id}`, true); }
 
   // EMI Calculator Mgmt (Admin)
-  adminGetEmiCalculatorPlans(params: any = {}) { return this.get('/api/admin/emi-calculator/plans', params, true); }
-  adminUpdateEmiCalculatorPlan(id: number, data: any) { return this.put(`/api/admin/emi-calculator/plans/${id}`, data, true); }
-  adminCreateEmiCalculatorPlan(data: any) { return this.post('/api/admin/emi-calculator/plans', data, true); }
-  adminDeleteEmiCalculatorPlan(id: number) { return this.delete(`/api/admin/emi-calculator/plans/${id}`, true); }
+  adminGetEmiCalculatorPlans(params: any = {}) { return this.get('/api/admin/emi-calculator', params, true); }
+  adminUpdateEmiCalculatorPlan(id: number, data: any) { return this.put(`/api/admin/emi-calculator/${id}`, data, true); }
+  adminCreateEmiCalculatorPlan(data: any) { return this.post('/api/admin/emi-calculator', data, true); }
+  adminDeleteEmiCalculatorPlan(id: number) { return this.delete(`/api/admin/emi-calculator/${id}`, true); }
 
   // Investor Portal & Management (Admin)
   adminGetInvestorsPortal(params: any = {}) { return this.get('/api/admin/investors/portal', params, true); }
