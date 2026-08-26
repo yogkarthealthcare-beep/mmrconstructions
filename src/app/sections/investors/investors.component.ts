@@ -21,15 +21,7 @@ export class InvestorsComponent implements OnInit {
     this.api.getInvestors().subscribe({
       next: (r: any) => {
         const rawList = Array.isArray(r?.data) ? r.data : [];
-        const seen = new Set<string>();
-        const uniqueList: any[] = [];
-
-        for (const item of rawList) {
-          const key = (item.name || '').trim().toLowerCase();
-          if (!key || seen.has(key)) continue;
-          seen.add(key);
-          uniqueList.push(item);
-        }
+        const uniqueList: any[] = [...rawList];
 
         // Sort descending by investment amount (highest investment first)
         uniqueList.sort((a, b) => (Number(b.investment_amount || 0) - Number(a.investment_amount || 0)));
@@ -69,8 +61,12 @@ export class InvestorsComponent implements OnInit {
     return 'card-sm';
   }
 
-  getImageUrl(url: string | undefined): string {
-    if (!url) return 'assets/favicon-192x192.png';
+  getImageUrl(investor: any): string {
+    const url = investor?.profile_image_url;
+    if (!url) {
+      const name = encodeURIComponent(investor?.name || 'Investor');
+      return `https://ui-avatars.com/api/?name=${name}&background=114c33&color=fff&size=200&bold=true`;
+    }
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
     return this.api.url(url);
   }
