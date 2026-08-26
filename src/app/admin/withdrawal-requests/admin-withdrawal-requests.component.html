@@ -146,35 +146,35 @@
       </h5>
     </div>
 
-    <div class="table-responsive" *ngIf="requests.length > 0">
-      <table class="table-withdrawal">
+    <div *ngIf="requests.length > 0">
+      <table class="table-withdrawal" style="table-layout: fixed; width: 100%;">
         <thead>
           <tr>
-            <th class="ps-4">#</th>
-            <th>Request ID</th>
-            <th>User Details</th>
-            <th>Role</th>
-            <th class="text-end">Amount</th>
-            <th>Bank / UPI Details</th>
-            <th>Status</th>
-            <th>Requested Date</th>
-            <th class="text-center">Actions</th>
+            <th class="ps-4" style="width: 5%;">#</th>
+            <th style="width: 10%;">Request ID</th>
+            <th style="width: 18%;">User Details</th>
+            <th style="width: 11%;">Role</th>
+            <th class="text-end" style="width: 12%;">Amount</th>
+            <th style="width: 13%;">Bank / UPI Details</th>
+            <th style="width: 11%;">Status</th>
+            <th style="width: 11%;">Requested Date</th>
+            <th class="text-center" style="width: 9%;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let r of requests; let i = index">
             <td class="ps-4 fw-semibold text-muted fs-13">{{ i + 1 }}</td>
             <td>
-              <span class="font-monospace text-muted fs-12 fw-bold">#{{ r.id.slice(0, 8) }}</span>
+              <span class="font-monospace text-muted fs-12 fw-bold text-truncate d-block" [title]="'#' + r.id">#{{ r.id.slice(0, 8) }}</span>
             </td>
             <td>
-              <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2" style="overflow: hidden;">
                 <div class="user-avatar-chip">
                   {{ getInitials(r.user_name) }}
                 </div>
-                <div>
-                  <div class="user-name-title">{{ r.user_name || 'Valued User' }}</div>
-                  <div class="user-contact-sub">{{ r.user_mobile || r.user_email || '—' }}</div>
+                <div style="min-width: 0;">
+                  <div class="user-name-title text-truncate" [title]="r.user_name || 'Valued User'">{{ r.user_name || 'Valued User' }}</div>
+                  <div class="user-contact-sub text-truncate" [title]="r.user_mobile || r.user_email || '—'">{{ r.user_mobile || r.user_email || '—' }}</div>
                 </div>
               </div>
             </td>
@@ -187,15 +187,15 @@
                 {{ r.user_role || 'User' }}
               </span>
             </td>
-            <td class="text-end">
+            <td class="text-end text-nowrap">
               <span class="fw-bold text-danger fs-14">− ₹{{ r.amount | number:'1.2-2' }}</span>
             </td>
-            <td>
+            <td style="position: relative;">
               <div class="dropdown">
                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle fs-12 py-1 px-2" type="button" (click)="toggleDropdown(r, $event)">
                   <i class="fas fa-eye me-1"></i> View Details
                 </button>
-                <div class="dropdown-menu p-3 shadow-sm" [class.show]="r.showDropdown" style="min-width: 250px; position: absolute; z-index: 1000; right: 0;">
+                <div class="dropdown-menu p-3 shadow-sm" [class.show]="r.showDropdown" style="min-width: 250px; position: absolute; z-index: 1000; left: 0; top: 100%; display: block;" *ngIf="r.showDropdown">
                   <h6 class="dropdown-header px-0 text-dark fw-bold border-bottom pb-2 mb-2"><i class="fas fa-university me-1 text-muted"></i>{{ r.bank_name || 'Bank' }}</h6>
                   
                   <div class="d-flex justify-content-between align-items-center mb-2 fs-12">
@@ -221,7 +221,7 @@
               </div>
             </td>
             <td>
-              <span class="status-pill-custom" [ngClass]="{
+              <span class="status-pill-custom text-nowrap" [ngClass]="{
                 'status-pending': r.status === 'pending',
                 'status-approved': r.status === 'approved',
                 'status-released': r.status === 'released',
@@ -236,11 +236,11 @@
                 {{ r.status | titlecase }}
               </span>
             </td>
-            <td>
+            <td class="text-nowrap">
               <div class="fs-12 fw-semibold text-dark">{{ r.created_at | date:'dd MMM yyyy' }}</div>
               <div class="fs-11 text-muted">{{ r.created_at | date:'hh:mm a' }}</div>
             </td>
-            <td class="text-center">
+            <td class="text-center text-nowrap">
               <div class="d-flex align-items-center justify-content-center gap-1">
 
                 <!-- Quick Approve Button -->
