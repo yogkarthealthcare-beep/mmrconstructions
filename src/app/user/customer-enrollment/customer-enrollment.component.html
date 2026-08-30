@@ -313,8 +313,14 @@
       </button>
     </div>
 
-    <div class="success-banner" *ngIf="isSubmitted" style="background: #e6f4ea; color: #137333; padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; margin: 20px 28px; border: 1px solid #c3e6cb; font-size: 15px;">
-      <i class="fas fa-check-circle me-1"></i> Application submitted successfully! / आवेदन सफलतापूर्वक जमा हो गया है!
+    <div class="success-banner" *ngIf="isSubmitted" style="background: #e6f4ea; color: #137333; padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; margin: 20px 28px; border: 1px solid #c3e6cb; font-size: 15px; display: flex; flex-direction: column; align-items: center; gap: 12px; justify-content: center;">
+      <div>
+        <i class="fas fa-check-circle me-1"></i> Application submitted successfully! / आवेदन सफलतापूर्वक जमा हो गया है!
+      </div>
+      <button type="button" class="btn btn-primary btn-sm no-print" (click)="downloadPdf()" [disabled]="printing" style="background-color: #14532d; color: white; border: none; padding: 8px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+        <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i>
+        {{ printing ? 'Generating PDF...' : 'Download / Print Form' }}
+      </button>
     </div>
   </form>
 

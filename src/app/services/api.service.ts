@@ -118,6 +118,12 @@ export class ApiService {
     });
   }
 
+  downloadCustomerPdf(id: string): Observable<Blob> {
+    return this.http.get(this.url(`/api/customer-enrollment/${id}/print`), {
+      responseType: 'blob'
+    });
+  }
+
   // ── Sites & Plots ─────────────────────────────────
   getHomeSliders()              { return this.get('/api/home-sliders'); }
   getSites()                    { return this.get('/api/sites'); }

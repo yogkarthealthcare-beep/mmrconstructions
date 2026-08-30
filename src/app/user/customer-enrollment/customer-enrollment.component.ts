@@ -20,6 +20,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   showToast = false;
   toastMsg = '';
   modalAgreed = false;
+  submissionId: string | null = null;
+  printing = false;
   
   photo1DataUrl = '';
   photo2DataUrl = '';
@@ -41,7 +43,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.initForm();
-    this.prefillProfile();
+    this.checkSubmissionStatus();
   }
 
   ngAfterViewInit() {
@@ -330,6 +332,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
         this.submitting = false;
         this.showModal = false;
         this.isSubmitted = true;
+        this.submissionId = res.data?.id || null;
         this.enrollmentForm.disable(); // Disable form after successful submission
         this.toastMsg = 'Application submitted successfully!';
         this.showToast = true;
@@ -454,5 +457,133 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
         }
       }
     }
+  }
+
+  checkSubmissionStatus() {
+    this.api.getMyCustomerEnrollments().subscribe({
+      next: (res: any) => {
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const enroll = res.data[0];
+          this.isSubmitted = true;
+          this.submissionId = enroll.id;
+          
+          this.enrollmentForm.disable();
+          
+          this.enrollmentForm.patchValue({
+            formDate: enroll.form_date ? new Date(enroll.form_date).toISOString().split('T')[0] : '',
+            applicationNo: enroll.application_no,
+            projectName: enroll.project_name,
+            propertyType: enroll.property_type,
+            propertyTypeOther: enroll.property_type_other || '',
+            plotFlatNo: enroll.plot_flat_no,
+            blockTower: enroll.block_tower,
+            sizeArea: enroll.size_area,
+            rate: enroll.rate_per_unit,
+            bsp: enroll.basic_sale_price,
+            plcDev: enroll.plc_dev_charges,
+            
+            applicantName: enroll.applicant_name,
+            fhName: enroll.fh_name,
+            dob: enroll.date_of_birth ? new Date(enroll.date_of_birth).toISOString().split('T')[0] : '',
+            age: enroll.age,
+            gender: enroll.gender,
+            maritalStatus: enroll.marital_status,
+            nationality: enroll.nationality,
+            nationalityOther: enroll.nationality_other || '',
+            pan: enroll.pan_no,
+            aadhar: enroll.aadhar_no,
+            occupation: enroll.occupation,
+            presentAddress: enroll.present_address,
+            presentCity: enroll.present_city,
+            presentStatePin: enroll.present_state_pin,
+            permanentAddress: enroll.permanent_address,
+            permanentCity: enroll.permanent_city,
+            permanentStatePin: enroll.permanent_state_pin,
+            mobile1: enroll.mobile_1,
+            mobile2: enroll.mobile_2 || '',
+            email1: enroll.email_1 || '',
+            
+            coApplicantName: enroll.co_applicant_name || '',
+            coFhName: enroll.co_fh_name || '',
+            coRelation: enroll.co_relation || '',
+            coDob: enroll.co_date_of_birth ? new Date(enroll.co_date_of_birth).toISOString().split('T')[0] : '',
+            coAge: enroll.co_age || '',
+            coGender: enroll.co_gender || '',
+            coPan: enroll.co_pan_no || '',
+            coAadhar: enroll.co_aadhar_no || '',
+            coPresentAddress: enroll.co_present_address || '',
+            coMobile: enroll.co_mobile || '',
+            coEmail: enroll.co_email || '',
+            
+            bookingAmount: enroll.booking_amount,
+            bookingAmountWords: enroll.booking_amount_words,
+            paymentMode: enroll.payment_mode,
+            txnNo: enroll.txn_cheque_no || '',
+            txnDate: enroll.txn_date ? new Date(enroll.txn_date).toISOString().split('T')[0] : '',
+            drawnBankBranch: enroll.drawn_bank_branch || '',
+            
+            accHolderName: enroll.acc_holder_name || '',
+            accBankBranch: enroll.acc_bank_branch || '',
+            accNumber: enroll.acc_number || '',
+            ifscCode: enroll.ifsc_code || '',
+            
+            associateName: enroll.associate_name || '',
+            associateId: enroll.associate_id || '',
+            associateMobile: enroll.associate_mobile || '',
+            associateSignatureName: enroll.associate_signature_name || '',
+            declarationCheck: true
+          });
+
+          if (enroll.nominees && Array.isArray(enroll.nominees)) {
+            const nomArray = this.enrollmentForm.get('nominees') as FormArray;
+            nomArray.clear();
+            enroll.nominees.forEach((n: any) => {
+              nomArray.push(this.fb.group({
+                nomineeName: [n.nominee_name || ''],
+                nomineeRelation: [n.relation || ''],
+                nomineeAgeDob: [n.age_dob || ''],
+                nomineeAadhar: [n.aadhar_no || '']
+              }));
+            });
+          }
+
+          if (enroll.photo_first_applicant_url) {
+            this.photo1DataUrl = enroll.photo_first_applicant_url;
+          }
+          if (enroll.photo_co_applicant_url) {
+            this.photo2DataUrl = enroll.photo_co_applicant_url;
+          }
+        } else {
+          this.prefillProfile();
+        }
+      },
+      error: () => {
+        this.prefillProfile();
+      }
+    });
+  }
+
+  downloadPdf() {
+    if (!this.submissionId) return;
+    if (this.printing) return;
+    this.printing = true;
+
+    this.api.downloadCustomerPdf(this.submissionId).subscribe({
+      next: (blob: Blob) => {
+        this.printing = false;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MMR-Customer-${this.enrollmentForm.get('applicationNo')?.value || 'Enrollment'}-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err: any) => {
+        this.printing = false;
+        alert('Failed to download PDF. Please try again.');
+      }
+    });
   }
 }
