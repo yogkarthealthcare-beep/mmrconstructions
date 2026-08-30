@@ -1,0 +1,495 @@
+<div class="wrap">
+  <!-- Header (Always visible unless form is successfully submitted) -->
+  <ng-container *ngIf="!(success$ | async)">
+    <div class="header">
+      <div class="brand">
+        <div class="brand-mark">MMR</div>
+        <div>
+          <h1>M.M.R. Construction &amp; Developers Private Limited</h1>
+          <p>Head Office: 00, Tribhuvan Khera, Sheshpur Nari | Corporate Office: Unnao, Uttar Pradesh, India 209801</p>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div>Ph: 9511119879 | 8429823067</div>
+        <div>GST No. 09AATCM6753A1Z5</div>
+        <div>CIN No. U68200UP2025PTC229203</div>
+      </div>
+    </div>
+
+    <div class="form-title">Associate Enrollment Form</div>
+
+    <!-- Error Alert from store if API fails -->
+    <div *ngIf="error$ | async as errMsg" class="section" style="border-color: var(--danger); background: #fdf2f2; color: var(--danger); font-weight: 600; padding: 12px 20px; border-radius: 8px;">
+      <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+      {{ errMsg }}
+    </div>
+
+    <form [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()" novalidate>
+      
+      <!-- 1. Personal Details -->
+      <div class="section" formGroupName="personalDetails">
+        <h2><span class="num">1</span>Personal Details</h2>
+        <div class="grid with-photo">
+          <div class="grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="field full">
+              <label>Full Name (only Adult) <span class="req">*</span></label>
+              <input type="text" formControlName="fullName" placeholder="Enter Full Name">
+              <div *ngIf="personal.get('fullName')?.touched && personal.get('fullName')?.errors?.['required']" class="error-text">
+                Full Name is required.
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Date of Birth <span class="req">*</span></label>
+              <input type="date" formControlName="dob">
+              <div *ngIf="personal.get('dob')?.touched && personal.get('dob')?.errors?.['required']" class="error-text">
+                Date of Birth is required.
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Gender <span class="req">*</span></label>
+              <select formControlName="gender">
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+              <div *ngIf="personal.get('gender')?.touched && personal.get('gender')?.errors?.['required']" class="error-text">
+                Gender is required.
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Father's Name</label>
+              <input type="text" formControlName="fatherName" placeholder="Father's Name">
+            </div>
+
+            <div class="field">
+              <label>Mother's Name</label>
+              <input type="text" formControlName="motherName" placeholder="Mother's Name">
+            </div>
+
+            <div class="field">
+              <label>Spouse's Name (Husband/Wife/Others)</label>
+              <input type="text" formControlName="spouseName" placeholder="Spouse's Name">
+            </div>
+
+            <div class="field"></div>
+
+            <div class="field">
+              <label>Contact No. (i) <span class="req">*</span></label>
+              <input type="tel" formControlName="contact1" placeholder="10-digit Mobile No.">
+              <div *ngIf="personal.get('contact1')?.touched" class="error-text">
+                <span *ngIf="personal.get('contact1')?.errors?.['required']">Primary Contact No is required.</span>
+                <span *ngIf="personal.get('contact1')?.errors?.['pattern']">Please enter a valid mobile number (10 to 15 digits).</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Contact No. (ii)</label>
+              <input type="tel" formControlName="contact2" placeholder="Alternate Mobile No.">
+              <div *ngIf="personal.get('contact2')?.touched && personal.get('contact2')?.errors?.['pattern']" class="error-text">
+                Please enter a valid mobile number (10 to 15 digits).
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Nationality</label>
+              <input type="text" formControlName="nationality" placeholder="Nationality">
+            </div>
+
+            <div class="field">
+              <label>Residential Status</label>
+              <input type="text" formControlName="residentialStatus" placeholder="Residential Status">
+            </div>
+
+            <div class="field">
+              <label>PAN No. <span class="req">*</span></label>
+              <input type="text" formControlName="panNo" maxlength="10" placeholder="ABCDE1234F" style="text-transform: uppercase">
+              <div *ngIf="personal.get('panNo')?.touched" class="error-text">
+                <span *ngIf="personal.get('panNo')?.errors?.['required']">PAN No. is required.</span>
+                <span *ngIf="personal.get('panNo')?.errors?.['pattern']">Invalid PAN format (e.g. ABCDE1234F).</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Aadhar No. <span class="req">*</span></label>
+              <input type="text" formControlName="aadharNo" maxlength="12" placeholder="12-digit Aadhar No.">
+              <div *ngIf="personal.get('aadharNo')?.touched" class="error-text">
+                <span *ngIf="personal.get('aadharNo')?.errors?.['required']">Aadhar No. is required.</span>
+                <span *ngIf="personal.get('aadharNo')?.errors?.['pattern']">Aadhar must be exactly 12 numeric digits.</span>
+              </div>
+            </div>
+
+            <div class="field full">
+              <label>E-mail Id</label>
+              <input type="email" formControlName="email" placeholder="example@email.com">
+              <div *ngIf="personal.get('email')?.touched && personal.get('email')?.errors?.['email']" class="error-text">
+                Please enter a valid email address.
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Occupation</label>
+              <input type="text" formControlName="occupation" placeholder="Occupation">
+            </div>
+
+            <div class="field">
+              <label>Annual Income</label>
+              <input type="text" formControlName="annualIncome" placeholder="Annual Income">
+            </div>
+
+            <div class="field">
+              <label>Education</label>
+              <input type="text" formControlName="education" placeholder="Education Level">
+            </div>
+
+            <div class="field">
+              <label>Category</label>
+              <input type="text" formControlName="category" placeholder="Category (e.g. Gen/OBC/SC/ST)">
+            </div>
+
+            <div class="field full">
+              <label>Religion</label>
+              <input type="text" formControlName="religion" placeholder="Religion">
+            </div>
+          </div>
+
+          <!-- Applicant Photo Box -->
+          <div class="field" style="align-self: center; justify-self: center;">
+            <app-photo-upload placeholderText="APPLICANT PHOTO" (fileSelected)="onApplicantPhotoSelected($event)"></app-photo-upload>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Address Details -->
+      <div class="section" formGroupName="addressDetails">
+        <h2><span class="num">2</span>Address Details</h2>
+        <div class="subhead">Permanent Address</div>
+        <div class="grid">
+          <div class="field full">
+            <label>Address</label>
+            <input type="text" formControlName="permAddress" placeholder="Street Address">
+          </div>
+          <div class="field">
+            <label>City/District</label>
+            <input type="text" formControlName="permCity" placeholder="City">
+          </div>
+          <div class="field">
+            <label>State</label>
+            <input type="text" formControlName="permState" placeholder="State">
+          </div>
+          <div class="field">
+            <label>Country</label>
+            <input type="text" formControlName="permCountry">
+          </div>
+          <div class="field">
+            <label>Pin Code</label>
+            <input type="text" formControlName="permPin" placeholder="Pin Code">
+          </div>
+        </div>
+
+        <div class="subhead" style="margin-top: 20px;">Local Address</div>
+        <div class="grid">
+          <div class="field full">
+            <label>Address</label>
+            <input type="text" formControlName="localAddress" placeholder="Street Address">
+          </div>
+          <div class="field">
+            <label>City/District</label>
+            <input type="text" formControlName="localCity" placeholder="City">
+          </div>
+          <div class="field">
+            <label>State</label>
+            <input type="text" formControlName="localState" placeholder="State">
+          </div>
+          <div class="field">
+            <label>Country</label>
+            <input type="text" formControlName="localCountry">
+          </div>
+          <div class="field">
+            <label>Pin Code</label>
+            <input type="text" formControlName="localPin" placeholder="Pin Code">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Bank Details -->
+      <div class="section" formGroupName="bankDetails">
+        <h2><span class="num">3</span>Bank Details</h2>
+        <div class="grid">
+          <div class="field">
+            <label>Bank Name</label>
+            <input type="text" formControlName="bankName" placeholder="Bank Name">
+          </div>
+          <div class="field">
+            <label>Account Holder Name</label>
+            <input type="text" formControlName="accHolder" placeholder="Account Holder Name">
+          </div>
+          <div class="field">
+            <label>Account No.</label>
+            <input type="text" formControlName="accNo" placeholder="Account Number">
+          </div>
+          <div class="field">
+            <label>IFSC Code</label>
+            <input type="text" formControlName="ifsc" placeholder="IFSC Code" style="text-transform: uppercase" (input)="onIfscInput($event)">
+            <div *ngIf="ifscLoading" style="font-size: 11px; color: var(--muted); margin-top: 2px;"><i class="fas fa-spinner fa-spin"></i> Fetching bank details...</div>
+            <div *ngIf="ifscSuccess" style="font-size: 11px; color: var(--primary); margin-top: 2px;"><i class="fas fa-check-circle"></i> Bank details fetched successfully</div>
+            <div *ngIf="ifscError" style="font-size: 11px; color: var(--danger); margin-top: 2px;"><i class="fas fa-times-circle"></i> {{ ifscError }}</div>
+          </div>
+          <div class="field">
+            <label>MICR Code</label>
+            <input type="text" formControlName="micr" placeholder="MICR Code">
+          </div>
+          <div class="field">
+            <label>Branch Name</label>
+            <input type="text" formControlName="branchName" placeholder="Branch Name">
+          </div>
+          <div class="field">
+            <label>Branch Code</label>
+            <input type="text" formControlName="branchCode" placeholder="Branch Code">
+          </div>
+          <div class="field">
+            <label>Swift Code</label>
+            <input type="text" formControlName="swift" placeholder="Swift Code" style="text-transform: uppercase">
+          </div>
+          <div class="field">
+            <label>Branch Country</label>
+            <input type="text" formControlName="branchCountry">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Nominee Details -->
+      <div class="section" formGroupName="nomineeDetails">
+        <h2><span class="num">4</span>Nominee Details</h2>
+        <div class="grid with-photo">
+          <div class="grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="field">
+              <label>Nominee Name</label>
+              <input type="text" formControlName="nomineeName" placeholder="Nominee Name">
+            </div>
+            <div class="field">
+              <label>Date of Birth</label>
+              <input type="date" formControlName="nomineeDob">
+            </div>
+            <div class="field">
+              <label>Gender</label>
+              <select formControlName="nomineeGender">
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Nationality</label>
+              <input type="text" formControlName="nomineeNationality">
+            </div>
+            <div class="field">
+              <label>Residential Status</label>
+              <input type="text" formControlName="nomineeResStatus" placeholder="Residential Status">
+            </div>
+            <div class="field">
+              <label>Relationship</label>
+              <input type="text" formControlName="nomineeRelationship" placeholder="Relationship to Applicant">
+            </div>
+            <div class="field">
+              <label>PAN Name</label>
+              <input type="text" formControlName="nomineePanName" placeholder="Name on PAN Card">
+            </div>
+            <div class="field">
+              <label>PAN No.</label>
+              <input type="text" formControlName="nomineePanNo" maxlength="10" placeholder="ABCDE1234F" style="text-transform: uppercase">
+              <div *ngIf="nominee.get('nomineePanNo')?.touched && nominee.get('nomineePanNo')?.errors?.['pattern']" class="error-text">
+                Invalid PAN format.
+              </div>
+            </div>
+            <div class="field">
+              <label>Aadhar Name</label>
+              <input type="text" formControlName="nomineeAadharName" placeholder="Name on Aadhar Card">
+            </div>
+            <div class="field">
+              <label>Aadhar No.</label>
+              <input type="text" formControlName="nomineeAadharNo" maxlength="12" placeholder="12-digit Aadhar No.">
+              <div *ngIf="nominee.get('nomineeAadharNo')?.touched && nominee.get('nomineeAadharNo')?.errors?.['pattern']" class="error-text">
+                Aadhar must be exactly 12 numeric digits.
+              </div>
+            </div>
+            <div class="field full">
+              <label>Nominee Address</label>
+              <input type="text" formControlName="nomineeAddress" placeholder="Nominee Address">
+            </div>
+          </div>
+
+          <!-- Nominee Photo Box -->
+          <div class="field" style="align-self: center; justify-self: center;">
+            <app-photo-upload placeholderText="NOMINEE PHOTO" (fileSelected)="onNomineePhotoSelected($event)"></app-photo-upload>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Sponsor Details -->
+      <div class="section" formGroupName="sponsorDetails">
+        <h2><span class="num">5</span>Sponsor / Introducer Details</h2>
+        <div class="grid">
+          <div class="field">
+            <label>Sponsor's/Introducer's Name</label>
+            <input type="text" formControlName="sponsorName" placeholder="Sponsor's Name">
+          </div>
+          <div class="field">
+            <label>Code No.</label>
+            <input type="text" formControlName="sponsorCode" placeholder="Sponsor Code">
+          </div>
+          <div class="field">
+            <label>Contact No.</label>
+            <input type="tel" formControlName="sponsorContact" placeholder="Sponsor Mobile No.">
+            <div *ngIf="sponsor.get('sponsorContact')?.touched && sponsor.get('sponsorContact')?.errors?.['pattern']" class="error-text">
+              Please enter a valid mobile number (10 to 15 digits).
+            </div>
+          </div>
+          <div class="field">
+            <label>Sponsor's/Introducer's Signature</label>
+            <input type="text" placeholder="(signed copy attached)" disabled>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Terms & Conditions -->
+      <div class="section" formGroupName="termsAndConditions">
+        <h2><span class="num">6</span>Terms &amp; Conditions</h2>
+
+        <div class="tc-box">
+          <h3>Commission Rules</h3>
+          <p><strong>Rule 1 — Member Sales:</strong> If a Team Member successfully sells a plot, they will receive a direct 5% commission on their sale. On this specific sale, the Team's Associate (Leader) will receive 0.5% (as Passive Income).</p>
+          <p><strong>Rule 2 — Associate Sales:</strong> If the Associate (Leader) themselves sells a plot, they will receive a direct 5% commission on their sale.</p>
+          <p><strong>10-Team-Member Rule:</strong> On this sale, the remaining 10 Team Members will each receive 0.5% commission. On any specific Team Member's sale, the Associate receives 0.5%, and each of the remaining 9 Team Members will receive 0.5% (as Passive Income).</p>
+
+          <h3>Target &amp; Bonanza Rewards</h3>
+          <p>Sales targets for the selling individual (Associate or Member) will be evaluated over a 6-month timeframe. Based on cumulative sales, upgrade the associate/member reward or bonanza prize (ranging from a smartphone to a car), along with a monthly Patrolling Allowance.</p>
+
+          <h3>Sales Reward Timeframe &amp; Cash Terms</h3>
+          <p>Timeframe: 6 months from designated sales target start. Rewards executed exclusively via 100% Upfront Cash Payment or 100% EMI, at the Company's discretion. No standard employment benefits apply to this offer.</p>
+
+          <h3>Associate &amp; Team Workflow</h3>
+          <p><strong>Team Building:</strong> The Associate (Leader) creates their ID and builds a team of a maximum of 10 Team Members (11 members total per team). Team Members complete KYC through their Associate and receive training regarding projects/commission structures.</p>
+          <p><strong>Marketing &amp; Site Visit:</strong> The team works together generating leads via company-approved brochures/videos and conducts site visits to close deals; the Associate can assist Team Members in closing deals.</p>
+          <p><strong>Deal Closure:</strong> 100% Upfront Cash Registry to the client explained; 100% offer benefits explained. Strict Rule — never accept cash directly from a client; all payment must be made directly into the Company's bank account.</p>
+
+          <h3>Registration, KYC &amp; Independent Contractor</h3>
+          <p>Associate registration is absolutely free and linked to Aadhar &amp; PAN card KYC verification (mandatory). Every associate is assigned a single ID strictly for their own use — no sharing/duplication permitted. The Associate acts as an independent channel partner, not as a company employee; no standard employment benefits apply.</p>
+
+          <h3>Commission on Sales &amp; Base Target</h3>
+          <p>An associate earns a 5% commission based on the fixed company-prescribed rate. Base Target: achieving a total sale of 2000 sq. yards over a continuous 72-month (6-year) tenure entitles a 100 sq. yard plot at company rates. Below-target proportion is calculated per the ratio of sq. yards sold against the 2000 sq. yard base.</p>
+
+          <h3>Patrolling Allowance (Mega Target)</h3>
+          <p>From the date an associate achieves total sales of 2000 sq. yards, the Company provides a patrolling (travel) allowance of ₹12,000/month for a continuous 72-month duration.</p>
+
+          <h3>Accidental Death &amp; Disability Benefit</h3>
+          <p>In the unfortunate event of an associate's accidental death during active tenure, the Company provides financial assistance of ₹3,00,000 to the nominee, or a registered plot of 50 sq. yards. For accidental disability resulting in physical loss (loss of limbs), the Company provides financial aid ranging ₹25,000 to ₹1,00,000 based on the condition.</p>
+
+          <h3>Financial Liability</h3>
+          <p>The Company is not responsible for any cash collected by the associate. The associate is strictly liable for any funds not officially credited to the Company's bank account via a valid company receipt.</p>
+
+          <h3>Marketing, Confidentiality &amp; Misconduct</h3>
+          <p>Associates must use only company-approved marketing materials and must protect company data, client leads, and trade secrets without sharing them with competitors. Misleading customers, fake commitments, fraud, mis-selling, or forging documents will lead to immediate termination and forfeiture of pending payouts.</p>
+
+          <h3>Taxation, TDS &amp; Termination</h3>
+          <p>All commissions, allowances and rewards are subject to TDS and applicable statutory tax deductions as per government rules. The Company is entitled to terminate this agreement for misconduct as described above.</p>
+
+          <h3>Possession, Registry &amp; Jurisdiction</h3>
+          <p>The Company is responsible for handing over possession and registry (Dakhil Kharij / mutation) to the customer as per company rules. All registry and legal expenses will be strictly borne by the customer. In case of any dispute, it shall be settled by mutual arbitration; subject to the exclusive jurisdiction of the courts at Unnao / Lucknow.</p>
+
+          <h3>Declaration</h3>
+          <p>I hereby declare that all the above information is true and correct to the best of my knowledge, and wish to associate with the Company as per the above mentioned terms and conditions. I agree with all the above details, terms and conditions and am requested to consider my application accordingly.</p>
+        </div>
+
+        <div class="consent-list">
+          <div class="consent">
+            <input type="checkbox" id="tc1" formControlName="tc1">
+            <label for="tc1">I have read and understood the <strong>Commission Rules</strong> (Member Sales &amp; Associate Sales) and Target/Bonanza Reward terms.</label>
+          </div>
+          <div class="consent">
+            <input type="checkbox" id="tc2" formControlName="tc2">
+            <label for="tc2">I have read and understood the <strong>Associate &amp; Team Workflow</strong> (Team Building, Marketing &amp; Site Visit, Deal Closure — including the "no cash to individuals" rule).</label>
+          </div>
+          <div class="consent">
+            <input type="checkbox" id="tc3" formControlName="tc3">
+            <label for="tc3">I have read and understood the <strong>Registration, KYC, Independent Contractor status, Commission Rate and Base Sales Target</strong> terms.</label>
+          </div>
+          <div class="consent">
+            <input type="checkbox" id="tc4" formControlName="tc4">
+            <label for="tc4">I have read and understood the <strong>Patrolling Allowance, Accidental Death Benefit, Disability Benefit</strong> and <strong>Financial Liability</strong> clauses.</label>
+          </div>
+          <div class="consent">
+            <input type="checkbox" id="tc5" formControlName="tc5">
+            <label for="tc5">I have read and understood the <strong>Marketing, Confidentiality, Misconduct, Taxation/TDS, Termination, Possession/Registry and Jurisdiction</strong> clauses.</label>
+          </div>
+          <div class="consent">
+            <input type="checkbox" id="tc6" formControlName="tc6">
+            <label for="tc6">I confirm the <strong>Declaration</strong> — all information provided by me is true and correct to the best of my knowledge, and I agree to associate with M.M.R. Construction &amp; Developers Pvt. Ltd. under the above terms.</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Signature -->
+      <div class="section" formGroupName="signature">
+        <h2><span class="num">7</span>Applicant Signature</h2>
+        <div class="sign-grid">
+          <div class="field">
+            <label>Signature</label>
+            <input type="text" placeholder="(signed copy to be attached)" disabled>
+          </div>
+          <div class="field">
+            <label>Date <span class="req">*</span></label>
+            <input type="date" formControlName="signDate">
+            <div *ngIf="signature.get('signDate')?.touched && signature.get('signDate')?.errors?.['required']" class="error-text">
+              Signature Date is required.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Row -->
+      <div class="submit-row">
+        <button type="submit" id="submitBtn" [disabled]="!allTermsAccepted() || (loading$ | async)">
+          <span *ngIf="loading$ | async">
+            <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Submitting...
+          </span>
+          <span *ngIf="!(loading$ | async)">Submit Enrollment Form</span>
+        </button>
+        <div class="submit-hint" [class.err]="!allTermsAccepted()" id="submitHint">
+          <span *ngIf="!allTermsAccepted()">
+            Please tick all 6 Terms &amp; Conditions checkboxes above to enable submit.
+          </span>
+          <span *ngIf="allTermsAccepted() && !(loading$ | async)" style="color: var(--primary); font-weight: 600;">
+            All terms acknowledged — you may submit the form.
+          </span>
+        </div>
+      </div>
+
+    </form>
+  </ng-container>
+
+  <!-- Success / Confirmation Screen -->
+  <ng-container *ngIf="success$ | async">
+    <div class="success-card">
+      <div class="success-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h2>Enrollment Successful!</h2>
+      <p>The associate has been successfully registered with MMR Construction &amp; Developers Pvt. Ltd.</p>
+      
+      <div class="id-badge" *ngIf="associateId$ | async as assocId">
+        <div>Associate Unique ID</div>
+        <div>{{ assocId }}</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" (click)="resetForm()">Enroll Another Associate</button>
+        <button class="btn-secondary" routerLink="/associate/dashboard">Go to Dashboard</button>
+      </div>
+    </div>
+  </ng-container>
+</div>

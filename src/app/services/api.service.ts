@@ -97,6 +97,11 @@ export class ApiService {
     return `${BASE_URL}${path.startsWith('/') ? path : '/' + path}`;
   }
 
+  lookupIfsc(ifscCode: string): Observable<any> {
+    const cleanIfsc = String(ifscCode).trim().toUpperCase();
+    return this.http.get(`https://ifsc.razorpay.com/${encodeURIComponent(cleanIfsc)}`);
+  }
+
   // ── Sites & Plots ─────────────────────────────────
   getHomeSliders()              { return this.get('/api/home-sliders'); }
   getSites()                    { return this.get('/api/sites'); }

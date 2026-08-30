@@ -54,6 +54,11 @@ export class InvestorProfileComponent implements OnInit {
   bankErr = '';
   bankSaving = false;
 
+  ifscLoading = false;
+  ifscSuccess = false;
+  ifscError = '';
+  private ifscCache = new Map<string, any>();
+
   passMsg = '';
   passErr = '';
   passSaving = false;
@@ -230,5 +235,63 @@ export class InvestorProfileComponent implements OnInit {
         this.passErr = err.error?.message || 'Failed to change password.';
       }
     });
+  }
+
+  onIfscInput(event: any) {
+    let value = (event.target.value || '').trim().toUpperCase();
+    event.target.value = value;
+    this.bankForm.ifsc_code = value;
+    
+    if (value.length === 11) {
+      this.fetchIfscDetails(value);
+    } else {
+      this.ifscSuccess = false;
+      this.ifscError = '';
+    }
+  }
+
+  fetchIfscDetails(ifsc: string) {
+    const cleanIfsc = ifsc.trim().toUpperCase();
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(cleanIfsc)) {
+      this.ifscError = 'Invalid IFSC format (e.g. SBIN0001234)';
+      this.ifscSuccess = false;
+      return;
+    }
+
+    if (this.ifscCache.has(cleanIfsc)) {
+      this.applyIfscDetails(this.ifscCache.get(cleanIfsc));
+      return;
+    }
+
+    this.ifscLoading = true;
+    this.ifscError = '';
+    this.ifscSuccess = false;
+
+    this.api.lookupIfsc(cleanIfsc).subscribe({
+      next: (res: any) => {
+        this.ifscLoading = false;
+        if (res) {
+          this.ifscCache.set(cleanIfsc, res);
+          this.applyIfscDetails(res);
+        } else {
+          this.ifscError = 'Bank details not found for this IFSC Code.';
+        }
+      },
+      error: (err: any) => {
+        this.ifscLoading = false;
+        if (err.status === 404) {
+          this.ifscError = 'IFSC Code not found.';
+        } else {
+          this.ifscError = 'Unable to fetch bank details right now.';
+        }
+      }
+    });
+  }
+
+  private applyIfscDetails(res: any) {
+    this.ifscSuccess = true;
+    this.ifscError = '';
+    
+    this.bankForm.bank_name = res.BANK || '';
   }
 }

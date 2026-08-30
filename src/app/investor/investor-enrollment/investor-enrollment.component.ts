@@ -21,6 +21,11 @@ export class InvestorEnrollmentComponent implements OnInit {
   submitting: boolean = false;
   isSubmitted: boolean = false;
 
+  ifscLoading = false;
+  ifscSuccess = false;
+  ifscError = '';
+  private ifscCache = new Map<string, any>();
+
   @ViewChild('sigFirstCanvas', { static: false }) sigFirstCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('sigJointCanvas', { static: false }) sigJointCanvas!: ElementRef<HTMLCanvasElement>;
 
@@ -33,6 +38,7 @@ export class InvestorEnrollmentComponent implements OnInit {
 
   ngOnInit() {
     this.initForm();
+    this.prefillProfile();
   }
 
   ngAfterViewInit() {
@@ -73,6 +79,7 @@ export class InvestorEnrollmentComponent implements OnInit {
       txnNo: [''],
       txnDate: [''],
       bankBranch: [''],
+      ifscCode: [''],
       nominees: this.fb.array([this.createNomineeGroup()]),
       declarationCheck: [false, Validators.requiredTrue],
       declDate: ['', Validators.required],
@@ -315,5 +322,130 @@ export class InvestorEnrollmentComponent implements OnInit {
         alert(err.error?.message || 'Failed to submit application.');
       }
     });
+  }
+
+  prefillProfile() {
+    this.api.getProfile().subscribe({
+      next: (res: any) => {
+        if (res.success && res.data) {
+          const u = res.data;
+          
+          let first = '';
+          let middle = '';
+          let surname = '';
+          if (u.full_name) {
+            const parts = u.full_name.trim().split(/\s+/);
+            if (parts.length === 1) {
+              first = parts[0];
+            } else if (parts.length === 2) {
+              first = parts[0];
+              surname = parts[1];
+            } else if (parts.length >= 3) {
+              first = parts[0];
+              middle = parts.slice(1, -1).join(' ');
+              surname = parts[parts.length - 1];
+            }
+          }
+
+          this.enrollmentForm.patchValue({
+            invFirstName: first,
+            invMiddleName: middle,
+            invSurname: surname,
+            mobile: u.mobile_no || '',
+            altTel: u.alternate_mobile || '',
+            email: u.email || '',
+            dob: u.date_of_birth ? u.date_of_birth.split('T')[0] : '',
+            gender: u.gender || '',
+            pan: u.pan_number || '',
+            aadhar: u.aadhar_number || '',
+            address: u.address || '',
+            city: u.city || '',
+            state: u.state || '',
+            pinCode: u.pincode || u.pin_code || '',
+            declSignatureName: u.full_name || '',
+            firstApplicantName: u.full_name || ''
+          });
+
+          // Trigger lookup if IFSC code is available
+          if (u.ifsc_code) {
+            this.enrollmentForm.patchValue({ ifscCode: u.ifsc_code });
+            this.fetchIfscDetails(u.ifsc_code);
+          }
+        }
+      }
+    });
+  }
+
+  onIfscInput(event: any) {
+    let value = (event.target.value || '').trim().toUpperCase();
+    event.target.value = value;
+    
+    if (value.length === 11) {
+      this.fetchIfscDetails(value);
+    } else {
+      this.ifscSuccess = false;
+      this.ifscError = '';
+    }
+  }
+
+  fetchIfscDetails(ifsc: string) {
+    const cleanIfsc = ifsc.trim().toUpperCase();
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(cleanIfsc)) {
+      this.ifscError = 'Invalid IFSC format (e.g. SBIN0001234)';
+      this.ifscSuccess = false;
+      return;
+    }
+
+    if (this.ifscCache.has(cleanIfsc)) {
+      this.applyIfscDetails(this.ifscCache.get(cleanIfsc));
+      return;
+    }
+
+    this.ifscLoading = true;
+    this.ifscError = '';
+    this.ifscSuccess = false;
+
+    this.api.lookupIfsc(cleanIfsc).subscribe({
+      next: (res: any) => {
+        this.ifscLoading = false;
+        if (res) {
+          this.ifscCache.set(cleanIfsc, res);
+          this.applyIfscDetails(res);
+        } else {
+          this.ifscError = 'Bank details not found for this IFSC Code.';
+        }
+      },
+      error: (err: any) => {
+        this.ifscLoading = false;
+        if (err.status === 404) {
+          this.ifscError = 'IFSC Code not found.';
+        } else {
+          this.ifscError = 'Unable to fetch bank details right now.';
+        }
+      }
+    });
+  }
+
+  private applyIfscDetails(res: any) {
+    this.ifscSuccess = true;
+    this.ifscError = '';
+    
+    const bankAndBranch = `${res.BANK || ''} - ${res.BRANCH || ''}`.trim();
+    this.enrollmentForm.patchValue({
+      bankBranch: bankAndBranch,
+      ifscCode: res.IFSC
+    });
+
+    // Try to extract PIN code from address
+    if (res.ADDRESS) {
+      const pinMatch = res.ADDRESS.match(/\b\d{6}\b/);
+      if (pinMatch) {
+        const pin = pinMatch[0];
+        const pinCtrl = this.enrollmentForm.get('pinCode');
+        if (!pinCtrl?.value) {
+          pinCtrl?.setValue(pin);
+        }
+      }
+    }
   }
 }

@@ -68,6 +68,19 @@ export class UserLayoutComponent implements OnInit {
     }
     this._cachedPrefix = p;
 
+    const accountItems: NavItem[] = [
+      { icon: 'fas fa-folder-open', label: 'My Documents', route: `${p}/documents` }
+    ];
+
+    if (p === '/associate' || p === '/customer') {
+      accountItems.push({ icon: 'fas fa-file-contract', label: 'Enrollment Form', route: `${p}/enrollment` });
+    }
+
+    accountItems.push(
+      { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` },
+      { icon: 'fas fa-user-circle', label: 'Profile & KYC', route: `${p}/profile` }
+    );
+
     this.navGroups = [
       {
         label: 'DASHBOARD & OVERVIEW',
@@ -115,12 +128,7 @@ export class UserLayoutComponent implements OnInit {
         label: 'ACCOUNT & PROFILE',
         icon: 'fas fa-user-cog',
         expanded: false,
-        items: [
-          { icon: 'fas fa-folder-open', label: 'My Documents', route: `${p}/documents` },
-          { icon: 'fas fa-file-contract', label: 'Enrollment Form', route: `${p}/enrollment` },
-          { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` },
-          { icon: 'fas fa-user-circle', label: 'Profile & KYC', route: `${p}/profile` },
-        ]
+        items: accountItems
       }
     ];
 

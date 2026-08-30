@@ -1,4 +1,8 @@
 import { Routes } from '@angular/router';
+import { provideState } from '@ngrx/store';
+import { provideEffects } from '@ngrx/effects';
+import { associateEnrollmentReducer } from './associate/enrollment/state/associate-enrollment.reducer';
+import { AssociateEnrollmentEffects } from './associate/enrollment/state/associate-enrollment.effects';
 import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
@@ -203,6 +207,14 @@ export const routes: Routes = [
       { path: 'profile',                component: ProfileComponent },
       { path: 'notifications',          component: NotificationsComponent },
       { path: 'buyback',                component: BuybackComponent },
+      {
+        path: 'enrollment',
+        loadComponent: () => import('./associate/enrollment/associate-enrollment-form.component').then(m => m.AssociateEnrollmentFormComponent),
+        providers: [
+          provideState({ name: 'associateEnrollment', reducer: associateEnrollmentReducer }),
+          provideEffects(AssociateEnrollmentEffects)
+        ]
+      },
     ]
   },
 

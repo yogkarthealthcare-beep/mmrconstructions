@@ -170,7 +170,10 @@
 
             <div class="mb-3">
               <label class="form-label fw-semibold">IFSC Code</label>
-              <input type="text" class="form-control text-uppercase" [(ngModel)]="bankForm.ifsc_code" name="ifsc_code" placeholder="e.g. SBIN0001234" required />
+              <input type="text" class="form-control text-uppercase" [(ngModel)]="bankForm.ifsc_code" name="ifsc_code" placeholder="e.g. SBIN0001234" required (input)="onIfscInput($event)" />
+              <div *ngIf="ifscLoading" class="text-muted" style="font-size: 11px; margin-top: 2px;"><span class="spinner-border spinner-border-sm me-1" style="width: 12px; height: 12px;"></span> Fetching bank details...</div>
+              <div *ngIf="ifscSuccess" class="text-success" style="font-size: 11px; margin-top: 2px;"><i class="fas fa-check-circle"></i> Bank details fetched successfully</div>
+              <div *ngIf="ifscError" class="text-danger" style="font-size: 11px; margin-top: 2px;"><i class="fas fa-times-circle"></i> {{ ifscError }}</div>
             </div>
 
             <button type="submit" class="btn btn-success px-4 py-2 fw-bold" [disabled]="bankSaving">

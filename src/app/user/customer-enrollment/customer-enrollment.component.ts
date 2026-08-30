@@ -26,6 +26,11 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   sigCoPad: any;
   sigAuthPad: any;
 
+  ifscLoading = false;
+  ifscSuccess = false;
+  ifscError = '';
+  private ifscCache = new Map<string, any>();
+
   constructor(
     private fb: FormBuilder,
     private api: ApiService,
@@ -35,6 +40,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.initForm();
+    this.prefillProfile();
   }
 
   ngAfterViewInit() {
@@ -337,5 +343,119 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
         alert(err.error?.message || 'Failed to submit form.');
       }
     });
+  }
+
+  prefillProfile() {
+    this.api.getProfile().subscribe({
+      next: (res: any) => {
+        if (res.success && res.data) {
+          const u = res.data;
+          this.enrollmentForm.patchValue({
+            applicantName: u.full_name || '',
+            dob: u.date_of_birth ? u.date_of_birth.split('T')[0] : '',
+            gender: u.gender || '',
+            fatherName: u.father_name || '',
+            motherName: u.mother_name || '',
+            spouseName: u.spouse_name || '',
+            mobile1: u.mobile_no || '',
+            mobile2: u.alternate_mobile || '',
+            email1: u.email || '',
+            pan: u.pan_number || '',
+            aadhar: u.aadhar_number || '',
+            presentAddress: u.address || '',
+            presentCity: u.city || '',
+            presentStatePin: u.pincode || u.pin_code || '',
+            permanentAddress: u.address || '',
+            permanentCity: u.city || '',
+            permanentStatePin: u.pincode || u.pin_code || '',
+            accHolderName: u.account_holder_name || u.full_name || '',
+            accNumber: u.account_number || '',
+            ifscCode: u.ifsc_code || ''
+          });
+
+          // Trigger IFSC lookup if code is already present
+          if (u.ifsc_code) {
+            this.fetchIfscDetails(u.ifsc_code);
+          }
+        }
+      }
+    });
+  }
+
+  onIfscInput(event: any) {
+    let value = (event.target.value || '').trim().toUpperCase();
+    event.target.value = value;
+    
+    if (value.length === 11) {
+      this.fetchIfscDetails(value);
+    } else {
+      this.ifscSuccess = false;
+      this.ifscError = '';
+    }
+  }
+
+  fetchIfscDetails(ifsc: string) {
+    const cleanIfsc = ifsc.trim().toUpperCase();
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(cleanIfsc)) {
+      this.ifscError = 'Invalid IFSC format (e.g. SBIN0001234)';
+      this.ifscSuccess = false;
+      return;
+    }
+
+    if (this.ifscCache.has(cleanIfsc)) {
+      this.applyIfscDetails(this.ifscCache.get(cleanIfsc));
+      return;
+    }
+
+    this.ifscLoading = true;
+    this.ifscError = '';
+    this.ifscSuccess = false;
+
+    this.api.lookupIfsc(cleanIfsc).subscribe({
+      next: (res: any) => {
+        this.ifscLoading = false;
+        if (res) {
+          this.ifscCache.set(cleanIfsc, res);
+          this.applyIfscDetails(res);
+        } else {
+          this.ifscError = 'Bank details not found for this IFSC Code.';
+        }
+      },
+      error: (err: any) => {
+        this.ifscLoading = false;
+        if (err.status === 404) {
+          this.ifscError = 'IFSC Code not found.';
+        } else {
+          this.ifscError = 'Unable to fetch bank details right now.';
+        }
+      }
+    });
+  }
+
+  private applyIfscDetails(res: any) {
+    this.ifscSuccess = true;
+    this.ifscError = '';
+    
+    const bankAndBranch = `${res.BANK || ''} - ${res.BRANCH || ''}`.trim();
+    this.enrollmentForm.patchValue({
+      accBankBranch: bankAndBranch,
+      ifscCode: res.IFSC
+    });
+
+    // Try to extract PIN code from address
+    if (res.ADDRESS) {
+      const pinMatch = res.ADDRESS.match(/\b\d{6}\b/);
+      if (pinMatch) {
+        const pin = pinMatch[0];
+        const presentPin = this.enrollmentForm.get('presentStatePin');
+        if (!presentPin?.value) {
+          presentPin?.setValue(pin);
+        }
+        const permPin = this.enrollmentForm.get('permanentStatePin');
+        if (!permPin?.value) {
+          permPin?.setValue(pin);
+        }
+      }
+    }
   }
 }
