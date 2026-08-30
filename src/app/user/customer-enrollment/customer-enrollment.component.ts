@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   enrollmentForm!: FormGroup;
   submitting = false;
+  isSubmitted = false;
   showModal = false;
   showToast = false;
   toastMsg = '';
@@ -328,15 +329,11 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       next: (res: any) => {
         this.submitting = false;
         this.showModal = false;
+        this.isSubmitted = true;
+        this.enrollmentForm.disable(); // Disable form after successful submission
         this.toastMsg = 'Application submitted successfully!';
         this.showToast = true;
         setTimeout(() => this.showToast = false, 3000);
-        this.enrollmentForm.reset();
-        this.photo1DataUrl = '';
-        this.photo2DataUrl = '';
-        this.clearSig('sole');
-        this.clearSig('co');
-        this.clearSig('auth');
       },
       error: (err: any) => {
         this.submitting = false;
