@@ -31,6 +31,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   ifscLoading = false;
   ifscSuccess = false;
   ifscError = '';
+  printing = false;
   private ifscCache = new Map<string, any>();
 
   // Signal to drive the T&C checkboxes computed state
@@ -359,5 +360,28 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         }
       }
     }
+  }
+
+  downloadPdf(associateId: string) {
+    if (this.printing) return;
+    this.printing = true;
+
+    this.api.downloadAssociatePdf(associateId).subscribe({
+      next: (blob: Blob) => {
+        this.printing = false;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MMR-Associate-${associateId}-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err: any) => {
+        this.printing = false;
+        alert('Failed to download PDF. Please try again from the dashboard.');
+      }
+    });
   }
 }

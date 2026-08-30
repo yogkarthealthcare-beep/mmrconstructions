@@ -506,8 +506,12 @@
         <div>{{ assocId }}</div>
       </div>
 
-      <div class="btn-row">
+      <div class="btn-row" *ngIf="associateId$ | async as assocId">
         <button class="btn-primary" (click)="resetForm()">Enroll Another Associate</button>
+        <button class="btn-secondary" (click)="downloadPdf(assocId)" [disabled]="printing" style="background-color: #14532d; color: white; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i>
+          {{ printing ? 'Generating PDF...' : 'Download / Print Form' }}
+        </button>
         <button class="btn-secondary" routerLink="/associate/dashboard">Go to Dashboard</button>
       </div>
     </div>

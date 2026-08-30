@@ -102,6 +102,12 @@ export class ApiService {
     return this.http.get(`https://ifsc.razorpay.com/${encodeURIComponent(cleanIfsc)}`);
   }
 
+  downloadAssociatePdf(id: string): Observable<Blob> {
+    return this.http.get(this.url(`/api/associate-enrollment/${id}/print`), {
+      responseType: 'blob'
+    });
+  }
+
   // ── Sites & Plots ─────────────────────────────────
   getHomeSliders()              { return this.get('/api/home-sliders'); }
   getSites()                    { return this.get('/api/sites'); }
