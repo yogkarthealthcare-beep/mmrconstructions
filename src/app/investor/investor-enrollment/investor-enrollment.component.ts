@@ -20,6 +20,8 @@ export class InvestorEnrollmentComponent implements OnInit {
   modalAgreeCheck: boolean = false;
   submitting: boolean = false;
   isSubmitted: boolean = false;
+  enrollmentId: string | null = null;
+  printing: boolean = false;
 
   ifscLoading = false;
   ifscSuccess = false;
@@ -38,7 +40,7 @@ export class InvestorEnrollmentComponent implements OnInit {
 
   ngOnInit() {
     this.initForm();
-    this.prefillProfile();
+    this.checkEnrollmentStatus();
   }
 
   ngAfterViewInit() {
@@ -314,6 +316,7 @@ export class InvestorEnrollmentComponent implements OnInit {
         this.submitting = false;
         this.showModal = false;
         this.isSubmitted = true;
+        this.enrollmentId = res.data?.id || null;
         this.enrollmentForm.disable(); // Lock the form to show it's finalized
         alert('Application submitted successfully!');
       },
@@ -447,5 +450,93 @@ export class InvestorEnrollmentComponent implements OnInit {
         }
       }
     }
+  }
+
+  checkEnrollmentStatus() {
+    this.api.getInvestorEnrollment().subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.data) {
+          const enroll = res.data;
+          this.isSubmitted = true;
+          this.enrollmentId = enroll.id;
+          
+          this.enrollmentForm.disable();
+          
+          this.enrollmentForm.patchValue({
+            formNo: enroll.form_no,
+            formDate: enroll.form_date ? new Date(enroll.form_date).toISOString().split('T')[0] : '',
+            branchCode: enroll.branch_code,
+            branchName: enroll.branch_name,
+            investorId: enroll.investor_enrollment_id,
+            projectName: enroll.project_name,
+            invFirstName: enroll.inv_first_name,
+            invMiddleName: enroll.inv_middle_name || '',
+            invSurname: enroll.inv_surname || '',
+            fhFirstName: enroll.fh_first_name,
+            fhMiddleName: enroll.fh_middle_name || '',
+            fhSurname: enroll.fh_surname || '',
+            dob: enroll.dob ? new Date(enroll.dob).toISOString().split('T')[0] : '',
+            age: enroll.age,
+            gender: enroll.gender,
+            occupation: enroll.occupation,
+            occupationOther: enroll.occupation_other || '',
+            address: enroll.address,
+            city: enroll.city,
+            state: enroll.state,
+            pinCode: enroll.pin_code,
+            mobile: enroll.mobile,
+            altTel: enroll.alt_tel || '',
+            email: enroll.email || '',
+            pan: enroll.pan || '',
+            aadhar: enroll.aadhar || '',
+            amount: enroll.amount,
+            amountWords: enroll.amount_words,
+            paymentMode: enroll.payment_mode,
+            txnNo: enroll.txn_no || '',
+            txnDate: enroll.txn_date ? new Date(enroll.txn_date).toISOString().split('T')[0] : '',
+            bankBranch: enroll.bank_branch || '',
+            declarationCheck: true,
+            declDate: enroll.decl_date ? new Date(enroll.decl_date).toISOString().split('T')[0] : '',
+            declPlace: enroll.decl_place,
+            declSignatureName: enroll.decl_signature_name,
+            firstApplicantName: enroll.first_applicant_name,
+            jointApplicantName: enroll.joint_applicant_name || ''
+          });
+
+          if (enroll.photo_url) {
+            this.photoDataUrl = enroll.photo_url;
+          }
+        } else {
+          this.prefillProfile();
+        }
+      },
+      error: () => {
+        this.prefillProfile();
+      }
+    });
+  }
+
+  downloadPdf() {
+    if (!this.enrollmentId) return;
+    if (this.printing) return;
+    this.printing = true;
+
+    this.api.downloadInvestorPdf(this.enrollmentId).subscribe({
+      next: (blob: Blob) => {
+        this.printing = false;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MMR-Investor-${this.enrollmentForm.get('investorId')?.value}-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err: any) => {
+        this.printing = false;
+        alert('Failed to download PDF. Please try again.');
+      }
+    });
   }
 }

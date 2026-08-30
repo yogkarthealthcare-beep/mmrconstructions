@@ -108,6 +108,16 @@ export class ApiService {
     });
   }
 
+  getInvestorEnrollment() {
+    return this.get('/api/investor/enroll/my');
+  }
+
+  downloadInvestorPdf(id: string): Observable<Blob> {
+    return this.http.get(this.url(`/api/investor/enrollment/${id}/print`), {
+      responseType: 'blob'
+    });
+  }
+
   // ── Sites & Plots ─────────────────────────────────
   getHomeSliders()              { return this.get('/api/home-sliders'); }
   getSites()                    { return this.get('/api/sites'); }
