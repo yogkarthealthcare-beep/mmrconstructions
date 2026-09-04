@@ -175,15 +175,18 @@ export class AdminInvestorPortalComponent implements OnInit {
   }
 
   loginAsInvestor(investor: any) {
-    if (investor.status !== 'active' || !investor.is_verified) {
-      alert(`Cannot login: investor status is '${investor.status}' (verified: ${investor.is_verified})`);
+    const status = String(investor.status || '').toLowerCase();
+    const isActive = status === 'active' || status === 'approved';
+    if (!isActive) {
+      alert(`Cannot login: investor status is '${investor.status}' (must be Active/Approved)`);
       return;
     }
     this.api.adminLoginAsUser(investor.id, 'Investor').subscribe({
       next: (res: any) => {
         if (res?.success && res?.data?.token) {
           const { token, refresh_token, user, redirect_url } = res.data;
-          const url = `/auth/impersonate-login?token=${encodeURIComponent(token)}&refresh_token=${encodeURIComponent(refresh_token || token)}&user=${encodeURIComponent(JSON.stringify(user))}&type=Investor&redirectUrl=${encodeURIComponent(redirect_url || '/investor/dashboard')}`;
+          const userPayload = user || { id: investor.id, full_name: investor.full_name, email: investor.email, user_type: 'Investor', account_status: 'Active' };
+          const url = `/auth/impersonate-login?token=${encodeURIComponent(token)}&refresh_token=${encodeURIComponent(refresh_token || token)}&user=${encodeURIComponent(JSON.stringify(userPayload))}&type=Investor&redirectUrl=${encodeURIComponent(redirect_url || '/investor/dashboard')}`;
           window.open(url, '_blank');
         } else {
           alert(res?.message || 'Login failed');

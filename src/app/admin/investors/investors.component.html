@@ -46,29 +46,87 @@
   </div>
 </div>
 
-<div class="modal-bg" *ngIf="showForm" (click)="showForm=false">
+<div class="modal-bg" *ngIf="showForm" (click)="showForm=false; showDropdown=false">
   <form class="investor-modal" (click)="$event.stopPropagation()" (ngSubmit)="save()">
-    <h5>{{editing?'Edit Profile':'Add Investor'}}</h5>
+    <h5>{{editing ? 'Edit Profile' : 'Add Investor'}}</h5>
     <div class="preview">
-      <img *ngIf="preview" [src]="preview">
+      <img *ngIf="preview" [src]="preview" alt="Preview">
       <i *ngIf="!preview" class="fas fa-user"></i>
     </div>
-    <label>Investor Name *</label>
-    <input class="form-control" name="name" [(ngModel)]="form.name">
-    <div style="font-size:11px; color:#666; margin-bottom:15px; margin-top:-8px;">
-      <i class="fas fa-info-circle text-primary"></i> Type the exact name of a registered investor to link their email/contact.
+
+    <!-- Searchable Registered Investor Dropdown for Add Mode -->
+    <div class="position-relative mb-2" *ngIf="!editing">
+      <label class="form-label fw-bold fs-12 mb-1">Select Registered Investor *</label>
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+        <input class="form-control border-start-0"
+               name="searchInvestor"
+               [(ngModel)]="investorSearchTerm"
+               (focus)="showDropdown = true"
+               (input)="showDropdown = true"
+               placeholder="Search by Sponsor ID or Investor Name..."
+               autocomplete="off">
+        <button type="button" class="btn btn-outline-secondary" (click)="showDropdown = !showDropdown">
+          <i class="fas" [ngClass]="showDropdown ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </button>
+      </div>
+
+      <!-- Dropdown Results -->
+      <div class="dropdown-menu show w-100 shadow-sm border mt-1"
+           style="max-height: 220px; overflow-y: auto; z-index: 2100; display: block;"
+           *ngIf="showDropdown">
+        <div *ngIf="filteredRegisteredInvestors.length === 0" class="p-2 text-muted fs-12 text-center">
+          No registered investors found.
+        </div>
+        <button type="button"
+                class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between text-start"
+                *ngFor="let inv of filteredRegisteredInvestors"
+                (click)="selectInvestor(inv)">
+          <div>
+            <div class="fw-bold fs-13 text-dark">{{ inv.full_name }}</div>
+            <div class="fs-11 text-muted">
+              <span class="badge bg-secondary me-1">Sponsor: {{ inv.sponsor_invite_code || 'MMR00001' }}</span>
+              <span>{{ inv.mobile_number || inv.email }}</span>
+            </div>
+          </div>
+          <span class="badge" [ngClass]="inv.profile_picture_url ? 'bg-success' : 'bg-warning text-dark'">
+            {{ inv.profile_picture_url ? 'Photo Added' : 'No Photo' }}
+          </span>
+        </button>
+      </div>
+      <div style="font-size:11px; color:#666; margin-top: 4px;">
+        <i class="fas fa-info-circle text-primary me-1"></i> Search and select by Sponsor ID or Name.
+      </div>
     </div>
-    
-    <label>Profile Image {{editing?'':'*'}}</label>
-    <input class="form-control" type="file" accept="image/jpeg,image/png,image/webp" (change)="choose($event)">
-    <label>Display Order</label>
-    <input class="form-control" type="number" name="order" [(ngModel)]="form.display_order">
+
+    <!-- Edit Name input -->
+    <div *ngIf="editing" class="mb-2">
+      <label class="form-label fw-bold fs-12 mb-1">Investor Name *</label>
+      <input class="form-control" name="name" [(ngModel)]="form.name" required>
+    </div>
+
+    <!-- Profile Photo Upload -->
+    <div class="mb-2">
+      <label class="form-label fw-bold fs-12 mb-1">Profile Photo {{ (editing || preview) ? '' : '*' }}</label>
+      <input class="form-control" type="file" accept="image/jpeg,image/png,image/webp" (change)="choose($event)">
+      <div style="font-size:11px; color:#666; margin-top: 4px;">
+        <i class="fas fa-camera text-gold me-1"></i> Upload profile photo (JPG, PNG or WEBP).
+      </div>
+    </div>
+
+    <div class="mb-2">
+      <label class="form-label fw-bold fs-12 mb-1">Display Order</label>
+      <input class="form-control" type="number" name="order" [(ngModel)]="form.display_order">
+    </div>
+
     <label class="check">
       <input type="checkbox" name="active" [(ngModel)]="form.is_active"> Active
     </label>
-    <div class="alert alert-danger" *ngIf="error">{{error}}</div>
+
+    <div class="alert alert-danger mt-2" *ngIf="error">{{error}}</div>
+
     <div class="actions">
-      <button type="button" class="btn btn-light" (click)="showForm=false">Cancel</button>
+      <button type="button" class="btn btn-light" (click)="showForm=false; showDropdown=false">Cancel</button>
       <button class="btn btn-green" [disabled]="saving">{{saving?'Saving...':'Save Profile'}}</button>
     </div>
   </form>

@@ -15,6 +15,7 @@ import { CustomerEnrollmentComponent } from './user/customer-enrollment/customer
 import { SignupComponent } from './pages/signup/signup.component';
 import { VerifyOtpComponent } from './pages/verify-otp/verify-otp.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
+import { ImpersonateLoginComponent } from './pages/impersonate-login/impersonate-login.component';
 
 // Admin
 import { adminGuard } from './shared/guards/admin.guard';
@@ -102,6 +103,8 @@ export const routes: Routes = [
   { path: 'register-old',         component: RegisterComponent },
   { path: 'verify-otp',           component: VerifyOtpComponent },
   { path: 'forgot-password',       component: ForgotPasswordComponent },
+  { path: 'auth/impersonate-login', component: ImpersonateLoginComponent },
+  { path: 'impersonate-login',      component: ImpersonateLoginComponent },
   { path: 'admin-login',          component: AdminLoginComponent },
   { path: 'investors',            component: AllInvestorsComponent },
   { path: 'blog',                 component: BlogListComponent },

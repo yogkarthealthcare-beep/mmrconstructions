@@ -320,7 +320,7 @@ export class ApiService {
   adminUpdateInvestorPortalDepositStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/deposits/${id}`, data, true); }
   adminUpdateInvestorPortalWithdrawalStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/withdrawals/${id}`, data, true); }
   adminUpdateInvestorPortalStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/${id}/status`, data, true); }
-  adminLoginAsUser(id: number, role: string) { return this.post('/api/admin/auth/impersonate', { user_id: id, role }, true); }
+  adminLoginAsUser(id: number, role: string) { return this.post('/api/admin/login-as-user', { user_id: id, user_type: role, role }, true); }
   adminGetInvestors() { return this.get('/api/admin/investors', {}, true); }
   adminUpdateInvestor(id: number, data: any) { return this.putForm(`/api/admin/investors/${id}`, data, true); }
   adminCreateInvestor(data: any) { return this.postForm('/api/admin/investors', data, true); }
