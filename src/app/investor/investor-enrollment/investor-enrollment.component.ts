@@ -1,7 +1,9 @@
 import { Component, OnInit, ViewChild, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-investor-enrollment',
@@ -13,6 +15,8 @@ import { ApiService } from '../../services/api.service';
 export class InvestorEnrollmentComponent implements OnInit {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
   enrollmentForm!: FormGroup;
   photoDataUrl: string = '';
@@ -317,14 +321,20 @@ export class InvestorEnrollmentComponent implements OnInit {
         this.showModal = false;
         this.isSubmitted = true;
         this.enrollmentId = res.data?.id || null;
+        this.auth.setEnrollmentCompleted();
         this.enrollmentForm.disable(); // Lock the form to show it's finalized
         alert('Application submitted successfully!');
+        this.goToDashboard();
       },
       error: (err: any) => {
         this.submitting = false;
         alert(err.error?.message || 'Failed to submit application.');
       }
     });
+  }
+
+  goToDashboard() {
+    this.router.navigate(['/investor/dashboard']);
   }
 
   prefillProfile() {
@@ -459,6 +469,7 @@ export class InvestorEnrollmentComponent implements OnInit {
           const enroll = res.data;
           this.isSubmitted = true;
           this.enrollmentId = enroll.id;
+          this.auth.setEnrollmentCompleted();
           
           this.enrollmentForm.disable();
           

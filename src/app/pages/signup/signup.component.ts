@@ -65,22 +65,21 @@ export class SignupComponent implements OnInit {
         this.selectRole('Customer');
       }
 
-      const referralCode = params['ref'] || params['sponsor'] || params['sponsor_invite_code'];
-      if (referralCode) {
-        this.form.sponsor_invite_code = String(referralCode).trim().toUpperCase();
+      const rawRef = params['ref'] ?? params['sponsor'] ?? params['sponsor_invite_code'];
+      const cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
+
+      if (cleanRef) {
+        // Condition 1: URL has a valid non-empty ref -> Priority to URL referral
+        this.form.sponsor_invite_code = cleanRef;
         this.referralLocked = true;
-        localStorage.setItem('mmr_referral_code', this.form.sponsor_invite_code);
-        this.api.trackReferralCode(this.form.sponsor_invite_code).subscribe({ error: () => {} });
-        this.verifySponsor();
+        localStorage.setItem('mmr_referral_code', cleanRef);
+        this.api.trackReferralCode(cleanRef).subscribe({ error: () => {} });
+        this.verifySponsor(cleanRef);
       } else {
-        const cached = localStorage.getItem('mmr_referral_code');
-        if (cached) {
-          this.form.sponsor_invite_code = cached.toUpperCase();
-          this.verifySponsor();
-        } else {
-          this.form.sponsor_invite_code = 'MMR00001';
-          this.verifySponsor();
-        }
+        // Condition 2 & 3: ref is missing, blank, or empty -> Fallback to default sponsor MMR3001 (Suraj Kumar Verma)
+        this.form.sponsor_invite_code = 'MMR3001';
+        this.referralLocked = false;
+        this.verifySponsor('MMR3001');
       }
     });
   }
@@ -93,7 +92,10 @@ export class SignupComponent implements OnInit {
     this.userType = role;
     this.roleSelected = true;
     this.error = '';
-    this.verifySponsor();
+    if (!this.form.sponsor_invite_code) {
+      this.form.sponsor_invite_code = 'MMR3001';
+    }
+    this.verifySponsor(this.form.sponsor_invite_code);
   }
 
   goBackToRoleSelection() {
@@ -103,7 +105,7 @@ export class SignupComponent implements OnInit {
   }
 
   resetForm() {
-    const currentSponsor = this.form.sponsor_invite_code;
+    const currentSponsor = this.form.sponsor_invite_code || 'MMR3001';
     this.form = {
       full_name: '',
       email: '',
@@ -118,28 +120,24 @@ export class SignupComponent implements OnInit {
 
   // ── Sponsor Live Validation & Role Rules ──
   onSponsorCodeInput(value: string) {
-    this.form.sponsor_invite_code = value.replace(/\*/g, '').trim().toUpperCase();
-    this.verifySponsor();
+    const clean = (value || '').replace(/\*/g, '').trim().toUpperCase();
+    this.form.sponsor_invite_code = clean;
+    if (!clean) {
+      // If user clears the input, fallback to MMR3001
+      this.form.sponsor_invite_code = 'MMR3001';
+      this.verifySponsor('MMR3001');
+    } else {
+      this.verifySponsor(clean);
+    }
   }
 
   verifySponsor(code?: string) {
     const rawCode = code !== undefined ? code : this.form.sponsor_invite_code;
-    const cleanCode = (rawCode || '').replace(/\*/g, '').trim().toUpperCase();
+    let cleanCode = (rawCode || '').replace(/\*/g, '').trim().toUpperCase();
 
     if (!cleanCode) {
-      if (this.userType === 'Customer') {
-        // Customer: Sponsor is optional with Admin fallback
-        this.sponsorValid = true;
-        this.sponsorName = 'Admin Sponsor (Default)';
-        this.sponsorCodeFormatted = 'MMR00001';
-        delete this.v['sponsor_invite_code'];
-      } else {
-        // Investor / Associate: Sponsor is mandatory
-        this.sponsorValid = false;
-        this.sponsorName = '';
-        this.sponsorCodeFormatted = '';
-      }
-      return;
+      cleanCode = 'MMR3001';
+      this.form.sponsor_invite_code = 'MMR3001';
     }
 
     this.sponsorChecking = true;
@@ -152,8 +150,14 @@ export class SignupComponent implements OnInit {
         this.sponsorChecking = false;
         if (res?.success && res?.data?.valid) {
           this.sponsorValid = true;
-          this.sponsorName = res.data.full_name || 'Verified Associate';
+          this.sponsorName = res.data.full_name || (cleanCode === 'MMR3001' ? 'Suraj Kumar Verma' : 'Verified Associate');
           this.sponsorCodeFormatted = res.data.invitation_code || res.data.member_id || cleanCode;
+        } else if (cleanCode === 'MMR3001') {
+          // Default Sponsor Fallback Guarantee
+          this.sponsorValid = true;
+          this.sponsorName = 'Suraj Kumar Verma (Default Sponsor)';
+          this.sponsorCodeFormatted = 'MMR3001';
+          delete this.v['sponsor_invite_code'];
         } else {
           this.sponsorValid = false;
           this.v['sponsor_invite_code'] = '✕ Sponsor not available';
@@ -161,8 +165,16 @@ export class SignupComponent implements OnInit {
       },
       error: () => {
         this.sponsorChecking = false;
-        this.sponsorValid = false;
-        this.v['sponsor_invite_code'] = '✕ Sponsor not available';
+        if (cleanCode === 'MMR3001') {
+          // Default Sponsor Fallback Guarantee
+          this.sponsorValid = true;
+          this.sponsorName = 'Suraj Kumar Verma (Default Sponsor)';
+          this.sponsorCodeFormatted = 'MMR3001';
+          delete this.v['sponsor_invite_code'];
+        } else {
+          this.sponsorValid = false;
+          this.v['sponsor_invite_code'] = '✕ Sponsor not available';
+        }
       }
     });
   }
@@ -278,7 +290,7 @@ export class SignupComponent implements OnInit {
 
   private getEffectiveSponsorCode(): string {
     const code = this.form.sponsor_invite_code.replace(/\*/g, '').trim().toUpperCase();
-    return code || 'MMR00001'; // Admin fallback for Customer
+    return code || 'MMR3001'; // Default sponsor fallback (Suraj Kumar Verma)
   }
 
   submit() {

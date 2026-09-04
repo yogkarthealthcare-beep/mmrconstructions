@@ -20,6 +20,22 @@
 
     <div class="form-title">Associate Enrollment Form</div>
 
+    <!-- Read-Only Banner when already submitted -->
+    <div *ngIf="isSubmitted && !(success$ | async)" class="section" style="background: #e8f5e9; border: 1px solid #c8e6c9; color: #2e7d32; font-weight: 600; padding: 14px 20px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-check-circle" style="font-size: 20px;"></i>
+        <span>Enrollment Completed (Read-Only Mode) <span *ngIf="submissionAssociateId">— Associate ID: <strong>{{ submissionAssociateId }}</strong></span></span>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button type="button" routerLink="/associate/dashboard" style="background: #1e3a8a; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <i class="fas fa-th-large"></i> Go to Dashboard
+        </button>
+        <button *ngIf="submissionAssociateId" type="button" (click)="downloadPdf(submissionAssociateId)" [disabled]="printing" style="background: #14532d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i> Download PDF
+        </button>
+      </div>
+    </div>
+
     <!-- Error Alert from store if API fails -->
     <div *ngIf="error$ | async as errMsg" class="section" style="border-color: var(--danger); background: #fdf2f2; color: var(--danger); font-weight: 600; padding: 12px 20px; border-radius: 8px;">
       <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
@@ -472,7 +488,7 @@
       </div>
 
       <!-- Submit Row -->
-      <div class="submit-row">
+      <div class="submit-row" *ngIf="!isSubmitted">
         <button type="submit" id="submitBtn" [disabled]="!allTermsAccepted() || (loading$ | async)">
           <span *ngIf="loading$ | async">
             <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Submitting...
@@ -487,6 +503,19 @@
             All terms acknowledged — you may submit the form.
           </span>
         </div>
+      </div>
+
+      <div class="submit-row" *ngIf="isSubmitted" style="display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 25px;">
+        <div style="background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; padding: 12px 24px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-check-circle"></i> Enrollment Submitted (Read-Only)
+        </div>
+        <button type="button" routerLink="/associate/dashboard" style="background-color: var(--primary, #1e3a8a); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-th-large"></i> Go to Dashboard
+        </button>
+        <button *ngIf="submissionAssociateId" type="button" (click)="downloadPdf(submissionAssociateId)" [disabled]="printing" style="background-color: #14532d; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+          <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i>
+          {{ printing ? 'Generating PDF...' : 'Download / Print Form' }}
+        </button>
       </div>
 
     </form>

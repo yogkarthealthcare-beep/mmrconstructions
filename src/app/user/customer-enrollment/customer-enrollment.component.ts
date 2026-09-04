@@ -245,16 +245,25 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
         this.submitting = false;
         this.isSubmitted = true;
         this.submissionId = res.data?.id || null;
+        this.auth.setEnrollmentCompleted();
         this.enrollmentForm.disable(); // Disable form after successful submission
-        this.toastMsg = 'Application submitted successfully!';
+        this.toastMsg = 'Application submitted successfully! Redirecting to dashboard...';
         this.showToast = true;
-        setTimeout(() => this.showToast = false, 3000);
+        setTimeout(() => {
+          this.showToast = false;
+          this.goToDashboard();
+        }, 2000);
       },
       error: (err: any) => {
         this.submitting = false;
         alert(err.error?.message || 'Failed to submit form.');
       }
     });
+  }
+
+  goToDashboard() {
+    const role = this.auth.getUserRolePrefix();
+    this.router.navigate([`/${role}/dashboard`]);
   }
 
   autoFillDemoData() {
@@ -455,6 +464,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
           const enroll = res.data[0];
           this.isSubmitted = true;
           this.submissionId = enroll.id;
+          this.auth.setEnrollmentCompleted();
           
           this.enrollmentForm.disable();
           

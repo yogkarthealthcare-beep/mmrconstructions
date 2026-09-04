@@ -187,6 +187,40 @@ export class AuthService {
     }
   }
 
+  isEnrollmentCompleted(): boolean {
+    if (this.isInvestorLoggedIn()) {
+      const inv = this.getInvestorUser();
+      const status = String(inv?.enrollment_status || '').toLowerCase();
+      return status === 'completed';
+    }
+    const user = this.getUser();
+    if (!user) return false;
+    const status = String(user?.enrollment_status || '').toLowerCase();
+    return status === 'completed';
+  }
+
+  setEnrollmentCompleted() {
+    if (this.isInvestorLoggedIn()) {
+      const inv = this.getInvestorUser() || {};
+      inv.enrollment_status = 'completed';
+      this.updateInvestorUser(inv);
+    } else {
+      const user = this.getUser() || {};
+      user.enrollment_status = 'completed';
+      this.saveAuthItem('mmr_user', JSON.stringify(user));
+      this._user$.next(user);
+    }
+  }
+
+  getUserRolePrefix(): string {
+    if (this.isInvestorLoggedIn()) return '/investor';
+    const user = this.getUser();
+    const type = String(user?.user_type || user?.role || '').toLowerCase();
+    if (type.includes('associate')) return '/associate';
+    if (type.includes('investor')) return '/investor';
+    return '/customer';
+  }
+
   handleAuthExpired(scope?: string, _url?: string) {
     if (scope === 'admin') {
       this.logoutAdmin();

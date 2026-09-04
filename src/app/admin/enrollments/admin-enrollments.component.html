@@ -1,0 +1,728 @@
+<div class="enrollments-page">
+  <!-- Top Header Section -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <i class="fas fa-id-card"></i>
+      </div>
+      <div>
+        <h1 class="page-title">Enrollment Management</h1>
+        <p class="page-subtitle">Centralized review, verification, and administrative management for all enrollments</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="loadData(); loadStats()">
+        <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- 3 Category Cards -->
+  <div class="category-cards-grid">
+    <!-- Customer Card -->
+    <div class="category-card" [class.active]="activeCategory === 'customer'" (click)="setCategory('customer')">
+      <div class="card-icon-wrap customer-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="card-info">
+        <h3>Customer Enrollments</h3>
+        <span class="card-sub">Property Buyers & Plots</span>
+        <div class="card-stats-row">
+          <div class="stat-pill total">
+            <span class="label">Total</span>
+            <span class="val">{{ stats.customer.total }}</span>
+          </div>
+          <div class="stat-pill completed">
+            <span class="label">Completed</span>
+            <span class="val">{{ stats.customer.completed }}</span>
+          </div>
+          <div class="stat-pill pending">
+            <span class="label">Pending</span>
+            <span class="val">{{ stats.customer.pending }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-indicator" *ngIf="activeCategory === 'customer'">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+
+    <!-- Associate Card -->
+    <div class="category-card" [class.active]="activeCategory === 'associate'" (click)="setCategory('associate')">
+      <div class="card-icon-wrap associate-icon">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="card-info">
+        <h3>Associate Enrollments</h3>
+        <span class="card-sub">Business Partners & Agents</span>
+        <div class="card-stats-row">
+          <div class="stat-pill total">
+            <span class="label">Total</span>
+            <span class="val">{{ stats.associate.total }}</span>
+          </div>
+          <div class="stat-pill completed">
+            <span class="label">Completed</span>
+            <span class="val">{{ stats.associate.completed }}</span>
+          </div>
+          <div class="stat-pill pending">
+            <span class="label">Pending</span>
+            <span class="val">{{ stats.associate.pending }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-indicator" *ngIf="activeCategory === 'associate'">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+
+    <!-- Investor Card -->
+    <div class="category-card" [class.active]="activeCategory === 'investor'" (click)="setCategory('investor')">
+      <div class="card-icon-wrap investor-icon">
+        <i class="fas fa-file-invoice-dollar"></i>
+      </div>
+      <div class="card-info">
+        <h3>Investor Enrollments</h3>
+        <span class="card-sub">Fixed & Growth Investors</span>
+        <div class="card-stats-row">
+          <div class="stat-pill total">
+            <span class="label">Total</span>
+            <span class="val">{{ stats.investor.total }}</span>
+          </div>
+          <div class="stat-pill completed">
+            <span class="label">Completed</span>
+            <span class="val">{{ stats.investor.completed }}</span>
+          </div>
+          <div class="stat-pill pending">
+            <span class="label">Pending</span>
+            <span class="val">{{ stats.investor.pending }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-indicator" *ngIf="activeCategory === 'investor'">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="filter-panel">
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (keyup.enter)="onSearch()"
+        placeholder="Search by Name, Application No, Sponsor ID, Phone, Email..." 
+      />
+      <button *ngIf="searchQuery" class="clear-btn" (click)="searchQuery = ''; onSearch()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="filter-group">
+      <select [(ngModel)]="statusFilter" (change)="onSearch()">
+        <option value="">All Statuses</option>
+        <option value="Completed">Completed Only</option>
+        <option value="Pending">Pending Only</option>
+      </select>
+
+      <button class="btn btn-primary" (click)="onSearch()">
+        <i class="fas fa-filter"></i> Apply
+      </button>
+
+      <button class="btn btn-secondary" (click)="resetFilter()">
+        <i class="fas fa-undo"></i> Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Table Container -->
+  <div class="table-container">
+    <div *ngIf="loading" class="loading-state">
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
+      <p>Loading enrollment records...</p>
+    </div>
+
+    <div *ngIf="!loading && items.length === 0" class="empty-state">
+      <i class="fas fa-folder-open fa-3x"></i>
+      <h3>No Enrollment Records Found</h3>
+      <p>Try refining your search keyword or changing the filter parameters.</p>
+    </div>
+
+    <!-- ================= CUSTOMER TABLE ================= -->
+    <table *ngIf="!loading && items.length > 0 && activeCategory === 'customer'" class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Applicant Name &amp; App No</th>
+          <th>Contact &amp; Email</th>
+          <th>Project &amp; Property</th>
+          <th>Total Value</th>
+          <th>Sponsor / Associate</th>
+          <th>Enrollment Status</th>
+          <th>Submitted At</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of items; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <div class="applicant-cell">
+              <strong>{{ item.applicant_name || item.full_name || 'N/A' }}</strong>
+              <span class="badge-sub">{{ item.application_no || item.user_id || 'Pending App' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="contact-cell">
+              <span><i class="fas fa-phone-alt"></i> {{ item.mobile_1 || item.mobile_no || 'N/A' }}</span>
+              <small *ngIf="item.email_1 || item.email"><i class="fas fa-envelope"></i> {{ item.email_1 || item.email }}</small>
+            </div>
+          </td>
+          <td>
+            <div class="project-cell">
+              <span class="project-title">{{ item.project_name || '—' }}</span>
+              <span class="prop-type">{{ item.property_type || '—' }} <span *ngIf="item.plot_flat_no">(#{{ item.plot_flat_no }})</span></span>
+            </div>
+          </td>
+          <td>
+            <span class="amount-val">₹{{ (item.basic_sale_price || 0) + (item.plc_dev_charges || 0) | number }}</span>
+          </td>
+          <td>
+            <span *ngIf="item.associate_id" class="sponsor-tag">{{ item.associate_name }} ({{ item.associate_id }})</span>
+            <span *ngIf="!item.associate_id" class="text-muted">—</span>
+          </td>
+          <td>
+            <span class="status-badge" [class.completed]="item.enrollment_status === 'Completed'" [class.pending]="item.enrollment_status === 'Pending'">
+              <i class="fas" [class.fa-check-circle]="item.enrollment_status === 'Completed'" [class.fa-clock]="item.enrollment_status === 'Pending'"></i>
+              {{ item.enrollment_status }}
+            </span>
+          </td>
+          <td>
+            <small>{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
+          </td>
+          <td class="text-right actions-cell">
+            <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
+              <i class="fas fa-eye"></i> View
+            </button>
+            <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
+              <i class="fas fa-file-pdf"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ================= ASSOCIATE TABLE ================= -->
+    <table *ngIf="!loading && items.length > 0 && activeCategory === 'associate'" class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Associate Name &amp; ID</th>
+          <th>Contact &amp; Email</th>
+          <th>Sponsor Details</th>
+          <th>Category / State</th>
+          <th>Enrollment Status</th>
+          <th>Submitted At</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of items; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <div class="applicant-cell">
+              <strong>{{ item.full_name || 'N/A' }}</strong>
+              <span class="badge-sub">{{ item.associate_id || item.user_id || 'Pending ID' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="contact-cell">
+              <span><i class="fas fa-phone-alt"></i> {{ item.contact_1 || item.mobile_no || 'N/A' }}</span>
+              <small *ngIf="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
+            </div>
+          </td>
+          <td>
+            <div *ngIf="item.sponsor_code || item.sponsor_name" class="sponsor-tag">
+              {{ item.sponsor_name || 'Sponsor' }} ({{ item.sponsor_code }})
+            </div>
+            <span *ngIf="!item.sponsor_code && !item.sponsor_name" class="text-muted">—</span>
+          </td>
+          <td>
+            <span>{{ item.category || 'General' }}</span>
+            <small class="d-block text-muted">{{ item.perm_state || item.perm_city || '—' }}</small>
+          </td>
+          <td>
+            <span class="status-badge" [class.completed]="item.enrollment_status === 'Completed'" [class.pending]="item.enrollment_status === 'Pending'">
+              <i class="fas" [class.fa-check-circle]="item.enrollment_status === 'Completed'" [class.fa-clock]="item.enrollment_status === 'Pending'"></i>
+              {{ item.enrollment_status }}
+            </span>
+          </td>
+          <td>
+            <small>{{ item.created_at ? (item.created_at | date:'mediumDate') : (item.sign_date | date:'mediumDate') || '—' }}</small>
+          </td>
+          <td class="text-right actions-cell">
+            <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
+              <i class="fas fa-eye"></i> View
+            </button>
+            <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
+              <i class="fas fa-file-pdf"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ================= INVESTOR TABLE ================= -->
+    <table *ngIf="!loading && items.length > 0 && activeCategory === 'investor'" class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Investor Name &amp; ID</th>
+          <th>Contact &amp; Email</th>
+          <th>Project &amp; Branch</th>
+          <th>Investment Amount</th>
+          <th>Payment Status</th>
+          <th>Enrollment Status</th>
+          <th>Date</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of items; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <div class="applicant-cell">
+              <strong>{{ item.inv_first_name ? (item.inv_first_name + ' ' + (item.inv_surname || '')) : (item.full_name || 'N/A') }}</strong>
+              <span class="badge-sub">{{ item.investor_enrollment_id || item.form_no || item.user_id || 'Pending ID' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="contact-cell">
+              <span><i class="fas fa-phone-alt"></i> {{ item.mobile || item.mobile_no || 'N/A' }}</span>
+              <small *ngIf="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
+            </div>
+          </td>
+          <td>
+            <div class="project-cell">
+              <span class="project-title">{{ item.project_name || '—' }}</span>
+              <span class="prop-type">{{ item.branch_name }} ({{ item.branch_code }})</span>
+            </div>
+          </td>
+          <td>
+            <span class="amount-val">₹{{ (item.amount || 0) | number }}</span>
+            <small class="d-block text-muted">{{ item.payment_mode || '—' }}</small>
+          </td>
+          <td>
+            <span class="badge-pay" [class.cleared]="item.payment_status === 'Cleared'" [class.pending]="item.payment_status !== 'Cleared'">
+              {{ item.payment_status || 'Pending' }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [class.completed]="item.enrollment_status === 'Completed'" [class.pending]="item.enrollment_status === 'Pending'">
+              <i class="fas" [class.fa-check-circle]="item.enrollment_status === 'Completed'" [class.fa-clock]="item.enrollment_status === 'Pending'"></i>
+              {{ item.enrollment_status }}
+            </span>
+          </td>
+          <td>
+            <small>{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
+          </td>
+          <td class="text-right actions-cell">
+            <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
+              <i class="fas fa-eye"></i> View
+            </button>
+            <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
+              <i class="fas fa-file-pdf"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ================= UNIVERSAL VIEW / EDIT MODAL ================= -->
+<div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-dialog-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <h2>
+          <i class="fas" [class.fa-eye]="!isEditMode" [class.fa-edit]="isEditMode"></i>
+          {{ isEditMode ? 'Edit & Update Enrollment' : 'View Enrollment Details' }}
+        </h2>
+        <span class="category-tag">{{ activeCategory | uppercase }} ENROLLMENT</span>
+      </div>
+      <button class="btn-close" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body" *ngIf="editFormData">
+      
+      <!-- ================= CUSTOMER ENROLLMENT FORM FIELDS ================= -->
+      <div *ngIf="activeCategory === 'customer'" class="form-sections">
+        <!-- 1. Property Details -->
+        <div class="form-section-card">
+          <h4>1. Property &amp; Project Details</h4>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Project Name</label>
+              <input type="text" [(ngModel)]="editFormData.project_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Property Type</label>
+              <input type="text" [(ngModel)]="editFormData.property_type" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Plot / Flat No</label>
+              <input type="text" [(ngModel)]="editFormData.plot_flat_no" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Block / Tower</label>
+              <input type="text" [(ngModel)]="editFormData.block_tower" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Size / Area</label>
+              <input type="text" [(ngModel)]="editFormData.size_area" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Rate (per Sq. Ft./Yd.)</label>
+              <input type="number" [(ngModel)]="editFormData.rate_per_unit" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Basic Sale Price (BSP ₹)</label>
+              <input type="number" [(ngModel)]="editFormData.basic_sale_price" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>PLC / Dev Charges (₹)</label>
+              <input type="number" [(ngModel)]="editFormData.plc_dev_charges" [disabled]="!isEditMode">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Applicant Details -->
+        <div class="form-section-card">
+          <h4>2. Applicant Details</h4>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Applicant Name</label>
+              <input type="text" [(ngModel)]="editFormData.applicant_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Father / Husband Name</label>
+              <input type="text" [(ngModel)]="editFormData.fh_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Date of Birth</label>
+              <input type="text" [(ngModel)]="editFormData.date_of_birth" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Gender</label>
+              <input type="text" [(ngModel)]="editFormData.gender" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>PAN Number</label>
+              <input type="text" [(ngModel)]="editFormData.pan_no" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Aadhaar Number</label>
+              <input type="text" [(ngModel)]="editFormData.aadhar_no" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Primary Mobile</label>
+              <input type="text" [(ngModel)]="editFormData.mobile_1" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Secondary Mobile</label>
+              <input type="text" [(ngModel)]="editFormData.mobile_2" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Email Address</label>
+              <input type="text" [(ngModel)]="editFormData.email_1" [disabled]="!isEditMode">
+            </div>
+            <div class="field span-2">
+              <label>Present Address</label>
+              <input type="text" [(ngModel)]="editFormData.present_address" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>City &amp; State / PIN</label>
+              <input type="text" [(ngModel)]="editFormData.present_city" [disabled]="!isEditMode">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Payment & Bank Details -->
+        <div class="form-section-card">
+          <h4>3. Payment &amp; Bank Details</h4>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Booking Amount (₹)</label>
+              <input type="number" [(ngModel)]="editFormData.booking_amount" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Payment Mode</label>
+              <input type="text" [(ngModel)]="editFormData.payment_mode" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Txn / Cheque No</label>
+              <input type="text" [(ngModel)]="editFormData.txn_cheque_no" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Bank &amp; Branch</label>
+              <input type="text" [(ngModel)]="editFormData.acc_bank_branch" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Account Number</label>
+              <input type="text" [(ngModel)]="editFormData.acc_number" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>IFSC Code</label>
+              <input type="text" [(ngModel)]="editFormData.ifsc_code" [disabled]="!isEditMode">
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Associate / Sponsor -->
+        <div class="form-section-card">
+          <h4>4. Associate / Sponsor Details</h4>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Associate Name</label>
+              <input type="text" [(ngModel)]="editFormData.associate_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Associate ID</label>
+              <input type="text" [(ngModel)]="editFormData.associate_id" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Associate Mobile</label>
+              <input type="text" [(ngModel)]="editFormData.associate_mobile" [disabled]="!isEditMode">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= ASSOCIATE ENROLLMENT FORM FIELDS ================= -->
+      <div *ngIf="activeCategory === 'associate'" class="form-sections">
+        <!-- 1. Personal Details -->
+        <div class="form-section-card">
+          <h4>1. Personal Information</h4>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Full Name</label>
+              <input type="text" [(ngModel)]="editFormData.full_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Date of Birth</label>
+              <input type="text" [(ngModel)]="editFormData.dob" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Gender</label>
+              <input type="text" [(ngModel)]="editFormData.gender" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Father / Spouse Name</label>
+              <input type="text" [(ngModel)]="editFormData.father_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Primary Contact</label>
+              <input type="text" [(ngModel)]="editFormData.contact_1" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Secondary Contact</label>
+              <input type="text" [(ngModel)]="editFormData.contact_2" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Email Address</label>
+              <input type="text" [(ngModel)]="editFormData.email" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>PAN Number</label>
+              <input type="text" [(ngModel)]="editFormData.pan_no" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Aadhaar Number</label>
+              <input type="text" [(ngModel)]="editFormData.aadhar_no" [disabled]="!isEditMode">
+            </div>
+            <div class="field span-2">
+              <label>Permanent Address</label>
+              <input type="text" [(ngModel)]="editFormData.perm_address" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>City / State / PIN</label>
+              <input type="text" [(ngModel)]="editFormData.perm_state" [disabled]="!isEditMode">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Bank Details -->
+        <div class="form-section-card">
+          <h4>2. Bank &amp; Payout Details</h4>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Bank Name</label>
+              <input type="text" [(ngModel)]="editFormData.bank_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Account Holder</label>
+              <input type="text" [(ngModel)]="editFormData.acc_holder" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Account Number</label>
+              <input type="text" [(ngModel)]="editFormData.acc_no" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>IFSC Code</label>
+              <input type="text" [(ngModel)]="editFormData.ifsc" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Branch Name</label>
+              <input type="text" [(ngModel)]="editFormData.branch_name" [disabled]="!isEditMode">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Nominee & Sponsor -->
+        <div class="form-section-card">
+          <h4>3. Nominee &amp; Sponsor Details</h4>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Nominee Name</label>
+              <input type="text" [(ngModel)]="editFormData.nominee_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Relationship</label>
+              <input type="text" [(ngModel)]="editFormData.nominee_relationship" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Sponsor Code</label>
+              <input type="text" [(ngModel)]="editFormData.sponsor_code" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Sponsor Name</label>
+              <input type="text" [(ngModel)]="editFormData.sponsor_name" [disabled]="!isEditMode">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= INVESTOR ENROLLMENT FORM FIELDS ================= -->
+      <div *ngIf="activeCategory === 'investor'" class="form-sections">
+        <!-- 1. Investor Details -->
+        <div class="form-section-card">
+          <h4>1. Investor Profile</h4>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>First Name</label>
+              <input type="text" [(ngModel)]="editFormData.inv_first_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Surname</label>
+              <input type="text" [(ngModel)]="editFormData.inv_surname" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Father / Husband Name</label>
+              <input type="text" [(ngModel)]="editFormData.fh_first_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Mobile Number</label>
+              <input type="text" [(ngModel)]="editFormData.mobile" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Email Address</label>
+              <input type="text" [(ngModel)]="editFormData.email" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>PAN Number</label>
+              <input type="text" [(ngModel)]="editFormData.pan" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Aadhaar Number</label>
+              <input type="text" [(ngModel)]="editFormData.aadhar" [disabled]="!isEditMode">
+            </div>
+            <div class="field span-2">
+              <label>Address</label>
+              <input type="text" [(ngModel)]="editFormData.address" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>City &amp; State</label>
+              <input type="text" [(ngModel)]="editFormData.city" [disabled]="!isEditMode">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Investment & Branch Details -->
+        <div class="form-section-card">
+          <h4>2. Investment &amp; Scheme Details</h4>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Investment Amount (₹)</label>
+              <input type="number" [(ngModel)]="editFormData.amount" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Amount in Words</label>
+              <input type="text" [(ngModel)]="editFormData.amount_words" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Payment Mode</label>
+              <input type="text" [(ngModel)]="editFormData.payment_mode" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Txn / Cheque No</label>
+              <input type="text" [(ngModel)]="editFormData.txn_no" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Project Name</label>
+              <input type="text" [(ngModel)]="editFormData.project_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Branch Name</label>
+              <input type="text" [(ngModel)]="editFormData.branch_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Payment Realization Status</label>
+              <select [(ngModel)]="editFormData.payment_status" [disabled]="!isEditMode">
+                <option value="Cleared">Cleared</option>
+                <option value="Hold/Pending KYC">Hold/Pending KYC</option>
+                <option value="Bounced">Bounced</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification / Enrollment Status Override (For Admins) -->
+      <div class="form-section-card status-override-box">
+        <h4><i class="fas fa-shield-alt"></i> Administrative Status</h4>
+        <div class="form-grid-3">
+          <div class="field">
+            <label>Enrollment Status</label>
+            <select [(ngModel)]="editFormData.enrollment_status" [disabled]="!isEditMode">
+              <option value="Completed">Completed (Unlocked)</option>
+              <option value="Pending">Pending (Mandatory Lock)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+      <button *ngIf="!isEditMode" class="btn btn-primary" (click)="isEditMode = true">
+        <i class="fas fa-edit"></i> Enable Edit Mode
+      </button>
+      <button *ngIf="isEditMode" class="btn btn-success" [disabled]="saving" (click)="saveChanges()">
+        <i class="fas fa-save" [class.fa-spin]="saving"></i>
+        {{ saving ? 'Saving Changes...' : 'Save & Update Database' }}
+      </button>
+    </div>
+  </div>
+</div>

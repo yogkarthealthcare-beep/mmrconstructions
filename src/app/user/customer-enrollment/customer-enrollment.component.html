@@ -307,12 +307,20 @@
       </div>
     </section>
 
-    <div class="submit-wrap" style="display: flex; gap: 15px; align-items: center; justify-content: center; margin-top: 34px; clear: both;">
-      <button type="submit" class="submit-btn" [disabled]="submitting || isSubmitted" [style.background-color]="isSubmitted ? '#6c757d' : 'var(--blue)'">
-        {{ submitting ? 'Submitting...' : isSubmitted ? 'Application Submitted' : 'Submit Application' }}
+    <div class="submit-wrap" style="display: flex; gap: 15px; align-items: center; justify-content: center; margin-top: 34px; clear: both; flex-wrap: wrap;">
+      <button *ngIf="!isSubmitted" type="submit" class="submit-btn" [disabled]="submitting">
+        {{ submitting ? 'Submitting...' : 'Submit Application' }}
       </button>
 
-      <button *ngIf="isSubmitted" type="button" class="no-print" (click)="downloadPdf()" [disabled]="printing" style="background-color: var(--green-dark); color: white; border: none; padding: 13px 26px; border-radius: 5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); letter-spacing: 0.3px;">
+      <div *ngIf="isSubmitted" class="submitted-badge" style="background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; padding: 12px 24px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-check-circle"></i> Application Submitted (Read-Only)
+      </div>
+
+      <button *ngIf="isSubmitted" type="button" class="no-print" (click)="goToDashboard()" style="background-color: var(--blue, #1a365d); color: white; border: none; padding: 13px 26px; border-radius: 5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+        <i class="fas fa-th-large"></i> Go to Dashboard
+      </button>
+
+      <button *ngIf="isSubmitted" type="button" class="no-print" (click)="downloadPdf()" [disabled]="printing" style="background-color: var(--green-dark, #2e7d32); color: white; border: none; padding: 13px 26px; border-radius: 5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); letter-spacing: 0.3px;">
         <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i>
         {{ printing ? 'Generating PDF...' : 'Download / Print Form' }}
       </button>

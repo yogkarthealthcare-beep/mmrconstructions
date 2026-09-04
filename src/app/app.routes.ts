@@ -19,8 +19,10 @@ import { ImpersonateLoginComponent } from './pages/impersonate-login/impersonate
 
 // Admin
 import { adminGuard } from './shared/guards/admin.guard';
+import { enrollmentGuard, customerGuard, associateGuard, investorGuard, userGuard } from './services/auth.guard';
 import { AdminLayoutComponent } from './admin/layout/layout.component';
 import { AdminDashboardComponent } from './admin/dashboard/dashboard.component';
+import { AdminEnrollmentsComponent } from './admin/enrollments/admin-enrollments.component';
 import { ControlComponent } from './admin/control/control.component';
 import { ApprovalsComponent } from './admin/approvals/approvals.component';
 import { CustomersComponent } from './admin/customers/customers.component';
@@ -100,6 +102,7 @@ export const routes: Routes = [
   { path: 'login',                component: LoginComponent },
   { path: 'register',             component: SignupComponent },
   { path: 'signup',               component: SignupComponent },
+  { path: 'registration',         component: SignupComponent },
   { path: 'register-old',         component: RegisterComponent },
   { path: 'verify-otp',           component: VerifyOtpComponent },
   { path: 'forgot-password',       component: ForgotPasswordComponent },
@@ -126,6 +129,7 @@ export const routes: Routes = [
       { path: 'dashboard',           component: AdminDashboardComponent },
       { path: 'analytics',           component: AdminAnalyticsComponent },
       { path: 'approvals',           component: ApprovalsComponent },
+      { path: 'enrollments',         component: AdminEnrollmentsComponent, title: 'Enrollment Management' },
       { path: 'customers',           component: CustomersComponent },
       { path: 'investor-enrollments', component: AdminInvestorEnrollmentsListComponent, title: 'Investor Enrollments' },
       { path: 'investor-enrollments/:id', component: AdminInvestorEnrollmentDetailComponent, title: 'Investor Enrollment Detail' },
@@ -168,6 +172,8 @@ export const routes: Routes = [
 
   {
     path: 'user', component: UserLayoutComponent,
+    canActivate: [userGuard],
+    canActivateChild: [enrollmentGuard],
     children: [
       { path: '',                        redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard',              component: UserDashboardComponent },
@@ -191,6 +197,8 @@ export const routes: Routes = [
 
   {
     path: 'associate', component: UserLayoutComponent,
+    canActivate: [associateGuard],
+    canActivateChild: [enrollmentGuard],
     children: [
       { path: '',                        redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard',              component: UserDashboardComponent },
@@ -223,6 +231,8 @@ export const routes: Routes = [
 
   {
     path: 'customer', component: UserLayoutComponent,
+    canActivate: [customerGuard],
+    canActivateChild: [enrollmentGuard],
     children: [
       { path: '',                        redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard',              component: UserDashboardComponent },
@@ -247,6 +257,8 @@ export const routes: Routes = [
 
   {
     path: 'investor', component: InvestorLayoutComponent,
+    canActivate: [investorGuard],
+    canActivateChild: [enrollmentGuard],
     children: [
       { path: '',               redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard',     component: InvestorDashboardComponent },

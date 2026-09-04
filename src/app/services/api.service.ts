@@ -175,12 +175,18 @@ export class ApiService {
   // ── Customer Enrollment ───────────────────────────
   submitCustomerEnrollment(data: any) { return this.post('/api/customer-enrollment', data); }
   getMyCustomerEnrollments()          { return this.get('/api/customer-enrollment/me'); }
-  adminGetCustomerEnrollments()       { return this.get('/api/customer-enrollment', {}, true); }
+  adminGetCustomerEnrollments(params: any = {}) { return this.get('/api/admin/customer-enrollments', params, true); }
   adminGetCustomerEnrollment(id: string) { return this.get(`/api/customer-enrollment/${id}`, {}, true); }
-  adminUpdateCustomerEnrollment(id: string, data: any) { return this.patch(`/api/customer-enrollment/${id}/office-use`, data, true); }
+  adminUpdateCustomerEnrollment(id: string, data: any) { return this.put(`/api/admin/customer-enrollments/${id}`, data, true); }
+
+  // ── Associate Enrollment ──────────────────────────
+  getMyAssociateEnrollment()          { return this.get('/api/associate-enrollment/me'); }
+  adminGetAssociateEnrollments(params: any = {}) { return this.get('/api/admin/associate-enrollments', params, true); }
+  adminGetAssociateEnrollment(id: string) { return this.get(`/api/admin/associate-enrollments/${id}`, {}, true); }
+  adminUpdateAssociateEnrollment(id: string, data: any) { return typeof data === 'object' && !(data instanceof FormData) ? this.put(`/api/admin/associate-enrollments/${id}`, data, true) : this.putForm(`/api/admin/associate-enrollments/${id}`, data, true); }
 
   // ── ADMIN — Investor Enrollments ──────────────────
-  adminGetInvestorEnrollments()       { return this.get('/api/admin/investor-enrollment', {}, true); }
+  adminGetInvestorEnrollments(params: any = {}) { return this.get('/api/admin/investor-enrollment', params, true); }
   adminGetInvestorEnrollment(id: string) { return this.get(`/api/admin/investor-enrollment/${id}`, {}, true); }
   adminUpdateInvestorEnrollment(id: string, data: any) { return this.put(`/api/admin/investor-enrollment/${id}`, data, true); }
   adminDeleteInvestorEnrollment(id: string) { return this.delete(`/api/admin/investor-enrollment/${id}`, true); }

@@ -107,7 +107,7 @@ export class RegisterComponent {
     this.loading = true; this.error = '';
 
     // Build minimal payload as FormData (API expects multipart for register)
-    const sponsorCode = (this.qForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR00001';
+    const sponsorCode = (this.qForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR3001';
     const fd = new FormData();
     fd.append('user_type',       this.qForm.user_type);
     fd.append('full_name',       this.qForm.mobile_no); // temp — user fills later
@@ -171,7 +171,7 @@ export class RegisterComponent {
   fullSubmit() {
     if (!this.fForm.terms_accepted) { this.error = 'Accept terms to continue'; return; }
     this.loading = true; this.error = '';
-    const sponsorCode = (this.fForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR00001';
+    const sponsorCode = (this.fForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR3001';
     const fd = new FormData();
     Object.keys(this.fForm).forEach(k => {
       if (this.fForm[k] !== null && this.fForm[k] !== undefined && this.fForm[k] !== false)

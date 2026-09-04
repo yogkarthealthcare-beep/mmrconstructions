@@ -1,17 +1,19 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { PhotoUploadComponent } from '../../shared/components/photo-upload/photo-upload.component';
 import { submitForm, resetFormState } from './state/associate-enrollment.actions';
 import { selectLoading, selectSuccess, selectAssociateId, selectError } from './state/associate-enrollment.selectors';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-associate-enrollment-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PhotoUploadComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, PhotoUploadComponent],
   templateUrl: './associate-enrollment-form.component.html',
   styleUrls: ['./associate-enrollment-form.component.css']
 })
@@ -27,6 +29,11 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   success$ = this.store.select(selectSuccess);
   associateId$ = this.store.select(selectAssociateId);
   error$ = this.store.select(selectError);
+
+  isSubmitted = false;
+  submissionAssociateId = '';
+  existingApplicantPhoto = '';
+  existingNomineePhoto = '';
 
   ifscLoading = false;
   ifscSuccess = false;
@@ -55,13 +62,15 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private store: Store,
-    private api: ApiService
+    private api: ApiService,
+    private auth: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit() {
     this.store.dispatch(resetFormState());
     this.initForm();
-    this.prefillProfile();
+    this.checkExistingEnrollment();
 
     // Listen to changes in terms and update the signal
     const termsGroup = this.enrollmentForm.get('termsAndConditions');
@@ -79,6 +88,113 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         })
       );
     }
+
+    // When success is dispatched via NgRx
+    this.subs.add(
+      this.success$.subscribe((success) => {
+        if (success) {
+          this.auth.setEnrollmentCompleted();
+          this.isSubmitted = true;
+        }
+      })
+    );
+  }
+
+  checkExistingEnrollment() {
+    this.api.getMyAssociateEnrollment().subscribe({
+      next: (res: any) => {
+        if (res && res.success && res.data) {
+          const d = res.data;
+          this.isSubmitted = true;
+          this.submissionAssociateId = d.associate_id || '';
+          this.auth.setEnrollmentCompleted();
+
+          this.enrollmentForm.patchValue({
+            personalDetails: {
+              fullName: d.full_name || '',
+              dob: d.dob ? new Date(d.dob).toISOString().split('T')[0] : '',
+              gender: d.gender || '',
+              fatherName: d.father_name || '',
+              motherName: d.mother_name || '',
+              spouseName: d.spouse_name || '',
+              contact1: d.contact_1 || '',
+              contact2: d.contact_2 || '',
+              nationality: d.nationality || 'Indian',
+              residentialStatus: d.residential_status || '',
+              panNo: d.pan_no || '',
+              aadharNo: d.aadhar_no || '',
+              email: d.email || '',
+              occupation: d.occupation || '',
+              annualIncome: d.annual_income || '',
+              education: d.education || '',
+              category: d.category || '',
+              religion: d.religion || ''
+            },
+            addressDetails: {
+              permAddress: d.perm_address || '',
+              permCity: d.perm_city || '',
+              permState: d.perm_state || '',
+              permCountry: d.perm_country || 'India',
+              permPin: d.perm_pin || '',
+              localAddress: d.local_address || '',
+              localCity: d.local_city || '',
+              localState: d.local_state || '',
+              localCountry: d.local_country || 'India',
+              localPin: d.local_pin || ''
+            },
+            bankDetails: {
+              bankName: d.bank_name || '',
+              accHolder: d.acc_holder || '',
+              accNo: d.acc_no || '',
+              ifsc: d.ifsc || '',
+              micr: d.micr || '',
+              branchName: d.branch_name || '',
+              branchCode: d.branch_code || '',
+              swift: d.swift || '',
+              branchCountry: d.branch_country || 'India'
+            },
+            nomineeDetails: {
+              nomineeName: d.nominee_name || '',
+              nomineeDob: d.nominee_dob ? new Date(d.nominee_dob).toISOString().split('T')[0] : '',
+              nomineeGender: d.nominee_gender || '',
+              nomineeNationality: d.nominee_nationality || 'Indian',
+              nomineeResStatus: d.nominee_res_status || '',
+              nomineeRelationship: d.nominee_relationship || '',
+              nomineePanName: d.nominee_pan_name || '',
+              nomineePanNo: d.nominee_pan_no || '',
+              nomineeAadharName: d.nominee_aadhar_name || '',
+              nomineeAadharNo: d.nominee_aadhar_no || '',
+              nomineeAddress: d.nominee_address || ''
+            },
+            sponsorDetails: {
+              sponsorName: d.sponsor_name || '',
+              sponsorCode: d.sponsor_code || '',
+              sponsorContact: d.sponsor_contact || ''
+            },
+            termsAndConditions: {
+              tc1: true,
+              tc2: true,
+              tc3: true,
+              tc4: true,
+              tc5: true,
+              tc6: true
+            },
+            signature: {
+              signDate: d.sign_date ? new Date(d.sign_date).toISOString().split('T')[0] : ''
+            }
+          });
+
+          this.existingApplicantPhoto = d.applicant_photo_url || '';
+          this.existingNomineePhoto = d.nominee_photo_url || '';
+          this.enrollmentForm.disable();
+        } else {
+          this.prefillProfile();
+        }
+      },
+      error: () => {
+        this.prefillProfile();
+      }
+    });
   }
 
   ngOnDestroy() {
