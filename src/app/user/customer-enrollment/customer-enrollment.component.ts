@@ -16,10 +16,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   enrollmentForm!: FormGroup;
   submitting = false;
   isSubmitted = false;
-  showModal = false;
   showToast = false;
   toastMsg = '';
-  modalAgreed = false;
   submissionId: string | null = null;
   printing = false;
   
@@ -222,7 +220,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   onSubmit() {
-    if (this.enrollmentForm.invalid) {
+    if (this.enrollmentForm.invalid || this.submitting) {
       this.enrollmentForm.markAllAsTouched();
       setTimeout(() => {
         const firstInvalidControl = document.querySelector('.ng-invalid[formControlName], .ng-invalid[formArrayName], .ng-invalid[formGroupName]') as HTMLElement;
@@ -232,11 +230,37 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       }, 100);
       return;
     }
-    this.showModal = true;
-    this.modalAgreed = false;
+    this.submitting = true;
+    
+    const payload = this.enrollmentForm.getRawValue();
+    payload.photoFirstApplicant = this.photo1DataUrl;
+    payload.photoCoApplicant = this.photo2DataUrl;
+    payload.signatureSoleFirstApplicant = this.sigSolePad ? this.sigSolePad.dataUrl() : '';
+    payload.signatureCoApplicant = this.sigCoPad ? this.sigCoPad.dataUrl() : '';
+    payload.signatureAuthorizedSignatory = this.sigAuthPad ? this.sigAuthPad.dataUrl() : '';
+    payload.termsAccepted = true;
+
+    this.api.submitCustomerEnrollment(payload).subscribe({
+      next: (res: any) => {
+        this.submitting = false;
+        this.isSubmitted = true;
+        this.submissionId = res.data?.id || null;
+        this.enrollmentForm.disable(); // Disable form after successful submission
+        this.toastMsg = 'Application submitted successfully!';
+        this.showToast = true;
+        setTimeout(() => this.showToast = false, 3000);
+      },
+      error: (err: any) => {
+        this.submitting = false;
+        alert(err.error?.message || 'Failed to submit form.');
+      }
+    });
   }
 
   autoFillDemoData() {
+    // Import FormArray type dynamically if needed, or cast it
+    const nomineesArray = this.enrollmentForm.get('nominees') as any;
+    
     this.enrollmentForm.patchValue({
       formDate: new Date().toISOString().split('T')[0],
       projectName: 'MMR Green City',
@@ -300,8 +324,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       declarationCheck: true
     });
 
-    const nomineesArray = this.enrollmentForm.get('nominees') as FormArray;
-    if (nomineesArray.length > 0) {
+    if (nomineesArray && nomineesArray.length > 0) {
       nomineesArray.at(0).patchValue({
         nomineeName: 'Aarav Sharma',
         nomineeRelation: 'Son',
@@ -309,40 +332,6 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
         nomineeAadhar: '112233445566'
       });
     }
-  }
-
-  closeModal() {
-    this.showModal = false;
-  }
-
-  confirmSubmit() {
-    if (!this.modalAgreed) return;
-    this.submitting = true;
-    
-    const payload = this.enrollmentForm.getRawValue();
-    payload.photoFirstApplicant = this.photo1DataUrl;
-    payload.photoCoApplicant = this.photo2DataUrl;
-    payload.signatureSoleFirstApplicant = this.sigSolePad ? this.sigSolePad.dataUrl() : '';
-    payload.signatureCoApplicant = this.sigCoPad ? this.sigCoPad.dataUrl() : '';
-    payload.signatureAuthorizedSignatory = this.sigAuthPad ? this.sigAuthPad.dataUrl() : '';
-    payload.termsAccepted = true;
-
-    this.api.submitCustomerEnrollment(payload).subscribe({
-      next: (res: any) => {
-        this.submitting = false;
-        this.showModal = false;
-        this.isSubmitted = true;
-        this.submissionId = res.data?.id || null;
-        this.enrollmentForm.disable(); // Disable form after successful submission
-        this.toastMsg = 'Application submitted successfully!';
-        this.showToast = true;
-        setTimeout(() => this.showToast = false, 3000);
-      },
-      error: (err: any) => {
-        this.submitting = false;
-        alert(err.error?.message || 'Failed to submit form.');
-      }
-    });
   }
 
   prefillProfile() {

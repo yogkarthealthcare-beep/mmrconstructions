@@ -307,17 +307,12 @@
       </div>
     </section>
 
-    <div class="submit-wrap" *ngIf="!isSubmitted">
-      <button type="submit" class="submit-btn" [disabled]="submitting">
-        {{ submitting ? 'Submitting...' : 'Submit Application' }}
+    <div class="submit-wrap" style="display: flex; gap: 15px; align-items: center; justify-content: center; margin-top: 34px; clear: both;">
+      <button type="submit" class="submit-btn" [disabled]="submitting || isSubmitted" [style.background-color]="isSubmitted ? '#6c757d' : 'var(--blue)'">
+        {{ submitting ? 'Submitting...' : isSubmitted ? 'Application Submitted' : 'Submit Application' }}
       </button>
-    </div>
 
-    <div class="success-banner" *ngIf="isSubmitted" style="background: #e6f4ea; color: #137333; padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; margin: 20px 28px; border: 1px solid #c3e6cb; font-size: 15px; display: flex; flex-direction: column; align-items: center; gap: 12px; justify-content: center;">
-      <div>
-        <i class="fas fa-check-circle me-1"></i> Application submitted successfully! / आवेदन सफलतापूर्वक जमा हो गया है!
-      </div>
-      <button type="button" class="btn btn-primary btn-sm no-print" (click)="downloadPdf()" [disabled]="printing" style="background-color: #14532d; color: white; border: none; padding: 8px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+      <button *ngIf="isSubmitted" type="button" class="no-print" (click)="downloadPdf()" [disabled]="printing" style="background-color: var(--green-dark); color: white; border: none; padding: 13px 26px; border-radius: 5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); letter-spacing: 0.3px;">
         <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i>
         {{ printing ? 'Generating PDF...' : 'Download / Print Form' }}
       </button>
@@ -328,39 +323,6 @@
     Website: <a href="https://mmrconstructions.in/" target="_blank">https://mmrconstructions.in/</a> &nbsp;|&nbsp;
     Email: <a href="mailto:mmrconstructions&#64;hotmail.com">mmrconstructions&#64;hotmail.com</a>
   </footer>
-</div>
-
-<!-- ============ MODAL ============ -->
-<div class="modal-overlay" [class.open]="showModal">
-  <div class="modal-box">
-    <h3>Terms &amp; Conditions of Allotment &amp; Sale</h3>
-    <div class="hindi-note">Submit karne se pehle neeche diye gaye terms &amp; conditions dhyaan se padhein aur checkbox par tick karein.</div>
-    <div class="modal-terms">
-      <ol>
-        <li>Allotment is purely provisional and subject to realization of the initial booking amount; the company may accept or reject any application without assigning reason.</li>
-        <li>Timely payment is essential; all payments must go directly into the company's official bank account or corporate office — never in cash to an associate.</li>
-        <li>100% upfront payment makes the registry completely free.</li>
-        <li>Installment purchases need a 25–30% down payment; registry expenses are borne by the customer.</li>
-        <li>Delayed installments attract 18% per month interest; prolonged default may lead to cancellation and re-allotment.</li>
-        <li>A 1–3 month EMI grace period may be granted on verifiable medical grounds.</li>
-        <li>Permanent disability entitles the customer to a 20% discount on the total property value.</li>
-        <li>On the customer's demise, if 50% is already paid, the remaining 50% is waived off for the co-applicant/nominee.</li>
-        <li>Cancellation attracts a 10% deduction (of value or booking amount, whichever is lower); balance refunded within 90 days, without interest.</li>
-        <li>Stamp duty, registration, GST, development and connection charges are extra, borne by the applicant(s).</li>
-        <li>Possession is handed over only after full payment; the company may alter layout/design per authority requirements.</li>
-        <li>Home loan approval is the applicant's responsibility; third-party transfer is allowed only after meeting company conditions.</li>
-        <li>Disputes are resolved via mutual arbitration, under the exclusive jurisdiction of Unnao / Lucknow, Uttar Pradesh courts.</li>
-      </ol>
-    </div>
-    <label class="modal-agree">
-      <input type="checkbox" [(ngModel)]="modalAgreed">
-      <span>Maine Terms and Conditions dhyaan se padh liye hain / I have read the Terms &amp; Conditions carefully.</span>
-    </label>
-    <div class="modal-btns">
-      <button type="button" class="btn-cancel" (click)="closeModal()">Cancel</button>
-      <button type="button" class="btn-confirm" [class.enabled]="modalAgreed" (click)="confirmSubmit()">Confirm &amp; Submit</button>
-    </div>
-  </div>
 </div>
 
 <div class="toast" [class.show]="showToast">{{ toastMsg }}</div>

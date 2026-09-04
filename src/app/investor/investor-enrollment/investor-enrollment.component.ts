@@ -297,7 +297,7 @@ export class InvestorEnrollmentComponent implements OnInit {
   }
 
   confirmAndSubmit() {
-    if (!this.modalAgreeCheck) return;
+    if (!this.modalAgreeCheck || this.submitting) return;
 
     this.submitting = true;
     const formData = { ...this.enrollmentForm.getRawValue() };

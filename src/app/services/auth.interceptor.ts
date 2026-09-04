@@ -18,11 +18,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   
   let token;
   if (isAdminApi) {
-    token = sessionStorage.getItem('mmr_admin_token');
+    token = sessionStorage.getItem('mmr_admin_token') || localStorage.getItem('mmr_admin_token');
   } else if (isInvestorApi) {
-    token = sessionStorage.getItem('mmr_investor_token');
+    token = sessionStorage.getItem('mmr_investor_token') || localStorage.getItem('mmr_investor_token');
   } else {
-    token = sessionStorage.getItem('mmr_user_token');
+    token = sessionStorage.getItem('mmr_user_token') || localStorage.getItem('mmr_user_token') || sessionStorage.getItem('mmr_investor_token') || localStorage.getItem('mmr_investor_token');
   }
 
   const request = !token || req.headers.has('Authorization')
@@ -32,7 +32,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
       if (!isAuthApi && isAuthFailure(error)) {
-        const scope = isAdminApi || router.url.startsWith('/admin') ? 'admin' : 'user';
+        const scope = isAdminApi || router.url.startsWith('/admin') ? 'admin' : (isInvestorApi || router.url.startsWith('/investor') ? 'investor' : 'user');
         auth.handleAuthExpired(scope, router.url);
         return EMPTY;
       }

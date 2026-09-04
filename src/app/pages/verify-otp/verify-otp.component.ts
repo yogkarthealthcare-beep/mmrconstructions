@@ -139,10 +139,9 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
           this.loading = false;
           if (res.success) {
             const userType = res.data?.user?.user_type || res.data?.user_type || this.userType;
+            this.verified = true;
             
             if (userType === 'Associate') {
-              // Associates are pending upon registration
-              this.verified = true;
               import('sweetalert2').then(Swal => {
                 Swal.default.fire({
                   icon: 'success',
@@ -154,33 +153,23 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
                            <strong><i class="fas fa-envelope"></i> official@mmrconstructions.in</strong>
                          </div>`,
                   confirmButtonColor: '#d4af37',
-                  confirmButtonText: 'Okay'
+                  confirmButtonText: 'Go to Login'
                 }).then(() => {
                   this.router.navigate(['/login']);
                 });
               });
             } else {
-              if (res.data?.token) {
-                this.auth.setUserSession(res.data);
-              }
-              this.verified = true;
-              setTimeout(() => {
-                const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-                let targetDashboard = '/customer/dashboard';
-                if (userType === 'Investor') {
-                  targetDashboard = '/investor/dashboard';
-                }
-
-                if (returnUrl) {
-                  this.router.navigateByUrl(returnUrl);
-                } else if (res.data?.redirect) {
-                  this.router.navigateByUrl(res.data.redirect);
-                } else if (userType === 'Investor') {
-                  this.router.navigate(['/login'], { queryParams: { verified: 'true' } });
-                } else {
-                  this.router.navigateByUrl(targetDashboard);
-                }
-              }, 1500);
+              import('sweetalert2').then(Swal => {
+                Swal.default.fire({
+                  icon: 'success',
+                  title: 'Registration Successful',
+                  text: 'Your email has been verified successfully. Please login with your email and password.',
+                  confirmButtonColor: '#d4af37',
+                  confirmButtonText: 'Go to Login'
+                }).then(() => {
+                  this.router.navigate(['/login']);
+                });
+              });
             }
           } else {
             this.error = res.message || 'Verification failed.';

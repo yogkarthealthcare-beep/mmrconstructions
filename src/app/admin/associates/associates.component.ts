@@ -189,13 +189,28 @@ export class AssociatesComponent implements OnInit {
       address: a.address?.address_line1 || a.address_line1 || '',
       city: a.city || a.address?.city || '',
       state: a.state || a.address?.state || '',
-      pin_code: a.pin_code || a.address?.pin_code || ''
+      pin_code: a.pin_code || a.address?.pin_code || '',
+      new_password: '',
+      confirm_password: '',
+      showChangePassword: false
     };
     this.showEditModal = true;
   }
 
   updateAssociate() {
     if (!this.selectedAssociate || this.actionLoading) return;
+
+    if (this.associateForm.new_password || this.associateForm.confirm_password) {
+      if (this.associateForm.new_password.length < 6) {
+        this.showToast('New password must be at least 6 characters');
+        return;
+      }
+      if (this.associateForm.new_password !== this.associateForm.confirm_password) {
+        this.showToast('New password and confirm password do not match');
+        return;
+      }
+    }
+
     this.actionLoading = true;
     this.api.adminUpdateAssociate(this.selectedAssociate.user_id, this.associateForm).subscribe({
       next: (res: any) => {

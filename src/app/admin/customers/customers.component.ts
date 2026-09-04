@@ -188,13 +188,28 @@ export class CustomersComponent implements OnInit {
       address: c.address?.address_line1 || c.address_line1 || '',
       city: c.city || c.address?.city || '',
       state: c.state || c.address?.state || '',
-      pin_code: c.pin_code || c.address?.pin_code || ''
+      pin_code: c.pin_code || c.address?.pin_code || '',
+      new_password: '',
+      confirm_password: '',
+      showChangePassword: false
     };
     this.showEditModal = true;
   }
 
   updateCustomer() {
     if (!this.selectedCustomer || this.actionLoading) return;
+
+    if (this.customerForm.new_password || this.customerForm.confirm_password) {
+      if (this.customerForm.new_password.length < 6) {
+        this.showToast('New password must be at least 6 characters');
+        return;
+      }
+      if (this.customerForm.new_password !== this.customerForm.confirm_password) {
+        this.showToast('New password and confirm password do not match');
+        return;
+      }
+    }
+
     this.actionLoading = true;
     this.api.adminUpdateCustomer(this.selectedCustomer.user_id, this.customerForm).subscribe({
       next: (res: any) => {

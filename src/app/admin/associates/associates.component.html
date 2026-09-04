@@ -352,6 +352,34 @@
             <label class="form-label fs-11 fw-700 text-dark">Pin Code</label>
             <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.pin_code">
           </div>
+
+          <!-- CHANGE PASSWORD SECTION -->
+          <div class="col-12 mt-3">
+            <div class="p-3 bg-light rounded-10 border">
+              <div class="d-flex align-items-center justify-content-between cursor-pointer" (click)="associateForm.showChangePassword = !associateForm.showChangePassword">
+                <span class="fs-12 fw-700 text-dark">
+                  <i class="fas fa-key text-gold me-1.5"></i> Change Password
+                </span>
+                <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2 fs-10">
+                  {{ associateForm.showChangePassword ? 'Cancel / Hide' : 'Change Password' }}
+                </button>
+              </div>
+
+              <div class="row g-2 mt-2" *ngIf="associateForm.showChangePassword">
+                <div class="col-md-6">
+                  <label class="form-label fs-11 fw-700 text-dark mb-1">New Password</label>
+                  <input type="password" class="form-control form-control-sm" [(ngModel)]="associateForm.new_password" placeholder="Enter new password (min 6 chars)">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fs-11 fw-700 text-dark mb-1">Confirm Password</label>
+                  <input type="password" class="form-control form-control-sm" [(ngModel)]="associateForm.confirm_password" placeholder="Confirm new password">
+                </div>
+                <div class="col-12" *ngIf="associateForm.new_password && associateForm.confirm_password && associateForm.new_password !== associateForm.confirm_password">
+                  <small class="text-danger fs-11"><i class="fas fa-exclamation-circle me-1"></i> Passwords do not match.</small>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

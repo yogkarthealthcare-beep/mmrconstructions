@@ -16,6 +16,27 @@ export class AuthService {
 
   private isLoggingOut = false;
 
+  private saveAuthItem(key: string, value: string | null) {
+    try {
+      if (value == null) {
+        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
+      } else {
+        sessionStorage.setItem(key, value);
+        localStorage.setItem(key, value);
+      }
+    } catch {}
+  }
+
+  private getAuthItem(key: string): string | null {
+    try {
+      const v = sessionStorage.getItem(key) || localStorage.getItem(key);
+      return (v && v !== 'undefined' && v !== 'null') ? v : null;
+    } catch {
+      return null;
+    }
+  }
+
   // ── Admin ──────────────────────
   clearAllAuthStorage() {
     const keys = [
@@ -23,40 +44,38 @@ export class AuthService {
       'mmr_user_token', 'mmr_user_refresh', 'mmr_user',
       'mmr_investor_token', 'mmr_investor_user'
     ];
-    keys.forEach(k => {
-      sessionStorage.removeItem(k);
-      localStorage.removeItem(k);
-    });
+    keys.forEach(k => this.saveAuthItem(k, null));
   }
 
   setAdminSession(data: any) {
+    if (!data) return;
     this.clearAllAuthStorage();
-    sessionStorage.setItem('mmr_admin_token', data.token);
-    sessionStorage.setItem('mmr_admin_refresh', data.refresh_token);
-    sessionStorage.setItem('mmr_admin_user', JSON.stringify(data.admin));
-    this._adminUser$.next(data.admin);
+    if (data.token) this.saveAuthItem('mmr_admin_token', data.token);
+    if (data.refresh_token) this.saveAuthItem('mmr_admin_refresh', data.refresh_token);
+    if (data.admin) this.saveAuthItem('mmr_admin_user', JSON.stringify(data.admin));
+    this._adminUser$.next(data.admin || null);
   }
+
   getAdminUser(): any {
-    const s = sessionStorage.getItem('mmr_admin_user');
-    if (!s || s === 'undefined' || s === 'null') return null;
+    const s = this.getAuthItem('mmr_admin_user');
+    if (!s) return null;
     try {
       return JSON.parse(s);
     } catch {
       return null;
     }
   }
+
   get adminToken() {
-    const t = sessionStorage.getItem('mmr_admin_token');
-    return (t && t !== 'undefined' && t !== 'null') ? t : null;
+    return this.getAuthItem('mmr_admin_token');
   }
+
   isAdminLoggedIn() { return !!this.adminToken; }
+
   logoutAdmin() {
     if (this.isLoggingOut) return;
     this.isLoggingOut = true;
-    ['mmr_admin_token','mmr_admin_refresh','mmr_admin_user'].forEach(k => {
-      sessionStorage.removeItem(k);
-      localStorage.removeItem(k);
-    });
+    ['mmr_admin_token','mmr_admin_refresh','mmr_admin_user'].forEach(k => this.saveAuthItem(k, null));
     this._adminUser$.next(null);
     this.router.navigate(['/admin-login']).then(() => {
       this.isLoggingOut = false;
@@ -72,37 +91,37 @@ export class AuthService {
     const userObj = data.user || data.data?.user || (data.user_id ? data : null);
 
     if (token) {
-      sessionStorage.setItem('mmr_user_token', token);
+      this.saveAuthItem('mmr_user_token', token);
     }
     if (refreshToken) {
-      sessionStorage.setItem('mmr_user_refresh', refreshToken);
+      this.saveAuthItem('mmr_user_refresh', refreshToken);
     }
     if (userObj) {
-      sessionStorage.setItem('mmr_user', JSON.stringify(userObj));
+      this.saveAuthItem('mmr_user', JSON.stringify(userObj));
       this._user$.next(userObj);
     }
   }
+
   getUser(): any {
-    const s = sessionStorage.getItem('mmr_user');
-    if (!s || s === 'undefined' || s === 'null') return null;
+    const s = this.getAuthItem('mmr_user');
+    if (!s) return null;
     try {
       return JSON.parse(s);
     } catch {
       return null;
     }
   }
+
   get userToken() {
-    const t = sessionStorage.getItem('mmr_user_token');
-    return (t && t !== 'undefined' && t !== 'null') ? t : null;
+    return this.getAuthItem('mmr_user_token');
   }
+
   isUserLoggedIn() { return !!this.userToken; }
+
   logoutUser() {
     if (this.isLoggingOut) return;
     this.isLoggingOut = true;
-    ['mmr_user_token','mmr_user_refresh','mmr_user'].forEach(k => {
-      sessionStorage.removeItem(k);
-      localStorage.removeItem(k);
-    });
+    ['mmr_user_token','mmr_user_refresh','mmr_user'].forEach(k => this.saveAuthItem(k, null));
     this._user$.next(null);
     this.router.navigate(['/login']).then(() => {
       this.isLoggingOut = false;
@@ -114,55 +133,61 @@ export class AuthService {
     const user = this.getUser();
     return user?.role === 'Associate' || user?.user_type === 'Associate' || user?.is_associate === true;
   }
+
   isApprovedUser(): boolean {
     const user = this.getUser();
-    return user?.account_status === 'Active' || user?.account_status === 'Approved';
+    if (!user) return false;
+    const status = String(user.account_status || user.status || 'Active').toLowerCase();
+    return status === 'active' || status === 'approved';
   }
+
   isInvestorLoggedIn(): boolean {
-    return !!sessionStorage.getItem('mmr_investor_token');
+    return !!this.getAuthItem('mmr_investor_token');
   }
+
   getInvestorUser(): any {
-    const s = sessionStorage.getItem('mmr_investor_user');
-    if (!s || s === 'undefined' || s === 'null') return null;
+    const s = this.getAuthItem('mmr_investor_user');
+    if (!s) return null;
     try { return JSON.parse(s); } catch { return null; }
   }
+
   logoutInvestor() {
     if (this.isLoggingOut) return;
     this.isLoggingOut = true;
-    ['mmr_investor_token', 'mmr_investor_user'].forEach(k => {
-      sessionStorage.removeItem(k);
-      localStorage.removeItem(k);
-    });
+    ['mmr_investor_token', 'mmr_investor_user'].forEach(k => this.saveAuthItem(k, null));
     this._investorUser$.next(null);
     this.router.navigate(['/login']).then(() => {
       this.isLoggingOut = false;
     });
   }
+
   setInvestorSession(tokenOrData: any, userObj?: any) {
     if (!tokenOrData) return;
     this.clearAllAuthStorage();
     if (typeof tokenOrData === 'string') {
-      sessionStorage.setItem('mmr_investor_token', tokenOrData);
+      this.saveAuthItem('mmr_investor_token', tokenOrData);
       if (userObj) {
-        sessionStorage.setItem('mmr_investor_user', JSON.stringify(userObj));
+        this.saveAuthItem('mmr_investor_user', JSON.stringify(userObj));
         this._investorUser$.next(userObj);
       }
     } else {
-      if (tokenOrData.token) sessionStorage.setItem('mmr_investor_token', tokenOrData.token);
-      const user = tokenOrData.user || tokenOrData.investor;
+      if (tokenOrData.token) this.saveAuthItem('mmr_investor_token', tokenOrData.token);
+      const user = tokenOrData.user || tokenOrData.investor || userObj;
       if (user) {
-        sessionStorage.setItem('mmr_investor_user', JSON.stringify(user));
+        this.saveAuthItem('mmr_investor_user', JSON.stringify(user));
         this._investorUser$.next(user);
       }
     }
   }
+
   updateInvestorUser(user: any) {
     if (user) {
-      sessionStorage.setItem('mmr_investor_user', JSON.stringify(user));
+      this.saveAuthItem('mmr_investor_user', JSON.stringify(user));
       this._investorUser$.next(user);
     }
   }
-  handleAuthExpired(scope?: string, url?: string) {
+
+  handleAuthExpired(scope?: string, _url?: string) {
     if (scope === 'admin') {
       this.logoutAdmin();
     } else {

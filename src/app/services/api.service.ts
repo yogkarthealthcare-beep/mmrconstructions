@@ -12,7 +12,7 @@ export class ApiService {
 
   private headers(admin = false): HttpHeaders {
     const getToken = (key: string) => {
-      const v = localStorage.getItem(key);
+      const v = sessionStorage.getItem(key) || localStorage.getItem(key);
       return (v && v !== 'undefined' && v !== 'null') ? v : null;
     };
 

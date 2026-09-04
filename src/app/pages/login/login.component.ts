@@ -86,11 +86,15 @@ export class LoginComponent implements OnInit {
     this.api.login(cleanInput, otpCode, password).subscribe({
       next: (res: any) => {
         if (res && res.success) {
-          this.auth.setUserSession(res.data || res);
-
           const userObj = res.data?.user || res.user || res.data || {};
           const userType = String(userObj.user_type || userObj.role || res.data?.user_type || res.user_type || '').toLowerCase();
-          
+
+          if (userType.includes('investor')) {
+            this.auth.setInvestorSession(res.data?.token || res.token || res.data, userObj);
+          } else {
+            this.auth.setUserSession(res.data || res);
+          }
+
           let targetDashboard = '/customer/dashboard';
           if (userType.includes('associate')) {
             targetDashboard = '/associate/dashboard';
@@ -102,7 +106,7 @@ export class LoginComponent implements OnInit {
             targetDashboard = '/customer/dashboard';
           }
 
-          const isInvalidReturn = (url?: string) => !url || url === '/' || url === '/home' || url === '/login' || url.includes('/login');
+          const isInvalidReturn = (url?: string) => !url || url === '/' || url === '/home' || url === '/login' || url.includes('/login') || url === '/unauthorized';
 
           let destination = targetDashboard;
           if (this.returnUrl && !isInvalidReturn(this.returnUrl)) {

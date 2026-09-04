@@ -308,7 +308,9 @@
     </label>
     <div class="modal-btns">
       <button type="button" class="btn-cancel" (click)="showModal = false">Cancel</button>
-      <button type="button" class="btn-confirm" [disabled]="!modalAgreeCheck" (click)="confirmAndSubmit()">Confirm & Submit</button>
+      <button type="button" class="btn-confirm" [disabled]="!modalAgreeCheck || submitting" (click)="confirmAndSubmit()">
+        {{ submitting ? 'Submitting...' : 'Confirm & Submit' }}
+      </button>
     </div>
   </div>
 </div>
