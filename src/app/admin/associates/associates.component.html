@@ -124,7 +124,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let a of filtered">
+        <tr *ngFor="let a of filtered"
+            [class.row-disabled-free]="isFreeOrDisabled(a)"
+            (mouseenter)="onRowMouseEnter(a, $event)"
+            (mousemove)="onRowMouseMove($event)"
+            (mouseleave)="onRowMouseLeave()"
+            (click)="onRowClick(a, $event)"
+            (dblclick)="onRowDblClick(a, $event)">
           <td>
             <div class="d-flex align-items-center gap-2.5">
               <div class="user-avatar-circle bg-gold-avatar">
@@ -133,6 +139,9 @@
               <div>
                 <div class="fw-700 text-dark fs-12">{{ a.full_name }}</div>
                 <div class="fs-10 text-muted"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ a.member_id || '—' }}</div>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-9 py-0 px-1 mt-0.5" *ngIf="isFreeOrDisabled(a)">
+                  Disabled / Free
+                </span>
               </div>
             </div>
           </td>
@@ -155,51 +164,72 @@
           </td>
           <td>
             <span class="sbadge"
-              [class.sbadge-green]="a.account_status==='Active'"
-              [class.sbadge-yellow]="a.account_status==='Pending'"
-              [class.sbadge-red]="a.account_status==='Suspended'||a.account_status==='Blacklisted'">
-              {{ a.account_status }}
+              [class.sbadge-green]="!isFreeOrDisabled(a) && a.account_status==='Active'"
+              [class.sbadge-yellow]="!isFreeOrDisabled(a) && a.account_status==='Pending'"
+              [class.sbadge-red]="isFreeOrDisabled(a)">
+              {{ isFreeOrDisabled(a) ? (a.account_status || 'Disabled / Free') : a.account_status }}
             </span>
           </td>
           <td class="text-end">
-            <div class="dropdown d-inline-block position-relative">
-              <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === a.user_id ? null : a.user_id)">
-                <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
-              </button>
+            <ng-container *ngIf="!isFreeOrDisabled(a)">
+              <div class="dropdown d-inline-block position-relative">
+                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === a.user_id ? null : a.user_id)">
+                  <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
+                </button>
 
-              <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 175px; border-radius: 10px;" *ngIf="activeRowId === a.user_id" (click)="$event.stopPropagation()">
-                <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="impersonateAssociate(a); activeRowId = null">
-                  <i class="fas fa-sign-in-alt text-primary me-2 width-16"></i> Login as User
-                </button>
-                <div class="dropdown-divider my-1"></div>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openDetailModal(a); activeRowId = null">
-                  <i class="fas fa-sitemap text-info me-2 width-16"></i> KYC &amp; Network
-                </button>
-                <div class="dropdown-divider my-1"></div>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="deleteAssociate(a); activeRowId = null">
-                  <i class="fas fa-trash-alt text-danger me-2 width-16"></i> Delete Associate
-                </button>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openEditModal(a); activeRowId = null">
-                  <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Rank/Details
-                </button>
-                <div class="dropdown-divider my-1"></div>
-                <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + a.mobile_no">
-                  <i class="fas fa-phone text-secondary me-2 width-16"></i> Call Associate
-                </a>
-                <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + a.mobile_no" target="_blank">
-                  <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
-                </a>
-                <div class="dropdown-divider my-1"></div>
-                <button type="button" class="dropdown-item py-1.5 px-3 fw-600 d-flex align-items-center" [class.text-danger]="a.account_status==='Active'" [class.text-success]="a.account_status!=='Active'" (click)="toggleAssociateStatus(a); activeRowId = null">
-                  <i [class]="a.account_status==='Active' ? 'fas fa-ban me-2 width-16' : 'fas fa-check me-2 width-16'"></i>
-                  {{ a.account_status==='Active' ? 'Suspend Agent' : 'Activate Agent' }}
-                </button>
+                <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 175px; border-radius: 10px;" *ngIf="activeRowId === a.user_id" (click)="$event.stopPropagation()">
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="impersonateAssociate(a); activeRowId = null">
+                    <i class="fas fa-sign-in-alt text-primary me-2 width-16"></i> Login as User
+                  </button>
+                  <div class="dropdown-divider my-1"></div>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openDetailModal(a); activeRowId = null">
+                    <i class="fas fa-sitemap text-info me-2 width-16"></i> KYC &amp; Network
+                  </button>
+                  <div class="dropdown-divider my-1"></div>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="deleteAssociate(a); activeRowId = null">
+                    <i class="fas fa-trash-alt text-danger me-2 width-16"></i> Delete Associate
+                  </button>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openEditModal(a); activeRowId = null">
+                    <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Rank/Details
+                  </button>
+                  <div class="dropdown-divider my-1"></div>
+                  <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + a.mobile_no">
+                    <i class="fas fa-phone text-secondary me-2 width-16"></i> Call Associate
+                  </a>
+                  <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + a.mobile_no" target="_blank">
+                    <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
+                  </a>
+                  <div class="dropdown-divider my-1"></div>
+                  <button type="button" class="dropdown-item py-1.5 px-3 fw-600 d-flex align-items-center" [class.text-danger]="a.account_status==='Active'" [class.text-success]="a.account_status!=='Active'" (click)="toggleAssociateStatus(a); activeRowId = null">
+                    <i [class]="a.account_status==='Active' ? 'fas fa-ban me-2 width-16' : 'fas fa-check me-2 width-16'"></i>
+                    {{ a.account_status==='Active' ? 'Suspend Agent' : 'Activate Agent' }}
+                  </button>
+                </div>
               </div>
-            </div>
+            </ng-container>
+
+            <ng-container *ngIf="isFreeOrDisabled(a)">
+              <span class="badge bg-light text-muted border fs-10 py-1 px-2" title="Disabled / Free Account (Hover to view details)">
+                <i class="fas fa-lock me-1"></i> Disabled
+              </span>
+            </ng-container>
           </td>
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Floating Hover Tooltip for Associate Records -->
+  <div class="admin-hover-tooltip" *ngIf="hoveredAssociate" [style.left.px]="tooltipPos.x" [style.top.px]="tooltipPos.y">
+    <div class="fw-700 text-white fs-13 mb-1">{{ hoveredAssociate.full_name }}</div>
+    <div class="fs-11 text-slate-300 mb-0.5"><strong>Member ID:</strong> {{ hoveredAssociate.member_id || '—' }}</div>
+    <div class="fs-11 text-slate-300 mb-0.5"><strong>Invite Code:</strong> {{ hoveredAssociate.invitation_code || '—' }}</div>
+    <div class="fs-11 text-slate-300 mb-0.5"><strong>Mobile:</strong> {{ hoveredAssociate.mobile_no }}</div>
+    <div class="fs-11 text-slate-300 mb-0.5"><strong>Email:</strong> {{ hoveredAssociate.email || '—' }}</div>
+    <div class="fs-11 text-slate-300 mb-0.5"><strong>Rank:</strong> {{ hoveredAssociate.rank_name || 'Associate' }}</div>
+    <div class="fs-11 text-slate-300 mb-1"><strong>Joined:</strong> {{ hoveredAssociate.registered_at | date:'dd MMM yyyy' }}</div>
+    <div class="badge mt-1" [class.bg-success]="!isFreeOrDisabled(hoveredAssociate) && hoveredAssociate.account_status==='Active'" [class.bg-danger]="isFreeOrDisabled(hoveredAssociate)">
+      {{ isFreeOrDisabled(hoveredAssociate) ? 'Disabled / Free Record (Hover only)' : (hoveredAssociate.account_status || 'Active') }}
   </div>
 </div>
 

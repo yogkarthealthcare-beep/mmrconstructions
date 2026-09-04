@@ -38,6 +38,10 @@ export class ReferralComponent implements OnInit {
   copied = false;
   copiedLink = false;
 
+  // Hover Tooltip for List
+  hoveredMember: any = null;
+  tooltipPos = { x: 0, y: 0 };
+
   constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit() {
@@ -248,5 +252,35 @@ export class ReferralComponent implements OnInit {
   shareWhatsApp() {
     const msg = encodeURIComponent(`MMR Constructions & Developers में plot book करें! मेरा Referral Code: ${this.invitationCode} \nरजिस्टर करने के लिए लिंक: ${this.referralLink}`);
     window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+  }
+
+  isFreeOrDisabled(node: TeamNode | any): boolean {
+    if (!node) return false;
+    const status = String(node.status || node.account_status || '').toLowerCase();
+    const isFree = node.is_free === true || node.isFree === true || node.user_type === 'Free' || node.rank === 'Free';
+    return isFree || status === 'free' || status === 'inactive' || status === 'pending' || status === 'disabled' || status === 'suspended' || status === 'blacklisted';
+  }
+
+  onNodeClick(node: TeamNode, event: MouseEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.isFreeOrDisabled(node)) {
+      return; // Single click disabled
+    }
+  }
+
+  onNodeDblClick(node: TeamNode, event: MouseEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+    return; // Double click disabled
+  }
+
+  showListTooltip(m: any, event: MouseEvent): void {
+    this.hoveredMember = m;
+    this.tooltipPos = { x: event.clientX + 12, y: event.clientY + 12 };
+  }
+
+  hideListTooltip(): void {
+    this.hoveredMember = null;
   }
 }

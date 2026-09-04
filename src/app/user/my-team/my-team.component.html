@@ -37,6 +37,25 @@
     </div>
   </div>
 
+  <!-- SPONSOR DETAILS BANNER (Visible for Logged-In User) -->
+  <div class="sponsor-hero-bar panel-card p-3 mb-2" *ngIf="sponsorInfo">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2.5">
+        <div class="avatar-sponsor bg-gold text-dark fw-700 px-2.5 py-1 rounded-8 fs-11">
+          <i class="fas fa-user-shield me-1"></i> SPONSOR
+        </div>
+        <div>
+          <span class="fs-11 text-muted text-uppercase fw-600">Your Introducer / Sponsor:</span>
+          <div class="fw-700 text-dark fs-13">{{ sponsorInfo.name }} <span class="badge bg-light text-dark border ms-1">ID: {{ sponsorInfo.id }}</span></div>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-3 fs-12 text-muted" *ngIf="sponsorInfo.mobile || sponsorInfo.email">
+        <span *ngIf="sponsorInfo.mobile"><i class="fas fa-phone-alt text-success me-1"></i>{{ sponsorInfo.mobile }}</span>
+        <span *ngIf="sponsorInfo.email"><i class="fas fa-envelope text-gold me-1"></i>{{ sponsorInfo.email }}</span>
+      </div>
+    </div>
+  </div>
+
   <!-- METRICS SUMMARY CARDS -->
   <div class="row g-2 mb-2">
     <div class="col-6 col-md-3">
@@ -97,7 +116,7 @@
         <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 130px;">
           <option value="all">All Status</option>
           <option value="active">Active Only</option>
-          <option value="inactive">Inactive</option>
+          <option value="inactive">Inactive / Free</option>
         </select>
       </div>
 
@@ -151,18 +170,27 @@
         <div class="tree-node-wrapper" [class.root-wrapper]="isRoot">
           
           <!-- NODE CARD (SQUARE BOX) -->
-          <div class="tree-card" [class.card-root]="isRoot" [class.card-active]="node.status==='Active'" [class.card-inactive]="node.status!=='Active'">
+          <div class="tree-card"
+               [class.card-root]="isRoot"
+               [class.card-active]="!isFreeOrDisabled(node) && node.status==='Active'"
+               [class.card-inactive]="isFreeOrDisabled(node) || node.status!=='Active'"
+               [class.card-disabled]="isFreeOrDisabled(node)"
+               (click)="onNodeClick(node, $event)"
+               (dblclick)="onNodeDblClick(node, $event)">
             
             <!-- Default Visible Content: Profile Icon, Name, ID & Account Type -->
             <div class="node-main-box">
               <div class="node-avatar" [class.avatar-root]="isRoot">
                 {{ getNodeInitials(node.full_name) }}
-                <span class="status-pulse" [class.bg-success]="node.status==='Active'" [class.bg-danger]="node.status!=='Active'" [title]="node.status"></span>
+                <span class="status-pulse" [class.bg-success]="!isFreeOrDisabled(node) && node.status==='Active'" [class.bg-danger]="isFreeOrDisabled(node)" [title]="isFreeOrDisabled(node) ? 'Disabled / Free Account' : node.status"></span>
               </div>
               <h6 class="node-name" [title]="node.full_name">{{ node.full_name }}</h6>
               <span class="node-id-chip">{{ node.member_id }}</span>
               <span class="node-role-badge" [class.badge-root]="isRoot">
                 {{ isRoot ? 'Root Associate' : (node.user_type || node.rank || 'Associate') }}
+              </span>
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-10 mt-1 d-block" *ngIf="isFreeOrDisabled(node)">
+                Disabled / Free
               </span>
             </div>
 
@@ -170,18 +198,22 @@
             <div class="node-hover-tooltip">
               <div class="tooltip-header">
                 <div class="tooltip-title">{{ node.full_name }}</div>
-                <span class="badge" [class.bg-success]="node.status==='Active'" [class.bg-danger]="node.status!=='Active'">
-                  {{ node.status || 'Active' }}
+                <span class="badge" [class.bg-success]="!isFreeOrDisabled(node) && node.status==='Active'" [class.bg-danger]="isFreeOrDisabled(node)">
+                  {{ isFreeOrDisabled(node) ? 'Disabled / Free' : (node.status || 'Active') }}
                 </span>
               </div>
               <div class="tooltip-body">
                 <div class="tt-row"><span>ID:</span> <strong>{{ node.member_id }}</strong></div>
                 <div class="tt-row"><span>Role:</span> <strong>{{ node.user_type || node.rank || 'Associate' }}</strong></div>
+                <div class="tt-row" *ngIf="node.sponsor_user_id"><span>Sponsor ID:</span> <strong>#{{ node.sponsor_user_id }}</strong></div>
                 <div class="tt-row" *ngIf="node.mobile_no"><span>Mobile:</span> <strong>{{ node.mobile_no }}</strong></div>
                 <div class="tt-row" *ngIf="node.email"><span>Email:</span> <strong>{{ node.email }}</strong></div>
                 <div class="tt-divider"></div>
                 <div class="tt-row"><span>Sales:</span> <strong class="text-success">{{ node.total_gaj_sold || 0 }} Gaj</strong></div>
                 <div class="tt-row"><span>Earned:</span> <strong class="text-warning">₹{{ (node.commission_earned || 0) | number }}</strong></div>
+                <div class="tt-row text-danger fs-11 mt-1" *ngIf="isFreeOrDisabled(node)">
+                  <i class="fas fa-lock me-1"></i> Disabled account (Hover only)
+                </div>
               </div>
             </div>
 
@@ -215,7 +247,7 @@
   </div>
 
   <!-- VIEW 2: COMPACT LIST / TABLE VIEW -->
-  <div class="panel-card mb-4 overflow-hidden" *ngIf="viewMode==='list'">
+  <div class="panel-card mb-4 overflow-hidden position-relative" *ngIf="viewMode==='list'">
     <div class="table-responsive">
       <table class="table align-middle custom-team-table mb-0">
         <thead>
@@ -235,7 +267,11 @@
               No matching team members found for search criteria.
             </td>
           </tr>
-          <tr *ngFor="let m of filteredFlatList">
+          <tr *ngFor="let m of filteredFlatList"
+              [class.table-disabled-row]="isFreeOrDisabled(m)"
+              (mouseenter)="showListTooltip(m, $event)"
+              (mousemove)="showListTooltip(m, $event)"
+              (mouseleave)="hideListTooltip()">
             <td>
               <span class="member-code-badge"><i class="fas fa-id-badge me-1"></i>{{ m.member_id }}</span>
             </td>
@@ -258,18 +294,38 @@
               <span class="fw-700 text-gold-dark">₹{{ (m.total_commission_earned || 0) | number }}</span>
             </td>
             <td>
-              <span class="sbadge" [class.sbadge-green]="m.account_status==='Active'" [class.sbadge-yellow]="m.account_status!=='Active'">
-                {{ m.account_status || 'Active' }}
+              <span class="sbadge" [class.sbadge-green]="!isFreeOrDisabled(m) && m.account_status==='Active'" [class.sbadge-red]="isFreeOrDisabled(m)" [class.sbadge-yellow]="!isFreeOrDisabled(m) && m.account_status!=='Active'">
+                {{ isFreeOrDisabled(m) ? 'Disabled / Free' : (m.account_status || 'Active') }}
               </span>
             </td>
             <td>
-              <a href="tel:{{m.mobile_no}}" class="btn btn-outline-green btn-xs" *ngIf="m.mobile_no">
-                <i class="fas fa-phone-alt me-1"></i> Call
-              </a>
+              <ng-container *ngIf="!isFreeOrDisabled(m)">
+                <a href="tel:{{m.mobile_no}}" class="btn btn-outline-green btn-xs" *ngIf="m.mobile_no">
+                  <i class="fas fa-phone-alt me-1"></i> Call
+                </a>
+              </ng-container>
+              <ng-container *ngIf="isFreeOrDisabled(m)">
+                <span class="badge bg-light text-muted border fs-10 py-1 px-2" title="Disabled / Free Account">
+                  <i class="fas fa-lock me-1"></i> Disabled
+                </span>
+              </ng-container>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Floating List Tooltip on Row Hover -->
+    <div class="list-hover-tooltip" *ngIf="hoveredMember" [style.left.px]="tooltipPos.x" [style.top.px]="tooltipPos.y">
+      <div class="fw-700 text-dark fs-13 mb-1">{{ hoveredMember.full_name }}</div>
+      <div class="fs-11 text-muted mb-1"><strong>ID:</strong> {{ hoveredMember.member_id }} | <strong>Sponsor:</strong> #{{ hoveredMember.sponsor_user_id || '—' }}</div>
+      <div class="fs-11 text-muted mb-1" *ngIf="hoveredMember.mobile_no"><strong>Mobile:</strong> {{ hoveredMember.mobile_no }}</div>
+      <div class="fs-11 text-muted mb-1" *ngIf="hoveredMember.email"><strong>Email:</strong> {{ hoveredMember.email }}</div>
+      <div class="fs-11 text-muted mb-1"><strong>Sales:</strong> {{ hoveredMember.total_gaj_sold || 0 }} Gaj</div>
+      <div class="fs-11 text-muted mb-1"><strong>Earnings:</strong> ₹{{ (hoveredMember.total_commission_earned || 0) | number }}</div>
+      <div class="badge mt-1" [class.bg-success]="!isFreeOrDisabled(hoveredMember) && hoveredMember.account_status==='Active'" [class.bg-danger]="isFreeOrDisabled(hoveredMember)">
+        {{ isFreeOrDisabled(hoveredMember) ? 'Disabled / Free Record' : (hoveredMember.account_status || 'Active') }}
+      </div>
     </div>
   </div>
 

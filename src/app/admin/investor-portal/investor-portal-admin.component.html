@@ -82,10 +82,19 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let inv of investors">
+          <tr *ngFor="let inv of investors"
+              [class.row-disabled-free]="isFreeOrDisabled(inv)"
+              (mouseenter)="onRowMouseEnter(inv, $event)"
+              (mousemove)="onRowMouseMove($event)"
+              (mouseleave)="onRowMouseLeave()"
+              (click)="onRowClick(inv, $event)"
+              (dblclick)="onRowDblClick(inv, $event)">
             <td class="ps-3">
               <div class="fw-bold fs-13 text-dark text-truncate" [title]="inv.full_name">{{ inv.full_name }}</div>
               <div class="fs-11 text-muted text-truncate" [title]="inv.city + ', ' + inv.state">{{ inv.city }}, {{ inv.state }}</div>
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-9 py-0 px-1 mt-0.5" *ngIf="isFreeOrDisabled(inv)">
+                Disabled / Free
+              </span>
             </td>
             <td>
               <div class="fs-12 text-truncate" [title]="inv.email">{{ inv.email }}</div>
@@ -104,16 +113,21 @@
                   'fas fa-check-double': inv.status === 'approved' || inv.status === 'active',
                   'fas fa-times-circle': inv.status === 'rejected' || inv.status === 'inactive'
                 }"></i>
-                {{ inv.status }}
+                {{ isFreeOrDisabled(inv) ? (inv.status || 'Disabled / Free') : inv.status }}
               </span>
             </td>
             <td class="text-end pe-3 text-nowrap">
-              <div class="d-flex align-items-center justify-content-end gap-1">
+              <div class="d-flex align-items-center justify-content-end gap-1" *ngIf="!isFreeOrDisabled(inv)">
                 <button *ngIf="inv.status === 'approved' || inv.status === 'active'" class="action-btn-micro btn-outline-blue" title="Login as Investor" (click)="loginAsInvestor(inv)"><i class="fas fa-sign-in-alt"></i> Login</button>
                 <button *ngIf="inv.status === 'pending'" class="action-btn-micro btn-approve-emerald" (click)="toggleInvestorStatus(inv, 'approved')"><i class="fas fa-check"></i> Approve</button>
                 <button *ngIf="inv.status === 'pending'" class="action-btn-micro btn-reject-red" (click)="toggleInvestorStatus(inv, 'rejected')"><i class="fas fa-times"></i> Reject</button>
                 <button *ngIf="inv.status === 'approved' || inv.status === 'active'" class="action-btn-micro btn-reject-red" (click)="toggleInvestorStatus(inv, 'inactive')"><i class="fas fa-ban"></i> Deactivate</button>
                 <button *ngIf="inv.status === 'inactive' || inv.status === 'rejected'" class="action-btn-micro btn-approve-emerald" (click)="toggleInvestorStatus(inv, 'approved')"><i class="fas fa-check"></i> Activate</button>
+              </div>
+              <div *ngIf="isFreeOrDisabled(inv)">
+                <span class="badge bg-light text-muted border fs-10 py-1 px-2" title="Disabled / Free Account (Hover to view details)">
+                  <i class="fas fa-lock me-1"></i> Disabled
+                </span>
               </div>
             </td>
           </tr>
@@ -122,6 +136,20 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Floating Hover Tooltip for Investor Records -->
+    <div class="admin-hover-tooltip" *ngIf="hoveredInvestor" [style.left.px]="tooltipPos.x" [style.top.px]="tooltipPos.y">
+      <div class="fw-700 text-white fs-13 mb-1">{{ hoveredInvestor.full_name }}</div>
+      <div class="fs-11 text-slate-300 mb-0.5"><strong>ID:</strong> #{{ hoveredInvestor.id }} | <strong>Sponsor:</strong> {{ hoveredInvestor.sponsor_invite_code || 'MMR0001' }}</div>
+      <div class="fs-11 text-slate-300 mb-0.5"><strong>Mobile:</strong> {{ hoveredInvestor.mobile_number }}</div>
+      <div class="fs-11 text-slate-300 mb-0.5"><strong>Email:</strong> {{ hoveredInvestor.email }}</div>
+      <div class="fs-11 text-slate-300 mb-0.5" *ngIf="hoveredInvestor.city || hoveredInvestor.state"><strong>Location:</strong> {{ hoveredInvestor.city }}, {{ hoveredInvestor.state }}</div>
+      <div class="fs-11 text-slate-300 mb-0.5"><strong>Investment:</strong> ₹{{ (hoveredInvestor.total_investment || 0) | number:'1.2-2' }}</div>
+      <div class="fs-11 text-slate-300 mb-1"><strong>Balance:</strong> ₹{{ (hoveredInvestor.available_balance || 0) | number:'1.2-2' }}</div>
+      <div class="badge" [class.bg-success]="!isFreeOrDisabled(hoveredInvestor) && (hoveredInvestor.status==='approved' || hoveredInvestor.status==='active')" [class.bg-danger]="isFreeOrDisabled(hoveredInvestor)">
+        {{ isFreeOrDisabled(hoveredInvestor) ? 'Disabled / Free Record (Hover only)' : (hoveredInvestor.status || 'Active') }}
+      </div>
     </div>
   </div>
 </div>

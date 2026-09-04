@@ -32,7 +32,47 @@ export class AdminInvestorPortalComponent implements OnInit {
   adminRemarks = '';
   processingAction = false;
 
+  // Hover Tooltip for Free/Disabled and Row Records
+  hoveredInvestor: any = null;
+  tooltipPos = { x: 0, y: 0 };
+
   constructor(private api: ApiService) {}
+
+  isFreeOrDisabled(inv: any): boolean {
+    if (!inv) return false;
+    const status = String(inv.status || inv.account_status || '').toLowerCase();
+    const isFree = inv.is_free === true || inv.isFree === true || inv.user_type === 'Free';
+    return isFree || status === 'free' || status === 'inactive' || status === 'pending' || status === 'rejected' || status === 'disabled' || status === 'suspended';
+  }
+
+  onRowMouseEnter(inv: any, event: MouseEvent) {
+    this.hoveredInvestor = inv;
+    this.tooltipPos = { x: event.clientX + 15, y: event.clientY + 15 };
+  }
+
+  onRowMouseMove(event: MouseEvent) {
+    if (this.hoveredInvestor) {
+      this.tooltipPos = { x: event.clientX + 15, y: event.clientY + 15 };
+    }
+  }
+
+  onRowMouseLeave() {
+    this.hoveredInvestor = null;
+  }
+
+  onRowClick(inv: any, event: MouseEvent) {
+    if (this.isFreeOrDisabled(inv)) {
+      event.stopPropagation();
+      event.preventDefault();
+      return;
+    }
+  }
+
+  onRowDblClick(inv: any, event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    return;
+  }
 
   ngOnInit() {
     this.loadData();

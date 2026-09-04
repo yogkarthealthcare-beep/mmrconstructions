@@ -124,7 +124,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let a of investors">
+        <tr *ngFor="let a of investors"
+            [class.row-disabled-free]="isFreeOrDisabled(a)"
+            (mouseenter)="onRowMouseEnter(a, $event)"
+            (mousemove)="onRowMouseMove($event)"
+            (mouseleave)="onRowMouseLeave()"
+            (click)="onRowClick(a, $event)"
+            (dblclick)="onRowDblClick(a, $event)">
           <td>
             <div class="d-flex align-items-center gap-2.5">
               <div class="user-avatar-circle bg-gold-avatar">
@@ -133,6 +139,9 @@
               <div>
                 <div class="fw-700 text-dark fs-12">{{ a.full_name }}</div>
                 <div class="fs-10 text-muted"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ a.member_id || a.id || '—' }}</div>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-9 py-0 px-1 mt-0.5" *ngIf="isFreeOrDisabled(a)">
+                  Disabled / Free
+                </span>
               </div>
             </div>
           </td>
@@ -155,54 +164,62 @@
           </td>
           <td>
             <span class="sbadge"
-              [class.sbadge-green]="(a.status || a.account_status | lowercase) === 'active'"
-              [class.sbadge-yellow]="(a.status || a.account_status | lowercase) === 'pending'"
-              [class.sbadge-red]="(a.status || a.account_status | lowercase) === 'suspended'||(a.status || a.account_status | lowercase) === 'blacklisted'">
-              {{ (a.status || a.account_status | uppercase) || 'ACTIVE' }}
+              [class.sbadge-green]="!isFreeOrDisabled(a) && (a.status || a.account_status | lowercase) === 'active'"
+              [class.sbadge-yellow]="!isFreeOrDisabled(a) && (a.status || a.account_status | lowercase) === 'pending'"
+              [class.sbadge-red]="isFreeOrDisabled(a)">
+              {{ isFreeOrDisabled(a) ? (a.status || a.account_status || 'DISABLED / FREE' | uppercase) : ((a.status || a.account_status | uppercase) || 'ACTIVE') }}
             </span>
           </td>
           <td class="text-end">
-            <div class="dropdown d-inline-block position-relative">
-              <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === a.id ? null : a.id)">
-                <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
-              </button>
-
-              <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 175px; border-radius: 10px;" *ngIf="activeRowId === a.id" (click)="$event.stopPropagation()">
-                <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="loginAsInvestor(a); activeRowId = null">
-                  <i class="fas fa-sign-in-alt text-primary me-2 width-16" [ngClass]="{'fa-spinner fa-spin': loginLoadingId === a.id}"></i> Login as User
-                </button>
-                <div class="dropdown-divider my-1"></div>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [routerLink]="['/admin/investor-enrollments', a.id]" (click)="activeRowId = null">
-                  <i class="fas fa-eye text-info me-2 width-16"></i> View Profile & Details
-                </button>
-                
-                <div class="dropdown-divider my-1"></div>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" *ngIf="(a.status || a.account_status | lowercase) !== 'active'" (click)="updateInvestorStatus(a, 'active', true); activeRowId = null">
-                  <i class="fas fa-check-circle text-success me-2 width-16"></i> Approve Investor
-                </button>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-warning fw-600 d-flex align-items-center" *ngIf="(a.status || a.account_status | lowercase) !== 'pending'" (click)="updateInvestorStatus(a, 'pending', false); activeRowId = null">
-                  <i class="fas fa-clock text-warning me-2 width-16"></i> Mark as Pending
-                </button>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" *ngIf="(a.status || a.account_status | lowercase) !== 'suspended' && (a.status || a.account_status | lowercase) !== 'blacklisted'" (click)="updateInvestorStatus(a, 'suspended', false); activeRowId = null">
-                  <i class="fas fa-ban text-danger me-2 width-16"></i> Suspend/Reject
+            <ng-container *ngIf="!isFreeOrDisabled(a)">
+              <div class="dropdown d-inline-block position-relative">
+                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === a.id ? null : a.id)">
+                  <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
                 </button>
 
-                <div class="dropdown-divider my-1"></div>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="deleteInvestor(a); activeRowId = null">
-                  <i class="fas fa-trash-alt text-danger me-2 width-16"></i> Delete Investor
-                </button>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [routerLink]="['/admin/investor-enrollments', a.id]" (click)="activeRowId = null">
-                  <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Information
-                </button>
-                <div class="dropdown-divider my-1"></div>
-                <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + (a.mobile_no || a.mobile_number)">
-                  <i class="fas fa-phone text-secondary me-2 width-16"></i> Call Investor
-                </a>
-                <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + (a.mobile_no || a.mobile_number)" target="_blank">
-                  <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
-                </a>
+                <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 175px; border-radius: 10px;" *ngIf="activeRowId === a.id" (click)="$event.stopPropagation()">
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="loginAsInvestor(a); activeRowId = null">
+                    <i class="fas fa-sign-in-alt text-primary me-2 width-16" [ngClass]="{'fa-spinner fa-spin': loginLoadingId === a.id}"></i> Login as User
+                  </button>
+                  <div class="dropdown-divider my-1"></div>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [routerLink]="['/admin/investor-enrollments', a.id]" (click)="activeRowId = null">
+                    <i class="fas fa-eye text-info me-2 width-16"></i> View Profile & Details
+                  </button>
+                  
+                  <div class="dropdown-divider my-1"></div>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" *ngIf="(a.status || a.account_status | lowercase) !== 'active'" (click)="updateInvestorStatus(a, 'active', true); activeRowId = null">
+                    <i class="fas fa-check-circle text-success me-2 width-16"></i> Approve Investor
+                  </button>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-warning fw-600 d-flex align-items-center" *ngIf="(a.status || a.account_status | lowercase) !== 'pending'" (click)="updateInvestorStatus(a, 'pending', false); activeRowId = null">
+                    <i class="fas fa-clock text-warning me-2 width-16"></i> Mark as Pending
+                  </button>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" *ngIf="(a.status || a.account_status | lowercase) !== 'suspended' && (a.status || a.account_status | lowercase) !== 'blacklisted'" (click)="updateInvestorStatus(a, 'suspended', false); activeRowId = null">
+                    <i class="fas fa-ban text-danger me-2 width-16"></i> Suspend/Reject
+                  </button>
+
+                  <div class="dropdown-divider my-1"></div>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="deleteInvestor(a); activeRowId = null">
+                    <i class="fas fa-trash-alt text-danger me-2 width-16"></i> Delete Investor
+                  </button>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [routerLink]="['/admin/investor-enrollments', a.id]" (click)="activeRowId = null">
+                    <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Information
+                  </button>
+                  <div class="dropdown-divider my-1"></div>
+                  <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + (a.mobile_no || a.mobile_number)">
+                    <i class="fas fa-phone text-secondary me-2 width-16"></i> Call Investor
+                  </a>
+                  <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + (a.mobile_no || a.mobile_number)" target="_blank">
+                    <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
+                  </a>
+                </div>
               </div>
-            </div>
+            </ng-container>
+
+            <ng-container *ngIf="isFreeOrDisabled(a)">
+              <span class="badge bg-light text-muted border fs-10 py-1 px-2" title="Disabled / Free Account (Hover to view details)">
+                <i class="fas fa-lock me-1"></i> Disabled
+              </span>
+            </ng-container>
           </td>
         </tr>
       </tbody>

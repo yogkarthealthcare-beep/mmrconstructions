@@ -18,7 +18,10 @@ type MlmNode = {
   mobile: string;
   email: string;
   joinDate: string;
-  status: 'Active' | 'Inactive';
+  status: 'Active' | 'Inactive' | 'Free';
+  isFree: boolean;
+  sponsorName?: string;
+  sponsorId?: string;
   directCount: number;
   teamCount: number;
   level: number;
@@ -67,6 +70,7 @@ export class MlmTreeComponent implements OnInit {
   root: MlmNode | null = null;
   flatNodes: MlmNode[] = [];
   maxDepthAllowed = 12;
+  sponsorInfo: { name: string; id: string; mobile?: string; email?: string } | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -122,6 +126,15 @@ export class MlmTreeComponent implements OnInit {
       const profile = this.audience === 'admin'
         ? (this.auth.getAdminUser() || { full_name: 'Admin', member_id: 'ADMIN' })
         : await this.loadProfile();
+
+      if (profile?.sponsor_name || profile?.sponsor_id) {
+        this.sponsorInfo = {
+          name: profile.sponsor_name || 'System Admin',
+          id: profile.sponsor_id || profile.sponsor_member_id || 'MMR0001',
+          mobile: profile.sponsor_mobile || '',
+          email: profile.sponsor_email || ''
+        };
+      }
 
       const network = await this.loadNetwork();
 
@@ -184,7 +197,7 @@ export class MlmTreeComponent implements OnInit {
     let attached = 0;
 
     for (const node of nodes) {
-      const parentKey = String((network.find(item => this.nodeId(item) === node.id) || {}).parent_member_id || (network.find(item => this.nodeId(item) === node.id) || {}).sponsor_member_id || '');
+      const parentKey = String((network.find(item => this.nodeId(item) === node.id) || {}).parent_member_id || (network.find(item => this.nodeId(item) === node.id) || {}).sponsor_user_id || (network.find(item => this.nodeId(item) === node.id) || {}).sponsor_member_id || '');
       const parent = byId.get(parentKey);
       if (parent && node.level > parent.level && node.level <= this.maxDepthAllowed) {
         parent.children.push(node);
@@ -211,6 +224,13 @@ export class MlmTreeComponent implements OnInit {
   private toNode(item: any, fallbackLevel: number, index: number): MlmNode {
     const direct = Number(item.direct_referrals || item.direct_count || item.direct_network_count || item.children_count || 0);
     const team = Number(item.total_team_count || item.team_count || item.total_network_count || item.total_downline || direct);
+    const rawStatus = String(item.account_status || item.status || 'Active').toLowerCase();
+    const isFree = item.is_free === true || item.isFree === true || rawStatus === 'free' || rawStatus === 'inactive' || rawStatus === 'pending' || rawStatus === 'suspended' || rawStatus === 'blacklisted';
+
+    let displayStatus: 'Active' | 'Inactive' | 'Free' = 'Active';
+    if (rawStatus === 'free') displayStatus = 'Free';
+    else if (rawStatus === 'inactive' || rawStatus === 'pending' || rawStatus === 'suspended' || rawStatus === 'blacklisted') displayStatus = 'Inactive';
+
     return {
       id: this.nodeId(item) || `node-${index}`,
       name: item.full_name || item.name || item.associate_name || item.email || 'Member',
@@ -219,7 +239,10 @@ export class MlmTreeComponent implements OnInit {
       mobile: item.mobile_no || item.mobile || '-',
       email: item.email || '-',
       joinDate: item.registered_at || item.created_at || item.join_date || item.joining_date || new Date().toISOString(),
-      status: String(item.account_status || item.status || 'Active').toLowerCase() === 'inactive' ? 'Inactive' : 'Active',
+      status: displayStatus,
+      isFree: isFree,
+      sponsorName: item.sponsor_name || '',
+      sponsorId: item.sponsor_id || item.sponsor_member_id || (item.sponsor_user_id ? String(item.sponsor_user_id) : ''),
       directCount: direct,
       teamCount: team,
       level: Math.min(Math.max(1, fallbackLevel || 1), this.maxDepthAllowed),
@@ -342,7 +365,34 @@ export class MlmTreeComponent implements OnInit {
     return [node.userId, node.memberCode, node.name].some(value => String(value || '').toLowerCase().includes(term));
   }
 
+  isFreeOrDisabled(node: MlmNode | any): boolean {
+    if (!node) return false;
+    if (node.isFree === true) return true;
+    const status = String(node.status || node.account_status || '').toLowerCase();
+    return status === 'free' || status === 'inactive' || status === 'pending' || status === 'disabled' || status === 'suspended' || status === 'blacklisted';
+  }
+
+  onNodeClick(node: MlmNode, event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    // 1. Single click MUST NOT work on Free/Disabled account records
+    if (this.isFreeOrDisabled(node)) {
+      return;
+    }
+    this.focusNode(node);
+  }
+
+  onNodeDblClick(node: MlmNode, event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    // 2. Double click MUST NOT work on Free/Disabled records (no action)
+    return;
+  }
+
   focusNode(node: MlmNode) {
+    if (this.isFreeOrDisabled(node)) {
+      return;
+    }
     this.focusedNode = node;
     node.loaded = true;
     node.expanded = true;

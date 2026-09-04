@@ -34,6 +34,7 @@ export class MyTeamComponent implements OnInit {
   loading = true;
   errorMsg = '';
   currentUser: any = null;
+  sponsorInfo: any = null;
   treeRoot: TeamMemberNode | null = null;
   flatList: any[] = [];
   viewMode: 'tree' | 'list' = 'tree';
@@ -42,6 +43,10 @@ export class MyTeamComponent implements OnInit {
   searchTerm = '';
   statusFilter = 'all';
   copiedLink = false;
+
+  // Hover Tooltip for List / Custom Records
+  hoveredMember: any = null;
+  tooltipPos = { x: 0, y: 0 };
 
   // Calculated Stats
   totalTeamCount = 0;
@@ -71,6 +76,14 @@ export class MyTeamComponent implements OnInit {
       if (profileRes?.success && profileRes?.data) {
         this.currentUser = profileRes.data;
         this.auth.setUserSession({ user: profileRes.data });
+        if (profileRes.data.sponsor_name || profileRes.data.sponsor_id) {
+          this.sponsorInfo = {
+            name: profileRes.data.sponsor_name || 'System Admin',
+            id: profileRes.data.sponsor_id || profileRes.data.sponsor_member_id || 'MMR0001',
+            mobile: profileRes.data.sponsor_mobile || '',
+            email: profileRes.data.sponsor_email || ''
+          };
+        }
       }
 
       const flatData = (networkRes?.success && Array.isArray(networkRes.data)) ? networkRes.data : [];
@@ -296,6 +309,38 @@ export class MyTeamComponent implements OnInit {
 
       return matchesSearch && matchesStatus;
     });
+  }
+
+  isFreeOrDisabled(node: TeamMemberNode | any): boolean {
+    if (!node) return false;
+    const status = String(node.status || node.account_status || '').toLowerCase();
+    const isFree = node.is_free === true || node.isFree === true || node.user_type === 'Free' || node.rank === 'Free';
+    return isFree || status === 'free' || status === 'inactive' || status === 'pending' || status === 'disabled' || status === 'suspended' || status === 'blacklisted';
+  }
+
+  onNodeClick(node: TeamMemberNode, event: MouseEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.isFreeOrDisabled(node)) {
+      // 1. Single click MUST NOT work on Free/Disabled records
+      return;
+    }
+  }
+
+  onNodeDblClick(node: TeamMemberNode, event: MouseEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+    // 2. Double click MUST NOT work on Free/Disabled records (no action)
+    return;
+  }
+
+  showListTooltip(m: any, event: MouseEvent): void {
+    this.hoveredMember = m;
+    this.tooltipPos = { x: event.clientX + 12, y: event.clientY + 12 };
+  }
+
+  hideListTooltip(): void {
+    this.hoveredMember = null;
   }
 
   clearSearch(): void {

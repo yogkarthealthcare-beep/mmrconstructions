@@ -54,11 +54,51 @@ export class CustomersComponent implements OnInit {
   actionLoading = false;
   toast = '';
 
+  // Hover Tooltip State for Free/Disabled and Row Records
+  hoveredCustomer: any = null;
+  tooltipPos = { x: 0, y: 0 };
+
   constructor(
     private api: ApiService,
     private auth: AuthService,
     private router: Router
   ) {}
+
+  isFreeOrDisabled(c: any): boolean {
+    if (!c) return false;
+    const status = String(c.account_status || c.status || '').toLowerCase();
+    const isFree = c.is_free === true || c.isFree === true || c.user_type === 'Free' || c.rank_name === 'Free';
+    return isFree || status === 'free' || status === 'inactive' || status === 'pending' || status === 'suspended' || status === 'blacklisted' || status === 'disabled';
+  }
+
+  onRowMouseEnter(c: any, event: MouseEvent) {
+    this.hoveredCustomer = c;
+    this.tooltipPos = { x: event.clientX + 15, y: event.clientY + 15 };
+  }
+
+  onRowMouseMove(event: MouseEvent) {
+    if (this.hoveredCustomer) {
+      this.tooltipPos = { x: event.clientX + 15, y: event.clientY + 15 };
+    }
+  }
+
+  onRowMouseLeave() {
+    this.hoveredCustomer = null;
+  }
+
+  onRowClick(c: any, event: MouseEvent) {
+    if (this.isFreeOrDisabled(c)) {
+      event.stopPropagation();
+      event.preventDefault();
+      return;
+    }
+  }
+
+  onRowDblClick(c: any, event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    return;
+  }
 
   ngOnInit() {
     this.load();

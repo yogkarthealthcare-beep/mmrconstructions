@@ -13,6 +13,18 @@
   </div>
 </div>
 
+<!-- Sponsor Information Banner for Logged-In User -->
+<div class="sponsor-bar panel-card p-2.5 mb-2 d-flex align-items-center justify-content-between flex-wrap gap-2" *ngIf="sponsorInfo && audience !== 'admin'">
+  <div class="d-flex align-items-center gap-2">
+    <span class="badge bg-gold text-dark fw-700"><i class="fas fa-user-shield me-1"></i> Your Sponsor</span>
+    <strong class="text-dark">{{ sponsorInfo.name }}</strong>
+    <span class="text-muted fs-12">(ID: {{ sponsorInfo.id }})</span>
+  </div>
+  <div class="fs-12 text-muted" *ngIf="sponsorInfo.mobile">
+    <i class="fas fa-phone-alt text-success me-1"></i> {{ sponsorInfo.mobile }}
+  </div>
+</div>
+
 <div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i><span>Loading MLM tree...</span></div>
 
 <ng-container *ngIf="!loading">
@@ -21,9 +33,9 @@
       <i class="fas fa-search"></i>
       <input class="f-input" placeholder="Search by User Name or User ID" [(ngModel)]="searchTerm" (ngModelChange)="search()">
       <div class="search-results" *ngIf="searchResults.length">
-        <button type="button" *ngFor="let result of searchResults" (click)="focusNode(result)">
+        <button type="button" *ngFor="let result of searchResults" (click)="onNodeClick(result, $event)" [class.disabled-item]="isFreeOrDisabled(result)" [title]="isFreeOrDisabled(result) ? 'Free/Disabled Account - Hover to view' : ''">
           <strong>{{ result.name }}</strong>
-          <span>ID: {{ result.userId }} - {{ result.memberCode }}</span>
+          <span>ID: {{ result.userId }} - {{ result.memberCode }} <em *ngIf="isFreeOrDisabled(result)" class="text-danger fw-600">(Disabled/Free)</em></span>
         </button>
       </div>
     </div>
@@ -50,26 +62,26 @@
     <section class="compact-stats-grid">
       <div><span>Total Team</span><strong>{{ stats.total }}</strong></div>
       <div><span>Active</span><strong>{{ stats.active }}</strong></div>
-      <div><span>Inactive</span><strong>{{ stats.inactive }}</strong></div>
+      <div><span>Inactive/Free</span><strong>{{ stats.inactive }}</strong></div>
       <div><span>Current Level</span><strong>{{ stats.currentLevel }}</strong></div>
       <div><span>Max Depth</span><strong>{{ stats.maxDepth }} / 12</strong></div>
     </section>
     <section class="compact-admin-analytics" *ngIf="audience === 'admin'">
       <div>
         <div class="panel-card-title">Highest Rank Members</div>
-        <button type="button" class="mini-member" *ngFor="let node of highestRankMembers" (click)="focusNode(node); showInfoPanel=false">
+        <button type="button" class="mini-member" *ngFor="let node of highestRankMembers" (click)="onNodeClick(node, $event); showInfoPanel=false">
           <strong>{{ node.name }}</strong><span>{{ node.rank }} - {{ node.memberCode }}</span>
         </button>
       </div>
       <div>
         <div class="panel-card-title">Top Recruiters</div>
-        <button type="button" class="mini-member" *ngFor="let node of topRecruiters" (click)="focusNode(node); showInfoPanel=false">
+        <button type="button" class="mini-member" *ngFor="let node of topRecruiters" (click)="onNodeClick(node, $event); showInfoPanel=false">
           <strong>{{ node.name }}</strong><span>{{ node.directCount }} direct members</span>
         </button>
       </div>
       <div>
         <div class="panel-card-title">Recently Joined</div>
-        <button type="button" class="mini-member" *ngFor="let node of recentlyJoined" (click)="focusNode(node); showInfoPanel=false">
+        <button type="button" class="mini-member" *ngFor="let node of recentlyJoined" (click)="onNodeClick(node, $event); showInfoPanel=false">
           <strong>{{ node.name }}</strong><span>{{ node.joinDate | date:'dd MMM yyyy' }}</span>
         </button>
       </div>
@@ -79,7 +91,7 @@
   <section class="stats-grid legacy-tree-summary">
     <div><span>Total Binary Team</span><strong>{{ stats.total }}</strong></div>
     <div><span>Total Active Members</span><strong>{{ stats.active }}</strong></div>
-    <div><span>Total Inactive Members</span><strong>{{ stats.inactive }}</strong></div>
+    <div><span>Total Inactive / Free</span><strong>{{ stats.inactive }}</strong></div>
     <div><span>Current Level</span><strong>{{ stats.currentLevel }}</strong></div>
     <div><span>Max Depth Used</span><strong>{{ stats.maxDepth }} / 12</strong></div>
   </section>
@@ -95,19 +107,19 @@
     </div>
     <div class="panel-card">
       <div class="panel-card-title">Highest Rank Members</div>
-      <button type="button" class="mini-member" *ngFor="let node of highestRankMembers" (click)="focusNode(node)">
+      <button type="button" class="mini-member" *ngFor="let node of highestRankMembers" (click)="onNodeClick(node, $event)">
         <strong>{{ node.name }}</strong><span>{{ node.rank }} - {{ node.memberCode }}</span>
       </button>
     </div>
     <div class="panel-card">
       <div class="panel-card-title">Top Recruiters</div>
-      <button type="button" class="mini-member" *ngFor="let node of topRecruiters" (click)="focusNode(node)">
+      <button type="button" class="mini-member" *ngFor="let node of topRecruiters" (click)="onNodeClick(node, $event)">
         <strong>{{ node.name }}</strong><span>{{ node.directCount }} direct members</span>
       </button>
     </div>
     <div class="panel-card">
       <div class="panel-card-title">Recently Joined</div>
-      <button type="button" class="mini-member" *ngFor="let node of recentlyJoined" (click)="focusNode(node)">
+      <button type="button" class="mini-member" *ngFor="let node of recentlyJoined" (click)="onNodeClick(node, $event)">
         <strong>{{ node.name }}</strong><span>{{ node.joinDate | date:'dd MMM yyyy' }}</span>
       </button>
     </div>
@@ -137,23 +149,26 @@
     <div class="org-node"
          [class.focused]="focusedNode?.id === node.id"
          [class.search-match]="isSearchMatch(node)"
-         [class.inactive]="node.status === 'Inactive'"
+         [class.inactive]="node.status === 'Inactive' || node.status === 'Free'"
+         [class.node-disabled]="isFreeOrDisabled(node)"
          (mouseenter)="showTooltip(node, $event)"
          (mousemove)="showTooltip(node, $event)"
          (mouseleave)="hoveredNode=null"
-         (click)="focusNode(node); $event.stopPropagation()">
+         (click)="onNodeClick(node, $event)"
+         (dblclick)="onNodeDblClick(node, $event)">
       
       <!-- Circular Avatar -->
       <div class="org-avatar">
         <span>{{ node.name.charAt(0) || 'M' }}</span>
-        <i *ngIf="node.status === 'Active'" class="fas fa-check-circle active-badge text-success"></i>
-        <i *ngIf="node.status !== 'Active'" class="fas fa-times-circle active-badge text-danger"></i>
+        <i *ngIf="!isFreeOrDisabled(node) && node.status === 'Active'" class="fas fa-check-circle active-badge text-success"></i>
+        <i *ngIf="isFreeOrDisabled(node)" class="fas fa-ban active-badge text-danger" title="Disabled / Free Account"></i>
       </div>
       
       <!-- Details -->
       <div class="org-details">
         <div class="org-name" [title]="node.name">{{ node.name }}</div>
         <div class="org-id">{{ node.memberCode || node.userId }}</div>
+        <div class="org-free-tag" *ngIf="isFreeOrDisabled(node)">Disabled/Free</div>
       </div>
 
       <!-- Expand Toggle -->
@@ -203,18 +218,28 @@
   </li>
 </ng-template>
 
+<!-- Enhanced Hover Tooltip for complete node details -->
 <div class="node-tooltip" *ngIf="hoveredNode" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
-  <strong>{{ hoveredNode.name }}</strong>
-  <span>User ID: {{ hoveredNode.userId }}</span>
-  <span>Member Code: {{ hoveredNode.memberCode }}</span>
-  <span>Mobile: {{ hoveredNode.mobile }}</span>
-  <span>Email: {{ hoveredNode.email }}</span>
-  <span>Rank: {{ hoveredNode.rank }}</span>
-  <span>Total Team: {{ hoveredNode.teamCount }}</span>
-  <span>Direct Referrals: {{ hoveredNode.directCount }}</span>
-  <span>Sales: {{ hoveredNode.salesGaj | number }} gaj</span>
-  <span *ngIf="audience === 'admin' || hoveredNode.id === root?.id">Commission Earned: {{ hoveredNode.commissionEarned | currency:'INR':'symbol':'1.0-0' }}</span>
-  <span *ngIf="audience === 'admin' || hoveredNode.id === root?.id">Pending Commission: {{ hoveredNode.pendingCommission | currency:'INR':'symbol':'1.0-0' }}</span>
-  <span>Joining: {{ hoveredNode.joinDate | date:'dd MMM yyyy' }}</span>
-  <span>Status: {{ hoveredNode.status }}</span>
+  <div class="d-flex align-items-center justify-content-between mb-1">
+    <strong class="fs-13">{{ hoveredNode.name }}</strong>
+    <span class="badge" [class.bg-success]="!isFreeOrDisabled(hoveredNode) && hoveredNode.status === 'Active'" [class.bg-danger]="isFreeOrDisabled(hoveredNode)">
+      {{ isFreeOrDisabled(hoveredNode) ? 'Disabled / Free' : 'Active' }}
+    </span>
+  </div>
+  <span><strong>User ID:</strong> {{ hoveredNode.userId }}</span>
+  <span><strong>Member Code:</strong> {{ hoveredNode.memberCode }}</span>
+  <span *ngIf="hoveredNode.sponsorName || hoveredNode.sponsorId"><strong>Sponsor:</strong> {{ hoveredNode.sponsorName || 'Sponsor' }} ({{ hoveredNode.sponsorId || '—' }})</span>
+  <span><strong>Mobile:</strong> {{ hoveredNode.mobile }}</span>
+  <span><strong>Email:</strong> {{ hoveredNode.email }}</span>
+  <span><strong>Rank / Role:</strong> {{ hoveredNode.rank }}</span>
+  <span><strong>Total Team:</strong> {{ hoveredNode.teamCount }}</span>
+  <span><strong>Direct Referrals:</strong> {{ hoveredNode.directCount }}</span>
+  <span><strong>Sales:</strong> {{ hoveredNode.salesGaj | number }} gaj</span>
+  <span *ngIf="audience === 'admin' || hoveredNode.id === root?.id"><strong>Commission Earned:</strong> {{ hoveredNode.commissionEarned | currency:'INR':'symbol':'1.0-0' }}</span>
+  <span *ngIf="audience === 'admin' || hoveredNode.id === root?.id"><strong>Pending Commission:</strong> {{ hoveredNode.pendingCommission | currency:'INR':'symbol':'1.0-0' }}</span>
+  <span><strong>Joining:</strong> {{ hoveredNode.joinDate | date:'dd MMM yyyy' }}</span>
+  <span><strong>Status:</strong> {{ hoveredNode.status }}</span>
+  <div *ngIf="isFreeOrDisabled(hoveredNode)" class="mt-1 pt-1 border-top border-secondary-subtle text-danger fs-11 fw-600">
+    <i class="fas fa-lock me-1"></i> Disabled account (Hover only, no clicks)
+  </div>
 </div>

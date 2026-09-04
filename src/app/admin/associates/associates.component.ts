@@ -55,7 +55,47 @@ export class AssociatesComponent implements OnInit {
   actionLoading = false;
   toast = '';
 
+  // Hover Tooltip State for Free/Disabled and Row Records
+  hoveredAssociate: any = null;
+  tooltipPos = { x: 0, y: 0 };
+
   constructor(private api: ApiService, private auth: AuthService) {}
+
+  isFreeOrDisabled(a: any): boolean {
+    if (!a) return false;
+    const status = String(a.account_status || a.status || '').toLowerCase();
+    const isFree = a.is_free === true || a.isFree === true || a.user_type === 'Free' || a.rank_name === 'Free';
+    return isFree || status === 'free' || status === 'inactive' || status === 'pending' || status === 'suspended' || status === 'blacklisted' || status === 'disabled';
+  }
+
+  onRowMouseEnter(a: any, event: MouseEvent) {
+    this.hoveredAssociate = a;
+    this.tooltipPos = { x: event.clientX + 15, y: event.clientY + 15 };
+  }
+
+  onRowMouseMove(event: MouseEvent) {
+    if (this.hoveredAssociate) {
+      this.tooltipPos = { x: event.clientX + 15, y: event.clientY + 15 };
+    }
+  }
+
+  onRowMouseLeave() {
+    this.hoveredAssociate = null;
+  }
+
+  onRowClick(a: any, event: MouseEvent) {
+    if (this.isFreeOrDisabled(a)) {
+      event.stopPropagation();
+      event.preventDefault();
+      return;
+    }
+  }
+
+  onRowDblClick(a: any, event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    return;
+  }
 
   ngOnInit() {
     this.load();
