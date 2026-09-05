@@ -105,7 +105,7 @@
         </div>
       </fieldset>
 
-      <div class="field"><label>Permanent Address</label><textarea formControlName="address" rows="2"></textarea></div>
+      <div class="field"><label>Permanent Address</label><textarea formControlName="address" rows="2" placeholder="Permanent House No., Street"></textarea></div>
 
       <div class="row3">
         <div class="field"><label>City</label><input type="text" formControlName="city"></div>
@@ -113,8 +113,23 @@
         <div class="field"><label>Pin Code</label><input type="text" formControlName="pinCode"></div>
       </div>
 
+      <div style="margin: 12px 0 8px; display: flex; align-items: center; gap: 8px; background: #f0f7ff; padding: 8px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
+        <input type="checkbox" id="invSameAsPerm" formControlName="sameAsPermanent" (change)="onSameAsPermanentChange($event)" style="width: auto; cursor: pointer;">
+        <label for="invSameAsPerm" style="font-weight: 600; cursor: pointer; color: #1e3a8a; margin: 0; font-size: 13px;">
+          Correspondence Address is same as Permanent Address / पत्र-व्यवहार का पता स्थायी पते के समान है
+        </label>
+      </div>
+
+      <div class="field"><label>Correspondence / Local Address</label><textarea formControlName="corrAddress" rows="2" placeholder="Local House No., Street"></textarea></div>
+
       <div class="row3">
-        <div class="field"><label>Mobile No.</label><input type="tel" formControlName="mobile" required></div>
+        <div class="field"><label>City</label><input type="text" formControlName="corrCity"></div>
+        <div class="field"><label>State</label><input type="text" formControlName="corrState"></div>
+        <div class="field"><label>Pin Code</label><input type="text" formControlName="corrPinCode"></div>
+      </div>
+
+      <div class="row3">
+        <div class="field"><label>Mobile No. <span class="text-danger">*</span></label><input type="tel" formControlName="mobile" required></div>
         <div class="field"><label>Alt. Tel. No.</label><input type="tel" formControlName="altTel"></div>
         <div class="field"><label>Email ID</label><input type="email" formControlName="email"></div>
       </div>
@@ -127,7 +142,7 @@
 
     <!-- ============ 2. INVESTMENT DETAILS ============ -->
     <section class="block">
-      <h2>2. Investment Details</h2>
+      <h2>2. Investment &amp; Bank Details</h2>
       <div class="row2">
         <div class="field"><label>Investment Amount (₹)</label><input type="number" formControlName="amount" min="0"></div>
         <div class="field"><label>Amount in Words</label><input type="text" formControlName="amountWords"></div>
@@ -147,7 +162,9 @@
         <div class="field"><label>Txn / Cheque No.</label><input type="text" formControlName="txnNo"></div>
         <div class="field"><label>Date</label><input type="date" formControlName="txnDate"></div>
       </div>
-      <div class="row2" style="margin-top: 12px;">
+      <div class="row3" style="margin-top: 12px;">
+        <div class="field"><label>Bank &amp; Branch</label><input type="text" formControlName="bankBranch" placeholder="e.g. State Bank of India - Main Branch"></div>
+        <div class="field"><label>Account Number</label><input type="text" formControlName="accountNumber" placeholder="Bank Account Number"></div>
         <div class="field">
           <label>IFSC Code</label>
           <input type="text" formControlName="ifscCode" placeholder="e.g. SBIN0001234" style="text-transform: uppercase" (input)="onIfscInput($event)">
@@ -155,7 +172,6 @@
           <div *ngIf="ifscSuccess" style="font-size: 11px; color: #2c5c39; margin-top: 2px;"><i class="fas fa-check-circle"></i> Bank details fetched successfully</div>
           <div *ngIf="ifscError" style="font-size: 11px; color: #b3261e; margin-top: 2px;"><i class="fas fa-times-circle"></i> {{ ifscError }}</div>
         </div>
-        <div class="field"><label>Bank & Branch</label><input type="text" formControlName="bankBranch"></div>
       </div>
     </section>
 

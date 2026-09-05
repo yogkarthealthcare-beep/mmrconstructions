@@ -131,13 +131,15 @@ export class AuthService {
   // ── Helpers ─────────────────────
   isAssociate(): boolean {
     const user = this.getUser();
-    return user?.role === 'Associate' || user?.user_type === 'Associate' || user?.is_associate === true;
+    if (!user) return false;
+    const type = String(user.user_type || user.role || '').toLowerCase().trim();
+    return type === 'associate' || type.includes('associate') || user.is_associate === true;
   }
 
   isApprovedUser(): boolean {
     const user = this.getUser();
     if (!user) return false;
-    const status = String(user.account_status || user.status || 'Active').toLowerCase();
+    const status = String(user.account_status || user.status || 'Active').toLowerCase().trim();
     return status === 'active' || status === 'approved';
   }
 

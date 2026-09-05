@@ -56,7 +56,8 @@ export const associateGuard: CanActivateFn = (_route, state) => {
     return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   }
   if (!auth.isAssociate()) {
-    return router.createUrlTree(['/unauthorized']);
+    const prefix = auth.getUserRolePrefix();
+    return router.createUrlTree([`${prefix}/dashboard`]);
   }
   const url = state.url.toLowerCase();
   if (!url.includes('/enrollment') && !auth.isEnrollmentCompleted()) {
@@ -89,7 +90,7 @@ export const userGuard: CanActivateFn = (_route, state) => {
     const prefix = auth.getUserRolePrefix();
     return router.createUrlTree([`${prefix}/enrollment`]);
   }
-  return auth.isApprovedUser() ? true : router.createUrlTree(['/unauthorized']);
+  return auth.isApprovedUser() ? true : router.createUrlTree(['/login'], { queryParams: { unapproved: 'true' } });
 };
 
 export const adminGuard: CanActivateFn = (_route, state) => {

@@ -119,65 +119,66 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
 
           this.enrollmentForm.patchValue({
             personalDetails: {
-              fullName: d.full_name || '',
+              fullName: d.full_name || d.fullName || '',
               dob: d.dob ? new Date(d.dob).toISOString().split('T')[0] : '',
               gender: d.gender || '',
-              fatherName: d.father_name || '',
-              motherName: d.mother_name || '',
-              spouseName: d.spouse_name || '',
-              contact1: d.contact_1 || '',
-              contact2: d.contact_2 || '',
+              fatherName: d.father_name || d.fatherName || '',
+              motherName: d.mother_name || d.motherName || '',
+              spouseName: d.spouse_name || d.spouseName || '',
+              contact1: d.contact_1 || d.contact1 || d.contact_no_1 || '',
+              contact2: d.contact_2 || d.contact2 || d.contact_no_2 || '',
               nationality: d.nationality || 'Indian',
-              residentialStatus: d.residential_status || '',
-              panNo: d.pan_no || '',
-              aadharNo: d.aadhar_no || '',
+              residentialStatus: d.residential_status || d.residentialStatus || '',
+              panNo: d.pan_no || d.panNo || '',
+              aadharNo: d.aadhar_no || d.aadharNo || '',
               email: d.email || '',
               occupation: d.occupation || '',
-              annualIncome: d.annual_income || '',
+              annualIncome: d.annual_income || d.annualIncome || '',
               education: d.education || '',
               category: d.category || '',
               religion: d.religion || ''
             },
             addressDetails: {
-              permAddress: d.perm_address || '',
-              permCity: d.perm_city || '',
-              permState: d.perm_state || '',
-              permCountry: d.perm_country || 'India',
-              permPin: d.perm_pin || '',
-              localAddress: d.local_address || '',
-              localCity: d.local_city || '',
-              localState: d.local_state || '',
-              localCountry: d.local_country || 'India',
-              localPin: d.local_pin || ''
+              permAddress: d.perm_address || d.permAddress || '',
+              permCity: d.perm_city || d.permCity || '',
+              permState: d.perm_state || d.permState || '',
+              permCountry: d.perm_country || d.permCountry || 'India',
+              permPin: d.perm_pin || d.permPin || '',
+              sameAsPerm: !!(d.perm_address && d.local_address && (d.perm_address || '').trim() === (d.local_address || '').trim()),
+              localAddress: d.local_address || d.localAddress || '',
+              localCity: d.local_city || d.localCity || '',
+              localState: d.local_state || d.localState || '',
+              localCountry: d.local_country || d.localCountry || 'India',
+              localPin: d.local_pin || d.localPin || ''
             },
             bankDetails: {
-              bankName: d.bank_name || '',
-              accHolder: d.acc_holder || '',
-              accNo: d.acc_no || '',
-              ifsc: d.ifsc || '',
-              micr: d.micr || '',
-              branchName: d.branch_name || '',
-              branchCode: d.branch_code || '',
-              swift: d.swift || '',
-              branchCountry: d.branch_country || 'India'
+              bankName: d.bank_name || d.bankName || '',
+              accHolder: d.acc_holder || d.accHolder || d.acc_holder_name || d.account_holder_name || '',
+              accNo: d.acc_no || d.accNo || d.account_no || '',
+              ifsc: d.ifsc || d.ifsc_code || d.ifscCode || '',
+              micr: d.micr || d.micr_code || d.micrCode || '',
+              branchName: d.branch_name || d.branchName || '',
+              branchCode: d.branch_code || d.branchCode || '',
+              swift: d.swift || d.swift_code || d.swiftCode || '',
+              branchCountry: d.branch_country || d.branchCountry || 'India'
             },
             nomineeDetails: {
-              nomineeName: d.nominee_name || '',
-              nomineeDob: d.nominee_dob ? new Date(d.nominee_dob).toISOString().split('T')[0] : '',
-              nomineeGender: d.nominee_gender || '',
-              nomineeNationality: d.nominee_nationality || 'Indian',
-              nomineeResStatus: d.nominee_res_status || '',
-              nomineeRelationship: d.nominee_relationship || '',
-              nomineePanName: d.nominee_pan_name || '',
-              nomineePanNo: d.nominee_pan_no || '',
-              nomineeAadharName: d.nominee_aadhar_name || '',
-              nomineeAadharNo: d.nominee_aadhar_no || '',
-              nomineeAddress: d.nominee_address || ''
+              nomineeName: d.nominee_name || d.nomineeName || '',
+              nomineeDob: (d.nominee_dob || d.nomineeDob) ? new Date(d.nominee_dob || d.nomineeDob).toISOString().split('T')[0] : '',
+              nomineeGender: d.nominee_gender || d.nomineeGender || '',
+              nomineeNationality: d.nominee_nationality || d.nomineeNationality || 'Indian',
+              nomineeResStatus: d.nominee_res_status || d.nomineeResStatus || '',
+              nomineeRelationship: d.nominee_relationship || d.nomineeRelationship || '',
+              nomineePanName: d.nominee_pan_name || d.nomineePanName || '',
+              nomineePanNo: d.nominee_pan_no || d.nomineePanNo || '',
+              nomineeAadharName: d.nominee_aadhar_name || d.nomineeAadharName || '',
+              nomineeAadharNo: d.nominee_aadhar_no || d.nomineeAadharNo || '',
+              nomineeAddress: d.nominee_address || d.nomineeAddress || ''
             },
             sponsorDetails: {
-              sponsorName: d.sponsor_name || '',
-              sponsorCode: d.sponsor_code || '',
-              sponsorContact: d.sponsor_contact || ''
+              sponsorName: d.sponsor_name || d.sponsorName || '',
+              sponsorCode: d.sponsor_code || d.sponsorCode || '',
+              sponsorContact: d.sponsor_contact || d.sponsorContact || ''
             },
             termsAndConditions: {
               tc1: true,
@@ -188,7 +189,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
               tc6: true
             },
             signature: {
-              signDate: d.sign_date ? new Date(d.sign_date).toISOString().split('T')[0] : ''
+              signDate: (d.sign_date || d.signDate) ? new Date(d.sign_date || d.signDate).toISOString().split('T')[0] : ''
             }
           });
 
@@ -237,6 +238,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         permState: [''],
         permCountry: ['India'],
         permPin: [''],
+        sameAsPerm: [false],
         localAddress: [''],
         localCity: [''],
         localState: [''],
@@ -284,6 +286,47 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         signDate: ['', Validators.required]
       })
     });
+
+    const addrGroup = this.enrollmentForm.get('addressDetails') as FormGroup;
+    addrGroup.get('permAddress')?.valueChanges.subscribe(val => {
+      if (addrGroup.get('sameAsPerm')?.value) {
+        addrGroup.get('localAddress')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+    addrGroup.get('permCity')?.valueChanges.subscribe(val => {
+      if (addrGroup.get('sameAsPerm')?.value) {
+        addrGroup.get('localCity')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+    addrGroup.get('permState')?.valueChanges.subscribe(val => {
+      if (addrGroup.get('sameAsPerm')?.value) {
+        addrGroup.get('localState')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+    addrGroup.get('permCountry')?.valueChanges.subscribe(val => {
+      if (addrGroup.get('sameAsPerm')?.value) {
+        addrGroup.get('localCountry')?.setValue(val || 'India', { emitEvent: false });
+      }
+    });
+    addrGroup.get('permPin')?.valueChanges.subscribe(val => {
+      if (addrGroup.get('sameAsPerm')?.value) {
+        addrGroup.get('localPin')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+  }
+
+  onSameAsPermChange(event: any) {
+    const isChecked = event.target.checked;
+    const addrGroup = this.enrollmentForm.get('addressDetails') as FormGroup;
+    if (isChecked) {
+      addrGroup.patchValue({
+        localAddress: addrGroup.get('permAddress')?.value || '',
+        localCity: addrGroup.get('permCity')?.value || '',
+        localState: addrGroup.get('permState')?.value || '',
+        localCountry: addrGroup.get('permCountry')?.value || 'India',
+        localPin: addrGroup.get('permPin')?.value || ''
+      });
+    }
   }
 
   // Getters for easy HTML form field access

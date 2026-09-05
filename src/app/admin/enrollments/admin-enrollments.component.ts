@@ -140,19 +140,98 @@ export class AdminEnrollmentsComponent implements OnInit {
     this.selectedItem = item;
     this.editFormData = JSON.parse(JSON.stringify(item));
     this.showModal = true;
+    this.modalLoading = true;
+
+    if (this.activeCategory === 'customer') {
+      const lookupId = item.submission_id || item.id || item.user_id;
+      this.api.adminGetCustomerEnrollment(lookupId).subscribe({
+        next: (res: any) => {
+          this.modalLoading = false;
+          const data = res.data || res;
+          if (data) {
+            this.editFormData = { ...this.editFormData, ...data };
+            if (this.editFormData.form_date) {
+              this.editFormData.form_date = this.formatDate(this.editFormData.form_date);
+            }
+            if (this.editFormData.date_of_birth) {
+              this.editFormData.date_of_birth = this.formatDate(this.editFormData.date_of_birth);
+            }
+            if (this.editFormData.txn_date) {
+              this.editFormData.txn_date = this.formatDate(this.editFormData.txn_date);
+            }
+          }
+        },
+        error: (err) => {
+          this.modalLoading = false;
+          console.error('Error fetching customer enrollment detail:', err);
+        }
+      });
+    } else if (this.activeCategory === 'associate') {
+      const lookupId = item.associate_enrollment_id || item.associate_id || item.id || item.user_id;
+      this.api.adminGetAssociateEnrollment(lookupId).subscribe({
+        next: (res: any) => {
+          this.modalLoading = false;
+          const data = res.data || res;
+          if (data) {
+            this.editFormData = { ...this.editFormData, ...data };
+            if (this.editFormData.dob) {
+              this.editFormData.dob = this.formatDate(this.editFormData.dob);
+            }
+          }
+        },
+        error: (err) => {
+          this.modalLoading = false;
+          console.error('Error fetching associate enrollment detail:', err);
+        }
+      });
+    } else if (this.activeCategory === 'investor') {
+      const lookupId = item.submission_id || item.investor_enrollment_id || item.investor_id || item.id || item.user_id;
+      this.api.adminGetInvestorEnrollment(lookupId).subscribe({
+        next: (res: any) => {
+          this.modalLoading = false;
+          const data = res.data || res;
+          if (data) {
+            this.editFormData = { ...this.editFormData, ...data };
+            if (this.editFormData.form_date) {
+              this.editFormData.form_date = this.formatDate(this.editFormData.form_date);
+            }
+            if (this.editFormData.dob) {
+              this.editFormData.dob = this.formatDate(this.editFormData.dob);
+            }
+            if (this.editFormData.txn_date) {
+              this.editFormData.txn_date = this.formatDate(this.editFormData.txn_date);
+            }
+          }
+        },
+        error: (err) => {
+          this.modalLoading = false;
+          console.error('Error fetching investor enrollment detail:', err);
+        }
+      });
+    }
+  }
+
+  private formatDate(val: any): string {
+    if (!val) return '';
+    try {
+      return new Date(val).toISOString().split('T')[0];
+    } catch {
+      return val;
+    }
   }
 
   closeModal() {
     this.showModal = false;
     this.selectedItem = null;
     this.editFormData = {};
+    this.modalLoading = false;
   }
 
   saveChanges() {
     this.saving = true;
-    const id = this.selectedItem.id;
 
     if (this.activeCategory === 'customer') {
+      const id = this.editFormData.id || this.editFormData.submission_id || this.selectedItem?.submission_id || this.selectedItem?.id || this.selectedItem?.user_id;
       this.api.adminUpdateCustomerEnrollment(id, this.editFormData).subscribe({
         next: (res: any) => {
           this.saving = false;
@@ -177,6 +256,7 @@ export class AdminEnrollmentsComponent implements OnInit {
         }
       });
     } else if (this.activeCategory === 'associate') {
+      const id = this.editFormData.associate_id || this.editFormData.id || this.selectedItem?.associate_id || this.selectedItem?.id || this.selectedItem?.user_id;
       this.api.adminUpdateAssociateEnrollment(id, this.editFormData).subscribe({
         next: (res: any) => {
           this.saving = false;
@@ -201,6 +281,7 @@ export class AdminEnrollmentsComponent implements OnInit {
         }
       });
     } else if (this.activeCategory === 'investor') {
+      const id = this.editFormData.id || this.editFormData.submission_id || this.selectedItem?.submission_id || this.selectedItem?.investor_id || this.selectedItem?.id;
       this.api.adminUpdateInvestorEnrollment(id, this.editFormData).subscribe({
         next: (res: any) => {
           this.saving = false;
@@ -232,10 +313,11 @@ export class AdminEnrollmentsComponent implements OnInit {
     this.printing = true;
 
     if (this.activeCategory === 'customer') {
-      this.api.downloadCustomerPdf(item.id).subscribe({
+      const custId = item.submission_id || item.id || item.user_id;
+      this.api.downloadCustomerPdf(custId).subscribe({
         next: (blob: Blob) => {
           this.printing = false;
-          this.saveBlob(blob, `MMR-Customer-${item.application_no || item.id}.pdf`);
+          this.saveBlob(blob, `MMR-Customer-${item.application_no || custId}.pdf`);
         },
         error: () => {
           this.printing = false;
@@ -255,10 +337,11 @@ export class AdminEnrollmentsComponent implements OnInit {
         }
       });
     } else if (this.activeCategory === 'investor') {
-      this.api.downloadInvestorPdf(item.id).subscribe({
+      const invId = item.submission_id || item.investor_enrollment_id || item.investor_id || item.id;
+      this.api.downloadInvestorPdf(invId).subscribe({
         next: (blob: Blob) => {
           this.printing = false;
-          this.saveBlob(blob, `MMR-Investor-${item.investor_enrollment_id || item.id}.pdf`);
+          this.saveBlob(blob, `MMR-Investor-${item.investor_enrollment_id || invId}.pdf`);
         },
         error: () => {
           this.printing = false;

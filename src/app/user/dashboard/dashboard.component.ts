@@ -25,12 +25,15 @@ export class UserDashboardComponent implements OnInit {
 
   recentEmisList: any[] = [];
 
-  get isAssociate() {
-    return (this.profile?.user_type || this.userData?.user_type) === 'Associate';
+  get isAssociate(): boolean {
+    const type = String(this.profile?.user_type || this.userData?.user_type || this.profile?.role || this.userData?.role || '').toLowerCase();
+    return this.auth.isAssociate() || type.includes('associate');
   }
 
   get basePrefix(): string {
-    return this.isAssociate ? '/associate' : '/user';
+    if (this.isAssociate) return '/associate';
+    if (this.isInvestor) return '/investor';
+    return this.auth.getUserRolePrefix() || '/user';
   }
 
   get isInvestor() {

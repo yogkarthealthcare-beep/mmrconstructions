@@ -75,6 +75,11 @@ export class InvestorEnrollmentComponent implements OnInit {
       city: ['', Validators.required],
       state: ['', Validators.required],
       pinCode: ['', Validators.required],
+      sameAsPermanent: [false],
+      corrAddress: [''],
+      corrCity: [''],
+      corrState: [''],
+      corrPinCode: [''],
       mobile: ['', Validators.required],
       altTel: [''],
       email: ['', Validators.email],
@@ -86,6 +91,7 @@ export class InvestorEnrollmentComponent implements OnInit {
       txnNo: [''],
       txnDate: [''],
       bankBranch: [''],
+      accountNumber: [''],
       ifscCode: [''],
       nominees: this.fb.array([this.createNomineeGroup()]),
       declarationCheck: [false, Validators.requiredTrue],
@@ -101,6 +107,27 @@ export class InvestorEnrollmentComponent implements OnInit {
       authorizedSignatory: [{ value: '', disabled: true }]
     });
 
+    this.enrollmentForm.get('address')?.valueChanges.subscribe(val => {
+      if (this.enrollmentForm.get('sameAsPermanent')?.value) {
+        this.enrollmentForm.get('corrAddress')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+    this.enrollmentForm.get('city')?.valueChanges.subscribe(val => {
+      if (this.enrollmentForm.get('sameAsPermanent')?.value) {
+        this.enrollmentForm.get('corrCity')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+    this.enrollmentForm.get('state')?.valueChanges.subscribe(val => {
+      if (this.enrollmentForm.get('sameAsPermanent')?.value) {
+        this.enrollmentForm.get('corrState')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+    this.enrollmentForm.get('pinCode')?.valueChanges.subscribe(val => {
+      if (this.enrollmentForm.get('sameAsPermanent')?.value) {
+        this.enrollmentForm.get('corrPinCode')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+
     this.enrollmentForm.get('occupation')?.valueChanges.subscribe(val => {
       const otherCtrl = this.enrollmentForm.get('occupationOther');
       if (val === 'Other') {
@@ -110,6 +137,18 @@ export class InvestorEnrollmentComponent implements OnInit {
         otherCtrl?.setValue('');
       }
     });
+  }
+
+  onSameAsPermanentChange(event: any) {
+    const isChecked = event.target.checked;
+    if (isChecked) {
+      this.enrollmentForm.patchValue({
+        corrAddress: this.enrollmentForm.get('address')?.value || '',
+        corrCity: this.enrollmentForm.get('city')?.value || '',
+        corrState: this.enrollmentForm.get('state')?.value || '',
+        corrPinCode: this.enrollmentForm.get('pinCode')?.value || ''
+      });
+    }
   }
 
   get nominees(): FormArray {
@@ -455,6 +494,11 @@ export class InvestorEnrollmentComponent implements OnInit {
             city: enroll.city,
             state: enroll.state,
             pinCode: enroll.pin_code,
+            sameAsPermanent: !!(enroll.address && enroll.corr_address && enroll.address.trim() === enroll.corr_address.trim()),
+            corrAddress: enroll.corr_address || '',
+            corrCity: enroll.corr_city || '',
+            corrState: enroll.corr_state || '',
+            corrPinCode: enroll.corr_pin_code || '',
             mobile: enroll.mobile,
             altTel: enroll.alt_tel || '',
             email: enroll.email || '',
@@ -465,7 +509,9 @@ export class InvestorEnrollmentComponent implements OnInit {
             paymentMode: enroll.payment_mode,
             txnNo: enroll.txn_no || '',
             txnDate: enroll.txn_date ? new Date(enroll.txn_date).toISOString().split('T')[0] : '',
-            bankBranch: enroll.bank_branch || '',
+            bankBranch: enroll.bank_branch || enroll.bankBranch || '',
+            accountNumber: enroll.account_number || enroll.accountNumber || '',
+            ifscCode: enroll.ifsc_code || enroll.ifscCode || '',
             declarationCheck: true,
             declDate: enroll.decl_date ? new Date(enroll.decl_date).toISOString().split('T')[0] : '',
             declPlace: enroll.decl_place,
@@ -473,6 +519,26 @@ export class InvestorEnrollmentComponent implements OnInit {
             firstApplicantName: enroll.first_applicant_name,
             jointApplicantName: enroll.joint_applicant_name || ''
           });
+
+          if (enroll.nominees) {
+            let noms = [];
+            try {
+              noms = typeof enroll.nominees === 'string' ? JSON.parse(enroll.nominees) : enroll.nominees;
+            } catch (e) {
+              noms = [];
+            }
+            if (Array.isArray(noms) && noms.length > 0) {
+              this.nominees.clear();
+              noms.forEach((n: any) => {
+                this.nominees.push(this.fb.group({
+                  name: [n.name || '', Validators.required],
+                  relationship: [n.relationship || '', Validators.required],
+                  age: [n.age || '', Validators.required],
+                  proportion: [n.proportion || '', [Validators.required, Validators.min(1), Validators.max(100)]]
+                }));
+              });
+            }
+          }
 
           if (enroll.photo_url) {
             this.photoDataUrl = enroll.photo_url;

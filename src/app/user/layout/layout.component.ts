@@ -35,35 +35,47 @@ export class UserLayoutComponent implements OnInit {
   constructor(private auth: AuthService, private router: Router) {}
 
   ngOnInit() {
+    this.userData = this.auth.getUser();
+    this.initNavGroups();
+
     this.auth.user$.subscribe(u => {
       this.userData = u || this.auth.getUser();
-      this.initNavGroups();
+      this.initNavGroups(true);
     });
 
-    this.initNavGroups();
     this.checkActiveGroup(this.router.url);
 
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      this.checkActiveGroup(event.urlAfterRedirects || event.url);
+      const currentUrl = event.urlAfterRedirects || event.url;
+      this.initNavGroups();
+      this.checkActiveGroup(currentUrl);
     });
   }
 
   get basePrefix(): string {
     const url = this.router.url || '';
-    if (url.startsWith('/associate') || this.userData?.user_type === 'Associate') {
+    if (url.startsWith('/associate') || this.auth.isAssociate()) {
       return '/associate';
     }
-    if (url.startsWith('/customer') || this.userData?.user_type === 'Customer') {
+    const type = String(this.userData?.user_type || this.userData?.role || '').toLowerCase();
+    if (type.includes('associate')) {
+      return '/associate';
+    }
+    const authPrefix = this.auth.getUserRolePrefix();
+    if (authPrefix === '/associate') {
+      return '/associate';
+    }
+    if (url.startsWith('/customer') || type.includes('customer') || authPrefix === '/customer') {
       return '/customer';
     }
-    return '/user';
+    return authPrefix || '/user';
   }
 
-  initNavGroups() {
+  initNavGroups(force = false) {
     const p = this.basePrefix;
-    if (p === this._cachedPrefix && this.navGroups.length > 0) {
+    if (!force && p === this._cachedPrefix && this.navGroups.length > 0) {
       return;
     }
     this._cachedPrefix = p;

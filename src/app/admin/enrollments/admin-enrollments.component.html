@@ -364,7 +364,13 @@
       <button class="btn-close" (click)="closeModal()">&times;</button>
     </div>
 
-    <div class="modal-body" *ngIf="editFormData">
+    <!-- Modal Loading Indicator -->
+    <div *ngIf="modalLoading" class="modal-loading-overlay">
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
+      <p>Loading full enrollment details...</p>
+    </div>
+
+    <div class="modal-body" *ngIf="editFormData && !modalLoading">
       
       <!-- ================= CUSTOMER ENROLLMENT FORM FIELDS ================= -->
       <div *ngIf="activeCategory === 'customer'" class="form-sections">
@@ -421,7 +427,7 @@
             </div>
             <div class="field">
               <label>Date of Birth</label>
-              <input type="text" [(ngModel)]="editFormData.date_of_birth" [disabled]="!isEditMode">
+              <input type="date" [(ngModel)]="editFormData.date_of_birth" [disabled]="!isEditMode">
             </div>
             <div class="field">
               <label>Gender</label>
@@ -452,8 +458,16 @@
               <input type="text" [(ngModel)]="editFormData.present_address" [disabled]="!isEditMode">
             </div>
             <div class="field">
-              <label>City &amp; State / PIN</label>
+              <label>Present City &amp; State/PIN</label>
               <input type="text" [(ngModel)]="editFormData.present_city" [disabled]="!isEditMode">
+            </div>
+            <div class="field span-2">
+              <label>Permanent Address</label>
+              <input type="text" [(ngModel)]="editFormData.permanent_address" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Permanent City &amp; State/PIN</label>
+              <input type="text" [(ngModel)]="editFormData.permanent_city" [disabled]="!isEditMode">
             </div>
           </div>
         </div>
@@ -473,6 +487,10 @@
             <div class="field">
               <label>Txn / Cheque No</label>
               <input type="text" [(ngModel)]="editFormData.txn_cheque_no" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Account Holder Name</label>
+              <input type="text" [(ngModel)]="editFormData.acc_holder_name" [disabled]="!isEditMode">
             </div>
             <div class="field">
               <label>Bank &amp; Branch</label>
@@ -521,7 +539,7 @@
             </div>
             <div class="field">
               <label>Date of Birth</label>
-              <input type="text" [(ngModel)]="editFormData.dob" [disabled]="!isEditMode">
+              <input type="date" [(ngModel)]="editFormData.dob" [disabled]="!isEditMode">
             </div>
             <div class="field">
               <label>Gender</label>
@@ -530,6 +548,10 @@
             <div class="field">
               <label>Father / Spouse Name</label>
               <input type="text" [(ngModel)]="editFormData.father_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Mother Name</label>
+              <input type="text" [(ngModel)]="editFormData.mother_name" [disabled]="!isEditMode">
             </div>
             <div class="field">
               <label>Primary Contact</label>
@@ -556,8 +578,16 @@
               <input type="text" [(ngModel)]="editFormData.perm_address" [disabled]="!isEditMode">
             </div>
             <div class="field">
-              <label>City / State / PIN</label>
+              <label>Permanent City / State / PIN</label>
               <input type="text" [(ngModel)]="editFormData.perm_state" [disabled]="!isEditMode">
+            </div>
+            <div class="field span-2">
+              <label>Local / Correspondence Address</label>
+              <input type="text" [(ngModel)]="editFormData.local_address" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Local City / State / PIN</label>
+              <input type="text" [(ngModel)]="editFormData.local_state" [disabled]="!isEditMode">
             </div>
           </div>
         </div>
@@ -583,8 +613,16 @@
               <input type="text" [(ngModel)]="editFormData.ifsc" [disabled]="!isEditMode">
             </div>
             <div class="field">
+              <label>MICR Code</label>
+              <input type="text" [(ngModel)]="editFormData.micr" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
               <label>Branch Name</label>
               <input type="text" [(ngModel)]="editFormData.branch_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Branch Code</label>
+              <input type="text" [(ngModel)]="editFormData.branch_code" [disabled]="!isEditMode">
             </div>
           </div>
         </div>
@@ -600,6 +638,14 @@
             <div class="field">
               <label>Relationship</label>
               <input type="text" [(ngModel)]="editFormData.nominee_relationship" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Nominee Aadhar / PAN</label>
+              <input type="text" [(ngModel)]="editFormData.nominee_aadhar_no" [disabled]="!isEditMode">
+            </div>
+            <div class="field span-2">
+              <label>Nominee Address</label>
+              <input type="text" [(ngModel)]="editFormData.nominee_address" [disabled]="!isEditMode">
             </div>
             <div class="field">
               <label>Sponsor Code</label>
@@ -624,6 +670,10 @@
               <input type="text" [(ngModel)]="editFormData.inv_first_name" [disabled]="!isEditMode">
             </div>
             <div class="field">
+              <label>Middle Name</label>
+              <input type="text" [(ngModel)]="editFormData.inv_middle_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
               <label>Surname</label>
               <input type="text" [(ngModel)]="editFormData.inv_surname" [disabled]="!isEditMode">
             </div>
@@ -632,8 +682,20 @@
               <input type="text" [(ngModel)]="editFormData.fh_first_name" [disabled]="!isEditMode">
             </div>
             <div class="field">
+              <label>Date of Birth</label>
+              <input type="date" [(ngModel)]="editFormData.dob" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Gender</label>
+              <input type="text" [(ngModel)]="editFormData.gender" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
               <label>Mobile Number</label>
               <input type="text" [(ngModel)]="editFormData.mobile" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Alt Phone</label>
+              <input type="text" [(ngModel)]="editFormData.alt_tel" [disabled]="!isEditMode">
             </div>
             <div class="field">
               <label>Email Address</label>
@@ -648,12 +710,20 @@
               <input type="text" [(ngModel)]="editFormData.aadhar" [disabled]="!isEditMode">
             </div>
             <div class="field span-2">
-              <label>Address</label>
+              <label>Permanent Address</label>
               <input type="text" [(ngModel)]="editFormData.address" [disabled]="!isEditMode">
             </div>
             <div class="field">
-              <label>City &amp; State</label>
+              <label>Permanent City / State / PIN</label>
               <input type="text" [(ngModel)]="editFormData.city" [disabled]="!isEditMode">
+            </div>
+            <div class="field span-2">
+              <label>Correspondence Address</label>
+              <input type="text" [(ngModel)]="editFormData.corr_address" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Correspondence City / State / PIN</label>
+              <input type="text" [(ngModel)]="editFormData.corr_city" [disabled]="!isEditMode">
             </div>
           </div>
         </div>
@@ -696,6 +766,25 @@
             </div>
           </div>
         </div>
+
+        <!-- 3. Bank & Payout Details -->
+        <div class="form-section-card">
+          <h4>3. Bank &amp; Payout Details</h4>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Bank &amp; Branch</label>
+              <input type="text" [(ngModel)]="editFormData.bank_branch" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Account Number</label>
+              <input type="text" [(ngModel)]="editFormData.account_number" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>IFSC Code</label>
+              <input type="text" [(ngModel)]="editFormData.ifsc_code" [disabled]="!isEditMode">
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Verification / Enrollment Status Override (For Admins) -->
@@ -719,7 +808,7 @@
       <button *ngIf="!isEditMode" class="btn btn-primary" (click)="isEditMode = true">
         <i class="fas fa-edit"></i> Enable Edit Mode
       </button>
-      <button *ngIf="isEditMode" class="btn btn-success" [disabled]="saving" (click)="saveChanges()">
+      <button *ngIf="isEditMode" class="btn btn-success" [disabled]="saving || modalLoading" (click)="saveChanges()">
         <i class="fas fa-save" [class.fa-spin]="saving"></i>
         {{ saving ? 'Saving Changes...' : 'Save & Update Database' }}
       </button>

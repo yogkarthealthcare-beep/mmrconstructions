@@ -80,6 +80,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       presentAddress: [''],
       presentCity: [''],
       presentStatePin: [''],
+      sameAsPresent: [false],
       permanentAddress: [''],
       permanentCity: [''],
       permanentStatePin: [''],
@@ -127,6 +128,22 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       declarationCheck: [false, Validators.requiredTrue]
     });
 
+    this.enrollmentForm.get('presentAddress')?.valueChanges.subscribe(val => {
+      if (this.enrollmentForm.get('sameAsPresent')?.value) {
+        this.enrollmentForm.get('permanentAddress')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+    this.enrollmentForm.get('presentCity')?.valueChanges.subscribe(val => {
+      if (this.enrollmentForm.get('sameAsPresent')?.value) {
+        this.enrollmentForm.get('permanentCity')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+    this.enrollmentForm.get('presentStatePin')?.valueChanges.subscribe(val => {
+      if (this.enrollmentForm.get('sameAsPresent')?.value) {
+        this.enrollmentForm.get('permanentStatePin')?.setValue(val || '', { emitEvent: false });
+      }
+    });
+
     this.enrollmentForm.get('propertyType')?.valueChanges.subscribe(val => {
       const otherCtrl = this.enrollmentForm.get('propertyTypeOther');
       if (val === 'Other') otherCtrl?.enable();
@@ -137,6 +154,17 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       if (val === 'Other') otherCtrl?.enable();
       else { otherCtrl?.disable(); otherCtrl?.setValue(''); }
     });
+  }
+
+  onSameAsPresentChange(event: any) {
+    const isChecked = event.target.checked;
+    if (isChecked) {
+      this.enrollmentForm.patchValue({
+        permanentAddress: this.enrollmentForm.get('presentAddress')?.value || '',
+        permanentCity: this.enrollmentForm.get('presentCity')?.value || '',
+        permanentStatePin: this.enrollmentForm.get('presentStatePin')?.value || ''
+      });
+    }
   }
 
   get nominees(): FormArray {
@@ -430,6 +458,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
             presentAddress: enroll.present_address,
             presentCity: enroll.present_city,
             presentStatePin: enroll.present_state_pin,
+            sameAsPresent: !!(enroll.present_address && enroll.permanent_address && enroll.present_address.trim() === enroll.permanent_address.trim()),
             permanentAddress: enroll.permanent_address,
             permanentCity: enroll.permanent_city,
             permanentStatePin: enroll.permanent_state_pin,
