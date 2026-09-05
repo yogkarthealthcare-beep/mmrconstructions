@@ -320,11 +320,44 @@
           <div class="cap">Signature of Co-Applicant</div>
           <button type="button" class="sig-clear" (click)="clearSig('co')">Clear</button>
         </div>
-        <div class="sig-block">
+        <div class="sig-block" style="opacity: 0.7; pointer-events: none;">
           <canvas id="sigAuth" width="330" height="100"></canvas>
-          <div class="cap">Authorized Signatory (For Company)</div>
-          <button type="button" class="sig-clear" (click)="clearSig('auth')">Clear</button>
+          <div class="cap">Authorized Signatory (For Company - Office Use Only)</div>
         </div>
+      </div>
+    </section>
+
+    <!-- ============ 8. FOR OFFICE USE ONLY ============ -->
+    <section class="block office-block">
+      <h2>8. For Office Use Only <span style="font-size: 12px; color: #888; font-weight: normal;">(Disabled for Applicant)</span></h2>
+      <div class="office-use" style="background: #fbf6ea; border: 1px dashed #c9a94a; border-radius: 6px; padding: 16px 18px;">
+        <fieldset disabled style="border:none;padding:0;margin:0;pointer-events:none;opacity:0.75;">
+          <span class="tag" style="display:inline-block;background:#c9a94a;color:#fff;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:3px;letter-spacing:.4px;margin-bottom:10px;">Staff Use Only</span>
+
+          <div class="field" style="margin-bottom: 8px;"><label style="font-weight:600;font-size:13px;color:#333;">Application Status</label></div>
+          <div class="radio-row" style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:12px;font-size:13.5px;">
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" formControlName="appStatus" value="Approved"> Approved</label>
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" formControlName="appStatus" value="Rejected"> Rejected</label>
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" formControlName="appStatus" value="Hold/Pending KYC"> Hold / Pending KYC</label>
+          </div>
+
+          <div class="field" style="margin-bottom: 12px;">
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#555;margin-bottom:4px;">Verified By (Name &amp; Emp Code)</label>
+            <input type="text" formControlName="verifiedBy" placeholder="Admin / Office Staff only" style="width:100%;border:1px solid #ccc;padding:8px 10px;border-radius:4px;background:#f9f9f9;font-size:13.5px;">
+          </div>
+
+          <div class="field" style="margin-bottom: 8px;"><label style="font-weight:600;font-size:13px;color:#333;">Payment Realization Status</label></div>
+          <div class="radio-row" style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:12px;font-size:13.5px;">
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" formControlName="paymentStatus" value="Cleared"> Cleared</label>
+            <label style="display:flex;align-items:center;gap:6px;"><input type="radio" formControlName="paymentStatus" value="Bounced"> Bounced</label>
+            <span style="margin-left:8px;font-size:13px;color:#555;">Date: <input type="date" formControlName="paymentStatusDate" style="border:none;border-bottom:1px solid #999;background:transparent;padding:2px 4px;"></span>
+          </div>
+
+          <div class="field">
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#555;margin-bottom:4px;">Authorized Signatory (with Stamp)</label>
+            <input type="text" formControlName="authorizedSignatory" placeholder="Company Authorized Signatory" style="width:100%;border:1px solid #ccc;padding:8px 10px;border-radius:4px;background:#f9f9f9;font-size:13.5px;">
+          </div>
+        </fieldset>
       </div>
     </section>
 

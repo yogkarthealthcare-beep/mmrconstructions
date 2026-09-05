@@ -118,6 +118,12 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       associateMobile: [''],
       associateSignatureName: [''],
       
+      appStatus: [{ value: 'Hold/Pending KYC', disabled: true }],
+      verifiedBy: [{ value: '', disabled: true }],
+      paymentStatus: [{ value: '', disabled: true }],
+      paymentStatusDate: [{ value: '', disabled: true }],
+      authorizedSignatory: [{ value: '', disabled: true }],
+      
       declarationCheck: [false, Validators.requiredTrue]
     });
 

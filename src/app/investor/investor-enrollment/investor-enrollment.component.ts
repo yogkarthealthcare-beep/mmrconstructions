@@ -94,11 +94,11 @@ export class InvestorEnrollmentComponent implements OnInit {
       declSignatureName: ['', Validators.required],
       firstApplicantName: ['', Validators.required],
       jointApplicantName: [''],
-      appStatus: ['Hold/Pending KYC'],
-      verifiedBy: [''],
-      paymentStatus: [''],
-      paymentStatusDate: [''],
-      authorizedSignatory: ['']
+      appStatus: [{ value: 'Hold/Pending KYC', disabled: true }],
+      verifiedBy: [{ value: '', disabled: true }],
+      paymentStatus: [{ value: '', disabled: true }],
+      paymentStatusDate: [{ value: '', disabled: true }],
+      authorizedSignatory: [{ value: '', disabled: true }]
     });
 
     this.enrollmentForm.get('occupation')?.valueChanges.subscribe(val => {
