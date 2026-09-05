@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-customer-application-detail',
@@ -200,12 +201,22 @@ export class CustomerApplicationDetailComponent implements OnInit {
     this.saving = true;
     this.api.adminUpdateCustomerEnrollment(this.appData.id, this.officeForm.value).subscribe({
       next: (res: any) => {
-        alert('Updated successfully!');
         this.saving = false;
+        Swal.fire({
+          icon: 'success',
+          title: 'Updated Successfully!',
+          text: 'Customer application status updated successfully.',
+          confirmButtonColor: '#1a5c3a'
+        });
       },
       error: (err: any) => {
-        alert('Failed to update.');
         this.saving = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'Update Failed',
+          text: err.error?.message || 'Failed to update customer application status.',
+          confirmButtonColor: '#dc2626'
+        });
       }
     });
   }

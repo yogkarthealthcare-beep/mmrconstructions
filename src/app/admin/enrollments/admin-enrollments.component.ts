@@ -156,42 +156,72 @@ export class AdminEnrollmentsComponent implements OnInit {
       this.api.adminUpdateCustomerEnrollment(id, this.editFormData).subscribe({
         next: (res: any) => {
           this.saving = false;
-          Swal.fire('Updated!', 'Customer enrollment updated successfully.', 'success');
+          Swal.fire({
+            icon: 'success',
+            title: 'Updated Successfully!',
+            text: 'Customer enrollment record updated successfully.',
+            confirmButtonColor: '#1a5c3a'
+          });
           this.closeModal();
           this.loadData();
           this.loadStats();
         },
         error: (err) => {
           this.saving = false;
-          Swal.fire('Error', err.error?.message || 'Failed to update customer enrollment.', 'error');
+          Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: err.error?.message || 'Failed to update customer enrollment.',
+            confirmButtonColor: '#dc2626'
+          });
         }
       });
     } else if (this.activeCategory === 'associate') {
       this.api.adminUpdateAssociateEnrollment(id, this.editFormData).subscribe({
         next: (res: any) => {
           this.saving = false;
-          Swal.fire('Updated!', 'Associate enrollment updated successfully.', 'success');
+          Swal.fire({
+            icon: 'success',
+            title: 'Updated Successfully!',
+            text: 'Associate enrollment record updated successfully.',
+            confirmButtonColor: '#1a5c3a'
+          });
           this.closeModal();
           this.loadData();
           this.loadStats();
         },
         error: (err) => {
           this.saving = false;
-          Swal.fire('Error', err.error?.message || 'Failed to update associate enrollment.', 'error');
+          Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: err.error?.message || 'Failed to update associate enrollment.',
+            confirmButtonColor: '#dc2626'
+          });
         }
       });
     } else if (this.activeCategory === 'investor') {
       this.api.adminUpdateInvestorEnrollment(id, this.editFormData).subscribe({
         next: (res: any) => {
           this.saving = false;
-          Swal.fire('Updated!', 'Investor enrollment updated successfully.', 'success');
+          Swal.fire({
+            icon: 'success',
+            title: 'Updated Successfully!',
+            text: 'Investor enrollment record updated successfully.',
+            confirmButtonColor: '#1a5c3a'
+          });
           this.closeModal();
           this.loadData();
           this.loadStats();
         },
         error: (err) => {
           this.saving = false;
-          Swal.fire('Error', err.error?.message || 'Failed to update investor enrollment.', 'error');
+          Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: err.error?.message || 'Failed to update investor enrollment.',
+            confirmButtonColor: '#dc2626'
+          });
         }
       });
     }

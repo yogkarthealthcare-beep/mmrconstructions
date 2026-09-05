@@ -19,9 +19,30 @@
     <div class="title-banner position-relative">
       <div class="en">CUSTOMER ENROLLMENT FORM (PROPERTY BUYER)</div>
       <div class="hi">ग्राहक नामांकन फॉर्म (संपति खरीदार)</div>
-      <button type="button" (click)="autoFillDemoData()" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: #ffc107; border: none; padding: 5px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; color: #000; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-        <i class="fas fa-bolt"></i> Auto-Fill Demo Data
-      </button>
+    </div>
+
+    <!-- Red Locked Support Banner when already submitted -->
+    <div *ngIf="isSubmitted" class="locked-banner" style="background: #fef2f2; border: 1px solid #f87171; border-left: 5px solid #dc2626; color: #991b1b; padding: 14px 20px; border-radius: 8px; margin: 15px 0 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-lock" style="font-size: 24px; color: #dc2626;"></i>
+        <div>
+          <div style="font-weight: 700; font-size: 15px; color: #7f1d1d;">Enrollment Form Submitted (Read-Only Mode) / फॉर्म पहले ही जमा हो चुका है</div>
+          <div style="font-size: 13px; color: #991b1b; margin-top: 3px;">
+            This form has already been submitted and cannot be edited. If you need to make any changes or updates, please contact MMR Support: 
+            <a href="tel:9511119879" style="color: #7f1d1d; font-weight: bold; text-decoration: underline;">9511119879</a> | 
+            <a href="tel:8429823067" style="color: #7f1d1d; font-weight: bold; text-decoration: underline;">8429823067</a> &nbsp;|&nbsp; 
+            Email: <a href="mailto:mmrconstructions&#64;hotmail.com" style="color: #7f1d1d; font-weight: bold; text-decoration: underline;">mmrconstructions&#64;hotmail.com</a>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px;" class="no-print">
+        <button type="button" (click)="goToDashboard()" style="background: #1e3a8a; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+          <i class="fas fa-th-large"></i> Go to Dashboard
+        </button>
+        <button *ngIf="submissionId" type="button" (click)="downloadPdf()" [disabled]="printing" style="background: #14532d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+          <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i> Download PDF
+        </button>
+      </div>
     </div>
 
     <div class="meta-grid">

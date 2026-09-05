@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-investor-enrollment-detail',
@@ -203,7 +204,12 @@ export class AdminInvestorEnrollmentDetailComponent implements OnInit {
   onSubmit() {
     if (this.enrollmentForm.invalid) {
       this.enrollmentForm.markAllAsTouched();
-      alert('Please fill out all required fields.');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Validation Error',
+        text: 'Please fill out all required fields before saving.',
+        confirmButtonColor: '#dc2626'
+      });
       return;
     }
 
@@ -215,11 +221,21 @@ export class AdminInvestorEnrollmentDetailComponent implements OnInit {
     (this.api as any).put(`/api/admin/investor-enrollment/${this.enrollmentId}`, formData, true).subscribe({
       next: (res: any) => {
         this.submitting = false;
-        alert('Changes saved successfully!');
+        Swal.fire({
+          icon: 'success',
+          title: 'Changes Saved!',
+          text: 'Investor enrollment changes saved successfully.',
+          confirmButtonColor: '#1a5c3a'
+        });
       },
       error: (err: any) => {
         this.submitting = false;
-        alert(err.error?.message || 'Failed to save changes.');
+        Swal.fire({
+          icon: 'error',
+          title: 'Save Failed',
+          text: err.error?.message || 'Failed to save changes.',
+          confirmButtonColor: '#dc2626'
+        });
       }
     });
   }

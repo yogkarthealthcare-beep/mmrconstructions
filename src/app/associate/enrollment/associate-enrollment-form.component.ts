@@ -9,6 +9,7 @@ import { submitForm, resetFormState } from './state/associate-enrollment.actions
 import { selectLoading, selectSuccess, selectAssociateId, selectError } from './state/associate-enrollment.selectors';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-associate-enrollment-form',
@@ -95,6 +96,13 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         if (success) {
           this.auth.setEnrollmentCompleted();
           this.isSubmitted = true;
+          this.enrollmentForm.disable();
+          Swal.fire({
+            icon: 'success',
+            title: 'Enrollment Submitted Successfully!',
+            text: 'Your associate enrollment form has been submitted.',
+            confirmButtonColor: '#1a5c3a'
+          });
         }
       })
     );
