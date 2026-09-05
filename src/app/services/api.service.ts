@@ -421,7 +421,7 @@ export class ApiService {
   getInvestorProfile() { return this.get('/api/investor/profile'); }
   updateInvestorProfile(data: any) { return this.put('/api/investor/profile', data); }
   updateInvestorBankDetails(data: any) { return this.put('/api/investor/profile/bank', data); }
-  changeInvestorPassword(data: any) { return this.post('/api/investor/profile/change-password', data); }
+  changeInvestorPassword(data: any) { return this.put('/api/investor/change-password', data); }
   getInvestorSettlementPreference() { return this.get('/api/investor/settlement'); }
   setInvestorSettlementPreference(pref: string) { return this.post('/api/investor/settlement', { preference: pref }); }
   requestInvestorSettlementChange(data: any) { return this.post('/api/investor/settlement/request', data); }

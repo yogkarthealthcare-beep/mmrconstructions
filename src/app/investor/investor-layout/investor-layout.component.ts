@@ -28,8 +28,7 @@ export class InvestorLayoutComponent implements OnInit {
       icon: 'fas fa-chart-pie',
       expanded: false,
       items: [
-        { icon: 'fas fa-chart-line', label: 'Dashboard', route: '/investor/dashboard' },
-        { icon: 'fas fa-bell', label: 'Notifications', route: '/investor/notifications' }
+        { icon: 'fas fa-chart-line', label: 'Dashboard', route: '/investor/dashboard' }
       ]
     },
     {
@@ -40,7 +39,6 @@ export class InvestorLayoutComponent implements OnInit {
         { icon: 'fas fa-hand-holding-usd', label: 'Deposit', route: '/investor/deposit' },
         { icon: 'fas fa-wallet', label: 'Wallet', route: '/investor/wallet' },
         { icon: 'fas fa-list-alt', label: 'Transaction History', route: '/investor/transactions' },
-        { icon: 'fas fa-receipt', label: 'Payment History', route: '/investor/payment-history' },
         { icon: 'fas fa-calendar-check', label: 'Settlement Details', route: '/investor/settlement' }
       ]
     },

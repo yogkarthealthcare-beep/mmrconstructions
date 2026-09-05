@@ -90,6 +90,9 @@ import { InvestorWithdrawalComponent } from './investor/investor-withdrawal/inve
 import { InvestorPaymentsComponent } from './investor/investor-payments/investor-payments.component';
 import { InvestorProfileComponent } from './investor/investor-profile/investor-profile.component';
 import { InvestorEnrollmentComponent } from './investor/investor-enrollment/investor-enrollment.component';
+import { InvestorDocumentsComponent } from './investor/investor-documents/investor-documents.component';
+import { InvestorSettlementComponent } from './investor/investor-settlement/investor-settlement.component';
+import { InvestorChangePasswordComponent } from './investor/investor-change-password/investor-change-password.component';
 
 import { BlogListComponent } from './pages/blog-list/blog-list.component';
 import { BlogDetailComponent } from './pages/blog-detail/blog-detail.component';
@@ -267,7 +270,11 @@ export const routes: Routes = [
       { path: 'withdrawal',    component: InvestorWithdrawalComponent },
       { path: 'payments',      component: InvestorPaymentsComponent },
       { path: 'payment-history', component: InvestorPaymentsComponent },
+      { path: 'transactions',  component: InvestorPaymentsComponent },
+      { path: 'settlement',    component: InvestorSettlementComponent },
+      { path: 'documents',     component: InvestorDocumentsComponent },
       { path: 'profile',       component: InvestorProfileComponent },
+      { path: 'change-password', component: InvestorChangePasswordComponent },
       { path: 'enrollment',    component: InvestorEnrollmentComponent },
     ]
   },
