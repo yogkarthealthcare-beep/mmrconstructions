@@ -102,6 +102,7 @@
     <table class="table align-middle custom-dash-table mb-0">
       <thead>
         <tr>
+          <th class="th-sno">#</th>
           <th>Associate Agent</th>
           <th>Type &amp; Level</th>
           <th>Gross / Net Payable</th>
@@ -112,7 +113,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let c of filtered">
+        <tr *ngFor="let c of pagedCommissions; let i = index">
+          <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
           <td>
             <div class="d-flex align-items-center gap-2.5">
               <div class="user-avatar-circle bg-gold-avatar">
@@ -163,7 +165,10 @@
                 <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="openRejectModal(c); activeRowId = null" *ngIf="c.commission_status==='Pending'">
                   <i class="fas fa-times-circle text-danger me-2 width-16"></i> Reject Payout
                 </button>
-                <div class="dropdown-divider my-1" *ngIf="c.commission_status==='Pending' &amp;&amp; c.mobile_no"></div>
+                <div class="dropdown-item py-1.5 px-3 text-muted fs-11" *ngIf="c.commission_status!=='Pending'">
+                  <i class="fas fa-info-circle me-1"></i> No further actions
+                </div>
+                <div class="dropdown-divider my-1" *ngIf="c.commission_status==='Pending' && c.mobile_no"></div>
                 <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + c.mobile_no" target="_blank" *ngIf="c.mobile_no">
                   <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Agent
                 </a>
@@ -174,6 +179,15 @@
       </tbody>
     </table>
   </div>
+  <app-admin-pagination
+    *ngIf="filtered.length > 0"
+    [totalItems]="filtered.length"
+    [page]="page"
+    [pageSize]="pageSize"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (export)="exportData($event.mode, $event.format)">
+  </app-admin-pagination>
 </div>
 
 <!-- APPROVE PAYOUT MODAL -->

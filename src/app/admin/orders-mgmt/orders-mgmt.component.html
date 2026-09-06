@@ -89,9 +89,10 @@
 
   <!-- Orders Listing Table -->
   <div *ngIf="!loading" class="table-responsive bg-white rounded-3 shadow-sm border mt-3">
-    <table class="table table-hover align-middle mb-0 font-sm">
+    <table class="table table-hover align-middle mb-0 font-sm custom-dash-table">
       <thead class="table-dark">
         <tr>
+          <th class="th-sno">#</th>
           <th>Order ID</th>
           <th>Invoice #</th>
           <th>Booking Date</th>
@@ -117,7 +118,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let order of orders">
+        <tr *ngFor="let order of orders; let i = index">
+          <td class="td-sno">{{ (pagination.page - 1) * pagination.limit + i + 1 }}</td>
           <td><span class="badge bg-secondary font-mono">{{ order.order_id || ('BK-' + order.booking_id) }}</span></td>
           <td>
             <a [routerLink]="['/booking', order.invoice_number || order.booking_id, 'invoice']" class="fw-bold text-success text-decoration-none">
@@ -158,16 +160,16 @@
           </td>
           <td class="text-center">
             <div class="btn-group btn-group-sm">
-              <a [routerLink]="['/booking', order.invoice_number || order.booking_id, 'invoice']" class="btn btn-outline-success" title="View Invoice">
+              <a [routerLink]="['/booking', order.invoice_number || order.booking_id, 'invoice']" class="btn btn-outline-success btn-xs" title="View Invoice">
                 <i class="fas fa-eye"></i>
               </a>
-              <button class="btn btn-outline-primary" (click)="downloadPdf(order)" title="Download PDF">
+              <button class="btn btn-outline-primary btn-xs" (click)="downloadPdf(order)" title="Download PDF">
                 <i class="fas fa-download"></i>
               </button>
-              <button class="btn btn-outline-dark" (click)="printOrder(order)" title="Print Invoice">
+              <button class="btn btn-outline-dark btn-xs" (click)="printOrder(order)" title="Print Invoice">
                 <i class="fas fa-print"></i>
               </button>
-              <button class="btn btn-outline-danger" (click)="deleteOrder(order)" title="Delete Order & Reset Plot">
+              <button class="btn btn-outline-danger btn-xs" (click)="deleteOrder(order)" title="Delete Order & Reset Plot">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -175,7 +177,7 @@
         </tr>
 
         <tr *ngIf="orders.length === 0">
-          <td colspan="22" class="text-center py-5 text-muted">
+          <td colspan="23" class="text-center py-5 text-muted">
             <i class="fas fa-inbox fa-3x mb-3 text-secondary opacity-50 d-block"></i>
             No orders found matching your filter criteria.
           </td>
@@ -184,23 +186,14 @@
     </table>
   </div>
 
-  <!-- Pagination Controls -->
-  <div *ngIf="!loading && pagination.pages > 1" class="d-flex justify-content-between align-items-center mt-3 bg-white p-3 rounded-3 border">
-    <span class="text-muted font-xs">
-      Showing page <strong>{{ pagination.page }}</strong> of <strong>{{ pagination.pages }}</strong> (Total <strong>{{ pagination.total }}</strong> orders)
-    </span>
-    <nav>
-      <ul class="pagination pagination-sm mb-0">
-        <li class="page-item" [class.disabled]="pagination.page === 1">
-          <button class="page-link" (click)="loadOrders(pagination.page - 1)">Previous</button>
-        </li>
-        <li *ngFor="let p of pagesArray" class="page-item" [class.active]="p === pagination.page">
-          <button class="page-link" (click)="loadOrders(p)">{{ p }}</button>
-        </li>
-        <li class="page-item" [class.disabled]="pagination.page === pagination.pages">
-          <button class="page-link" (click)="loadOrders(pagination.page + 1)">Next</button>
-        </li>
-      </ul>
-    </nav>
-  </div>
+  <!-- Unified Pagination -->
+  <app-admin-pagination
+    *ngIf="!loading && pagination.total > 0"
+    [totalItems]="pagination.total"
+    [page]="pagination.page"
+    [pageSize]="pagination.limit"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (export)="exportData($event.mode, $event.format)">
+  </app-admin-pagination>
 </div>

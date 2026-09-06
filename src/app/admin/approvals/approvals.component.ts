@@ -1,21 +1,30 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent],
   templateUrl: './approvals.component.html',
   styleUrls: ['./approvals.component.css']
 })
 export class ApprovalsComponent implements OnInit {
+  private api = inject(ApiService);
+  private exportService = inject(AdminExportService);
+
   loading = true;
   filter = 'all';
   search = '';
   users: any[] = [];
   activeRowId: any = null;
+
+  // Pagination
+  page = 1;
+  pageSize = 10;
 
   @HostListener('document:click')
   closeDropdowns() {
@@ -39,7 +48,57 @@ export class ApprovalsComponent implements OnInit {
   actionLoading = false;
   toast = '';
 
-  constructor(private api: ApiService) {}
+  constructor() {}
+
+  get pagedUsers(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filtered.slice(start, start + this.pageSize);
+  }
+
+  onPageChange(p: number) {
+    this.page = p;
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.page = 1;
+  }
+
+  exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const list = mode === 'current' ? this.pagedUsers : this.filtered;
+    const baseIndex = mode === 'current' ? (this.page - 1) * this.pageSize : 0;
+
+    const columns: ExportColumn[] = [
+      { header: '#', key: '_sno', width: 6 },
+      { header: 'Full Name', key: 'full_name', width: 22 },
+      { header: 'Contact Number', key: 'mobile_no', width: 16 },
+      { header: 'Email Address', key: 'email_display', width: 22 },
+      { header: 'User Type', key: 'user_type', width: 14 },
+      { header: 'Member ID', key: 'member_id_display', width: 14 },
+      { header: 'Sponsor Details', key: 'sponsor_display', width: 20 },
+      { header: 'Status', key: 'status_display', width: 14 },
+      { header: 'Registered Date', key: 'date_display', width: 16 }
+    ];
+
+    const formatted = list.map((u, idx) => ({
+      ...u,
+      _sno: baseIndex + idx + 1,
+      email_display: u.email || 'N/A',
+      member_id_display: u.member_id || 'N/A',
+      sponsor_display: u.sponsor_name ? `${u.sponsor_name} (${u.sponsor_code || ''})` : 'Direct / None',
+      status_display: u.account_status || 'Pending',
+      date_display: u.registered_at ? new Date(u.registered_at).toLocaleString() : 'N/A'
+    }));
+
+    const title = mode === 'current' ? `User Approvals (Page ${this.page})` : 'All Pending User Approvals';
+    const filename = `user_approvals_${mode}_${new Date().toISOString().slice(0, 10)}`;
+
+    if (format === 'excel') {
+      this.exportService.exportToExcel(formatted, columns, filename, title);
+    } else {
+      this.exportService.exportToPdf(formatted, columns, filename, title);
+    }
+  }
 
   ngOnInit() {
     this.loadUsers();

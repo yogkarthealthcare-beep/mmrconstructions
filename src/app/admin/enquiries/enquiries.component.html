@@ -104,8 +104,9 @@
 
   <div class="table-responsive" *ngIf="filtered.length > 0">
     <table class="table align-middle custom-dash-table mb-0">
-      <thead>
+      <thead class="bg-light">
         <tr>
+          <th class="th-sno">#</th>
           <th>Lead Customer Profile</th>
           <th>Selected Site</th>
           <th>Topic &amp; Interest</th>
@@ -117,7 +118,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let e of pagedEnquiries">
+        <tr *ngFor="let e of pagedEnquiries; let i = index">
+          <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
           <td>
             <div class="d-flex align-items-center gap-2.5">
               <div class="user-avatar-circle bg-purple-avatar">
@@ -195,19 +197,16 @@
     </table>
   </div>
   
-  <!-- PAGINATION -->
-  <div class="d-flex align-items-center justify-content-between p-3 border-top bg-light rounded-bottom-12" *ngIf="!loading && filtered.length > 0">
-    <div class="text-muted fs-12 fw-600">
-      Showing {{ (page - 1) * pageSize + 1 }} to {{ page * pageSize > filtered.length ? filtered.length : page * pageSize }} of {{ filtered.length }} entries
-    </div>
-    <div class="d-flex gap-1">
-      <button class="btn btn-outline-secondary btn-sm px-3 rounded-6 fs-12 fw-600" [disabled]="page === 1" (click)="changePage(page - 1)">Prev</button>
-      <button class="btn btn-sm rounded-6 fs-12 fw-600 px-3" *ngFor="let p of [].constructor(totalPages); let i = index" 
-              [class.btn-primary]="page === i + 1" [class.btn-outline-secondary]="page !== i + 1" 
-              (click)="changePage(i + 1)">{{ i + 1 }}</button>
-      <button class="btn btn-outline-secondary btn-sm px-3 rounded-6 fs-12 fw-600" [disabled]="page === totalPages" (click)="changePage(page + 1)">Next</button>
-    </div>
-  </div>
+  <!-- Unified Pagination -->
+  <app-admin-pagination
+    *ngIf="!loading && filtered.length > 0"
+    [totalItems]="filtered.length"
+    [page]="page"
+    [pageSize]="pageSize"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (export)="exportData($event.mode, $event.format)">
+  </app-admin-pagination>
 </div>
 
 <!-- LOG NEW LEAD MODAL -->

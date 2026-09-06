@@ -150,7 +150,7 @@
       <table class="table-withdrawal" style="table-layout: fixed; width: 100%;">
         <thead>
           <tr>
-            <th class="ps-4" style="width: 5%;">#</th>
+            <th class="ps-4 th-sno" style="width: 5%;">#</th>
             <th style="width: 11%;">Request ID</th>
             <th style="width: 19%;">User Details</th>
             <th style="width: 11%;">Role</th>
@@ -158,11 +158,12 @@
             <th style="width: 15%;">Bank / UPI Details</th>
             <th style="width: 12%;">Status</th>
             <th style="width: 14%;">Requested Date</th>
+            <th class="text-end pe-4" style="width: 15%;">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let r of requests; let i = index">
-            <td class="ps-4 fw-semibold text-muted fs-13">{{ i + 1 }}</td>
+          <tr *ngFor="let r of pagedRequests; let i = index">
+            <td class="ps-4 fw-semibold text-muted fs-13 td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
             <td>
               <span class="font-monospace text-muted fs-12 fw-bold text-truncate d-block" [title]="'#' + r.id">#{{ r.id.slice(0, 8) }}</span>
             </td>
@@ -220,19 +221,15 @@
               </div>
             </td>
             <td>
-              <span class="status-pill-custom text-nowrap" [ngClass]="{
+              <span class="status-badge" [ngClass]="{
                 'status-pending': r.status === 'pending',
                 'status-approved': r.status === 'approved',
                 'status-released': r.status === 'released',
-                'status-rejected': r.status === 'rejected' || r.status === 'failed'
+                'status-rejected': r.status === 'rejected',
+                'status-failed': r.status === 'failed',
+                'status-cancelled': r.status === 'cancelled'
               }">
-                <i [class]="{
-                  'fas fa-clock': r.status === 'pending',
-                  'fas fa-check-double': r.status === 'approved',
-                  'fas fa-hand-holding-usd': r.status === 'released',
-                  'fas fa-times-circle': r.status === 'rejected' || r.status === 'failed'
-                }"></i>
-                {{ r.status | titlecase }}
+                {{ r.status | uppercase }}
               </span>
             </td>
             <td class="text-nowrap">
@@ -250,6 +247,17 @@
       <h6 class="fw-bold text-dark">No Withdrawal Requests Found</h6>
       <p class="text-muted fs-13">No payout requests match the selected filters or date range.</p>
     </div>
+
+    <!-- Unified Pagination -->
+    <app-admin-pagination
+      *ngIf="requests.length > 0"
+      [totalItems]="requests.length"
+      [page]="page"
+      [pageSize]="pageSize"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (export)="exportData($event.mode, $event.format)">
+    </app-admin-pagination>
   </div>
 
   <!-- APPROVAL MODAL DIALOG -->

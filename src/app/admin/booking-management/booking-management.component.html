@@ -27,6 +27,7 @@
       <table class="table booking-table">
         <thead>
           <tr>
+            <th class="th-sno">#</th>
             <th>Booking</th>
             <th>Customer</th>
             <th>Plot</th>
@@ -37,7 +38,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let booking of pagedBookings" [class.selected]="selected?.booking_id === booking.booking_id">
+          <tr *ngFor="let booking of pagedBookings; let i = index" [class.selected]="selected?.booking_id === booking.booking_id">
+            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
             <td><strong>{{ booking.booking_serial || ('#' + booking.booking_id) }}</strong><small>{{ booking.booking_date | date:'mediumDate' }}</small></td>
             <td>{{ booking.customer_name || booking.full_name || '-' }}<small>{{ booking.mobile_no || '-' }}{{ booking.email ? ' · ' + booking.email : '' }}</small></td>
             <td>Plot {{ booking.plot_number }}<small>{{ booking.site_name }}</small></td>
@@ -47,18 +49,20 @@
             <td class="text-end"><button class="btn btn-green btn-sm" (click)="selectBooking(booking)">View</button></td>
           </tr>
           <tr *ngIf="!pagedBookings.length">
-            <td colspan="7" class="empty-row">No booking requests found.</td>
+            <td colspan="8" class="empty-row">No booking requests found.</td>
           </tr>
         </tbody>
       </table>
     </div>
-    <div class="pager">
-      <span>Page {{ page }} of {{ totalPages }}</span>
-      <div>
-        <button class="btn btn-outline-green btn-sm" (click)="prevPage()" [disabled]="page === 1">Prev</button>
-        <button class="btn btn-outline-green btn-sm" (click)="nextPage()" [disabled]="page === totalPages">Next</button>
-      </div>
-    </div>
+    <app-admin-pagination
+      *ngIf="filteredBookings.length"
+      [totalItems]="filteredBookings.length"
+      [page]="page"
+      [pageSize]="pageSize"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (export)="exportData($event.mode, $event.format)">
+    </app-admin-pagination>
   </section>
 
   <aside class="panel-card detail-panel" *ngIf="selected; else noSelection">

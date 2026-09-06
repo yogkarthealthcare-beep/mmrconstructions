@@ -16,6 +16,8 @@ import { SignupComponent } from './pages/signup/signup.component';
 import { VerifyOtpComponent } from './pages/verify-otp/verify-otp.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ImpersonateLoginComponent } from './pages/impersonate-login/impersonate-login.component';
+import { NotFoundComponent } from './pages/not-found/not-found.component';
+import { ErrorComponent } from './pages/error/error.component';
 
 // Admin
 import { adminGuard } from './shared/guards/admin.guard';
@@ -281,5 +283,9 @@ export const routes: Routes = [
     ]
   },
 
-  { path: '**', redirectTo: '' }
+  { path: '404', component: NotFoundComponent },
+  { path: 'not-found', component: NotFoundComponent },
+  { path: 'error', component: ErrorComponent },
+  { path: 'something-went-wrong', component: ErrorComponent },
+  { path: '**', component: NotFoundComponent }
 ];

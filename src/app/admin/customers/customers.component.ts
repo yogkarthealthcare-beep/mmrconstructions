@@ -3,13 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { AdminExportService } from '../../services/admin-export.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent],
   templateUrl: './customers.component.html',
   styleUrls: ['./customers.component.css']
 })
@@ -61,8 +63,82 @@ export class CustomersComponent implements OnInit {
   constructor(
     private api: ApiService,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    public exportService: AdminExportService
   ) {}
+
+  onPageChange(p: number) {
+    this.page = p;
+    this.load();
+  }
+
+  onPageSizeChange(s: number) {
+    this.pageSize = s;
+    this.page = 1;
+    this.load();
+  }
+
+  exportCustomers(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const headers = ['S.No.', 'Member ID', 'Customer Name', 'Mobile Number', 'Email', 'Location', 'Registered Date', 'Status'];
+    
+    if (mode === 'current') {
+      const startIdx = (this.page - 1) * this.pageSize;
+      const rows = this.filtered.map((c: any, i: number) => [
+        startIdx + i + 1,
+        c.member_id || '—',
+        c.full_name || '—',
+        c.mobile_no || '—',
+        c.email || '—',
+        [c.city || c.address?.city, c.state || c.address?.state].filter(Boolean).join(', ') || 'Not specified',
+        c.registered_at ? new Date(c.registered_at).toLocaleDateString('en-IN') : '—',
+        c.account_status || 'Active'
+      ]);
+
+      const title = `Customers List (${mode === 'current' ? 'Page ' + this.page : 'All Data'})`;
+      if (format === 'excel') {
+        this.exportService.exportToCsv(`customers-page-${this.page}`, headers, rows);
+      } else {
+        this.exportService.exportToPdf(title, headers, rows, 'Customer Management Report');
+      }
+    } else {
+      // Fetch all customers for full export
+      this.actionLoading = true;
+      const queryParams: any = {
+        user_type: 'Customer',
+        page: 1,
+        pageSize: 10000
+      };
+      if (this.statusFilter !== 'all') queryParams.account_status = this.statusFilter;
+      if (this.search.trim()) queryParams.search = this.search.trim();
+
+      this.api.adminGetCustomers(queryParams).subscribe({
+        next: (res: any) => {
+          this.actionLoading = false;
+          const list = res.data?.users || res.data?.customers || (Array.isArray(res.data) ? res.data : []);
+          const rows = list.map((c: any, i: number) => [
+            i + 1,
+            c.member_id || '—',
+            c.full_name || '—',
+            c.mobile_no || '—',
+            c.email || '—',
+            [c.city || c.address?.city, c.state || c.address?.state].filter(Boolean).join(', ') || 'Not specified',
+            c.registered_at ? new Date(c.registered_at).toLocaleDateString('en-IN') : '—',
+            c.account_status || 'Active'
+          ]);
+
+          if (format === 'excel') {
+            this.exportService.exportToCsv('customers-all-records', headers, rows);
+          } else {
+            this.exportService.exportToPdf('All Registered Customers Report', headers, rows, 'Complete Customer Directory');
+          }
+        },
+        error: () => {
+          this.actionLoading = false;
+          alert('Failed to fetch full customer list for export.');
+        }
+      });
+    }
+  }
 
   isFreeOrDisabled(c: any): boolean {
     if (!c) return false;

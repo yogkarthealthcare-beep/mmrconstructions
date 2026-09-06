@@ -1,3 +1,69 @@
-<div class="pg-header"><div><h4>Book Plot Leads</h4><p>Guest and registered-user plot inquiries</p></div><button class="btn btn-outline-green" (click)="export()"><i class="fas fa-file-excel me-2"></i>Export Excel</button></div>
-<div class="filters"><div class="search"><i class="fas fa-search"></i><input [(ngModel)]="search" (keyup.enter)="filter()" placeholder="Search inquiry, name, mobile or site"></div><select [(ngModel)]="status" (change)="filter()"><option value="">All statuses</option><option *ngFor="let s of statuses">{{s}}</option></select><button class="btn btn-green" (click)="filter()">Search</button></div>
-<div class="table-card"><div class="table-responsive"><table><thead><tr><th>Inquiry ID</th><th>Name / Mobile</th><th>Selected Site</th><th>Custom Site</th><th>Inquiry Date</th><th>User Type</th><th>Status</th></tr></thead><tbody><tr *ngFor="let row of rows"><td><strong>{{row.inquiry_number}}</strong></td><td>{{row.full_name}}<small>{{row.contact_number}}</small></td><td>{{row.selected_site||'—'}}</td><td>{{row.custom_site_name||'—'}}</td><td>{{row.created_at|date:'dd MMM y, h:mm a'}}</td><td><span class="type">{{row.user_type}}</span></td><td><select [(ngModel)]="row.status" (change)="update(row)"><option *ngFor="let s of statuses">{{s}}</option></select></td></tr><tr *ngIf="!loading&&!rows.length"><td colspan="7" class="empty">No leads found.</td></tr><tr *ngIf="loading"><td colspan="7" class="empty">Loading leads...</td></tr></tbody></table></div><div class="pager"><span>{{total}} lead(s)</span><div><button (click)="go(-1)" [disabled]="page<=1">Previous</button><span>Page {{page}} of {{pages}}</span><button (click)="go(1)" [disabled]="page>=pages">Next</button></div></div></div>
+<div class="pg-header">
+  <div>
+    <h4>Book Plot Leads</h4>
+    <p>Guest and registered-user plot inquiries</p>
+  </div>
+</div>
+
+<div class="filters">
+  <div class="search">
+    <i class="fas fa-search"></i>
+    <input [(ngModel)]="search" (keyup.enter)="filter()" placeholder="Search inquiry, name, mobile or site">
+  </div>
+  <select [(ngModel)]="status" (change)="filter()">
+    <option value="">All statuses</option>
+    <option *ngFor="let s of statuses">{{s}}</option>
+  </select>
+  <button class="btn btn-green" (click)="filter()">Search</button>
+</div>
+
+<div class="table-card">
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th class="th-sno">#</th>
+          <th>Inquiry ID</th>
+          <th>Name / Mobile</th>
+          <th>Selected Site</th>
+          <th>Custom Site</th>
+          <th>Inquiry Date</th>
+          <th>User Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows; let i = index">
+          <td class="td-sno">{{ (page - 1) * limit + i + 1 }}</td>
+          <td><strong>{{row.inquiry_number}}</strong></td>
+          <td>{{row.full_name}}<small>{{row.contact_number}}</small></td>
+          <td>{{row.selected_site||'—'}}</td>
+          <td>{{row.custom_site_name||'—'}}</td>
+          <td>{{row.created_at|date:'dd MMM y, h:mm a'}}</td>
+          <td><span class="type">{{row.user_type}}</span></td>
+          <td>
+            <select [(ngModel)]="row.status" (change)="update(row)">
+              <option *ngFor="let s of statuses">{{s}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr *ngIf="!loading&&!rows.length">
+          <td colspan="8" class="empty">No leads found.</td>
+        </tr>
+        <tr *ngIf="loading">
+          <td colspan="8" class="empty">Loading leads...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <app-admin-pagination
+    *ngIf="total > 0"
+    [totalItems]="total"
+    [page]="page"
+    [pageSize]="limit"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (export)="exportData($event.mode, $event.format)">
+  </app-admin-pagination>
+</div>
+

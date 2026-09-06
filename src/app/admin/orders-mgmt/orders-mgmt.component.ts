@@ -1,17 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-admin-orders-mgmt',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, AdminPaginationComponent],
   templateUrl: './orders-mgmt.component.html',
   styleUrls: ['./orders-mgmt.component.css']
 })
 export class AdminOrdersMgmtComponent implements OnInit {
+  private api = inject(ApiService);
+  private exportService = inject(AdminExportService);
+
   loading = true;
   orders: any[] = [];
   pagination: any = { total: 0, page: 1, limit: 10, pages: 1 };
@@ -26,8 +31,6 @@ export class AdminOrdersMgmtComponent implements OnInit {
 
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
-
-  constructor(private api: ApiService) {}
 
   ngOnInit() {
     this.loadOrders();
@@ -61,6 +64,15 @@ export class AdminOrdersMgmtComponent implements OnInit {
     });
   }
 
+  onPageChange(p: number) {
+    this.loadOrders(p);
+  }
+
+  onPageSizeChange(size: number) {
+    this.pagination.limit = size;
+    this.loadOrders(1);
+  }
+
   onFilterChange() {
     this.loadOrders(1);
   }
@@ -73,6 +85,75 @@ export class AdminOrdersMgmtComponent implements OnInit {
     this.toDate = '';
     this.sortBy = 'latest';
     this.loadOrders(1);
+  }
+
+  exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const fetchAndExport = (dataList: any[], baseIndex: number) => {
+      const columns: ExportColumn[] = [
+        { header: '#', key: '_sno', width: 6 },
+        { header: 'Order ID', key: 'order_id_display', width: 14 },
+        { header: 'Invoice #', key: 'invoice_number', width: 16 },
+        { header: 'Booking Date', key: 'date_display', width: 14 },
+        { header: 'Customer Name', key: 'customer_name', width: 20 },
+        { header: 'Mobile', key: 'mobile_no', width: 14 },
+        { header: 'Project / Site', key: 'site_name', width: 18 },
+        { header: 'Plot #', key: 'plot_number', width: 10 },
+        { header: 'Grand Total (Rs.)', key: 'grand_total_display', width: 16 },
+        { header: 'Paid (Rs.)', key: 'paid_amount_display', width: 14 },
+        { header: 'Balance (Rs.)', key: 'balance_amount_display', width: 14 },
+        { header: 'Pay Status', key: 'payment_status', width: 12 },
+        { header: 'Order Status', key: 'order_status', width: 12 }
+      ];
+
+      const formatted = dataList.map((o, idx) => ({
+        ...o,
+        _sno: baseIndex + idx + 1,
+        order_id_display: o.order_id || ('BK-' + o.booking_id),
+        date_display: o.invoice_date ? new Date(o.invoice_date).toLocaleDateString() : 'N/A',
+        customer_name: o.invoice_data?.customer_name || '-',
+        mobile_no: o.invoice_data?.mobile_no || '-',
+        site_name: o.invoice_data?.site_name || '-',
+        plot_number: o.invoice_data?.plot_number || '-',
+        grand_total_display: Number(o.grand_total || 0).toLocaleString(),
+        paid_amount_display: Number(o.paid_amount || 0).toLocaleString(),
+        balance_amount_display: Number(o.balance_amount || 0).toLocaleString()
+      }));
+
+      const title = mode === 'current' ? `Orders Directory (Page ${this.pagination.page})` : 'All Orders & Invoices Directory';
+      const filename = `orders_invoices_${mode}_${new Date().toISOString().slice(0, 10)}`;
+
+      if (format === 'excel') {
+        this.exportService.exportToExcel(formatted, columns, filename, title);
+      } else {
+        this.exportService.exportToPdf(formatted, columns, filename, title);
+      }
+    };
+
+    if (mode === 'current') {
+      const baseIdx = (this.pagination.page - 1) * this.pagination.limit;
+      fetchAndExport(this.orders, baseIdx);
+    } else {
+      const params: any = {
+        page: 1,
+        limit: 1000,
+        search: this.search,
+        payment_status: this.paymentStatus,
+        order_status: this.orderStatus,
+        from_date: this.fromDate,
+        to_date: this.toDate,
+        sort_by: this.sortBy,
+      };
+
+      this.api.get('/api/orders', params, true).subscribe({
+        next: (res: any) => {
+          const allOrders = res?.data?.orders || this.orders;
+          fetchAndExport(allOrders, 0);
+        },
+        error: () => {
+          fetchAndExport(this.orders, 0);
+        }
+      });
+    }
   }
 
   downloadPdf(order: any) {
@@ -119,16 +200,5 @@ export class AdminOrdersMgmtComponent implements OnInit {
     this.toastType = type;
     setTimeout(() => { this.toastMessage = ''; }, 4000);
   }
-
-  get pagesArray(): number[] {
-    const totalPages = this.pagination.pages || 1;
-    const current = this.pagination.page || 1;
-    const pages: number[] = [];
-    const start = Math.max(1, current - 2);
-    const end = Math.min(totalPages, current + 2);
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
 }
+

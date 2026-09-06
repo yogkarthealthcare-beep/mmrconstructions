@@ -2,16 +2,19 @@ import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-booking-report',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent],
   templateUrl: './booking-report.component.html',
   styleUrls: ['./booking-report.component.css']
 })
 export class BookingReportComponent implements OnInit {
   private api = inject(ApiService);
+  private exportService = inject(AdminExportService);
 
   loading = true;
   search = '';
@@ -37,6 +40,48 @@ export class BookingReportComponent implements OnInit {
 
   ngOnInit() {
     this.fetchBookingReports();
+  }
+
+  onPageChange(p: number) {
+    this.page = p;
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.page = 1;
+  }
+
+  exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const list = mode === 'current' ? this.pagedBookings : this.filtered;
+    const baseIndex = mode === 'current' ? (this.page - 1) * this.pageSize : 0;
+
+    const columns: ExportColumn[] = [
+      { header: '#', key: '_sno', width: 6 },
+      { header: 'Customer Name', key: 'name', width: 22 },
+      { header: 'Mobile Number', key: 'mobile', width: 16 },
+      { header: 'Email Address', key: 'email_display', width: 22 },
+      { header: 'Selected Site', key: 'site_name', width: 20 },
+      { header: 'Plot Preference', key: 'interest', width: 18 },
+      { header: 'Booking Date', key: 'date_display', width: 14 },
+      { header: 'Status', key: 'status_display', width: 12 }
+    ];
+
+    const formatted = list.map((b, idx) => ({
+      ...b,
+      _sno: baseIndex + idx + 1,
+      email_display: b.email || 'N/A',
+      date_display: b.date ? new Date(b.date).toLocaleDateString() : 'N/A',
+      status_display: String(b.status || 'open').toUpperCase()
+    }));
+
+    const title = mode === 'current' ? `Booking Reports (Page ${this.page})` : 'All Plot Booking Reports';
+    const filename = `booking_report_${mode}_${new Date().toISOString().slice(0, 10)}`;
+
+    if (format === 'excel') {
+      this.exportService.exportToExcel(formatted, columns, filename, title);
+    } else {
+      this.exportService.exportToPdf(formatted, columns, filename, title);
+    }
   }
 
   fetchBookingReports() {

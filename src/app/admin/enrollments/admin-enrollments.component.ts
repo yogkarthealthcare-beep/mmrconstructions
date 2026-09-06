@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 import Swal from 'sweetalert2';
 
 type CategoryType = 'customer' | 'associate' | 'investor';
@@ -9,7 +11,7 @@ type CategoryType = 'customer' | 'associate' | 'investor';
 @Component({
   selector: 'app-admin-enrollments',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent],
   templateUrl: './admin-enrollments.component.html',
   styleUrls: ['./admin-enrollments.component.css']
 })
@@ -19,6 +21,10 @@ export class AdminEnrollmentsComponent implements OnInit {
   statusFilter = '';
   loading = false;
   items: any[] = [];
+
+  // Pagination state
+  page = 1;
+  pageSize = 10;
   
   // Category statistics
   stats = {
@@ -36,7 +42,126 @@ export class AdminEnrollmentsComponent implements OnInit {
   selectedItem: any = null;
   editFormData: any = {};
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private exportService: AdminExportService
+  ) {}
+
+  get pagedItems(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.items.slice(start, start + this.pageSize);
+  }
+
+  onPageChange(p: number) {
+    this.page = p;
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.page = 1;
+  }
+
+  exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const list = mode === 'current' ? this.pagedItems : this.items;
+    const baseIndex = mode === 'current' ? (this.page - 1) * this.pageSize : 0;
+
+    let columns: ExportColumn[] = [];
+    let formatted: any[] = [];
+    let title = '';
+
+    if (this.activeCategory === 'customer') {
+      title = mode === 'current' ? `Customer Enrollments (Page ${this.page})` : 'All Customer Enrollments';
+      columns = [
+        { header: '#', key: '_sno', width: 6 },
+        { header: 'Applicant Name', key: 'applicant_display', width: 22 },
+        { header: 'Application No', key: 'app_no_display', width: 16 },
+        { header: 'Mobile', key: 'mobile_display', width: 14 },
+        { header: 'Email', key: 'email_display', width: 22 },
+        { header: 'Project', key: 'project_name', width: 18 },
+        { header: 'Property Type / Plot', key: 'property_display', width: 18 },
+        { header: 'Total Value (Rs.)', key: 'total_val_display', width: 15 },
+        { header: 'Sponsor / Associate', key: 'sponsor_display', width: 20 },
+        { header: 'Status', key: 'enrollment_status', width: 12 },
+        { header: 'Date', key: 'date_display', width: 14 }
+      ];
+
+      formatted = list.map((item, idx) => ({
+        ...item,
+        _sno: baseIndex + idx + 1,
+        applicant_display: item.applicant_name || item.full_name || 'N/A',
+        app_no_display: item.application_no || item.user_id || 'Pending',
+        mobile_display: item.mobile_1 || item.mobile_no || 'N/A',
+        email_display: item.email_1 || item.email || 'N/A',
+        project_name: item.project_name || '—',
+        property_display: `${item.property_type || '—'} ${item.plot_flat_no ? '(#' + item.plot_flat_no + ')' : ''}`,
+        total_val_display: ((item.basic_sale_price || 0) + (item.plc_dev_charges || 0)).toLocaleString(),
+        sponsor_display: item.associate_id ? `${item.associate_name || 'Associate'} (${item.associate_id})` : '—',
+        enrollment_status: item.enrollment_status || 'Pending',
+        date_display: item.form_date ? new Date(item.form_date).toLocaleDateString() : (item.created_at ? new Date(item.created_at).toLocaleDateString() : '—')
+      }));
+    } else if (this.activeCategory === 'associate') {
+      title = mode === 'current' ? `Associate Enrollments (Page ${this.page})` : 'All Associate Enrollments';
+      columns = [
+        { header: '#', key: '_sno', width: 6 },
+        { header: 'Associate Name', key: 'full_name', width: 22 },
+        { header: 'Associate ID', key: 'id_display', width: 16 },
+        { header: 'Mobile', key: 'mobile_display', width: 14 },
+        { header: 'Email', key: 'email', width: 22 },
+        { header: 'Sponsor Details', key: 'sponsor_display', width: 20 },
+        { header: 'Category / State', key: 'category_display', width: 18 },
+        { header: 'Status', key: 'enrollment_status', width: 12 },
+        { header: 'Date', key: 'date_display', width: 14 }
+      ];
+
+      formatted = list.map((item, idx) => ({
+        ...item,
+        _sno: baseIndex + idx + 1,
+        full_name: item.full_name || 'N/A',
+        id_display: item.associate_id || item.user_id || 'Pending',
+        mobile_display: item.contact_1 || item.mobile_no || 'N/A',
+        email: item.email || 'N/A',
+        sponsor_display: item.sponsor_code ? `${item.sponsor_name || 'Sponsor'} (${item.sponsor_code})` : '—',
+        category_display: `${item.category || 'General'} - ${item.perm_state || item.perm_city || '—'}`,
+        enrollment_status: item.enrollment_status || 'Pending',
+        date_display: item.created_at ? new Date(item.created_at).toLocaleDateString() : (item.sign_date ? new Date(item.sign_date).toLocaleDateString() : '—')
+      }));
+    } else {
+      title = mode === 'current' ? `Investor Enrollments (Page ${this.page})` : 'All Investor Enrollments';
+      columns = [
+        { header: '#', key: '_sno', width: 6 },
+        { header: 'Investor Name', key: 'full_name_display', width: 22 },
+        { header: 'Investor ID', key: 'id_display', width: 16 },
+        { header: 'Mobile', key: 'mobile_display', width: 14 },
+        { header: 'Email', key: 'email', width: 22 },
+        { header: 'Project / Branch', key: 'proj_branch_display', width: 20 },
+        { header: 'Amount (Rs.)', key: 'amount_display', width: 15 },
+        { header: 'Payment Mode', key: 'payment_mode', width: 14 },
+        { header: 'Status', key: 'enrollment_status', width: 12 },
+        { header: 'Date', key: 'date_display', width: 14 }
+      ];
+
+      formatted = list.map((item, idx) => ({
+        ...item,
+        _sno: baseIndex + idx + 1,
+        full_name_display: item.inv_first_name ? `${item.inv_first_name} ${item.inv_surname || ''}` : (item.full_name || 'N/A'),
+        id_display: item.investor_enrollment_id || item.form_no || item.user_id || 'Pending',
+        mobile_display: item.mobile || item.mobile_no || 'N/A',
+        email: item.email || 'N/A',
+        proj_branch_display: `${item.project_name || '—'} / ${item.branch_name || '—'}`,
+        amount_display: Number(item.amount || 0).toLocaleString(),
+        payment_mode: item.payment_mode || '—',
+        enrollment_status: item.enrollment_status || 'Pending',
+        date_display: item.created_at ? new Date(item.created_at).toLocaleDateString() : (item.cheque_date ? new Date(item.cheque_date).toLocaleDateString() : '—')
+      }));
+    }
+
+    const filename = `enrollments_${this.activeCategory}_${mode}_${new Date().toISOString().slice(0, 10)}`;
+    if (format === 'excel') {
+      this.exportService.exportToExcel(formatted, columns, filename, title);
+    } else {
+      this.exportService.exportToPdf(formatted, columns, filename, title);
+    }
+  }
 
   ngOnInit() {
     this.loadData();

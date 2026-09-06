@@ -236,7 +236,8 @@
             <table class="table align-middle custom-dash-table mb-0">
               <thead>
                 <tr>
-                  <th class="fw-800 fs-10">Rank &amp; Page Name</th>
+                  <th class="th-sno">#</th>
+                  <th class="fw-800 fs-10">Page Name</th>
                   <th class="fw-800 fs-10">Page URL</th>
                   <th class="fw-800 fs-10 text-end">Total Views</th>
                   <th class="fw-800 fs-10 text-end">Unique Visitors</th>
@@ -245,11 +246,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let p of topPagesProcessed">
+                <tr *ngFor="let p of topPagesPaginated; let i = index">
+                  <td class="td-sno">{{ (topPagesPage - 1) * topPagesPageSize + i + 1 }}</td>
                   <td>
                     <div class="d-flex align-items-center gap-2">
                       <span class="badge bg-gold text-dark fw-800 fs-10">#{{ p.rank }}</span>
-                      <strong class="text-dark fs-11 fw-800 text-truncate" style="max-width: 220px;">{{ p.name }}</strong>
+                      <strong class="text-dark fs-11 fw-800 text-truncate" style="max-width: 200px;">{{ p.name }}</strong>
                     </div>
                   </td>
                   <td><code class="text-primary fs-10 fw-700">{{ p.url }}</code></td>
@@ -266,11 +268,25 @@
                   </td>
                 </tr>
                 <tr *ngIf="topPagesProcessed.length === 0">
-                  <td colspan="6" class="text-center text-muted py-3 fs-10 fw-700">No live page views recorded for this period</td>
+                  <td colspan="7" class="text-center text-muted py-3 fs-10 fw-700">No live page views recorded for this period</td>
                 </tr>
               </tbody>
             </table>
           </div>
+
+          <!-- Pagination & 2-Mode Export -->
+          <app-admin-pagination
+            *ngIf="topPagesProcessed.length > 0"
+            [totalItems]="topPagesProcessed.length"
+            [pageSize]="topPagesPageSize"
+            [currentPage]="topPagesPage"
+            (pageChange)="topPagesPage = $event"
+            (pageSizeChange)="topPagesPageSize = $event; topPagesPage = 1"
+            (exportCurrentExcel)="exportTopPages('current', 'excel')"
+            (exportAllExcel)="exportTopPages('all', 'excel')"
+            (exportCurrentPdf)="exportTopPages('current', 'pdf')"
+            (exportAllPdf)="exportTopPages('all', 'pdf')">
+          </app-admin-pagination>
         </div>
       </div>
 
@@ -358,6 +374,7 @@
             <table class="table align-middle custom-dash-table mb-0">
               <thead>
                 <tr>
+                  <th class="th-sno">#</th>
                   <th class="fw-800 fs-9.5">Source</th>
                   <th class="fw-800 fs-9.5 text-end">Visitors</th>
                   <th class="fw-800 fs-9.5 text-end">Sessions</th>
@@ -366,7 +383,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let s of trafficSourcesList">
+                <tr *ngFor="let s of trafficSourcesPaginated; let i = index">
+                  <td class="td-sno">{{ (sourcesPage - 1) * sourcesPageSize + i + 1 }}</td>
                   <td class="fw-800 text-dark fs-10">{{ s.source }}</td>
                   <td class="text-end fw-800 text-primary fs-10">{{ formatNumber(s.visitors) }}</td>
                   <td class="text-end fw-700 text-muted fs-10">{{ formatNumber(s.sessions) }}</td>
@@ -374,11 +392,25 @@
                   <td class="text-end fw-800 text-emerald fs-10">{{ s.avgDuration }}</td>
                 </tr>
                 <tr *ngIf="trafficSourcesList.length === 0">
-                  <td colspan="5" class="text-center text-muted py-3 fs-10 fw-700">No source breakdown data available</td>
+                  <td colspan="6" class="text-center text-muted py-3 fs-10 fw-700">No source breakdown data available</td>
                 </tr>
               </tbody>
             </table>
           </div>
+
+          <!-- Pagination & 2-Mode Export -->
+          <app-admin-pagination
+            *ngIf="trafficSourcesList.length > 0"
+            [totalItems]="trafficSourcesList.length"
+            [pageSize]="sourcesPageSize"
+            [currentPage]="sourcesPage"
+            (pageChange)="sourcesPage = $event"
+            (pageSizeChange)="sourcesPageSize = $event; sourcesPage = 1"
+            (exportCurrentExcel)="exportTrafficSources('current', 'excel')"
+            (exportAllExcel)="exportTrafficSources('all', 'excel')"
+            (exportCurrentPdf)="exportTrafficSources('current', 'pdf')"
+            (exportAllPdf)="exportTrafficSources('all', 'pdf')">
+          </app-admin-pagination>
         </div>
       </div>
     </div>

@@ -2,11 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-admin-investors',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent],
   templateUrl: './investors.component.html',
   styleUrls: ['./investors.component.css']
 })
@@ -22,6 +24,10 @@ export class AdminInvestorsComponent implements OnInit {
   message = '';
   error = '';
 
+  // Pagination state
+  page = 1;
+  pageSize = 10;
+
   // Searchable Dropdown State
   investorSearchTerm = '';
   showDropdown = false;
@@ -34,7 +40,54 @@ export class AdminInvestorsComponent implements OnInit {
     is_active: true
   };
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private exportService: AdminExportService
+  ) {}
+
+  get pagedRows(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.rows.slice(start, start + this.pageSize);
+  }
+
+  onPageChange(p: number) {
+    this.page = p;
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.page = 1;
+  }
+
+  exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const dataToExport = mode === 'current' ? this.pagedRows : this.rows;
+    const columns: ExportColumn[] = [
+      { header: '#', key: '_sno', width: 6 },
+      { header: 'Investor Name', key: 'name', width: 22 },
+      { header: 'Email Address', key: 'email', width: 25 },
+      { header: 'Contact Number', key: 'mobile_number', width: 16 },
+      { header: 'Display Order', key: 'display_order', width: 12 },
+      { header: 'Status', key: 'status_label', width: 12 }
+    ];
+
+    const baseIndex = mode === 'current' ? (this.page - 1) * this.pageSize : 0;
+    const formattedData = dataToExport.map((row, idx) => ({
+      ...row,
+      _sno: baseIndex + idx + 1,
+      email: row.email || 'N/A',
+      mobile_number: row.mobile_number || 'N/A',
+      status_label: row.is_active ? 'Active' : 'Inactive'
+    }));
+
+    const title = mode === 'current' ? `Investors (Page ${this.page})` : 'All Investors List';
+    const filename = `investors_${mode}_${new Date().toISOString().slice(0, 10)}`;
+
+    if (format === 'excel') {
+      this.exportService.exportToExcel(formattedData, columns, filename, title);
+    } else {
+      this.exportService.exportToPdf(formattedData, columns, filename, title);
+    }
+  }
 
   ngOnInit() {
     this.load();

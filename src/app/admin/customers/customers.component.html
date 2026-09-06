@@ -114,6 +114,7 @@
     <table class="table align-middle custom-dash-table mb-0">
       <thead>
         <tr>
+          <th class="th-sno">#</th>
           <th>Customer Profile</th>
           <th>Contact &amp; Mobile</th>
           <th>Location</th>
@@ -123,13 +124,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let c of filtered"
+        <tr *ngFor="let c of filtered; let i = index"
             [class.row-disabled-free]="isFreeOrDisabled(c)"
             (mouseenter)="onRowMouseEnter(c, $event)"
             (mousemove)="onRowMouseMove($event)"
             (mouseleave)="onRowMouseLeave()"
             (click)="onRowClick(c, $event)"
             (dblclick)="onRowDblClick(c, $event)">
+          <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
           <td>
             <div class="d-flex align-items-center gap-2.5">
               <div class="user-avatar-circle bg-blue">
@@ -211,6 +213,20 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination & 2-Mode Export -->
+  <app-admin-pagination
+    *ngIf="total > 0"
+    [totalItems]="total"
+    [pageSize]="pageSize"
+    [currentPage]="page"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (exportCurrentExcel)="exportCustomers('current', 'excel')"
+    (exportAllExcel)="exportCustomers('all', 'excel')"
+    (exportCurrentPdf)="exportCustomers('current', 'pdf')"
+    (exportAllPdf)="exportCustomers('all', 'pdf')">
+  </app-admin-pagination>
 
   <!-- Floating Hover Tooltip for Customer Records -->
   <div class="admin-hover-tooltip" *ngIf="hoveredCustomer" [style.left.px]="tooltipPos.x" [style.top.px]="tooltipPos.y">

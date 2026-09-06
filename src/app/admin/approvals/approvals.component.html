@@ -112,6 +112,7 @@
     <table class="table align-middle custom-dash-table mb-0">
       <thead>
         <tr>
+          <th class="th-sno">#</th>
           <th>User Profile</th>
           <th>Contact &amp; Mobile</th>
           <th>Type</th>
@@ -122,7 +123,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let u of filtered">
+        <tr *ngFor="let u of pagedUsers; let i = index">
+          <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
           <td>
             <div class="d-flex align-items-center gap-2.5">
               <div class="user-avatar-circle" [class.bg-blue]="u.user_type==='Customer'" [class.bg-gold]="u.user_type==='Associate'">
@@ -146,7 +148,7 @@
           <td>
             <div class="fs-12 fw-600 text-dark" *ngIf="u.sponsor_name">{{ u.sponsor_name }}</div>
             <div class="fs-10 text-muted" *ngIf="u.sponsor_code">Code: {{ u.sponsor_code }}</div>
-            <span class="fs-11 text-muted" *ngIf="!u.sponsor_name &amp;&amp; !u.sponsor_code">Direct / None</span>
+            <span class="fs-11 text-muted" *ngIf="!u.sponsor_name && !u.sponsor_code">Direct / None</span>
           </td>
           <td>
             <div class="fs-11 text-dark fw-600">{{ u.registered_at | date:'dd MMM yyyy' }}</div>
@@ -179,8 +181,15 @@
                   <i class="fas fa-question-circle text-warning me-2 width-16"></i> Request Info
                 </button>
                 <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="openRejectModal(u); activeRowId = null" [disabled]="actionLoading">
-                  <i class="fas fa-times-circle text-danger me-2 width-16"></i> Reject User
+                  <i class="fas fa-ban text-danger me-2 width-16"></i> Reject User
                 </button>
+                <div class="dropdown-divider my-1"></div>
+                <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + u.mobile_no">
+                  <i class="fas fa-phone text-secondary me-2 width-16"></i> Call User
+                </a>
+                <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + u.mobile_no" target="_blank">
+                  <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
+                </a>
               </div>
             </div>
           </td>
@@ -188,6 +197,15 @@
       </tbody>
     </table>
   </div>
+  <app-admin-pagination
+    *ngIf="filtered.length > 0"
+    [totalItems]="filtered.length"
+    [page]="page"
+    [pageSize]="pageSize"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (export)="exportData($event.mode, $event.format)">
+  </app-admin-pagination>
 </div>
 
 <!-- DETAIL KYC MODAL -->

@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-booking-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AdminPaginationComponent],
   templateUrl: './booking-management.component.html',
   styleUrls: ['./booking-management.component.css'],
 })
@@ -17,7 +19,7 @@ export class BookingManagementComponent implements OnInit {
   bookings: any[] = [];
   selected: any = null;
   page = 1;
-  pageSize = 12;
+  pageSize = 10;
   toast = '';
   toastType: 'success' | 'error' = 'success';
 
@@ -32,11 +34,63 @@ export class BookingManagementComponent implements OnInit {
 
   readonly plotStatuses = ['Vacant', 'InProcess', 'Booked', 'Sold'];
 
-  constructor(private api: ApiService, private fb: FormBuilder) {}
+  constructor(
+    private api: ApiService,
+    private fb: FormBuilder,
+    private exportService: AdminExportService
+  ) {}
 
   ngOnInit() {
     this.loadBookings();
     this.filterForm.valueChanges.subscribe(() => this.page = 1);
+  }
+
+  onPageChange(p: number) {
+    this.page = p;
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.page = 1;
+  }
+
+  exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const list = mode === 'current' ? this.pagedBookings : this.filteredBookings;
+    const baseIndex = mode === 'current' ? (this.page - 1) * this.pageSize : 0;
+
+    const columns: ExportColumn[] = [
+      { header: '#', key: '_sno', width: 6 },
+      { header: 'Booking Ref', key: 'booking_ref', width: 16 },
+      { header: 'Customer Name', key: 'customer_display', width: 22 },
+      { header: 'Mobile Number', key: 'mobile_display', width: 16 },
+      { header: 'Plot & Site', key: 'plot_site_display', width: 22 },
+      { header: 'Amount (Rs.)', key: 'amount_display', width: 15 },
+      { header: 'Payment Status', key: 'payment_status', width: 14 },
+      { header: 'Booking Status', key: 'booking_status', width: 14 },
+      { header: 'Date', key: 'date_display', width: 14 }
+    ];
+
+    const formatted = list.map((b, idx) => ({
+      ...b,
+      _sno: baseIndex + idx + 1,
+      booking_ref: b.booking_serial || (`#${b.booking_id}`),
+      customer_display: b.customer_name || b.full_name || 'N/A',
+      mobile_display: b.mobile_no || 'N/A',
+      plot_site_display: `Plot ${b.plot_number} (${b.site_name || 'N/A'})`,
+      amount_display: Number(b.advance_amount || b.booking_amount || 0).toLocaleString(),
+      payment_status: b.payment_status || (b.booking_status === 'Confirmed' ? 'Paid' : 'Pending'),
+      booking_status: b.booking_status || 'N/A',
+      date_display: b.booking_date ? new Date(b.booking_date).toLocaleDateString() : 'N/A'
+    }));
+
+    const title = mode === 'current' ? `Bookings (Page ${this.page})` : 'All Bookings Report';
+    const filename = `bookings_${mode}_${new Date().toISOString().slice(0, 10)}`;
+
+    if (format === 'excel') {
+      this.exportService.exportToExcel(formatted, columns, filename, title);
+    } else {
+      this.exportService.exportToPdf(formatted, columns, filename, title);
+    }
   }
 
   get filteredBookings() {

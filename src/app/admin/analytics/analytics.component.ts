@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { AdminExportService } from '../../services/admin-export.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 
 @Component({
   selector: 'app-admin-analytics',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, AdminPaginationComponent],
   templateUrl: './analytics.component.html',
   styleUrls: ['./analytics.component.css']
 })
@@ -24,6 +26,12 @@ export class AdminAnalyticsComponent implements OnInit {
   customEndDate: string = '';
   lastUpdated: string = '';
 
+  // Pagination
+  topPagesPage = 1;
+  topPagesPageSize = 10;
+  sourcesPage = 1;
+  sourcesPageSize = 10;
+
   // Data Sources
   sitesList: any[] = [];
   data: any = null;
@@ -31,7 +39,10 @@ export class AdminAnalyticsComponent implements OnInit {
   // Property Sorting
   propertySortKey: string = 'sold_plots';
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    public exportService: AdminExportService
+  ) {}
 
   ngOnInit() {
     this.loadSites();
@@ -264,4 +275,64 @@ export class AdminAnalyticsComponent implements OnInit {
     if (!total || total === 0) return '0%';
     return ((sold / total) * 100).toFixed(1) + '%';
   }
+
+  // ── PAGINATED SLICES ──────────────────────
+  get topPagesPaginated(): any[] {
+    const list = this.topPagesProcessed;
+    const start = (this.topPagesPage - 1) * this.topPagesPageSize;
+    return list.slice(start, start + this.topPagesPageSize);
+  }
+
+  get trafficSourcesPaginated(): any[] {
+    const list = this.trafficSourcesList;
+    const start = (this.sourcesPage - 1) * this.sourcesPageSize;
+    return list.slice(start, start + this.sourcesPageSize);
+  }
+
+  // ── EXPORT METHODS ────────────────────────
+  exportTopPages(mode: 'current' | 'all', format: 'excel' | 'pdf'): void {
+    const data = mode === 'current' ? this.topPagesPaginated : this.topPagesProcessed;
+    const headers = ['S.No.', 'Rank', 'Page Name', 'Page URL', 'Total Views', 'Unique Visitors', 'Avg. Time', '% Share'];
+    const startIdx = mode === 'current' ? (this.topPagesPage - 1) * this.topPagesPageSize : 0;
+    const rows = data.map((p, idx) => [
+      startIdx + idx + 1,
+      `#${p.rank}`,
+      p.name,
+      p.url,
+      p.views,
+      p.uniqueVisitors,
+      p.avgTime,
+      `${p.pct}%`
+    ]);
+
+    const title = `Top Visited Pages (${mode === 'current' ? 'Page ' + this.topPagesPage : 'All Data'})`;
+    if (format === 'excel') {
+      this.exportService.exportToCsv(`mmr-top-pages-${mode}`, headers, rows);
+    } else {
+      this.exportService.exportToPdf(title, headers, rows);
+    }
+  }
+
+  exportTrafficSources(mode: 'current' | 'all', format: 'excel' | 'pdf'): void {
+    const data = mode === 'current' ? this.trafficSourcesPaginated : this.trafficSourcesList;
+    const headers = ['S.No.', 'Traffic Channel', 'Visitors', 'Sessions', 'Page Views', 'Avg. Duration', '% Share'];
+    const startIdx = mode === 'current' ? (this.sourcesPage - 1) * this.sourcesPageSize : 0;
+    const rows = data.map((s, idx) => [
+      startIdx + idx + 1,
+      s.source,
+      s.visitors,
+      s.sessions,
+      s.pageViews,
+      s.avgDuration,
+      `${s.pct}%`
+    ]);
+
+    const title = `Traffic Sources (${mode === 'current' ? 'Page ' + this.sourcesPage : 'All Data'})`;
+    if (format === 'excel') {
+      this.exportService.exportToCsv(`mmr-traffic-sources-${mode}`, headers, rows);
+    } else {
+      this.exportService.exportToPdf(title, headers, rows);
+    }
+  }
 }
+

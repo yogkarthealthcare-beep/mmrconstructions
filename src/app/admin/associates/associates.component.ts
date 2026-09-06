@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { AdminExportService } from '../../services/admin-export.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-associates',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent],
   templateUrl: './associates.component.html',
   styleUrls: ['./associates.component.css']
 })
@@ -59,7 +61,85 @@ export class AssociatesComponent implements OnInit {
   hoveredAssociate: any = null;
   tooltipPos = { x: 0, y: 0 };
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    public exportService: AdminExportService
+  ) {}
+
+  onPageChange(p: number) {
+    this.page = p;
+    this.load();
+  }
+
+  onPageSizeChange(s: number) {
+    this.pageSize = s;
+    this.page = 1;
+    this.load();
+  }
+
+  exportAssociates(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const headers = ['S.No.', 'Member ID', 'Associate Name', 'Mobile Number', 'Email', 'Invite Code', 'Rank', 'Joined Date', 'Status'];
+
+    if (mode === 'current') {
+      const startIdx = (this.page - 1) * this.pageSize;
+      const rows = this.filtered.map((a: any, i: number) => [
+        startIdx + i + 1,
+        a.member_id || '—',
+        a.full_name || '—',
+        a.mobile_no || '—',
+        a.email || '—',
+        a.invitation_code || a.sponsor_code || '—',
+        a.rank_name || a.user_type || 'Associate',
+        a.registered_at ? new Date(a.registered_at).toLocaleDateString('en-IN') : '—',
+        a.account_status || 'Active'
+      ]);
+
+      const title = `Associates Directory (${mode === 'current' ? 'Page ' + this.page : 'All Data'})`;
+      if (format === 'excel') {
+        this.exportService.exportToCsv(`associates-page-${this.page}`, headers, rows);
+      } else {
+        this.exportService.exportToPdf(title, headers, rows, 'Associate Management Report');
+      }
+    } else {
+      this.actionLoading = true;
+      const queryParams: any = {
+        user_type: 'Associate',
+        page: 1,
+        pageSize: 10000
+      };
+      if (this.statusFilter !== 'all') queryParams.account_status = this.statusFilter;
+      if (this.search.trim()) queryParams.search = this.search.trim();
+
+      this.api.adminGetAssociates(queryParams).subscribe({
+        next: (res: any) => {
+          this.actionLoading = false;
+          const list = res.data?.users || res.data?.associates || (Array.isArray(res.data) ? res.data : []);
+          const rows = list.map((a: any, i: number) => [
+            i + 1,
+            a.member_id || '—',
+            a.full_name || '—',
+            a.mobile_no || '—',
+            a.email || '—',
+            a.invitation_code || a.sponsor_code || '—',
+            a.rank_name || a.user_type || 'Associate',
+            a.registered_at ? new Date(a.registered_at).toLocaleDateString('en-IN') : '—',
+            a.account_status || 'Active'
+          ]);
+
+          if (format === 'excel') {
+            this.exportService.exportToCsv('associates-all-records', headers, rows);
+          } else {
+            this.exportService.exportToPdf('All Registered Associates Report', headers, rows, 'Complete Associates Directory');
+          }
+        },
+        error: () => {
+          this.actionLoading = false;
+          alert('Failed to fetch full associates list for export.');
+        }
+      });
+    }
+  }
 
   isFreeOrDisabled(a: any): boolean {
     if (!a) return false;

@@ -29,6 +29,9 @@ export class InvestorLoginComponent {
   ) {
     const token = this.route.snapshot.queryParamMap.get('verify');
     if (token) this.verifyEmail(token);
+    if (this.route.snapshot.queryParamMap.get('sessionExpired') === 'true') {
+      this.errorMessage = 'सुरक्षा कारणों से आपका सत्र (Session) 4 घंटे बाद समाप्त हो गया है। कृपया पुनः लॉगिन करें।';
+    }
   }
 
   verifyEmail(token: string) {

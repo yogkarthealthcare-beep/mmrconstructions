@@ -14,6 +14,7 @@
     <table>
       <thead>
         <tr>
+          <th class="th-sno">#</th>
           <th>Profile</th>
           <th>Name & Email</th>
           <th>Contact</th>
@@ -23,7 +24,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let row of rows">
+        <tr *ngFor="let row of pagedRows; let i = index">
+          <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
           <td><img [src]="row.profile_image_url" [alt]="row.name" style="width:40px;height:40px;border-radius:50%;object-fit:cover;"></td>
           <td><strong>{{row.name}}</strong><br><small style="color:var(--clr-text-light);">{{row.email || 'No email linked'}}</small></td>
           <td>{{row.mobile_number || '-'}}</td>
@@ -44,6 +46,15 @@
       </tbody>
     </table>
   </div>
+  <app-admin-pagination
+    *ngIf="rows.length"
+    [totalItems]="rows.length"
+    [page]="page"
+    [pageSize]="pageSize"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (export)="exportData($event.mode, $event.format)">
+  </app-admin-pagination>
 </div>
 
 <div class="modal-bg" *ngIf="showForm" (click)="showForm=false; showDropdown=false">

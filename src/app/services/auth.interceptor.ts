@@ -14,15 +14,25 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const isAdminApi = req.url.includes('/api/admin/');
   const isInvestorApi = req.url.includes('/api/investor/');
-  const isAuthApi = req.url.includes('/api/auth/') || req.url.includes('/api/admin/auth/');
+  const isAuthApi = req.url.includes('/api/auth/') || req.url.includes('/api/admin/auth/') || req.url.includes('/api/investor/auth/');
   
-  let token;
-  if (isAdminApi) {
+  const scope: 'admin' | 'investor' | 'user' = isAdminApi || router.url.startsWith('/admin')
+    ? 'admin'
+    : (isInvestorApi || router.url.startsWith('/investor') ? 'investor' : 'user');
+
+  let token: string | null = null;
+  if (scope === 'admin') {
     token = sessionStorage.getItem('mmr_admin_token') || localStorage.getItem('mmr_admin_token');
-  } else if (isInvestorApi) {
+  } else if (scope === 'investor') {
     token = sessionStorage.getItem('mmr_investor_token') || localStorage.getItem('mmr_investor_token');
   } else {
     token = sessionStorage.getItem('mmr_user_token') || localStorage.getItem('mmr_user_token') || sessionStorage.getItem('mmr_investor_token') || localStorage.getItem('mmr_investor_token');
+  }
+
+  // If token is already expired before sending non-auth API calls, intercept and logout immediately
+  if (!isAuthApi && token && auth.isTokenExpired(scope, token)) {
+    auth.handleAuthExpired(scope, router.url);
+    return EMPTY;
   }
 
   const request = !token || req.headers.has('Authorization')
@@ -32,7 +42,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
       if (!isAuthApi && isAuthFailure(error)) {
-        const scope = isAdminApi || router.url.startsWith('/admin') ? 'admin' : (isInvestorApi || router.url.startsWith('/investor') ? 'investor' : 'user');
         auth.handleAuthExpired(scope, router.url);
         return EMPTY;
       }
@@ -41,7 +50,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
-function isAuthFailure(error: HttpErrorResponse) {
+function isAuthFailure(error: HttpErrorResponse): boolean {
   if (error.status === 401) return true;
   const message = [
     error.error?.message,
@@ -57,5 +66,6 @@ function isAuthFailure(error: HttpErrorResponse) {
     'unauthorized',
     'authentication failed',
     'session expired',
+    'invalid or expired token',
   ].some(pattern => message.includes(pattern));
 }

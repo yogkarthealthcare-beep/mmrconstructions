@@ -18,6 +18,7 @@ export class LoginComponent implements OnInit {
   mobile = ''; password = ''; otp = ['','','','','',''];
   showPassword = false; loginMode: 'password' | 'otp' = 'password';
   loading = false; otpSent = false; error = '';
+  sessionExpiredMessage = '';
   mobileMenuOpen = false;
   returnUrl = '';
 
@@ -33,6 +34,9 @@ export class LoginComponent implements OnInit {
     const rawReturnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
     if (rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')) {
       this.returnUrl = rawReturnUrl;
+    }
+    if (this.route.snapshot.queryParamMap.get('sessionExpired') === 'true') {
+      this.sessionExpiredMessage = 'सुरक्षा कारणों से आपका सत्र (Session) 4 घंटे बाद समाप्त हो गया है। कृपया पुनः लॉगिन करें।';
     }
   }
 

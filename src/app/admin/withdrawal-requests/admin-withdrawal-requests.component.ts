@@ -1,8 +1,10 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 import { WithdrawalApprovalDialogComponent } from './withdrawal-approval-dialog.component';
 import { WithdrawalReleaseDialogComponent } from './withdrawal-release-dialog.component';
 
@@ -14,6 +16,7 @@ import { WithdrawalReleaseDialogComponent } from './withdrawal-release-dialog.co
     RouterLink,
     FormsModule,
     ReactiveFormsModule,
+    AdminPaginationComponent,
     WithdrawalApprovalDialogComponent,
     WithdrawalReleaseDialogComponent
   ],
@@ -21,11 +24,19 @@ import { WithdrawalReleaseDialogComponent } from './withdrawal-release-dialog.co
   styleUrls: ['./admin-withdrawal-requests.component.css']
 })
 export class AdminWithdrawalRequestsComponent implements OnInit {
+  private api = inject(ApiService);
+  private fb = inject(FormBuilder);
+  private exportService = inject(AdminExportService);
+
   loading = true;
   errorMsg = '';
 
   requests: any[] = [];
   allRequests: any[] = [];
+
+  // Pagination
+  page = 1;
+  pageSize = 10;
 
   filterForm!: FormGroup;
 
@@ -44,10 +55,66 @@ export class AdminWithdrawalRequestsComponent implements OnInit {
   releasedCount = 0;
   releasedTotal = 0;
 
-  constructor(
-    private api: ApiService,
-    private fb: FormBuilder
-  ) {}
+  constructor() {}
+
+  get pagedRequests(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.requests.slice(start, start + this.pageSize);
+  }
+
+  onPageChange(p: number) {
+    this.page = p;
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.page = 1;
+  }
+
+  exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const list = mode === 'current' ? this.pagedRequests : this.requests;
+    const baseIndex = mode === 'current' ? (this.page - 1) * this.pageSize : 0;
+
+    const columns: ExportColumn[] = [
+      { header: '#', key: '_sno', width: 6 },
+      { header: 'Request ID', key: 'req_id', width: 14 },
+      { header: 'User Name', key: 'user_name_display', width: 20 },
+      { header: 'Contact', key: 'contact_display', width: 16 },
+      { header: 'Role', key: 'user_role_display', width: 12 },
+      { header: 'Amount (Rs.)', key: 'amount_display', width: 15 },
+      { header: 'Bank Name', key: 'bank_name', width: 16 },
+      { header: 'Account No', key: 'bank_account_number', width: 18 },
+      { header: 'IFSC Code', key: 'ifsc_code', width: 14 },
+      { header: 'UPI ID', key: 'upi_id', width: 18 },
+      { header: 'Status', key: 'status_display', width: 12 },
+      { header: 'Requested Date', key: 'date_display', width: 16 }
+    ];
+
+    const formatted = list.map((r, idx) => ({
+      ...r,
+      _sno: baseIndex + idx + 1,
+      req_id: `#${r.id ? r.id.slice(0, 8) : 'N/A'}`,
+      user_name_display: r.user_name || 'Valued User',
+      contact_display: r.user_mobile || r.user_email || 'N/A',
+      user_role_display: r.user_role || 'User',
+      amount_display: Number(r.amount || 0).toLocaleString(),
+      bank_name: r.bank_name || 'N/A',
+      bank_account_number: r.bank_account_number || 'N/A',
+      ifsc_code: r.ifsc_code || 'N/A',
+      upi_id: r.upi_id || 'N/A',
+      status_display: String(r.status || 'pending').toUpperCase(),
+      date_display: r.created_at ? new Date(r.created_at).toLocaleString() : 'N/A'
+    }));
+
+    const title = mode === 'current' ? `Withdrawal Requests (Page ${this.page})` : 'All Withdrawal & Payout Requests';
+    const filename = `withdrawal_requests_${mode}_${new Date().toISOString().slice(0, 10)}`;
+
+    if (format === 'excel') {
+      this.exportService.exportToExcel(formatted, columns, filename, title);
+    } else {
+      this.exportService.exportToPdf(formatted, columns, filename, title);
+    }
+  }
 
   ngOnInit(): void {
     this.initFilterForm();

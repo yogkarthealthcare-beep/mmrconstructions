@@ -1,16 +1,21 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-enquiries',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent],
   templateUrl: './enquiries.component.html',
   styleUrls: ['./enquiries.component.css']
 })
 export class EnquiriesComponent implements OnInit {
+  private api = inject(ApiService);
+  private exportService = inject(AdminExportService);
+
   loading = true;
   search = '';
   statusFilter = 'all';
@@ -23,6 +28,51 @@ export class EnquiriesComponent implements OnInit {
   @HostListener('document:click')
   closeDropdowns() {
     this.activeRowId = null;
+  }
+
+  onPageChange(p: number) {
+    this.page = p;
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.page = 1;
+  }
+
+  exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const list = mode === 'current' ? this.pagedEnquiries : this.filtered;
+    const baseIndex = mode === 'current' ? (this.page - 1) * this.pageSize : 0;
+
+    const columns: ExportColumn[] = [
+      { header: '#', key: '_sno', width: 6 },
+      { header: 'Lead Customer', key: 'name', width: 22 },
+      { header: 'Mobile Number', key: 'mobile', width: 16 },
+      { header: 'Email Address', key: 'email_display', width: 22 },
+      { header: 'Selected Site', key: 'site_display', width: 20 },
+      { header: 'Topic & Interest', key: 'interest', width: 20 },
+      { header: 'Priority', key: 'priority_display', width: 12 },
+      { header: 'Date', key: 'date_display', width: 14 },
+      { header: 'Status', key: 'status_display', width: 12 }
+    ];
+
+    const formatted = list.map((e, idx) => ({
+      ...e,
+      _sno: baseIndex + idx + 1,
+      email_display: e.email || 'N/A',
+      site_display: e.site_name || 'General Inquiry',
+      priority_display: String(e.priority || 'medium').toUpperCase(),
+      date_display: e.date ? new Date(e.date).toLocaleDateString() : 'N/A',
+      status_display: String(e.status || 'open').toUpperCase()
+    }));
+
+    const title = mode === 'current' ? `CRM Enquiries (Page ${this.page})` : 'All CRM Leads & Enquiries';
+    const filename = `crm_enquiries_${mode}_${new Date().toISOString().slice(0, 10)}`;
+
+    if (format === 'excel') {
+      this.exportService.exportToExcel(formatted, columns, filename, title);
+    } else {
+      this.exportService.exportToPdf(formatted, columns, filename, title);
+    }
   }
 
   // Lead / Enquiry Inventory Data
@@ -56,7 +106,7 @@ export class EnquiriesComponent implements OnInit {
     priority: 'high'
   };
 
-  constructor(private api: ApiService) {}
+  constructor() {}
 
   ngOnInit() {
     this.fetchInquiries();

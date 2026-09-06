@@ -1,19 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApiService, BASE_URL } from '../../services/api.service';
 import { SiteToggleService } from '../../services/site-toggle.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-sites-mgmt',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, AdminPaginationComponent],
   templateUrl: './sites-mgmt.component.html',
   styleUrls: ['./sites-mgmt.component.css']
 })
 export class SitesMgmtComponent implements OnInit {
+  private api = inject(ApiService);
+  private siteToggle = inject(SiteToggleService);
+  private exportService = inject(AdminExportService);
+
   // --- API LOADER & ERROR STATES ---
   sitesLoading = false;
   sitesError: string | null = null;
@@ -36,6 +42,10 @@ export class SitesMgmtComponent implements OnInit {
   sitePlots: any[] = [];
   filteredPlots: any[] = [];
 
+  // Plots table pagination
+  plotPage = 1;
+  plotPageSize = 10;
+
   isInteractive = true;
   selectedPlot: any = null;
 
@@ -52,7 +62,7 @@ export class SitesMgmtComponent implements OnInit {
   showEditSite = false;
   showAddPlot = false;
 
-  newSite = {
+  newSite: any = {
     site_name: '',
     city: '',
     state: 'Uttar Pradesh',
@@ -65,7 +75,7 @@ export class SitesMgmtComponent implements OnInit {
     is_booking_enabled: true
   };
 
-  editSiteForm = {
+  editSiteForm: any = {
     site_name: '',
     city: '',
     state: '',
@@ -78,7 +88,7 @@ export class SitesMgmtComponent implements OnInit {
     is_booking_enabled: true
   };
 
-  newPlot = {
+  newPlot: any = {
     plot_number: '',
     sqft: 1000,
     rate_per_sqft: 1200,
@@ -87,10 +97,58 @@ export class SitesMgmtComponent implements OnInit {
     khasra_number: ''
   };
 
-  constructor(
-    private api: ApiService,
-    private siteToggle: SiteToggleService
-  ) {}
+  constructor() {}
+
+  get pagedPlots(): any[] {
+    const start = (this.plotPage - 1) * this.plotPageSize;
+    return this.filteredPlots.slice(start, start + this.plotPageSize);
+  }
+
+  onPlotPageChange(p: number) {
+    this.plotPage = p;
+  }
+
+  onPlotPageSizeChange(size: number) {
+    this.plotPageSize = size;
+    this.plotPage = 1;
+  }
+
+  exportPlots(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const list = mode === 'current' ? this.pagedPlots : this.filteredPlots;
+    const baseIndex = mode === 'current' ? (this.plotPage - 1) * this.plotPageSize : 0;
+
+    const columns: ExportColumn[] = [
+      { header: '#', key: '_sno', width: 6 },
+      { header: 'Site Name', key: 'site_display', width: 20 },
+      { header: 'Plot Number', key: 'plot_display', width: 14 },
+      { header: 'Area (sq.ft)', key: 'sqft', width: 14 },
+      { header: 'Rate/sq.ft (Rs.)', key: 'rate_display', width: 16 },
+      { header: 'Total Price (Rs.)', key: 'total_price_display', width: 18 },
+      { header: 'Facing Direction', key: 'facing_direction', width: 16 },
+      { header: 'Plot Status', key: 'plot_status', width: 14 }
+    ];
+
+    const formatted = list.map((p, idx) => ({
+      ...p,
+      _sno: baseIndex + idx + 1,
+      site_display: this.activeSite?.site_name || 'N/A',
+      plot_display: `Plot ${p.plot_number}`,
+      rate_display: Number(p.rate_per_sqft || 1200).toLocaleString(),
+      total_price_display: Number((p.sqft || 1000) * (p.rate_per_sqft || 1200)).toLocaleString(),
+      facing_direction: p.facing_direction || 'East',
+      plot_status: p.plot_status || 'Available'
+    }));
+
+    const siteName = this.activeSite?.site_name ? `_${this.activeSite.site_name.replace(/\s+/g, '_')}` : '';
+    const title = mode === 'current' ? `Plots List${siteName ? ' - ' + this.activeSite?.site_name : ''} (Page ${this.plotPage})` : `All Plots Directory${siteName ? ' - ' + this.activeSite?.site_name : ''}`;
+    const filename = `plots_directory${siteName}_${mode}_${new Date().toISOString().slice(0, 10)}`;
+
+    if (format === 'excel') {
+      this.exportService.exportToExcel(formatted, columns, filename, title);
+    } else {
+      this.exportService.exportToPdf(formatted, columns, filename, title);
+    }
+  }
 
   ngOnInit() {
     this.loadSites();

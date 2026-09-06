@@ -103,7 +103,7 @@
 </div>
 
 <!-- TAB 1: PLOT BOOKINGS MANAGEMENT TABLE -->
-<div class="panel-card p-3 mb-2" *ngIf="!loading &amp;&amp; activeTab==='bookings'">
+<div class="panel-card p-3 mb-2" *ngIf="!loading && activeTab==='bookings'">
   
   <div *ngIf="filteredBookings.length === 0" class="text-center py-5">
     <i class="fas fa-calendar-times text-muted fs-1 mb-2"></i>
@@ -115,6 +115,7 @@
     <table class="table align-middle custom-dash-table mb-0">
       <thead>
         <tr>
+          <th class="th-sno">#</th>
           <th>Customer Details</th>
           <th>Plot &amp; Site Specs</th>
           <th>Advance Paid</th>
@@ -125,7 +126,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let b of filteredBookings">
+        <tr *ngFor="let b of pagedBookings; let i = index">
+          <td class="td-sno">{{ (bookingsPage - 1) * bookingsPageSize + i + 1 }}</td>
           <td>
             <div class="d-flex align-items-center gap-2.5">
               <div class="user-avatar-circle bg-blue">
@@ -186,10 +188,19 @@
       </tbody>
     </table>
   </div>
+  <app-admin-pagination
+    *ngIf="filteredBookings.length > 0"
+    [totalItems]="filteredBookings.length"
+    [page]="bookingsPage"
+    [pageSize]="bookingsPageSize"
+    (pageChange)="onBookingsPageChange($event)"
+    (pageSizeChange)="onBookingsPageSizeChange($event)"
+    (export)="exportData('bookings', $event.mode, $event.format)">
+  </app-admin-pagination>
 </div>
 
 <!-- TAB 2: OVERDUE EMI INSTALLMENTS TABLE -->
-<div class="panel-card p-3 mb-2" *ngIf="!loading &amp;&amp; activeTab==='overdue'">
+<div class="panel-card p-3 mb-2" *ngIf="!loading && activeTab==='overdue'">
   
   <div *ngIf="filteredEmis.length === 0" class="text-center py-5">
     <i class="fas fa-check-circle text-emerald fs-1 mb-2"></i>
@@ -201,6 +212,7 @@
     <table class="table align-middle custom-dash-table mb-0">
       <thead>
         <tr>
+          <th class="th-sno">#</th>
           <th>Customer Details</th>
           <th>Plot &amp; Site</th>
           <th>EMI Amount</th>
@@ -211,7 +223,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let e of filteredEmis">
+        <tr *ngFor="let e of pagedOverdueEmis; let i = index">
+          <td class="td-sno">{{ (overduePage - 1) * overduePageSize + i + 1 }}</td>
           <td>
             <div class="fw-700 text-dark fs-12">{{ e.full_name || e.customer_name }}</div>
             <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ e.mobile_no }}</div>
@@ -243,6 +256,15 @@
       </tbody>
     </table>
   </div>
+  <app-admin-pagination
+    *ngIf="filteredEmis.length > 0"
+    [totalItems]="filteredEmis.length"
+    [page]="overduePage"
+    [pageSize]="overduePageSize"
+    (pageChange)="onOverduePageChange($event)"
+    (pageSizeChange)="onOverduePageSizeChange($event)"
+    (export)="exportData('overdue', $event.mode, $event.format)">
+  </app-admin-pagination>
 </div>
 
 <!-- BOOKING DETAIL & EMI SCHEDULE MODAL -->

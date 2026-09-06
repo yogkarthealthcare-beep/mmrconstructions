@@ -114,6 +114,7 @@
     <table class="table align-middle custom-dash-table mb-0">
       <thead>
         <tr>
+          <th class="th-sno">#</th>
           <th>Investor Profile</th>
           <th>Contact &amp; Mobile</th>
           <th>ID / Reference</th>
@@ -124,13 +125,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let a of investors"
+        <tr *ngFor="let a of investors; let i = index"
             [class.row-disabled-free]="isFreeOrDisabled(a)"
             (mouseenter)="onRowMouseEnter(a, $event)"
             (mousemove)="onRowMouseMove($event)"
             (mouseleave)="onRowMouseLeave()"
             (click)="onRowClick(a, $event)"
             (dblclick)="onRowDblClick(a, $event)">
+          <td class="td-sno">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
           <td>
             <div class="d-flex align-items-center gap-2.5">
               <div class="user-avatar-circle bg-gold-avatar">
@@ -225,30 +227,13 @@
       </tbody>
     </table>
   </div>
-</div>
-
-<!-- Pagination -->
-<div class="d-flex justify-content-between align-items-center flex-wrap px-1" *ngIf="totalPages > 1 && !loading">
-  <div class="fs-12 text-muted mb-2 mb-sm-0">
-    Showing <span class="fw-600 text-dark">{{ (currentPage - 1) * pageSize + 1 }}</span>–<span class="fw-600 text-dark">{{ Math.min(currentPage * pageSize, totalItems) }}</span> of <span class="fw-600 text-dark">{{ totalItems }}</span>
-  </div>
-  
-  <ul class="pagination pagination-sm compact-pagination m-0">
-    <li class="page-item" [class.disabled]="currentPage === 1">
-      <a class="page-link" href="javascript:void(0)" (click)="changePage(currentPage - 1)"><i class="fas fa-chevron-left fs-10"></i></a>
-    </li>
-    
-    <ng-container *ngFor="let page of pagesArray">
-      <li class="page-item" *ngIf="page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)" [class.active]="currentPage === page">
-        <a class="page-link" href="javascript:void(0)" (click)="changePage(page)">{{ page }}</a>
-      </li>
-      <li class="page-item disabled" *ngIf="(page === currentPage - 2 && page > 1) || (page === currentPage + 2 && page < totalPages)">
-        <span class="page-link border-0 bg-transparent text-muted px-1">...</span>
-      </li>
-    </ng-container>
-    
-    <li class="page-item" [class.disabled]="currentPage === totalPages">
-      <a class="page-link" href="javascript:void(0)" (click)="changePage(currentPage + 1)"><i class="fas fa-chevron-right fs-10"></i></a>
-    </li>
-  </ul>
+  <app-admin-pagination
+    *ngIf="totalItems > 0"
+    [totalItems]="totalItems"
+    [page]="currentPage"
+    [pageSize]="pageSize"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (export)="exportData($event.mode, $event.format)">
+  </app-admin-pagination>
 </div>

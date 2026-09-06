@@ -1,0 +1,85 @@
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-1 admin-pagination-wrapper">
+  
+  <!-- Left info & Page Size Selector -->
+  <div class="d-flex align-items-center flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-1.5">
+      <span class="fs-11 text-muted fw-600">Show</span>
+      <select class="form-select form-select-sm page-size-select fw-700 fs-11 py-0 px-2" [ngModel]="pageSize" (ngModelChange)="onPageSizeSelect($event)">
+        <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+      </select>
+      <span class="fs-11 text-muted fw-600">entries</span>
+    </div>
+
+    <div class="fs-11 text-muted fw-600 entries-info ms-md-2" *ngIf="totalItems > 0">
+      Showing <strong class="text-dark">{{ startItem }}</strong> to <strong class="text-dark">{{ endItem }}</strong> of <strong class="text-dark">{{ totalItems }}</strong> entries
+    </div>
+  </div>
+
+  <!-- Right: Page Controls & Export Dropdown -->
+  <div class="d-flex align-items-center flex-wrap gap-2 ms-auto">
+    
+    <!-- Export Dropdown -->
+    <div class="dropdown position-relative" *ngIf="showExport">
+      <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2.5 d-flex align-items-center gap-1.5 rounded-8" (click)="toggleExportDropdown($event)">
+        <i class="fas fa-file-export text-emerald fs-11"></i>
+        <span class="fs-11">Export Data</span>
+        <i class="fas fa-chevron-down fs-9 text-muted ms-0.5"></i>
+      </button>
+
+      <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-1 position-absolute export-menu" [class.show]="exportDropdownOpen">
+        <div class="dropdown-header fs-10 fw-800 text-uppercase py-1 px-3 text-muted">
+          <i class="fas fa-file-excel text-emerald me-1"></i> Excel / CSV Formats
+        </div>
+        <button type="button" class="dropdown-item py-1.5 px-3 fs-11 text-dark fw-600 d-flex align-items-center justify-content-between" (click)="triggerExport('current-excel')">
+          <span><i class="fas fa-file-csv text-emerald me-2"></i>Current Page (Excel)</span>
+          <span class="badge bg-light text-muted border fs-9 ms-2">Visible ({{ endItem - startItem + 1 }})</span>
+        </button>
+        <button type="button" class="dropdown-item py-1.5 px-3 fs-11 text-dark fw-600 d-flex align-items-center justify-content-between" (click)="triggerExport('all-excel')">
+          <span><i class="fas fa-table text-success me-2"></i>All Data (Excel)</span>
+          <span class="badge bg-success-subtle text-success fs-9 ms-2">Full ({{ totalItems }})</span>
+        </button>
+
+        <div class="dropdown-divider my-1"></div>
+
+        <div class="dropdown-header fs-10 fw-800 text-uppercase py-1 px-3 text-muted">
+          <i class="fas fa-file-pdf text-danger me-1"></i> PDF Printable Reports
+        </div>
+        <button type="button" class="dropdown-item py-1.5 px-3 fs-11 text-dark fw-600 d-flex align-items-center justify-content-between" (click)="triggerExport('current-pdf')">
+          <span><i class="fas fa-file-pdf text-danger me-2"></i>Current Page (PDF)</span>
+          <span class="badge bg-light text-muted border fs-9 ms-2">Visible</span>
+        </button>
+        <button type="button" class="dropdown-item py-1.5 px-3 fs-11 text-dark fw-600 d-flex align-items-center justify-content-between" (click)="triggerExport('all-pdf')">
+          <span><i class="fas fa-print text-danger me-2"></i>All Data (PDF Report)</span>
+          <span class="badge bg-danger-subtle text-danger fs-9 ms-2">Full</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Pagination Navigation Buttons -->
+    <nav *ngIf="totalPages > 1" class="d-inline-flex" aria-label="Table pagination">
+      <ul class="pagination pagination-sm mb-0 custom-pagination">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button type="button" class="page-link" (click)="onPrev()" [disabled]="currentPage === 1" aria-label="Previous">
+            <i class="fas fa-chevron-left fs-10"></i>
+          </button>
+        </li>
+
+        <ng-container *ngFor="let p of pageNumbers">
+          <li class="page-item" *ngIf="p !== '...'" [class.active]="p === currentPage">
+            <button type="button" class="page-link" (click)="onPageClick(p)">{{ p }}</button>
+          </li>
+          <li class="page-item disabled" *ngIf="p === '...'">
+            <span class="page-link py-1 px-2 text-muted border-0 bg-transparent">&hellip;</span>
+          </li>
+        </ng-container>
+
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button type="button" class="page-link" (click)="onNext()" [disabled]="currentPage === totalPages" aria-label="Next">
+            <i class="fas fa-chevron-right fs-10"></i>
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+  </div>
+</div>

@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-investor-enrollments-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, AdminPaginationComponent],
   templateUrl: './admin-investor-enrollments-list.component.html',
   styleUrls: ['./admin-investor-enrollments-list.component.css']
 })
@@ -28,6 +30,7 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
 
   private api = (inject as any)(ApiService) || inject(ApiService);
   private router = inject(Router);
+  private exportService = inject(AdminExportService);
 
   constructor() {}
 
@@ -59,6 +62,63 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
         console.error('Failed to load investors', err);
       }
     });
+  }
+
+  onPageChange(p: number) {
+    this.currentPage = p;
+    this.loadInvestors();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.currentPage = 1;
+    this.loadInvestors();
+  }
+
+  exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
+    const columns: ExportColumn[] = [
+      { header: '#', key: '_sno', width: 6 },
+      { header: 'Investor Name', key: 'full_name', width: 22 },
+      { header: 'Mobile Number', key: 'mobile_display', width: 16 },
+      { header: 'Email Address', key: 'email', width: 24 },
+      { header: 'Investor ID', key: 'member_id_display', width: 15 },
+      { header: 'Joined Date', key: 'created_date', width: 14 },
+      { header: 'Status', key: 'status_display', width: 14 }
+    ];
+
+    const processAndExport = (list: any[]) => {
+      const baseIndex = mode === 'current' ? (this.currentPage - 1) * this.pageSize : 0;
+      const formatted = list.map((a, idx) => ({
+        ...a,
+        _sno: baseIndex + idx + 1,
+        mobile_display: a.mobile_no || a.mobile_number || 'N/A',
+        email: a.email || 'N/A',
+        member_id_display: a.member_id || a.id || 'N/A',
+        created_date: a.created_at ? new Date(a.created_at).toLocaleDateString() : 'N/A',
+        status_display: this.isFreeOrDisabled(a) ? 'Disabled / Free' : (a.status || a.account_status || 'Active')
+      }));
+
+      const title = mode === 'current' ? `Investors (Page ${this.currentPage})` : 'All Registered Investors';
+      const filename = `investor_enrollments_${mode}_${new Date().toISOString().slice(0, 10)}`;
+
+      if (format === 'excel') {
+        this.exportService.exportToExcel(formatted, columns, filename, title);
+      } else {
+        this.exportService.exportToPdf(formatted, columns, filename, title);
+      }
+    };
+
+    if (mode === 'current' || this.totalItems <= this.investors.length) {
+      processAndExport(this.investors);
+    } else {
+      this.api.get('/api/admin/investors-portal', { page: 1, limit: 10000, search: this.searchQuery }, true).subscribe({
+        next: (res: any) => {
+          const allList = res?.data?.items || res?.data?.users || res?.data || [];
+          processAndExport(allList);
+        },
+        error: () => processAndExport(this.investors)
+      });
+    }
   }
 
   statusFilter = 'all';
