@@ -36,8 +36,22 @@ export class AdminBuybackTermsComponent implements OnInit {
         this.loading = false;
       },
       error: (e: any) => {
-        this.error = e?.error?.message || 'Unable to load Buyback Terms & Conditions.';
-        this.loading = false;
+        // Fallback to public terms endpoint if admin endpoint returns error
+        this.api.getBuybackTerms().subscribe({
+          next: (res2: any) => {
+            const data = res2?.data || {};
+            this.form = {
+              title: data.title || '',
+              summary: data.summary || '',
+              content: data.content || '',
+            };
+            this.loading = false;
+          },
+          error: (e2: any) => {
+            this.error = e?.error?.message || e2?.error?.message || 'Unable to load Buyback Terms & Conditions.';
+            this.loading = false;
+          },
+        });
       },
     });
   }
@@ -55,6 +69,7 @@ export class AdminBuybackTermsComponent implements OnInit {
       next: (res: any) => {
         this.success = res?.message || 'Buyback Terms & Conditions updated successfully.';
         this.saving = false;
+        setTimeout(() => { this.success = ''; }, 5000);
       },
       error: (e: any) => {
         this.error = e?.error?.message || 'Unable to update Buyback Terms & Conditions.';

@@ -1,8 +1,8 @@
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-1 admin-pagination-wrapper">
+<div class="admin-pagination-wrapper">
   
-  <!-- Left info & Page Size Selector -->
-  <div class="d-flex align-items-center flex-wrap gap-2">
-    <div class="d-flex align-items-center gap-1.5">
+  <!-- Top Controls Row (Mobile: Show Entries on Left, Export on Right | Desktop: Inline) -->
+  <div class="pagination-row-controls">
+    <div class="page-size-wrap">
       <span class="fs-11 text-muted fw-600">Show</span>
       <select class="form-select form-select-sm page-size-select fw-700 fs-11 py-0 px-2" [ngModel]="pageSize" (ngModelChange)="onPageSizeSelect($event)">
         <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
@@ -10,16 +10,13 @@
       <span class="fs-11 text-muted fw-600">entries</span>
     </div>
 
-    <div class="fs-11 text-muted fw-600 entries-info ms-md-2" *ngIf="totalItems > 0">
-      Showing <strong class="text-dark">{{ startItem }}</strong> to <strong class="text-dark">{{ endItem }}</strong> of <strong class="text-dark">{{ totalItems }}</strong> entries
+    <!-- Desktop Entries Counter -->
+    <div class="entries-info d-none d-md-inline-flex" *ngIf="totalItems > 0">
+      <span>Showing <strong class="text-dark">{{ startItem }}</strong> to <strong class="text-dark">{{ endItem }}</strong> of <strong class="text-dark">{{ totalItems }}</strong> entries</span>
     </div>
-  </div>
 
-  <!-- Right: Page Controls & Export Dropdown -->
-  <div class="d-flex align-items-center flex-wrap gap-2 ms-auto">
-    
     <!-- Export Dropdown -->
-    <div class="dropdown position-relative" *ngIf="showExport">
+    <div class="dropdown position-relative export-dropdown-wrap ms-auto" *ngIf="showExport">
       <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2.5 d-flex align-items-center gap-1.5 rounded-8" (click)="toggleExportDropdown($event)">
         <i class="fas fa-file-export text-emerald fs-11"></i>
         <span class="fs-11">Export Data</span>
@@ -54,9 +51,17 @@
         </button>
       </div>
     </div>
+  </div>
 
-    <!-- Pagination Navigation Buttons -->
-    <nav *ngIf="totalPages > 1" class="d-inline-flex" aria-label="Table pagination">
+  <!-- Bottom Navigation Row (Mobile: Centered info & Centered Page Links | Desktop: Inline Right) -->
+  <div class="pagination-row-nav" [class.has-nav]="totalPages > 1">
+    <!-- Mobile Entries Counter (Centered) -->
+    <div class="entries-info mobile-entries-info d-flex d-md-none" *ngIf="totalItems > 0">
+      <span>Showing <strong class="text-dark">{{ startItem }}</strong> to <strong class="text-dark">{{ endItem }}</strong> of <strong class="text-dark">{{ totalItems }}</strong> entries</span>
+    </div>
+
+    <!-- Pagination Navigation Buttons (Centered on Mobile) -->
+    <nav *ngIf="totalPages > 1" class="d-flex pagination-nav-wrap" aria-label="Table pagination">
       <ul class="pagination pagination-sm mb-0 custom-pagination">
         <li class="page-item" [class.disabled]="currentPage === 1">
           <button type="button" class="page-link" (click)="onPrev()" [disabled]="currentPage === 1" aria-label="Previous">
@@ -69,7 +74,7 @@
             <button type="button" class="page-link" (click)="onPageClick(p)">{{ p }}</button>
           </li>
           <li class="page-item disabled" *ngIf="p === '...'">
-            <span class="page-link py-1 px-2 text-muted border-0 bg-transparent">&hellip;</span>
+            <span class="page-link py-1 px-1 text-muted border-0 bg-transparent">&hellip;</span>
           </li>
         </ng-container>
 
@@ -80,6 +85,6 @@
         </li>
       </ul>
     </nav>
-
   </div>
+
 </div>

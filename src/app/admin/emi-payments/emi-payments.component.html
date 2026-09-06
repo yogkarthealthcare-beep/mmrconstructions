@@ -111,83 +111,89 @@
     <p class="text-muted fs-12 mb-0">No booking requests match your current search query.</p>
   </div>
 
-  <div class="table-responsive" *ngIf="filteredBookings.length > 0">
-    <table class="table align-middle custom-dash-table mb-0">
-      <thead>
-        <tr>
-          <th class="th-sno">#</th>
-          <th>Customer Details</th>
-          <th>Plot &amp; Site Specs</th>
-          <th>Advance Paid</th>
-          <th>Payment Type</th>
-          <th>Booking Date</th>
-          <th>Status</th>
-          <th class="text-end">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let b of pagedBookings; let i = index">
-          <td class="td-sno">{{ (bookingsPage - 1) * bookingsPageSize + i + 1 }}</td>
-          <td>
-            <div class="d-flex align-items-center gap-2.5">
-              <div class="user-avatar-circle bg-blue">
-                {{ getInitials(b.customer_name || b.full_name) }}
+  <app-admin-table-container
+    *ngIf="filteredBookings.length > 0"
+    title="Plot Bookings"
+    [count]="filteredBookings.length"
+    (export)="exportData('bookings', 'all', 'excel')">
+    <div class="table-responsive">
+      <table class="table align-middle custom-dash-table mb-0">
+        <thead>
+          <tr>
+            <th class="th-sno">#</th>
+            <th>Customer Details</th>
+            <th>Plot &amp; Site Specs</th>
+            <th>Advance Paid</th>
+            <th>Payment Type</th>
+            <th>Booking Date</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of pagedBookings; let i = index">
+            <td class="td-sno">{{ (bookingsPage - 1) * bookingsPageSize + i + 1 }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="user-avatar-circle bg-blue">
+                  {{ getInitials(b.customer_name || b.full_name) }}
+                </div>
+                <div>
+                  <div class="fw-700 text-dark fs-12">{{ b.customer_name || b.full_name }}</div>
+                  <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ b.mobile_no }}</div>
+                </div>
               </div>
-              <div>
-                <div class="fw-700 text-dark fs-12">{{ b.customer_name || b.full_name }}</div>
-                <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ b.mobile_no }}</div>
-              </div>
-            </div>
-          </td>
-          <td>
-            <div class="fw-700 text-primary fs-12"><i class="fas fa-map-marker-alt text-gold me-1"></i>Plot #{{ b.plot_number }}</div>
-            <div class="fs-10 text-muted">{{ b.site_name || 'Project Site' }}</div>
-          </td>
-          <td>
-            <div class="fw-800 text-emerald fs-13">₹{{ (b.advance_amount || b.booking_amount || 0) | number:'1.0-0' }}</div>
-            <div class="fs-10 text-muted" *ngIf="b.total_plot_price">of ₹{{ b.total_plot_price | number:'1.0-0' }} total</div>
-          </td>
-          <td>
-            <span class="badge bg-light text-dark border fw-600">
-              {{ b.payment_type || b.payment_mode || 'EMI Plan' }}
-            </span>
-          </td>
-          <td>
-            <div class="fs-11 text-dark fw-600">{{ b.booking_date | date:'dd MMM yyyy' }}</div>
-            <div class="fs-10 text-muted">{{ b.booking_date | date:'hh:mm a' }}</div>
-          </td>
-          <td>
-            <span class="sbadge"
-              [class.sbadge-green]="b.booking_status==='Confirmed'"
-              [class.sbadge-yellow]="b.booking_status==='PaymentPending'||b.booking_status==='Pending'"
-              [class.sbadge-red]="b.booking_status==='Cancelled'">
-              {{ b.booking_status }}
-            </span>
-          </td>
-          <td class="text-end">
-            <div class="dropdown d-inline-block position-relative">
-              <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === b.booking_id ? null : b.booking_id)">
-                <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
-              </button>
+            </td>
+            <td>
+              <div class="fw-700 text-primary fs-12"><i class="fas fa-map-marker-alt text-gold me-1"></i>Plot #{{ b.plot_number }}</div>
+              <div class="fs-10 text-muted">{{ b.site_name || 'Project Site' }}</div>
+            </td>
+            <td>
+              <div class="fw-800 text-emerald fs-13">₹{{ (b.advance_amount || b.booking_amount || 0) | number:'1.0-0' }}</div>
+              <div class="fs-10 text-muted" *ngIf="b.total_plot_price">of ₹{{ b.total_plot_price | number:'1.0-0' }} total</div>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border fw-600">
+                {{ b.payment_type || b.payment_mode || 'EMI Plan' }}
+              </span>
+            </td>
+            <td>
+              <div class="fs-11 text-dark fw-600">{{ b.booking_date | date:'dd MMM yyyy' }}</div>
+              <div class="fs-10 text-muted">{{ b.booking_date | date:'hh:mm a' }}</div>
+            </td>
+            <td>
+              <span class="sbadge"
+                [class.sbadge-green]="b.booking_status==='Confirmed'"
+                [class.sbadge-yellow]="b.booking_status==='PaymentPending'||b.booking_status==='Pending'"
+                [class.sbadge-red]="b.booking_status==='Cancelled'">
+                {{ b.booking_status }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="dropdown d-inline-block position-relative">
+                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === b.booking_id ? null : b.booking_id)">
+                  <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
+                </button>
 
-              <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 175px; border-radius: 10px;" *ngIf="activeRowId === b.booking_id" (click)="$event.stopPropagation()">
-                <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="openBookingDetail(b); activeRowId = null">
-                  <i class="fas fa-eye text-primary me-2 width-16"></i> EMI Schedule Details
-                </button>
-                <div class="dropdown-divider my-1" *ngIf="b.booking_status!=='Confirmed' || b.booking_status!=='Cancelled'"></div>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-emerald fw-700 d-flex align-items-center" (click)="confirmBooking(b); activeRowId = null" *ngIf="b.booking_status!=='Confirmed'" [disabled]="confirmLoading">
-                  <i class="fas fa-check-circle text-emerald me-2 width-16"></i> Approve Booking
-                </button>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="openCancelModal(b); activeRowId = null" *ngIf="b.booking_status!=='Cancelled'">
-                  <i class="fas fa-times-circle text-danger me-2 width-16"></i> Cancel Booking
-                </button>
+                <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 175px; border-radius: 10px;" *ngIf="activeRowId === b.booking_id" (click)="$event.stopPropagation()">
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="openBookingDetail(b); activeRowId = null">
+                    <i class="fas fa-eye text-primary me-2 width-16"></i> EMI Schedule Details
+                  </button>
+                  <div class="dropdown-divider my-1" *ngIf="b.booking_status!=='Confirmed' || b.booking_status!=='Cancelled'"></div>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-emerald fw-700 d-flex align-items-center" (click)="confirmBooking(b); activeRowId = null" *ngIf="b.booking_status!=='Confirmed'" [disabled]="confirmLoading">
+                    <i class="fas fa-check-circle text-emerald me-2 width-16"></i> Approve Booking
+                  </button>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="openCancelModal(b); activeRowId = null" *ngIf="b.booking_status!=='Cancelled'">
+                    <i class="fas fa-times-circle text-danger me-2 width-16"></i> Cancel Booking
+                  </button>
+                </div>
               </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </app-admin-table-container>
   <app-admin-pagination
     *ngIf="filteredBookings.length > 0"
     [totalItems]="filteredBookings.length"
@@ -208,54 +214,60 @@
     <p class="text-muted fs-12 mb-0">All customer installment payments are up to date.</p>
   </div>
 
-  <div class="table-responsive" *ngIf="filteredEmis.length > 0">
-    <table class="table align-middle custom-dash-table mb-0">
-      <thead>
-        <tr>
-          <th class="th-sno">#</th>
-          <th>Customer Details</th>
-          <th>Plot &amp; Site</th>
-          <th>EMI Amount</th>
-          <th>Due Date</th>
-          <th>Overdue Days</th>
-          <th>Late Fee Due</th>
-          <th class="text-end">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let e of pagedOverdueEmis; let i = index">
-          <td class="td-sno">{{ (overduePage - 1) * overduePageSize + i + 1 }}</td>
-          <td>
-            <div class="fw-700 text-dark fs-12">{{ e.full_name || e.customer_name }}</div>
-            <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ e.mobile_no }}</div>
-          </td>
-          <td>
-            <div class="fw-700 text-primary fs-12">Plot #{{ e.plot_number }}</div>
-            <div class="fs-10 text-muted">{{ e.site_name }}</div>
-          </td>
-          <td>
-            <div class="fw-800 text-dark fs-13">₹{{ (e.emi_amount || e.amount || 0) | number:'1.0-0' }}</div>
-          </td>
-          <td>
-            <div class="fs-11 text-dark fw-600">{{ e.due_date | date:'dd MMM yyyy' }}</div>
-          </td>
-          <td>
-            <span class="sbadge sbadge-red">
-              <i class="fas fa-clock me-1"></i>{{ e.overdue_days || 0 }} Days Overdue
-            </span>
-          </td>
-          <td>
-            <div class="fw-700 text-danger fs-12">₹{{ (e.late_fee_due || 0) | number:'1.0-0' }}</div>
-          </td>
-          <td class="text-end">
-            <button class="btn btn-emerald btn-xs" (click)="confirmEmi(e)">
-              <i class="fas fa-check-circle me-1"></i> Collect Payment
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <app-admin-table-container
+    *ngIf="filteredEmis.length > 0"
+    title="Overdue EMI Installments"
+    [count]="filteredEmis.length"
+    (export)="exportData('overdue', 'all', 'excel')">
+    <div class="table-responsive">
+      <table class="table align-middle custom-dash-table mb-0">
+        <thead>
+          <tr>
+            <th class="th-sno">#</th>
+            <th>Customer Details</th>
+            <th>Plot &amp; Site</th>
+            <th>EMI Amount</th>
+            <th>Due Date</th>
+            <th>Overdue Days</th>
+            <th>Late Fee Due</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of pagedOverdueEmis; let i = index">
+            <td class="td-sno">{{ (overduePage - 1) * overduePageSize + i + 1 }}</td>
+            <td>
+              <div class="fw-700 text-dark fs-12">{{ e.full_name || e.customer_name }}</div>
+              <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ e.mobile_no }}</div>
+            </td>
+            <td>
+              <div class="fw-700 text-primary fs-12">Plot #{{ e.plot_number }}</div>
+              <div class="fs-10 text-muted">{{ e.site_name }}</div>
+            </td>
+            <td>
+              <div class="fw-800 text-dark fs-13">₹{{ (e.emi_amount || e.amount || 0) | number:'1.0-0' }}</div>
+            </td>
+            <td>
+              <div class="fs-11 text-dark fw-600">{{ e.due_date | date:'dd MMM yyyy' }}</div>
+            </td>
+            <td>
+              <span class="sbadge sbadge-red">
+                <i class="fas fa-clock me-1"></i>{{ e.overdue_days || 0 }} Days Overdue
+              </span>
+            </td>
+            <td>
+              <div class="fw-700 text-danger fs-12">₹{{ (e.late_fee_due || 0) | number:'1.0-0' }}</div>
+            </td>
+            <td class="text-end">
+              <button class="btn btn-emerald btn-xs" (click)="confirmEmi(e)">
+                <i class="fas fa-check-circle me-1"></i> Collect Payment
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </app-admin-table-container>
   <app-admin-pagination
     *ngIf="filteredEmis.length > 0"
     [totalItems]="filteredEmis.length"

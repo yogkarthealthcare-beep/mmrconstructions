@@ -445,8 +445,8 @@ export class ApiService {
   adminGetWorkflowAlerts() { return this.get('/api/admin/booking/workflow-alerts', {}, true); }
   adminUpdateBookingWorkflowSettings(data: any) { return this.put('/api/admin/booking/workflow-config', data, true); }
   adminUpdateKyc(id: number, statusOrData: any, note = '') { return this.put(`/api/admin/kyc/${id}`, typeof statusOrData === 'object' ? statusOrData : { status: statusOrData, note }, true); }
-  adminGetBuybackTerms() { return this.get('/api/admin/buyback-terms', {}, true); }
-  adminUpdateBuybackTerms(data: any) { return this.put('/api/admin/buyback-terms', data, true); }
+  adminGetBuybackTerms() { return this.get('/api/admin/buyback/terms', {}, true); }
+  adminUpdateBuybackTerms(data: any) { return this.put('/api/admin/buyback/terms', data, true); }
   adminGetWithdrawalRequestDetail(id: any) { return this.get(`/api/admin/withdrawal-requests/${id}`, {}, true); }
   adminFailWithdrawalRequest(id: number, reason: string) { return this.patch(`/api/admin/withdrawal-requests/${id}/failed`, { reason }, true); }
 

@@ -102,100 +102,106 @@
     <p class="text-muted fs-12 mb-0">No customer enquiries match your current search query.</p>
   </div>
 
-  <div class="table-responsive" *ngIf="filtered.length > 0">
-    <table class="table align-middle custom-dash-table mb-0">
-      <thead class="bg-light">
-        <tr>
-          <th class="th-sno">#</th>
-          <th>Lead Customer Profile</th>
-          <th>Selected Site</th>
-          <th>Topic &amp; Interest</th>
-          <th>Message Note</th>
-          <th>Priority</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th class="text-end">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let e of pagedEnquiries; let i = index">
-          <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-          <td>
-            <div class="d-flex align-items-center gap-2.5">
-              <div class="user-avatar-circle bg-purple-avatar">
-                {{ getInitials(e.name) }}
+  <app-admin-table-container
+    *ngIf="filtered.length > 0"
+    title="Customer Leads"
+    [count]="filtered.length"
+    (export)="exportData('all', 'excel')">
+    <div class="table-responsive">
+      <table class="table align-middle custom-dash-table mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="th-sno">#</th>
+            <th>Lead Customer Profile</th>
+            <th>Selected Site</th>
+            <th>Topic &amp; Interest</th>
+            <th>Message Note</th>
+            <th>Priority</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of pagedEnquiries; let i = index">
+            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="user-avatar-circle bg-purple-avatar">
+                  {{ getInitials(e.name) }}
+                </div>
+                <div>
+                  <div class="fw-700 text-dark fs-12">{{ e.name }}</div>
+                  <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ e.mobile }}</div>
+                </div>
               </div>
-              <div>
-                <div class="fw-700 text-dark fs-12">{{ e.name }}</div>
-                <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ e.mobile }}</div>
+            </td>
+            <td>
+              <span class="badge bg-emerald-subtle text-dark border border-emerald-subtle fw-600 fs-11">
+                <i class="fas fa-building text-gold me-1"></i>{{ e.site_name || 'General Inquiry' }}
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border fw-600">
+                <i class="fas fa-tag text-gold me-1"></i>{{ e.interest }}
+              </span>
+            </td>
+            <td>
+              <div class="fs-11 text-dark text-truncate" style="max-width: 180px;" [title]="e.message">
+                "{{ e.message || '-' }}"
               </div>
-            </div>
-          </td>
-          <td>
-            <span class="badge bg-emerald-subtle text-dark border border-emerald-subtle fw-600 fs-11">
-              <i class="fas fa-building text-gold me-1"></i>{{ e.site_name || 'General Inquiry' }}
-            </span>
-          </td>
-          <td>
-            <span class="badge bg-light text-dark border fw-600">
-              <i class="fas fa-tag text-gold me-1"></i>{{ e.interest }}
-            </span>
-          </td>
-          <td>
-            <div class="fs-11 text-dark text-truncate" style="max-width: 180px;" [title]="e.message">
-              "{{ e.message || '-' }}"
-            </div>
-          </td>
-          <td>
-            <span class="sbadge"
-              [class.sbadge-red]="e.priority==='high'"
-              [class.sbadge-yellow]="e.priority==='medium'"
-              [class.sbadge-green]="e.priority==='low'">
-              {{ e.priority | uppercase }}
-            </span>
-          </td>
-          <td>
-            <div class="fs-11 text-dark fw-600">{{ e.date | date:'dd MMM yyyy' }}</div>
-          </td>
-          <td>
-            <select class="status-select-pill"
-              [ngModel]="e.status"
-              (change)="updateStatus(e, $any($event.target).value)"
-              [class.status-open]="e.status==='open'"
-              [class.status-called]="e.status==='called'"
-              [class.status-closed]="e.status==='closed'">
-              <option value="open">Open</option>
-              <option value="called">Follow-Up</option>
-              <option value="closed">Closed</option>
-            </select>
-          </td>
-          <td class="text-end">
-            <div class="dropdown d-inline-block position-relative">
-              <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === e.id ? null : e.id)">
-                <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
-              </button>
+            </td>
+            <td>
+              <span class="sbadge"
+                [class.sbadge-red]="e.priority==='high'"
+                [class.sbadge-yellow]="e.priority==='medium'"
+                [class.sbadge-green]="e.priority==='low'">
+                {{ e.priority | uppercase }}
+              </span>
+            </td>
+            <td>
+              <div class="fs-11 text-dark fw-600">{{ e.date | date:'dd MMM yyyy' }}</div>
+            </td>
+            <td>
+              <select class="status-select-pill"
+                [ngModel]="e.status"
+                (change)="updateStatus(e, $any($event.target).value)"
+                [class.status-open]="e.status==='open'"
+                [class.status-called]="e.status==='called'"
+                [class.status-closed]="e.status==='closed'">
+                <option value="open">Open</option>
+                <option value="called">Follow-Up</option>
+                <option value="closed">Closed</option>
+              </select>
+            </td>
+            <td class="text-end">
+              <div class="dropdown d-inline-block position-relative">
+                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === e.id ? null : e.id)">
+                  <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
+                </button>
 
-              <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 165px; border-radius: 10px;" *ngIf="activeRowId === e.id" (click)="$event.stopPropagation()">
-                <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + e.mobile">
-                  <i class="fas fa-phone text-primary me-2 width-16"></i> Call Lead
-                </a>
-                <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + e.mobile" target="_blank">
-                  <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
-                </a>
-                <div class="dropdown-divider my-1"></div>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openDetailModal(e); activeRowId = null">
-                  <i class="fas fa-sticky-note text-info me-2 width-16"></i> Follow-up Notes
-                </button>
-                <button type="button" class="dropdown-item py-1.5 px-3 text-warning fw-600 d-flex align-items-center" (click)="sendFollowUpNotification(e); activeRowId = null" [disabled]="actionLoading">
-                  <i class="fas fa-bell text-warning me-2 width-16"></i> Push Notification
-                </button>
+                <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 165px; border-radius: 10px;" *ngIf="activeRowId === e.id" (click)="$event.stopPropagation()">
+                  <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + e.mobile">
+                    <i class="fas fa-phone text-primary me-2 width-16"></i> Call Lead
+                  </a>
+                  <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + e.mobile" target="_blank">
+                    <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
+                  </a>
+                  <div class="dropdown-divider my-1"></div>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openDetailModal(e); activeRowId = null">
+                    <i class="fas fa-sticky-note text-info me-2 width-16"></i> Follow-up Notes
+                  </button>
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-warning fw-600 d-flex align-items-center" (click)="sendFollowUpNotification(e); activeRowId = null" [disabled]="actionLoading">
+                    <i class="fas fa-bell text-warning me-2 width-16"></i> Push Notification
+                  </button>
+                </div>
               </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </app-admin-table-container>
   
   <!-- Unified Pagination -->
   <app-admin-pagination

@@ -5,13 +5,14 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { AdminExportService } from '../../services/admin-export.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminPaginationComponent],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
   templateUrl: './customers.component.html',
   styleUrls: ['./customers.component.css']
 })

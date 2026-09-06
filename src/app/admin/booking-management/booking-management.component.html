@@ -23,37 +23,39 @@
 
 <div class="booking-grid" *ngIf="!loading">
   <section class="panel-card">
-    <div class="table-responsive">
-      <table class="table booking-table">
-        <thead>
-          <tr>
-            <th class="th-sno">#</th>
-            <th>Booking</th>
-            <th>Customer</th>
-            <th>Plot</th>
-            <th>Amount</th>
-            <th>Payment</th>
-            <th>Status</th>
-            <th class="text-end">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let booking of pagedBookings; let i = index" [class.selected]="selected?.booking_id === booking.booking_id">
-            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td><strong>{{ booking.booking_serial || ('#' + booking.booking_id) }}</strong><small>{{ booking.booking_date | date:'mediumDate' }}</small></td>
-            <td>{{ booking.customer_name || booking.full_name || '-' }}<small>{{ booking.mobile_no || '-' }}{{ booking.email ? ' · ' + booking.email : '' }}</small></td>
-            <td>Plot {{ booking.plot_number }}<small>{{ booking.site_name }}</small></td>
-            <td>{{ booking.advance_amount || booking.booking_amount || 0 | currency:'INR':'symbol':'1.0-0' }}</td>
-            <td><span class="status-pill">{{ booking.payment_status || (booking.booking_status === 'Confirmed' ? 'Paid' : 'Pending') }}</span></td>
-            <td><span class="status-pill">{{ booking.booking_status || '-' }}</span></td>
-            <td class="text-end"><button class="btn btn-green btn-sm" (click)="selectBooking(booking)">View</button></td>
-          </tr>
-          <tr *ngIf="!pagedBookings.length">
-            <td colspan="8" class="empty-row">No booking requests found.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <app-admin-table-container [title]="'Plot Bookings'" [count]="filteredBookings.length">
+      <div class="table-responsive">
+        <table class="table booking-table">
+          <thead>
+            <tr>
+              <th class="th-sno">#</th>
+              <th>Booking</th>
+              <th>Customer</th>
+              <th>Plot</th>
+              <th>Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let booking of pagedBookings; let i = index" [class.selected]="selected?.booking_id === booking.booking_id">
+              <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
+              <td><strong>{{ booking.booking_serial || ('#' + booking.booking_id) }}</strong><small>{{ booking.booking_date | date:'mediumDate' }}</small></td>
+              <td>{{ booking.customer_name || booking.full_name || '-' }}<small>{{ booking.mobile_no || '-' }}{{ booking.email ? ' · ' + booking.email : '' }}</small></td>
+              <td>Plot {{ booking.plot_number }}<small>{{ booking.site_name }}</small></td>
+              <td>{{ booking.advance_amount || booking.booking_amount || 0 | currency:'INR':'symbol':'1.0-0' }}</td>
+              <td><span class="status-pill">{{ booking.payment_status || (booking.booking_status === 'Confirmed' ? 'Paid' : 'Pending') }}</span></td>
+              <td><span class="status-pill">{{ booking.booking_status || '-' }}</span></td>
+              <td class="text-end"><button class="btn btn-green btn-sm" (click)="selectBooking(booking)">View</button></td>
+            </tr>
+            <tr *ngIf="!pagedBookings.length">
+              <td colspan="8" class="empty-row">No booking requests found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </app-admin-table-container>
     <app-admin-pagination
       *ngIf="filteredBookings.length"
       [totalItems]="filteredBookings.length"

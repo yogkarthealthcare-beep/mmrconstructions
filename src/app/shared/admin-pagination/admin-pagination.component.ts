@@ -65,28 +65,19 @@ export class AdminPaginationComponent {
   get pageNumbers(): (number | string)[] {
     const total = this.totalPages;
     const current = this.currentPage;
-    if (total <= 7) {
+    if (total <= 5) {
       return Array.from({ length: total }, (_, i) => i + 1);
     }
 
-    const pages: (number | string)[] = [1];
-    if (current > 3) {
-      pages.push('...');
+    if (current <= 3) {
+      return [1, 2, 3, 4, '...', total];
     }
 
-    const start = Math.max(2, current - 1);
-    const end = Math.min(total - 1, current + 1);
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
+    if (current >= total - 2) {
+      return [1, '...', total - 3, total - 2, total - 1, total];
     }
 
-    if (current < total - 2) {
-      pages.push('...');
-    }
-
-    pages.push(total);
-    return pages;
+    return [1, '...', current - 1, current, current + 1, '...', total];
   }
 
   onPageClick(page: number | string): void {

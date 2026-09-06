@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-book-plot-leads',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminPaginationComponent],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
   templateUrl: './book-plot-leads.component.html',
   styleUrls: ['./book-plot-leads.component.css']
 })

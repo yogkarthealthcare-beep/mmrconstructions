@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 import Swal from 'sweetalert2';
 
@@ -11,7 +12,7 @@ type CategoryType = 'customer' | 'associate' | 'investor';
 @Component({
   selector: 'app-admin-enrollments',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminPaginationComponent],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
   templateUrl: './admin-enrollments.component.html',
   styleUrls: ['./admin-enrollments.component.css']
 })

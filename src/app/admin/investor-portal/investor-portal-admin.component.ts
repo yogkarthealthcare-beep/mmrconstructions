@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 
 @Component({
   selector: 'app-investor-portal-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminTableContainerComponent, AdminPaginationComponent],
   templateUrl: './investor-portal-admin.component.html',
   styleUrls: ['./investor-portal-admin.component.css']
 })
@@ -21,6 +23,38 @@ export class AdminInvestorPortalComponent implements OnInit {
   loading = true;
   message = '';
   error = '';
+
+  page = 1;
+  pageSize = 10;
+
+  get pagedInvestors(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.investors.slice(start, start + this.pageSize);
+  }
+
+  get pagedDeposits(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.deposits.slice(start, start + this.pageSize);
+  }
+
+  get pagedWithdrawals(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.withdrawals.slice(start, start + this.pageSize);
+  }
+
+  get pagedTransactions(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.transactions.slice(start, start + this.pageSize);
+  }
+
+  onPageChange(p: number) {
+    this.page = p;
+  }
+
+  onPageSizeChange(s: number) {
+    this.pageSize = s;
+    this.page = 1;
+  }
 
   // Investor Search/Filter
   investorSearch = '';
@@ -132,6 +166,7 @@ export class AdminInvestorPortalComponent implements OnInit {
 
   switchTab(tab: string) {
     this.activeTab = tab;
+    this.page = 1;
     this.loadData();
   }
 

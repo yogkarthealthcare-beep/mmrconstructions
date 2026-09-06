@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-customer-applications-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, AdminPaginationComponent],
+  imports: [CommonModule, RouterModule, AdminPaginationComponent, AdminTableContainerComponent],
   template: `
     <div class="admin-hero-card mb-3">
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
@@ -26,7 +27,12 @@ import { AdminExportService, ExportColumn } from '../../services/admin-export.se
     </div>
     
     <div class="panel-card p-3 mb-3">
-      <div class="table-responsive">
+      <app-admin-table-container
+        *ngIf="applications.length > 0"
+        title="Customer Applications"
+        [count]="applications.length"
+        (export)="exportData('all', 'excel')">
+        <div class="table-responsive">
         <table class="table align-middle custom-dash-table mb-0">
           <thead class="bg-light">
             <tr>
@@ -70,6 +76,7 @@ import { AdminExportService, ExportColumn } from '../../services/admin-export.se
           </tbody>
         </table>
       </div>
+      </app-admin-table-container>
 
       <app-admin-pagination
         *ngIf="applications.length > 0"

@@ -6,12 +6,13 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService, BASE_URL } from '../../services/api.service';
 import { SiteToggleService } from '../../services/site-toggle.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-sites-mgmt',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AdminPaginationComponent],
+  imports: [CommonModule, FormsModule, RouterLink, AdminPaginationComponent, AdminTableContainerComponent],
   templateUrl: './sites-mgmt.component.html',
   styleUrls: ['./sites-mgmt.component.css']
 })

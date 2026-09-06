@@ -785,7 +785,8 @@ button[type="submit"][disabled] {
   font-size: 11px !important;
 }
 
-.table-responsive {
+.table-responsive,
+.admin-table-scroll {
   width: 100% !important;
   max-width: 100% !important;
   overflow-x: auto !important;
@@ -794,40 +795,197 @@ button[type="submit"][disabled] {
 }
 
 /* 
-   MOBILE VIEW FIXES (< 768px & < 576px)
+   BODY LOCK FOR FULLSCREEN TABLE OVERLAY
+ */
+body.table-fullscreen-active {
+  overflow: hidden !important;
+  touch-action: none !important;
+}
+
+/* 
+   MOBILE & TABLET RESPONSIVE SYSTEM (<= 768px, <= 480px, <= 375px)
  */
 @media (max-width: 768px) {
   .panel-shell {
-    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
   }
   
   .panel-content {
     padding: 10px 12px !important;
+    width: 100% !important;
     max-width: 100vw !important;
-    overflow-x: hidden !important;
+    box-sizing: border-box !important;
   }
 
   .panel-card {
     padding: 12px 14px !important;
     border-radius: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .admin-hero-card {
     padding: 12px 14px !important;
     border-radius: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-hero-card > div {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .admin-hero-card .ms-auto,
+  .admin-hero-card .header-actions {
+    width: 100% !important;
+    margin-left: 0 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
   }
 
   .admin-hero-badge {
     font-size: 9px !important;
     padding: 2px 6px !important;
+    white-space: normal !important;
   }
 
   .admin-hero-title {
-    font-size: 16px !important;
+    font-size: clamp(16px, 4vw, 20px) !important;
+    line-height: 1.2 !important;
+    overflow-wrap: break-word !important;
   }
 
   .admin-hero-sub {
     font-size: 11px !important;
+    line-height: 1.35 !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Universal Admin Page Header Card on Mobile (<= 768px) */
+  .pg-header,
+  .dashboard-header,
+  .booking-head,
+  .editor-head,
+  .page-header,
+  .pg-header-wrapper,
+  .pg-header-card,
+  .booking-report-header,
+  .orders-container > .page-header,
+  .enrollments-page > .page-header,
+  .investor-head,
+  .slider-head {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 14px 16px !important;
+    margin-bottom: 14px !important;
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.04) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Reset nested headers when inside an outer header card */
+  .emi-admin-head .pg-header,
+  .booking-head .pg-header,
+  .slider-head .pg-header,
+  .mobile-app-head .pg-header,
+  .detector-head .pg-header,
+  .pd2-head .pg-header,
+  .documents-head .pg-header,
+  .emi-admin-head .pg-header-wrapper {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    width: auto !important;
+  }
+
+  .pg-header > div:first-child,
+  .dashboard-header > div:first-child,
+  .booking-head > div:first-child,
+  .editor-head > div:first-child,
+  .page-header > div:first-child,
+  .pg-header-wrapper > div:first-child,
+  .pg-header-card > div:first-child,
+  .booking-report-header > div:first-child,
+  .investor-head > div:first-child,
+  .slider-head > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .pg-header h1, .pg-header h2, .pg-header h3, .pg-header h4,
+  .dashboard-header h1, .dashboard-header h2, .dashboard-header h3, .dashboard-header h4,
+  .booking-head h1, .booking-head h2, .booking-head h3, .booking-head h4,
+  .editor-head h1, .editor-head h2, .editor-head h3, .editor-head h4,
+  .page-header h1, .page-header h2, .page-header h3, .page-header h4,
+  .pg-header-wrapper h1, .pg-header-wrapper h2, .pg-header-wrapper h3, .pg-header-wrapper h4,
+  .pg-header-card h1, .pg-header-card h2, .pg-header-card h3, .pg-header-card h4,
+  .booking-report-header h4,
+  .slider-head h4 {
+    font-size: clamp(16px, 4.5vw, 19px) !important;
+    line-height: 1.25 !important;
+    margin-bottom: 4px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    word-break: break-word !important;
+  }
+
+  .pg-header p,
+  .dashboard-header p,
+  .booking-head p,
+  .editor-head p,
+  .page-header p,
+  .pg-header-wrapper p,
+  .pg-header-card p,
+  .booking-report-header p,
+  .slider-head p {
+    font-size: 11.5px !important;
+    color: #64748b !important;
+    line-height: 1.35 !important;
+    margin: 0 !important;
+    word-break: break-word !important;
+  }
+
+  .page-header .header-left {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  .pg-header .btn,
+  .dashboard-header .btn,
+  .booking-head .btn,
+  .editor-head .btn,
+  .page-header .btn,
+  .pg-header-wrapper .btn,
+  .pg-header-card .btn,
+  .booking-report-header .btn,
+  .slider-head .btn,
+  .pg-header .header-actions,
+  .dashboard-header .header-actions,
+  .booking-head .header-actions,
+  .editor-head .head-actions,
+  .page-header .header-actions,
+  .pg-header-wrapper .header-actions,
+  .booking-report-header .header-actions {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
   }
 
   /* Compact Input, Select, Textarea */
@@ -843,6 +1001,8 @@ button[type="submit"][disabled] {
     height: 32px !important;
     min-height: 32px !important;
     border-radius: 6px !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   /* Compact Buttons */
@@ -851,21 +1011,28 @@ button[type="submit"][disabled] {
   .btn-xs,
   .filter-tab {
     font-size: 11px !important;
-    padding: 4px 9px !important;
+    padding: 4px 8px !important;
     border-radius: 6px !important;
-    white-space: nowrap !important;
+    white-space: normal !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
   }
 
   /* Search Box */
   .search-box {
     width: 100% !important;
-    min-width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
     margin-top: 4px !important;
     padding: 3px 8px !important;
+    box-sizing: border-box !important;
   }
 
   .search-box input {
     width: 100% !important;
+    max-width: 100% !important;
     font-size: 12px !important;
     height: 26px !important;
   }
@@ -885,10 +1052,12 @@ button[type="submit"][disabled] {
     font-size: 11px !important;
   }
 
-  /* Mini Stat Cards in 2 columns */
+  /* Mini Stat Cards */
   .stat-mini-card {
     padding: 10px 10px !important;
     border-radius: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .stat-mini-lbl {
@@ -905,15 +1074,43 @@ button[type="submit"][disabled] {
     font-size: 12px !important;
   }
 
+  /* Category Cards (Enrollments) */
+  .category-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .category-card {
+    padding: 14px !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .category-card .card-stats-row {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .category-card .stat-pill {
+    flex: 1 1 calc(33.33% - 6px) !important;
+    min-width: 60px !important;
+    padding: 4px 6px !important;
+  }
+
   /* Table Cells */
   .table thead th {
     padding: 8px 10px !important;
     font-size: 10px !important;
+    white-space: nowrap !important;
   }
 
   .table tbody td {
     padding: 8px 10px !important;
     font-size: 11.5px !important;
+    white-space: nowrap !important;
   }
 
   /* Date Preset Buttons Wrap */
@@ -921,7 +1118,7 @@ button[type="submit"][disabled] {
     display: flex !important;
     flex-wrap: wrap !important;
     width: 100% !important;
-    gap: 2px !important;
+    gap: 3px !important;
   }
 
   .btn-group.btn-group-sm > .btn {
@@ -930,6 +1127,38 @@ button[type="submit"][disabled] {
     margin: 0 !important;
     font-size: 10.5px !important;
   }
+
+  /* Modals on Mobile */
+  .modal-dialog {
+    margin: 8px !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  .modal-body {
+    padding: 14px !important;
+    max-height: calc(100vh - 140px) !important;
+    overflow-y: auto !important;
+  }
 }
+
+@media (max-width: 480px) {
+  .panel-content {
+    padding: 8px !important;
+  }
+
+  .panel-card,
+  .admin-hero-card {
+    padding: 10px !important;
+  }
+
+  .btn-group.btn-group-sm > .btn {
+    flex: 1 1 calc(50% - 4px) !important;
+  }
+
+  .col-6 {
+    width: 50% !important;
+  }
+}
+
 
 

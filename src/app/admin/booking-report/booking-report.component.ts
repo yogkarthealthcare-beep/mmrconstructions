@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-booking-report',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminPaginationComponent],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
   templateUrl: './booking-report.component.html',
   styleUrls: ['./booking-report.component.css']
 })

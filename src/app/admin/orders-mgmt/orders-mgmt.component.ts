@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-admin-orders-mgmt',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AdminPaginationComponent],
+  imports: [CommonModule, FormsModule, RouterLink, AdminPaginationComponent, AdminTableContainerComponent],
   templateUrl: './orders-mgmt.component.html',
   styleUrls: ['./orders-mgmt.component.css']
 })

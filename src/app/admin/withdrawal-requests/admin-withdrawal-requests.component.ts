@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 import { WithdrawalApprovalDialogComponent } from './withdrawal-approval-dialog.component';
 import { WithdrawalReleaseDialogComponent } from './withdrawal-release-dialog.component';
@@ -17,6 +18,7 @@ import { WithdrawalReleaseDialogComponent } from './withdrawal-release-dialog.co
     FormsModule,
     ReactiveFormsModule,
     AdminPaginationComponent,
+    AdminTableContainerComponent,
     WithdrawalApprovalDialogComponent,
     WithdrawalReleaseDialogComponent
   ],

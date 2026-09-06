@@ -4,13 +4,14 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-investor-enrollments-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, AdminPaginationComponent],
+  imports: [CommonModule, RouterModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
   templateUrl: './admin-investor-enrollments-list.component.html',
   styleUrls: ['./admin-investor-enrollments-list.component.css']
 })

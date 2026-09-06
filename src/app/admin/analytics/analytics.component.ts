@@ -5,11 +5,12 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AdminExportService } from '../../services/admin-export.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 
 @Component({
   selector: 'app-admin-analytics',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AdminPaginationComponent],
+  imports: [CommonModule, FormsModule, RouterLink, AdminPaginationComponent, AdminTableContainerComponent],
   templateUrl: './analytics.component.html',
   styleUrls: ['./analytics.component.css']
 })

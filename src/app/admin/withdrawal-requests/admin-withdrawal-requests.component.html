@@ -1,18 +1,17 @@
 <div class="withdrawal-page-container">
-
-  <!-- PAGE HEADER -->
-  <div class="pg-header-wrapper">
-    <div class="d-flex align-items-center gap-3">
+  <!-- PAGE HEADER CARD -->
+  <div class="pg-header-card">
+    <div class="header-main-content">
       <div class="header-badge-icon">
         <i class="fas fa-hand-holding-usd"></i>
       </div>
-      <div>
+      <div class="header-text-wrap">
         <h1 class="pg-title">Withdrawal Requests Command Center</h1>
         <p class="pg-sub">Review, approve, release, or reject payout requests for Associates, Investors, and Customers.</p>
       </div>
     </div>
 
-    <div>
+    <div class="header-tag-wrap">
       <span class="security-tag">
         <i class="fas fa-shield-alt"></i> PAYOUT ENGINE ACTIVE
       </span>
@@ -146,100 +145,143 @@
       </h5>
     </div>
 
-    <div *ngIf="requests.length > 0">
-      <table class="table-withdrawal" style="table-layout: fixed; width: 100%;">
-        <thead>
-          <tr>
-            <th class="ps-4 th-sno" style="width: 5%;">#</th>
-            <th style="width: 11%;">Request ID</th>
-            <th style="width: 19%;">User Details</th>
-            <th style="width: 11%;">Role</th>
-            <th class="text-end" style="width: 13%;">Amount</th>
-            <th style="width: 15%;">Bank / UPI Details</th>
-            <th style="width: 12%;">Status</th>
-            <th style="width: 14%;">Requested Date</th>
-            <th class="text-end pe-4" style="width: 15%;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let r of pagedRequests; let i = index">
-            <td class="ps-4 fw-semibold text-muted fs-13 td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td>
-              <span class="font-monospace text-muted fs-12 fw-bold text-truncate d-block" [title]="'#' + r.id">#{{ r.id.slice(0, 8) }}</span>
-            </td>
-            <td>
-              <div class="d-flex align-items-center gap-2" style="overflow: hidden;">
-                <div class="user-avatar-chip">
-                  {{ getInitials(r.user_name) }}
-                </div>
-                <div style="min-width: 0;">
-                  <div class="user-name-title text-truncate" [title]="r.user_name || 'Valued User'">{{ r.user_name || 'Valued User' }}</div>
-                  <div class="user-contact-sub text-truncate" [title]="r.user_mobile || r.user_email || '—'">{{ r.user_mobile || r.user_email || '—' }}</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <span class="role-badge-pill" [ngClass]="{
-                'role-associate': r.user_role === 'Associate',
-                'role-investor': r.user_role === 'Investor',
-                'role-customer': r.user_role === 'Customer' || !r.user_role
-              }">
-                {{ r.user_role || 'User' }}
-              </span>
-            </td>
-            <td class="text-end text-nowrap">
-              <span class="fw-bold text-danger fs-14">− ₹{{ r.amount | number:'1.2-2' }}</span>
-            </td>
-            <td style="position: relative;">
-              <div class="dropdown">
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle fs-12 py-1 px-2" type="button" (click)="toggleDropdown(r, $event)">
-                  <i class="fas fa-eye me-1"></i> View Details
-                </button>
-                <div class="dropdown-menu p-3 shadow-sm" [class.show]="r.showDropdown" style="min-width: 250px; position: absolute; z-index: 1000; left: 0; top: 100%; display: block;" *ngIf="r.showDropdown">
-                  <h6 class="dropdown-header px-0 text-dark fw-bold border-bottom pb-2 mb-2"><i class="fas fa-university me-1 text-muted"></i>{{ r.bank_name || 'Bank' }}</h6>
-                  
-                  <div class="d-flex justify-content-between align-items-center mb-2 fs-12">
-                    <span class="text-muted">A/C: <span class="fw-semibold text-dark">{{ r.bank_account_number || '-' }}</span></span>
-                    <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.bank_account_number)" title="Copy A/C"><i class="far fa-copy"></i></button>
+    <app-admin-table-container
+      *ngIf="requests.length > 0"
+      title="Payout Submissions"
+      [count]="requests.length"
+      (export)="exportData('all', 'excel')">
+      <div class="table-responsive">
+        <table class="table-withdrawal">
+          <thead>
+            <tr>
+              <th class="ps-4 th-sno">#</th>
+              <th>Request ID</th>
+              <th>User Details</th>
+              <th>Role</th>
+              <th class="text-end">Amount</th>
+              <th>Bank / UPI Details</th>
+              <th>Status</th>
+              <th>Requested Date</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of pagedRequests; let i = index">
+              <td class="ps-4 fw-semibold text-muted fs-13 td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
+              <td>
+                <span class="font-monospace text-muted fs-12 fw-bold text-truncate d-block" [title]="'#' + r.id">#{{ r.id.slice(0, 8) }}</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2" style="overflow: hidden;">
+                  <div class="user-avatar-chip">
+                    {{ getInitials(r.user_name) }}
                   </div>
-                  
-                  <div class="d-flex justify-content-between align-items-center mb-2 fs-12">
-                    <span class="text-muted">IFSC: <span class="fw-semibold text-dark">{{ r.ifsc_code || '-' }}</span></span>
-                    <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.ifsc_code)" title="Copy IFSC"><i class="far fa-copy"></i></button>
+                  <div style="min-width: 0;">
+                    <div class="user-name-title text-truncate" [title]="r.user_name || 'Valued User'">{{ r.user_name || 'Valued User' }}</div>
+                    <div class="user-contact-sub text-truncate" [title]="r.user_mobile || r.user_email || '—'">{{ r.user_mobile || r.user_email || '—' }}</div>
                   </div>
+                </div>
+              </td>
+              <td>
+                <span class="role-badge-pill" [ngClass]="{
+                  'role-associate': r.user_role === 'Associate',
+                  'role-investor': r.user_role === 'Investor',
+                  'role-customer': r.user_role === 'Customer' || !r.user_role
+                }">
+                  {{ r.user_role || 'User' }}
+                </span>
+              </td>
+              <td class="text-end text-nowrap">
+                <span class="fw-bold text-danger fs-14">− ₹{{ r.amount | number:'1.2-2' }}</span>
+              </td>
+              <td style="position: relative;">
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle fs-12 py-1 px-2" type="button" (click)="toggleDropdown(r, $event)">
+                    <i class="fas fa-eye me-1"></i> View Details
+                  </button>
+                  <div class="dropdown-menu p-3 shadow-sm" [class.show]="r.showDropdown" style="min-width: 250px; position: absolute; z-index: 1000; left: 0; top: 100%; display: block;" *ngIf="r.showDropdown">
+                    <h6 class="dropdown-header px-0 text-dark fw-bold border-bottom pb-2 mb-2"><i class="fas fa-university me-1 text-muted"></i>{{ r.bank_name || 'Bank' }}</h6>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2 fs-12">
+                      <span class="text-muted">A/C: <span class="fw-semibold text-dark">{{ r.bank_account_number || '-' }}</span></span>
+                      <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.bank_account_number)" title="Copy A/C"><i class="far fa-copy"></i></button>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2 fs-12">
+                      <span class="text-muted">IFSC: <span class="fw-semibold text-dark">{{ r.ifsc_code || '-' }}</span></span>
+                      <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.ifsc_code)" title="Copy IFSC"><i class="far fa-copy"></i></button>
+                    </div>
 
-                  <div *ngIf="r.upi_id" class="d-flex justify-content-between align-items-center mb-2 fs-12 border-top pt-2 mt-2">
-                    <span class="text-primary fw-semibold"><i class="fas fa-mobile-alt me-1"></i>UPI: {{ r.upi_id }}</span>
-                    <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.upi_id)" title="Copy UPI"><i class="far fa-copy"></i></button>
-                  </div>
-                  
-                  <div *ngIf="r.payout_reference_id" class="d-flex justify-content-between align-items-center mb-0 fs-12 border-top pt-2 mt-2">
-                    <span class="text-success fw-bold"><i class="fas fa-hashtag me-1"></i>Ref: {{ r.payout_reference_id }}</span>
-                    <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.payout_reference_id)" title="Copy Ref"><i class="far fa-copy"></i></button>
+                    <div *ngIf="r.upi_id" class="d-flex justify-content-between align-items-center mb-2 fs-12 border-top pt-2 mt-2">
+                      <span class="text-primary fw-semibold"><i class="fas fa-mobile-alt me-1"></i>UPI: {{ r.upi_id }}</span>
+                      <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.upi_id)" title="Copy UPI"><i class="far fa-copy"></i></button>
+                    </div>
+                    
+                    <div *ngIf="r.payout_reference_id" class="d-flex justify-content-between align-items-center mb-0 fs-12 border-top pt-2 mt-2">
+                      <span class="text-success fw-bold"><i class="fas fa-hashtag me-1"></i>Ref: {{ r.payout_reference_id }}</span>
+                      <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.payout_reference_id)" title="Copy Ref"><i class="far fa-copy"></i></button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <span class="status-badge" [ngClass]="{
-                'status-pending': r.status === 'pending',
-                'status-approved': r.status === 'approved',
-                'status-released': r.status === 'released',
-                'status-rejected': r.status === 'rejected',
-                'status-failed': r.status === 'failed',
-                'status-cancelled': r.status === 'cancelled'
-              }">
-                {{ r.status | uppercase }}
-              </span>
-            </td>
-            <td class="text-nowrap">
-              <div class="fs-12 fw-semibold text-dark">{{ r.created_at | date:'dd MMM yyyy' }}</div>
-              <div class="fs-11 text-muted">{{ r.created_at | date:'hh:mm a' }}</div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="{
+                  'status-pending': r.status === 'pending',
+                  'status-approved': r.status === 'approved',
+                  'status-released': r.status === 'released',
+                  'status-rejected': r.status === 'rejected',
+                  'status-failed': r.status === 'failed',
+                  'status-cancelled': r.status === 'cancelled'
+                }">
+                  {{ r.status | uppercase }}
+                </span>
+              </td>
+              <td class="text-nowrap">
+                <div class="fs-12 fw-semibold text-dark">{{ r.created_at | date:'dd MMM yyyy' }}</div>
+                <div class="fs-11 text-muted">{{ r.created_at | date:'hh:mm a' }}</div>
+              </td>
+              <td class="text-center text-nowrap pe-4">
+                <div class="d-flex align-items-center justify-content-center gap-1">
+
+                  <!-- Quick Approve Button -->
+                  <button
+                    *ngIf="r.status === 'pending'"
+                    class="action-btn-micro btn-approve-emerald"
+                    (click)="openApprove(r)"
+                    title="Approve Request">
+                    <i class="fas fa-check"></i> Approve
+                  </button>
+
+                  <!-- Quick Release Button -->
+                  <button
+                    *ngIf="r.status === 'approved' || r.status === 'pending'"
+                    class="action-btn-micro btn-release-blue"
+                    (click)="openRelease(r)"
+                    title="Release Funds">
+                    <i class="fas fa-paper-plane"></i> Release
+                  </button>
+
+                  <!-- Quick Reject Button -->
+                  <button
+                    *ngIf="r.status === 'pending' || r.status === 'approved'"
+                    class="action-btn-micro btn-reject-red"
+                    (click)="openReject(r)"
+                    title="Reject Request">
+                    <i class="fas fa-times"></i> Reject
+                  </button>
+
+                  <!-- View Details Link -->
+                  <a [routerLink]="['/admin/withdrawal-requests', r.id]" class="btn-icon-only" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </a>
+
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </app-admin-table-container>
 
     <!-- EMPTY STATE -->
     <div *ngIf="requests.length === 0" class="py-5 text-center">

@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-admin-wallet-transactions',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminPaginationComponent],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
   template: `
     <div class="fintech-dashboard">
       <!-- Page Header -->
@@ -145,61 +146,67 @@ import { AdminExportService, ExportColumn } from '../../services/admin-export.se
 
       <!-- Transactions Table -->
       <div class="table-card" *ngIf="!loading && !errorMsg">
-        <div class="table-responsive">
-          <table class="table mb-0 text-nowrap" style="table-layout: fixed; width: 100%;">
-            <thead>
-              <tr>
-                <th class="ps-4 th-sno" style="width: 5%;">#</th>
-                <th style="width: 17%;">User Details</th>
-                <th style="width: 25%;">Transaction Details</th>
-                <th class="text-end" style="width: 12%;">Amount</th>
-                <th class="text-end" style="width: 13%;">Balance After</th>
-                <th class="text-center" style="width: 12%;">Status</th>
-                <th style="width: 16%;">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let t of pagedTransactions; let i = index">
-                <td class="ps-4 fw-semibold td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-                <td>
-                  <div class="fw-bold text-dark" style="word-break: break-all;">{{ t.user_name || 'User #' + t.user_id }}</div>
-                  <div class="text-muted fs-12 mb-1" style="word-break: break-all;">{{ t.user_email || t.user_mobile }}</div>
-                  <span class="badge-role">{{ t.user_role }}</span>
-                </td>
-                <td>
-                  <div class="fw-bold text-primary fs-13 mb-1" style="word-break: break-all;">{{ t.payment_order_id || t.id }}</div>
-                  <div class="d-flex align-items-center gap-1 flex-wrap">
-                    <span [class]="isCredit(t) ? 'badge-pill bg-success-soft text-success' : 'badge-pill bg-danger-soft text-danger'">
-                      {{ (t.transaction_type || (isCredit(t) ? 'credit' : 'debit')) | uppercase }}
+        <app-admin-table-container
+          *ngIf="transactions.length > 0"
+          title="Wallet Transactions"
+          [count]="transactions.length"
+          (export)="exportData('all', 'excel')">
+          <div class="table-responsive">
+            <table class="table mb-0 text-nowrap">
+              <thead>
+                <tr>
+                  <th class="ps-4 th-sno">#</th>
+                  <th>User Details</th>
+                  <th>Transaction Details</th>
+                  <th class="text-end">Amount</th>
+                  <th class="text-end">Balance After</th>
+                  <th class="text-center">Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let t of pagedTransactions; let i = index">
+                  <td class="ps-4 fw-semibold td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
+                  <td>
+                    <div class="fw-bold text-dark" style="word-break: break-all;">{{ t.user_name || 'User #' + t.user_id }}</div>
+                    <div class="text-muted fs-12 mb-1" style="word-break: break-all;">{{ t.user_email || t.user_mobile }}</div>
+                    <span class="badge-role">{{ t.user_role }}</span>
+                  </td>
+                  <td>
+                    <div class="fw-bold text-primary fs-13 mb-1" style="word-break: break-all;">{{ t.payment_order_id || t.id }}</div>
+                    <div class="d-flex align-items-center gap-1 flex-wrap">
+                      <span [class]="isCredit(t) ? 'badge-pill bg-success-soft text-success' : 'badge-pill bg-danger-soft text-danger'">
+                        {{ (t.transaction_type || (isCredit(t) ? 'credit' : 'debit')) | uppercase }}
+                      </span>
+                      <span class="badge-pill bg-gray-soft text-gray">{{ t.source }}</span>
+                      <span class="badge-pill bg-gray-soft text-gray text-capitalize">{{ t.payment_gateway || 'Internal' }}</span>
+                    </div>
+                    <div class="text-muted fs-11 mt-1" *ngIf="t.payment_transaction_id">Txn: <span class="font-monospace">{{ t.payment_transaction_id }}</span></div>
+                  </td>
+                  <td class="text-end font-monospace fw-bold fs-14" [class.text-success]="isCredit(t)" [class.text-danger]="!isCredit(t)">
+                    {{ isCredit(t) ? '+' : '−' }} ₹{{ (t.amount < 0 ? -t.amount : t.amount) | number:'1.2-2' }}
+                  </td>
+                  <td class="text-end font-monospace fw-bold text-dark fs-13">
+                    ₹{{ t.balance_after | number:'1.2-2' }}
+                  </td>
+                  <td class="text-center">
+                    <span class="badge-status" [ngClass]="{
+                      'status-success': t.status === 'success',
+                      'status-pending': t.status === 'pending',
+                      'status-failed': t.status === 'failed' || t.status === 'cancelled'
+                    }" style="width: 75px; text-align: center;">
+                      {{ t.status | uppercase }}
                     </span>
-                    <span class="badge-pill bg-gray-soft text-gray">{{ t.source }}</span>
-                    <span class="badge-pill bg-gray-soft text-gray text-capitalize">{{ t.payment_gateway || 'Internal' }}</span>
-                  </div>
-                  <div class="text-muted fs-11 mt-1" *ngIf="t.payment_transaction_id">Txn: <span class="font-monospace">{{ t.payment_transaction_id }}</span></div>
-                </td>
-                <td class="text-end font-monospace fw-bold fs-14" [class.text-success]="isCredit(t)" [class.text-danger]="!isCredit(t)">
-                  {{ isCredit(t) ? '+' : '−' }} ₹{{ (t.amount < 0 ? -t.amount : t.amount) | number:'1.2-2' }}
-                </td>
-                <td class="text-end font-monospace fw-bold text-dark fs-13">
-                  ₹{{ t.balance_after | number:'1.2-2' }}
-                </td>
-                <td class="text-center">
-                  <span class="badge-status" [ngClass]="{
-                    'status-success': t.status === 'success',
-                    'status-pending': t.status === 'pending',
-                    'status-failed': t.status === 'failed' || t.status === 'cancelled'
-                  }" style="width: 75px; text-align: center;">
-                    {{ t.status | uppercase }}
-                  </span>
-                </td>
-                <td>
-                  <div class="fw-semibold text-dark fs-13">{{ t.created_at | date:'MMM dd, yyyy' }}</div>
-                  <div class="text-muted fs-12">{{ t.created_at | date:'hh:mm a' }}</div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  </td>
+                  <td>
+                    <div class="fw-semibold text-dark fs-13">{{ t.created_at | date:'MMM dd, yyyy' }}</div>
+                    <div class="text-muted fs-12">{{ t.created_at | date:'hh:mm a' }}</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </app-admin-table-container>
 
         <!-- Empty State -->
         <div *ngIf="transactions.length === 0" class="text-center py-5">
@@ -250,7 +257,19 @@ import { AdminExportService, ExportColumn } from '../../services/admin-export.se
       color: var(--ft-text-main);
     }
 
-    /* Header */
+    /* Header Card */
+    .dashboard-header {
+      background: var(--ft-card-bg);
+      border: 1px solid var(--ft-border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--ft-shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
     .btn-elevated {
       background-color: var(--ft-primary);
       color: white;
@@ -265,6 +284,20 @@ import { AdminExportService, ExportColumn } from '../../services/admin-export.se
       background-color: var(--ft-primary-hover);
       transform: translateY(-1px);
       box-shadow: var(--ft-shadow-hover);
+    }
+    @media (max-width: 576px) {
+      .dashboard-header {
+        padding: 1rem;
+        border-radius: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .dashboard-header .btn-elevated {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
 
     /* Stat Cards */
@@ -351,6 +384,10 @@ import { AdminExportService, ExportColumn } from '../../services/admin-export.se
       border-radius: 12px;
       box-shadow: var(--ft-shadow);
       overflow: hidden;
+    }
+    .table {
+      min-width: 900px;
+      width: 100%;
     }
     .table > thead {
       background-color: #F8FAFC;

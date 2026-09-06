@@ -3,11 +3,13 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 
 @Component({
   selector: 'app-emi-calculator-mgmt',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminTableContainerComponent, AdminPaginationComponent],
   templateUrl: './emi-calculator-mgmt.component.html',
   styleUrls: ['./emi-calculator-mgmt.component.css']
 })
@@ -193,6 +195,16 @@ export class EmiCalculatorMgmtComponent implements OnInit {
   setPage(next: number) {
     if (next < 1 || next > this.totalPages) return;
     this.page = next;
+    this.loadPlans();
+  }
+
+  onPageChange(p: number) {
+    this.setPage(p);
+  }
+
+  onPageSizeChange(s: number) {
+    this.limit = s;
+    this.page = 1;
     this.loadPlans();
   }
 

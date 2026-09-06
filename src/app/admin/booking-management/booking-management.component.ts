@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 
 @Component({
   selector: 'app-booking-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AdminPaginationComponent],
+  imports: [CommonModule, ReactiveFormsModule, AdminPaginationComponent, AdminTableContainerComponent],
   templateUrl: './booking-management.component.html',
   styleUrls: ['./booking-management.component.css'],
 })

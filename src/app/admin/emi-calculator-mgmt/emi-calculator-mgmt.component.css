@@ -21,28 +21,71 @@
   color: #991b1b;
 }
 
+.header-icon-badge {
+  width: 40px;
+  height: 40px;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+  border: 1px solid #dcfce7;
+  margin-right: 6px;
+}
+
 .emi-admin-head {
-  align-items: flex-start;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: none !important;
   display: flex;
   gap: 16px;
   justify-content: space-between;
   margin-bottom: 18px;
+  padding: 16px 20px;
 }
 
-.emi-admin-head .pg-header {
-  margin-bottom: 0;
+.emi-admin-head h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.emi-admin-head p {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-top: 3px;
 }
 
 .emi-admin-grid {
   display: grid;
   gap: 18px;
   grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.emi-form-card,
+.emi-list-card {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .emi-form {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .emi-form label {
@@ -51,12 +94,32 @@
   flex-direction: column;
   font-size: 12px;
   gap: 5px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.f-input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .emi-form label:first-child,
 .calc-preview,
 .form-actions {
   grid-column: 1 / -1;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
 .readonly {
@@ -70,6 +133,8 @@
   flex-direction: row !important;
   gap: 8px !important;
   padding: 10px 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .calc-preview {
@@ -80,6 +145,8 @@
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .calc-preview div {
@@ -114,27 +181,14 @@
   text-align: left;
 }
 
+.custom-dash-table {
+  min-width: 750px;
+}
+
 .emi-table td,
 .emi-table th {
   vertical-align: middle;
-}
-
-.pagination-row {
-  align-items: center;
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
-  margin-top: 12px;
-}
-
-.pagination-row span {
-  color: var(--txt-muted);
-  font-size: 12px;
-}
-
-.pagination-row div {
-  display: flex;
-  gap: 8px;
+  white-space: nowrap;
 }
 
 @media (max-width: 1100px) {
@@ -143,15 +197,59 @@
   }
 }
 
-@media (max-width: 720px) {
-  .emi-admin-head,
-  .pagination-row {
-    align-items: stretch;
-    flex-direction: column;
+@media (max-width: 768px) {
+  .emi-admin-head {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    margin-bottom: 12px !important;
+    gap: 12px !important;
+    box-shadow: none !important;
   }
 
-  .emi-form,
+  .emi-admin-head h4 {
+    font-size: 1.15rem !important;
+  }
+
+  .emi-admin-head .btn {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+  }
+
+  .emi-form-card,
+  .emi-list-card {
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .emi-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .form-actions .btn {
+    width: 100% !important;
+    padding: 8px !important;
+    font-size: 12px !important;
+  }
+
   .emi-filters {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .emi-filters .btn {
+    width: 100% !important;
   }
 }
