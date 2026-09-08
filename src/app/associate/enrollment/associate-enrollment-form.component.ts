@@ -10,6 +10,7 @@ import { selectLoading, selectSuccess, selectAssociateId, selectError } from './
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
+import { MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN } from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-associate-enrollment-form',
@@ -31,15 +32,16 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   associateId$ = this.store.select(selectAssociateId);
   error$ = this.store.select(selectError);
 
-  isSubmitted = false;
-  submissionAssociateId = '';
+  // Read-only state for already submitted user
+  isSubmitted: boolean = false;
+  submissionAssociateId: string | null = null;
   existingApplicantPhoto = '';
   existingNomineePhoto = '';
 
   ifscLoading = false;
   ifscSuccess = false;
   ifscError = '';
-  printing = false;
+  printing: boolean = false;
   private ifscCache = new Map<string, any>();
 
   // Signal to drive the T&C checkboxes computed state
@@ -71,7 +73,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.store.dispatch(resetFormState());
     this.initForm();
-    this.checkExistingEnrollment();
+    this.checkSubmissionStatus();
 
     // Listen to changes in terms and update the signal
     const termsGroup = this.enrollmentForm.get('termsAndConditions');
@@ -108,29 +110,29 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     );
   }
 
-  checkExistingEnrollment() {
+  checkSubmissionStatus() {
     this.api.getMyAssociateEnrollment().subscribe({
       next: (res: any) => {
         if (res && res.success && res.data) {
           const d = res.data;
           this.isSubmitted = true;
-          this.submissionAssociateId = d.associate_id || '';
+          this.submissionAssociateId = d.associate_id || d.associateId || null;
           this.auth.setEnrollmentCompleted();
 
           this.enrollmentForm.patchValue({
             personalDetails: {
               fullName: d.full_name || d.fullName || '',
-              dob: d.dob ? new Date(d.dob).toISOString().split('T')[0] : '',
+              dob: (d.date_of_birth || d.dob) ? new Date(d.date_of_birth || d.dob).toISOString().split('T')[0] : '',
               gender: d.gender || '',
               fatherName: d.father_name || d.fatherName || '',
               motherName: d.mother_name || d.motherName || '',
               spouseName: d.spouse_name || d.spouseName || '',
-              contact1: d.contact_1 || d.contact1 || d.contact_no_1 || '',
-              contact2: d.contact_2 || d.contact2 || d.contact_no_2 || '',
+              contact1: d.contact_primary || d.contact1 || '',
+              contact2: d.contact_secondary || d.contact2 || '',
               nationality: d.nationality || 'Indian',
               residentialStatus: d.residential_status || d.residentialStatus || '',
-              panNo: d.pan_no || d.panNo || '',
-              aadharNo: d.aadhar_no || d.aadharNo || '',
+              panNo: d.pan_number || d.panNo || '',
+              aadharNo: d.aadhar_number || d.aadharNo || '',
               email: d.email || '',
               occupation: d.occupation || '',
               annualIncome: d.annual_income || d.annualIncome || '',
@@ -139,27 +141,27 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
               religion: d.religion || ''
             },
             addressDetails: {
-              permAddress: d.perm_address || d.permAddress || '',
+              permAddress: d.perm_address_line1 || d.permAddress || '',
               permCity: d.perm_city || d.permCity || '',
               permState: d.perm_state || d.permState || '',
               permCountry: d.perm_country || d.permCountry || 'India',
-              permPin: d.perm_pin || d.permPin || '',
-              sameAsPerm: !!(d.perm_address && d.local_address && (d.perm_address || '').trim() === (d.local_address || '').trim()),
-              localAddress: d.local_address || d.localAddress || '',
+              permPin: d.perm_pincode || d.permPin || '',
+              sameAsPerm: !!(d.perm_address_line1 && d.local_address_line1 && d.perm_address_line1 === d.local_address_line1),
+              localAddress: d.local_address_line1 || d.localAddress || '',
               localCity: d.local_city || d.localCity || '',
               localState: d.local_state || d.localState || '',
               localCountry: d.local_country || d.localCountry || 'India',
-              localPin: d.local_pin || d.localPin || ''
+              localPin: d.local_pincode || d.localPin || ''
             },
             bankDetails: {
               bankName: d.bank_name || d.bankName || '',
-              accHolder: d.acc_holder || d.accHolder || d.acc_holder_name || d.account_holder_name || '',
-              accNo: d.acc_no || d.accNo || d.account_no || '',
-              ifsc: d.ifsc || d.ifsc_code || d.ifscCode || '',
-              micr: d.micr || d.micr_code || d.micrCode || '',
+              accHolder: d.account_holder_name || d.accHolder || '',
+              accNo: d.account_number || d.accNo || '',
+              ifsc: d.ifsc_code || d.ifsc || '',
+              micr: d.micr_code || d.micr || '',
               branchName: d.branch_name || d.branchName || '',
               branchCode: d.branch_code || d.branchCode || '',
-              swift: d.swift || d.swift_code || d.swiftCode || '',
+              swift: d.swift_code || d.swift || '',
               branchCountry: d.branch_country || d.branchCountry || 'India'
             },
             nomineeDetails: {
@@ -219,13 +221,13 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         fatherName: [''],
         motherName: [''],
         spouseName: [''],
-        contact1: ['', [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]],
-        contact2: ['', Validators.pattern(/^[0-9]{10,15}$/)],
+        contact1: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
+        contact2: ['', [Validators.pattern(MOBILE_PATTERN)]],
         nationality: ['Indian'],
         residentialStatus: [''],
         panNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/)]],
-        aadharNo: ['', [Validators.required, Validators.pattern(/^[0-9]{12}$/)]],
-        email: ['', Validators.email],
+        aadharNo: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
+        email: ['', [Validators.pattern(EMAIL_PATTERN)]],
         occupation: [''],
         annualIncome: [''],
         education: [''],
@@ -266,13 +268,13 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         nomineePanName: [''],
         nomineePanNo: ['', Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/)],
         nomineeAadharName: [''],
-        nomineeAadharNo: ['', Validators.pattern(/^[0-9]{12}$/)],
+        nomineeAadharNo: ['', [Validators.pattern(AADHAAR_PATTERN)]],
         nomineeAddress: ['']
       }),
       sponsorDetails: this.fb.group({
         sponsorName: [''],
         sponsorCode: [''],
-        sponsorContact: ['', Validators.pattern(/^[0-9]{10,15}$/)]
+        sponsorContact: ['', [Validators.pattern(MOBILE_PATTERN)]]
       }),
       termsAndConditions: this.fb.group({
         tc1: [false, Validators.requiredTrue],

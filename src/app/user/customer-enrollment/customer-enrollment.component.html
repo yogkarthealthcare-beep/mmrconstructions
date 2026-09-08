@@ -74,11 +74,11 @@
       </div>
       <div class="row2">
         <div class="field"><label>Size / Area</label><input type="text" formControlName="sizeArea"></div>
-        <div class="field"><label>Rate (per Sq. Ft./Yd.)</label><input type="number" formControlName="rate"></div>
+        <div class="field"><label>Rate (per Sq. Ft./Yd.)</label><input type="text" inputmode="numeric" formControlName="rate"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>Basic Sale Price (BSP)</label><input type="number" formControlName="bsp"></div>
-        <div class="field"><label>PLC / Dev. Charges</label><input type="number" formControlName="plcDev"></div>
+        <div class="field"><label>Basic Sale Price (BSP)</label><input type="text" inputmode="numeric" formControlName="bsp"></div>
+        <div class="field"><label>PLC / Dev. Charges</label><input type="text" inputmode="numeric" formControlName="plcDev"></div>
       </div>
       <div class="field"><label style="color:#b3261e;">Total Property Value (₹)</label>
         <input type="number" [value]="totalPropertyValue" disabled style="background:#f2f6fb; padding:8px;">
@@ -100,7 +100,7 @@
 
       <div class="row2">
         <div class="field"><label>Date of Birth</label><input type="date" formControlName="dob"></div>
-        <div class="field"><label>Age</label><input type="number" min="18" formControlName="age"></div>
+        <div class="field"><label>Age (Auto-calculated)</label><input type="number" formControlName="age" readonly style="background:#f8f9fa;"></div>
       </div>
 
       <fieldset class="inline-choices">
@@ -134,7 +134,7 @@
 
       <div class="row2">
         <div class="field"><label>PAN No.</label><input type="text" formControlName="pan" maxlength="10" style="text-transform:uppercase"></div>
-        <div class="field"><label>Aadhar No.</label><input type="text" formControlName="aadhar" maxlength="12"></div>
+        <div class="field"><label>Aadhar No. (12 Digits)</label><input type="text" formControlName="aadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>
       </div>
       <div class="field"><label>Occupation</label><input type="text" formControlName="occupation"></div>
 
@@ -158,10 +158,10 @@
       </div>
 
       <div class="row2">
-        <div class="field"><label>Mobile No. 1 <span class="text-danger">*</span></label><input type="tel" formControlName="mobile1" required></div>
-        <div class="field"><label>Mobile No. 2</label><input type="tel" formControlName="mobile2"></div>
+        <div class="field"><label>Mobile No. 1 <span class="text-danger">*</span></label><input type="tel" formControlName="mobile1" maxlength="10" placeholder="10-digit Mobile No." required></div>
+        <div class="field"><label>Mobile No. 2</label><input type="tel" formControlName="mobile2" maxlength="10" placeholder="10-digit Mobile No."></div>
       </div>
-      <div class="field"><label>Email ID</label><input type="email" formControlName="email1"></div>
+      <div class="field"><label>Email ID</label><input type="email" formControlName="email1" placeholder="example@email.com"></div>
     </section>
 
     <!-- ============ 3. CO-APPLICANT DETAILS ============ -->
@@ -180,7 +180,7 @@
 
       <div class="row2">
         <div class="field"><label>Date of Birth</label><input type="date" formControlName="coDob"></div>
-        <div class="field"><label>Age</label><input type="number" formControlName="coAge"></div>
+        <div class="field"><label>Age (Auto-calculated)</label><input type="number" formControlName="coAge" readonly style="background:#f8f9fa;"></div>
       </div>
 
       <fieldset class="inline-choices">
@@ -194,13 +194,13 @@
 
       <div class="row2">
         <div class="field"><label>PAN No.</label><input type="text" formControlName="coPan" maxlength="10" style="text-transform:uppercase"></div>
-        <div class="field"><label>Aadhar No.</label><input type="text" formControlName="coAadhar" maxlength="12"></div>
+        <div class="field"><label>Aadhar No. (12 Digits)</label><input type="text" formControlName="coAadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>
       </div>
 
       <div class="field"><label>Present Address</label><textarea formControlName="coPresentAddress" rows="2"></textarea></div>
       <div class="row2">
-        <div class="field"><label>Mobile No.</label><input type="tel" formControlName="coMobile"></div>
-        <div class="field"><label>Email ID</label><input type="email" formControlName="coEmail"></div>
+        <div class="field"><label>Mobile No.</label><input type="tel" formControlName="coMobile" maxlength="10" placeholder="10-digit Mobile No."></div>
+        <div class="field"><label>Email ID</label><input type="email" formControlName="coEmail" placeholder="example@email.com"></div>
       </div>
     </section>
 
@@ -215,7 +215,7 @@
           </div>
           <div class="row2">
             <div class="field"><label>Age / DOB</label><input type="text" formControlName="nomineeAgeDob"></div>
-            <div class="field"><label>Aadhar No.</label><input type="text" formControlName="nomineeAadhar" maxlength="12"></div>
+            <div class="field"><label>Aadhar No. (12 Digits)</label><input type="text" formControlName="nomineeAadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>
           </div>
         </div>
       </div>
@@ -225,8 +225,8 @@
     <section class="block">
       <h2>5. Payment Details (Initial Booking Amount)</h2>
       <div class="row2">
-        <div class="field"><label>Booking Amount Paid (₹)</label><input type="number" formControlName="bookingAmount"></div>
-        <div class="field"><label>In Words</label><input type="text" formControlName="bookingAmountWords"></div>
+        <div class="field"><label>Booking Amount Paid (₹)</label><input type="text" inputmode="numeric" formControlName="bookingAmount" placeholder="Enter Booking Amount"></div>
+        <div class="field"><label>In Words (Auto-filled)</label><input type="text" formControlName="bookingAmountWords" readonly style="background:#f8f9fa; font-weight: 500;" placeholder="Amount in words"></div>
       </div>
 
       <fieldset class="inline-choices">
@@ -273,7 +273,7 @@
         <div class="field"><label>Associate Name</label><input type="text" formControlName="associateName"></div>
         <div class="field"><label>Associate ID</label><input type="text" formControlName="associateId"></div>
       </div>
-      <div class="field"><label>Mobile Number</label><input type="tel" formControlName="associateMobile"></div>
+      <div class="field"><label>Mobile Number</label><input type="tel" formControlName="associateMobile" maxlength="10" placeholder="10-digit Mobile No."></div>
       <div class="field"><label>Signature</label><input type="text" formControlName="associateSignatureName" placeholder="Type name as signature"></div>
     </section>
 

@@ -5,6 +5,7 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { calculateAgeFromDob, numberToIndianWords, MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN } from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-customer-enrollment',
@@ -63,8 +64,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       blockTower: [''],
       sizeArea: [''],
       rate: [''],
-      bsp: [0],
-      plcDev: [0],
+      bsp: [''],
+      plcDev: [''],
       
       applicantName: ['', Validators.required],
       fhName: [''],
@@ -75,7 +76,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       nationality: [''],
       nationalityOther: [{ value: '', disabled: true }],
       pan: [''],
-      aadhar: [''],
+      aadhar: ['', [Validators.pattern(AADHAAR_PATTERN)]],
       occupation: [''],
       presentAddress: [''],
       presentCity: [''],
@@ -84,9 +85,9 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       permanentAddress: [''],
       permanentCity: [''],
       permanentStatePin: [''],
-      mobile1: ['', Validators.required],
-      mobile2: [''],
-      email1: [''],
+      mobile1: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
+      mobile2: ['', [Validators.pattern(MOBILE_PATTERN)]],
+      email1: ['', [Validators.pattern(EMAIL_PATTERN)]],
       
       coApplicantName: [''],
       coFhName: [''],
@@ -95,10 +96,10 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       coAge: [''],
       coGender: [''],
       coPan: [''],
-      coAadhar: [''],
+      coAadhar: ['', [Validators.pattern(AADHAAR_PATTERN)]],
       coPresentAddress: [''],
-      coMobile: [''],
-      coEmail: [''],
+      coMobile: ['', [Validators.pattern(MOBILE_PATTERN)]],
+      coEmail: ['', [Validators.pattern(EMAIL_PATTERN)]],
       
       nominees: this.fb.array([this.createNomineeGroup()]),
       
@@ -116,7 +117,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       
       associateName: [''],
       associateId: [''],
-      associateMobile: [''],
+      associateMobile: ['', [Validators.pattern(MOBILE_PATTERN)]],
       associateSignatureName: [''],
       
       appStatus: [{ value: 'Hold/Pending KYC', disabled: true }],
@@ -126,6 +127,29 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       authorizedSignatory: [{ value: '', disabled: true }],
       
       declarationCheck: [false, Validators.requiredTrue]
+    });
+
+    // Auto-calculate Age on First Applicant DOB change
+    this.enrollmentForm.get('dob')?.valueChanges.subscribe(val => {
+      const calculatedAge = calculateAgeFromDob(val);
+      this.enrollmentForm.get('age')?.setValue(calculatedAge, { emitEvent: false });
+    });
+
+    // Auto-calculate Age on Co-Applicant DOB change
+    this.enrollmentForm.get('coDob')?.valueChanges.subscribe(val => {
+      const calculatedAge = calculateAgeFromDob(val);
+      this.enrollmentForm.get('coAge')?.setValue(calculatedAge, { emitEvent: false });
+    });
+
+    // Auto-convert Booking Amount to Words (and prevent negative values)
+    this.enrollmentForm.get('bookingAmount')?.valueChanges.subscribe(val => {
+      if (val !== null && val !== undefined && String(val).includes('-')) {
+        const positiveVal = String(val).replace(/-/g, '');
+        this.enrollmentForm.get('bookingAmount')?.setValue(positiveVal, { emitEvent: false });
+        val = positiveVal;
+      }
+      const words = numberToIndianWords(val);
+      this.enrollmentForm.get('bookingAmountWords')?.setValue(words, { emitEvent: false });
     });
 
     this.enrollmentForm.get('presentAddress')?.valueChanges.subscribe(val => {
@@ -176,7 +200,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       nomineeName: [''],
       nomineeRelation: [''],
       nomineeAgeDob: [''],
-      nomineeAadhar: ['']
+      nomineeAadhar: ['', [Validators.pattern(AADHAAR_PATTERN)]]
     });
   }
 

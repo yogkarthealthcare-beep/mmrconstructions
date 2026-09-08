@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
+import { calculateAgeFromDob, numberToIndianWords, MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN } from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-investor-enrollment',
@@ -36,12 +37,12 @@ export class InvestorEnrollmentComponent implements OnInit {
   @ViewChild('sigFirstCanvas', { static: false }) sigFirstCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('sigJointCanvas', { static: false }) sigJointCanvas!: ElementRef<HTMLCanvasElement>;
 
-  private padFirstContext!: CanvasRenderingContext2D;
-  private padJointContext!: CanvasRenderingContext2D;
-  private drawingFirst = false;
-  private drawingJoint = false;
-  private lastPosFirst: {x: number, y: number} | null = null;
-  private lastPosJoint: {x: number, y: number} | null = null;
+  private padFirstContext: CanvasRenderingContext2D | null = null;
+  private padJointContext: CanvasRenderingContext2D | null = null;
+  drawingFirst = false;
+  drawingJoint = false;
+  lastPosFirst = { x: 0, y: 0 };
+  lastPosJoint = { x: 0, y: 0 };
 
   ngOnInit() {
     this.initForm();
@@ -80,11 +81,11 @@ export class InvestorEnrollmentComponent implements OnInit {
       corrCity: [''],
       corrState: [''],
       corrPinCode: [''],
-      mobile: ['', Validators.required],
-      altTel: [''],
-      email: ['', Validators.email],
+      mobile: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
+      altTel: ['', [Validators.pattern(MOBILE_PATTERN)]],
+      email: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
       pan: [''],
-      aadhar: [''],
+      aadhar: ['', [Validators.pattern(AADHAAR_PATTERN)]],
       amount: ['', Validators.required],
       amountWords: ['', Validators.required],
       paymentMode: ['', Validators.required],
@@ -105,6 +106,23 @@ export class InvestorEnrollmentComponent implements OnInit {
       paymentStatus: [{ value: '', disabled: true }],
       paymentStatusDate: [{ value: '', disabled: true }],
       authorizedSignatory: [{ value: '', disabled: true }]
+    });
+
+    // Auto-calculate Age on DOB change
+    this.enrollmentForm.get('dob')?.valueChanges.subscribe(val => {
+      const calculatedAge = calculateAgeFromDob(val);
+      this.enrollmentForm.get('age')?.setValue(calculatedAge, { emitEvent: false });
+    });
+
+    // Auto-convert Amount to Words (and prevent negative values)
+    this.enrollmentForm.get('amount')?.valueChanges.subscribe(val => {
+      if (val !== null && val !== undefined && String(val).includes('-')) {
+        const positiveVal = String(val).replace(/-/g, '');
+        this.enrollmentForm.get('amount')?.setValue(positiveVal, { emitEvent: false });
+        val = positiveVal;
+      }
+      const words = numberToIndianWords(val);
+      this.enrollmentForm.get('amountWords')?.setValue(words, { emitEvent: false });
     });
 
     this.enrollmentForm.get('address')?.valueChanges.subscribe(val => {

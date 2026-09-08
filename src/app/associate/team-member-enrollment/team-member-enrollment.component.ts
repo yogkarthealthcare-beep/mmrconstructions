@@ -5,6 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
+import { MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN } from '../../shared/utils/form-helpers';
 
 interface SignaturePadController {
   clear: () => void;
@@ -98,16 +99,16 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       fatherHusbandName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
       dateOfBirth: ['', Validators.required],
       gender: ['Male', Validators.required],
-      aadharNo: ['', [Validators.required, Validators.pattern(/^[0-9]{12}$/)]],
+      aadharNo: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
       panNo: ['', [Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
-      mobileNo: ['', [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]],
-      emailId: ['', [Validators.email]],
+      mobileNo: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
+      emailId: ['', [Validators.pattern(EMAIL_PATTERN)]],
       fullAddress: ['', [Validators.required, Validators.minLength(5)]],
 
       nomineeName: [''],
       nomineeRelation: [''],
       nomineeAgeDob: [''],
-      nomineeContactNo: ['', [Validators.pattern(/^[0-9]{0,15}$/)]],
+      nomineeContactNo: ['', [Validators.pattern(MOBILE_PATTERN)]],
 
       bankName: ['', Validators.required],
       branchName: ['', Validators.required],
