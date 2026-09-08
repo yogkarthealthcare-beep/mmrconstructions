@@ -243,14 +243,13 @@ export class AuthService {
     return true;
   }
 
-  logoutAdmin(sessionExpired = false) {
+  logoutAdmin(_sessionExpired = false) {
     if (this.isLoggingOut) return;
     this.isLoggingOut = true;
     ['mmr_admin_token','mmr_admin_refresh','mmr_admin_user','mmr_admin_expires_at'].forEach(k => this.saveAuthItem(k, null));
     this._adminUser$.next(null);
     this.scheduleAutoLogout();
-    const queryParams = sessionExpired ? { sessionExpired: 'true' } : undefined;
-    this.router.navigate(['/admin-login'], { queryParams }).then(() => {
+    this.router.navigate(['/admin-login']).then(() => {
       this.isLoggingOut = false;
     });
   }

@@ -23,8 +23,15 @@ export class AdminLoginComponent {
     private router: Router,
     private route: ActivatedRoute
   ) {
-    if (this.route.snapshot.queryParamMap.get('sessionExpired') === 'true') {
+    const qp = this.route.snapshot.queryParamMap;
+    if (qp.get('sessionExpired') === 'true' || qp.get('sessonExpired') === 'true') {
       this.sessionExpiredMessage = 'सुरक्षा कारणों से आपका एडमिन सत्र (Session) समाप्त हो गया है। कृपया पुनः लॉगिन करें।';
+      // Automatically clean the URL in address bar to https://mmrconstructions.in/admin-login
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true
+      });
     }
   }
 
