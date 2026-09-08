@@ -75,21 +75,42 @@
   }
   .meta-grid .app-no label{color:#b3261e;}
 
-  .photo-box{
-    float:right;
-    width:105px;height:125px;
-    border:1px dashed #94a3b8;
-    border-radius:4px;
-    display:flex;align-items:center;justify-content:center;
-    text-align:center;
-    font-size:10px;color:#64748b;
-    margin:0 0 8px 12px;
-    padding:4px;
-    background:#f8fafc;
-    cursor:pointer;
-    overflow:hidden;
+  /* ---- Applicant Top Grid (7 col inputs, 5 col photo) ---- */
+  .applicant-top-grid {
+    display: grid;
+    grid-template-columns: 7fr 5fr;
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 8px;
   }
-  .photo-box img{max-width:100%;max-height:100%;object-fit:cover;}
+  .applicant-inputs-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .applicant-photo-col {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+  }
+  .photo-box {
+    width: 105px;
+    height: 125px;
+    border: 1px dashed #94a3b8;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 10px;
+    color: #64748b;
+    margin: 0;
+    padding: 4px;
+    background: #f8fafc;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .photo-box img { max-width: 100%; max-height: 100%; object-fit: cover; }
 
   /* ---- XSmall Text Boxes & Inputs ---- */
   .field{margin-bottom:8px;}
@@ -317,7 +338,8 @@
   }
 
   @media(max-width:640px){
-    .row3, .row2, .meta-grid, .sig-grid{grid-template-columns:1fr;}
+    .row3, .row2, .meta-grid, .sig-grid, .applicant-top-grid{grid-template-columns:1fr;}
+    .applicant-photo-col{justify-content:center;margin-bottom:10px;}
     .company-header{flex-direction:column;text-align:center;}
-    .photo-box{float:none;margin:0 auto 12px;}
+    .photo-box{margin:0 auto 10px;}
   }
