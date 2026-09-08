@@ -435,15 +435,19 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
 
   resetForm() {
     const sessionUser = this.auth.getUser() || {};
+    const defaultSponsorName = sessionUser.sponsor_name || 'Suraj Kumar Verma';
+    const defaultSponsorCode = sessionUser.sponsor_code || sessionUser.sponsor_id || sessionUser.sponsor_invite_code || 'MMR0001';
+    const defaultSponsorContact = sessionUser.sponsor_contact || sessionUser.sponsor_mobile || '7071951011';
+
     this.enrollmentForm.reset({
       personalDetails: { nationality: 'Indian' },
       addressDetails: { permCountry: 'India', localCountry: 'India' },
       bankDetails: { branchCountry: 'India' },
       nomineeDetails: { nomineeNationality: 'Indian' },
       sponsorDetails: {
-        sponsorName: sessionUser.sponsor_name || 'MMR Constructions',
-        sponsorCode: sessionUser.sponsor_code || sessionUser.sponsor_id || sessionUser.sponsor_invite_code || 'MMR0001',
-        sponsorContact: sessionUser.sponsor_contact || '9511119879'
+        sponsorName: defaultSponsorName,
+        sponsorCode: defaultSponsorCode,
+        sponsorContact: defaultSponsorContact
       }
     });
     this.applicantPhotoFile = null;
@@ -458,9 +462,29 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
           const u = res.data;
           const sessionUser = this.auth.getUser() || {};
 
-          const sName = u.sponsor_name || sessionUser.sponsor_name || 'MMR Constructions';
-          const sCode = u.sponsor_id || u.sponsor_code || u.sponsor_invite_code || sessionUser.sponsor_code || sessionUser.sponsor_id || sessionUser.sponsor_invite_code || 'MMR0001';
-          const sContact = u.sponsor_contact || u.sponsor_mobile || u.sponsor_mobile_no || sessionUser.sponsor_contact || '9511119879';
+          // If the associate has an existing sponsor, auto-fill that sponsor's data;
+          // If no sponsor exists, fallback to Admin sponsor (MMR0001 / Suraj Kumar Verma / 7071951011)
+          const hasCustomSponsor = Boolean(
+            (u.sponsor_user_id && Number(u.sponsor_user_id) !== 1) ||
+            (u.sponsor_name && u.sponsor_name !== 'MMR Constructions' && u.sponsor_name !== 'Suraj Kumar Verma') ||
+            (u.sponsor_id && u.sponsor_id !== 'MMR0001' && u.sponsor_id !== 'MMR00001') ||
+            (sessionUser.sponsor_name && sessionUser.sponsor_name !== 'Suraj Kumar Verma')
+          );
+
+          let sName = 'Suraj Kumar Verma';
+          let sCode = 'MMR0001';
+          let sContact = '7071951011';
+
+          if (hasCustomSponsor) {
+            sName = u.sponsor_name || sessionUser.sponsor_name || 'Suraj Kumar Verma';
+            sCode = u.sponsor_id || u.sponsor_code || u.sponsor_invite_code || sessionUser.sponsor_code || sessionUser.sponsor_id || 'MMR0001';
+            sContact = u.sponsor_contact || u.sponsor_mobile || u.sponsor_mobile_no || sessionUser.sponsor_contact || '7071951011';
+          } else {
+            // Use returned profile sponsor or Admin fallback
+            sName = u.sponsor_name || sessionUser.sponsor_name || 'Suraj Kumar Verma';
+            sCode = u.sponsor_id || u.sponsor_code || sessionUser.sponsor_code || 'MMR0001';
+            sContact = u.sponsor_contact || u.sponsor_mobile || sessionUser.sponsor_contact || '7071951011';
+          }
 
           this.enrollmentForm.patchValue({
             personalDetails: {
@@ -517,9 +541,9 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         const sessionUser = this.auth.getUser() || {};
         this.enrollmentForm.patchValue({
           sponsorDetails: {
-            sponsorName: sessionUser.sponsor_name || 'MMR Constructions',
+            sponsorName: sessionUser.sponsor_name || 'Suraj Kumar Verma',
             sponsorCode: sessionUser.sponsor_code || sessionUser.sponsor_id || sessionUser.sponsor_invite_code || 'MMR0001',
-            sponsorContact: sessionUser.sponsor_contact || '9511119879'
+            sponsorContact: sessionUser.sponsor_contact || sessionUser.sponsor_mobile || '7071951011'
           }
         });
       }
