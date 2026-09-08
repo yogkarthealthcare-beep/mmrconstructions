@@ -160,15 +160,21 @@ export class UserLayoutComponent implements OnInit {
   }
 
   toggleGroup(group: NavGroup) {
-    group.expanded = !group.expanded;
+    const willExpand = !group.expanded;
+    this.navGroups.forEach(g => g.expanded = false);
+    group.expanded = willExpand;
   }
 
   checkActiveGroup(currentUrl: string) {
-    this.navGroups.forEach(group => {
-      const hasActive = group.items.some(item => currentUrl.includes(item.route));
-      if (hasActive) {
-        group.expanded = true;
+    let matchedGroup: NavGroup | null = null;
+    for (const group of this.navGroups) {
+      if (group.items.some(item => currentUrl.includes(item.route))) {
+        matchedGroup = group;
+        break;
       }
+    }
+    this.navGroups.forEach(group => {
+      group.expanded = (group === matchedGroup);
     });
   }
 

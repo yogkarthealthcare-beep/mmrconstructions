@@ -66,19 +66,23 @@ export class InvestorLayoutComponent implements OnInit {
     if (this.sidebarCollapsed) {
       this.sidebarCollapsed = false;
     }
-    this.navGroups.forEach(g => {
-      if (g !== group) g.expanded = false;
-    });
-    group.expanded = !group.expanded;
+    const willExpand = !group.expanded;
+    this.navGroups.forEach(g => g.expanded = false);
+    group.expanded = willExpand;
   }
 
   expandGroupForCurrentRoute() {
     const currentUrl = this.router.url;
+    let matchedGroup: any = null;
     for (const group of this.navGroups) {
       if (group.items.some(item => currentUrl.includes(item.route))) {
-        group.expanded = true;
+        matchedGroup = group;
+        break;
       }
     }
+    this.navGroups.forEach(g => {
+      g.expanded = (g === matchedGroup);
+    });
   }
 
   constructor(private auth: AuthService, private api: ApiService, private router: Router) {}

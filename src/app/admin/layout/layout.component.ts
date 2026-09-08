@@ -227,13 +227,26 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   }
 
   toggleGroup(group: NavGroup) {
-    group.expanded = !group.expanded;
+    const willExpand = !group.expanded;
+    // Close all other groups (single active group accordion)
+    this.filteredNavGroups.forEach(g => g.expanded = false);
+    this.rawNavGroups.forEach(g => g.expanded = false);
+    group.expanded = willExpand;
   }
 
   checkActiveGroup(currentUrl: string) {
+    let matchedGroup: NavGroup | null = null;
+    for (const group of this.filteredNavGroups) {
+      if (group.items.some(item => currentUrl.includes(item.route))) {
+        matchedGroup = group;
+        break;
+      }
+    }
+    this.filteredNavGroups.forEach(group => {
+      group.expanded = (group === matchedGroup);
+    });
     this.rawNavGroups.forEach(group => {
-      const hasActive = group.items.some(item => currentUrl.includes(item.route));
-      group.expanded = hasActive;
+      group.expanded = (matchedGroup ? group.label === matchedGroup.label : false);
     });
   }
 
