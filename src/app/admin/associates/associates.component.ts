@@ -392,11 +392,11 @@ export class AssociatesComponent implements OnInit {
     this.api.post(`/api/admin/impersonate/${a.user_id}`, {}, true).subscribe({
       next: (res: any) => {
         if (res.success && res.data?.token) {
-          this.auth.setUserSession(res.data);
-          this.showToast(`Logged in as ${a.full_name}`);
-          setTimeout(() => {
-            window.open('/associate/dashboard', '_blank');
-          }, 500);
+          const { token, refresh_token, user, redirect_url } = res.data;
+          const userPayload = user || { id: a.user_id, user_id: a.user_id, full_name: a.full_name, mobile_no: a.mobile_no, user_type: 'Associate', account_status: 'Active' };
+          const url = `/auth/impersonate-login?token=${encodeURIComponent(token)}&refresh_token=${encodeURIComponent(refresh_token || token)}&user=${encodeURIComponent(JSON.stringify(userPayload))}&type=Associate&redirectUrl=${encodeURIComponent(redirect_url || '/associate/dashboard')}`;
+          this.showToast(`Opening session for ${a.full_name}...`);
+          window.open(url, '_blank');
         } else {
           this.showToast(res.message || 'Impersonation failed');
         }

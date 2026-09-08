@@ -228,17 +228,10 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
       next: (res: any) => {
         this.loginLoadingId = null;
         if (res.success && res.data && res.data.token) {
-          // Store token in local storage
-          localStorage.setItem('mmr_investor_token', res.data.token);
-          if (res.data.refresh_token) {
-            localStorage.setItem('mmr_investor_refresh', res.data.refresh_token);
-          }
-          if (res.data.user) {
-            localStorage.setItem('mmr_investor_user', JSON.stringify(res.data.user));
-          }
-          
-          // Open investor dashboard in new tab
-          window.open('/investor/dashboard', '_blank');
+          const { token, refresh_token, user, redirect_url } = res.data;
+          const userPayload = user || { id: investor.id, full_name: investor.full_name, email: investor.email, mobile_no: investor.mobile_no, user_type: 'Investor', account_status: 'Active' };
+          const url = `/auth/impersonate-login?token=${encodeURIComponent(token)}&refresh_token=${encodeURIComponent(refresh_token || token)}&user=${encodeURIComponent(JSON.stringify(userPayload))}&type=Investor&redirectUrl=${encodeURIComponent(redirect_url || '/investor/dashboard')}`;
+          window.open(url, '_blank');
         } else {
           alert('Failed to login as investor. Invalid response.');
         }

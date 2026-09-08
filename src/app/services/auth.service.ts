@@ -4,8 +4,8 @@ import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly ADMIN_SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 Hours
-  private readonly DEFAULT_SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 Hours
+  readonly ADMIN_SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 Hours
+  readonly DEFAULT_SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
   private _adminUser$    = new BehaviorSubject<any>(this.getAdminUser());
   private _user$         = new BehaviorSubject<any>(this.getUser());
@@ -15,12 +15,17 @@ export class AuthService {
   user$         = this._user$.asObservable();
   investorUser$ = this._investorUser$.asObservable();
 
-  private isLoggingOut = false;
-  private autoLogoutTimer: any = null;
+  private isLoggingOutAdmin = false;
+  private isLoggingOutUser = false;
+  private isLoggingOutInvestor = false;
+
+  private adminLogoutTimer: any = null;
+  private userLogoutTimer: any = null;
+  private investorLogoutTimer: any = null;
 
   constructor(private router: Router) {
     this.checkInitialExpirations();
-    this.scheduleAutoLogout();
+    this.scheduleAllAutoLogouts();
     this.setupVisibilityListeners();
   }
 
@@ -67,14 +72,6 @@ export class AuthService {
     } catch {
       return null;
     }
-  }
-
-  private calculateExpiresAt(token: string | null, defaultDurationMs = this.DEFAULT_SESSION_DURATION_MS): number {
-    const jwtExp = this.parseJwtExp(token);
-    if (jwtExp && jwtExp > Date.now()) {
-      return jwtExp;
-    }
-    return Date.now() + defaultDurationMs;
   }
 
   isTokenExpired(scope: 'admin' | 'user' | 'investor', token?: string | null): boolean {
@@ -129,53 +126,85 @@ export class AuthService {
     return Date.now() + duration;
   }
 
-  private scheduleAutoLogout() {
-    if (this.autoLogoutTimer) {
-      clearTimeout(this.autoLogoutTimer);
-      this.autoLogoutTimer = null;
-    }
-
-    const now = Date.now();
-    let activeScope: 'admin' | 'investor' | 'user' | null = null;
-    let activeExp: number | null = null;
-
-    if (this.adminToken) {
-      activeScope = 'admin';
-      activeExp = this.getExpirationMs('admin');
-    } else if (this.getAuthItem('mmr_investor_token')) {
-      activeScope = 'investor';
-      activeExp = this.getExpirationMs('investor');
-    } else if (this.userToken) {
-      activeScope = 'user';
-      activeExp = this.getExpirationMs('user');
-    }
-
-    if (!activeScope || !activeExp || activeExp <= 0) return;
-
-    const delay = activeExp - now;
-    if (delay <= 0) {
-      this.handleAuthExpired(activeScope);
-      return;
-    }
-
-    // Protect from 32-bit setTimeout integer limit (2,147,483,647 ms)
-    const timeoutDelay = Math.min(delay, 2147483647);
-    this.autoLogoutTimer = setTimeout(() => {
-      // When timer fires, check again if real expiration has arrived
-      if (Date.now() >= activeExp!) {
-        this.handleAuthExpired(activeScope!);
-      } else {
-        this.scheduleAutoLogout();
+  private scheduleScopeAutoLogout(scope: 'admin' | 'user' | 'investor') {
+    if (scope === 'admin') {
+      if (this.adminLogoutTimer) {
+        clearTimeout(this.adminLogoutTimer);
+        this.adminLogoutTimer = null;
       }
-    }, timeoutDelay);
+      if (!this.adminToken) return;
+      const exp = this.getExpirationMs('admin');
+      if (!exp || exp <= 0) return;
+      const delay = exp - Date.now();
+      if (delay <= 0) {
+        this.logoutAdmin(true);
+        return;
+      }
+      this.adminLogoutTimer = setTimeout(() => {
+        if (Date.now() >= exp) {
+          this.logoutAdmin(true);
+        } else {
+          this.scheduleScopeAutoLogout('admin');
+        }
+      }, Math.min(delay, 2147483647));
+    } else if (scope === 'user') {
+      if (this.userLogoutTimer) {
+        clearTimeout(this.userLogoutTimer);
+        this.userLogoutTimer = null;
+      }
+      if (!this.userToken) return;
+      const exp = this.getExpirationMs('user');
+      if (!exp || exp <= 0) return;
+      const delay = exp - Date.now();
+      if (delay <= 0) {
+        this.logoutUser(true);
+        return;
+      }
+      this.userLogoutTimer = setTimeout(() => {
+        if (Date.now() >= exp) {
+          this.logoutUser(true);
+        } else {
+          this.scheduleScopeAutoLogout('user');
+        }
+      }, Math.min(delay, 2147483647));
+    } else if (scope === 'investor') {
+      if (this.investorLogoutTimer) {
+        clearTimeout(this.investorLogoutTimer);
+        this.investorLogoutTimer = null;
+      }
+      const token = this.getAuthItem('mmr_investor_token');
+      if (!token) return;
+      const exp = this.getExpirationMs('investor');
+      if (!exp || exp <= 0) return;
+      const delay = exp - Date.now();
+      if (delay <= 0) {
+        this.logoutInvestor(true);
+        return;
+      }
+      this.investorLogoutTimer = setTimeout(() => {
+        if (Date.now() >= exp) {
+          this.logoutInvestor(true);
+        } else {
+          this.scheduleScopeAutoLogout('investor');
+        }
+      }, Math.min(delay, 2147483647));
+    }
+  }
+
+  private scheduleAllAutoLogouts() {
+    this.scheduleScopeAutoLogout('admin');
+    this.scheduleScopeAutoLogout('user');
+    this.scheduleScopeAutoLogout('investor');
   }
 
   private checkInitialExpirations() {
     if (this.adminToken && this.isTokenExpired('admin')) {
       this.logoutAdmin(true);
-    } else if (this.getAuthItem('mmr_investor_token') && this.isTokenExpired('investor')) {
+    }
+    if (this.getAuthItem('mmr_investor_token') && this.isTokenExpired('investor')) {
       this.logoutInvestor(true);
-    } else if (this.userToken && this.isTokenExpired('user')) {
+    }
+    if (this.userToken && this.isTokenExpired('user')) {
       this.logoutUser(true);
     }
   }
@@ -185,29 +214,42 @@ export class AuthService {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
           this.checkInitialExpirations();
-          this.scheduleAutoLogout();
+          this.scheduleAllAutoLogouts();
         }
       });
       window.addEventListener('focus', () => {
         this.checkInitialExpirations();
-        this.scheduleAutoLogout();
+        this.scheduleAllAutoLogouts();
       });
     }
   }
 
-  // ── Admin ──────────────────────
-  clearAllAuthStorage() {
-    const keys = [
-      'mmr_admin_token', 'mmr_admin_refresh', 'mmr_admin_user', 'mmr_admin_expires_at',
-      'mmr_user_token', 'mmr_user_refresh', 'mmr_user', 'mmr_user_expires_at',
-      'mmr_investor_token', 'mmr_investor_refresh', 'mmr_investor_user', 'mmr_investor_expires_at'
-    ];
-    keys.forEach(k => this.saveAuthItem(k, null));
+  // ── Separate Storage Clearers per Scope ──────────────────────────
+  clearAdminStorage() {
+    ['mmr_admin_token', 'mmr_admin_refresh', 'mmr_admin_user', 'mmr_admin_expires_at']
+      .forEach(k => this.saveAuthItem(k, null));
   }
 
+  clearUserStorage() {
+    ['mmr_user_token', 'mmr_user_refresh', 'mmr_user', 'mmr_user_expires_at']
+      .forEach(k => this.saveAuthItem(k, null));
+  }
+
+  clearInvestorStorage() {
+    ['mmr_investor_token', 'mmr_investor_refresh', 'mmr_investor_user', 'mmr_investor_expires_at']
+      .forEach(k => this.saveAuthItem(k, null));
+  }
+
+  clearAllAuthStorage() {
+    this.clearAdminStorage();
+    this.clearUserStorage();
+    this.clearInvestorStorage();
+  }
+
+  // ── Admin ──────────────────────
   setAdminSession(data: any) {
     if (!data) return;
-    this.clearAllAuthStorage();
+    this.clearAdminStorage(); // Only clears admin storage!
     if (data.token) {
       this.saveAuthItem('mmr_admin_token', data.token);
       const expiresAt = Date.now() + this.ADMIN_SESSION_DURATION_MS; // Exactly 24 Hours
@@ -216,7 +258,7 @@ export class AuthService {
     if (data.refresh_token) this.saveAuthItem('mmr_admin_refresh', data.refresh_token);
     if (data.admin) this.saveAuthItem('mmr_admin_user', JSON.stringify(data.admin));
     this._adminUser$.next(data.admin || null);
-    this.scheduleAutoLogout();
+    this.scheduleScopeAutoLogout('admin');
   }
 
   getAdminUser(): any {
@@ -244,27 +286,30 @@ export class AuthService {
   }
 
   logoutAdmin(_sessionExpired = false) {
-    if (this.isLoggingOut) return;
-    this.isLoggingOut = true;
-    ['mmr_admin_token','mmr_admin_refresh','mmr_admin_user','mmr_admin_expires_at'].forEach(k => this.saveAuthItem(k, null));
+    if (this.isLoggingOutAdmin) return;
+    this.isLoggingOutAdmin = true;
+    if (this.adminLogoutTimer) {
+      clearTimeout(this.adminLogoutTimer);
+      this.adminLogoutTimer = null;
+    }
+    this.clearAdminStorage();
     this._adminUser$.next(null);
-    this.scheduleAutoLogout();
     this.router.navigate(['/admin-login']).then(() => {
-      this.isLoggingOut = false;
+      this.isLoggingOutAdmin = false;
     });
   }
 
-  // ── User ──────────────────────
+  // ── User / Associate / Customer ──────────────────────
   setUserSession(data: any) {
     if (!data) return;
-    this.clearAllAuthStorage();
+    this.clearUserStorage(); // Only clears user storage!
     const token = data.token || data.access_token || data.jwt || (typeof data === 'string' ? data : null);
     const refreshToken = data.refresh_token || data.refreshToken || '';
     const userObj = data.user || data.data?.user || (data.user_id ? data : null);
 
     if (token) {
       this.saveAuthItem('mmr_user_token', token);
-      const expiresAt = this.calculateExpiresAt(token);
+      const expiresAt = Date.now() + this.DEFAULT_SESSION_DURATION_MS; // 24 Hours
       this.saveAuthItem('mmr_user_expires_at', String(expiresAt));
     }
     if (refreshToken) {
@@ -274,7 +319,7 @@ export class AuthService {
       this.saveAuthItem('mmr_user', JSON.stringify(userObj));
       this._user$.next(userObj);
     }
-    this.scheduleAutoLogout();
+    this.scheduleScopeAutoLogout('user');
   }
 
   getUser(): any {
@@ -302,14 +347,17 @@ export class AuthService {
   }
 
   logoutUser(sessionExpired = false) {
-    if (this.isLoggingOut) return;
-    this.isLoggingOut = true;
-    ['mmr_user_token','mmr_user_refresh','mmr_user','mmr_user_expires_at'].forEach(k => this.saveAuthItem(k, null));
+    if (this.isLoggingOutUser) return;
+    this.isLoggingOutUser = true;
+    if (this.userLogoutTimer) {
+      clearTimeout(this.userLogoutTimer);
+      this.userLogoutTimer = null;
+    }
+    this.clearUserStorage();
     this._user$.next(null);
-    this.scheduleAutoLogout();
     const queryParams = sessionExpired ? { sessionExpired: 'true' } : undefined;
     this.router.navigate(['/login'], { queryParams }).then(() => {
-      this.isLoggingOut = false;
+      this.isLoggingOutUser = false;
     });
   }
 
@@ -328,6 +376,7 @@ export class AuthService {
     return status === 'active' || status === 'approved';
   }
 
+  // ── Investor ─────────────────────
   isInvestorLoggedIn(): boolean {
     const token = this.getAuthItem('mmr_investor_token');
     if (!token) return false;
@@ -345,20 +394,23 @@ export class AuthService {
   }
 
   logoutInvestor(sessionExpired = false) {
-    if (this.isLoggingOut) return;
-    this.isLoggingOut = true;
-    ['mmr_investor_token', 'mmr_investor_refresh', 'mmr_investor_user', 'mmr_investor_expires_at'].forEach(k => this.saveAuthItem(k, null));
+    if (this.isLoggingOutInvestor) return;
+    this.isLoggingOutInvestor = true;
+    if (this.investorLogoutTimer) {
+      clearTimeout(this.investorLogoutTimer);
+      this.investorLogoutTimer = null;
+    }
+    this.clearInvestorStorage();
     this._investorUser$.next(null);
-    this.scheduleAutoLogout();
     const queryParams = sessionExpired ? { sessionExpired: 'true' } : undefined;
     this.router.navigate(['/login'], { queryParams }).then(() => {
-      this.isLoggingOut = false;
+      this.isLoggingOutInvestor = false;
     });
   }
 
   setInvestorSession(tokenOrData: any, userObj?: any) {
     if (!tokenOrData) return;
-    this.clearAllAuthStorage();
+    this.clearInvestorStorage(); // Only clears investor storage!
     let token: string | null = null;
 
     if (typeof tokenOrData === 'string') {
@@ -380,10 +432,10 @@ export class AuthService {
     }
 
     if (token) {
-      const expiresAt = this.calculateExpiresAt(token);
+      const expiresAt = Date.now() + this.DEFAULT_SESSION_DURATION_MS; // 24 Hours
       this.saveAuthItem('mmr_investor_expires_at', String(expiresAt));
     }
-    this.scheduleAutoLogout();
+    this.scheduleScopeAutoLogout('investor');
   }
 
   updateInvestorUser(user: any) {

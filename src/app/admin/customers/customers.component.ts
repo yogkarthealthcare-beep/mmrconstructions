@@ -398,9 +398,13 @@ export class CustomersComponent implements OnInit {
     this.api.adminImpersonateUser(c.user_id).subscribe({
       next: (res: any) => {
         this.actionLoading = false;
-        if (res.success && res.data) {
-          this.auth.setUserSession(res.data);
-          window.open('/user/dashboard', '_blank');
+        if (res.success && res.data?.token) {
+          const { token, refresh_token, user, redirect_url } = res.data;
+          const userPayload = user || { id: c.user_id, user_id: c.user_id, full_name: c.full_name, mobile_no: c.mobile_no, user_type: 'Customer', account_status: 'Active' };
+          const url = `/auth/impersonate-login?token=${encodeURIComponent(token)}&refresh_token=${encodeURIComponent(refresh_token || token)}&user=${encodeURIComponent(JSON.stringify(userPayload))}&type=Customer&redirectUrl=${encodeURIComponent(redirect_url || '/user/dashboard')}`;
+          window.open(url, '_blank');
+        } else {
+          this.showToast(res.message || 'Failed to login as customer');
         }
       },
       error: (e: any) => {
