@@ -157,63 +157,65 @@
         <thead>
           <tr>
             <th class="th-sno">#</th>
-            <th>Applicant Name &amp; App No</th>
-            <th>Contact &amp; Email</th>
-            <th>Project &amp; Property</th>
-            <th>Total Value</th>
-            <th>Sponsor / Associate</th>
-            <th>Enrollment Status</th>
-            <th>Submitted At</th>
-            <th class="text-right">Actions</th>
+            <th class="th-applicant">Applicant Name &amp; App No</th>
+            <th class="th-contact">Contact &amp; Email</th>
+            <th class="th-project">Project &amp; Property</th>
+            <th class="th-amount">Total Value</th>
+            <th class="th-sponsor">Sponsor / Associate</th>
+            <th class="th-status">Enrollment Status</th>
+            <th class="th-date">Submitted At</th>
+            <th class="th-actions text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of pagedItems; let i = index">
             <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td>
+            <td class="td-applicant">
               <div class="applicant-cell">
-                <strong>{{ item.applicant_name || item.full_name || 'N/A' }}</strong>
+                <strong class="applicant-name">{{ item.applicant_name || item.full_name || 'N/A' }}</strong>
                 <span class="badge-sub">{{ item.application_no || item.user_id || 'Pending App' }}</span>
               </div>
             </td>
-            <td>
+            <td class="td-contact">
               <div class="contact-cell">
-                <span><i class="fas fa-phone-alt"></i> {{ item.mobile_1 || item.mobile_no || 'N/A' }}</span>
-                <small *ngIf="item.email_1 || item.email"><i class="fas fa-envelope"></i> {{ item.email_1 || item.email }}</small>
+                <span class="contact-phone"><i class="fas fa-phone-alt"></i> {{ item.mobile_1 || item.mobile_no || 'N/A' }}</span>
+                <small class="contact-email" *ngIf="item.email_1 || item.email" [title]="item.email_1 || item.email"><i class="fas fa-envelope"></i> {{ item.email_1 || item.email }}</small>
               </div>
             </td>
-            <td>
+            <td class="td-project">
               <div class="project-cell">
                 <span class="project-title">{{ item.project_name || '—' }}</span>
                 <span class="prop-type">{{ item.property_type || '—' }} <span *ngIf="item.plot_flat_no">(#{{ item.plot_flat_no }})</span></span>
               </div>
             </td>
-            <td>
+            <td class="td-amount">
               <span class="amount-val">₹{{ (item.basic_sale_price || 0) + (item.plc_dev_charges || 0) | number }}</span>
             </td>
-            <td>
+            <td class="td-sponsor">
               <span *ngIf="item.associate_id" class="sponsor-tag">{{ item.associate_name }} ({{ item.associate_id }})</span>
               <span *ngIf="!item.associate_id" class="text-muted">—</span>
             </td>
-            <td>
+            <td class="td-status">
               <span class="status-badge" [class.completed]="item.enrollment_status === 'Completed'" [class.pending]="item.enrollment_status === 'Pending'">
                 <i class="fas" [class.fa-check-circle]="item.enrollment_status === 'Completed'" [class.fa-clock]="item.enrollment_status === 'Pending'"></i>
                 {{ item.enrollment_status }}
               </span>
             </td>
-            <td>
-              <small>{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
+            <td class="td-date">
+              <small class="date-text">{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
             </td>
-            <td class="text-right actions-cell">
-              <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
-                <i class="fas fa-eye"></i> View
-              </button>
-              <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-              <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
-                <i class="fas fa-file-pdf"></i>
-              </button>
+            <td class="td-actions text-end">
+              <div class="action-btn-group">
+                <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
+                  <i class="fas fa-eye"></i> <span>View</span>
+                </button>
+                <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
+                  <i class="fas fa-edit"></i> <span>Edit</span>
+                </button>
+                <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
+                  <i class="fas fa-file-pdf"></i>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -224,59 +226,61 @@
         <thead>
           <tr>
             <th class="th-sno">#</th>
-            <th>Associate Name &amp; ID</th>
-            <th>Contact &amp; Email</th>
-            <th>Sponsor Details</th>
-            <th>Category / State</th>
-            <th>Enrollment Status</th>
-            <th>Submitted At</th>
-            <th class="text-right">Actions</th>
+            <th class="th-applicant">Associate Name &amp; ID</th>
+            <th class="th-contact">Contact &amp; Email</th>
+            <th class="th-sponsor">Sponsor Details</th>
+            <th class="th-category">Category / State</th>
+            <th class="th-status">Enrollment Status</th>
+            <th class="th-date">Submitted At</th>
+            <th class="th-actions text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of pagedItems; let i = index">
             <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td>
+            <td class="td-applicant">
               <div class="applicant-cell">
-                <strong>{{ item.full_name || 'N/A' }}</strong>
+                <strong class="applicant-name">{{ item.full_name || 'N/A' }}</strong>
                 <span class="badge-sub">{{ item.associate_id || item.user_id || 'Pending ID' }}</span>
               </div>
             </td>
-            <td>
+            <td class="td-contact">
               <div class="contact-cell">
-                <span><i class="fas fa-phone-alt"></i> {{ item.mobile_1 || item.mobile_no || 'N/A' }}</span>
-                <small *ngIf="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
+                <span class="contact-phone"><i class="fas fa-phone-alt"></i> {{ item.mobile_1 || item.mobile_no || 'N/A' }}</span>
+                <small class="contact-email" *ngIf="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
               </div>
             </td>
-            <td>
+            <td class="td-sponsor">
               <div class="sponsor-cell">
                 <strong>{{ item.sponsor_name || '—' }}</strong>
                 <span class="badge-sub" *ngIf="item.sponsor_id">ID: {{ item.sponsor_id }}</span>
               </div>
             </td>
-            <td>
+            <td class="td-category">
               <span class="category-tag">{{ item.category || 'Executive' }}</span>
               <small class="d-block text-muted">{{ item.state || 'Uttar Pradesh' }}</small>
             </td>
-            <td>
+            <td class="td-status">
               <span class="status-badge" [class.completed]="item.enrollment_status === 'Completed'" [class.pending]="item.enrollment_status === 'Pending'">
                 <i class="fas" [class.fa-check-circle]="item.enrollment_status === 'Completed'" [class.fa-clock]="item.enrollment_status === 'Pending'"></i>
                 {{ item.enrollment_status }}
               </span>
             </td>
-            <td>
-              <small>{{ item.created_at ? (item.created_at | date:'mediumDate') : (item.sign_date | date:'mediumDate') || '—' }}</small>
+            <td class="td-date">
+              <small class="date-text">{{ item.created_at ? (item.created_at | date:'mediumDate') : (item.sign_date | date:'mediumDate') || '—' }}</small>
             </td>
-            <td class="text-right actions-cell">
-              <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
-                <i class="fas fa-eye"></i> View
-              </button>
-              <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-              <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
-                <i class="fas fa-file-pdf"></i>
-              </button>
+            <td class="td-actions text-end">
+              <div class="action-btn-group">
+                <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
+                  <i class="fas fa-eye"></i> <span>View</span>
+                </button>
+                <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
+                  <i class="fas fa-edit"></i> <span>Edit</span>
+                </button>
+                <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
+                  <i class="fas fa-file-pdf"></i>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -287,65 +291,67 @@
         <thead>
           <tr>
             <th class="th-sno">#</th>
-            <th>Investor Name &amp; ID</th>
-            <th>Contact &amp; Email</th>
-            <th>Project &amp; Branch</th>
-            <th>Investment Amount</th>
-            <th>Payment Status</th>
-            <th>Enrollment Status</th>
-            <th>Date</th>
-            <th class="text-right">Actions</th>
+            <th class="th-applicant">Investor Name &amp; ID</th>
+            <th class="th-contact">Contact &amp; Email</th>
+            <th class="th-project">Project &amp; Branch</th>
+            <th class="th-amount">Investment Amount</th>
+            <th class="th-paystatus">Payment Status</th>
+            <th class="th-status">Enrollment Status</th>
+            <th class="th-date">Date</th>
+            <th class="th-actions text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of pagedItems; let i = index">
             <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td>
+            <td class="td-applicant">
               <div class="applicant-cell">
-                <strong>{{ item.inv_first_name ? (item.inv_first_name + ' ' + (item.inv_surname || '')) : (item.full_name || 'N/A') }}</strong>
+                <strong class="applicant-name">{{ item.inv_first_name ? (item.inv_first_name + ' ' + (item.inv_surname || '')) : (item.full_name || 'N/A') }}</strong>
                 <span class="badge-sub">{{ item.investor_enrollment_id || item.form_no || item.user_id || 'Pending ID' }}</span>
               </div>
             </td>
-            <td>
+            <td class="td-contact">
               <div class="contact-cell">
-                <span><i class="fas fa-phone-alt"></i> {{ item.mobile || item.mobile_no || 'N/A' }}</span>
-                <small *ngIf="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
+                <span class="contact-phone"><i class="fas fa-phone-alt"></i> {{ item.mobile || item.mobile_no || 'N/A' }}</span>
+                <small class="contact-email" *ngIf="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
               </div>
             </td>
-            <td>
+            <td class="td-project">
               <div class="project-cell">
                 <span class="project-title">{{ item.project_name || '—' }}</span>
                 <span class="prop-type">{{ item.branch_name }} ({{ item.branch_code }})</span>
               </div>
             </td>
-            <td>
+            <td class="td-amount">
               <span class="amount-val">₹{{ (item.amount || 0) | number }}</span>
               <small class="d-block text-muted">{{ item.payment_mode || '—' }}</small>
             </td>
-            <td>
+            <td class="td-paystatus">
               <span class="badge-pay" [class.cleared]="item.payment_status === 'Cleared'" [class.pending]="item.payment_status !== 'Cleared'">
                 {{ item.payment_status || 'Pending' }}
               </span>
             </td>
-            <td>
+            <td class="td-status">
               <span class="status-badge" [class.completed]="item.enrollment_status === 'Completed'" [class.pending]="item.enrollment_status === 'Pending'">
                 <i class="fas" [class.fa-check-circle]="item.enrollment_status === 'Completed'" [class.fa-clock]="item.enrollment_status === 'Pending'"></i>
                 {{ item.enrollment_status }}
               </span>
             </td>
-            <td>
-              <small>{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
+            <td class="td-date">
+              <small class="date-text">{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
             </td>
-            <td class="text-right actions-cell">
-              <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
-                <i class="fas fa-eye"></i> View
-              </button>
-              <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-              <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
-                <i class="fas fa-file-pdf"></i>
-              </button>
+            <td class="td-actions text-end">
+              <div class="action-btn-group">
+                <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
+                  <i class="fas fa-eye"></i> <span>View</span>
+                </button>
+                <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
+                  <i class="fas fa-edit"></i> <span>Edit</span>
+                </button>
+                <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
+                  <i class="fas fa-file-pdf"></i>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
