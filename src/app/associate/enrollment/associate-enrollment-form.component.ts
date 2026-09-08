@@ -434,11 +434,17 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   }
 
   resetForm() {
+    const sessionUser = this.auth.getUser() || {};
     this.enrollmentForm.reset({
       personalDetails: { nationality: 'Indian' },
       addressDetails: { permCountry: 'India', localCountry: 'India' },
       bankDetails: { branchCountry: 'India' },
-      nomineeDetails: { nomineeNationality: 'Indian' }
+      nomineeDetails: { nomineeNationality: 'Indian' },
+      sponsorDetails: {
+        sponsorName: sessionUser.sponsor_name || 'MMR Constructions',
+        sponsorCode: sessionUser.sponsor_code || sessionUser.sponsor_id || sessionUser.sponsor_invite_code || 'MMR0001',
+        sponsorContact: sessionUser.sponsor_contact || '9511119879'
+      }
     });
     this.applicantPhotoFile = null;
     this.nomineePhotoFile = null;
@@ -450,6 +456,12 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         if (res.success && res.data) {
           const u = res.data;
+          const sessionUser = this.auth.getUser() || {};
+
+          const sName = u.sponsor_name || sessionUser.sponsor_name || 'MMR Constructions';
+          const sCode = u.sponsor_id || u.sponsor_code || u.sponsor_invite_code || sessionUser.sponsor_code || sessionUser.sponsor_id || sessionUser.sponsor_invite_code || 'MMR0001';
+          const sContact = u.sponsor_contact || u.sponsor_mobile || u.sponsor_mobile_no || sessionUser.sponsor_contact || '9511119879';
+
           this.enrollmentForm.patchValue({
             personalDetails: {
               fullName: u.full_name || '',
@@ -487,6 +499,11 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
               nomineeName: u.nominee_name || '',
               nomineeRelationship: u.nominee_relationship || '',
               nomineeNationality: 'Indian'
+            },
+            sponsorDetails: {
+              sponsorName: sName,
+              sponsorCode: sCode,
+              sponsorContact: sContact
             }
           });
 
@@ -495,6 +512,16 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
             this.fetchIfscDetails(u.ifsc_code);
           }
         }
+      },
+      error: () => {
+        const sessionUser = this.auth.getUser() || {};
+        this.enrollmentForm.patchValue({
+          sponsorDetails: {
+            sponsorName: sessionUser.sponsor_name || 'MMR Constructions',
+            sponsorCode: sessionUser.sponsor_code || sessionUser.sponsor_id || sessionUser.sponsor_invite_code || 'MMR0001',
+            sponsorContact: sessionUser.sponsor_contact || '9511119879'
+          }
+        });
       }
     });
   }
