@@ -272,10 +272,25 @@ export class InvestorEnrollmentComponent implements OnInit {
 
   private focusFirstInvalidControl() {
     setTimeout(() => {
-      const invalidControl = document.querySelector('.ng-invalid[formControlName], input.ng-invalid, select.ng-invalid, textarea.ng-invalid');
+      // 1. If photo is missing, focus & scroll to photo box first
+      if (!this.photoDataUrl) {
+        const photoEl = document.querySelector('.photo-box') as HTMLElement;
+        if (photoEl) {
+          photoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          photoEl.focus();
+          return;
+        }
+      }
+
+      // 2. Otherwise focus first invalid input/select/textarea
+      const invalidControl = document.querySelector(
+        '.ng-invalid[formControlName], input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid'
+      ) as HTMLElement;
       if (invalidControl) {
-        (invalidControl as HTMLElement).focus();
         invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof invalidControl.focus === 'function') {
+          invalidControl.focus();
+        }
       }
     }, 100);
   }
@@ -284,6 +299,13 @@ export class InvestorEnrollmentComponent implements OnInit {
     if (this.enrollmentForm.invalid || !this.photoDataUrl) {
       this.enrollmentForm.markAllAsTouched();
       this.focusFirstInvalidControl();
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required Fields Missing',
+        text: 'Please fill in all mandatory fields highlighted in red (including passport photo) before proceeding.',
+        confirmButtonColor: '#dc2626'
+      });
       return;
     }
     this.modalAgreeCheck = false;

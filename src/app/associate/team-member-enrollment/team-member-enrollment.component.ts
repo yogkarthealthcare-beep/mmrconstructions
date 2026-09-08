@@ -345,6 +345,18 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     if (this.enrollmentForm.invalid) {
       this.enrollmentForm.markAllAsTouched();
 
+      setTimeout(() => {
+        const invalidControl = document.querySelector(
+          '.form-input.ng-invalid.ng-touched, .form-select.ng-invalid.ng-touched, .form-textarea.ng-invalid.ng-touched, input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName]'
+        ) as HTMLElement;
+        if (invalidControl) {
+          invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (typeof invalidControl.focus === 'function') {
+            invalidControl.focus();
+          }
+        }
+      }, 100);
+
       // Find first invalid field and display sweetalert
       const invalidFields: string[] = [];
       const controls = this.enrollmentForm.controls;
@@ -365,6 +377,13 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
 
     const declaration = this.enrollmentForm.get('declarationAccepted')?.value;
     if (!declaration) {
+      setTimeout(() => {
+        const declEl = document.querySelector('.declaration-card, .checkbox-label') as HTMLElement;
+        if (declEl) {
+          declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+
       Swal.fire({
         icon: 'warning',
         title: 'Declaration Required',

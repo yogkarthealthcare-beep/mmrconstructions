@@ -346,9 +346,52 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     this.nomineePhotoFile = file;
   }
 
+  private focusFirstInvalidControl() {
+    setTimeout(() => {
+      // 1. Check if applicant photo is missing
+      if (!this.applicantPhotoFile && !this.existingApplicantPhoto) {
+        const photoEl = document.querySelector('app-photo-upload, .photo-box') as HTMLElement;
+        if (photoEl) {
+          photoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          photoEl.focus();
+          return;
+        }
+      }
+
+      // 2. Check first invalid form input / select / textarea
+      const invalidControl = document.querySelector(
+        'input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName], input.ng-invalid, select.ng-invalid'
+      ) as HTMLElement;
+      if (invalidControl) {
+        invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof invalidControl.focus === 'function') {
+          invalidControl.focus();
+        }
+        return;
+      }
+
+      // 3. Check terms acceptance checkbox
+      if (!this.allTermsAccepted()) {
+        const termsEl = document.querySelector('.terms-table, .checkbox-wrap') as HTMLElement;
+        if (termsEl) {
+          termsEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }, 100);
+  }
+
   onSubmit() {
-    if (this.enrollmentForm.invalid || !this.allTermsAccepted()) {
+    const isPhotoMissing = !this.applicantPhotoFile && !this.existingApplicantPhoto;
+    if (this.enrollmentForm.invalid || !this.allTermsAccepted() || isPhotoMissing) {
       this.enrollmentForm.markAllAsTouched();
+      this.focusFirstInvalidControl();
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required Fields Missing',
+        text: 'Please fill in all mandatory fields highlighted in red (including applicant photo & terms) before proceeding.',
+        confirmButtonColor: '#dc2626'
+      });
       return;
     }
 

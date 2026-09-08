@@ -254,15 +254,52 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     if (type === 'auth' && this.sigAuthPad) this.sigAuthPad.clear();
   }
 
-  onSubmit() {
-    if (this.enrollmentForm.invalid || this.submitting) {
-      this.enrollmentForm.markAllAsTouched();
-      setTimeout(() => {
-        const firstInvalidControl = document.querySelector('.ng-invalid[formControlName], .ng-invalid[formArrayName], .ng-invalid[formGroupName]') as HTMLElement;
-        if (firstInvalidControl) {
-          firstInvalidControl.focus();
+  private focusFirstInvalidControl() {
+    setTimeout(() => {
+      // 1. If photo is missing, focus & scroll to photo box first
+      if (!this.photo1DataUrl) {
+        const photoEl = document.querySelector('.photo-box') as HTMLElement;
+        if (photoEl) {
+          photoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          photoEl.focus();
+          return;
         }
-      }, 100);
+      }
+
+      // 2. Otherwise focus first invalid input/select/textarea
+      const invalidControl = document.querySelector(
+        'input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName], .ng-invalid[formArrayName], .ng-invalid[formGroupName], .ng-invalid'
+      ) as HTMLElement;
+      if (invalidControl) {
+        invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof invalidControl.focus === 'function') {
+          invalidControl.focus();
+        }
+        return;
+      }
+
+      // 3. Declaration check
+      if (!this.enrollmentForm.get('declarationCheck')?.value) {
+        const declEl = document.querySelector('.agree-line') as HTMLElement;
+        if (declEl) {
+          declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }, 100);
+  }
+
+  onSubmit() {
+    const isPhotoMissing = !this.photo1DataUrl;
+    if (this.enrollmentForm.invalid || isPhotoMissing || this.submitting) {
+      this.enrollmentForm.markAllAsTouched();
+      this.focusFirstInvalidControl();
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required Fields Missing',
+        text: 'Please fill in all mandatory fields highlighted in red (including passport photo & declaration) before proceeding.',
+        confirmButtonColor: '#dc2626'
+      });
       return;
     }
     this.submitting = true;

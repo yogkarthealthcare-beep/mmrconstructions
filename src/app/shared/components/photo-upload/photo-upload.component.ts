@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="photo-box" (click)="fileInput.click()">
+    <div class="photo-box" [class.invalid-photo]="isInvalid" (click)="fileInput.click()">
       <ng-container *ngIf="previewUrl; else uploadPlaceholder">
         <img [src]="previewUrl" alt="Photo preview">
       </ng-container>
@@ -40,6 +40,18 @@ import { CommonModule } from '@angular/common';
       cursor: pointer;
       overflow: hidden;
       margin: 0 auto;
+      transition: all 0.2s ease;
+    }
+    .photo-box.invalid-photo {
+      border: 2.5px dashed #dc2626 !important;
+      background-color: #fef2f2 !important;
+      box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2) !important;
+      animation: pulseError 1.5s infinite;
+    }
+    @keyframes pulseError {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
     }
     .photo-box img {
       width: 100%;
@@ -50,6 +62,7 @@ import { CommonModule } from '@angular/common';
 })
 export class PhotoUploadComponent {
   @Input() placeholderText = 'PHOTO';
+  @Input() isInvalid = false;
   @Output() fileSelected = new EventEmitter<File>();
 
   previewUrl: string | null = null;
