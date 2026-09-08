@@ -4,7 +4,8 @@ import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly DEFAULT_SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 Days (2,592,000,000 ms)
+  private readonly ADMIN_SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 Hours
+  private readonly DEFAULT_SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
   private _adminUser$    = new BehaviorSubject<any>(this.getAdminUser());
   private _user$         = new BehaviorSubject<any>(this.getUser());
@@ -84,33 +85,48 @@ export class AuthService {
 
     const now = Date.now();
 
-    // 1. Check JWT exp claim directly
-    const jwtExp = this.parseJwtExp(t);
-    if (jwtExp && now >= jwtExp) {
-      return true;
-    }
-
-    // 2. Check stored timestamp fallback
+    // 1. Check stored timestamp fallback
     const expKey = scope === 'admin' ? 'mmr_admin_expires_at' : (scope === 'investor' ? 'mmr_investor_expires_at' : 'mmr_user_expires_at');
     const storedExpStr = this.getAuthItem(expKey);
     if (storedExpStr) {
       const storedExp = Number(storedExpStr);
-      if (!isNaN(storedExp) && storedExp > 0 && now >= storedExp) {
-        return true;
+      if (!isNaN(storedExp) && storedExp > 0) {
+        if (now >= storedExp) {
+          return true;
+        }
+        return false;
       }
     }
 
+    // 2. Check JWT exp claim directly
+    const jwtExp = this.parseJwtExp(t);
+    if (jwtExp) {
+      if (now >= jwtExp) return true;
+      return false;
+    }
+
+    // 3. Fallback: initialize 24h window
+    const duration = scope === 'admin' ? this.ADMIN_SESSION_DURATION_MS : this.DEFAULT_SESSION_DURATION_MS;
+    this.saveAuthItem(expKey, String(now + duration));
     return false;
   }
 
   private getExpirationMs(scope: 'admin' | 'user' | 'investor'): number | null {
     const token = scope === 'admin' ? this.adminToken : (scope === 'investor' ? this.getAuthItem('mmr_investor_token') : this.userToken);
     if (!token) return null;
-    const jwtExp = this.parseJwtExp(token);
-    if (jwtExp) return jwtExp;
+
     const expKey = scope === 'admin' ? 'mmr_admin_expires_at' : (scope === 'investor' ? 'mmr_investor_expires_at' : 'mmr_user_expires_at');
     const stored = this.getAuthItem(expKey);
-    return stored ? Number(stored) : null;
+    if (stored) {
+      const num = Number(stored);
+      if (!isNaN(num) && num > 0) return num;
+    }
+
+    const jwtExp = this.parseJwtExp(token);
+    if (jwtExp && jwtExp > Date.now()) return jwtExp;
+
+    const duration = scope === 'admin' ? this.ADMIN_SESSION_DURATION_MS : this.DEFAULT_SESSION_DURATION_MS;
+    return Date.now() + duration;
   }
 
   private scheduleAutoLogout() {
@@ -194,7 +210,7 @@ export class AuthService {
     this.clearAllAuthStorage();
     if (data.token) {
       this.saveAuthItem('mmr_admin_token', data.token);
-      const expiresAt = this.calculateExpiresAt(data.token, 30 * 24 * 60 * 60 * 1000); // 30d default for admin
+      const expiresAt = Date.now() + this.ADMIN_SESSION_DURATION_MS; // Exactly 24 Hours
       this.saveAuthItem('mmr_admin_expires_at', String(expiresAt));
     }
     if (data.refresh_token) this.saveAuthItem('mmr_admin_refresh', data.refresh_token);
