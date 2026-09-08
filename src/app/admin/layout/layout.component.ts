@@ -196,6 +196,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
+      this.closeDropdowns();
       this.checkActiveGroup(event.urlAfterRedirects || event.url);
     });
   }
@@ -236,12 +237,23 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
+  activeDropdown: 'notif' | 'settings' | 'user' | null = null;
+
+  toggleDropdown(type: 'notif' | 'settings' | 'user') {
+    this.activeDropdown = this.activeDropdown === type ? null : type;
+  }
+
+  closeDropdowns() {
+    this.activeDropdown = null;
+  }
+
   get initials() {
     if (!this.adminUser?.full_name) return 'MA';
     return this.adminUser.full_name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase();
   }
 
   logout() {
+    this.closeDropdowns();
     this.auth.logoutAdmin();
     this.router.navigate(['/admin-login']);
   }

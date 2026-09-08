@@ -88,6 +88,7 @@ export class InvestorLayoutComponent implements OnInit {
       this.investorData = user;
     });
     this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+      this.closeDropdowns();
       this.expandGroupForCurrentRoute();
     });
     this.expandGroupForCurrentRoute();
@@ -105,19 +106,23 @@ export class InvestorLayoutComponent implements OnInit {
     return n.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase();
   }
 
+  activeDropdown: 'notif' | 'settings' | 'user' | null = null;
+
+  toggleDropdown(type: 'notif' | 'settings' | 'user' = 'user') {
+    this.activeDropdown = this.activeDropdown === type ? null : type;
+  }
+
+  closeDropdowns() {
+    this.activeDropdown = null;
+    this.showUserDropdown = false;
+  }
+
   toggleSidebar() {
     this.sidebarOpen = !this.sidebarOpen;
   }
 
-  toggleDropdown() {
-    this.showUserDropdown = !this.showUserDropdown;
-  }
-
-  closeDropdown() {
-    this.showUserDropdown = false;
-  }
-
   logout() {
+    this.closeDropdowns();
     this.auth.logoutInvestor();
   }
 }

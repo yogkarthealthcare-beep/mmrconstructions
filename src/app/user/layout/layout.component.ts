@@ -48,10 +48,21 @@ export class UserLayoutComponent implements OnInit {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
+      this.closeDropdowns();
       const currentUrl = event.urlAfterRedirects || event.url;
       this.initNavGroups();
       this.checkActiveGroup(currentUrl);
     });
+  }
+
+  activeDropdown: 'notif' | 'settings' | 'user' | null = null;
+
+  toggleDropdown(type: 'notif' | 'settings' | 'user') {
+    this.activeDropdown = this.activeDropdown === type ? null : type;
+  }
+
+  closeDropdowns() {
+    this.activeDropdown = null;
   }
 
   get basePrefix(): string {
@@ -167,6 +178,7 @@ export class UserLayoutComponent implements OnInit {
   }
 
   logout() {
+    this.closeDropdowns();
     this.auth.logoutUser();
   }
 }

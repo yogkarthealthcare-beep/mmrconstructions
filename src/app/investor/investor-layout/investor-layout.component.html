@@ -87,10 +87,112 @@
         <div class="topbar-page-sub" *ngIf="investorData">{{ investorData?.full_name }} · {{ investorData?.email }}</div>
       </div>
       <div class="topbar-actions">
-        <div class="topbar-avatar" [title]="investorData?.full_name || 'Investor'" routerLink="/investor/profile" style="cursor:pointer; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-          <img *ngIf="investorData?.profile_picture_url" [src]="getImageUrl(investorData.profile_picture_url)" alt="Profile" class="w-100 h-100" style="object-fit:cover; border-radius:50%;" />
-          <span *ngIf="!investorData?.profile_picture_url">{{ initials }}</span>
+        <!-- Notification Bell Dropdown -->
+        <div class="topbar-action-item">
+          <div class="topbar-icon-btn" title="Notifications" (click)="toggleDropdown('notif')">
+            <i class="fas fa-bell"></i>
+            <span class="notif-dot"></span>
+          </div>
+
+          <div class="topbar-dropdown notif-dropdown" *ngIf="activeDropdown === 'notif'" (click)="$event.stopPropagation()">
+            <div class="notif-dropdown-header">
+              <h6>Investor Alerts</h6>
+              <span class="notif-badge">Alerts</span>
+            </div>
+            <div class="notif-dropdown-list">
+              <a routerLink="/investor/deposit" (click)="closeDropdowns()" class="notif-item">
+                <div class="notif-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                <div class="notif-text">
+                  <div class="notif-title">Deposit &amp; Settlements</div>
+                  <div class="notif-desc">Check your verified deposits and interest settlements.</div>
+                </div>
+              </a>
+              <a routerLink="/investor/transactions" (click)="closeDropdowns()" class="notif-item">
+                <div class="notif-icon"><i class="fas fa-list-alt"></i></div>
+                <div class="notif-text">
+                  <div class="notif-title">Transaction History</div>
+                  <div class="notif-desc">View full ledger of investment returns.</div>
+                </div>
+              </a>
+            </div>
+            <div class="notif-dropdown-footer">
+              <a routerLink="/investor/transactions" (click)="closeDropdowns()">View All Transactions &rarr;</a>
+            </div>
+          </div>
         </div>
+
+        <!-- Settings Cog Dropdown -->
+        <div class="topbar-action-item">
+          <div class="topbar-icon-btn" title="Settings" (click)="toggleDropdown('settings')">
+            <i class="fas fa-cog"></i>
+          </div>
+
+          <div class="topbar-dropdown settings-dropdown" *ngIf="activeDropdown === 'settings'" (click)="$event.stopPropagation()">
+            <div class="notif-dropdown-header">
+              <h6>Quick Settings</h6>
+            </div>
+            <div class="topbar-dropdown-menu">
+              <a routerLink="/investor/profile" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-user-circle"></i> Edit Profile
+              </a>
+              <a routerLink="/investor/change-password" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-key"></i> Change Password
+              </a>
+              <a routerLink="/investor/documents" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-file-upload"></i> KYC &amp; Documents
+              </a>
+              <a routerLink="/investor/enrollment" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-file-contract"></i> Enrollment Form
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Avatar Circle Dropdown -->
+        <div class="topbar-action-item">
+          <div class="topbar-avatar" [title]="investorData?.full_name || 'Investor'" (click)="toggleDropdown('user')">
+            <img *ngIf="investorData?.profile_picture_url" [src]="getImageUrl(investorData.profile_picture_url)" alt="Profile" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />
+            <span *ngIf="!investorData?.profile_picture_url">{{ initials }}</span>
+          </div>
+
+          <div class="topbar-dropdown user-dropdown" *ngIf="activeDropdown === 'user'" (click)="$event.stopPropagation()">
+            <div class="dropdown-user-card">
+              <div class="duc-avatar">
+                <img *ngIf="investorData?.profile_picture_url" [src]="getImageUrl(investorData.profile_picture_url)" alt="Profile" />
+                <span *ngIf="!investorData?.profile_picture_url">{{ initials }}</span>
+              </div>
+              <div class="duc-info">
+                <div class="duc-name">{{ investorData?.full_name || 'Investor Account' }}</div>
+                <div class="duc-role">Investor Partner</div>
+                <div class="duc-sub">{{ investorData?.email || investorData?.mobile }}</div>
+              </div>
+            </div>
+            <div class="topbar-dropdown-menu">
+              <a routerLink="/investor/profile" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-user-circle"></i> Investor Profile
+              </a>
+              <a routerLink="/investor/wallet" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-wallet"></i> My Wallet
+              </a>
+              <a routerLink="/investor/deposit" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-hand-holding-usd"></i> Deposit &amp; Investments
+              </a>
+              <a routerLink="/investor/change-password" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-key"></i> Security &amp; Password
+              </a>
+              <a routerLink="/" target="_blank" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-globe"></i> View Website
+              </a>
+              <div class="topbar-dropdown-divider"></div>
+              <button type="button" (click)="logout()" class="topbar-dropdown-item danger-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Backdrop to close dropdown on outside click -->
+        <div class="topbar-dropdown-backdrop" *ngIf="activeDropdown" (click)="closeDropdowns()"></div>
       </div>
     </header>
 

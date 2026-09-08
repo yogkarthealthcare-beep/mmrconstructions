@@ -59,14 +59,112 @@
         <div class="topbar-page-title">Admin Management Console</div>
       </div>
       <div class="topbar-actions">
-        <div class="topbar-icon-btn" title="Notifications">
-          <i class="fas fa-bell"></i>
-          <span class="notif-dot"></span>
+        <!-- Notification Bell Dropdown -->
+        <div class="topbar-action-item">
+          <div class="topbar-icon-btn" title="Notifications" (click)="toggleDropdown('notif')">
+            <i class="fas fa-bell"></i>
+            <span class="notif-dot"></span>
+          </div>
+
+          <div class="topbar-dropdown notif-dropdown" *ngIf="activeDropdown === 'notif'" (click)="$event.stopPropagation()">
+            <div class="notif-dropdown-header">
+              <h6>Notifications</h6>
+              <span class="notif-badge">Alerts</span>
+            </div>
+            <div class="notif-dropdown-list">
+              <a routerLink="/admin/approvals" (click)="closeDropdowns()" class="notif-item">
+                <div class="notif-icon"><i class="fas fa-user-check"></i></div>
+                <div class="notif-text">
+                  <div class="notif-title">KYC Registrations</div>
+                  <div class="notif-desc">Check pending associate &amp; customer verification approvals.</div>
+                </div>
+              </a>
+              <a routerLink="/admin/enrollments" (click)="closeDropdowns()" class="notif-item">
+                <div class="notif-icon"><i class="fas fa-id-card"></i></div>
+                <div class="notif-text">
+                  <div class="notif-title">Enrollment Applications</div>
+                  <div class="notif-desc">New customer and associate enrollment submissions.</div>
+                </div>
+              </a>
+              <a routerLink="/admin/enquiries" (click)="closeDropdowns()" class="notif-item">
+                <div class="notif-icon"><i class="fas fa-envelope-open-text"></i></div>
+                <div class="notif-text">
+                  <div class="notif-title">Client Enquiries</div>
+                  <div class="notif-desc">New leads and website contact messages.</div>
+                </div>
+              </a>
+            </div>
+            <div class="notif-dropdown-footer">
+              <a routerLink="/admin/enquiries" (click)="closeDropdowns()">View All Enquiries &rarr;</a>
+            </div>
+          </div>
         </div>
-        <div class="topbar-icon-btn" title="Settings">
-          <i class="fas fa-cog"></i>
+
+        <!-- Settings Cog Dropdown -->
+        <div class="topbar-action-item">
+          <div class="topbar-icon-btn" title="Settings" (click)="toggleDropdown('settings')">
+            <i class="fas fa-cog"></i>
+          </div>
+
+          <div class="topbar-dropdown settings-dropdown" *ngIf="activeDropdown === 'settings'" (click)="$event.stopPropagation()">
+            <div class="notif-dropdown-header">
+              <h6>Quick Settings</h6>
+            </div>
+            <div class="topbar-dropdown-menu">
+              <a routerLink="/admin/settings" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-sliders-h"></i> General Settings
+              </a>
+              <a routerLink="/admin/invoice-settings" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-file-invoice-dollar"></i> Invoice &amp; Billing
+              </a>
+              <a routerLink="/admin/payment-gateways" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-credit-card"></i> Payment Gateways
+              </a>
+              <a routerLink="/admin/database-backup" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-database"></i> Database Backup
+              </a>
+              <a routerLink="/admin/change-password" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-key"></i> Change Password
+              </a>
+            </div>
+          </div>
         </div>
-        <div class="topbar-avatar" [title]="adminUser?.full_name || 'Admin'">{{ initials }}</div>
+
+        <!-- Avatar Circle Dropdown -->
+        <div class="topbar-action-item">
+          <div class="topbar-avatar" [title]="adminUser?.full_name || 'Admin'" (click)="toggleDropdown('user')">
+            {{ initials }}
+          </div>
+
+          <div class="topbar-dropdown user-dropdown" *ngIf="activeDropdown === 'user'" (click)="$event.stopPropagation()">
+            <div class="dropdown-user-card">
+              <div class="duc-avatar">{{ initials }}</div>
+              <div class="duc-info">
+                <div class="duc-name">{{ adminUser?.full_name || 'Super Admin' }}</div>
+                <div class="duc-role">{{ adminUser?.role || 'Administrator' }}</div>
+                <div class="duc-sub">{{ adminUser?.email || 'admin@mmrconstructions.in' }}</div>
+              </div>
+            </div>
+            <div class="topbar-dropdown-menu">
+              <a routerLink="/admin/settings" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-cog"></i> Admin Settings
+              </a>
+              <a routerLink="/admin/change-password" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-shield-alt"></i> Security &amp; Password
+              </a>
+              <a routerLink="/" target="_blank" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-globe"></i> View Website
+              </a>
+              <div class="topbar-dropdown-divider"></div>
+              <button type="button" (click)="logout()" class="topbar-dropdown-item danger-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Backdrop to close dropdown on outside click -->
+        <div class="topbar-dropdown-backdrop" *ngIf="activeDropdown" (click)="closeDropdowns()"></div>
       </div>
     </header>
 

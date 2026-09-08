@@ -63,8 +63,105 @@
         <div class="topbar-page-sub">{{ userData?.member_id }} · {{ userData?.user_type || 'Associate' }}</div>
       </div>
       <div class="topbar-actions">
-        <div class="topbar-icon-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
-        <div class="topbar-avatar">{{ initials }}</div>
+        <!-- Notification Bell Dropdown -->
+        <div class="topbar-action-item">
+          <div class="topbar-icon-btn" title="Notifications" (click)="toggleDropdown('notif')">
+            <i class="fas fa-bell"></i>
+            <span class="notif-dot"></span>
+          </div>
+
+          <div class="topbar-dropdown notif-dropdown" *ngIf="activeDropdown === 'notif'" (click)="$event.stopPropagation()">
+            <div class="notif-dropdown-header">
+              <h6>Notifications</h6>
+              <span class="notif-badge">Alerts</span>
+            </div>
+            <div class="notif-dropdown-list">
+              <a [routerLink]="basePrefix + '/notifications'" (click)="closeDropdowns()" class="notif-item">
+                <div class="notif-icon"><i class="fas fa-bell"></i></div>
+                <div class="notif-text">
+                  <div class="notif-title">Account Alerts &amp; Updates</div>
+                  <div class="notif-desc">Check your recent transaction and enrollment notifications.</div>
+                </div>
+              </a>
+              <a [routerLink]="basePrefix + '/wallet/transactions'" (click)="closeDropdowns()" class="notif-item">
+                <div class="notif-icon"><i class="fas fa-wallet"></i></div>
+                <div class="notif-text">
+                  <div class="notif-title">Wallet &amp; Payouts</div>
+                  <div class="notif-desc">Track latest commission credits and payouts.</div>
+                </div>
+              </a>
+            </div>
+            <div class="notif-dropdown-footer">
+              <a [routerLink]="basePrefix + '/notifications'" (click)="closeDropdowns()">View All Notifications &rarr;</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Cog Dropdown -->
+        <div class="topbar-action-item">
+          <div class="topbar-icon-btn" title="Settings" (click)="toggleDropdown('settings')">
+            <i class="fas fa-cog"></i>
+          </div>
+
+          <div class="topbar-dropdown settings-dropdown" *ngIf="activeDropdown === 'settings'" (click)="$event.stopPropagation()">
+            <div class="notif-dropdown-header">
+              <h6>Quick Settings</h6>
+            </div>
+            <div class="topbar-dropdown-menu">
+              <a [routerLink]="basePrefix + '/profile'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-user-circle"></i> Profile &amp; KYC
+              </a>
+              <a [routerLink]="basePrefix + '/documents'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-folder-open"></i> My Documents
+              </a>
+              <a [routerLink]="basePrefix + '/wallet'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-wallet"></i> Wallet &amp; Bank
+              </a>
+              <a [routerLink]="basePrefix + '/notifications'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-bell"></i> Notifications
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Avatar Circle Dropdown -->
+        <div class="topbar-action-item">
+          <div class="topbar-avatar" [title]="userData?.full_name || 'My Account'" (click)="toggleDropdown('user')">
+            {{ initials }}
+          </div>
+
+          <div class="topbar-dropdown user-dropdown" *ngIf="activeDropdown === 'user'" (click)="$event.stopPropagation()">
+            <div class="dropdown-user-card">
+              <div class="duc-avatar">{{ initials }}</div>
+              <div class="duc-info">
+                <div class="duc-name">{{ userData?.full_name || 'My Account' }}</div>
+                <div class="duc-role">{{ userData?.user_type || 'Associate' }}</div>
+                <div class="duc-sub">{{ userData?.member_id }} · {{ userData?.mobile_no }}</div>
+              </div>
+            </div>
+            <div class="topbar-dropdown-menu">
+              <a [routerLink]="basePrefix + '/profile'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-user-circle"></i> My Profile &amp; KYC
+              </a>
+              <a [routerLink]="basePrefix + '/wallet'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-coins"></i> My Wallet &amp; Earnings
+              </a>
+              <a [routerLink]="basePrefix + '/documents'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-file-alt"></i> Uploaded Documents
+              </a>
+              <a routerLink="/" target="_blank" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-globe"></i> View Website
+              </a>
+              <div class="topbar-dropdown-divider"></div>
+              <button type="button" (click)="logout()" class="topbar-dropdown-item danger-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Backdrop to close dropdown on outside click -->
+        <div class="topbar-dropdown-backdrop" *ngIf="activeDropdown" (click)="closeDropdowns()"></div>
       </div>
     </header>
     <main class="panel-content">
