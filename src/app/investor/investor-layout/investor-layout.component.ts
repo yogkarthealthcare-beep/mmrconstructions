@@ -22,45 +22,57 @@ export class InvestorLayoutComponent implements OnInit {
     this.sidebarCollapsed = !this.sidebarCollapsed;
   }
 
-  navGroups = [
-    {
-      label: 'OVERVIEW',
-      icon: 'fas fa-chart-pie',
-      expanded: false,
-      items: [
-        { icon: 'fas fa-chart-line', label: 'Dashboard', route: '/investor/dashboard' }
-      ]
-    },
-    {
-      label: 'FINANCE & WALLET',
-      icon: 'fas fa-wallet',
-      expanded: false,
-      items: [
-        { icon: 'fas fa-hand-holding-usd', label: 'Deposit', route: '/investor/deposit' },
-        { icon: 'fas fa-wallet', label: 'Wallet', route: '/investor/wallet' },
-        { icon: 'fas fa-list-alt', label: 'Transaction History', route: '/investor/transactions' },
-        { icon: 'fas fa-calendar-check', label: 'Settlement Details', route: '/investor/settlement' }
-      ]
-    },
-    {
-      label: 'FORMS & DOCUMENTS',
-      icon: 'fas fa-file-contract',
-      expanded: false,
-      items: [
-        { icon: 'fas fa-file-contract', label: 'Enrollment Form', route: '/investor/enrollment' },
-        { icon: 'fas fa-file-upload', label: 'Document Upload', route: '/investor/documents' }
-      ]
-    },
-    {
-      label: 'SETTINGS',
-      icon: 'fas fa-cog',
-      expanded: false,
-      items: [
-        { icon: 'fas fa-user-circle', label: 'Edit Profile', route: '/investor/profile' },
-        { icon: 'fas fa-key', label: 'Change Password', route: '/investor/change-password' }
-      ]
+  navGroups: any[] = [];
+
+  get isEnrollmentCompleted(): boolean {
+    return this.auth.isEnrollmentCompleted();
+  }
+
+  initNavGroups() {
+    const formItems = [];
+    if (!this.auth.isEnrollmentCompleted()) {
+      formItems.push({ icon: 'fas fa-file-contract', label: 'Enrollment Form', route: '/investor/enrollment' });
     }
-  ];
+    formItems.push({ icon: 'fas fa-file-upload', label: 'Document Upload', route: '/investor/documents' });
+
+    this.navGroups = [
+      {
+        label: 'OVERVIEW',
+        icon: 'fas fa-chart-pie',
+        expanded: false,
+        items: [
+          { icon: 'fas fa-chart-line', label: 'Dashboard', route: '/investor/dashboard' }
+        ]
+      },
+      {
+        label: 'FINANCE & WALLET',
+        icon: 'fas fa-wallet',
+        expanded: false,
+        items: [
+          { icon: 'fas fa-hand-holding-usd', label: 'Deposit', route: '/investor/deposit' },
+          { icon: 'fas fa-wallet', label: 'Wallet', route: '/investor/wallet' },
+          { icon: 'fas fa-list-alt', label: 'Transaction History', route: '/investor/transactions' },
+          { icon: 'fas fa-calendar-check', label: 'Settlement Details', route: '/investor/settlement' }
+        ]
+      },
+      {
+        label: 'FORMS & DOCUMENTS',
+        icon: 'fas fa-file-contract',
+        expanded: false,
+        items: formItems
+      },
+      {
+        label: 'SETTINGS',
+        icon: 'fas fa-cog',
+        expanded: false,
+        items: [
+          { icon: 'fas fa-user-circle', label: 'Edit Profile', route: '/investor/profile' },
+          { icon: 'fas fa-key', label: 'Change Password', route: '/investor/change-password' }
+        ]
+      }
+    ];
+    this.expandGroupForCurrentRoute();
+  }
 
   toggleGroup(group: any) {
     if (this.sidebarCollapsed) {
@@ -75,7 +87,7 @@ export class InvestorLayoutComponent implements OnInit {
     const currentUrl = this.router.url;
     let matchedGroup: any = null;
     for (const group of this.navGroups) {
-      if (group.items.some(item => currentUrl.includes(item.route))) {
+      if (group.items.some((item: any) => currentUrl.includes(item.route))) {
         matchedGroup = group;
         break;
       }
@@ -88,9 +100,28 @@ export class InvestorLayoutComponent implements OnInit {
   constructor(private auth: AuthService, private api: ApiService, private router: Router) {}
 
   ngOnInit() {
+    this.initNavGroups();
+
     this.auth.investorUser$.subscribe(user => {
       this.investorData = user;
+      this.initNavGroups();
     });
+
+    if (!this.auth.isEnrollmentCompleted()) {
+      this.api.getInvestorEnrollment().subscribe({
+        next: (res: any) => {
+          if (res && res.success && res.data) {
+            this.auth.setEnrollmentCompleted();
+            this.initNavGroups();
+            if (this.router.url.includes('/enrollment')) {
+              this.router.navigate(['/investor/dashboard']);
+            }
+          }
+        },
+        error: () => {}
+      });
+    }
+
     this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
       this.closeDropdowns();
       this.expandGroupForCurrentRoute();

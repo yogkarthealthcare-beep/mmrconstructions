@@ -353,7 +353,10 @@ export class InvestorEnrollmentComponent implements OnInit {
           icon: 'success',
           title: 'Enrollment Submitted Successfully!',
           text: 'Your investor enrollment form has been submitted.',
-          confirmButtonColor: '#1a5c3a'
+          confirmButtonColor: '#1a5c3a',
+          confirmButtonText: 'Go to Dashboard'
+        }).then(() => {
+          this.goToDashboard();
         });
       },
       error: (err: any) => {
@@ -505,80 +508,8 @@ export class InvestorEnrollmentComponent implements OnInit {
           this.isSubmitted = true;
           this.enrollmentId = enroll.id;
           this.auth.setEnrollmentCompleted();
-          
-          this.enrollmentForm.disable();
-          
-          this.enrollmentForm.patchValue({
-            formNo: enroll.form_no,
-            formDate: enroll.form_date ? new Date(enroll.form_date).toISOString().split('T')[0] : '',
-            branchCode: enroll.branch_code,
-            branchName: enroll.branch_name,
-            investorId: enroll.investor_enrollment_id,
-            projectName: enroll.project_name,
-            invFirstName: enroll.inv_first_name,
-            invMiddleName: enroll.inv_middle_name || '',
-            invSurname: enroll.inv_surname || '',
-            fhFirstName: enroll.fh_first_name,
-            fhMiddleName: enroll.fh_middle_name || '',
-            fhSurname: enroll.fh_surname || '',
-            dob: enroll.dob ? new Date(enroll.dob).toISOString().split('T')[0] : '',
-            age: enroll.age,
-            gender: enroll.gender,
-            occupation: enroll.occupation,
-            occupationOther: enroll.occupation_other || '',
-            address: enroll.address,
-            city: enroll.city,
-            state: enroll.state,
-            pinCode: enroll.pin_code,
-            sameAsPermanent: !!(enroll.address && enroll.corr_address && enroll.address.trim() === enroll.corr_address.trim()),
-            corrAddress: enroll.corr_address || '',
-            corrCity: enroll.corr_city || '',
-            corrState: enroll.corr_state || '',
-            corrPinCode: enroll.corr_pin_code || '',
-            mobile: enroll.mobile,
-            altTel: enroll.alt_tel || '',
-            email: enroll.email || '',
-            pan: enroll.pan || '',
-            aadhar: enroll.aadhar || '',
-            amount: enroll.amount,
-            amountWords: enroll.amount_words,
-            paymentMode: enroll.payment_mode,
-            txnNo: enroll.txn_no || '',
-            txnDate: enroll.txn_date ? new Date(enroll.txn_date).toISOString().split('T')[0] : '',
-            bankBranch: enroll.bank_branch || enroll.bankBranch || '',
-            accountNumber: enroll.account_number || enroll.accountNumber || '',
-            ifscCode: enroll.ifsc_code || enroll.ifscCode || '',
-            declarationCheck: true,
-            declDate: enroll.decl_date ? new Date(enroll.decl_date).toISOString().split('T')[0] : '',
-            declPlace: enroll.decl_place,
-            declSignatureName: enroll.decl_signature_name,
-            firstApplicantName: enroll.first_applicant_name,
-            jointApplicantName: enroll.joint_applicant_name || ''
-          });
-
-          if (enroll.nominees) {
-            let noms = [];
-            try {
-              noms = typeof enroll.nominees === 'string' ? JSON.parse(enroll.nominees) : enroll.nominees;
-            } catch (e) {
-              noms = [];
-            }
-            if (Array.isArray(noms) && noms.length > 0) {
-              this.nominees.clear();
-              noms.forEach((n: any) => {
-                this.nominees.push(this.fb.group({
-                  name: [n.name || '', Validators.required],
-                  relationship: [n.relationship || '', Validators.required],
-                  age: [n.age || '', Validators.required],
-                  proportion: [n.proportion || '', [Validators.required, Validators.min(1), Validators.max(100)]]
-                }));
-              });
-            }
-          }
-
-          if (enroll.photo_url) {
-            this.photoDataUrl = enroll.photo_url;
-          }
+          this.goToDashboard();
+          return;
         } else {
           this.prefillProfile();
         }

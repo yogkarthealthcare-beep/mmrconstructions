@@ -448,23 +448,30 @@ export class AuthService {
   isEnrollmentCompleted(): boolean {
     if (this.isInvestorLoggedIn()) {
       const inv = this.getInvestorUser();
-      const status = String(inv?.enrollment_status || '').toLowerCase();
-      return status === 'completed';
+      if (!inv) return false;
+      const status = String(inv.enrollment_status || inv.enrollmentStatus || '').toLowerCase().trim();
+      if (status === 'completed' || status === 'submitted') return true;
+      if (inv.is_enrolled === true || inv.isEnrolled === true || inv.enrollment_form_submitted === true || inv.enrollment_completed === true) return true;
+      return false;
     }
     const user = this.getUser();
     if (!user) return false;
-    const status = String(user?.enrollment_status || '').toLowerCase();
-    return status === 'completed';
+    const status = String(user.enrollment_status || user.enrollmentStatus || '').toLowerCase().trim();
+    if (status === 'completed' || status === 'submitted') return true;
+    if (user.is_enrolled === true || user.isEnrolled === true || user.enrollment_form_submitted === true || user.enrollment_completed === true) return true;
+    return false;
   }
 
   setEnrollmentCompleted() {
     if (this.isInvestorLoggedIn()) {
       const inv = this.getInvestorUser() || {};
       inv.enrollment_status = 'completed';
+      inv.is_enrolled = true;
       this.updateInvestorUser(inv);
     } else {
       const user = this.getUser() || {};
       user.enrollment_status = 'completed';
+      user.is_enrolled = true;
       this.saveAuthItem('mmr_user', JSON.stringify(user));
       this._user$.next(user);
     }

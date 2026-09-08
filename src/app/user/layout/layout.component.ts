@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink, RouterOutlet, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { ApiService } from '../../services/api.service';
 import { filter } from 'rxjs/operators';
 
 interface NavItem {
@@ -32,7 +33,7 @@ export class UserLayoutComponent implements OnInit {
   private _cachedPrefix = '';
   navGroups: NavGroup[] = [];
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(private auth: AuthService, private api: ApiService, private router: Router) {}
 
   ngOnInit() {
     this.userData = this.auth.getUser();
@@ -44,6 +45,38 @@ export class UserLayoutComponent implements OnInit {
     });
 
     this.checkActiveGroup(this.router.url);
+
+    // If enrollment is not marked completed in local session, check backend API
+    if (!this.auth.isEnrollmentCompleted()) {
+      const p = this.basePrefix;
+      if (p === '/associate') {
+        this.api.getMyAssociateEnrollment().subscribe({
+          next: (res: any) => {
+            if (res && res.success && res.data) {
+              this.auth.setEnrollmentCompleted();
+              this.initNavGroups(true);
+              if (this.router.url.includes('/enrollment')) {
+                this.router.navigate(['/associate/dashboard']);
+              }
+            }
+          },
+          error: () => {}
+        });
+      } else if (p === '/customer') {
+        this.api.getMyCustomerEnrollments().subscribe({
+          next: (res: any) => {
+            if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+              this.auth.setEnrollmentCompleted();
+              this.initNavGroups(true);
+              if (this.router.url.includes('/enrollment')) {
+                this.router.navigate(['/customer/dashboard']);
+              }
+            }
+          },
+          error: () => {}
+        });
+      }
+    }
 
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -95,7 +128,8 @@ export class UserLayoutComponent implements OnInit {
       { icon: 'fas fa-folder-open', label: 'My Documents', route: `${p}/documents` }
     ];
 
-    if (p === '/associate' || p === '/customer') {
+    // Show Enrollment Form in menu ONLY if not yet completed
+    if (!this.auth.isEnrollmentCompleted() && (p === '/associate' || p === '/customer')) {
       accountItems.push({ icon: 'fas fa-file-contract', label: 'Enrollment Form', route: `${p}/enrollment` });
     }
 

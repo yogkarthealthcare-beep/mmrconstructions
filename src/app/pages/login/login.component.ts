@@ -100,23 +100,40 @@ export class LoginComponent implements OnInit {
           }
 
           let targetDashboard = '/customer/dashboard';
+          let targetEnrollment = '/customer/enrollment';
+
           if (userType.includes('associate')) {
             targetDashboard = '/associate/dashboard';
+            targetEnrollment = '/associate/enrollment';
           } else if (userType.includes('investor')) {
             targetDashboard = '/investor/dashboard';
+            targetEnrollment = '/investor/enrollment';
           } else if (userType.includes('admin')) {
             targetDashboard = '/admin/dashboard';
+            targetEnrollment = '/admin/dashboard';
           } else {
             targetDashboard = '/customer/dashboard';
+            targetEnrollment = '/customer/enrollment';
           }
+
+          const isEnrolled = this.auth.isEnrollmentCompleted();
+          const defaultTarget = isEnrolled ? targetDashboard : targetEnrollment;
 
           const isInvalidReturn = (url?: string) => !url || url === '/' || url === '/home' || url === '/login' || url.includes('/login') || url === '/unauthorized';
 
-          let destination = targetDashboard;
+          let destination = defaultTarget;
           if (this.returnUrl && !isInvalidReturn(this.returnUrl)) {
-            destination = this.returnUrl;
+            if (isEnrolled && this.returnUrl.toLowerCase().includes('/enrollment')) {
+              destination = targetDashboard;
+            } else {
+              destination = this.returnUrl;
+            }
           } else if (res.data?.redirect && !isInvalidReturn(res.data.redirect)) {
-            destination = res.data.redirect;
+            if (isEnrolled && res.data.redirect.toLowerCase().includes('/enrollment')) {
+              destination = targetDashboard;
+            } else {
+              destination = res.data.redirect;
+            }
           }
 
           setTimeout(() => {

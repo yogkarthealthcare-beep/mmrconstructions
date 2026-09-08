@@ -64,7 +64,8 @@ export class InvestorLoginComponent {
         this.loading = false;
         if (res.success && res.data?.token) {
           this.auth.setInvestorSession(res.data, this.rememberMe);
-          this.router.navigate(['/investor/dashboard']);
+          const target = this.auth.isEnrollmentCompleted() ? '/investor/dashboard' : '/investor/enrollment';
+          this.router.navigate([target]);
         } else {
           this.errorMessage = res.message || 'Login failed. Please check credentials.';
         }

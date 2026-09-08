@@ -103,7 +103,10 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
             icon: 'success',
             title: 'Enrollment Submitted Successfully!',
             text: 'Your associate enrollment form has been submitted.',
-            confirmButtonColor: '#1a5c3a'
+            confirmButtonColor: '#1a5c3a',
+            confirmButtonText: 'Go to Dashboard'
+          }).then(() => {
+            this.router.navigate(['/associate/dashboard']);
           });
         }
       })
@@ -118,86 +121,8 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
           this.isSubmitted = true;
           this.submissionAssociateId = d.associate_id || d.associateId || null;
           this.auth.setEnrollmentCompleted();
-
-          this.enrollmentForm.patchValue({
-            personalDetails: {
-              fullName: d.full_name || d.fullName || '',
-              dob: (d.date_of_birth || d.dob) ? new Date(d.date_of_birth || d.dob).toISOString().split('T')[0] : '',
-              gender: d.gender || '',
-              fatherName: d.father_name || d.fatherName || '',
-              motherName: d.mother_name || d.motherName || '',
-              spouseName: d.spouse_name || d.spouseName || '',
-              contact1: d.contact_primary || d.contact1 || '',
-              contact2: d.contact_secondary || d.contact2 || '',
-              nationality: d.nationality || 'Indian',
-              residentialStatus: d.residential_status || d.residentialStatus || '',
-              panNo: d.pan_number || d.panNo || '',
-              aadharNo: d.aadhar_number || d.aadharNo || '',
-              email: d.email || '',
-              occupation: d.occupation || '',
-              annualIncome: d.annual_income || d.annualIncome || '',
-              education: d.education || '',
-              category: d.category || '',
-              religion: d.religion || ''
-            },
-            addressDetails: {
-              permAddress: d.perm_address_line1 || d.permAddress || '',
-              permCity: d.perm_city || d.permCity || '',
-              permState: d.perm_state || d.permState || '',
-              permCountry: d.perm_country || d.permCountry || 'India',
-              permPin: d.perm_pincode || d.permPin || '',
-              sameAsPerm: !!(d.perm_address_line1 && d.local_address_line1 && d.perm_address_line1 === d.local_address_line1),
-              localAddress: d.local_address_line1 || d.localAddress || '',
-              localCity: d.local_city || d.localCity || '',
-              localState: d.local_state || d.localState || '',
-              localCountry: d.local_country || d.localCountry || 'India',
-              localPin: d.local_pincode || d.localPin || ''
-            },
-            bankDetails: {
-              bankName: d.bank_name || d.bankName || '',
-              accHolder: d.account_holder_name || d.accHolder || '',
-              accNo: d.account_number || d.accNo || '',
-              ifsc: d.ifsc_code || d.ifsc || '',
-              micr: d.micr_code || d.micr || '',
-              branchName: d.branch_name || d.branchName || '',
-              branchCode: d.branch_code || d.branchCode || '',
-              swift: d.swift_code || d.swift || '',
-              branchCountry: d.branch_country || d.branchCountry || 'India'
-            },
-            nomineeDetails: {
-              nomineeName: d.nominee_name || d.nomineeName || '',
-              nomineeDob: (d.nominee_dob || d.nomineeDob) ? new Date(d.nominee_dob || d.nomineeDob).toISOString().split('T')[0] : '',
-              nomineeGender: d.nominee_gender || d.nomineeGender || '',
-              nomineeNationality: d.nominee_nationality || d.nomineeNationality || 'Indian',
-              nomineeResStatus: d.nominee_res_status || d.nomineeResStatus || '',
-              nomineeRelationship: d.nominee_relationship || d.nomineeRelationship || '',
-              nomineePanName: d.nominee_pan_name || d.nomineePanName || '',
-              nomineePanNo: d.nominee_pan_no || d.nomineePanNo || '',
-              nomineeAadharName: d.nominee_aadhar_name || d.nomineeAadharName || '',
-              nomineeAadharNo: d.nominee_aadhar_no || d.nomineeAadharNo || '',
-              nomineeAddress: d.nominee_address || d.nomineeAddress || ''
-            },
-            sponsorDetails: {
-              sponsorName: d.sponsor_name || d.sponsorName || '',
-              sponsorCode: d.sponsor_code || d.sponsorCode || '',
-              sponsorContact: d.sponsor_contact || d.sponsorContact || ''
-            },
-            termsAndConditions: {
-              tc1: true,
-              tc2: true,
-              tc3: true,
-              tc4: true,
-              tc5: true,
-              tc6: true
-            },
-            signature: {
-              signDate: (d.sign_date || d.signDate) ? new Date(d.sign_date || d.signDate).toISOString().split('T')[0] : ''
-            }
-          });
-
-          this.existingApplicantPhoto = d.applicant_photo_url || '';
-          this.existingNomineePhoto = d.nominee_photo_url || '';
-          this.enrollmentForm.disable();
+          this.router.navigate(['/associate/dashboard']);
+          return;
         } else {
           this.prefillProfile();
         }
