@@ -53,9 +53,12 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   initForm() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const autoAppNo = `MMR-CUST-${Date.now().toString().slice(-6)}`;
+
     this.enrollmentForm = this.fb.group({
-      formDate: [''],
-      applicationNo: [''],
+      formDate: [todayStr],
+      applicationNo: [autoAppNo],
       
       projectName: [''],
       propertyType: [''],

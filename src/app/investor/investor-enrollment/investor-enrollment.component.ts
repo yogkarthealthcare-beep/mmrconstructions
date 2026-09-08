@@ -54,9 +54,12 @@ export class InvestorEnrollmentComponent implements OnInit {
   }
 
   initForm() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const autoFormNo = `MMR-INV-${Date.now().toString().slice(-6)}`;
+
     this.enrollmentForm = this.fb.group({
-      formNo: ['', Validators.required],
-      formDate: ['', Validators.required],
+      formNo: [autoFormNo, Validators.required],
+      formDate: [todayStr, Validators.required],
       branchCode: ['', Validators.required],
       branchName: ['', Validators.required],
       investorId: ['', Validators.required],
@@ -96,7 +99,7 @@ export class InvestorEnrollmentComponent implements OnInit {
       ifscCode: [''],
       nominees: this.fb.array([this.createNomineeGroup()]),
       declarationCheck: [false, Validators.requiredTrue],
-      declDate: ['', Validators.required],
+      declDate: [todayStr, Validators.required],
       declPlace: ['', Validators.required],
       declSignatureName: ['', Validators.required],
       firstApplicantName: ['', Validators.required],

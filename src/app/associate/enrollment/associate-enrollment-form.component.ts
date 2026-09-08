@@ -285,7 +285,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         tc6: [false, Validators.requiredTrue]
       }),
       signature: this.fb.group({
-        signDate: ['', Validators.required]
+        signDate: [new Date().toISOString().split('T')[0], Validators.required]
       })
     });
 
