@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -15,8 +15,18 @@ import { AuthService } from '../../services/auth.service';
 export class AdminLoginComponent {
   email = ''; password = ''; showPass = false;
   loading = false; error = '';
+  sessionExpiredMessage = '';
 
-  constructor(private api: ApiService, private auth: AuthService, private router: Router) {}
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    if (this.route.snapshot.queryParamMap.get('sessionExpired') === 'true') {
+      this.sessionExpiredMessage = 'सुरक्षा कारणों से आपका एडमिन सत्र (Session) समाप्त हो गया है। कृपया पुनः लॉगिन करें।';
+    }
+  }
 
   login() {
     if (!this.email || !this.password) { this.error = 'Email and password required'; return; }

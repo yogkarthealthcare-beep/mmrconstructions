@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly DEFAULT_SESSION_DURATION_MS = 4 * 60 * 60 * 1000; // 4 Hours (14,400,000 ms)
+  private readonly DEFAULT_SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 Days (2,592,000,000 ms)
 
   private _adminUser$    = new BehaviorSubject<any>(this.getAdminUser());
   private _user$         = new BehaviorSubject<any>(this.getUser());
@@ -120,40 +120,47 @@ export class AuthService {
     }
 
     const now = Date.now();
-    const userExp = this.getExpirationMs('user');
-    const investorExp = this.getExpirationMs('investor');
-    const adminExp = this.getExpirationMs('admin');
+    let activeScope: 'admin' | 'investor' | 'user' | null = null;
+    let activeExp: number | null = null;
 
-    const activeExps: { scope: 'user' | 'investor' | 'admin'; exp: number }[] = [];
-    if (userExp !== null && userExp > 0) activeExps.push({ scope: 'user', exp: userExp });
-    if (investorExp !== null && investorExp > 0) activeExps.push({ scope: 'investor', exp: investorExp });
-    if (adminExp !== null && adminExp > 0) activeExps.push({ scope: 'admin', exp: adminExp });
+    if (this.adminToken) {
+      activeScope = 'admin';
+      activeExp = this.getExpirationMs('admin');
+    } else if (this.getAuthItem('mmr_investor_token')) {
+      activeScope = 'investor';
+      activeExp = this.getExpirationMs('investor');
+    } else if (this.userToken) {
+      activeScope = 'user';
+      activeExp = this.getExpirationMs('user');
+    }
 
-    if (activeExps.length === 0) return;
+    if (!activeScope || !activeExp || activeExp <= 0) return;
 
-    activeExps.sort((a, b) => a.exp - b.exp);
-    const soonest = activeExps[0];
-    const delay = Math.max(0, soonest.exp - now);
-
+    const delay = activeExp - now;
     if (delay <= 0) {
-      this.handleAuthExpired(soonest.scope);
+      this.handleAuthExpired(activeScope);
       return;
     }
 
+    // Protect from 32-bit setTimeout integer limit (2,147,483,647 ms)
+    const timeoutDelay = Math.min(delay, 2147483647);
     this.autoLogoutTimer = setTimeout(() => {
-      this.handleAuthExpired(soonest.scope);
-    }, delay);
+      // When timer fires, check again if real expiration has arrived
+      if (Date.now() >= activeExp!) {
+        this.handleAuthExpired(activeScope!);
+      } else {
+        this.scheduleAutoLogout();
+      }
+    }, timeoutDelay);
   }
 
   private checkInitialExpirations() {
-    if (this.getAuthItem('mmr_user_token') && this.isTokenExpired('user')) {
-      this.logoutUser(true);
-    }
-    if (this.getAuthItem('mmr_investor_token') && this.isTokenExpired('investor')) {
-      this.logoutInvestor(true);
-    }
-    if (this.getAuthItem('mmr_admin_token') && this.isTokenExpired('admin')) {
+    if (this.adminToken && this.isTokenExpired('admin')) {
       this.logoutAdmin(true);
+    } else if (this.getAuthItem('mmr_investor_token') && this.isTokenExpired('investor')) {
+      this.logoutInvestor(true);
+    } else if (this.userToken && this.isTokenExpired('user')) {
+      this.logoutUser(true);
     }
   }
 
@@ -187,7 +194,7 @@ export class AuthService {
     this.clearAllAuthStorage();
     if (data.token) {
       this.saveAuthItem('mmr_admin_token', data.token);
-      const expiresAt = this.calculateExpiresAt(data.token, 8 * 60 * 60 * 1000); // 8h default for admin
+      const expiresAt = this.calculateExpiresAt(data.token, 30 * 24 * 60 * 60 * 1000); // 30d default for admin
       this.saveAuthItem('mmr_admin_expires_at', String(expiresAt));
     }
     if (data.refresh_token) this.saveAuthItem('mmr_admin_refresh', data.refresh_token);

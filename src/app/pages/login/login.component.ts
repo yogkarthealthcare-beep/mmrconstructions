@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit {
       this.returnUrl = rawReturnUrl;
     }
     if (this.route.snapshot.queryParamMap.get('sessionExpired') === 'true') {
-      this.sessionExpiredMessage = 'सुरक्षा कारणों से आपका सत्र (Session) 4 घंटे बाद समाप्त हो गया है। कृपया पुनः लॉगिन करें।';
+      this.sessionExpiredMessage = 'सुरक्षा कारणों से आपका सत्र (Session) समाप्त हो गया है। कृपया पुनः लॉगिन करें।';
     }
   }
 
