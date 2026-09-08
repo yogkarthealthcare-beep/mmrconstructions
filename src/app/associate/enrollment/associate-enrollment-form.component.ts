@@ -218,63 +218,63 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         fullName: ['', Validators.required],
         dob: ['', Validators.required],
         gender: ['', Validators.required],
-        fatherName: [''],
-        motherName: [''],
+        fatherName: ['', Validators.required],
+        motherName: ['', Validators.required],
         spouseName: [''],
         contact1: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
         contact2: ['', [Validators.pattern(MOBILE_PATTERN)]],
-        nationality: ['Indian'],
-        residentialStatus: [''],
-        panNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/)]],
+        nationality: ['Indian', Validators.required],
+        residentialStatus: ['', Validators.required],
+        panNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
         aadharNo: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
-        email: ['', [Validators.pattern(EMAIL_PATTERN)]],
-        occupation: [''],
-        annualIncome: [''],
-        education: [''],
-        category: [''],
-        religion: ['']
+        email: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
+        occupation: ['', Validators.required],
+        annualIncome: ['', Validators.required],
+        education: ['', Validators.required],
+        category: ['', Validators.required],
+        religion: ['', Validators.required]
       }),
       addressDetails: this.fb.group({
-        permAddress: [''],
-        permCity: [''],
-        permState: [''],
-        permCountry: ['India'],
-        permPin: [''],
+        permAddress: ['', Validators.required],
+        permCity: ['', Validators.required],
+        permState: ['', Validators.required],
+        permCountry: ['India', Validators.required],
+        permPin: ['', Validators.required],
         sameAsPerm: [false],
-        localAddress: [''],
-        localCity: [''],
-        localState: [''],
-        localCountry: ['India'],
-        localPin: ['']
+        localAddress: ['', Validators.required],
+        localCity: ['', Validators.required],
+        localState: ['', Validators.required],
+        localCountry: ['India', Validators.required],
+        localPin: ['', Validators.required]
       }),
       bankDetails: this.fb.group({
-        bankName: [''],
-        accHolder: [''],
-        accNo: [''],
-        ifsc: [''],
+        bankName: ['', Validators.required],
+        accHolder: ['', Validators.required],
+        accNo: ['', Validators.required],
+        ifsc: ['', [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
         micr: [''],
-        branchName: [''],
+        branchName: ['', Validators.required],
         branchCode: [''],
         swift: [''],
-        branchCountry: ['India']
+        branchCountry: ['India', Validators.required]
       }),
       nomineeDetails: this.fb.group({
-        nomineeName: [''],
-        nomineeDob: [''],
-        nomineeGender: [''],
-        nomineeNationality: ['Indian'],
-        nomineeResStatus: [''],
-        nomineeRelationship: [''],
+        nomineeName: ['', Validators.required],
+        nomineeDob: ['', Validators.required],
+        nomineeGender: ['', Validators.required],
+        nomineeNationality: ['Indian', Validators.required],
+        nomineeResStatus: ['', Validators.required],
+        nomineeRelationship: ['', Validators.required],
         nomineePanName: [''],
-        nomineePanNo: ['', Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/)],
+        nomineePanNo: ['', Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)],
         nomineeAadharName: [''],
         nomineeAadharNo: ['', [Validators.pattern(AADHAAR_PATTERN)]],
-        nomineeAddress: ['']
+        nomineeAddress: ['', Validators.required]
       }),
       sponsorDetails: this.fb.group({
-        sponsorName: [''],
-        sponsorCode: [''],
-        sponsorContact: ['', [Validators.pattern(MOBILE_PATTERN)]]
+        sponsorName: ['', Validators.required],
+        sponsorCode: ['', Validators.required],
+        sponsorContact: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]]
       }),
       termsAndConditions: this.fb.group({
         tc1: [false, Validators.requiredTrue],
@@ -362,7 +362,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
 
       // 2. Check first invalid form input / select / textarea
       const invalidControl = document.querySelector(
-        'input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName], input.ng-invalid, select.ng-invalid'
+        'input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName], input.ng-invalid, select.ng-invalid, textarea.ng-invalid'
       ) as HTMLElement;
       if (invalidControl) {
         invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -372,18 +372,30 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // 3. Check terms acceptance checkbox
+      // 3. Check nominee photo
+      if (!this.nomineePhotoFile && !this.existingNomineePhoto) {
+        const nomPhotoEls = document.querySelectorAll('app-photo-upload');
+        if (nomPhotoEls.length > 1) {
+          const nomEl = nomPhotoEls[1] as HTMLElement;
+          nomEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          nomEl.focus();
+          return;
+        }
+      }
+
+      // 4. Check terms acceptance checkbox
       if (!this.allTermsAccepted()) {
-        const termsEl = document.querySelector('.terms-table, .checkbox-wrap') as HTMLElement;
+        const termsEl = document.querySelector('.consent input[type="checkbox"]:not(:checked)') as HTMLElement;
         if (termsEl) {
           termsEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          termsEl.focus();
         }
       }
     }, 100);
   }
 
   onSubmit() {
-    const isPhotoMissing = !this.applicantPhotoFile && !this.existingApplicantPhoto;
+    const isPhotoMissing = (!this.applicantPhotoFile && !this.existingApplicantPhoto) || (!this.nomineePhotoFile && !this.existingNomineePhoto);
     if (this.enrollmentForm.invalid || !this.allTermsAccepted() || isPhotoMissing) {
       this.enrollmentForm.markAllAsTouched();
       this.focusFirstInvalidControl();

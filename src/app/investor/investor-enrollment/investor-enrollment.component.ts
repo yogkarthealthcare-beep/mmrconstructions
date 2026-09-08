@@ -66,10 +66,10 @@ export class InvestorEnrollmentComponent implements OnInit {
       projectName: ['', Validators.required],
       invFirstName: ['', Validators.required],
       invMiddleName: [''],
-      invSurname: [''],
+      invSurname: ['', Validators.required],
       fhFirstName: ['', Validators.required],
       fhMiddleName: [''],
-      fhSurname: [''],
+      fhSurname: ['', Validators.required],
       dob: ['', Validators.required],
       age: ['', Validators.required],
       gender: ['', Validators.required],
@@ -80,23 +80,23 @@ export class InvestorEnrollmentComponent implements OnInit {
       state: ['', Validators.required],
       pinCode: ['', Validators.required],
       sameAsPermanent: [false],
-      corrAddress: [''],
-      corrCity: [''],
-      corrState: [''],
-      corrPinCode: [''],
+      corrAddress: ['', Validators.required],
+      corrCity: ['', Validators.required],
+      corrState: ['', Validators.required],
+      corrPinCode: ['', Validators.required],
       mobile: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
       altTel: ['', [Validators.pattern(MOBILE_PATTERN)]],
       email: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
-      pan: [''],
-      aadhar: ['', [Validators.pattern(AADHAAR_PATTERN)]],
+      pan: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
+      aadhar: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
       amount: ['', Validators.required],
       amountWords: ['', Validators.required],
       paymentMode: ['', Validators.required],
-      txnNo: [''],
-      txnDate: [''],
-      bankBranch: [''],
-      accountNumber: [''],
-      ifscCode: [''],
+      txnNo: ['', Validators.required],
+      txnDate: ['', Validators.required],
+      bankBranch: ['', Validators.required],
+      accountNumber: ['', Validators.required],
+      ifscCode: ['', [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
       nominees: this.fb.array([this.createNomineeGroup()]),
       declarationCheck: [false, Validators.requiredTrue],
       declDate: [todayStr, Validators.required],
@@ -320,13 +320,6 @@ export class InvestorEnrollmentComponent implements OnInit {
     if (this.enrollmentForm.invalid || !this.photoDataUrl) {
       this.enrollmentForm.markAllAsTouched();
       this.focusFirstInvalidControl();
-
-      Swal.fire({
-        icon: 'warning',
-        title: 'Required Fields Missing',
-        text: 'Please fill in all mandatory fields highlighted in red (including passport photo) before proceeding.',
-        confirmButtonColor: '#dc2626'
-      });
       return;
     }
     this.modalAgreeCheck = false;

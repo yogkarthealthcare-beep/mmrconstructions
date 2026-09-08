@@ -143,11 +143,11 @@
           <!-- Photo Upload Card -->
           <div class="grid-col-12">
             <div class="photo-upload-container">
-              <div class="photo-preview-box" [class.has-image]="photoPreviewUrl">
+              <div class="photo-preview-box" [class.has-image]="photoPreviewUrl" [class.invalid-photo]="!photoFile && enrollmentForm.touched">
                 <img *ngIf="photoPreviewUrl" [src]="photoPreviewUrl" alt="Passport Photo" class="preview-img">
                 <div *ngIf="!photoPreviewUrl" class="photo-placeholder">
                   <i class="fas fa-user-circle fa-3x text-muted"></i>
-                  <span>Passport Photo (Optional)</span>
+                  <span>Passport Photo <strong style="color:red;">*</strong></span>
                 </div>
               </div>
               <div class="photo-upload-controls">
@@ -286,7 +286,7 @@
 
           <div class="grid-col-6">
             <div class="form-group" [class.has-error]="enrollmentForm.get('panNo')?.invalid && enrollmentForm.get('panNo')?.touched">
-              <label>PAN Number <span class="optional-tag">(Optional)</span></label>
+              <label class="required-label">PAN Number</label>
               <div class="input-with-icon">
                 <i class="fas fa-id-badge input-icon"></i>
                 <input 
@@ -298,6 +298,9 @@
                   maxlength="10"
                 >
               </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('panNo')?.errors?.['required'] && enrollmentForm.get('panNo')?.touched">
+                PAN number is required.
+              </span>
               <span class="error-msg" *ngIf="enrollmentForm.get('panNo')?.errors?.['pattern'] && enrollmentForm.get('panNo')?.touched">
                 Invalid PAN format (e.g. ABCDE1234F).
               </span>
@@ -306,7 +309,7 @@
 
           <div class="grid-col-6">
             <div class="form-group" [class.has-error]="enrollmentForm.get('emailId')?.invalid && enrollmentForm.get('emailId')?.touched">
-              <label>Email Address <span class="optional-tag">(Optional)</span></label>
+              <label class="required-label">Email Address</label>
               <div class="input-with-icon">
                 <i class="fas fa-envelope input-icon"></i>
                 <input 
@@ -316,7 +319,10 @@
                   placeholder="team.member@example.com"
                 >
               </div>
-              <span class="error-msg" *ngIf="enrollmentForm.get('emailId')?.errors?.['email'] && enrollmentForm.get('emailId')?.touched">
+              <span class="error-msg" *ngIf="enrollmentForm.get('emailId')?.errors?.['required'] && enrollmentForm.get('emailId')?.touched">
+                Email address is required.
+              </span>
+              <span class="error-msg" *ngIf="enrollmentForm.get('emailId')?.errors?.['pattern'] && enrollmentForm.get('emailId')?.touched">
                 Please enter a valid email address.
               </span>
             </div>
@@ -345,14 +351,14 @@
           <div class="section-icon"><i class="fas fa-user-shield"></i></div>
           <div class="section-title-wrap">
             <h3>Section B — Nominee Details</h3>
-            <span class="section-desc">Nomination designation for security and commission benefits (Optional)</span>
+            <span class="section-desc">Nomination designation for security and commission benefits</span>
           </div>
         </div>
 
         <div class="form-grid-layout">
           <div class="grid-col-6">
-            <div class="form-group">
-              <label>Nominee Full Name</label>
+            <div class="form-group" [class.has-error]="enrollmentForm.get('nomineeName')?.invalid && enrollmentForm.get('nomineeName')?.touched">
+              <label class="required-label">Nominee Full Name</label>
               <div class="input-with-icon">
                 <i class="fas fa-user input-icon"></i>
                 <input 
@@ -362,12 +368,15 @@
                   placeholder="Enter nominee name"
                 >
               </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('nomineeName')?.errors?.['required'] && enrollmentForm.get('nomineeName')?.touched">
+                Nominee name is required.
+              </span>
             </div>
           </div>
 
           <div class="grid-col-6">
-            <div class="form-group">
-              <label>Relationship with Applicant</label>
+            <div class="form-group" [class.has-error]="enrollmentForm.get('nomineeRelation')?.invalid && enrollmentForm.get('nomineeRelation')?.touched">
+              <label class="required-label">Relationship with Applicant</label>
               <div class="input-with-icon">
                 <i class="fas fa-heart input-icon"></i>
                 <input 
@@ -377,12 +386,15 @@
                   placeholder="e.g. Spouse / Son / Father / Mother"
                 >
               </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('nomineeRelation')?.errors?.['required'] && enrollmentForm.get('nomineeRelation')?.touched">
+                Relationship is required.
+              </span>
             </div>
           </div>
 
           <div class="grid-col-6">
-            <div class="form-group">
-              <label>Nominee Age / Date of Birth</label>
+            <div class="form-group" [class.has-error]="enrollmentForm.get('nomineeAgeDob')?.invalid && enrollmentForm.get('nomineeAgeDob')?.touched">
+              <label class="required-label">Nominee Age / Date of Birth</label>
               <div class="input-with-icon">
                 <i class="fas fa-calendar input-icon"></i>
                 <input 
@@ -392,12 +404,15 @@
                   placeholder="e.g. 28 Years or DD/MM/YYYY"
                 >
               </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('nomineeAgeDob')?.errors?.['required'] && enrollmentForm.get('nomineeAgeDob')?.touched">
+                Nominee age / DOB is required.
+              </span>
             </div>
           </div>
 
           <div class="grid-col-6">
-            <div class="form-group">
-              <label>Nominee Contact Number</label>
+            <div class="form-group" [class.has-error]="enrollmentForm.get('nomineeContactNo')?.invalid && enrollmentForm.get('nomineeContactNo')?.touched">
+              <label class="required-label">Nominee Contact Number</label>
               <div class="input-with-icon">
                 <i class="fas fa-phone input-icon"></i>
                 <input 
@@ -408,6 +423,12 @@
                   maxlength="10"
                 >
               </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('nomineeContactNo')?.errors?.['required'] && enrollmentForm.get('nomineeContactNo')?.touched">
+                Nominee contact number is required.
+              </span>
+              <span class="error-msg" *ngIf="enrollmentForm.get('nomineeContactNo')?.errors?.['pattern'] && enrollmentForm.get('nomineeContactNo')?.touched">
+                Please enter a valid 10-digit mobile number.
+              </span>
             </div>
           </div>
         </div>

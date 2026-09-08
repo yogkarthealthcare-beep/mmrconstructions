@@ -53,10 +53,10 @@
     <!-- ============ 1. PROPERTY & PROJECT DETAILS ============ -->
     <section class="block">
       <h2>1. Property &amp; Project Details</h2>
-      <div class="field"><label>Project Name</label><input type="text" formControlName="projectName"></div>
+      <div class="field"><label>Project Name <span class="text-danger">*</span></label><input type="text" formControlName="projectName"></div>
 
-      <fieldset class="inline-choices">
-        <legend>Property Type</legend>
+      <fieldset class="inline-choices" [class.fieldset-invalid]="enrollmentForm.get('propertyType')?.invalid && enrollmentForm.get('propertyType')?.touched">
+        <legend>Property Type <span class="text-danger">*</span></legend>
         <div class="choice-wrap">
           <label><input type="radio" formControlName="propertyType" value="Residential Plot"> Residential Plot</label>
           <label><input type="radio" formControlName="propertyType" value="Commercial Plot"> Commercial Plot</label>
@@ -69,16 +69,16 @@
       </fieldset>
 
       <div class="row2">
-        <div class="field"><label>Plot / Flat No.</label><input type="text" formControlName="plotFlatNo"></div>
-        <div class="field"><label>Block / Tower</label><input type="text" formControlName="blockTower"></div>
+        <div class="field"><label>Plot / Flat No. <span class="text-danger">*</span></label><input type="text" formControlName="plotFlatNo"></div>
+        <div class="field"><label>Block / Tower <span class="text-danger">*</span></label><input type="text" formControlName="blockTower"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>Size / Area</label><input type="text" formControlName="sizeArea"></div>
-        <div class="field"><label>Rate (per Sq. Ft./Yd.)</label><input type="text" inputmode="numeric" formControlName="rate"></div>
+        <div class="field"><label>Size / Area <span class="text-danger">*</span></label><input type="text" formControlName="sizeArea"></div>
+        <div class="field"><label>Rate (per Sq. Ft./Yd.) <span class="text-danger">*</span></label><input type="text" inputmode="numeric" formControlName="rate"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>Basic Sale Price (BSP)</label><input type="text" inputmode="numeric" formControlName="bsp"></div>
-        <div class="field"><label>PLC / Dev. Charges</label><input type="text" inputmode="numeric" formControlName="plcDev"></div>
+        <div class="field"><label>Basic Sale Price (BSP) <span class="text-danger">*</span></label><input type="text" inputmode="numeric" formControlName="bsp"></div>
+        <div class="field"><label>PLC / Dev. Charges <span class="text-danger">*</span></label><input type="text" inputmode="numeric" formControlName="plcDev"></div>
       </div>
       <div class="field"><label style="color:#b3261e;">Total Property Value (₹)</label>
         <input type="number" [value]="totalPropertyValue" disabled style="background:#f2f6fb; padding:8px;">
@@ -96,15 +96,15 @@
       </div>
 
       <div class="field"><label>Applicant Name <span class="text-danger">*</span></label><input type="text" formControlName="applicantName" required></div>
-      <div class="field"><label>Father / Husband's Name</label><input type="text" formControlName="fhName"></div>
+      <div class="field"><label>Father / Husband's Name <span class="text-danger">*</span></label><input type="text" formControlName="fhName"></div>
 
       <div class="row2">
-        <div class="field"><label>Date of Birth</label><input type="date" formControlName="dob"></div>
-        <div class="field"><label>Age (Auto-calculated)</label><input type="number" formControlName="age" readonly style="background:#f8f9fa;"></div>
+        <div class="field"><label>Date of Birth <span class="text-danger">*</span></label><input type="date" formControlName="dob"></div>
+        <div class="field"><label>Age (Auto-calculated) <span class="text-danger">*</span></label><input type="number" formControlName="age" readonly style="background:#f8f9fa;"></div>
       </div>
 
-      <fieldset class="inline-choices">
-        <legend>Gender</legend>
+      <fieldset class="inline-choices" [class.fieldset-invalid]="enrollmentForm.get('gender')?.invalid && enrollmentForm.get('gender')?.touched">
+        <legend>Gender <span class="text-danger">*</span></legend>
         <div class="choice-wrap">
           <label><input type="radio" formControlName="gender" value="M"> M</label>
           <label><input type="radio" formControlName="gender" value="F"> F</label>
@@ -112,16 +112,16 @@
         </div>
       </fieldset>
 
-      <fieldset class="inline-choices">
-        <legend>Marital Status</legend>
+      <fieldset class="inline-choices" [class.fieldset-invalid]="enrollmentForm.get('maritalStatus')?.invalid && enrollmentForm.get('maritalStatus')?.touched">
+        <legend>Marital Status <span class="text-danger">*</span></legend>
         <div class="choice-wrap">
           <label><input type="radio" formControlName="maritalStatus" value="Single"> Single</label>
           <label><input type="radio" formControlName="maritalStatus" value="Married"> Married</label>
         </div>
       </fieldset>
 
-      <fieldset class="inline-choices">
-        <legend>Nationality</legend>
+      <fieldset class="inline-choices" [class.fieldset-invalid]="enrollmentForm.get('nationality')?.invalid && enrollmentForm.get('nationality')?.touched">
+        <legend>Nationality <span class="text-danger">*</span></legend>
         <div class="choice-wrap">
           <label><input type="radio" formControlName="nationality" value="Indian"> Indian</label>
           <label><input type="radio" formControlName="nationality" value="NRI"> NRI</label>
@@ -133,15 +133,15 @@
       </fieldset>
 
       <div class="row2">
-        <div class="field"><label>PAN No.</label><input type="text" formControlName="pan" maxlength="10" style="text-transform:uppercase"></div>
-        <div class="field"><label>Aadhar No. (12 Digits)</label><input type="text" formControlName="aadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>
+        <div class="field"><label>PAN No. <span class="text-danger">*</span></label><input type="text" formControlName="pan" maxlength="10" style="text-transform:uppercase"></div>
+        <div class="field"><label>Aadhar No. (12 Digits) <span class="text-danger">*</span></label><input type="text" formControlName="aadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>
       </div>
-      <div class="field"><label>Occupation</label><input type="text" formControlName="occupation"></div>
+      <div class="field"><label>Occupation <span class="text-danger">*</span></label><input type="text" formControlName="occupation"></div>
 
-      <div class="field"><label>Present Address</label><textarea formControlName="presentAddress" rows="2" placeholder="House No., Street, Landmark"></textarea></div>
+      <div class="field"><label>Present Address <span class="text-danger">*</span></label><textarea formControlName="presentAddress" rows="2" placeholder="House No., Street, Landmark"></textarea></div>
       <div class="row2">
-        <div class="field"><label>City / Dist.</label><input type="text" formControlName="presentCity"></div>
-        <div class="field"><label>State &amp; Pin Code</label><input type="text" formControlName="presentStatePin"></div>
+        <div class="field"><label>City / Dist. <span class="text-danger">*</span></label><input type="text" formControlName="presentCity"></div>
+        <div class="field"><label>State &amp; Pin Code <span class="text-danger">*</span></label><input type="text" formControlName="presentStatePin"></div>
       </div>
 
       <div style="margin: 10px 0; display: flex; align-items: center; gap: 8px; background: #f0f7ff; padding: 8px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
@@ -151,17 +151,17 @@
         </label>
       </div>
 
-      <div class="field"><label>Permanent Address</label><textarea formControlName="permanentAddress" rows="2" placeholder="Permanent House No., Street"></textarea></div>
+      <div class="field"><label>Permanent Address <span class="text-danger">*</span></label><textarea formControlName="permanentAddress" rows="2" placeholder="Permanent House No., Street"></textarea></div>
       <div class="row2">
-        <div class="field"><label>City / Dist.</label><input type="text" formControlName="permanentCity"></div>
-        <div class="field"><label>State &amp; Pin Code</label><input type="text" formControlName="permanentStatePin"></div>
+        <div class="field"><label>City / Dist. <span class="text-danger">*</span></label><input type="text" formControlName="permanentCity"></div>
+        <div class="field"><label>State &amp; Pin Code <span class="text-danger">*</span></label><input type="text" formControlName="permanentStatePin"></div>
       </div>
 
       <div class="row2">
         <div class="field"><label>Mobile No. 1 <span class="text-danger">*</span></label><input type="tel" formControlName="mobile1" maxlength="10" placeholder="10-digit Mobile No." required></div>
         <div class="field"><label>Mobile No. 2</label><input type="tel" formControlName="mobile2" maxlength="10" placeholder="10-digit Mobile No."></div>
       </div>
-      <div class="field"><label>Email ID</label><input type="email" formControlName="email1" placeholder="example@email.com"></div>
+      <div class="field"><label>Email ID <span class="text-danger">*</span></label><input type="email" formControlName="email1" placeholder="example@email.com"></div>
     </section>
 
     <!-- ============ 3. CO-APPLICANT DETAILS ============ -->
@@ -210,12 +210,12 @@
       <div formArrayName="nominees">
         <div *ngFor="let nom of nominees.controls; let i=index" [formGroupName]="i">
           <div class="row2">
-            <div class="field"><label>Nominee Name</label><input type="text" formControlName="nomineeName"></div>
-            <div class="field"><label>Relation</label><input type="text" formControlName="nomineeRelation"></div>
+            <div class="field"><label>Nominee Name <span class="text-danger">*</span></label><input type="text" formControlName="nomineeName"></div>
+            <div class="field"><label>Relation <span class="text-danger">*</span></label><input type="text" formControlName="nomineeRelation"></div>
           </div>
           <div class="row2">
-            <div class="field"><label>Age / DOB</label><input type="text" formControlName="nomineeAgeDob"></div>
-            <div class="field"><label>Aadhar No. (12 Digits)</label><input type="text" formControlName="nomineeAadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>
+            <div class="field"><label>Age / DOB <span class="text-danger">*</span></label><input type="text" formControlName="nomineeAgeDob"></div>
+            <div class="field"><label>Aadhar No. (12 Digits) <span class="text-danger">*</span></label><input type="text" formControlName="nomineeAadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>
           </div>
         </div>
       </div>
@@ -225,12 +225,12 @@
     <section class="block">
       <h2>5. Payment Details (Initial Booking Amount)</h2>
       <div class="row2">
-        <div class="field"><label>Booking Amount Paid (₹)</label><input type="text" inputmode="numeric" formControlName="bookingAmount" placeholder="Enter Booking Amount"></div>
-        <div class="field"><label>In Words (Auto-filled)</label><input type="text" formControlName="bookingAmountWords" readonly style="background:#f8f9fa; font-weight: 500;" placeholder="Amount in words"></div>
+        <div class="field"><label>Booking Amount Paid (₹) <span class="text-danger">*</span></label><input type="text" inputmode="numeric" formControlName="bookingAmount" placeholder="Enter Booking Amount"></div>
+        <div class="field"><label>In Words (Auto-filled) <span class="text-danger">*</span></label><input type="text" formControlName="bookingAmountWords" readonly style="background:#f8f9fa; font-weight: 500;" placeholder="Amount in words"></div>
       </div>
 
-      <fieldset class="inline-choices">
-        <legend>Mode of Payment</legend>
+      <fieldset class="inline-choices" [class.fieldset-invalid]="enrollmentForm.get('paymentMode')?.invalid && enrollmentForm.get('paymentMode')?.touched">
+        <legend>Mode of Payment <span class="text-danger">*</span></legend>
         <div class="choice-wrap">
           <label><input type="radio" formControlName="paymentMode" value="Cash"> Cash</label>
           <label><input type="radio" formControlName="paymentMode" value="Cheque"> Cheque</label>
@@ -241,9 +241,9 @@
       </fieldset>
 
       <div class="row3">
-        <div class="field"><label>Cheque / DD / Txn No.</label><input type="text" formControlName="txnNo"></div>
-        <div class="field"><label>Date</label><input type="date" formControlName="txnDate"></div>
-        <div class="field"><label>Drawn on Bank/Branch</label><input type="text" formControlName="drawnBankBranch"></div>
+        <div class="field"><label>Cheque / DD / Txn No. <span class="text-danger">*</span></label><input type="text" formControlName="txnNo"></div>
+        <div class="field"><label>Date <span class="text-danger">*</span></label><input type="date" formControlName="txnDate"></div>
+        <div class="field"><label>Drawn on Bank/Branch <span class="text-danger">*</span></label><input type="text" formControlName="drawnBankBranch"></div>
       </div>
     </section>
 
@@ -251,13 +251,13 @@
     <section class="block">
       <h2>6. Bank Account Details (for Refund / Cancellation)</h2>
       <div class="row2">
-        <div class="field"><label>Account Holder Name</label><input type="text" formControlName="accHolderName"></div>
-        <div class="field"><label>Bank Name &amp; Branch</label><input type="text" formControlName="accBankBranch"></div>
+        <div class="field"><label>Account Holder Name <span class="text-danger">*</span></label><input type="text" formControlName="accHolderName"></div>
+        <div class="field"><label>Bank Name &amp; Branch <span class="text-danger">*</span></label><input type="text" formControlName="accBankBranch"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>Account Number</label><input type="text" formControlName="accNumber"></div>
+        <div class="field"><label>Account Number <span class="text-danger">*</span></label><input type="text" formControlName="accNumber"></div>
         <div class="field">
-          <label>IFSC Code</label>
+          <label>IFSC Code <span class="text-danger">*</span></label>
           <input type="text" formControlName="ifscCode" style="text-transform:uppercase" (input)="onIfscInput($event)">
           <div *ngIf="ifscLoading" style="font-size: 11px; color: #777; margin-top: 2px;"><i class="fas fa-spinner fa-spin"></i> Fetching bank details...</div>
           <div *ngIf="ifscSuccess" style="font-size: 11px; color: #2c5c39; margin-top: 2px;"><i class="fas fa-check-circle"></i> Bank details fetched successfully</div>
@@ -270,11 +270,11 @@
     <section class="block">
       <h2>7. Associate / Channel Partner Details</h2>
       <div class="row2">
-        <div class="field"><label>Associate Name</label><input type="text" formControlName="associateName"></div>
-        <div class="field"><label>Associate ID</label><input type="text" formControlName="associateId"></div>
+        <div class="field"><label>Associate Name <span class="text-danger">*</span></label><input type="text" formControlName="associateName"></div>
+        <div class="field"><label>Associate ID <span class="text-danger">*</span></label><input type="text" formControlName="associateId"></div>
       </div>
-      <div class="field"><label>Mobile Number</label><input type="tel" formControlName="associateMobile" maxlength="10" placeholder="10-digit Mobile No."></div>
-      <div class="field"><label>Signature</label><input type="text" formControlName="associateSignatureName" placeholder="Type name as signature"></div>
+      <div class="field"><label>Mobile Number <span class="text-danger">*</span></label><input type="tel" formControlName="associateMobile" maxlength="10" placeholder="10-digit Mobile No."></div>
+      <div class="field"><label>Signature <span class="text-danger">*</span></label><input type="text" formControlName="associateSignatureName" placeholder="Type name as signature"></div>
     </section>
 
     <!-- ============ TERMS ============ -->

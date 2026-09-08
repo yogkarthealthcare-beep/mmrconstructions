@@ -60,37 +60,37 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       formDate: [todayStr],
       applicationNo: [autoAppNo],
       
-      projectName: [''],
-      propertyType: [''],
+      projectName: ['', Validators.required],
+      propertyType: ['', Validators.required],
       propertyTypeOther: [{ value: '', disabled: true }],
-      plotFlatNo: [''],
-      blockTower: [''],
-      sizeArea: [''],
-      rate: [''],
-      bsp: [''],
-      plcDev: [''],
+      plotFlatNo: ['', Validators.required],
+      blockTower: ['', Validators.required],
+      sizeArea: ['', Validators.required],
+      rate: ['', Validators.required],
+      bsp: ['', Validators.required],
+      plcDev: ['', Validators.required],
       
       applicantName: ['', Validators.required],
-      fhName: [''],
-      dob: [''],
-      age: [''],
-      gender: [''],
-      maritalStatus: [''],
-      nationality: [''],
+      fhName: ['', Validators.required],
+      dob: ['', Validators.required],
+      age: ['', Validators.required],
+      gender: ['', Validators.required],
+      maritalStatus: ['', Validators.required],
+      nationality: ['', Validators.required],
       nationalityOther: [{ value: '', disabled: true }],
-      pan: [''],
-      aadhar: ['', [Validators.pattern(AADHAAR_PATTERN)]],
-      occupation: [''],
-      presentAddress: [''],
-      presentCity: [''],
-      presentStatePin: [''],
+      pan: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
+      aadhar: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
+      occupation: ['', Validators.required],
+      presentAddress: ['', Validators.required],
+      presentCity: ['', Validators.required],
+      presentStatePin: ['', Validators.required],
       sameAsPresent: [false],
-      permanentAddress: [''],
-      permanentCity: [''],
-      permanentStatePin: [''],
+      permanentAddress: ['', Validators.required],
+      permanentCity: ['', Validators.required],
+      permanentStatePin: ['', Validators.required],
       mobile1: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
       mobile2: ['', [Validators.pattern(MOBILE_PATTERN)]],
-      email1: ['', [Validators.pattern(EMAIL_PATTERN)]],
+      email1: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
       
       coApplicantName: [''],
       coFhName: [''],
@@ -106,22 +106,22 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       
       nominees: this.fb.array([this.createNomineeGroup()]),
       
-      bookingAmount: [''],
-      bookingAmountWords: [''],
-      paymentMode: [''],
-      txnNo: [''],
-      txnDate: [''],
-      drawnBankBranch: [''],
+      bookingAmount: ['', Validators.required],
+      bookingAmountWords: ['', Validators.required],
+      paymentMode: ['', Validators.required],
+      txnNo: ['', Validators.required],
+      txnDate: ['', Validators.required],
+      drawnBankBranch: ['', Validators.required],
       
-      accHolderName: [''],
-      accBankBranch: [''],
-      accNumber: [''],
-      ifscCode: [''],
+      accHolderName: ['', Validators.required],
+      accBankBranch: ['', Validators.required],
+      accNumber: ['', Validators.required],
+      ifscCode: ['', [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
       
-      associateName: [''],
-      associateId: [''],
-      associateMobile: ['', [Validators.pattern(MOBILE_PATTERN)]],
-      associateSignatureName: [''],
+      associateName: ['', Validators.required],
+      associateId: ['', Validators.required],
+      associateMobile: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
+      associateSignatureName: ['', Validators.required],
       
       appStatus: [{ value: 'Hold/Pending KYC', disabled: true }],
       verifiedBy: [{ value: '', disabled: true }],
@@ -200,10 +200,10 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
 
   createNomineeGroup(): FormGroup {
     return this.fb.group({
-      nomineeName: [''],
-      nomineeRelation: [''],
-      nomineeAgeDob: [''],
-      nomineeAadhar: ['', [Validators.pattern(AADHAAR_PATTERN)]]
+      nomineeName: ['', Validators.required],
+      nomineeRelation: ['', Validators.required],
+      nomineeAgeDob: ['', Validators.required],
+      nomineeAadhar: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]]
     });
   }
 
@@ -283,7 +283,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
 
   private focusFirstInvalidControl() {
     setTimeout(() => {
-      // 1. If photo is missing, focus & scroll to photo box first
+      // 1. If applicant photo is missing, focus & scroll to photo box first
       if (!this.photo1DataUrl) {
         const photoEl = document.querySelector('.photo-box') as HTMLElement;
         if (photoEl) {
@@ -293,9 +293,9 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
         }
       }
 
-      // 2. Otherwise focus first invalid input/select/textarea
+      // 2. Focus first invalid input/select/textarea/radio
       const invalidControl = document.querySelector(
-        'input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName], .ng-invalid[formArrayName], .ng-invalid[formGroupName], .ng-invalid'
+        'input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName], .ng-invalid[formArrayName], .ng-invalid[formGroupName], .fieldset-invalid input, .ng-invalid'
       ) as HTMLElement;
       if (invalidControl) {
         invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -310,6 +310,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
         const declEl = document.querySelector('.agree-line') as HTMLElement;
         if (declEl) {
           declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const chk = declEl.querySelector('input[type="checkbox"]') as HTMLElement;
+          if (chk) chk.focus();
         }
       }
     }, 100);
@@ -320,13 +322,6 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     if (this.enrollmentForm.invalid || isPhotoMissing || this.submitting) {
       this.enrollmentForm.markAllAsTouched();
       this.focusFirstInvalidControl();
-
-      Swal.fire({
-        icon: 'warning',
-        title: 'Required Fields Missing',
-        text: 'Please fill in all mandatory fields highlighted in red (including passport photo & declaration) before proceeding.',
-        confirmButtonColor: '#dc2626'
-      });
       return;
     }
     this.submitting = true;

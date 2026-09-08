@@ -100,15 +100,15 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       dateOfBirth: ['', Validators.required],
       gender: ['Male', Validators.required],
       aadharNo: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
-      panNo: ['', [Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
+      panNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
       mobileNo: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
-      emailId: ['', [Validators.pattern(EMAIL_PATTERN)]],
+      emailId: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
       fullAddress: ['', [Validators.required, Validators.minLength(5)]],
 
-      nomineeName: [''],
-      nomineeRelation: [''],
-      nomineeAgeDob: [''],
-      nomineeContactNo: ['', [Validators.pattern(MOBILE_PATTERN)]],
+      nomineeName: ['', Validators.required],
+      nomineeRelation: ['', Validators.required],
+      nomineeAgeDob: ['', Validators.required],
+      nomineeContactNo: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
 
       bankName: ['', Validators.required],
       branchName: ['', Validators.required],
@@ -343,18 +343,30 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   onSubmit(): void {
-    if (this.enrollmentForm.invalid) {
+    if (this.enrollmentForm.invalid || !this.photoFile) {
       this.enrollmentForm.markAllAsTouched();
 
       setTimeout(() => {
+        // 1. Check if photo is missing
+        if (!this.photoFile) {
+          const photoBox = document.querySelector('.photo-upload-container, .photo-preview-box') as HTMLElement;
+          if (photoBox) {
+            photoBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            photoBox.focus();
+            return;
+          }
+        }
+
+        // 2. Focus first invalid input/select/textarea
         const invalidControl = document.querySelector(
-          '.form-input.ng-invalid.ng-touched, .form-select.ng-invalid.ng-touched, .form-textarea.ng-invalid.ng-touched, input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName]'
+          '.form-input.ng-invalid.ng-touched, .form-select.ng-invalid.ng-touched, .form-textarea.ng-invalid.ng-touched, input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName], input.ng-invalid, select.ng-invalid, textarea.ng-invalid'
         ) as HTMLElement;
         if (invalidControl) {
           invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           if (typeof invalidControl.focus === 'function') {
             invalidControl.focus();
           }
+          return;
         }
       }, 100);
       return;
@@ -366,6 +378,8 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
         const declEl = document.querySelector('.declaration-card, .checkbox-label') as HTMLElement;
         if (declEl) {
           declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const chk = declEl.querySelector('input[type="checkbox"]') as HTMLElement;
+          if (chk) chk.focus();
         }
       }, 100);
       return;

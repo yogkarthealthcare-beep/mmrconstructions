@@ -89,12 +89,12 @@
             </div>
 
             <div class="field">
-              <label>Father's Name</label>
+              <label>Father's Name <span class="req">*</span></label>
               <input type="text" formControlName="fatherName" placeholder="Father's Name">
             </div>
 
             <div class="field">
-              <label>Mother's Name</label>
+              <label>Mother's Name <span class="req">*</span></label>
               <input type="text" formControlName="motherName" placeholder="Mother's Name">
             </div>
 
@@ -123,12 +123,12 @@
             </div>
 
             <div class="field">
-              <label>Nationality</label>
+              <label>Nationality <span class="req">*</span></label>
               <input type="text" formControlName="nationality" placeholder="Nationality">
             </div>
 
             <div class="field">
-              <label>Residential Status</label>
+              <label>Residential Status <span class="req">*</span></label>
               <input type="text" formControlName="residentialStatus" placeholder="Residential Status">
             </div>
 
@@ -151,42 +151,43 @@
             </div>
 
             <div class="field full">
-              <label>E-mail Id</label>
+              <label>E-mail Id <span class="req">*</span></label>
               <input type="email" formControlName="email" placeholder="example@email.com">
-              <div *ngIf="personal.get('email')?.touched && personal.get('email')?.errors?.['email']" class="error-text">
-                Please enter a valid email address.
+              <div *ngIf="personal.get('email')?.touched" class="error-text">
+                <span *ngIf="personal.get('email')?.errors?.['required']">Email address is required.</span>
+                <span *ngIf="personal.get('email')?.errors?.['pattern']">Please enter a valid email address.</span>
               </div>
             </div>
 
             <div class="field">
-              <label>Occupation</label>
+              <label>Occupation <span class="req">*</span></label>
               <input type="text" formControlName="occupation" placeholder="Occupation">
             </div>
 
             <div class="field">
-              <label>Annual Income</label>
+              <label>Annual Income <span class="req">*</span></label>
               <input type="text" formControlName="annualIncome" placeholder="Annual Income">
             </div>
 
             <div class="field">
-              <label>Education</label>
+              <label>Education <span class="req">*</span></label>
               <input type="text" formControlName="education" placeholder="Education Level">
             </div>
 
             <div class="field">
-              <label>Category</label>
+              <label>Category <span class="req">*</span></label>
               <input type="text" formControlName="category" placeholder="Category (e.g. Gen/OBC/SC/ST)">
             </div>
 
             <div class="field full">
-              <label>Religion</label>
+              <label>Religion <span class="req">*</span></label>
               <input type="text" formControlName="religion" placeholder="Religion">
             </div>
           </div>
 
           <!-- Applicant Photo Box -->
           <div class="field" style="align-self: center; justify-self: center;">
-            <app-photo-upload placeholderText="APPLICANT PHOTO" [isInvalid]="!applicantPhotoFile && !existingApplicantPhoto && enrollmentForm.touched" (fileSelected)="onApplicantPhotoSelected($event)"></app-photo-upload>
+            <app-photo-upload placeholderText="APPLICANT PHOTO *" [isInvalid]="!applicantPhotoFile && !existingApplicantPhoto && enrollmentForm.touched" (fileSelected)="onApplicantPhotoSelected($event)"></app-photo-upload>
           </div>
         </div>
       </div>
@@ -197,23 +198,23 @@
         <div class="subhead">Permanent Address</div>
         <div class="grid">
           <div class="field full">
-            <label>Address</label>
+            <label>Address <span class="req">*</span></label>
             <input type="text" formControlName="permAddress" placeholder="Street Address">
           </div>
           <div class="field">
-            <label>City/District</label>
+            <label>City/District <span class="req">*</span></label>
             <input type="text" formControlName="permCity" placeholder="City">
           </div>
           <div class="field">
-            <label>State</label>
+            <label>State <span class="req">*</span></label>
             <input type="text" formControlName="permState" placeholder="State">
           </div>
           <div class="field">
-            <label>Country</label>
+            <label>Country <span class="req">*</span></label>
             <input type="text" formControlName="permCountry">
           </div>
           <div class="field">
-            <label>Pin Code</label>
+            <label>Pin Code <span class="req">*</span></label>
             <input type="text" formControlName="permPin" placeholder="Pin Code">
           </div>
         </div>
@@ -228,23 +229,23 @@
         <div class="subhead" style="margin-top: 10px;">Local Address</div>
         <div class="grid">
           <div class="field full">
-            <label>Address</label>
+            <label>Address <span class="req">*</span></label>
             <input type="text" formControlName="localAddress" placeholder="Street Address">
           </div>
           <div class="field">
-            <label>City/District</label>
+            <label>City/District <span class="req">*</span></label>
             <input type="text" formControlName="localCity" placeholder="City">
           </div>
           <div class="field">
-            <label>State</label>
+            <label>State <span class="req">*</span></label>
             <input type="text" formControlName="localState" placeholder="State">
           </div>
           <div class="field">
-            <label>Country</label>
+            <label>Country <span class="req">*</span></label>
             <input type="text" formControlName="localCountry">
           </div>
           <div class="field">
-            <label>Pin Code</label>
+            <label>Pin Code <span class="req">*</span></label>
             <input type="text" formControlName="localPin" placeholder="Pin Code">
           </div>
         </div>
@@ -255,19 +256,19 @@
         <h2><span class="num">3</span>Bank Details</h2>
         <div class="grid">
           <div class="field">
-            <label>Bank Name</label>
+            <label>Bank Name <span class="req">*</span></label>
             <input type="text" formControlName="bankName" placeholder="Bank Name">
           </div>
           <div class="field">
-            <label>Account Holder Name</label>
+            <label>Account Holder Name <span class="req">*</span></label>
             <input type="text" formControlName="accHolder" placeholder="Account Holder Name">
           </div>
           <div class="field">
-            <label>Account No.</label>
+            <label>Account No. <span class="req">*</span></label>
             <input type="text" formControlName="accNo" placeholder="Account Number">
           </div>
           <div class="field">
-            <label>IFSC Code</label>
+            <label>IFSC Code <span class="req">*</span></label>
             <input type="text" formControlName="ifsc" placeholder="IFSC Code" style="text-transform: uppercase" (input)="onIfscInput($event)">
             <div *ngIf="ifscLoading" style="font-size: 11px; color: var(--muted); margin-top: 2px;"><i class="fas fa-spinner fa-spin"></i> Fetching bank details...</div>
             <div *ngIf="ifscSuccess" style="font-size: 11px; color: var(--primary); margin-top: 2px;"><i class="fas fa-check-circle"></i> Bank details fetched successfully</div>
@@ -278,7 +279,7 @@
             <input type="text" formControlName="micr" placeholder="MICR Code">
           </div>
           <div class="field">
-            <label>Branch Name</label>
+            <label>Branch Name <span class="req">*</span></label>
             <input type="text" formControlName="branchName" placeholder="Branch Name">
           </div>
           <div class="field">
@@ -290,7 +291,7 @@
             <input type="text" formControlName="swift" placeholder="Swift Code" style="text-transform: uppercase">
           </div>
           <div class="field">
-            <label>Branch Country</label>
+            <label>Branch Country <span class="req">*</span></label>
             <input type="text" formControlName="branchCountry">
           </div>
         </div>
@@ -302,15 +303,15 @@
         <div class="grid with-photo">
           <div class="grid" style="grid-template-columns: repeat(2, 1fr);">
             <div class="field">
-              <label>Nominee Name</label>
+              <label>Nominee Name <span class="req">*</span></label>
               <input type="text" formControlName="nomineeName" placeholder="Nominee Name">
             </div>
             <div class="field">
-              <label>Date of Birth</label>
+              <label>Date of Birth <span class="req">*</span></label>
               <input type="date" formControlName="nomineeDob">
             </div>
             <div class="field">
-              <label>Gender</label>
+              <label>Gender <span class="req">*</span></label>
               <select formControlName="nomineeGender">
                 <option value="">Select</option>
                 <option value="Male">Male</option>
@@ -319,15 +320,15 @@
               </select>
             </div>
             <div class="field">
-              <label>Nationality</label>
+              <label>Nationality <span class="req">*</span></label>
               <input type="text" formControlName="nomineeNationality">
             </div>
             <div class="field">
-              <label>Residential Status</label>
+              <label>Residential Status <span class="req">*</span></label>
               <input type="text" formControlName="nomineeResStatus" placeholder="Residential Status">
             </div>
             <div class="field">
-              <label>Relationship</label>
+              <label>Relationship <span class="req">*</span></label>
               <input type="text" formControlName="nomineeRelationship" placeholder="Relationship to Applicant">
             </div>
             <div class="field">
@@ -353,14 +354,14 @@
               </div>
             </div>
             <div class="field full">
-              <label>Nominee Address</label>
+              <label>Nominee Address <span class="req">*</span></label>
               <input type="text" formControlName="nomineeAddress" placeholder="Nominee Address">
             </div>
           </div>
 
           <!-- Nominee Photo Box -->
           <div class="field" style="align-self: center; justify-self: center;">
-            <app-photo-upload placeholderText="NOMINEE PHOTO" (fileSelected)="onNomineePhotoSelected($event)"></app-photo-upload>
+            <app-photo-upload placeholderText="NOMINEE PHOTO *" [isInvalid]="!nomineePhotoFile && !existingNomineePhoto && enrollmentForm.touched" (fileSelected)="onNomineePhotoSelected($event)"></app-photo-upload>
           </div>
         </div>
       </div>
@@ -370,15 +371,15 @@
         <h2><span class="num">5</span>Sponsor / Introducer Details</h2>
         <div class="grid">
           <div class="field">
-            <label>Sponsor's/Introducer's Name</label>
+            <label>Sponsor's/Introducer's Name <span class="req">*</span></label>
             <input type="text" formControlName="sponsorName" placeholder="Sponsor's Name">
           </div>
           <div class="field">
-            <label>Code No.</label>
+            <label>Code No. <span class="req">*</span></label>
             <input type="text" formControlName="sponsorCode" placeholder="Sponsor Code">
           </div>
           <div class="field">
-            <label>Contact No.</label>
+            <label>Contact No. <span class="req">*</span></label>
             <input type="tel" formControlName="sponsorContact" maxlength="10" placeholder="10-digit Sponsor Mobile No.">
             <div *ngIf="sponsor.get('sponsorContact')?.touched && sponsor.get('sponsorContact')?.errors?.['pattern']" class="error-text">
               Please enter a valid 10-digit mobile number.
