@@ -318,18 +318,55 @@
 
       <div class="sig-grid">
         <div class="sig-block">
-          <canvas id="sigSole" width="330" height="100"></canvas>
-          <div class="cap">Signature of Sole / First Applicant</div>
-          <button type="button" class="sig-clear" (click)="clearSig('sole')">Clear</button>
+          <div class="sig-canvas-wrap">
+            <canvas id="sigSole" width="330" height="100" [style.display]="sigSoleImage ? 'none' : 'block'"></canvas>
+            <div *ngIf="sigSoleImage" class="sig-uploaded-preview">
+              <img [src]="sigSoleImage" alt="First Applicant Signature">
+            </div>
+          </div>
+          <div class="cap">Signature of Sole / First Applicant <span style="color:#dc2626;">*</span></div>
+          <div class="sig-btn-row">
+            <label class="sig-action-btn sig-upload-btn">
+              <i class="fas fa-upload"></i> Upload Sign
+              <input type="file" accept="image/*" (change)="onSignatureFileSelect($event, 'sole')" style="display: none;">
+            </label>
+            <button type="button" class="sig-action-btn sig-clear-btn" (click)="clearSig('sole')">
+              <i class="fas fa-eraser"></i> Clear
+            </button>
+          </div>
         </div>
+
         <div class="sig-block">
-          <canvas id="sigCo" width="330" height="100"></canvas>
+          <div class="sig-canvas-wrap">
+            <canvas id="sigCo" width="330" height="100" [style.display]="sigCoImage ? 'none' : 'block'"></canvas>
+            <div *ngIf="sigCoImage" class="sig-uploaded-preview">
+              <img [src]="sigCoImage" alt="Co-Applicant Signature">
+            </div>
+          </div>
           <div class="cap">Signature of Co-Applicant</div>
-          <button type="button" class="sig-clear" (click)="clearSig('co')">Clear</button>
+          <div class="sig-btn-row">
+            <label class="sig-action-btn sig-upload-btn">
+              <i class="fas fa-upload"></i> Upload Sign
+              <input type="file" accept="image/*" (change)="onSignatureFileSelect($event, 'co')" style="display: none;">
+            </label>
+            <button type="button" class="sig-action-btn sig-clear-btn" (click)="clearSig('co')">
+              <i class="fas fa-eraser"></i> Clear
+            </button>
+          </div>
         </div>
-        <div class="sig-block" style="opacity: 0.7; pointer-events: none;">
-          <canvas id="sigAuth" width="330" height="100"></canvas>
+
+        <div class="sig-block company-sig-block">
+          <div class="company-seal-box">
+            <div class="seal-inner">
+              <div class="seal-header">M.M.R. CONSTRUCTION &amp; DEVELOPERS</div>
+              <div class="seal-signature">Authorized Signatory</div>
+              <div class="seal-badge"><i class="fas fa-certificate"></i> Digitally Verified &amp; Approved</div>
+            </div>
+          </div>
           <div class="cap">Authorized Signatory (For Company - Office Use Only)</div>
+          <div class="sig-status-badge">
+            <i class="fas fa-shield-alt"></i> Official Seal &amp; Signature
+          </div>
         </div>
       </div>
     </section>

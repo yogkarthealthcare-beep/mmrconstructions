@@ -25,9 +25,10 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   
   photo1DataUrl = '';
   photo2DataUrl = '';
+  sigSoleImage = '';
+  sigCoImage = '';
   sigSolePad: any;
   sigCoPad: any;
-  sigAuthPad: any;
 
   ifscLoading = false;
   ifscSuccess = false;
@@ -49,7 +50,6 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.sigSolePad = this.setupSignaturePad('sigSole');
     this.sigCoPad = this.setupSignaturePad('sigCo');
-    this.sigAuthPad = this.setupSignaturePad('sigAuth');
   }
 
   initForm() {
@@ -275,13 +275,46 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     };
   }
 
-  clearSig(type: string) {
-    if (type === 'sole' && this.sigSolePad) this.sigSolePad.clear();
-    if (type === 'co' && this.sigCoPad) this.sigCoPad.clear();
-    if (type === 'auth' && this.sigAuthPad) this.sigAuthPad.clear();
+  onSignatureFileSelect(event: Event, type: 'sole' | 'co') {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        if (type === 'sole') {
+          this.sigSoleImage = e.target.result;
+        } else {
+          this.sigCoImage = e.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
-  private focusFirstInvalidControl() {
+  clearSig(type: string) {
+    if (type === 'sole') {
+      this.sigSoleImage = '';
+      if (this.sigSolePad) {
+        this.sigSolePad.clear();
+      } else {
+        setTimeout(() => {
+          this.sigSolePad = this.setupSignaturePad('sigSole');
+        }, 50);
+      }
+    }
+    if (type === 'co') {
+      this.sigCoImage = '';
+      if (this.sigCoPad) {
+        this.sigCoPad.clear();
+      } else {
+        setTimeout(() => {
+          this.sigCoPad = this.setupSignaturePad('sigCo');
+        }, 50);
+      }
+    }
+  }
+
+  private focusFirstInvalidControl(isSigSoleMissing = false) {
     setTimeout(() => {
       // 1. If applicant photo is missing, focus & scroll to photo box first
       if (!this.photo1DataUrl) {
@@ -313,25 +346,38 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
           const chk = declEl.querySelector('input[type="checkbox"]') as HTMLElement;
           if (chk) chk.focus();
         }
+        return;
+      }
+
+      // 4. Signature missing
+      if (isSigSoleMissing) {
+        const sigEl = document.querySelector('.sig-block') as HTMLElement;
+        if (sigEl) {
+          sigEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
     }, 100);
   }
 
   onSubmit() {
     const isPhotoMissing = !this.photo1DataUrl;
-    if (this.enrollmentForm.invalid || isPhotoMissing || this.submitting) {
+    const sigSole = this.sigSoleImage || (this.sigSolePad && !this.sigSolePad.isEmpty() ? this.sigSolePad.dataUrl() : '');
+    const sigCo = this.sigCoImage || (this.sigCoPad && !this.sigCoPad.isEmpty() ? this.sigCoPad.dataUrl() : '');
+    const isSigSoleMissing = !sigSole;
+
+    if (this.enrollmentForm.invalid || isPhotoMissing || isSigSoleMissing || this.submitting) {
       this.enrollmentForm.markAllAsTouched();
-      this.focusFirstInvalidControl();
+      this.focusFirstInvalidControl(isSigSoleMissing);
       return;
     }
     this.submitting = true;
     
     const payload = this.enrollmentForm.getRawValue();
     payload.photoFirstApplicant = this.photo1DataUrl;
-    payload.photoCoApplicant = this.photo2DataUrl;
-    payload.signatureSoleFirstApplicant = this.sigSolePad ? this.sigSolePad.dataUrl() : '';
-    payload.signatureCoApplicant = this.sigCoPad ? this.sigCoPad.dataUrl() : '';
-    payload.signatureAuthorizedSignatory = this.sigAuthPad ? this.sigAuthPad.dataUrl() : '';
+    payload.photoCoApplicant = '';
+    payload.signatureSoleFirstApplicant = sigSole;
+    payload.signatureCoApplicant = sigCo;
+    payload.signatureAuthorizedSignatory = 'MMR_AUTHORIZED_OFFICIAL_SEAL';
     payload.termsAccepted = true;
 
     this.api.submitCustomerEnrollment(payload).subscribe({
@@ -574,6 +620,12 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
           }
           if (enroll.photo_co_applicant_url) {
             this.photo2DataUrl = enroll.photo_co_applicant_url;
+          }
+          if (enroll.signature_sole_first_applicant_url || enroll.signature_sole_first_applicant) {
+            this.sigSoleImage = enroll.signature_sole_first_applicant_url || enroll.signature_sole_first_applicant;
+          }
+          if (enroll.signature_co_applicant_url || enroll.signature_co_applicant) {
+            this.sigCoImage = enroll.signature_co_applicant_url || enroll.signature_co_applicant;
           }
         } else {
           this.prefillProfile();
