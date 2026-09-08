@@ -1,13 +1,15 @@
 <div class="settings-container">
   <div class="page-header">
     <div class="header-title-section">
-      <div class="d-flex align-items-center gap-2 mb-1">
+      <div class="d-flex align-items-center gap-2">
         <div class="header-icon-badge">
           <i class="fas fa-cogs"></i>
         </div>
-        <h1 class="page-title mb-0">Invoice Settings Module</h1>
+        <div>
+          <h1 class="page-title">Invoice Settings Module</h1>
+          <p class="page-sub">Configure company branding, address, bank info, terms & conditions, logo, and theme color for invoices.</p>
+        </div>
       </div>
-      <p class="page-sub mb-0">Configure company branding, address, bank info, terms & conditions, logo, and theme color for invoices.</p>
     </div>
     <div class="header-actions">
       <a routerLink="/admin/orders" class="btn btn-outline-secondary">
@@ -27,15 +29,15 @@
     <p class="mt-2 text-muted">Loading Invoice Settings...</p>
   </div>
 
-  <div *ngIf="!loading" class="card shadow-sm border-0 rounded-3">
-    <div class="card-body p-4">
+  <div *ngIf="!loading" class="card shadow-sm border rounded-3 settings-card">
+    <div class="card-body p-3">
       <form (ngSubmit)="saveSettings()">
 
         <!-- Section 1: Company Profile -->
-        <h5 class="text-success fw-bold border-bottom pb-2 mb-3">
-          <i class="fas fa-building me-2"></i> Company Branding & Info
+        <h5 class="text-success fw-bold border-bottom pb-1 mb-2 section-heading">
+          <i class="fas fa-building me-1"></i> Company Branding & Info
         </h5>
-        <div class="row g-3 mb-4">
+        <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label font-xs fw-bold text-muted">COMPANY NAME</label>
             <input type="text" class="form-control" [(ngModel)]="settings.company_name" name="company_name" required />
@@ -63,10 +65,10 @@
         </div>
 
         <!-- Section 2: Branding Media & Logos -->
-        <h5 class="text-success fw-bold border-bottom pb-2 mb-3">
-          <i class="fas fa-image me-2"></i> Logo, Signatures & Color Theme
+        <h5 class="text-success fw-bold border-bottom pb-1 mb-2 section-heading">
+          <i class="fas fa-image me-1"></i> Logo, Signatures & Color Theme
         </h5>
-        <div class="row g-3 mb-4">
+        <div class="row g-2 mb-3">
           <div class="col-md-4">
             <label class="form-label font-xs fw-bold text-muted">COMPANY LOGO URL</label>
             <input type="text" class="form-control" [(ngModel)]="settings.company_logo" name="company_logo" placeholder="https://..." />
@@ -93,10 +95,10 @@
         </div>
 
         <!-- Section 3: Bank & Payment Info -->
-        <h5 class="text-success fw-bold border-bottom pb-2 mb-3">
-          <i class="fas fa-university me-2"></i> Company Bank Details & UPI
+        <h5 class="text-success fw-bold border-bottom pb-1 mb-2 section-heading">
+          <i class="fas fa-university me-1"></i> Company Bank Details & UPI
         </h5>
-        <div class="row g-3 mb-4">
+        <div class="row g-2 mb-3">
           <div class="col-md-3">
             <label class="form-label font-xs fw-bold text-muted">BANK NAME</label>
             <input type="text" class="form-control" [(ngModel)]="settings.bank_name" name="bank_name" />
@@ -124,23 +126,23 @@
         </div>
 
         <!-- Section 4: Terms & Notes -->
-        <h5 class="text-success fw-bold border-bottom pb-2 mb-3">
-          <i class="fas fa-file-contract me-2"></i> Terms & Conditions & Special Notes
+        <h5 class="text-success fw-bold border-bottom pb-1 mb-2 section-heading">
+          <i class="fas fa-file-contract me-1"></i> Terms & Conditions & Special Notes
         </h5>
-        <div class="row g-3 mb-4">
+        <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label font-xs fw-bold text-muted">TERMS & CONDITIONS</label>
-            <textarea class="form-control" rows="5" [(ngModel)]="settings.terms_and_conditions" name="terms_and_conditions"></textarea>
+            <textarea class="form-control" rows="4" [(ngModel)]="settings.terms_and_conditions" name="terms_and_conditions"></textarea>
           </div>
           <div class="col-md-6">
             <label class="form-label font-xs fw-bold text-muted">SPECIAL NOTES</label>
-            <textarea class="form-control" rows="5" [(ngModel)]="settings.notes" name="notes"></textarea>
+            <textarea class="form-control" rows="4" [(ngModel)]="settings.notes" name="notes"></textarea>
           </div>
         </div>
 
         <!-- Submit Action -->
-        <div class="d-flex justify-content-end gap-2 border-top pt-3">
-          <button type="submit" class="btn btn-success px-5 font-weight-bold" [disabled]="saving">
+        <div class="d-flex justify-content-end gap-2 border-top pt-2">
+          <button type="submit" class="btn btn-success px-4" [disabled]="saving">
             <i *ngIf="saving" class="fas fa-spinner fa-spin me-1"></i>
             <i *ngIf="!saving" class="fas fa-save me-1"></i> Save Invoice Settings
           </button>
