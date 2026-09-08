@@ -149,14 +149,27 @@ export class AdminCompanyDocumentsComponent implements OnInit {
     });
   }
 
-  deactivate(document: any): void {
-    if (!confirm(`Deactivate "${document.document_name}"?`)) return;
+  deleteDocument(document: any): void {
+    if (!confirm(`Are you sure you want to permanently delete "${document.document_name}"? This action cannot be undone.`)) return;
     this.api.adminDeleteCompanyDocument(document.id).subscribe({
       next: (res: any) => {
-        this.showToast(res?.message || 'Company document deactivated.');
+        this.showToast(res?.message || 'Company document deleted successfully.');
         this.loadDocuments();
       },
-      error: (error: any) => this.showToast(error?.error?.message || 'Unable to deactivate document.', 'error'),
+      error: (error: any) => this.showToast(error?.error?.message || 'Unable to delete document.', 'error'),
+    });
+  }
+
+  toggleStatus(document: any): void {
+    const newStatus = !document.is_active;
+    const actionText = newStatus ? 'activate' : 'deactivate';
+    if (!confirm(`Are you sure you want to ${actionText} "${document.document_name}"?`)) return;
+    this.api.adminToggleCompanyDocumentStatus(document.id, newStatus).subscribe({
+      next: (res: any) => {
+        this.showToast(res?.message || `Company document ${actionText}d successfully.`);
+        this.loadDocuments();
+      },
+      error: (error: any) => this.showToast(error?.error?.message || `Unable to ${actionText} document.`, 'error'),
     });
   }
 

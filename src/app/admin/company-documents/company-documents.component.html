@@ -33,8 +33,9 @@
           <td>{{ document.display_order }}</td>
           <td><span class="status-pill" [class.inactive]="!document.is_active">{{ document.is_active ? 'Active' : 'Inactive' }}</span></td>
           <td class="text-end">
-            <button type="button" class="icon-btn" title="Edit document" (click)="openEdit(document)"><i class="fas fa-edit"></i></button>
-            <button type="button" class="icon-btn danger" title="Deactivate document" (click)="deactivate(document)" [disabled]="!document.is_active"><i class="fas fa-ban"></i></button>
+            <button type="button" class="icon-btn edit-btn" title="Edit document" (click)="openEdit(document)"><i class="fas fa-edit"></i></button>
+            <button type="button" class="icon-btn" [class.warning]="document.is_active" [class.success]="!document.is_active" [title]="document.is_active ? 'Deactivate (hide from public)' : 'Activate (show on public)'" (click)="toggleStatus(document)"><i [class]="document.is_active ? 'fas fa-eye-slash' : 'fas fa-eye'"></i></button>
+            <button type="button" class="icon-btn danger delete-btn" title="Delete document permanently" (click)="deleteDocument(document)"><i class="fas fa-trash-alt"></i></button>
           </td>
         </tr>
       </tbody>

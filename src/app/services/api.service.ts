@@ -342,6 +342,7 @@ export class ApiService {
   adminUpdateCompanyDocument(id: number, data: any) { return this.putForm(`/api/admin/company-documents/${id}`, data, true); }
   adminCreateCompanyDocument(data: any) { return this.postForm('/api/admin/company-documents', data, true); }
   adminDeleteCompanyDocument(id: number) { return this.delete(`/api/admin/company-documents/${id}`, true); }
+  adminToggleCompanyDocumentStatus(id: number, is_active: boolean) { return this.patch(`/api/admin/company-documents/${id}/status`, { is_active }, true); }
 
   // EMI Calculator Mgmt (Admin)
   adminGetEmiCalculatorPlans(params: any = {}) { return this.get('/api/admin/emi-calculator', params, true); }
