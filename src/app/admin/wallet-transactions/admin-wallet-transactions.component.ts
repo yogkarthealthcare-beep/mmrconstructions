@@ -393,28 +393,30 @@ import { AdminExportService, ExportColumn } from '../../services/admin-export.se
       background-color: #F8FAFC;
     }
     .table > thead > tr > th {
-      font-size: 11px;
+      font-size: 11.5px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--ft-text-muted);
-      font-weight: 600;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--ft-border);
+      letter-spacing: 0.4px;
+      color: #475569;
+      font-weight: 700;
+      padding: 6px 12px;
+      height: 42px;
+      border-bottom: 1.5px solid #e2e8f0;
       border-top: none;
+      white-space: nowrap;
+      vertical-align: middle;
     }
     .table > tbody > tr > td {
-      padding: 0.5rem 1rem;
+      padding: 6px 12px;
+      height: 46px;
       vertical-align: middle;
-      border-bottom: 1px solid var(--ft-border);
-      font-size: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 12.5px;
+      color: #1e293b;
       background-color: transparent;
-      transition: background-color 0.15s;
-    }
-    .table > tbody > tr:nth-of-type(even) > td {
-      background-color: #FAFAFA;
+      transition: background-color 0.12s;
     }
     .table > tbody > tr:hover > td {
-      background-color: #F1F5F9;
+      background-color: #F8FAFC;
     }
     .table > tbody > tr:last-child > td {
       border-bottom: none;

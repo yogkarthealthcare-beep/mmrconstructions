@@ -244,26 +244,31 @@ import { ApiService } from '../../services/api.service';
       width: 100%;
       min-width: 850px;
       margin-bottom: 0;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
     }
 
     .table-tx th {
       background: #f8fafc;
-      padding: 0.55rem 0.75rem;
-      font-size: 0.675rem;
+      padding: 6px 12px;
+      height: 42px;
+      font-size: 11.5px;
       font-weight: 700;
       color: #475569;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1.5px solid #e2e8f0;
       white-space: nowrap;
+      vertical-align: middle;
     }
 
     .table-tx td {
-      padding: 0.55rem 0.75rem;
+      padding: 6px 12px;
+      height: 46px;
       vertical-align: middle;
       border-bottom: 1px solid #f1f5f9;
-      font-size: 0.75rem;
+      font-size: 12.5px;
+      color: #1e293b;
       white-space: nowrap;
     }
 
