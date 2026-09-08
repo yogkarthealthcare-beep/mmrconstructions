@@ -198,6 +198,11 @@ export const routes: Routes = [
       { path: 'profile',                component: ProfileComponent },
       { path: 'notifications',          component: NotificationsComponent },
       { path: 'buyback',                component: BuybackComponent },
+      {
+        path: 'team-member-enrollment',
+        loadComponent: () => import('./associate/team-member-enrollment/team-member-enrollment.component').then(m => m.TeamMemberEnrollmentComponent),
+        title: 'Team Member Enrollment'
+      },
     ]
   },
 
@@ -224,6 +229,11 @@ export const routes: Routes = [
       { path: 'profile',                component: ProfileComponent },
       { path: 'notifications',          component: NotificationsComponent },
       { path: 'buyback',                component: BuybackComponent },
+      {
+        path: 'team-member-enrollment',
+        loadComponent: () => import('./associate/team-member-enrollment/team-member-enrollment.component').then(m => m.TeamMemberEnrollmentComponent),
+        title: 'Team Member Enrollment'
+      },
       {
         path: 'enrollment',
         loadComponent: () => import('./associate/enrollment/associate-enrollment-form.component').then(m => m.AssociateEnrollmentFormComponent),

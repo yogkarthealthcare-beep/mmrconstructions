@@ -130,6 +130,7 @@ export class UserLayoutComponent implements OnInit {
         icon: 'fas fa-users',
         expanded: false,
         items: [
+          { icon: 'fas fa-user-plus', label: 'Team Member Enrollment', route: `${p}/team-member-enrollment` },
           { icon: 'fas fa-hand-holding-usd', label: 'Commission Tracker', route: `${p}/commission` },
           { icon: 'fas fa-sitemap', label: 'My Team Network', route: `${p}/my-team` },
           { icon: 'fas fa-project-diagram', label: 'Network Tree', route: `${p}/network-tree`, badge: 'NEW' },

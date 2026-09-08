@@ -124,6 +124,37 @@ export class ApiService {
     });
   }
 
+  // ── Team Member Enrollment ───────────────────────
+  getAssociatePrefill(associateId: number | string): Observable<any> {
+    return this.get(`/api/associates/${associateId}/prefill`);
+  }
+
+  getTeamMembers(associateId: number | string, params: any = {}): Observable<any> {
+    return this.get(`/api/associates/${associateId}/team-members`, params);
+  }
+
+  getTeamMember(id: number | string): Observable<any> {
+    return this.get(`/api/team-members/${id}`);
+  }
+
+  createTeamMember(data: FormData | any): Observable<any> {
+    if (data instanceof FormData) {
+      return this.postForm('/api/team-members', data);
+    }
+    return this.post('/api/team-members', data);
+  }
+
+  updateTeamMember(id: number | string, data: FormData | any): Observable<any> {
+    if (data instanceof FormData) {
+      return this.putForm(`/api/team-members/${id}`, data);
+    }
+    return this.put(`/api/team-members/${id}`, data);
+  }
+
+  updateTeamMemberStatus(id: number | string, status: string, authorizedSignatoryName?: string): Observable<any> {
+    return this.patch(`/api/team-members/${id}/status`, { status, authorizedSignatoryName });
+  }
+
   // ── Sites & Plots ─────────────────────────────────
   getHomeSliders()              { return this.get('/api/home-sliders'); }
   getSites()                    { return this.get('/api/sites'); }

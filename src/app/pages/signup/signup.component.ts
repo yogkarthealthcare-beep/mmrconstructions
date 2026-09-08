@@ -76,10 +76,10 @@ export class SignupComponent implements OnInit {
         this.api.trackReferralCode(cleanRef).subscribe({ error: () => {} });
         this.verifySponsor(cleanRef);
       } else {
-        // Condition 2 & 3: ref is missing, blank, or empty -> Fallback to default sponsor MMR3001 (Suraj Kumar Verma)
-        this.form.sponsor_invite_code = 'MMR3001';
+        // Condition 2 & 3: ref is missing, blank, or empty -> Fallback to default sponsor MMR0001 (Suraj Kumar Verma)
+        this.form.sponsor_invite_code = 'MMR0001';
         this.referralLocked = false;
-        this.verifySponsor('MMR3001');
+        this.verifySponsor('MMR0001');
       }
     });
   }
@@ -93,7 +93,7 @@ export class SignupComponent implements OnInit {
     this.roleSelected = true;
     this.error = '';
     if (!this.form.sponsor_invite_code) {
-      this.form.sponsor_invite_code = 'MMR3001';
+      this.form.sponsor_invite_code = 'MMR0001';
     }
     this.verifySponsor(this.form.sponsor_invite_code);
   }
@@ -105,7 +105,7 @@ export class SignupComponent implements OnInit {
   }
 
   resetForm() {
-    const currentSponsor = this.form.sponsor_invite_code || 'MMR3001';
+    const currentSponsor = this.form.sponsor_invite_code || 'MMR0001';
     this.form = {
       full_name: '',
       email: '',
@@ -123,9 +123,9 @@ export class SignupComponent implements OnInit {
     const clean = (value || '').replace(/\*/g, '').trim().toUpperCase();
     this.form.sponsor_invite_code = clean;
     if (!clean) {
-      // If user clears the input, fallback to MMR3001
-      this.form.sponsor_invite_code = 'MMR3001';
-      this.verifySponsor('MMR3001');
+      // If user clears the input, fallback to MMR0001
+      this.form.sponsor_invite_code = 'MMR0001';
+      this.verifySponsor('MMR0001');
     } else {
       this.verifySponsor(clean);
     }
@@ -136,8 +136,8 @@ export class SignupComponent implements OnInit {
     let cleanCode = (rawCode || '').replace(/\*/g, '').trim().toUpperCase();
 
     if (!cleanCode) {
-      cleanCode = 'MMR3001';
-      this.form.sponsor_invite_code = 'MMR3001';
+      cleanCode = 'MMR0001';
+      this.form.sponsor_invite_code = 'MMR0001';
     }
 
     this.sponsorChecking = true;
@@ -150,13 +150,13 @@ export class SignupComponent implements OnInit {
         this.sponsorChecking = false;
         if (res?.success && res?.data?.valid) {
           this.sponsorValid = true;
-          this.sponsorName = res.data.full_name || (cleanCode === 'MMR3001' ? 'Suraj Kumar Verma' : 'Verified Associate');
+          this.sponsorName = res.data.full_name || ((cleanCode === 'MMR0001' || cleanCode === 'MMR3001') ? 'Suraj Kumar Verma' : 'Verified Associate');
           this.sponsorCodeFormatted = res.data.invitation_code || res.data.member_id || cleanCode;
-        } else if (cleanCode === 'MMR3001') {
+        } else if (cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
           // Default Sponsor Fallback Guarantee
           this.sponsorValid = true;
           this.sponsorName = 'Suraj Kumar Verma (Default Sponsor)';
-          this.sponsorCodeFormatted = 'MMR3001';
+          this.sponsorCodeFormatted = 'MMR0001';
           delete this.v['sponsor_invite_code'];
         } else {
           this.sponsorValid = false;
@@ -165,11 +165,11 @@ export class SignupComponent implements OnInit {
       },
       error: () => {
         this.sponsorChecking = false;
-        if (cleanCode === 'MMR3001') {
+        if (cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
           // Default Sponsor Fallback Guarantee
           this.sponsorValid = true;
           this.sponsorName = 'Suraj Kumar Verma (Default Sponsor)';
-          this.sponsorCodeFormatted = 'MMR3001';
+          this.sponsorCodeFormatted = 'MMR0001';
           delete this.v['sponsor_invite_code'];
         } else {
           this.sponsorValid = false;
@@ -290,7 +290,7 @@ export class SignupComponent implements OnInit {
 
   private getEffectiveSponsorCode(): string {
     const code = this.form.sponsor_invite_code.replace(/\*/g, '').trim().toUpperCase();
-    return code || 'MMR3001'; // Default sponsor fallback (Suraj Kumar Verma)
+    return code || 'MMR0001'; // Default sponsor fallback (Suraj Kumar Verma)
   }
 
   submit() {

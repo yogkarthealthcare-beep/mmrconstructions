@@ -1,0 +1,870 @@
+<div class="team-enrollment-container">
+  <!-- Top Navigation / Header -->
+  <div class="header-card">
+    <div class="header-content">
+      <div class="header-titles">
+        <div class="company-badge">
+          <i class="fas fa-building"></i> MMR CONSTRUCTION & DEVELOPERS PVT. LTD.
+        </div>
+        <h1 class="page-title">Team Member Enrollment</h1>
+        <p class="page-subtitle">
+          Register new team members under your associate network with instant UID generation & verification.
+        </p>
+      </div>
+
+      <!-- Action Tabs -->
+      <div class="tab-switcher">
+        <button 
+          type="button"
+          class="tab-btn" 
+          [class.active]="activeTab === 'enroll'"
+          (click)="setTab('enroll')"
+        >
+          <i class="fas fa-user-plus"></i>
+          <span>Enroll New Member</span>
+        </button>
+        <button 
+          type="button"
+          class="tab-btn" 
+          [class.active]="activeTab === 'list'"
+          (click)="setTab('list')"
+        >
+          <i class="fas fa-users"></i>
+          <span>My Team Members</span>
+          <span class="count-pill" *ngIf="totalCount() > 0">{{ totalCount() }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 1: ENROLLMENT FORM VIEW -->
+  <div class="tab-content" *ngIf="activeTab === 'enroll'">
+    
+    <!-- Collapsible Workflow & Responsibilities Panel -->
+    <div class="workflow-accordion" [class.open]="workflowOpen()">
+      <div class="accordion-header" (click)="toggleWorkflow()">
+        <div class="accordion-title">
+          <i class="fas fa-info-circle text-gold"></i>
+          <span>Team Member Workflow & Responsibilities (Reference Sheet)</span>
+        </div>
+        <div class="accordion-toggle-icon">
+          <i class="fas" [ngClass]="workflowOpen() ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+      </div>
+
+      <div class="accordion-body" *ngIf="workflowOpen()">
+        <div class="workflow-grid">
+          <div class="workflow-card">
+            <div class="step-num">01</div>
+            <h4>Joining & KYC</h4>
+            <p>Enrollment form submission with genuine Aadhar, PAN & verified bank account for prompt commission payouts.</p>
+          </div>
+          <div class="workflow-card">
+            <div class="step-num">02</div>
+            <h4>Learning & Marketing</h4>
+            <p>Company training sessions, site map studies, legal document reviews & marketing materials usage.</p>
+          </div>
+          <div class="workflow-card">
+            <div class="step-num">03</div>
+            <h4>Site Visit & Pitching</h4>
+            <p>Guiding prospective customers to MMR site projects, explaining plot dimensions, amenities & development status.</p>
+          </div>
+          <div class="workflow-card">
+            <div class="step-num">04</div>
+            <h4>Deal Closure</h4>
+            <p>Facilitating token payments, booking documentation, agreement drafting & payment schedule setup.</p>
+          </div>
+          <div class="workflow-card">
+            <div class="step-num">05</div>
+            <h4>Direct Commission</h4>
+            <p>Instant commission credit to wallet/bank upon approval of customer booking & verified payment receipts.</p>
+          </div>
+          <div class="workflow-card">
+            <div class="step-num">06</div>
+            <h4>Passive Income</h4>
+            <p>Multi-tiered override income & downline rewards generated through active team member sales performance.</p>
+          </div>
+          <div class="workflow-card highlight">
+            <div class="step-num gold">07</div>
+            <h4>Target & Bonanza Rewards</h4>
+            <p>Eligibility for national & international luxury tours, vehicle schemes, and gold coin bonus milestones.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Enrollment Reactive Form -->
+    <form [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()" class="enrollment-form-card" novalidate>
+      
+      <!-- Section A: Associate & Personal Details -->
+      <div class="form-section">
+        <div class="section-heading">
+          <div class="section-icon"><i class="fas fa-id-card"></i></div>
+          <div class="section-title-wrap">
+            <h3>Section A — Associate & Personal Details</h3>
+            <span class="section-desc">Associate identity verification and applicant profile information</span>
+          </div>
+        </div>
+
+        <div class="form-grid-layout">
+          <!-- Associate Read-only Box -->
+          <div class="grid-col-6">
+            <div class="form-group readonly-group">
+              <label><i class="fas fa-lock text-muted"></i> Associate ID (Logged In)</label>
+              <div class="input-with-icon">
+                <i class="fas fa-hashtag input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="associateId" 
+                  class="form-control readonly-input" 
+                  placeholder="Associate ID"
+                >
+              </div>
+              <small class="help-text text-muted">Locked to your active session credentials</small>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group readonly-group">
+              <label><i class="fas fa-lock text-muted"></i> Associate Name</label>
+              <div class="input-with-icon">
+                <i class="fas fa-user-shield input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="associateName" 
+                  class="form-control readonly-input" 
+                  placeholder="Associate Name"
+                >
+              </div>
+              <small class="help-text text-muted">Auto-filled from company profile record</small>
+            </div>
+          </div>
+
+          <!-- Photo Upload Card -->
+          <div class="grid-col-12">
+            <div class="photo-upload-container">
+              <div class="photo-preview-box" [class.has-image]="photoPreviewUrl">
+                <img *ngIf="photoPreviewUrl" [src]="photoPreviewUrl" alt="Passport Photo" class="preview-img">
+                <div *ngIf="!photoPreviewUrl" class="photo-placeholder">
+                  <i class="fas fa-user-circle fa-3x text-muted"></i>
+                  <span>Passport Photo (Optional)</span>
+                </div>
+              </div>
+              <div class="photo-upload-controls">
+                <label class="btn-file-upload">
+                  <i class="fas fa-camera"></i>
+                  <span>{{ photoPreviewUrl ? 'Change Photo' : 'Upload Passport Photo' }}</span>
+                  <input type="file" (change)="onPhotoSelected($event)" accept="image/jpeg,image/png,image/webp" style="display: none;">
+                </label>
+                <button type="button" *ngIf="photoPreviewUrl" (click)="removePhoto()" class="btn-remove-photo">
+                  <i class="fas fa-trash"></i> Remove
+                </button>
+                <span class="photo-hint">Max file size: 5 MB (JPG, PNG, WEBP)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Applicant Personal Fields -->
+          <div class="grid-col-6">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('fullName')?.invalid && enrollmentForm.get('fullName')?.touched">
+              <label class="required-label">Full Name of Team Member</label>
+              <div class="input-with-icon">
+                <i class="fas fa-user input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="fullName" 
+                  class="form-control" 
+                  placeholder="Enter full legal name"
+                >
+              </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('fullName')?.errors?.['required'] && enrollmentForm.get('fullName')?.touched">
+                Full name is required.
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('fatherHusbandName')?.invalid && enrollmentForm.get('fatherHusbandName')?.touched">
+              <label class="required-label">Father / Husband Name</label>
+              <div class="input-with-icon">
+                <i class="fas fa-users-line input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="fatherHusbandName" 
+                  class="form-control" 
+                  placeholder="Enter father or husband name"
+                >
+              </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('fatherHusbandName')?.errors?.['required'] && enrollmentForm.get('fatherHusbandName')?.touched">
+                Father / Husband name is required.
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-col-4">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('dateOfBirth')?.invalid && enrollmentForm.get('dateOfBirth')?.touched">
+              <label class="required-label">Date of Birth</label>
+              <div class="input-with-icon">
+                <i class="fas fa-calendar-alt input-icon"></i>
+                <input 
+                  type="date" 
+                  formControlName="dateOfBirth" 
+                  class="form-control"
+                >
+              </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('dateOfBirth')?.errors?.['required'] && enrollmentForm.get('dateOfBirth')?.touched">
+                Date of birth is required.
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-col-4">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('gender')?.invalid && enrollmentForm.get('gender')?.touched">
+              <label class="required-label">Gender</label>
+              <div class="input-with-icon">
+                <i class="fas fa-venus-mars input-icon"></i>
+                <select formControlName="gender" class="form-control">
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-col-4">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('mobileNo')?.invalid && enrollmentForm.get('mobileNo')?.touched">
+              <label class="required-label">Mobile Number</label>
+              <div class="input-with-icon">
+                <i class="fas fa-phone input-icon"></i>
+                <input 
+                  type="tel" 
+                  formControlName="mobileNo" 
+                  (input)="onMobileInput($event)"
+                  class="form-control" 
+                  placeholder="10-digit mobile number"
+                  maxlength="15"
+                >
+              </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('mobileNo')?.errors?.['required'] && enrollmentForm.get('mobileNo')?.touched">
+                Mobile number is required.
+              </span>
+              <span class="error-msg" *ngIf="enrollmentForm.get('mobileNo')?.errors?.['pattern'] && enrollmentForm.get('mobileNo')?.touched">
+                Please enter a valid 10-15 digit mobile number.
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('aadharNo')?.invalid && enrollmentForm.get('aadharNo')?.touched">
+              <div class="label-with-toggle">
+                <label class="required-label">Aadhar Number (12 Digits)</label>
+                <button type="button" class="btn-toggle-mask" (click)="showAadhar.set(!showAadhar())">
+                  <i class="fas" [ngClass]="showAadhar() ? 'fa-eye-slash' : 'fa-eye'"></i>
+                  <span>{{ showAadhar() ? 'Hide' : 'Show' }}</span>
+                </button>
+              </div>
+              <div class="input-with-icon">
+                <i class="fas fa-address-card input-icon"></i>
+                <input 
+                  [type]="showAadhar() ? 'text' : 'password'"
+                  formControlName="aadharNo" 
+                  (input)="onAadharInput($event)"
+                  class="form-control" 
+                  placeholder="12-digit numeric Aadhar number"
+                  maxlength="12"
+                >
+              </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('aadharNo')?.errors?.['required'] && enrollmentForm.get('aadharNo')?.touched">
+                Aadhar number is mandatory.
+              </span>
+              <span class="error-msg" *ngIf="enrollmentForm.get('aadharNo')?.errors?.['pattern'] && enrollmentForm.get('aadharNo')?.touched">
+                Aadhar must be exactly 12 numeric digits.
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('panNo')?.invalid && enrollmentForm.get('panNo')?.touched">
+              <label>PAN Number <span class="optional-tag">(Optional)</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-id-badge input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="panNo" 
+                  (input)="onPanInput($event)"
+                  class="form-control" 
+                  placeholder="10-digit PAN (e.g. ABCDE1234F)"
+                  maxlength="10"
+                >
+              </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('panNo')?.errors?.['pattern'] && enrollmentForm.get('panNo')?.touched">
+                Invalid PAN format (e.g. ABCDE1234F).
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('emailId')?.invalid && enrollmentForm.get('emailId')?.touched">
+              <label>Email Address <span class="optional-tag">(Optional)</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon"></i>
+                <input 
+                  type="email" 
+                  formControlName="emailId" 
+                  class="form-control" 
+                  placeholder="team.member@example.com"
+                >
+              </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('emailId')?.errors?.['email'] && enrollmentForm.get('emailId')?.touched">
+                Please enter a valid email address.
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-col-12">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('fullAddress')?.invalid && enrollmentForm.get('fullAddress')?.touched">
+              <label class="required-label">Full Residential Address</label>
+              <textarea 
+                formControlName="fullAddress" 
+                class="form-control textarea-address" 
+                rows="3" 
+                placeholder="House / Flat No., Street, Landmark, City, State, PIN Code"
+              ></textarea>
+              <span class="error-msg" *ngIf="enrollmentForm.get('fullAddress')?.errors?.['required'] && enrollmentForm.get('fullAddress')?.touched">
+                Full address is required.
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section B: Nominee Details -->
+      <div class="form-section">
+        <div class="section-heading">
+          <div class="section-icon"><i class="fas fa-user-shield"></i></div>
+          <div class="section-title-wrap">
+            <h3>Section B — Nominee Details</h3>
+            <span class="section-desc">Nomination designation for security and commission benefits (Optional)</span>
+          </div>
+        </div>
+
+        <div class="form-grid-layout">
+          <div class="grid-col-6">
+            <div class="form-group">
+              <label>Nominee Full Name</label>
+              <div class="input-with-icon">
+                <i class="fas fa-user input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="nomineeName" 
+                  class="form-control" 
+                  placeholder="Enter nominee name"
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group">
+              <label>Relationship with Applicant</label>
+              <div class="input-with-icon">
+                <i class="fas fa-heart input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="nomineeRelation" 
+                  class="form-control" 
+                  placeholder="e.g. Spouse / Son / Father / Mother"
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group">
+              <label>Nominee Age / Date of Birth</label>
+              <div class="input-with-icon">
+                <i class="fas fa-calendar input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="nomineeAgeDob" 
+                  class="form-control" 
+                  placeholder="e.g. 28 Years or DD/MM/YYYY"
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group">
+              <label>Nominee Contact Number</label>
+              <div class="input-with-icon">
+                <i class="fas fa-phone input-icon"></i>
+                <input 
+                  type="tel" 
+                  formControlName="nomineeContactNo" 
+                  class="form-control" 
+                  placeholder="10-digit mobile number"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section C: Bank Details -->
+      <div class="form-section">
+        <div class="section-heading">
+          <div class="section-icon"><i class="fas fa-university"></i></div>
+          <div class="section-title-wrap">
+            <h3>Section C — Bank Account Details</h3>
+            <span class="section-desc">Direct commission and incentives settlement account</span>
+          </div>
+        </div>
+
+        <div class="form-grid-layout">
+          <div class="grid-col-6">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('ifscCode')?.invalid && enrollmentForm.get('ifscCode')?.touched">
+              <div class="label-with-status">
+                <label class="required-label">IFSC Code (11 Characters)</label>
+                <span *ngIf="ifscLoading()" class="status-badge loading"><i class="fas fa-spinner fa-spin"></i> Checking...</span>
+                <span *ngIf="ifscVerified()" class="status-badge verified"><i class="fas fa-check-circle"></i> Verified</span>
+              </div>
+              <div class="input-with-icon">
+                <i class="fas fa-barcode input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="ifscCode" 
+                  (input)="onIfscInput($event)"
+                  class="form-control uppercase-input" 
+                  placeholder="e.g. SBIN0001234 / HDFC0000001"
+                  maxlength="11"
+                >
+              </div>
+              <small *ngIf="ifscBankInfo()" class="help-text text-success font-weight-bold">{{ ifscBankInfo() }}</small>
+              <span class="error-msg" *ngIf="enrollmentForm.get('ifscCode')?.errors?.['required'] && enrollmentForm.get('ifscCode')?.touched">
+                IFSC code is required.
+              </span>
+              <span class="error-msg" *ngIf="enrollmentForm.get('ifscCode')?.errors?.['pattern'] && enrollmentForm.get('ifscCode')?.touched">
+                Invalid IFSC Code format (11 alphanumeric characters).
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('bankName')?.invalid && enrollmentForm.get('bankName')?.touched">
+              <label class="required-label">Bank Name</label>
+              <div class="input-with-icon">
+                <i class="fas fa-landmark input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="bankName" 
+                  class="form-control" 
+                  placeholder="e.g. State Bank of India / HDFC Bank"
+                >
+              </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('bankName')?.errors?.['required'] && enrollmentForm.get('bankName')?.touched">
+                Bank name is required.
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('branchName')?.invalid && enrollmentForm.get('branchName')?.touched">
+              <label class="required-label">Branch Name</label>
+              <div class="input-with-icon">
+                <i class="fas fa-map-marker-alt input-icon"></i>
+                <input 
+                  type="text" 
+                  formControlName="branchName" 
+                  class="form-control" 
+                  placeholder="e.g. Gomti Nagar, Lucknow"
+                >
+              </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('branchName')?.errors?.['required'] && enrollmentForm.get('branchName')?.touched">
+                Branch name is required.
+              </span>
+            </div>
+          </div>
+
+          <div class="grid-col-6">
+            <div class="form-group" [class.has-error]="enrollmentForm.get('accountNo')?.invalid && enrollmentForm.get('accountNo')?.touched">
+              <div class="label-with-toggle">
+                <label class="required-label">Account Number</label>
+                <button type="button" class="btn-toggle-mask" (click)="showAccount.set(!showAccount())">
+                  <i class="fas" [ngClass]="showAccount() ? 'fa-eye-slash' : 'fa-eye'"></i>
+                  <span>{{ showAccount() ? 'Hide' : 'Show' }}</span>
+                </button>
+              </div>
+              <div class="input-with-icon">
+                <i class="fas fa-credit-card input-icon"></i>
+                <input 
+                  [type]="showAccount() ? 'text' : 'password'"
+                  formControlName="accountNo" 
+                  class="form-control" 
+                  placeholder="Enter full bank account number"
+                  maxlength="30"
+                >
+              </div>
+              <span class="error-msg" *ngIf="enrollmentForm.get('accountNo')?.errors?.['required'] && enrollmentForm.get('accountNo')?.touched">
+                Account number is required.
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section D: Declaration & Signatures (SUBMIT GATE) -->
+      <div class="form-section declaration-section">
+        <div class="section-heading">
+          <div class="section-icon gold"><i class="fas fa-file-contract"></i></div>
+          <div class="section-title-wrap">
+            <h3>Section D — Declaration & Signatures</h3>
+            <span class="section-desc">MMR Construction & Developers code of conduct acceptance & digital signatures</span>
+          </div>
+        </div>
+
+        <!-- Terms Box -->
+        <div class="declaration-terms-box">
+          <h4 class="terms-title"><i class="fas fa-gavel text-gold"></i> APPLICANT & ASSOCIATE UNDERTAKING</h4>
+          <ol class="terms-list">
+            <li>I hereby declare that all information furnished in this Team Member Enrollment Form is true, correct, and complete to the best of my knowledge.</li>
+            <li>I agree to adhere strictly to the rules, ethical marketing standards, code of conduct, and business guidelines formulated by <b>MMR Construction & Developers Pvt. Ltd.</b></li>
+            <li>I understand that commission payouts, incentives, and rank advancements are subject to verified plot bookings and official payment receipt approvals.</li>
+            <li>I acknowledge that MMR Construction & Developers Pvt. Ltd. reserves the right to review, approve, or reject this enrollment application upon verification of documents.</li>
+          </ol>
+        </div>
+
+        <!-- Mandatory Declaration Checkbox (SUBMIT-GATE) -->
+        <div class="declaration-gate-box" [class.checked]="enrollmentForm.get('declarationAccepted')?.value">
+          <label class="checkbox-container">
+            <input 
+              type="checkbox" 
+              formControlName="declarationAccepted" 
+              id="declarationCheck"
+            >
+            <span class="checkmark"></span>
+            <span class="declaration-label-text">
+              <strong>I hereby accept the Declaration & Code of Conduct</strong> and confirm that all details provided in this form are accurate.
+              <span class="submit-gate-note">(Mandatory to unlock submit button)</span>
+            </span>
+          </label>
+        </div>
+
+        <!-- Interactive Signatures Pad Layout -->
+        <div class="signature-pads-grid">
+          <!-- Applicant Signature Pad -->
+          <div class="sig-pad-card">
+            <div class="sig-pad-header">
+              <label><i class="fas fa-signature text-gold"></i> Applicant Digital Signature</label>
+              <button type="button" class="btn-clear-sig" (click)="clearApplicantSignature()">
+                <i class="fas fa-eraser"></i> Clear Pad
+              </button>
+            </div>
+            <div class="canvas-wrapper">
+              <canvas #applicantSigCanvas id="applicantSigCanvas" class="sig-canvas"></canvas>
+            </div>
+            <span class="sig-hint">Draw signature inside the box using touch or mouse</span>
+          </div>
+
+          <!-- Associate Signature Pad -->
+          <div class="sig-pad-card">
+            <div class="sig-pad-header">
+              <label><i class="fas fa-file-signature text-gold"></i> Sponsoring Associate Signature</label>
+              <button type="button" class="btn-clear-sig" (click)="clearAssociateSignature()">
+                <i class="fas fa-eraser"></i> Clear Pad
+              </button>
+            </div>
+            <div class="canvas-wrapper">
+              <canvas #associateSigCanvas id="associateSigCanvas" class="sig-canvas"></canvas>
+            </div>
+            <span class="sig-hint">Sponsoring Associate signature verification</span>
+          </div>
+        </div>
+
+        <!-- Submission Buttons Bar -->
+        <div class="form-actions-bar">
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            (click)="resetForm()"
+            [disabled]="submitting()"
+          >
+            <i class="fas fa-redo"></i> Reset Form
+          </button>
+
+          <div class="submit-btn-wrapper">
+            <button 
+              type="submit" 
+              class="btn btn-primary btn-submit"
+              [disabled]="!canSubmit()"
+              [class.disabled-gate]="!canSubmit()"
+              [title]="!enrollmentForm.get('declarationAccepted')?.value ? 'Please accept the declaration checkbox above to enable submit' : ''"
+            >
+              <span *ngIf="submitting()" class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!submitting()" class="fas fa-paper-plane me-2"></i>
+              <span>{{ submitting() ? 'Submitting Enrollment...' : 'Submit Team Member Enrollment' }}</span>
+            </button>
+            <small *ngIf="!enrollmentForm.get('declarationAccepted')?.value" class="gate-hint">
+              <i class="fas fa-lock"></i> Check the declaration box above to enable submission
+            </small>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tab 2: ENROLLED TEAM MEMBERS LIST VIEW -->
+  <div class="tab-content" *ngIf="activeTab === 'list'">
+    <div class="list-container-card">
+      
+      <!-- Filter and Search Header -->
+      <div class="list-controls-bar">
+        <div class="search-input-wrap">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            class="form-control search-input" 
+            placeholder="Search by Name, UID, Mobile, or Aadhar..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event); onSearchChange()"
+          >
+        </div>
+
+        <div class="status-filters">
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="statusFilter() === 'all'"
+            (click)="onFilterStatus('all')"
+          >
+            All ({{ totalCount() }})
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill pending" 
+            [class.active]="statusFilter() === 'pending'"
+            (click)="onFilterStatus('pending')"
+          >
+            Pending
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill approved" 
+            [class.active]="statusFilter() === 'approved'"
+            (click)="onFilterStatus('approved')"
+          >
+            Approved
+          </button>
+          <button 
+            type="button" 
+            class="filter-pill rejected" 
+            [class.active]="statusFilter() === 'rejected'"
+            (click)="onFilterStatus('rejected')"
+          >
+            Rejected
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loadingList()" class="loading-state-box">
+        <i class="fas fa-circle-notch fa-spin fa-2x text-gold"></i>
+        <span>Loading team members...</span>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loadingList() && teamMembers().length === 0" class="empty-state-box">
+        <i class="fas fa-user-friends fa-3x text-muted"></i>
+        <h3>No Team Members Enrolled Yet</h3>
+        <p>You haven't enrolled any team members under your associate account yet.</p>
+        <button type="button" class="btn btn-primary" (click)="setTab('enroll')">
+          <i class="fas fa-user-plus"></i> Enroll First Team Member
+        </button>
+      </div>
+
+      <!-- Table View (Desktop & Tablet) -->
+      <div *ngIf="!loadingList() && teamMembers().length > 0" class="table-responsive desktop-table-view">
+        <table class="table team-table">
+          <thead>
+            <tr>
+              <th>Team Member UID</th>
+              <th>Full Name</th>
+              <th>Mobile Number</th>
+              <th>Aadhar Number</th>
+              <th>Bank & Branch</th>
+              <th>Status</th>
+              <th>Enrolled Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let member of teamMembers()">
+              <td>
+                <span class="uid-badge">{{ member.team_member_uid }}</span>
+              </td>
+              <td>
+                <div class="member-name-cell">
+                  <span class="member-name">{{ member.full_name }}</span>
+                  <small class="text-muted">{{ member.gender }} • S/D/W: {{ member.father_husband_name }}</small>
+                </div>
+              </td>
+              <td>
+                <i class="fas fa-phone text-muted me-1"></i> {{ member.mobile_no }}
+              </td>
+              <td>
+                <span class="masked-text">{{ member.aadhar_no_masked || member.aadhar_no }}</span>
+              </td>
+              <td>
+                <span>{{ member.bank_name }}</span><br>
+                <small class="text-muted">{{ member.branch_name }}</small>
+              </td>
+              <td>
+                <span class="badge-status" [ngClass]="member.status">
+                  <i class="fas" [ngClass]="{
+                    'fa-clock': member.status === 'pending',
+                    'fa-check-circle': member.status === 'approved',
+                    'fa-times-circle': member.status === 'rejected'
+                  }"></i>
+                  {{ member.status | uppercase }}
+                </span>
+              </td>
+              <td>
+                {{ member.created_at | date:'dd MMM yyyy' }}
+              </td>
+              <td>
+                <button type="button" class="btn-action-view" (click)="viewMemberDetails(member)">
+                  <i class="fas fa-eye"></i> View
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Stacked Card View -->
+      <div *ngIf="!loadingList() && teamMembers().length > 0" class="mobile-cards-view">
+        <div class="mobile-member-card" *ngFor="let member of teamMembers()">
+          <div class="card-top-row">
+            <span class="uid-badge">{{ member.team_member_uid }}</span>
+            <span class="badge-status" [ngClass]="member.status">
+              {{ member.status | uppercase }}
+            </span>
+          </div>
+
+          <div class="card-main-info">
+            <h4 class="member-title">{{ member.full_name }}</h4>
+            <div class="info-row">
+              <span class="info-label"><i class="fas fa-phone"></i> Mobile:</span>
+              <span class="info-val">{{ member.mobile_no }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label"><i class="fas fa-id-card"></i> Aadhar:</span>
+              <span class="info-val masked-text">{{ member.aadhar_no_masked || member.aadhar_no }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label"><i class="fas fa-university"></i> Bank:</span>
+              <span class="info-val">{{ member.bank_name }} ({{ member.branch_name }})</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label"><i class="fas fa-calendar"></i> Enrolled:</span>
+              <span class="info-val">{{ member.created_at | date:'dd MMM yyyy' }}</span>
+            </div>
+          </div>
+
+          <div class="card-footer-action">
+            <button type="button" class="btn-mobile-view" (click)="viewMemberDetails(member)">
+              <i class="fas fa-eye"></i> View Full Application Details
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-backdrop-custom" *ngIf="selectedMember()" (click)="closeModal()">
+    <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <div class="modal-title-wrap">
+          <span class="modal-badge">{{ selectedMember()?.team_member_uid }}</span>
+          <h3>Team Member Application Record</h3>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body-custom">
+        <div class="modal-details-grid">
+          <div class="detail-item">
+            <label>Full Legal Name</label>
+            <div class="detail-value font-bold">{{ selectedMember()?.full_name }}</div>
+          </div>
+          <div class="detail-item">
+            <label>Father / Husband Name</label>
+            <div class="detail-value">{{ selectedMember()?.father_husband_name }}</div>
+          </div>
+          <div class="detail-item">
+            <label>Date of Birth & Gender</label>
+            <div class="detail-value">{{ selectedMember()?.date_of_birth | date:'dd/MM/yyyy' }} • {{ selectedMember()?.gender }}</div>
+          </div>
+          <div class="detail-item">
+            <label>Mobile Number</label>
+            <div class="detail-value">{{ selectedMember()?.mobile_no }}</div>
+          </div>
+          <div class="detail-item">
+            <label>Aadhar Number</label>
+            <div class="detail-value masked-text">{{ selectedMember()?.aadhar_no_masked || selectedMember()?.aadhar_no }}</div>
+          </div>
+          <div class="detail-item">
+            <label>PAN Number</label>
+            <div class="detail-value">{{ selectedMember()?.pan_no || 'Not Provided' }}</div>
+          </div>
+          <div class="detail-item full-width">
+            <label>Full Residential Address</label>
+            <div class="detail-value">{{ selectedMember()?.full_address }}</div>
+          </div>
+
+          <div class="modal-divider full-width"></div>
+
+          <div class="detail-item">
+            <label>Nominee Name & Relation</label>
+            <div class="detail-value">{{ selectedMember()?.nominee_name || 'N/A' }} ({{ selectedMember()?.nominee_relation || 'N/A' }})</div>
+          </div>
+          <div class="detail-item">
+            <label>Nominee Contact</label>
+            <div class="detail-value">{{ selectedMember()?.nominee_contact_no || 'N/A' }}</div>
+          </div>
+
+          <div class="modal-divider full-width"></div>
+
+          <div class="detail-item">
+            <label>Bank & Branch</label>
+            <div class="detail-value font-bold">{{ selectedMember()?.bank_name }} - {{ selectedMember()?.branch_name }}</div>
+          </div>
+          <div class="detail-item">
+            <label>Account Number & IFSC</label>
+            <div class="detail-value">{{ selectedMember()?.account_no_masked || selectedMember()?.account_no }} ({{ selectedMember()?.ifsc_code }})</div>
+          </div>
+          <div class="detail-item">
+            <label>Enrolled By Associate</label>
+            <div class="detail-value">{{ selectedMember()?.associate_name }} (#{{ selectedMember()?.associate_id }})</div>
+          </div>
+          <div class="detail-item">
+            <label>Application Status</label>
+            <div class="detail-value">
+              <span class="badge-status" [ngClass]="selectedMember()?.status">
+                {{ selectedMember()?.status | uppercase }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer-custom">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
