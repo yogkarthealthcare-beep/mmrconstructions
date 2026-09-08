@@ -387,13 +387,6 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     if (this.enrollmentForm.invalid || !this.allTermsAccepted() || isPhotoMissing) {
       this.enrollmentForm.markAllAsTouched();
       this.focusFirstInvalidControl();
-
-      Swal.fire({
-        icon: 'warning',
-        title: 'Required Fields Missing',
-        text: 'Please fill in all mandatory fields highlighted in red (including applicant photo & terms) before proceeding.',
-        confirmButtonColor: '#dc2626'
-      });
       return;
     }
 

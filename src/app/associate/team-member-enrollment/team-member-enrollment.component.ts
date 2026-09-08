@@ -357,22 +357,6 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
           }
         }
       }, 100);
-
-      // Find first invalid field and display sweetalert
-      const invalidFields: string[] = [];
-      const controls = this.enrollmentForm.controls;
-      for (const name in controls) {
-        if (controls[name].invalid) {
-          invalidFields.push(this.formatFieldName(name));
-        }
-      }
-
-      Swal.fire({
-        icon: 'warning',
-        title: 'Incomplete Form',
-        html: `Please correct the following fields before submitting:<br><br><b>${invalidFields.slice(0, 5).join(', ')}</b>`,
-        confirmButtonColor: '#1b5e20'
-      });
       return;
     }
 
@@ -384,13 +368,6 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
           declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 100);
-
-      Swal.fire({
-        icon: 'warning',
-        title: 'Declaration Required',
-        text: 'Please tick the Declaration checkbox before submitting the Team Member Enrollment form.',
-        confirmButtonColor: '#1b5e20'
-      });
       return;
     }
 
