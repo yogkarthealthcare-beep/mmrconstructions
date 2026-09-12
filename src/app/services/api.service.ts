@@ -11,14 +11,29 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   private headers(admin = false): HttpHeaders {
-    const getToken = (key: string) => {
+    const getToken = (key: string, loginDateKey?: string, expKey?: string) => {
       const v = sessionStorage.getItem(key) || localStorage.getItem(key);
-      return (v && v !== 'undefined' && v !== 'null') ? v : null;
+      if (!v || v === 'undefined' || v === 'null') return null;
+
+      if (loginDateKey || expKey) {
+        const loginDate = loginDateKey ? (sessionStorage.getItem(loginDateKey) || localStorage.getItem(loginDateKey)) : null;
+        const expStr = expKey ? (sessionStorage.getItem(expKey) || localStorage.getItem(expKey)) : null;
+
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+        if (loginDate && loginDate !== todayStr) return null;
+        if (expStr) {
+          const exp = Number(expStr);
+          if (!isNaN(exp) && exp > 0 && now.getTime() >= exp) return null;
+        }
+      }
+      return v;
     };
 
     let token = admin
-      ? getToken('mmr_admin_token')
-      : (getToken('mmr_user_token') || getToken('mmr_investor_token'));
+      ? getToken('mmr_admin_token', 'mmr_admin_login_date', 'mmr_admin_expires_at')
+      : (getToken('mmr_user_token', 'mmr_user_login_date', 'mmr_user_expires_at') || getToken('mmr_investor_token', 'mmr_investor_login_date', 'mmr_investor_expires_at'));
 
     return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }
@@ -454,9 +469,9 @@ export class ApiService {
   updateInvestorProfile(data: any) { return this.put('/api/investor/profile', data); }
   updateInvestorBankDetails(data: any) { return this.put('/api/investor/profile/bank', data); }
   changeInvestorPassword(data: any) { return this.put('/api/investor/change-password', data); }
-  getInvestorSettlementPreference() { return this.get('/api/investor/settlement'); }
-  setInvestorSettlementPreference(pref: string) { return this.post('/api/investor/settlement', { preference: pref }); }
-  requestInvestorSettlementChange(data: any) { return this.post('/api/investor/settlement/request', data); }
+  getInvestorSettlementPreference() { return this.get('/api/investor/settlement-preference'); }
+  setInvestorSettlementPreference(pref: string) { return this.post('/api/investor/settlement-preference', { frequency: pref, preference: pref }); }
+  requestInvestorSettlementChange(data: any) { return this.post('/api/investor/settlement-change-request', data); }
   investorSignup(data: any) { return this.post('/api/investor/auth/signup', data); }
   getInvestorWallet() { return this.get('/api/investor/wallet'); }
   getInvestorWithdrawals() { return this.get('/api/investor/withdrawals'); }

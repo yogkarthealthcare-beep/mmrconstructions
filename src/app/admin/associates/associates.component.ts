@@ -6,12 +6,13 @@ import { AuthService } from '../../services/auth.service';
 import { AdminExportService } from '../../services/admin-export.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-associates',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent, VerifiedBadgeComponent],
   templateUrl: './associates.component.html',
   styleUrls: ['./associates.component.css']
 })

@@ -6,13 +6,14 @@ import { AuthService } from '../../services/auth.service';
 import { AdminExportService } from '../../services/admin-export.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent, VerifiedBadgeComponent],
   templateUrl: './customers.component.html',
   styleUrls: ['./customers.component.css']
 })

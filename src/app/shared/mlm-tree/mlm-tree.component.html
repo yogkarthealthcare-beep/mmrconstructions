@@ -166,7 +166,10 @@
       
       <!-- Details -->
       <div class="org-details">
-        <div class="org-name" [title]="node.name">{{ node.name }}</div>
+        <div class="org-name d-flex align-items-center justify-content-center gap-1" [title]="node.name">
+          <span>{{ node.name }}</span>
+          <app-verified-badge [user]="node" size="xs"></app-verified-badge>
+        </div>
         <div class="org-id">{{ node.memberCode || node.userId }}</div>
         <div class="org-free-tag" *ngIf="isFreeOrDisabled(node)">Disabled/Free</div>
       </div>
@@ -221,7 +224,10 @@
 <!-- Enhanced Hover Tooltip for complete node details -->
 <div class="node-tooltip" *ngIf="hoveredNode" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
   <div class="d-flex align-items-center justify-content-between mb-1">
-    <strong class="fs-13">{{ hoveredNode.name }}</strong>
+    <div class="d-flex align-items-center gap-1">
+      <strong class="fs-13">{{ hoveredNode.name }}</strong>
+      <app-verified-badge [user]="hoveredNode" size="xs"></app-verified-badge>
+    </div>
     <span class="badge" [class.bg-success]="!isFreeOrDisabled(hoveredNode) && hoveredNode.status === 'Active'" [class.bg-danger]="isFreeOrDisabled(hoveredNode)">
       {{ isFreeOrDisabled(hoveredNode) ? 'Disabled / Free' : 'Active' }}
     </span>

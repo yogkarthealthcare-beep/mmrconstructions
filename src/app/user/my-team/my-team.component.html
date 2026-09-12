@@ -184,7 +184,10 @@
                 {{ getNodeInitials(node.full_name) }}
                 <span class="status-pulse" [class.bg-success]="!isFreeOrDisabled(node) && node.status==='Active'" [class.bg-danger]="isFreeOrDisabled(node)" [title]="isFreeOrDisabled(node) ? 'Disabled / Free Account' : node.status"></span>
               </div>
-              <h6 class="node-name" [title]="node.full_name">{{ node.full_name }}</h6>
+              <h6 class="node-name d-flex align-items-center justify-content-center gap-1" [title]="node.full_name">
+                <span>{{ node.full_name }}</span>
+                <app-verified-badge [user]="node" size="xs"></app-verified-badge>
+              </h6>
               <span class="node-id-chip">{{ node.member_id }}</span>
               <span class="node-role-badge" [class.badge-root]="isRoot">
                 {{ isRoot ? 'Root Associate' : (node.user_type || node.rank || 'Associate') }}
@@ -197,7 +200,10 @@
             <!-- HOVER TOOLTIP POPUP OVERLAY FOR FULL DETAILS -->
             <div class="node-hover-tooltip">
               <div class="tooltip-header">
-                <div class="tooltip-title">{{ node.full_name }}</div>
+                <div class="tooltip-title d-flex align-items-center gap-1">
+                  <span>{{ node.full_name }}</span>
+                  <app-verified-badge [user]="node" size="xs"></app-verified-badge>
+                </div>
                 <span class="badge" [class.bg-success]="!isFreeOrDisabled(node) && node.status==='Active'" [class.bg-danger]="isFreeOrDisabled(node)">
                   {{ isFreeOrDisabled(node) ? 'Disabled / Free' : (node.status || 'Active') }}
                 </span>
@@ -279,7 +285,10 @@
               <div class="d-flex align-items-center gap-2">
                 <div class="mini-avatar">{{ getNodeInitials(m.full_name) }}</div>
                 <div>
-                  <div class="fw-700 text-dark">{{ m.full_name }}</div>
+                  <div class="fw-700 text-dark d-flex align-items-center gap-1">
+                    <span>{{ m.full_name }}</span>
+                    <app-verified-badge [user]="m" size="xs"></app-verified-badge>
+                  </div>
                   <div class="fs-11 text-muted" *ngIf="m.mobile_no"><i class="fas fa-phone me-1"></i>{{ m.mobile_no }}</div>
                 </div>
               </div>

@@ -102,7 +102,10 @@
                   (dblclick)="onRowDblClick(inv, $event)">
                 <td class="ps-3 td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
                 <td>
-                  <div class="fw-bold fs-13 text-dark text-truncate" [title]="inv.full_name">{{ inv.full_name }}</div>
+                  <div class="fw-bold fs-13 text-dark text-truncate d-flex align-items-center gap-1" [title]="inv.full_name">
+                    <span>{{ inv.full_name }}</span>
+                    <app-verified-badge [user]="inv" size="xs"></app-verified-badge>
+                  </div>
                   <div class="fs-11 text-muted text-truncate" [title]="inv.city + ', ' + inv.state">{{ inv.city }}, {{ inv.state }}</div>
                   <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-9 py-0 px-1 mt-0.5" *ngIf="isFreeOrDisabled(inv)">
                     Disabled / Free

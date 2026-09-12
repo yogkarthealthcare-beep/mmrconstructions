@@ -1,27 +1,88 @@
-<div class="d-flex align-items-center justify-content-between mb-4">
-  <div>
-    <h4 class="fw-bold text-dark mb-1">Notifications</h4>
-    <p class="text-muted mb-0">Investor account, document, wallet, deposit, and settlement updates</p>
+<div class="inv-page-shell">
+  <!-- Page Header -->
+  <div class="inv-page-header">
+    <div class="inv-page-header-main">
+      <div class="inv-page-icon-badge">
+        <i class="fas fa-bell"></i>
+      </div>
+      <div>
+        <h1 class="inv-page-title">Notifications &amp; Alerts</h1>
+        <p class="inv-page-subtitle">Stay updated on your deposits, earnings, settlements, and account status</p>
+      </div>
+    </div>
+    <div class="inv-page-actions">
+      <span class="inv-badge inv-badge-neutral" *ngIf="!loading">
+        {{ notifications.length }} {{ notifications.length === 1 ? 'Notification' : 'Notifications' }}
+      </span>
+    </div>
   </div>
-</div>
 
-<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-<div *ngIf="loading" class="text-center py-5"><span class="spinner-border text-success"></span></div>
+  <div *ngIf="error" class="inv-alert inv-alert-danger">
+    <i class="fas fa-exclamation-circle mt-0.5"></i>
+    <div>{{ error }}</div>
+  </div>
 
-<div class="card border-0 shadow-sm" *ngIf="!loading">
-  <div class="list-group list-group-flush">
-    <button type="button" class="list-group-item list-group-item-action p-3" *ngFor="let item of notifications" (click)="markRead(item)">
-      <div class="d-flex justify-content-between gap-3">
-        <div>
-          <div class="fw-bold" [class.text-success]="!item.is_read">{{ item.title }}</div>
-          <div class="text-muted small">{{ item.message }}</div>
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border spinner-border-sm text-success me-2"></div>
+    <span class="text-muted small">Loading notifications...</span>
+  </div>
+
+  <div class="inv-card" *ngIf="!loading">
+    <div class="inv-card-header">
+      <div class="inv-card-header-left">
+        <div class="inv-card-header-icon primary">
+          <i class="fas fa-inbox"></i>
         </div>
-        <div class="text-end">
-          <span class="badge" [class.bg-success]="!item.is_read" [class.bg-secondary]="item.is_read">{{ item.is_read ? 'Read' : 'New' }}</span>
-          <div class="small text-muted mt-1">{{ item.created_at | date:'short' }}</div>
+        <div>
+          <h2 class="inv-card-title">All Notifications</h2>
+          <p class="inv-card-desc">Click any notification to mark it as read</p>
         </div>
       </div>
-    </button>
-    <div *ngIf="!notifications.length" class="text-center text-muted py-4">No notifications yet.</div>
+    </div>
+
+    <div class="inv-card-body p-0">
+      <div class="list-group list-group-flush" *ngIf="notifications.length">
+        <button type="button"
+                class="list-group-item list-group-item-action p-3 border-bottom d-flex align-items-start gap-3 transition-base"
+                [class.bg-light]="item.is_read"
+                *ngFor="let item of notifications"
+                (click)="markRead(item)">
+          <div class="inv-card-header-icon flex-shrink-0" [class.primary]="!item.is_read" [class.gold]="item.is_read">
+            <i [class]="item.is_read ? 'fas fa-envelope-open' : 'fas fa-envelope'"></i>
+          </div>
+
+          <div class="flex-fill" style="min-width: 0;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-1 mb-1">
+              <span class="fw-bold text-dark" [class.text-success]="!item.is_read" style="font-size: 13.5px;">
+                {{ item.title }}
+              </span>
+              <span class="text-muted small" style="font-size: 11.5px;">
+                {{ item.created_at | date:'medium' }}
+              </span>
+            </div>
+            <p class="text-muted mb-0 small" style="line-height: 1.45;">
+              {{ item.message }}
+            </p>
+          </div>
+
+          <div class="ms-2 flex-shrink-0">
+            <span class="inv-badge"
+                  [class.inv-badge-approved]="!item.is_read"
+                  [class.inv-badge-neutral]="item.is_read">
+              {{ item.is_read ? 'Read' : 'New' }}
+            </span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Empty State -->
+      <div class="inv-empty-state" *ngIf="!notifications.length">
+        <div class="inv-empty-icon">
+          <i class="fas fa-bell-slash"></i>
+        </div>
+        <div class="inv-empty-title">No notifications yet</div>
+        <p class="inv-empty-desc">You're all caught up! Account updates and transaction confirmations will appear here.</p>
+      </div>
+    </div>
   </div>
 </div>

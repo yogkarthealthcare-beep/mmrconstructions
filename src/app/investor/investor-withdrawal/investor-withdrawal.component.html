@@ -1,39 +1,66 @@
-<div class="investor-withdrawal">
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <div>
-      <h4 class="fw-bold text-dark mb-1">Request Withdrawal</h4>
-      <p class="text-muted mb-0">Withdraw funds directly to your registered bank account</p>
+<div class="inv-page-shell">
+  <!-- Page Header -->
+  <div class="inv-page-header">
+    <div class="inv-page-header-main">
+      <div class="inv-page-icon-badge">
+        <i class="fas fa-arrow-alt-circle-up"></i>
+      </div>
+      <div>
+        <h1 class="inv-page-title">Request Withdrawal</h1>
+        <p class="inv-page-subtitle">Withdraw funds directly to your verified bank account</p>
+      </div>
     </div>
-    <div class="bg-white px-4 py-2 rounded-3 border shadow-sm">
-      <span class="text-muted small d-block">Available Balance</span>
-      <span class="fw-bold text-success fs-5">₹{{ availableBalance | number:'1.2-2' }}</span>
+    <div class="inv-page-actions">
+      <div class="p-2 px-3 rounded-3 bg-white border shadow-xs d-flex align-items-center gap-2">
+        <span class="text-muted small">Available Balance:</span>
+        <span class="fw-bold text-success fs-6">₹{{ availableBalance | number:'1.2-2' }}</span>
+      </div>
     </div>
   </div>
 
-  <div class="row g-4">
-    <!-- Withdrawal Form Card -->
+  <div class="row g-3">
+    <!-- Left: Withdrawal Form Card -->
     <div class="col-lg-5">
-      <div class="card border-0 shadow-sm rounded-3">
-        <div class="card-header bg-white py-3">
-          <h5 class="fw-bold m-0 text-dark">
-            <i class="fas fa-wallet text-success me-2"></i>New Withdrawal Request
-          </h5>
-        </div>
-        <div class="card-body p-4">
-          <div *ngIf="errorMessage" class="alert alert-danger mb-3">
-            <i class="fas fa-exclamation-circle me-1"></i>{{ errorMessage }}
+      <div class="inv-card">
+        <div class="inv-card-header">
+          <div class="inv-card-header-left">
+            <div class="inv-card-header-icon primary">
+              <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <div>
+              <h2 class="inv-card-title">New Withdrawal Request</h2>
+              <p class="inv-card-desc">Enter amount and destination bank details</p>
+            </div>
           </div>
-          <div *ngIf="successMessage" class="alert alert-success mb-3">
-            <i class="fas fa-check-circle me-1"></i>{{ successMessage }}
+        </div>
+
+        <div class="inv-card-body">
+          <div *ngIf="errorMessage" class="inv-alert inv-alert-danger">
+            <i class="fas fa-exclamation-circle mt-0.5"></i>
+            <div>{{ errorMessage }}</div>
+          </div>
+
+          <div *ngIf="successMessage" class="inv-alert inv-alert-success">
+            <i class="fas fa-check-circle mt-0.5"></i>
+            <div>{{ successMessage }}</div>
           </div>
 
           <form (ngSubmit)="submitWithdrawal()">
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Withdrawal Amount (₹) *</label>
-              <div class="input-group">
-                <span class="input-group-text">₹</span>
-                <input type="number"
-                       class="form-control form-control-lg"
+            <!-- Withdrawal Amount -->
+            <div class="inv-form-group">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="inv-label mb-0" for="withAmount">
+                  Withdrawal Amount (₹) <span class="req">*</span>
+                </label>
+                <span class="text-muted" style="font-size: 11px;">
+                  Max: ₹{{ availableBalance | number:'1.2-2' }}
+                </span>
+              </div>
+              <div class="inv-input-group">
+                <span class="inv-input-group-addon">₹</span>
+                <input id="withAmount"
+                       type="number"
+                       class="inv-input"
                        [(ngModel)]="form.amount"
                        name="amount"
                        placeholder="e.g. 10000"
@@ -41,82 +68,140 @@
                        [max]="availableBalance"
                        required />
               </div>
-              <div class="form-text">Available to withdraw: ₹{{ availableBalance | number:'1.2-2' }}</div>
             </div>
 
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Bank Name</label>
-              <input type="text" class="form-control" [(ngModel)]="form.bank_name" name="bank_name" placeholder="Bank name" />
+            <!-- Bank Name -->
+            <div class="inv-form-group">
+              <label class="inv-label" for="withBankName">Bank Name <span class="req">*</span></label>
+              <input id="withBankName"
+                     type="text"
+                     class="inv-input"
+                     [(ngModel)]="form.bank_name"
+                     name="bank_name"
+                     placeholder="e.g. State Bank of India"
+                     required />
             </div>
 
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Bank Account Number *</label>
-              <input type="text" class="form-control" [(ngModel)]="form.account_number" name="account_number" placeholder="Account number" required />
+            <!-- Account Number -->
+            <div class="inv-form-group">
+              <label class="inv-label" for="withAccNum">Bank Account Number <span class="req">*</span></label>
+              <input id="withAccNum"
+                     type="text"
+                     class="inv-input font-monospace"
+                     [(ngModel)]="form.account_number"
+                     name="account_number"
+                     placeholder="Enter bank account number"
+                     required />
             </div>
 
-            <div class="mb-3">
-              <label class="form-label fw-semibold">IFSC Code *</label>
-              <input type="text" class="form-control text-uppercase" [(ngModel)]="form.ifsc_code" name="ifsc_code" placeholder="IFSC Code" required />
+            <!-- IFSC Code -->
+            <div class="inv-form-group">
+              <label class="inv-label" for="withIfsc">IFSC Code <span class="req">*</span></label>
+              <input id="withIfsc"
+                     type="text"
+                     class="inv-input text-uppercase font-monospace"
+                     [(ngModel)]="form.ifsc_code"
+                     name="ifsc_code"
+                     placeholder="e.g. SBIN0001234"
+                     required />
             </div>
 
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Remarks (Optional)</label>
-              <input type="text" class="form-control" [(ngModel)]="form.remarks" name="remarks" placeholder="Optional notes" />
+            <!-- Remarks -->
+            <div class="inv-form-group">
+              <label class="inv-label" for="withRemarks">Remarks (Optional)</label>
+              <input id="withRemarks"
+                     type="text"
+                     class="inv-input"
+                     [(ngModel)]="form.remarks"
+                     name="remarks"
+                     placeholder="Optional withdrawal notes" />
             </div>
 
-            <button type="submit" class="btn btn-success w-100 py-2.5 fw-bold shadow-sm rounded-3 mt-2" [disabled]="submitting || availableBalance <= 0">
-              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
-              {{ submitting ? 'Submitting...' : 'Submit Withdrawal Request' }}
-            </button>
+            <!-- Submit Button -->
+            <div class="mt-3">
+              <button type="submit" class="inv-btn inv-btn-primary w-100 py-2" [disabled]="submitting || availableBalance <= 0">
+                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1.5"></span>
+                <i *ngIf="!submitting" class="fas fa-arrow-alt-circle-up me-1.5"></i>
+                {{ submitting ? 'Submitting Request...' : 'Submit Withdrawal Request' }}
+              </button>
+            </div>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- Withdrawal History List -->
+    <!-- Right: Withdrawal History Card -->
     <div class="col-lg-7">
-      <div class="card border-0 shadow-sm rounded-3 h-100">
-        <div class="card-header bg-white py-3">
-          <h5 class="fw-bold m-0 text-dark">
-            <i class="fas fa-history text-muted me-2"></i>Withdrawal History
-          </h5>
+      <div class="inv-card h-100 d-flex flex-column">
+        <div class="inv-card-header">
+          <div class="inv-card-header-left">
+            <div class="inv-card-header-icon gold">
+              <i class="fas fa-history"></i>
+            </div>
+            <div>
+              <h2 class="inv-card-title">Withdrawal History</h2>
+              <p class="inv-card-desc">Log of your payout requests</p>
+            </div>
+          </div>
+          <span class="inv-badge inv-badge-neutral" *ngIf="!loading">
+            {{ withdrawals.length }} {{ withdrawals.length === 1 ? 'Request' : 'Requests' }}
+          </span>
         </div>
-        <div class="card-body p-0">
+
+        <div class="inv-card-body p-0 flex-fill">
           <div *ngIf="loading" class="text-center py-5">
-            <div class="spinner-border text-success spinner-border-sm me-2"></div> Loading requests...
+            <div class="spinner-border spinner-border-sm text-success me-2"></div>
+            <span class="text-muted small">Loading withdrawal requests...</span>
           </div>
 
-          <div class="table-responsive" *ngIf="!loading">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
+          <div class="inv-table-wrapper" *ngIf="!loading && withdrawals.length">
+            <table class="inv-table">
+              <thead>
                 <tr>
-                  <th class="ps-3">Date</th>
+                  <th class="ps-3">Request Date</th>
                   <th class="text-end">Amount</th>
                   <th>Bank Account</th>
                   <th>Status</th>
-                  <th>Admin Remarks</th>
+                  <th class="pe-3">Admin Remarks</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let w of withdrawals">
-                  <td class="ps-3 text-muted small">{{ w.created_at | date:'mediumDate' }}</td>
-                  <td class="fw-bold text-danger text-end">− ₹{{ w.amount | number:'1.2-2' }}</td>
-                  <td class="small text-secondary">
-                    <div>{{ w.bank_name }}</div>
-                    <div class="font-monospace text-muted">{{ w.account_number }} ({{ w.ifsc_code }})</div>
+                  <td class="ps-3 text-muted" style="white-space: nowrap; font-size: 12px;">
+                    {{ w.created_at | date:'mediumDate' }}
+                  </td>
+                  <td class="text-end fw-bold text-danger" style="white-space: nowrap;">
+                    − ₹{{ w.amount | number:'1.2-2' }}
                   </td>
                   <td>
-                    <span class="badge rounded-pill border px-2.5 py-1 text-capitalize" [ngClass]="getStatusBadge(w.status)">
+                    <div class="small fw-semibold text-dark">{{ w.bank_name || 'Bank Payout' }}</div>
+                    <div class="inv-mono-chip" style="font-size: 11px;">
+                      {{ w.account_number }} ({{ w.ifsc_code }})
+                    </div>
+                  </td>
+                  <td>
+                    <span class="inv-badge"
+                          [class.inv-badge-approved]="w.status === 'approved'"
+                          [class.inv-badge-pending]="w.status === 'pending'"
+                          [class.inv-badge-rejected]="w.status === 'rejected'">
                       {{ w.status }}
                     </span>
                   </td>
-                  <td class="small text-muted">{{ w.admin_remarks || '-' }}</td>
-                </tr>
-                <tr *ngIf="!withdrawals.length">
-                  <td colspan="5" class="text-center text-muted py-4">No withdrawal requests submitted yet.</td>
+                  <td class="pe-3 text-muted small" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="w.admin_remarks || '-'">
+                    {{ w.admin_remarks || '-' }}
+                  </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Empty State -->
+          <div class="inv-empty-state" *ngIf="!loading && !withdrawals.length">
+            <div class="inv-empty-icon">
+              <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <div class="inv-empty-title">No withdrawal requests yet</div>
+            <p class="inv-empty-desc">When you request payout withdrawals from your available balance, they will appear here.</p>
           </div>
         </div>
       </div>

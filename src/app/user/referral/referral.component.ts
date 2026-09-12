@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 
 export interface TeamNode {
   user_id: number;
@@ -23,7 +24,7 @@ export interface TeamNode {
 @Component({
   selector: 'app-referral',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, VerifiedBadgeComponent],
   templateUrl: './referral.component.html',
   styleUrls: ['./referral.component.css']
 })

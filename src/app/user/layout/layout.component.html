@@ -17,8 +17,9 @@
       <div class="d-flex align-items-center gap-3">
         <div class="sidebar-avatar">{{ initials }}</div>
         <div style="min-width:0;">
-          <div class="sidebar-user-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-            {{ userData?.full_name || 'User' }}
+          <div class="sidebar-user-name d-flex align-items-center gap-1" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            <span class="text-truncate">{{ userData?.full_name || 'User' }}</span>
+            <app-verified-badge [user]="userData" size="xs"></app-verified-badge>
           </div>
           <div class="sidebar-user-id">{{ userData?.member_id || '—' }} · {{ userData?.user_type || 'Associate' }}</div>
         </div>
@@ -54,7 +55,10 @@
     <header class="panel-topbar">
       <button class="hamburger-toggle" (click)="sidebarOpen=true"><i class="fas fa-bars"></i></button>
       <div class="flex-fill" style="min-width:0;">
-        <div class="topbar-page-title">{{ userData?.full_name || 'My Account' }}</div>
+        <div class="topbar-page-title d-flex align-items-center gap-1.5">
+          <span>{{ userData?.full_name || 'My Account' }}</span>
+          <app-verified-badge [user]="userData" size="sm"></app-verified-badge>
+        </div>
         <div class="topbar-page-sub">{{ userData?.member_id }} · {{ userData?.user_type || 'Associate' }}</div>
       </div>
       <div class="topbar-actions">
@@ -136,7 +140,10 @@
             <div class="dropdown-user-card">
               <div class="duc-avatar">{{ initials }}</div>
               <div class="duc-info">
-                <div class="duc-name">{{ userData?.full_name || 'My Account' }}</div>
+                <div class="duc-name d-flex align-items-center gap-1">
+                  <span>{{ userData?.full_name || 'My Account' }}</span>
+                  <app-verified-badge [user]="userData" size="xs"></app-verified-badge>
+                </div>
                 <div class="duc-role">{{ userData?.user_type || 'Associate' }}</div>
                 <div class="duc-sub">{{ userData?.member_id }} · {{ userData?.mobile_no }}</div>
               </div>

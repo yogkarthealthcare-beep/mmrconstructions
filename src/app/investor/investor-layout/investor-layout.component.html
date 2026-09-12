@@ -26,7 +26,10 @@
           <span *ngIf="!investorData?.profile_picture_url">{{ initials }}</span>
         </div>
         <div style="min-width: 0;">
-          <div class="sidebar-user-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ investorData?.full_name || 'Investor' }}</div>
+          <div class="sidebar-user-name d-flex align-items-center gap-1" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            <span class="text-truncate">{{ investorData?.full_name || 'Investor' }}</span>
+            <app-verified-badge [user]="investorData" size="xs"></app-verified-badge>
+          </div>
           <div class="sidebar-user-id" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ investorData?.email }}</div>
         </div>
       </div>
@@ -72,7 +75,11 @@
       </button>
       <div class="flex-fill ps-2" style="min-width:0;">
         <div class="topbar-page-title">Investor Portal</div>
-        <div class="topbar-page-sub" *ngIf="investorData">{{ investorData?.full_name }} · {{ investorData?.email }}</div>
+        <div class="topbar-page-sub d-flex align-items-center gap-1" *ngIf="investorData">
+          <span>{{ investorData?.full_name }}</span>
+          <app-verified-badge [user]="investorData" size="xs"></app-verified-badge>
+          <span>· {{ investorData?.email }}</span>
+        </div>
       </div>
       <div class="topbar-actions">
         <!-- Notification Bell Dropdown -->
@@ -157,7 +164,10 @@
                 <span *ngIf="!investorData?.profile_picture_url">{{ initials }}</span>
               </div>
               <div class="duc-info">
-                <div class="duc-name">{{ investorData?.full_name || 'Investor Account' }}</div>
+                <div class="duc-name d-flex align-items-center gap-1">
+                  <span>{{ investorData?.full_name || 'Investor Account' }}</span>
+                  <app-verified-badge [user]="investorData" size="xs"></app-verified-badge>
+                </div>
                 <div class="duc-role">Investor Partner</div>
                 <div class="duc-sub">{{ investorData?.email || investorData?.mobile }}</div>
               </div>

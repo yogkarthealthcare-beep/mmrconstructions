@@ -33,6 +33,14 @@ export class InvestorDepositComponent implements OnInit {
   gateways = ['razorpay', 'cashfree'];
   companyUpiId = 'mmrconstructions@upi';
   companyQrUrl = 'assets/mmr-logo.png';
+  copiedUpi = false;
+
+  copyUpiId() {
+    navigator.clipboard.writeText(this.companyUpiId).then(() => {
+      this.copiedUpi = true;
+      setTimeout(() => this.copiedUpi = false, 2500);
+    }).catch(() => {});
+  }
 
   constructor(private api: ApiService) {}
 

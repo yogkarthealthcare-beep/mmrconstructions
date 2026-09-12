@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 
 @Component({
   selector: 'app-investor-portal-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminTableContainerComponent, AdminPaginationComponent],
+  imports: [CommonModule, FormsModule, AdminTableContainerComponent, AdminPaginationComponent, VerifiedBadgeComponent],
   templateUrl: './investor-portal-admin.component.html',
   styleUrls: ['./investor-portal-admin.component.css']
 })

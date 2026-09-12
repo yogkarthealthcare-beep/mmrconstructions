@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, VerifiedBadgeComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })

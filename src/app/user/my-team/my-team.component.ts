@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 
 export interface TeamMemberNode {
   user_id: number;
@@ -26,7 +27,7 @@ export interface TeamMemberNode {
 @Component({
   selector: 'app-my-team',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, VerifiedBadgeComponent],
   templateUrl: './my-team.component.html',
   styleUrls: ['./my-team.component.css']
 })

@@ -98,8 +98,8 @@
     
     <!-- Right Side -->
     <div class="modal-right">
-      <button type="button" class="btn-close-custom" (click)="closeEnquiryModal()">
-        <i class="fas fa-times"></i>
+      <button type="button" class="btn-close-custom" (click)="closeEnquiryModal()" aria-label="Close enquiry popup modal">
+        <i class="fas fa-times" aria-hidden="true"></i>
       </button>
       <h3 class="modal-title">Send Enquiry</h3>
       
@@ -114,23 +114,44 @@
         <div class="row g-3">
           <div class="col-sm-6">
             <div class="input-with-icon">
-              <label class="f-label">Your Name *</label>
-              <i class="far fa-user icon"></i>
-              <input type="text" class="f-input" placeholder="Full Name" [(ngModel)]="form.name" name="name" required/>
+              <label for="popup-fullname" class="f-label">Your Name <span class="text-danger" aria-hidden="true">*</span></label>
+              <i class="far fa-user icon" aria-hidden="true"></i>
+              <input 
+                type="text" 
+                id="popup-fullname"
+                class="f-input" 
+                placeholder="Full Name" 
+                [(ngModel)]="form.name" 
+                name="name" 
+                required
+                aria-required="true"
+                [attr.aria-invalid]="enquiryPopupForm.submitted && !form.name"
+              />
             </div>
           </div>
           <div class="col-sm-6">
             <div class="input-with-icon">
-              <label class="f-label">Mobile Number *</label>
-              <i class="fas fa-phone-alt icon" style="font-size: 13px;"></i>
-              <input type="tel" class="f-input" placeholder="10-digit mobile" [(ngModel)]="form.mobile" name="mobile" required/>
+              <label for="popup-mobile" class="f-label">Mobile Number <span class="text-danger" aria-hidden="true">*</span></label>
+              <i class="fas fa-phone-alt icon" style="font-size: 13px;" aria-hidden="true"></i>
+              <input 
+                type="tel" 
+                id="popup-mobile"
+                class="f-input" 
+                placeholder="10-digit mobile" 
+                [(ngModel)]="form.mobile" 
+                name="mobile" 
+                pattern="[0-9]{10}"
+                required
+                aria-required="true"
+                [attr.aria-invalid]="enquiryPopupForm.submitted && !form.mobile"
+              />
             </div>
           </div>
           <div class="col-sm-6">
             <div class="input-with-icon">
-              <label class="f-label">Select Project / Site</label>
-              <i class="fas fa-map-marker-alt icon"></i>
-              <select class="f-select" [(ngModel)]="form.site_id" name="site_id">
+              <label for="popup-site" class="f-label">Select Project / Site</label>
+              <i class="fas fa-map-marker-alt icon" aria-hidden="true"></i>
+              <select id="popup-site" class="f-select" [(ngModel)]="form.site_id" name="site_id" aria-label="Select Project Site">
                 <option [ngValue]="null">-- Select Project Site --</option>
                 <option *ngFor="let s of sites" [ngValue]="s.site_id">{{ s.site_name }} ({{ s.city }})</option>
               </select>
@@ -138,9 +159,9 @@
           </div>
           <div class="col-sm-6">
             <div class="input-with-icon">
-              <label class="f-label">Interested In</label>
-              <i class="far fa-building icon"></i>
-              <select class="f-select" [(ngModel)]="form.interest" name="interest">
+              <label for="popup-interest" class="f-label">Interested In</label>
+              <i class="far fa-building icon" aria-hidden="true"></i>
+              <select id="popup-interest" class="f-select" [(ngModel)]="form.interest" name="interest" aria-label="Select Interest Category">
                 <option>Plot Booking — 100 Gaj</option>
                 <option>Plot Booking — 50 Gaj</option>
                 <option>Associate / Commission Program</option>
@@ -151,9 +172,9 @@
           </div>
           <div class="col-12">
             <div class="input-with-icon">
-              <label class="f-label">Message</label>
-              <i class="far fa-comment-dots icon"></i>
-              <textarea id="enquiryMessage" [(ngModel)]="form.message" name="message" class="f-input" rows="3" maxlength="500"></textarea>
+              <label for="enquiryMessage" class="f-label">Message</label>
+              <i class="far fa-comment-dots icon" aria-hidden="true"></i>
+              <textarea id="enquiryMessage" [(ngModel)]="form.message" name="message" class="f-input" rows="3" maxlength="500" placeholder="Your message..."></textarea>
               <div class="char-count">{{ form.message.length || 0 }}/500</div>
             </div>
           </div>

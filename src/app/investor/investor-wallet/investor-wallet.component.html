@@ -1,44 +1,196 @@
-<div class="d-flex align-items-center justify-content-between mb-4">
-  <div>
-    <h4 class="fw-bold text-dark mb-1">Investor Wallet</h4>
-    <p class="text-muted mb-0">Balance, deposits, settlements, earnings, and withdrawals</p>
-  </div>
-  <a routerLink="/investor/deposit" class="btn btn-success fw-bold">Add Deposit</a>
-</div>
-
-<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-<div *ngIf="loading" class="text-center py-5"><span class="spinner-border text-success"></span></div>
-
-<div *ngIf="!loading" class="row g-4">
-  <div class="col-md-6 col-xl-4" *ngFor="let item of [
-    { label: 'Current Balance', value: wallet?.current_balance, icon: 'fa-wallet', color: 'text-success' },
-    { label: 'Total Deposits', value: wallet?.total_deposits, icon: 'fa-arrow-down', color: 'text-primary' },
-    { label: 'Total Settlements', value: wallet?.total_settlements, icon: 'fa-calendar-check', color: 'text-info' },
-    { label: 'Total Earnings', value: wallet?.total_earnings, icon: 'fa-chart-line', color: 'text-warning' },
-    { label: 'Total Withdrawals', value: wallet?.total_withdrawals, icon: 'fa-arrow-up', color: 'text-danger' }
-  ]">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-body p-4 d-flex align-items-center justify-content-between">
-        <div>
-          <div class="small text-muted text-uppercase fw-semibold">{{ item.label }}</div>
-          <h3 class="fw-bold mb-0">₹{{ (item.value || 0) | number:'1.2-2' }}</h3>
-        </div>
-        <i class="fas {{ item.icon }} fs-2 {{ item.color }}"></i>
+<div class="inv-page-shell">
+  <!-- Page Header -->
+  <div class="inv-page-header">
+    <div class="inv-page-header-main">
+      <div class="inv-page-icon-badge">
+        <i class="fas fa-wallet"></i>
       </div>
+      <div>
+        <h1 class="inv-page-title">Investor Wallet</h1>
+        <p class="inv-page-subtitle">Track your balance, deposits, earnings, settlements, and withdrawals</p>
+      </div>
+    </div>
+    <div class="inv-page-actions">
+      <a routerLink="/investor/deposit" class="inv-btn inv-btn-primary">
+        <i class="fas fa-plus-circle"></i> Make Deposit
+      </a>
+      <a routerLink="/investor/withdrawal" class="inv-btn inv-btn-outline">
+        <i class="fas fa-arrow-alt-circle-up"></i> Withdraw
+      </a>
     </div>
   </div>
 
-  <div class="col-12">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-4">
-        <h5 class="fw-bold mb-3">Last Transaction</h5>
-        <div *ngIf="wallet?.last_transaction; else noTx" class="d-flex flex-wrap gap-3 align-items-center">
-          <span class="fw-semibold">{{ wallet.last_transaction.transaction_id }}</span>
-          <span class="badge bg-light text-dark text-capitalize">{{ wallet.last_transaction.type }}</span>
-          <span class="fw-bold">₹{{ wallet.last_transaction.amount | number:'1.2-2' }}</span>
-          <span class="text-muted">{{ wallet.last_transaction.created_at | date:'medium' }}</span>
+  <div *ngIf="error" class="inv-alert inv-alert-danger">
+    <i class="fas fa-exclamation-circle mt-0.5"></i>
+    <div>{{ error }}</div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border spinner-border-sm text-success me-2"></div>
+    <span class="text-muted small">Loading wallet information...</span>
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- Financial Metric Cards Grid -->
+    <div class="row g-3 mb-3">
+      <!-- 1. Current Available Balance (Hero) -->
+      <div class="col-xl-4 col-md-6">
+        <div class="inv-hero-card h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-uppercase fw-bold" style="font-size: 11px; letter-spacing: 0.05em; color: #e8c97a;">
+                <i class="fas fa-wallet me-1"></i> Available Balance
+              </span>
+              <span class="inv-badge" style="background: rgba(232, 201, 122, 0.2); color: #e8c97a; border-color: rgba(232, 201, 122, 0.3);">
+                Live Account
+              </span>
+            </div>
+            <h2 class="inv-stat-value text-white mb-1" style="font-size: 1.85rem;">
+              ₹{{ (wallet?.current_balance || 0) | number:'1.2-2' }}
+            </h2>
+            <div class="text-white-50 small">Available for withdrawal or reinvestment</div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 mt-3 pt-2 border-top border-success border-opacity-25">
+            <a routerLink="/investor/deposit" class="inv-btn inv-btn-gold inv-btn-sm">
+              <i class="fas fa-plus"></i> Add Fund
+            </a>
+            <a routerLink="/investor/withdrawal" class="inv-btn inv-btn-outline inv-btn-sm" style="background: rgba(255,255,255,0.1); color: #fff !important; border-color: rgba(255,255,255,0.2);">
+              <i class="fas fa-arrow-up"></i> Withdraw
+            </a>
+          </div>
         </div>
-        <ng-template #noTx><span class="text-muted">No wallet transaction yet.</span></ng-template>
+      </div>
+
+      <!-- 2. Total Deposits -->
+      <div class="col-xl-4 col-md-6">
+        <div class="inv-stat-card accent-blue h-100">
+          <div>
+            <div class="inv-stat-label">
+              <i class="fas fa-arrow-down text-primary"></i> Total Deposits
+            </div>
+            <h3 class="inv-stat-value">
+              ₹{{ (wallet?.total_deposits || 0) | number:'1.2-2' }}
+            </h3>
+            <div class="inv-stat-sub">Total funds deposited to date</div>
+          </div>
+          <div class="inv-stat-icon-wrap bg-blue-soft">
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Total Settlements -->
+      <div class="col-xl-4 col-md-6">
+        <div class="inv-stat-card accent-teal h-100">
+          <div>
+            <div class="inv-stat-label">
+              <i class="fas fa-calendar-check text-teal"></i> Total Settlements
+            </div>
+            <h3 class="inv-stat-value">
+              ₹{{ (wallet?.total_settlements || 0) | number:'1.2-2' }}
+            </h3>
+            <div class="inv-stat-sub">Disbursed settlement credits</div>
+          </div>
+          <div class="inv-stat-icon-wrap bg-teal-soft">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Total Earnings -->
+      <div class="col-xl-6 col-md-6">
+        <div class="inv-stat-card accent-gold h-100">
+          <div>
+            <div class="inv-stat-label">
+              <i class="fas fa-chart-line text-warning"></i> Total Earnings
+            </div>
+            <h3 class="inv-stat-value text-gold">
+              ₹{{ (wallet?.total_earnings || 0) | number:'1.2-2' }}
+            </h3>
+            <div class="inv-stat-sub">Net returns and yield generated</div>
+          </div>
+          <div class="inv-stat-icon-wrap bg-gold-soft">
+            <i class="fas fa-coins"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Total Withdrawals -->
+      <div class="col-xl-6 col-md-12">
+        <div class="inv-stat-card accent-rose h-100">
+          <div>
+            <div class="inv-stat-label">
+              <i class="fas fa-arrow-up text-danger"></i> Total Withdrawals
+            </div>
+            <h3 class="inv-stat-value">
+              ₹{{ (wallet?.total_withdrawals || 0) | number:'1.2-2' }}
+            </h3>
+            <div class="inv-stat-sub">Approved payouts withdrawn</div>
+          </div>
+          <div class="inv-stat-icon-wrap bg-rose-soft">
+            <i class="fas fa-hand-holding-usd"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Last Transaction Section Card -->
+    <div class="inv-card">
+      <div class="inv-card-header">
+        <div class="inv-card-header-left">
+          <div class="inv-card-header-icon primary">
+            <i class="fas fa-receipt"></i>
+          </div>
+          <div>
+            <h2 class="inv-card-title">Last Recorded Activity</h2>
+            <p class="inv-card-desc">Most recent transaction on your wallet</p>
+          </div>
+        </div>
+        <a routerLink="/investor/transactions" class="inv-btn inv-btn-sm inv-btn-outline">
+          View All Transactions <i class="fas fa-chevron-right ms-1"></i>
+        </a>
+      </div>
+
+      <div class="inv-card-body p-3">
+        <div *ngIf="wallet?.last_transaction; else noTx" class="d-flex flex-wrap align-items-center justify-content-between p-3 rounded-3 bg-light border gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="inv-card-header-icon" [class.primary]="wallet.last_transaction.type === 'deposit' || wallet.last_transaction.type === 'credit'" [class.blue]="wallet.last_transaction.type !== 'deposit' && wallet.last_transaction.type !== 'credit'">
+              <i [class]="wallet.last_transaction.type === 'deposit' || wallet.last_transaction.type === 'credit' ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark font-monospace" style="font-size: 13px;">
+                {{ wallet.last_transaction.transaction_id }}
+              </div>
+              <div class="text-muted small">
+                {{ wallet.last_transaction.created_at | date:'medium' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-3">
+            <span class="inv-badge text-uppercase"
+                  [class.inv-badge-approved]="wallet.last_transaction.type === 'deposit' || wallet.last_transaction.type === 'credit'"
+                  [class.inv-badge-danger]="wallet.last_transaction.type === 'withdrawal' || wallet.last_transaction.type === 'debit'">
+              {{ wallet.last_transaction.type }}
+            </span>
+            <div class="fw-bold fs-6 text-end"
+                 [class.text-success]="wallet.last_transaction.type === 'deposit' || wallet.last_transaction.type === 'credit'"
+                 [class.text-danger]="wallet.last_transaction.type === 'withdrawal' || wallet.last_transaction.type === 'debit'">
+              {{ (wallet.last_transaction.type === 'deposit' || wallet.last_transaction.type === 'credit') ? '+' : '−' }} ₹{{ wallet.last_transaction.amount | number:'1.2-2' }}
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noTx>
+          <div class="inv-empty-state py-4">
+            <div class="inv-empty-icon">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div class="inv-empty-title">No transactions recorded yet</div>
+            <p class="inv-empty-desc">Your wallet transaction history will appear here once activity begins.</p>
+          </div>
+        </ng-template>
       </div>
     </div>
   </div>

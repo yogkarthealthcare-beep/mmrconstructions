@@ -2,11 +2,12 @@ import { Component, HostListener, OnInit, ElementRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { VerifiedBadgeComponent } from '../verified-badge/verified-badge.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterLink, RouterLinkActive, CommonModule, VerifiedBadgeComponent],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
@@ -35,6 +36,10 @@ export class NavbarComponent implements OnInit {
 
   get isLoggedIn(): boolean {
     return !!this.currentUser || !!this.investorUser || this.auth.isUserLoggedIn() || this.auth.isInvestorLoggedIn();
+  }
+
+  get activeUser(): any {
+    return this.investorUser || this.currentUser;
   }
 
   get isPublicUserLoggedIn(): boolean {

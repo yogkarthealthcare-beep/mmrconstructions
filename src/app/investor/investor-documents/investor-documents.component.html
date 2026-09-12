@@ -1,63 +1,153 @@
-<div class="d-flex align-items-center justify-content-between mb-4">
-  <div>
-    <h4 class="fw-bold text-dark mb-1">Document Upload</h4>
-    <p class="text-muted mb-0">Upload KYC and supporting documents for admin verification</p>
-  </div>
-</div>
-
-<div *ngIf="message" class="alert alert-success">{{ message }}</div>
-<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-
-<div class="row g-4">
-  <div class="col-lg-4">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-4">
-        <label class="form-label fw-semibold">Document Type</label>
-        <select class="form-select mb-3" [(ngModel)]="documentType">
-          <option *ngFor="let type of documentTypes" [value]="type.value">{{ type.label }}</option>
-        </select>
-        <label class="form-label fw-semibold">File</label>
-        <input class="form-control mb-3" type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onFileChange($event)">
-        <div class="small text-muted mb-3">PDF, JPG, PNG. Maximum 5 MB.</div>
-        <button class="btn btn-success w-100 fw-bold" [disabled]="uploading" (click)="uploadDocument()">
-          <span *ngIf="uploading" class="spinner-border spinner-border-sm me-2"></span>
-          Upload Document
-        </button>
+<div class="inv-page-shell">
+  <!-- Page Header -->
+  <div class="inv-page-header">
+    <div class="inv-page-header-main">
+      <div class="inv-page-icon-badge">
+        <i class="fas fa-file-invoice"></i>
       </div>
+      <div>
+        <h1 class="inv-page-title">KYC &amp; Documents</h1>
+        <p class="inv-page-subtitle">Upload and manage identity proof, address proof, and investment agreements</p>
+      </div>
+    </div>
+    <div class="inv-page-actions">
+      <span class="inv-badge inv-badge-gold">
+        <i class="fas fa-shield-alt"></i> Official KYC Verification
+      </span>
     </div>
   </div>
 
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white py-3">
-        <h5 class="fw-bold m-0">Uploaded Documents</h5>
+  <div *ngIf="message" class="inv-alert inv-alert-success">
+    <i class="fas fa-check-circle mt-0.5"></i>
+    <div>{{ message }}</div>
+  </div>
+
+  <div *ngIf="error" class="inv-alert inv-alert-danger">
+    <i class="fas fa-exclamation-circle mt-0.5"></i>
+    <div>{{ error }}</div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Left Column: Upload Form -->
+    <div class="col-lg-4">
+      <div class="inv-card h-100">
+        <div class="inv-card-header">
+          <div class="inv-card-header-left">
+            <div class="inv-card-header-icon primary">
+              <i class="fas fa-file-upload"></i>
+            </div>
+            <div>
+              <h2 class="inv-card-title">Upload Document</h2>
+              <p class="inv-card-desc">Attach verified KYC file</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="inv-card-body">
+          <div class="inv-form-group mb-2">
+            <label class="inv-label" for="docTypeSelect">Document Type <span class="req">*</span></label>
+            <select id="docTypeSelect" class="inv-select" [(ngModel)]="documentType">
+              <option *ngFor="let type of documentTypes" [value]="type.value">{{ type.label }}</option>
+            </select>
+          </div>
+
+          <div class="inv-form-group mb-3">
+            <label class="inv-label">Choose File <span class="req">*</span></label>
+            <input class="inv-input" type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onFileChange($event)">
+            <div class="text-muted mt-1" style="font-size: 11px;">
+              Accepted formats: PDF, JPG, PNG (Max 5 MB)
+            </div>
+          </div>
+
+          <button class="inv-btn inv-btn-primary w-100 py-2 mt-2" [disabled]="uploading" (click)="uploadDocument()">
+            <span *ngIf="uploading" class="spinner-border spinner-border-sm me-1.5"></span>
+            <i *ngIf="!uploading" class="fas fa-cloud-upload-alt me-1.5"></i>
+            {{ uploading ? 'Uploading Document...' : 'Upload Document' }}
+          </button>
+        </div>
       </div>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th class="ps-3">Type</th>
-              <th>File</th>
-              <th>Status</th>
-              <th>Remarks</th>
-              <th class="text-end pe-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let doc of documents">
-              <td class="ps-3 text-capitalize">{{ doc.document_type?.replace('_', ' ') }}</td>
-              <td><a [href]="fileUrl(doc.id)" target="_blank">{{ doc.original_file_name }}</a></td>
-              <td><span class="badge rounded-pill border" [ngClass]="badge(doc.status)">{{ doc.status }}</span></td>
-              <td class="text-muted small">{{ doc.admin_remarks || '-' }}</td>
-              <td class="text-end pe-3">
-                <button class="btn btn-sm btn-outline-danger" [disabled]="doc.status === 'approved'" (click)="deleteDocument(doc)">Delete</button>
-              </td>
-            </tr>
-            <tr *ngIf="!loading && !documents.length">
-              <td colspan="5" class="text-center text-muted py-4">No documents uploaded yet.</td>
-            </tr>
-          </tbody>
-        </table>
+    </div>
+
+    <!-- Right Column: Document List -->
+    <div class="col-lg-8">
+      <div class="inv-card h-100 d-flex flex-column">
+        <div class="inv-card-header">
+          <div class="inv-card-header-left">
+            <div class="inv-card-header-icon gold">
+              <i class="fas fa-folder-open"></i>
+            </div>
+            <div>
+              <h2 class="inv-card-title">Uploaded Documents</h2>
+              <p class="inv-card-desc">History and verification status of submitted documents</p>
+            </div>
+          </div>
+          <span class="inv-badge inv-badge-neutral" *ngIf="!loading">
+            {{ documents.length }} {{ documents.length === 1 ? 'File' : 'Files' }}
+          </span>
+        </div>
+
+        <div class="inv-card-body p-0 flex-fill">
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border spinner-border-sm text-success me-2"></div>
+            <span class="text-muted small">Loading documents...</span>
+          </div>
+
+          <div class="inv-table-wrapper" *ngIf="!loading && documents.length">
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th class="ps-3">Document Type</th>
+                  <th>File Name</th>
+                  <th>Status</th>
+                  <th>Remarks</th>
+                  <th class="text-end pe-3">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let doc of documents">
+                  <td class="ps-3 text-capitalize small fw-semibold text-dark">
+                    <i class="fas fa-file-alt text-primary me-1.5"></i>
+                    {{ doc.document_type?.replace('_', ' ') }}
+                  </td>
+                  <td>
+                    <a [href]="fileUrl(doc.id)" target="_blank" class="inv-mono-chip text-primary text-decoration-none">
+                      <i class="fas fa-external-link-alt me-1"></i>
+                      {{ doc.original_file_name || 'View File' }}
+                    </a>
+                  </td>
+                  <td>
+                    <span class="inv-badge"
+                          [class.inv-badge-approved]="doc.status === 'approved'"
+                          [class.inv-badge-pending]="doc.status === 'pending'"
+                          [class.inv-badge-rejected]="doc.status === 'rejected'">
+                      {{ doc.status }}
+                    </span>
+                  </td>
+                  <td class="text-muted small" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="doc.admin_remarks || '-'">
+                    {{ doc.admin_remarks || '-' }}
+                  </td>
+                  <td class="text-end pe-3">
+                    <button class="inv-btn inv-btn-sm inv-btn-outline-danger"
+                            [disabled]="doc.status === 'approved'"
+                            (click)="deleteDocument(doc)"
+                            title="Delete unapproved document">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div class="inv-empty-state" *ngIf="!loading && !documents.length">
+            <div class="inv-empty-icon emerald">
+              <i class="fas fa-file-invoice"></i>
+            </div>
+            <div class="inv-empty-title">No documents uploaded yet</div>
+            <p class="inv-empty-desc">Upload your PAN Card, Aadhaar Card, or Bank Statement to complete your investor KYC verification.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -47,23 +47,44 @@
           <form (ngSubmit)="onSubmit()" #contactForm="ngForm">
             <div class="row g-3">
               <div class="col-sm-6">
-                <label class="f-label">Your Name *</label>
-                <input type="text" class="f-input" placeholder="Full Name" [(ngModel)]="form.name" name="name" required/>
+                <label for="contact-fullname" class="f-label">Your Name <span class="text-danger" aria-hidden="true">*</span></label>
+                <input 
+                  type="text" 
+                  id="contact-fullname"
+                  class="f-input" 
+                  placeholder="Full Name" 
+                  [(ngModel)]="form.name" 
+                  name="name" 
+                  required
+                  aria-required="true"
+                  [attr.aria-invalid]="contactForm.submitted && !form.name"
+                />
               </div>
               <div class="col-sm-6">
-                <label class="f-label">Mobile Number *</label>
-                <input type="tel" class="f-input" placeholder="10-digit mobile" [(ngModel)]="form.mobile" name="mobile" required/>
+                <label for="contact-mobile" class="f-label">Mobile Number <span class="text-danger" aria-hidden="true">*</span></label>
+                <input 
+                  type="tel" 
+                  id="contact-mobile"
+                  class="f-input" 
+                  placeholder="10-digit mobile" 
+                  [(ngModel)]="form.mobile" 
+                  name="mobile" 
+                  pattern="[0-9]{10}"
+                  required
+                  aria-required="true"
+                  [attr.aria-invalid]="contactForm.submitted && !form.mobile"
+                />
               </div>
               <div class="col-sm-6">
-                <label class="f-label">Select Project / Site</label>
-                <select class="f-select" [(ngModel)]="form.site_id" name="site_id">
+                <label for="contact-site" class="f-label">Select Project / Site</label>
+                <select id="contact-site" class="f-select" [(ngModel)]="form.site_id" name="site_id" aria-label="Select Project Site">
                   <option [ngValue]="null">-- Select Project Site --</option>
                   <option *ngFor="let s of sites" [ngValue]="s.site_id">{{ s.site_name }} ({{ s.city }})</option>
                 </select>
               </div>
               <div class="col-sm-6">
-                <label class="f-label">Interested In</label>
-                <select class="f-select" [(ngModel)]="form.interest" name="interest">
+                <label for="contact-interest" class="f-label">Interested In</label>
+                <select id="contact-interest" class="f-select" [(ngModel)]="form.interest" name="interest" aria-label="Select Interest Category">
                   <option>Plot Booking — 100 Gaj</option>
                   <option>Plot Booking — 50 Gaj</option>
                   <option>Associate / Commission Program</option>
@@ -72,12 +93,12 @@
                 </select>
               </div>
               <div class="col-12">
-                <label class="f-label">Message</label>
-                <textarea class="f-input" rows="3" placeholder="Your message..." [(ngModel)]="form.message" name="message"></textarea>
+                <label for="contact-message" class="f-label">Message</label>
+                <textarea id="contact-message" class="f-input" rows="3" placeholder="Your message..." [(ngModel)]="form.message" name="message"></textarea>
               </div>
               <div class="col-12 mt-1">
-                <button type="submit" class="btn btn-green btn-lg w-100" [disabled]="submitting">
-                  <i class="fas" [ngClass]="submitting ? 'fa-spinner fa-spin me-2' : 'fa-paper-plane me-2'"></i>
+                <button type="submit" class="btn btn-green btn-lg w-100" [disabled]="submitting" aria-label="Submit enquiry form">
+                  <i class="fas" [ngClass]="submitting ? 'fa-spinner fa-spin me-2' : 'fa-paper-plane me-2'" aria-hidden="true"></i>
                   {{ submitting ? 'Submitting...' : 'Send Enquiry' }}
                 </button>
               </div>

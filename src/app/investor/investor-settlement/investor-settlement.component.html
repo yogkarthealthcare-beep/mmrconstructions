@@ -1,63 +1,209 @@
-<div class="d-flex align-items-center justify-content-between mb-4">
-  <div>
-    <h4 class="fw-bold text-dark mb-1">Settlement Details</h4>
-    <p class="text-muted mb-0">Choose settlement frequency once, or request an admin-approved change</p>
-  </div>
-</div>
-
-<div *ngIf="message" class="alert alert-success">{{ message }}</div>
-<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-
-<div class="row g-4">
-  <div class="col-lg-5">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-4">
-        <ng-container *ngIf="!preference; else lockedPreference">
-          <h5 class="fw-bold mb-3">First-time Settlement Setup</h5>
-          <select class="form-select mb-3" [(ngModel)]="frequency">
-            <option *ngFor="let option of options" [value]="option.value">{{ option.label }}</option>
-          </select>
-          <button class="btn btn-success fw-bold w-100" [disabled]="saving" (click)="saveFirstChoice()">Save and Lock Frequency</button>
-        </ng-container>
-        <ng-template #lockedPreference>
-          <h5 class="fw-bold mb-2">Current Frequency</h5>
-          <div class="display-6 fw-bold text-success text-capitalize mb-2">{{ preference.frequency?.replace('_', '-') }}</div>
-          <p class="text-muted mb-0">This choice is locked. Use request change for admin approval.</p>
-        </ng-template>
+<div class="inv-page-shell">
+  <!-- Page Header -->
+  <div class="inv-page-header">
+    <div class="inv-page-header-main">
+      <div class="inv-page-icon-badge">
+        <i class="fas fa-calendar-check"></i>
       </div>
+      <div>
+        <h1 class="inv-page-title">Settlement Details</h1>
+        <p class="inv-page-subtitle">Configure your payout frequency for investment yield and return distributions</p>
+      </div>
+    </div>
+    <div class="inv-page-actions" *ngIf="preference">
+      <span class="inv-badge inv-badge-approved">
+        <i class="fas fa-lock"></i> Current Frequency: {{ preference.frequency?.replace('_', ' ') }}
+      </span>
     </div>
   </div>
 
-  <div class="col-lg-7">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-4">
-        <h5 class="fw-bold mb-3">Request Settlement Change</h5>
-        <select class="form-select mb-3" [(ngModel)]="requested_frequency" [disabled]="!preference">
-          <option *ngFor="let option of options" [value]="option.value">{{ option.label }}</option>
-        </select>
-        <textarea class="form-control mb-3" rows="3" [(ngModel)]="reason" placeholder="Reason for change" [disabled]="!preference"></textarea>
-        <button class="btn btn-outline-success fw-bold" [disabled]="!preference || saving" (click)="requestChange()">Submit Request</button>
-      </div>
-    </div>
+  <div *ngIf="message" class="inv-alert inv-alert-success">
+    <i class="fas fa-check-circle mt-0.5"></i>
+    <div>{{ message }}</div>
   </div>
 
-  <div class="col-12">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white py-3"><h5 class="fw-bold m-0">Request History</h5></div>
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light"><tr><th class="ps-3">Date</th><th>Current</th><th>Requested</th><th>Status</th><th>Remarks</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let request of requests">
-              <td class="ps-3">{{ request.created_at | date:'mediumDate' }}</td>
-              <td class="text-capitalize">{{ request.current_frequency }}</td>
-              <td class="text-capitalize">{{ request.requested_frequency }}</td>
-              <td class="text-capitalize">{{ request.status }}</td>
-              <td class="text-muted">{{ request.admin_remarks || '-' }}</td>
-            </tr>
-            <tr *ngIf="!requests.length"><td colspan="5" class="text-center text-muted py-4">No change requests yet.</td></tr>
-          </tbody>
-        </table>
+  <div *ngIf="error" class="inv-alert inv-alert-danger">
+    <i class="fas fa-exclamation-circle mt-0.5"></i>
+    <div>{{ error }}</div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border spinner-border-sm text-success me-2"></div>
+    <span class="text-muted small">Loading settlement configuration...</span>
+  </div>
+
+  <div *ngIf="!loading">
+    <div class="row g-3 mb-3">
+      <!-- Left Card: Current / First-time Settlement Setup -->
+      <div class="col-lg-5">
+        <div class="inv-card h-100">
+          <div class="inv-card-header">
+            <div class="inv-card-header-left">
+              <div class="inv-card-header-icon primary">
+                <i [class]="preference ? 'fas fa-lock' : 'fas fa-cog'"></i>
+              </div>
+              <div>
+                <h2 class="inv-card-title">{{ preference ? 'Current Active Frequency' : 'Initial Settlement Setup' }}</h2>
+                <p class="inv-card-desc">{{ preference ? 'Locked distribution schedule' : 'Choose your payout frequency' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="inv-card-body">
+            <!-- First-time Setup -->
+            <ng-container *ngIf="!preference; else lockedPreference">
+              <p class="text-muted small mb-3">
+                Please choose your preferred settlement schedule. Once saved, this choice becomes active and can only be updated through an admin approval request.
+              </p>
+
+              <div class="inv-form-group">
+                <label class="inv-label" for="initFrequency">Settlement Frequency <span class="req">*</span></label>
+                <select id="initFrequency" class="inv-select" [(ngModel)]="frequency">
+                  <option *ngFor="let option of options" [value]="option.value">{{ option.label }}</option>
+                </select>
+              </div>
+
+              <button class="inv-btn inv-btn-primary w-100 mt-2 py-2" [disabled]="saving" (click)="saveFirstChoice()">
+                <span *ngIf="saving" class="spinner-border spinner-border-sm me-1.5"></span>
+                <i *ngIf="!saving" class="fas fa-check-circle me-1.5"></i>
+                Save and Lock Frequency
+              </button>
+            </ng-container>
+
+            <!-- Locked Preference Display -->
+            <ng-template #lockedPreference>
+              <div class="p-3 rounded-3 bg-light border text-center my-2">
+                <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 11px; letter-spacing: 0.05em;">
+                  Active Settlement Interval
+                </div>
+                <div class="inv-stat-value text-emerald text-capitalize my-1" style="font-size: 1.65rem;">
+                  {{ preference.frequency?.replace('_', ' ') }}
+                </div>
+                <span class="inv-badge inv-badge-approved mt-1">
+                  <i class="fas fa-shield-alt"></i> Verified Schedule
+                </span>
+              </div>
+
+              <div class="d-flex align-items-start gap-2 text-muted small mt-3 p-2 bg-light rounded-2">
+                <i class="fas fa-info-circle text-primary mt-0.5"></i>
+                <span>Your settlement frequency is active. To change it, submit a request in the adjacent form.</span>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Card: Request Settlement Change -->
+      <div class="col-lg-7">
+        <div class="inv-card h-100">
+          <div class="inv-card-header">
+            <div class="inv-card-header-left">
+              <div class="inv-card-header-icon gold">
+                <i class="fas fa-exchange-alt"></i>
+              </div>
+              <div>
+                <h2 class="inv-card-title">Request Settlement Change</h2>
+                <p class="inv-card-desc">Submit a request to modify your payout cycle</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="inv-card-body">
+            <div *ngIf="!preference" class="inv-alert inv-alert-info mb-3">
+              <i class="fas fa-info-circle mt-0.5"></i>
+              <div>Please set up your initial frequency first before requesting changes.</div>
+            </div>
+
+            <div class="inv-form-group">
+              <label class="inv-label" for="reqFreq">Desired Settlement Frequency <span class="req">*</span></label>
+              <select id="reqFreq" class="inv-select" [(ngModel)]="requested_frequency" [disabled]="!preference">
+                <option *ngFor="let option of options" [value]="option.value">{{ option.label }}</option>
+              </select>
+            </div>
+
+            <div class="inv-form-group">
+              <label class="inv-label" for="reqReason">Reason for Change (Optional)</label>
+              <textarea id="reqReason"
+                        class="inv-textarea"
+                        rows="2"
+                        [(ngModel)]="reason"
+                        placeholder="Briefly explain why you'd like to switch frequencies..."
+                        [disabled]="!preference"></textarea>
+            </div>
+
+            <button class="inv-btn inv-btn-gold w-100 mt-2 py-2" [disabled]="!preference || saving" (click)="requestChange()">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1.5"></span>
+              <i *ngIf="!saving" class="fas fa-paper-plane me-1.5"></i>
+              {{ saving ? 'Submitting...' : 'Submit Frequency Change Request' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom: Request History Card -->
+    <div class="inv-card">
+      <div class="inv-card-header">
+        <div class="inv-card-header-left">
+          <div class="inv-card-header-icon blue">
+            <i class="fas fa-history"></i>
+          </div>
+          <div>
+            <h2 class="inv-card-title">Settlement Change History</h2>
+            <p class="inv-card-desc">Review your past frequency change requests</p>
+          </div>
+        </div>
+        <span class="inv-badge inv-badge-neutral">
+          {{ requests.length }} {{ requests.length === 1 ? 'Request' : 'Requests' }}
+        </span>
+      </div>
+
+      <div class="inv-card-body p-0">
+        <div class="inv-table-wrapper" *ngIf="requests.length">
+          <table class="inv-table">
+            <thead>
+              <tr>
+                <th class="ps-3">Request Date</th>
+                <th>Current Frequency</th>
+                <th>Requested Frequency</th>
+                <th>Status</th>
+                <th class="pe-3">Admin Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let request of requests">
+                <td class="ps-3 text-muted" style="white-space: nowrap; font-size: 12px;">
+                  {{ request.created_at | date:'mediumDate' }}
+                </td>
+                <td class="text-capitalize small">
+                  {{ request.current_frequency?.replace('_', ' ') || '-' }}
+                </td>
+                <td class="text-capitalize small fw-semibold text-dark">
+                  {{ request.requested_frequency?.replace('_', ' ') }}
+                </td>
+                <td>
+                  <span class="inv-badge"
+                        [class.inv-badge-approved]="request.status === 'approved'"
+                        [class.inv-badge-pending]="request.status === 'pending'"
+                        [class.inv-badge-rejected]="request.status === 'rejected'">
+                    {{ request.status }}
+                  </span>
+                </td>
+                <td class="pe-3 text-muted small" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="request.admin_remarks || '-'">
+                  {{ request.admin_remarks || '-' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="inv-empty-state" *ngIf="!requests.length">
+          <div class="inv-empty-icon">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <div class="inv-empty-title">No change requests submitted</div>
+          <p class="inv-empty-desc">When you request an adjustment to your payout interval, the details and approval status will appear here.</p>
+        </div>
       </div>
     </div>
   </div>

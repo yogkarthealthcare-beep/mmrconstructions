@@ -14,6 +14,7 @@ import { EarnComponent } from '../../sections/earn/earn.component';
 import { ContactComponent } from '../../sections/contact/contact.component';
 import { ApiService } from '../../services/api.service';
 import { SiteToggleService } from '../../services/site-toggle.service';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-home',
@@ -67,9 +68,52 @@ export class HomeComponent implements OnInit {
     { icon: 'fas fa-file-invoice', title: 'PDF Vouchers',    desc: 'Downloadable receipt हर payment पर।' },
   ];
 
-  constructor(private api: ApiService, private siteToggle: SiteToggleService) {}
+  constructor(
+    private api: ApiService, 
+    private siteToggle: SiteToggleService,
+    private seo: SeoService
+  ) {}
 
   ngOnInit() {
+    this.seo.set({
+      title: 'MMR Constructions & Developers — Premium Plots | Kanpur · Unnao · Lucknow',
+      description: 'Buy approved residential & commercial plots in Kanpur, Unnao & Lucknow with MMR Constructions. Easy EMI, Buyback Guarantee. CIN: U68200UP2025PTC229203.',
+      canonical: '/',
+      keywords: 'MMR Constructions, plots in kanpur, plots in unnao, plots in lucknow, real estate developers uttar pradesh, buy plot on emi',
+      schema: {
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': ['Organization', 'RealEstateAgent'],
+            '@id': 'https://mmrconstructions.in/#organization',
+            name: 'M.M.R. Constructions & Developers Private Limited',
+            url: 'https://mmrconstructions.in',
+            logo: 'https://mmrconstructions.in/assets/mmr-logo.png',
+            image: 'https://mmrconstructions.in/assets/mmr-logo.png',
+            description: 'Leading real estate developer offering affordable & approved residential and commercial plots in Kanpur, Unnao, and Lucknow.',
+            telephone: '+919511119879',
+            email: 'official@mmrconstructions.in',
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: 'Tribhuvan Kheda, Sheshpur',
+              addressLocality: 'Unnao',
+              addressRegion: 'Uttar Pradesh',
+              postalCode: '209801',
+              addressCountry: 'IN'
+            },
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: 26.5393,
+              longitude: 80.4878
+            },
+            sameAs: [
+              'https://facebook.com/mmrconstructions',
+              'https://instagram.com/mmrconstructions'
+            ]
+          }
+        ]
+      }
+    });
     this.api.getHomePageSettings().subscribe({
       next: (res: any) => {
         const data = res?.data || {};

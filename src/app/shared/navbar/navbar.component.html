@@ -54,7 +54,10 @@
             {{ userInitials }}
           </div>
           <div class="user-meta-text d-none d-sm-flex flex-column text-start">
-            <span class="user-name-text">{{ userName }}</span>
+            <span class="user-name-text d-inline-flex align-items-center gap-1">
+              {{ userName }}
+              <app-verified-badge [user]="activeUser" size="xs"></app-verified-badge>
+            </span>
             <span class="user-role-badge" [class.badge-associate]="userRole==='Associate'" [class.badge-customer]="userRole==='Customer'" [class.badge-investor]="userRole==='Investor'" [class.badge-admin]="userRole==='Admin'">
               {{ userRole }}
             </span>
@@ -68,7 +71,10 @@
             <div class="d-flex align-items-center gap-2 mb-1">
               <div class="avatar-circle-md">{{ userInitials }}</div>
               <div>
-                <div class="fw-700 fs-13 text-dark">{{ userName }}</div>
+                <div class="fw-700 fs-13 text-dark d-flex align-items-center gap-1">
+                  <span>{{ userName }}</span>
+                  <app-verified-badge [user]="activeUser" size="sm"></app-verified-badge>
+                </div>
                 <span class="badge bg-gold text-dark fs-10 fw-800">{{ userRole }}</span>
               </div>
             </div>
@@ -97,11 +103,16 @@
         </div>
       </div>
 
-      <div class="hamburger ms-2" (click)="toggleDrawer()">
+      <button 
+        type="button"
+        class="hamburger ms-2 border-0 bg-transparent" 
+        (click)="toggleDrawer()"
+        aria-label="Toggle navigation menu"
+        [attr.aria-expanded]="drawerOpen">
         <span class="hb-line"></span>
         <span class="hb-line"></span>
         <span class="hb-line"></span>
-      </div>
+      </button>
     </div>
   </div>
 </nav>
@@ -116,7 +127,7 @@
         <span class="brand-sub">&amp; Developers Pvt. Ltd.</span>
       </div>
     </a>
-    <button class="drawer-close" (click)="closeDrawer()"><i class="fas fa-times"></i></button>
+    <button type="button" class="drawer-close" (click)="closeDrawer()" aria-label="Close navigation drawer"><i class="fas fa-times" aria-hidden="true"></i></button>
   </div>
 
   <nav class="drawer-nav">
@@ -125,7 +136,10 @@
       <div class="d-flex align-items-center gap-3">
         <div class="avatar-circle-md bg-gold text-dark font-display fw-700 fs-5">{{ userInitials }}</div>
         <div>
-          <div class="fw-700 fs-14 text-gold">{{ userName }}</div>
+          <div class="fw-700 fs-14 text-gold d-flex align-items-center gap-1">
+            <span>{{ userName }}</span>
+            <app-verified-badge [user]="activeUser" size="sm"></app-verified-badge>
+          </div>
           <span class="badge bg-white-20 text-white fs-11">{{ userRole }}</span>
         </div>
       </div>

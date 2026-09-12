@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 
 @Component({
   selector: 'app-investor-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, VerifiedBadgeComponent],
   templateUrl: './investor-dashboard.component.html',
   styleUrls: ['./investor-dashboard.component.css']
 })

@@ -3,6 +3,7 @@ import { RouterLink, RouterOutlet, RouterLinkActive, Router, NavigationEnd } fro
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 import { filter } from 'rxjs/operators';
 
 interface NavItem {
@@ -23,7 +24,7 @@ interface NavGroup {
 @Component({
   selector: 'app-user-layout',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, RouterLinkActive, CommonModule],
+  imports: [RouterLink, RouterOutlet, RouterLinkActive, CommonModule, VerifiedBadgeComponent],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css']
 })

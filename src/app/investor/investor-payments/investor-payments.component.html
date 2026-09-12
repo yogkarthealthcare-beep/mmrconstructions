@@ -1,37 +1,50 @@
-<div class="investor-payments">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-    <div>
-      <h4 class="fw-bold text-dark mb-1">Transaction History & Payments</h4>
-      <p class="text-muted mb-0">Detailed log of all deposits, withdrawals, and financial transactions</p>
+<div class="inv-page-shell">
+  <!-- Page Header -->
+  <div class="inv-page-header">
+    <div class="inv-page-header-main">
+      <div class="inv-page-icon-badge">
+        <i class="fas fa-receipt"></i>
+      </div>
+      <div>
+        <h1 class="inv-page-title">Transaction History &amp; Payments</h1>
+        <p class="inv-page-subtitle">Detailed ledger of all deposits, withdrawals, and financial transactions</p>
+      </div>
+    </div>
+    <div class="inv-page-actions">
+      <button class="inv-btn inv-btn-outline" (click)="onFilterChange()">
+        <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Refresh
+      </button>
     </div>
   </div>
 
-  <div class="card border-0 shadow-sm rounded-3">
-    <!-- Filters & Search Toolbar -->
-    <div class="card-header bg-white py-3">
-      <div class="row g-3 align-items-center">
-        <div class="col-md-4">
-          <div class="input-group">
-            <span class="input-group-text"><i class="fas fa-search"></i></span>
+  <div class="inv-card">
+    <!-- Filter Toolbar -->
+    <div class="inv-card-header bg-light bg-opacity-50 py-2.5">
+      <div class="row g-2 w-100 align-items-center m-0">
+        <!-- Search -->
+        <div class="col-md-5 ps-0">
+          <div class="inv-input-group">
+            <span class="inv-input-group-addon"><i class="fas fa-search"></i></span>
             <input type="text"
-                   class="form-control"
+                   class="inv-input"
                    [(ngModel)]="searchQuery"
                    (keyup.enter)="onFilterChange()"
                    placeholder="Search by Txn ID or Reference..." />
-            <button class="btn btn-outline-secondary" (click)="onFilterChange()">Search</button>
           </div>
         </div>
 
+        <!-- Type Filter -->
         <div class="col-md-3">
-          <select class="form-select" [(ngModel)]="typeFilter" (change)="onFilterChange()">
+          <select class="inv-select" [(ngModel)]="typeFilter" (change)="onFilterChange()">
             <option value="all">All Types</option>
             <option value="deposit">Deposit</option>
             <option value="withdrawal">Withdrawal</option>
           </select>
         </div>
 
-        <div class="col-md-3">
-          <select class="form-select" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+        <!-- Status Filter -->
+        <div class="col-md-2">
+          <select class="inv-select" [(ngModel)]="statusFilter" (change)="onFilterChange()">
             <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
@@ -39,88 +52,122 @@
           </select>
         </div>
 
-        <div class="col-md-2 text-md-end">
-          <button class="btn btn-outline-success w-100" (click)="onFilterChange()">
-            <i class="fas fa-sync-alt me-1"></i> Refresh
+        <!-- Filter Action -->
+        <div class="col-md-2 pe-0 text-md-end">
+          <button class="inv-btn inv-btn-primary w-100 py-1.5" (click)="onFilterChange()">
+            <i class="fas fa-filter me-1"></i> Apply
           </button>
         </div>
       </div>
     </div>
 
+    <!-- Error Banner -->
+    <div *ngIf="errorMessage" class="p-3">
+      <div class="inv-alert inv-alert-danger mb-0">
+        <i class="fas fa-exclamation-circle mt-0.5"></i>
+        <div>{{ errorMessage }}</div>
+      </div>
+    </div>
+
     <!-- Table -->
-    <div class="card-body p-0">
+    <div class="inv-card-body p-0">
       <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-success" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="text-muted mt-2">Loading transactions...</p>
+        <div class="spinner-border spinner-border-sm text-success me-2"></div>
+        <span class="text-muted small">Loading transactions...</span>
       </div>
 
-      <div class="table-responsive" *ngIf="!loading">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
+      <div class="inv-table-wrapper" *ngIf="!loading && transactions.length">
+        <table class="inv-table">
+          <thead>
             <tr>
-              <th class="ps-4">Date</th>
+              <th class="ps-3">Date &amp; Time</th>
               <th>Transaction ID</th>
               <th>Type</th>
               <th class="text-end">Amount</th>
-              <th>Payment Method</th>
+              <th>Method</th>
               <th>Reference Number</th>
-              <th>Status</th>
+              <th class="pe-3">Status</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let tx of transactions">
-              <td class="ps-4 text-muted small">{{ tx.created_at | date:'medium' }}</td>
-              <td class="fw-bold font-monospace">{{ tx.transaction_id }}</td>
+              <td class="ps-3 text-muted" style="white-space: nowrap; font-size: 12px;">
+                {{ tx.created_at | date:'medium' }}
+              </td>
               <td>
-                <span class="badge rounded-pill text-uppercase px-2.5 py-1"
-                      [class.bg-success-subtle]="tx.type === 'deposit' || tx.type === 'credit'"
-                      [class.text-success]="tx.type === 'deposit' || tx.type === 'credit'"
-                      [class.bg-danger-subtle]="tx.type === 'withdrawal' || tx.type === 'debit'"
-                      [class.text-danger]="tx.type === 'withdrawal' || tx.type === 'debit'">
+                <span class="inv-mono-chip fw-bold">{{ tx.transaction_id }}</span>
+              </td>
+              <td>
+                <span class="inv-badge text-uppercase"
+                      [class.inv-badge-approved]="tx.type === 'deposit' || tx.type === 'credit'"
+                      [class.inv-badge-danger]="tx.type === 'withdrawal' || tx.type === 'debit'">
+                  <i [class]="tx.type === 'deposit' || tx.type === 'credit' ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
                   {{ tx.type }}
                 </span>
               </td>
-              <td class="fw-bold fs-6 text-end" [class.text-success]="tx.type === 'deposit' || tx.type === 'credit'" [class.text-danger]="tx.type === 'withdrawal' || tx.type === 'debit'">
+              <td class="text-end fw-bold" style="white-space: nowrap;"
+                  [class.text-success]="tx.type === 'deposit' || tx.type === 'credit'"
+                  [class.text-danger]="tx.type === 'withdrawal' || tx.type === 'debit'">
                 {{ (tx.type === 'deposit' || tx.type === 'credit') ? '+' : '−' }} ₹{{ tx.amount | number:'1.2-2' }}
               </td>
-              <td class="text-secondary">{{ tx.payment_method || '-' }}</td>
-              <td class="small font-monospace text-muted">{{ tx.reference_number || '-' }}</td>
-              <td>
-                <span class="badge rounded-pill border px-2.5 py-1 text-capitalize" [ngClass]="getStatusClass(tx.status)">
+              <td class="text-secondary small text-capitalize">
+                {{ tx.payment_method?.replace('_', ' ') || '-' }}
+              </td>
+              <td class="text-muted small font-monospace">
+                {{ tx.reference_number || '-' }}
+              </td>
+              <td class="pe-3">
+                <span class="inv-badge"
+                      [class.inv-badge-approved]="tx.status === 'approved'"
+                      [class.inv-badge-pending]="tx.status === 'pending'"
+                      [class.inv-badge-rejected]="tx.status === 'rejected'">
                   {{ tx.status }}
                 </span>
-              </td>
-            </tr>
-            <tr *ngIf="!transactions.length">
-              <td colspan="7" class="text-center text-muted py-5">
-                <i class="fas fa-receipt fa-2x mb-2 d-block text-muted opacity-50"></i>
-                No transaction history matching your filters.
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <!-- Empty State -->
+      <div class="inv-empty-state" *ngIf="!loading && !transactions.length">
+        <div class="inv-empty-icon emerald">
+          <i class="fas fa-receipt"></i>
+        </div>
+        <div class="inv-empty-title">No transactions found</div>
+        <p class="inv-empty-desc">No transaction history matching your selected filters was found.</p>
+      </div>
     </div>
 
     <!-- Pagination Footer -->
-    <div class="card-footer bg-white py-3 d-flex align-items-center justify-content-between flex-wrap gap-2" *ngIf="totalPages > 1">
-      <span class="text-muted small">
+    <div class="inv-card-footer" *ngIf="totalPages > 1">
+      <div class="text-muted small">
         Showing Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong> (Total {{ totalCount }} records)
-      </span>
+      </div>
 
-      <ul class="pagination pagination-sm m-0">
-        <li class="page-item" [class.disabled]="currentPage === 1">
-          <button class="page-link" (click)="goToPage(currentPage - 1)">Previous</button>
-        </li>
-        <li class="page-item" [class.active]="currentPage === page" *ngFor="let page of [].constructor(totalPages); let i = index">
-          <button class="page-link" (click)="goToPage(i + 1)">{{ i + 1 }}</button>
-        </li>
-        <li class="page-item" [class.disabled]="currentPage === totalPages">
-          <button class="page-link" (click)="goToPage(currentPage + 1)">Next</button>
-        </li>
-      </ul>
+      <div class="d-flex align-items-center gap-1">
+        <button class="inv-btn inv-btn-sm inv-btn-outline"
+                [disabled]="currentPage === 1"
+                (click)="goToPage(currentPage - 1)">
+          <i class="fas fa-chevron-left"></i> Prev
+        </button>
+
+        <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+          <button class="inv-btn inv-btn-sm"
+                  [class.inv-btn-primary]="currentPage === (i + 1)"
+                  [class.inv-btn-outline]="currentPage !== (i + 1)"
+                  *ngIf="i + 1 >= currentPage - 2 && i + 1 <= currentPage + 2"
+                  (click)="goToPage(i + 1)">
+            {{ i + 1 }}
+          </button>
+        </ng-container>
+
+        <button class="inv-btn inv-btn-sm inv-btn-outline"
+                [disabled]="currentPage === totalPages"
+                (click)="goToPage(currentPage + 1)">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
     </div>
   </div>
 </div>

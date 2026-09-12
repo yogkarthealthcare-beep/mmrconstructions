@@ -140,7 +140,10 @@
                   {{ getInitials(a.full_name) }}
                 </div>
                 <div>
-                  <div class="fw-700 text-dark fs-12">{{ a.full_name }}</div>
+                  <div class="fw-700 text-dark fs-12 d-flex align-items-center gap-1">
+                    <span>{{ a.full_name }}</span>
+                    <app-verified-badge [user]="a" size="xs"></app-verified-badge>
+                  </div>
                   <div class="fs-10 text-muted"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ a.member_id || '—' }}</div>
                   <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-9 py-0 px-1 mt-0.5" *ngIf="isFreeOrDisabled(a)">
                     Disabled / Free
@@ -465,7 +468,10 @@
                 <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-user-tie text-gold-dark me-2"></i>Agent Profile</h6>
                 <div class="fs-12 mb-1"><strong>Member ID:</strong> {{ selectedAssociate.member_id || '—' }}</div>
                 <div class="fs-12 mb-1"><strong>Invite Code:</strong> <span class="invite-code-pill">{{ selectedAssociate.invitation_code || '—' }}</span></div>
-                <div class="fs-12 mb-1"><strong>Name:</strong> {{ selectedAssociate.full_name }}</div>
+                <div class="fs-12 mb-1 d-flex align-items-center gap-1">
+                  <strong>Name:</strong> <span>{{ selectedAssociate.full_name }}</span>
+                  <app-verified-badge [user]="selectedAssociate" size="xs"></app-verified-badge>
+                </div>
                 <div class="fs-12 mb-1"><strong>Mobile:</strong> {{ selectedAssociate.mobile_no }}</div>
                 <div class="fs-12 mb-1"><strong>Email:</strong> {{ selectedAssociate.email || '—' }}</div>
                 <div class="fs-12"><strong>Rank:</strong> <span class="badge bg-warning text-dark">{{ selectedAssociate.rank_name || 'Associate' }}</span></div>

@@ -1,123 +1,161 @@
-<div class="auth-page py-5">
+<div class="auth-page py-4">
   <div class="auth-card signup-card">
-    <div class="auth-header text-center mb-4">
+    <div class="auth-header text-center mb-3">
       <div class="auth-logo mx-auto mb-2">
-        <i class="fas fa-user-plus text-success"></i>
+        <i class="fas fa-user-plus"></i>
       </div>
-      <h3 class="fw-bold text-dark">Investor Sign Up</h3>
-      <p class="text-muted fs-6">Register as an Investor with MMR Construction</p>
+      <h2 class="fw-bold text-dark fs-4 mb-1">Investor Registration</h2>
+      <p class="text-muted small mb-0">Join MMR Constructions as an accredited Investor Partner</p>
     </div>
 
-    <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-3">
-      <i class="fas fa-exclamation-circle"></i>
-      <span>{{ errorMessage }}</span>
+    <div *ngIf="errorMessage" class="inv-alert inv-alert-danger mb-3">
+      <i class="fas fa-exclamation-circle mt-0.5"></i>
+      <div>{{ errorMessage }}</div>
     </div>
 
-    <div *ngIf="successMessage" class="alert alert-success d-flex align-items-center gap-2 mb-3">
-      <i class="fas fa-check-circle"></i>
-      <span>{{ successMessage }}</span>
+    <div *ngIf="successMessage" class="inv-alert inv-alert-success mb-3">
+      <i class="fas fa-check-circle mt-0.5"></i>
+      <div>{{ successMessage }}</div>
     </div>
 
     <form (ngSubmit)="signup()">
-      <!-- Step 1: Personal Info -->
-      <h6 class="text-success fw-bold border-bottom pb-2 mb-3">
-        <i class="fas fa-user me-2"></i>Personal Details
-      </h6>
+      <!-- Step 1: Personal Particulars -->
+      <div class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom">
+        <span class="inv-card-header-icon primary" style="width: 24px; height: 24px; font-size: 11px;">
+          <i class="fas fa-user"></i>
+        </span>
+        <span class="fw-bold text-dark small">Personal &amp; Account Details</span>
+      </div>
 
-      <div class="row g-3 mb-3">
+      <div class="row g-2 mb-2">
         <div class="col-md-6">
-          <label class="form-label fw-semibold">Full Name *</label>
-          <input type="text" class="form-control" [(ngModel)]="form.full_name" name="full_name" placeholder="Full name" required />
+          <div class="inv-form-group">
+            <label class="inv-label">Full Name <span class="req">*</span></label>
+            <input type="text" class="inv-input" [(ngModel)]="form.full_name" name="full_name" placeholder="Full name" required />
+          </div>
         </div>
         <div class="col-md-6">
-          <label class="form-label fw-semibold">Mobile Number *</label>
-          <input type="tel" class="form-control" [(ngModel)]="form.mobile_number" name="mobile_number" placeholder="Mobile number" required />
+          <div class="inv-form-group">
+            <label class="inv-label">Mobile Number <span class="req">*</span></label>
+            <input type="tel" class="inv-input" [(ngModel)]="form.mobile_number" name="mobile_number" placeholder="Mobile number" required />
+          </div>
         </div>
         <div class="col-md-6">
-          <label class="form-label fw-semibold">Email Address *</label>
-          <input type="email" class="form-control" [(ngModel)]="form.email" name="email" placeholder="Email address" required />
+          <div class="inv-form-group">
+            <label class="inv-label">Email Address <span class="req">*</span></label>
+            <input type="email" class="inv-input" [(ngModel)]="form.email" name="email" placeholder="Email address" required />
+          </div>
         </div>
         <div class="col-md-6">
-          <label class="form-label fw-semibold">Nominee Name (Optional)</label>
-          <input type="text" class="form-control" [(ngModel)]="form.nominee_name" name="nominee_name" placeholder="Nominee name" />
+          <div class="inv-form-group">
+            <label class="inv-label">Nominee Name (Optional)</label>
+            <input type="text" class="inv-input" [(ngModel)]="form.nominee_name" name="nominee_name" placeholder="Nominee name" />
+          </div>
         </div>
       </div>
 
-      <div class="row g-3 mb-3">
+      <div class="row g-2 mb-3">
         <div class="col-md-6">
-          <label class="form-label fw-semibold">Password *</label>
-          <input type="password" class="form-control" [(ngModel)]="form.password" name="password" placeholder="Password" required />
+          <div class="inv-form-group">
+            <label class="inv-label">Password <span class="req">*</span></label>
+            <input type="password" class="inv-input" [(ngModel)]="form.password" name="password" placeholder="Create password" required />
+          </div>
         </div>
         <div class="col-md-6">
-          <label class="form-label fw-semibold">Confirm Password *</label>
-          <input type="password" class="form-control" [(ngModel)]="form.confirm_password" name="confirm_password" placeholder="Confirm password" required />
+          <div class="inv-form-group">
+            <label class="inv-label">Confirm Password <span class="req">*</span></label>
+            <input type="password" class="inv-input" [(ngModel)]="form.confirm_password" name="confirm_password" placeholder="Confirm password" required />
+          </div>
         </div>
       </div>
 
-      <!-- Step 2: Identification & Address -->
-      <h6 class="text-success fw-bold border-bottom pb-2 my-3">
-        <i class="fas fa-id-card me-2"></i>Address & Identification
-      </h6>
-
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Address</label>
-        <textarea class="form-control" rows="2" [(ngModel)]="form.address" name="address" placeholder="Full address"></textarea>
+      <!-- Step 2: Address & ID -->
+      <div class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom">
+        <span class="inv-card-header-icon gold" style="width: 24px; height: 24px; font-size: 11px;">
+          <i class="fas fa-map-marker-alt"></i>
+        </span>
+        <span class="fw-bold text-dark small">Address &amp; Identification</span>
       </div>
 
-      <div class="row g-3 mb-3">
+      <div class="inv-form-group mb-2">
+        <label class="inv-label">Residential Address</label>
+        <textarea class="inv-textarea" rows="2" [(ngModel)]="form.address" name="address" placeholder="Full residential address"></textarea>
+      </div>
+
+      <div class="row g-2 mb-2">
         <div class="col-md-4">
-          <label class="form-label fw-semibold">City</label>
-          <input type="text" class="form-control" [(ngModel)]="form.city" name="city" placeholder="City" />
+          <div class="inv-form-group">
+            <label class="inv-label">City</label>
+            <input type="text" class="inv-input" [(ngModel)]="form.city" name="city" placeholder="City" />
+          </div>
         </div>
         <div class="col-md-4">
-          <label class="form-label fw-semibold">State</label>
-          <input type="text" class="form-control" [(ngModel)]="form.state" name="state" placeholder="State" />
+          <div class="inv-form-group">
+            <label class="inv-label">State</label>
+            <input type="text" class="inv-input" [(ngModel)]="form.state" name="state" placeholder="State" />
+          </div>
         </div>
         <div class="col-md-4">
-          <label class="form-label fw-semibold">Pincode</label>
-          <input type="text" class="form-control" [(ngModel)]="form.pincode" name="pincode" placeholder="Pincode" />
+          <div class="inv-form-group">
+            <label class="inv-label">Pincode</label>
+            <input type="text" class="inv-input" [(ngModel)]="form.pincode" name="pincode" placeholder="Pincode" />
+          </div>
         </div>
       </div>
 
-      <div class="row g-3 mb-3">
+      <div class="row g-2 mb-3">
         <div class="col-md-6">
-          <label class="form-label fw-semibold">PAN Number</label>
-          <input type="text" class="form-control text-uppercase" [(ngModel)]="form.pan_number" name="pan_number" placeholder="PAN Number" />
+          <div class="inv-form-group">
+            <label class="inv-label">PAN Number</label>
+            <input type="text" class="inv-input text-uppercase font-monospace" [(ngModel)]="form.pan_number" name="pan_number" placeholder="PAN Number" />
+          </div>
         </div>
         <div class="col-md-6">
-          <label class="form-label fw-semibold">Aadhaar Number (Optional)</label>
-          <input type="text" class="form-control" [(ngModel)]="form.aadhaar_number" name="aadhaar_number" placeholder="12-digit Aadhaar" />
+          <div class="inv-form-group">
+            <label class="inv-label">Aadhaar Number (Optional)</label>
+            <input type="text" class="inv-input font-monospace" [(ngModel)]="form.aadhaar_number" name="aadhaar_number" placeholder="12-digit Aadhaar" />
+          </div>
         </div>
       </div>
 
       <!-- Step 3: Bank Details -->
-      <h6 class="text-success fw-bold border-bottom pb-2 my-3">
-        <i class="fas fa-university me-2"></i>Bank Details
-      </h6>
+      <div class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom">
+        <span class="inv-card-header-icon blue" style="width: 24px; height: 24px; font-size: 11px;">
+          <i class="fas fa-university"></i>
+        </span>
+        <span class="fw-bold text-dark small">Bank Details</span>
+      </div>
 
-      <div class="row g-3 mb-3">
+      <div class="row g-2 mb-3">
         <div class="col-md-4">
-          <label class="form-label fw-semibold">Bank Name</label>
-          <input type="text" class="form-control" [(ngModel)]="form.bank_name" name="bank_name" placeholder="Bank name" />
+          <div class="inv-form-group">
+            <label class="inv-label">Bank Name</label>
+            <input type="text" class="inv-input" [(ngModel)]="form.bank_name" name="bank_name" placeholder="Bank name" />
+          </div>
         </div>
         <div class="col-md-4">
-          <label class="form-label fw-semibold">Account Number</label>
-          <input type="text" class="form-control" [(ngModel)]="form.account_number" name="account_number" placeholder="Account number" />
+          <div class="inv-form-group">
+            <label class="inv-label">Account Number</label>
+            <input type="text" class="inv-input font-monospace" [(ngModel)]="form.account_number" name="account_number" placeholder="Account number" />
+          </div>
         </div>
         <div class="col-md-4">
-          <label class="form-label fw-semibold">IFSC Code</label>
-          <input type="text" class="form-control text-uppercase" [(ngModel)]="form.ifsc_code" name="ifsc_code" placeholder="IFSC Code" />
+          <div class="inv-form-group">
+            <label class="inv-label">IFSC Code</label>
+            <input type="text" class="inv-input text-uppercase font-monospace" [(ngModel)]="form.ifsc_code" name="ifsc_code" placeholder="IFSC Code" />
+          </div>
         </div>
       </div>
 
-      <button type="submit" class="btn btn-success w-100 py-2.5 fw-bold shadow-sm rounded-3 mt-3" [disabled]="loading">
-        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-        {{ loading ? 'Creating Account...' : 'Register as Investor' }}
+      <button type="submit" class="inv-btn inv-btn-primary w-100 py-2 fs-6 shadow-sm" [disabled]="loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-1.5"></span>
+        <i *ngIf="!loading" class="fas fa-check-circle me-1.5"></i>
+        {{ loading ? 'Creating Account...' : 'Register as Investor Partner' }}
       </button>
 
-      <div class="text-center mt-4 pt-2 border-top">
-        <p class="text-muted mb-0">Already have an investor account?
-          <a routerLink="/investor/login" class="text-success fw-bold text-decoration-none ms-1">Login Here</a>
+      <div class="text-center mt-3 pt-3 border-top">
+        <p class="text-muted small mb-0">Already registered?
+          <a routerLink="/investor/login" class="text-success fw-bold text-decoration-none ms-1">Sign In Here</a>
         </p>
       </div>
     </form>

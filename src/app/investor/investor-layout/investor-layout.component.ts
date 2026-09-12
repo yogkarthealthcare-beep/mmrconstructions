@@ -4,11 +4,12 @@ import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 
 @Component({
   selector: 'app-investor-layout',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, RouterLinkActive, CommonModule],
+  imports: [RouterLink, RouterOutlet, RouterLinkActive, CommonModule, VerifiedBadgeComponent],
   templateUrl: './investor-layout.component.html',
   styleUrls: ['./investor-layout.component.css']
 })

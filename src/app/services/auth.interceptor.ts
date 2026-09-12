@@ -22,7 +22,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     if (isAdminApi || (router.url.startsWith('/admin') && !req.url.includes('/api/customer/') && !req.url.includes('/api/associate/'))) {
       token = auth.adminToken;
     } else if (isInvestorApi || router.url.startsWith('/investor')) {
-      token = sessionStorage.getItem('mmr_investor_token') || localStorage.getItem('mmr_investor_token');
+      token = auth.investorToken;
     } else {
       token = auth.userToken;
     }

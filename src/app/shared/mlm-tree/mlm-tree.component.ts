@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { CommissionNotesComponent } from '../commission-notes/commission-notes.component';
+import { VerifiedBadgeComponent } from '../verified-badge/verified-badge.component';
 
 type TreeMode = 'binary' | 'hierarchical';
 type Audience = 'user' | 'associate' | 'admin';
@@ -20,6 +21,8 @@ type MlmNode = {
   joinDate: string;
   status: 'Active' | 'Inactive' | 'Free';
   isFree: boolean;
+  is_verified?: boolean;
+  enrollment_status?: string;
   sponsorName?: string;
   sponsorId?: string;
   directCount: number;
@@ -44,7 +47,7 @@ const MAX_RENDER_NODES = 200;
 @Component({
   selector: 'app-mlm-tree',
   standalone: true,
-  imports: [CommonModule, FormsModule, CommissionNotesComponent],
+  imports: [CommonModule, FormsModule, CommissionNotesComponent, VerifiedBadgeComponent],
   templateUrl: './mlm-tree.component.html',
   styleUrls: ['./mlm-tree.component.css']
 })
@@ -241,6 +244,8 @@ export class MlmTreeComponent implements OnInit {
       joinDate: item.registered_at || item.created_at || item.join_date || item.joining_date || new Date().toISOString(),
       status: displayStatus,
       isFree: isFree,
+      is_verified: item.is_verified === true || item.isVerified === true || item.enrollment_status === 'Completed' || item.enrollment_status === 'submitted' || item.is_enrolled === true,
+      enrollment_status: item.enrollment_status,
       sponsorName: item.sponsor_name || '',
       sponsorId: item.sponsor_id || item.sponsor_member_id || (item.sponsor_user_id ? String(item.sponsor_user_id) : ''),
       directCount: direct,

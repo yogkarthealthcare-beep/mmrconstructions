@@ -9,20 +9,21 @@
             <div class="tag-dot"><i [class]="slide.tagIcon"></i></div>
             <span class="tag-txt">{{ slide.tagTxt }}</span>
           </div>
-          <h1 class="slide-title">{{ slide.title }}<br/><span class="hl">{{ slide.titleHl }}</span></h1>
+          <h1 *ngIf="i === 0" class="slide-title">{{ slide.title }}<br/><span class="hl">{{ slide.titleHl }}</span></h1>
+          <h2 *ngIf="i > 0" class="slide-title">{{ slide.title }}<br/><span class="hl">{{ slide.titleHl }}</span></h2>
           <p class="slide-desc">{{ slide.desc }}</p>
           <div class="slide-btns">
             <button *ngIf="slide.btn1.scroll" class="btn btn-gold btn-lg" (click)="scrollTo(slide.btn1.scroll!)">
-              <i [class]="slide.btn1.icon + ' me-2'"></i>{{ slide.btn1.text }}
+              <i [class]="slide.btn1.icon + ' me-2'" aria-hidden="true"></i>{{ slide.btn1.text }}
             </button>
             <a *ngIf="slide.btn1.link" [routerLink]="slide.btn1.link" class="btn btn-gold btn-lg">
-              <i [class]="slide.btn1.icon + ' me-2'"></i>{{ slide.btn1.text }}
+              <i [class]="slide.btn1.icon + ' me-2'" aria-hidden="true"></i>{{ slide.btn1.text }}
             </a>
             <button *ngIf="slide.btn2.scroll" class="btn btn-outline-white btn-lg" (click)="scrollTo(slide.btn2.scroll!)">
-              <i [class]="slide.btn2.icon + ' me-2'"></i>{{ slide.btn2.text }}
+              <i [class]="slide.btn2.icon + ' me-2'" aria-hidden="true"></i>{{ slide.btn2.text }}
             </button>
             <a *ngIf="slide.btn2.link" [routerLink]="slide.btn2.link" class="btn btn-outline-white btn-lg">
-              <i [class]="slide.btn2.icon + ' me-2'"></i>{{ slide.btn2.text }}
+              <i [class]="slide.btn2.icon + ' me-2'" aria-hidden="true"></i>{{ slide.btn2.text }}
             </a>
           </div>
           <div class="slide-stats">
@@ -37,12 +38,21 @@
   </div>
 
   <div class="slider-arrows">
-    <button class="s-arrow" (click)="prev()"><i class="fas fa-chevron-left"></i></button>
-    <button class="s-arrow" (click)="next()"><i class="fas fa-chevron-right"></i></button>
+    <button type="button" class="s-arrow" (click)="prev()" aria-label="Previous slide"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+    <button type="button" class="s-arrow" (click)="next()" aria-label="Next slide"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
   </div>
 
-  <div class="slider-dots">
-    <div class="s-dot" *ngFor="let s of slides; let i = index" [class.active]="i === currentSlide" (click)="goTo(i)"></div>
+  <div class="slider-dots" role="tablist" aria-label="Slider navigation">
+    <button 
+      type="button"
+      class="s-dot border-0" 
+      *ngFor="let s of slides; let i = index" 
+      [class.active]="i === currentSlide" 
+      (click)="goTo(i)"
+      role="tab"
+      [attr.aria-selected]="i === currentSlide"
+      [attr.aria-label]="'Go to slide ' + (i + 1)">
+    </button>
   </div>
 
   <div class="slide-counter d-none d-md-flex">
@@ -58,7 +68,7 @@
 
   <div class="thumb-nav d-none d-lg-flex">
     <div class="thumb-item" *ngFor="let s of slides; let i = index" [class.active]="i === currentSlide" (click)="goTo(i)">
-      <img class="thumb-img" [src]="s.thumb" alt=""/>
+      <img class="thumb-img" [src]="s.thumb" [alt]="s.thumbTitle || 'Slide thumbnail'"/>
       <div class="thumb-info">
         <div class="thumb-title">{{ s.thumbTitle }}</div>
         <div class="thumb-sub">{{ s.thumbSub }}</div>
