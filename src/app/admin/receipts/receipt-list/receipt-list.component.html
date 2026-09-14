@@ -5,27 +5,27 @@
 </div>
 
 <div class="receipt-management-shell">
-  <!-- 1. TOP HEADER -->
-  <div class="rm-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
-    <div class="d-flex align-items-center gap-3">
+  <!-- 1. PAGE HEADER -->
+  <div class="rm-header d-flex align-items-center justify-content-between flex-wrap gap-2.5 mb-2.5">
+    <div class="d-flex align-items-center gap-2.5">
       <div class="rm-header-icon">
         <i class="fas fa-file-invoice"></i>
       </div>
       <div>
         <h2 class="rm-header-title mb-0">Receipt Management</h2>
-        <p class="rm-header-sub text-muted mb-0">Track, search, verify &amp; generate official payment receipts for NEW M.M.R. CITY.</p>
+        <p class="rm-header-sub mb-0">Track, search, verify &amp; generate official payment receipts for NEW M.M.R. CITY.</p>
       </div>
     </div>
 
     <div class="d-flex align-items-center gap-2">
       <a routerLink="/admin/receipts/create" class="btn rm-btn-gold">
-        <i class="fas fa-plus me-1.5"></i> Add New Receipt
+        <i class="fas fa-plus me-1.5"></i> + Add New Receipt
       </a>
     </div>
   </div>
 
-  <!-- 2. STAT SUMMARY CARDS (4 Columns) -->
-  <div class="row g-3 mb-3">
+  <!-- 2. SUMMARY CARDS (4 Compact Cards in One Row) -->
+  <div class="row g-2.5 mb-2.5">
     <!-- Total Receipts -->
     <div class="col-12 col-sm-6 col-xl-3">
       <div class="rm-stat-card">
@@ -68,7 +68,7 @@
           <div class="rm-stat-label">Today's Collection</div>
           <div class="rm-stat-value">₹{{ summary.todayCollection | number:'1.0-0' }}</div>
           <div class="rm-stat-sub text-emerald">
-            <i class="fas fa-chart-line me-1"></i>Verified Today
+            <i class="fas fa-arrow-trend-up me-1"></i>Received Today
           </div>
         </div>
       </div>
@@ -91,58 +91,58 @@
     </div>
   </div>
 
-  <!-- 3. FILTER TABS & SEARCH BAR CARD -->
-  <div class="rm-panel-card mb-3">
+  <!-- 3. RECEIPT TABS + SEARCH COMPACT TOOLBAR -->
+  <div class="rm-panel-card mb-2.5">
     <!-- Top Pill Tabs & Global Search -->
-    <div class="rm-filter-top d-flex align-items-center justify-content-between flex-wrap gap-2.5 p-3">
-      <div class="rm-pill-tabs d-flex align-items-center flex-wrap gap-2">
+    <div class="rm-filter-top d-flex align-items-center justify-content-between flex-wrap gap-2 p-2.5">
+      <div class="rm-pill-tabs d-flex align-items-center gap-1.5 overflow-auto">
         <button type="button" class="rm-pill-tab" [class.active]="activeTab==='all'" (click)="selectTab('all')">
-          All ({{ summary.totalReceipts }})
+          All Receipts <span *ngIf="summary.totalReceipts">({{ summary.totalReceipts }})</span>
         </button>
         <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Active'" (click)="selectTab('Active')">
-          Active ({{ summary.activeReceipts }})
+          Active <span *ngIf="summary.activeReceipts">({{ summary.activeReceipts }})</span>
         </button>
         <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Cancelled'" (click)="selectTab('Cancelled')">
-          Cancelled ({{ summary.cancelledReceipts }})
+          Cancelled <span *ngIf="summary.cancelledReceipts">({{ summary.cancelledReceipts }})</span>
         </button>
         <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Cash'" (click)="selectTab('Cash')">
-          Cash <span *ngIf="summary.cashReceipts !== undefined">({{ summary.cashReceipts }})</span>
+          Cash <span *ngIf="summary.cashReceipts !== undefined && summary.cashReceipts > 0">({{ summary.cashReceipts }})</span>
         </button>
         <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Cheque'" (click)="selectTab('Cheque')">
-          Cheque <span *ngIf="summary.chequeReceipts !== undefined">({{ summary.chequeReceipts }})</span>
+          Cheque <span *ngIf="summary.chequeReceipts !== undefined && summary.chequeReceipts > 0">({{ summary.chequeReceipts }})</span>
         </button>
         <button type="button" class="rm-pill-tab" [class.active]="activeTab==='UPI'" (click)="selectTab('UPI')">
-          UPI <span *ngIf="summary.upiReceipts !== undefined">({{ summary.upiReceipts }})</span>
+          UPI / Online <span *ngIf="summary.upiReceipts !== undefined && summary.upiReceipts > 0">({{ summary.upiReceipts }})</span>
         </button>
       </div>
 
       <div class="rm-search-box">
         <i class="fas fa-search rm-search-icon"></i>
         <input type="text" class="rm-search-input" [(ngModel)]="search" (keyup.enter)="onFilterChange()"
-               placeholder="Search receipts, customer, property..." />
+               placeholder="Search name, receipt #, property..." />
       </div>
     </div>
 
-    <!-- Collapsible Filters Accordion Bar -->
-    <div class="rm-filter-accordion-header px-3 py-2.5 d-flex align-items-center justify-content-between border-top cursor-pointer"
+    <!-- 4. FILTER SECTION (COMPACT ACCORDION BAR) -->
+    <div class="rm-filter-accordion-header px-3 py-2 d-flex align-items-center justify-content-between border-top cursor-pointer"
          (click)="toggleFilters()">
-      <div class="d-flex align-items-center gap-2">
-        <i class="fas fa-filter text-emerald fs-13"></i>
-        <span class="fw-700 fs-13 text-dark">Filters</span>
+      <div class="d-flex align-items-center gap-1.5">
+        <i class="fas fa-filter text-emerald fs-12"></i>
+        <span class="fw-700 fs-12 text-dark">Filters</span>
         <i class="fas fa-chevron-down fs-10 text-muted ms-0.5"></i>
         <span *ngIf="hasActiveFilters" class="badge bg-emerald-subtle text-emerald fs-10 py-0.5 px-2 rounded-pill ms-1">Active</span>
       </div>
-      <i class="fas" [class.fa-chevron-up]="filtersOpen" [class.fa-chevron-down]="!filtersOpen" style="color: #6b7280; font-size: 12px;"></i>
+      <i class="fas" [class.fa-chevron-up]="filtersOpen" [class.fa-chevron-down]="!filtersOpen" style="color: #64748b; font-size: 11px;"></i>
     </div>
 
     <!-- Filter Inputs Row (Collapsible) -->
-    <div class="rm-filter-drawer px-3 py-3 border-top bg-light-subtle" *ngIf="filtersOpen">
-      <div class="row g-2.5 align-items-end">
-        <!-- Customer -->
+    <div class="rm-filter-drawer px-3 py-2.5 border-top bg-light-subtle" *ngIf="filtersOpen">
+      <div class="row g-2 align-items-end">
+        <!-- Customer Name -->
         <div class="col-12 col-sm-6 col-md-3 col-xl-2">
-          <label class="rm-field-label">Customer</label>
+          <label class="rm-field-label">Customer Name</label>
           <div class="position-relative">
-            <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-2.5 text-muted fs-11"></i>
+            <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted fs-11"></i>
             <input type="text" class="form-control rm-input ps-4" [(ngModel)]="customerName" (keyup.enter)="onFilterChange()"
                    placeholder="Search customer..." />
           </div>
@@ -191,45 +191,47 @@
           </div>
         </div>
 
-        <!-- Clear All & Apply Filters -->
+        <!-- Clear All & Apply Filter -->
         <div class="col-12 col-sm-4 col-md-12 col-xl-1.5 d-flex align-items-center justify-content-end gap-2 ms-auto">
           <button type="button" class="btn btn-link text-decoration-none p-0 rm-clear-link" (click)="resetFilters()" *ngIf="hasActiveFilters">
             Clear All
           </button>
           <button type="button" class="btn rm-btn-apply" (click)="onFilterChange()">
-            <i class="fas fa-filter me-1.5"></i> Apply Filters
+            <i class="fas fa-filter me-1.5"></i> Apply Filter
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 4. MAIN DATA TABLE CARD -->
-  <div class="rm-panel-card mb-3">
+  <!-- 5 & 6. MAIN DATA TABLE / COMPACT EMPTY STATE CARD -->
+  <div class="rm-panel-card mb-2.5">
     <!-- Loading Spinner -->
-    <div class="text-center py-5" *ngIf="loading">
+    <div class="text-center py-4" *ngIf="loading">
       <div class="spinner-border spinner-border-sm text-emerald mx-auto mb-2" role="status"></div>
       <p class="text-muted fs-12 mb-0">Loading receipt records...</p>
     </div>
 
-    <!-- Empty State -->
-    <div class="text-center py-5" *ngIf="!loading && receipts.length === 0">
+    <!-- 5. EMPTY STATE (COMPACT 250px-300px) -->
+    <div class="rm-empty-state text-center py-4 px-3" *ngIf="!loading && receipts.length === 0">
       <div class="rm-empty-icon mb-2">
-        <i class="fas fa-receipt"></i>
+        <i class="fas fa-file-invoice"></i>
       </div>
-      <h6 class="fw-700 text-dark mb-1">No receipts found</h6>
-      <p class="text-muted fs-12 mb-3">No receipt records matched the given search/filter criteria.</p>
+      <h6 class="fw-700 text-dark mb-1 fs-14">No Receipts Found</h6>
+      <p class="text-muted fs-12 mb-3 mx-auto" style="max-width: 360px;">
+        No payment receipts match your current search/filter criteria.
+      </p>
       <div class="d-flex justify-content-center gap-2">
-        <button *ngIf="hasActiveFilters" class="btn btn-outline-secondary btn-sm rounded-pill" (click)="resetFilters()">
+        <button *ngIf="hasActiveFilters" class="btn btn-outline-secondary btn-sm rounded-8" (click)="resetFilters()">
           <i class="fas fa-undo me-1"></i> Clear Filters
         </button>
         <a routerLink="/admin/receipts/create" class="btn rm-btn-gold btn-sm">
-          <i class="fas fa-plus me-1"></i> Add New Receipt
+          <i class="fas fa-plus me-1"></i> + Add First Receipt
         </a>
       </div>
     </div>
 
-    <!-- Table Container -->
+    <!-- 6. DATA TABLE -->
     <div class="table-responsive" *ngIf="!loading && receipts.length > 0">
       <table class="table rm-table align-middle mb-0">
         <thead>
@@ -255,27 +257,27 @@
             <th (click)="sortBy('status')" class="cursor-pointer">
               Status <i class="fas fa-sort text-muted fs-10 ms-1"></i>
             </th>
-            <th class="text-center" style="width: 70px;">Actions</th>
+            <th class="text-center" style="width: 60px;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let r of receipts" [class.rm-row-cancelled]="r.status === 'Cancelled'">
             <!-- Receipt No -->
             <td>
-              <span class="rm-receipt-number">{{ r.receipt_no }}</span>
+              <span class="rm-receipt-number cursor-pointer" (click)="viewReceipt(r)">{{ r.receipt_no }}</span>
             </td>
 
             <!-- Customer Name -->
             <td>
-              <div class="fw-600 text-dark fs-13">{{ r.customer_name }}</div>
+              <div class="fw-600 text-dark fs-12.5">{{ r.customer_name }}</div>
               <div *ngIf="r.mobile_no" class="fs-10 text-muted">{{ r.mobile_no }}</div>
             </td>
 
             <!-- Property / Project -->
             <td>
-              <div class="text-secondary fs-13" *ngIf="r.plot_no">Plot {{ r.plot_no }}</div>
-              <div class="text-secondary fs-13" *ngIf="!r.plot_no && r.plot_area">{{ r.plot_area }}</div>
-              <div class="text-muted fs-12" *ngIf="!r.plot_no && !r.plot_area">—</div>
+              <div class="text-secondary fs-12.5" *ngIf="r.plot_no">Plot {{ r.plot_no }}</div>
+              <div class="text-secondary fs-12.5" *ngIf="!r.plot_no && r.plot_area">{{ r.plot_area }}</div>
+              <div class="text-muted fs-11" *ngIf="!r.plot_no && !r.plot_area">—</div>
             </td>
 
             <!-- Amount (₹) -->
@@ -307,7 +309,7 @@
 
             <!-- Date -->
             <td>
-              <span class="text-secondary fs-13">{{ r.receipt_date | date:'dd MMM yyyy' }}</span>
+              <span class="text-secondary fs-12">{{ r.receipt_date | date:'dd MMM yyyy' }}</span>
             </td>
 
             <!-- Status -->
@@ -332,13 +334,19 @@
               <!-- Dropdown Menu -->
               <div class="rm-actions-dropdown shadow-lg" *ngIf="activeRowMenuId === r.id" (click)="$event.stopPropagation()">
                 <button type="button" class="rm-dropdown-item" (click)="viewReceipt(r); activeRowMenuId = null">
-                  <i class="fas fa-eye text-primary me-2"></i> View Details
+                  <i class="fas fa-eye text-primary me-2"></i> View Receipt
                 </button>
-                <button type="button" class="rm-dropdown-item" (click)="printReceipt(r); activeRowMenuId = null">
-                  <i class="fas fa-print text-dark me-2"></i> Print Receipt
-                </button>
+                <a routerLink="/admin/receipts/create" class="rm-dropdown-item text-dark" (click)="activeRowMenuId = null">
+                  <i class="fas fa-edit text-warning me-2"></i> Edit
+                </a>
                 <button type="button" class="rm-dropdown-item text-success" (click)="downloadPdf(r); activeRowMenuId = null">
                   <i class="fas fa-file-pdf text-success me-2"></i> Download PDF
+                </button>
+                <button type="button" class="rm-dropdown-item" (click)="printReceipt(r); activeRowMenuId = null">
+                  <i class="fas fa-print text-secondary me-2"></i> Print
+                </button>
+                <button type="button" class="rm-dropdown-item text-info" (click)="verifyReceipt(r); activeRowMenuId = null">
+                  <i class="fas fa-check-double text-info me-2"></i> Verify
                 </button>
                 <div class="dropdown-divider my-1" *ngIf="r.status === 'Active'"></div>
                 <button *ngIf="r.status === 'Active'" type="button" class="rm-dropdown-item text-danger" (click)="openCancelModal(r); activeRowMenuId = null">
@@ -351,9 +359,9 @@
       </table>
     </div>
 
-    <!-- 5. PAGINATION FOOTER -->
-    <div class="rm-pagination-footer p-3 d-flex align-items-center justify-content-between flex-wrap gap-2 border-top" *ngIf="!loading && total > 0">
-      <div class="text-muted fs-13">
+    <!-- 7. PAGINATION FOOTER -->
+    <div class="rm-pagination-footer p-2.5 d-flex align-items-center justify-content-between flex-wrap gap-2 border-top" *ngIf="!loading && total > 0">
+      <div class="text-muted fs-12">
         Showing <strong class="text-dark">{{ total === 0 ? 0 : (page - 1) * limit + 1 }} – {{ Math.min(page * limit, total) }}</strong> of <strong class="text-dark">{{ total }}</strong> receipts
       </div>
 
@@ -371,7 +379,7 @@
         </ng-container>
 
         <!-- Ellipsis if needed -->
-        <span *ngIf="totalPages > 5 && page < totalPages - 2" class="px-1 text-muted fs-12">...</span>
+        <span *ngIf="totalPages > 5 && page < totalPages - 2" class="px-1 text-muted fs-11">...</span>
 
         <!-- Last page jump -->
         <button *ngIf="totalPages > 5 && !visiblePages.includes(totalPages)" class="rm-page-box" (click)="changePage(totalPages)">
@@ -392,10 +400,10 @@
   <div class="modal-backdrop fade show" *ngIf="showViewModal && selectedReceipt"></div>
   <div class="modal d-block fade show" tabIndex="-1" *ngIf="showViewModal && selectedReceipt" (click)="closeViewModal()">
     <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
-      <div class="modal-content border-0 rounded-14 shadow-lg overflow-hidden">
-        <div class="modal-header rm-modal-head text-white py-2.5 px-3.5 d-flex justify-content-between align-items-center">
+      <div class="modal-content border-0 rounded-12 shadow-lg overflow-hidden">
+        <div class="modal-header rm-modal-head text-white py-2 px-3 d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-receipt text-warning fs-14"></i>
+            <i class="fas fa-receipt text-warning fs-13"></i>
             <div>
               <h6 class="modal-title fs-13 fw-700 text-white mb-0">Official Receipt Details</h6>
               <div class="fs-10 text-white-50">Receipt #{{ selectedReceipt.receipt_no }}</div>
@@ -509,7 +517,7 @@
           </div>
         </div>
 
-        <div class="modal-footer bg-light p-2.5 d-flex justify-content-between align-items-center">
+        <div class="modal-footer bg-light p-2 d-flex justify-content-between align-items-center">
           <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeViewModal()">Close</button>
           <div class="d-flex gap-1.5">
             <button type="button" class="btn btn-outline-success btn-xs" (click)="downloadPdf(selectedReceipt)">
@@ -529,9 +537,9 @@
   <!-- ======================================================== -->
   <div class="modal-backdrop fade show" *ngIf="receiptToCancel"></div>
   <div class="modal d-block fade show" tabIndex="-1" *ngIf="receiptToCancel" (click)="closeCancelModal()">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;" (click)="$event.stopPropagation()">
-      <div class="modal-content border-0 rounded-14 shadow-lg overflow-hidden">
-        <div class="modal-header bg-danger text-white py-2.5 px-3.5">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;" (click)="$event.stopPropagation()">
+      <div class="modal-content border-0 rounded-12 shadow-lg overflow-hidden">
+        <div class="modal-header bg-danger text-white py-2 px-3">
           <h6 class="modal-title fs-13 fw-700 text-white mb-0"><i class="fas fa-exclamation-triangle me-1.5"></i>Cancel Receipt</h6>
           <button type="button" class="btn-close btn-close-white" (click)="closeCancelModal()"></button>
         </div>
