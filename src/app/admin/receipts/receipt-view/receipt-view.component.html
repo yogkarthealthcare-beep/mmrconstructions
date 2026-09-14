@@ -1,42 +1,45 @@
+<!-- Toast Notification -->
+<div *ngIf="error" class="toast-popup" style="position:fixed;top:76px;right:24px;z-index:9999;animation:slideIn .25s ease;">
+  <i class="fas fa-exclamation-circle text-danger me-2"></i>
+  <span>{{ error }}</span>
+</div>
+
 <div class="receipt-view-page">
-  <!-- Top Header Card (Back button & Actions inside a compact Card) -->
-  <div class="card header-compact-card shadow-sm border-0 no-print mb-2.5">
-    <div class="card-body p-2.5 d-flex justify-content-between align-items-center flex-wrap gap-2">
-      <div class="d-flex align-items-center gap-2">
-        <a routerLink="/admin/receipts" class="btn btn-xs btn-outline-secondary" title="Back to Receipt List">
-          <i class="fas fa-arrow-left"></i>
+  <!-- TOP HERO EXECUTIVE BANNER -->
+  <div class="admin-hero-card mb-2.5 no-print">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+      <div class="d-flex align-items-center gap-2.5">
+        <a routerLink="/admin/receipts" class="btn btn-outline-light btn-xs" title="Back to Receipt Directory">
+          <i class="fas fa-arrow-left me-1"></i> Back to List
         </a>
-        <div class="header-icon-badge-sm">
-          <i class="fas fa-receipt"></i>
-        </div>
         <div>
-          <h1 class="page-title-xs mb-0">Receipt View &amp; Print</h1>
-          <p class="page-sub-xs text-muted mb-0" *ngIf="receipt">Official Record: {{ receipt.receipt_no }} (Serial #{{ receipt.serial_no }})</p>
+          <div class="admin-hero-badge"><i class="fas fa-receipt me-1"></i>VERIFIED RECEIPT DOCUMENT</div>
+          <h2 class="admin-hero-title mb-0.5">Receipt View &amp; Print</h2>
+          <p class="admin-hero-sub mb-0" *ngIf="receipt">Official Record: {{ receipt.receipt_no }} (Serial #{{ receipt.serial_no }})</p>
         </div>
       </div>
-      <div class="d-flex align-items-center gap-1.5">
-        <a routerLink="/admin/receipts" class="btn btn-xs btn-outline-secondary">
-          <i class="fas fa-list me-1"></i> Receipt List
+
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <a routerLink="/admin/receipts" class="btn btn-outline-light btn-xs">
+          <i class="fas fa-list me-1"></i> Receipt Directory
         </a>
-        <button type="button" class="btn btn-xs btn-outline-success" (click)="downloadPdf()" [disabled]="!receipt">
-          <i class="fas fa-file-pdf me-1"></i> Download PDF
+        <button type="button" class="btn btn-outline-light btn-xs" (click)="downloadPdf()" [disabled]="!receipt">
+          <i class="fas fa-file-pdf text-emerald me-1"></i> Download PDF
         </button>
-        <button type="button" class="btn btn-xs btn-primary" (click)="print()" [disabled]="!receipt">
+        <button type="button" class="btn btn-gold btn-xs" (click)="print()" [disabled]="!receipt">
           <i class="fas fa-print me-1"></i> Print Receipt
         </button>
       </div>
     </div>
   </div>
 
-  <div *ngIf="loading" class="card border-0 shadow-sm p-4 text-center mb-2.5">
-    <div class="spinner-border spinner-border-sm text-success mx-auto" role="status"></div>
-    <span class="mt-2 text-muted font-xs">Loading receipt record...</span>
+  <!-- LOADING STATE -->
+  <div class="panel-card text-center py-5 mb-2.5" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+    <p class="text-muted fs-12 mt-2 mb-0">Loading receipt details...</p>
   </div>
 
-  <div *ngIf="error" class="alert alert-danger font-xs py-2 mb-2.5">
-    <i class="fas fa-exclamation-triangle me-1.5"></i>{{ error }}
-  </div>
-
+  <!-- MAIN DOCUMENT PANEL -->
   <div *ngIf="receipt && !loading" class="receipt-wrapper">
     <div class="receipt-paper shadow-sm" [class.cancelled-receipt]="receipt.status === 'Cancelled'">
       <div *ngIf="receipt.status === 'Cancelled'" class="cancelled-watermark">
@@ -52,7 +55,7 @@
       </div>
 
       <!-- Meta Grid -->
-      <div class="receipt-meta-grid font-xs">
+      <div class="receipt-meta-grid fs-11">
         <div><strong>Receipt No:</strong> {{ receipt.receipt_no }}</div>
         <div><strong>Date:</strong> {{ receipt.receipt_date | date:'dd/MM/yyyy' }}</div>
         <div><strong>Serial No:</strong> {{ receipt.serial_no }}</div>
@@ -81,11 +84,11 @@
               <td class="lbl">Plot Area:</td>
               <td class="val">{{ receipt.plot_area || '—' }}</td>
               <td class="lbl">Payment Mode:</td>
-              <td class="val"><span class="badge bg-success font-xxs">{{ receipt.payment_mode }}</span></td>
+              <td class="val"><span class="badge bg-success fs-10">{{ receipt.payment_mode }}</span></td>
             </tr>
             <tr>
               <td class="lbl">Payment Type:</td>
-              <td class="val"><span class="badge bg-primary font-xxs">{{ receipt.payment_type }}</span></td>
+              <td class="val"><span class="badge bg-primary fs-10">{{ receipt.payment_type }}</span></td>
               <td class="lbl">Amount Depositor:</td>
               <td class="val">{{ receipt.amount_depositor_name || '—' }}</td>
             </tr>
@@ -106,32 +109,32 @@
       </div>
 
       <!-- Financial Figures Summary Box -->
-      <div class="receipt-amount-box p-2 rounded mb-2">
+      <div class="receipt-amount-box p-2.5 rounded mb-2">
         <div class="row text-center mb-1">
           <div class="col-4">
-            <div class="text-muted font-xxs">Receipt Amount</div>
-            <div class="amount-val text-secondary font-xs">₹{{ receipt.receipt_amount | number:'1.2-2' }}</div>
+            <div class="text-muted fs-10">Receipt Amount</div>
+            <div class="amount-val text-secondary fs-12">₹{{ receipt.receipt_amount | number:'1.2-2' }}</div>
           </div>
           <div class="col-4">
-            <div class="text-muted font-xxs">Paid Amount</div>
-            <div class="amount-val text-success fw-bold font-sm">₹{{ receipt.paid_amount | number:'1.2-2' }}</div>
+            <div class="text-muted fs-10">Paid Amount</div>
+            <div class="amount-val text-success fw-bold fs-14">₹{{ receipt.paid_amount | number:'1.2-2' }}</div>
           </div>
           <div class="col-4">
-            <div class="text-muted font-xxs">Inward Amount</div>
-            <div class="amount-val text-info font-xs">₹{{ receipt.inward_amount | number:'1.2-2' }}</div>
+            <div class="text-muted fs-10">Inward Amount</div>
+            <div class="amount-val text-info fs-12">₹{{ receipt.inward_amount | number:'1.2-2' }}</div>
           </div>
         </div>
-        <div class="amount-words-line border-top pt-1 mt-1 font-xs">
+        <div class="amount-words-line border-top pt-1 mt-1 fs-11">
           <strong>Amount in Words: </strong>
           <span class="text-success fst-italic">{{ amountInWords }}</span>
         </div>
       </div>
 
-      <div *ngIf="receipt.notes" class="receipt-notes mb-2 font-xxs text-muted">
+      <div *ngIf="receipt.notes" class="receipt-notes mb-2 fs-10 text-muted">
         <strong>Notes / Terms:</strong> {{ receipt.notes }}
       </div>
 
-      <div class="terms-disclaimer text-muted font-xxs fst-italic mb-2">
+      <div class="terms-disclaimer text-muted fs-10 fst-italic mb-2">
         * This receipt is a verified acknowledgment of payment for NEW M.M.R. CITY, Unnao. All payments via cheque are subject to clearance.
       </div>
 
@@ -149,13 +152,15 @@
       </div>
     </div>
 
-    <!-- Audit Trail (Hidden on print) -->
-    <div *ngIf="auditLogs.length" class="no-print mt-2.5 card border-0 shadow-sm p-2.5">
-      <div class="fw-bold font-xs text-muted mb-1.5"><i class="fas fa-history me-1"></i>Audit Trail</div>
-      <div class="font-xxs py-1 border-bottom" *ngFor="let a of auditLogs">
-        <span class="badge bg-secondary font-xxs me-1.5">{{ a.action }}</span>
-        <span class="text-dark fw-semibold">{{ a.performed_by_name || 'Admin' }}</span>
-        <span class="text-muted ms-2">{{ a.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
+    <!-- Audit Trail Panel (Hidden on print) -->
+    <div *ngIf="auditLogs.length" class="no-print mt-2.5 panel-card p-3">
+      <div class="fw-700 fs-12 text-dark mb-2"><i class="fas fa-history text-gold me-1.5"></i>Audit Log &amp; Security History</div>
+      <div class="fs-11 py-1.5 border-bottom d-flex align-items-center justify-content-between" *ngFor="let a of auditLogs">
+        <div>
+          <span class="badge bg-secondary fs-9 me-1.5">{{ a.action }}</span>
+          <span class="text-dark fw-600">{{ a.performed_by_name || 'Administrator' }}</span>
+        </div>
+        <span class="text-muted fs-10">{{ a.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
       </div>
     </div>
   </div>
