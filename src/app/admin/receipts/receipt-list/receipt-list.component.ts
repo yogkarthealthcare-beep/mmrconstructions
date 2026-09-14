@@ -29,10 +29,15 @@ export class ReceiptListComponent implements OnInit {
 
   // Filters Model
   search = '';
-  paymentType = '';
-  paymentMode = '';
+  customerName = '';
+  invoiceNo = '';
   dateFrom = '';
   dateTo = '';
+  exactAmount: number | null = null;
+  minAmount: number | null = null;
+  maxAmount: number | null = null;
+  paymentType = '';
+  paymentMode = '';
   plottingPlace = '';
   status = '';
   
@@ -41,6 +46,7 @@ export class ReceiptListComponent implements OnInit {
   limit = 25;
   total = 0;
   totalPages = 1;
+  pageSizeOptions = [10, 25, 50, 100];
 
   // View Modal
   selectedReceipt: any = null;
@@ -70,10 +76,21 @@ export class ReceiptListComponent implements OnInit {
     };
 
     if (this.search.trim()) params.search = this.search.trim();
-    if (this.paymentType) params.payment_type = this.paymentType;
-    if (this.paymentMode) params.payment_mode = this.paymentMode;
+    if (this.customerName.trim()) params.customer_name = this.customerName.trim();
+    if (this.invoiceNo.trim()) params.invoice_no = this.invoiceNo.trim();
     if (this.dateFrom) params.date_from = this.dateFrom;
     if (this.dateTo) params.date_to = this.dateTo;
+    if (this.exactAmount !== null && !isNaN(this.exactAmount) && this.exactAmount >= 0) {
+      params.amount = this.exactAmount;
+    }
+    if (this.minAmount !== null && !isNaN(this.minAmount) && this.minAmount >= 0) {
+      params.min_amount = this.minAmount;
+    }
+    if (this.maxAmount !== null && !isNaN(this.maxAmount) && this.maxAmount >= 0) {
+      params.max_amount = this.maxAmount;
+    }
+    if (this.paymentType) params.payment_type = this.paymentType;
+    if (this.paymentMode) params.payment_mode = this.paymentMode;
     if (this.plottingPlace) params.plotting_place = this.plottingPlace;
     if (this.status) params.status = this.status;
 
@@ -86,7 +103,7 @@ export class ReceiptListComponent implements OnInit {
             this.page = res.pagination.page;
             this.limit = res.pagination.limit;
             this.total = res.pagination.total;
-            this.totalPages = res.pagination.totalPages;
+            this.totalPages = res.pagination.totalPages || 1;
           }
           if (res.summary) {
             this.summary = res.summary;
@@ -107,10 +124,15 @@ export class ReceiptListComponent implements OnInit {
 
   resetFilters(): void {
     this.search = '';
-    this.paymentType = '';
-    this.paymentMode = '';
+    this.customerName = '';
+    this.invoiceNo = '';
     this.dateFrom = '';
     this.dateTo = '';
+    this.exactAmount = null;
+    this.minAmount = null;
+    this.maxAmount = null;
+    this.paymentType = '';
+    this.paymentMode = '';
     this.plottingPlace = '';
     this.status = '';
     this.page = 1;
@@ -127,6 +149,39 @@ export class ReceiptListComponent implements OnInit {
   onLimitChange(): void {
     this.page = 1;
     this.loadReceipts();
+  }
+
+  get hasActiveFilters(): boolean {
+    return !!(
+      this.search.trim() ||
+      this.customerName.trim() ||
+      this.invoiceNo.trim() ||
+      this.dateFrom ||
+      this.dateTo ||
+      this.exactAmount !== null ||
+      this.minAmount !== null ||
+      this.maxAmount !== null ||
+      this.paymentType ||
+      this.paymentMode ||
+      this.plottingPlace ||
+      this.status
+    );
+  }
+
+  get visiblePages(): number[] {
+    const pages: number[] = [];
+    const maxVisible = 5;
+    let start = Math.max(1, this.page - Math.floor(maxVisible / 2));
+    let end = Math.min(this.totalPages, start + maxVisible - 1);
+
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
   // View Modal
