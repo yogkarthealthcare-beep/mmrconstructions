@@ -245,9 +245,12 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
   }
 
   deleteInvestor(investor: any) {
+    const idToDelete = investor.id || investor.investor_id || investor.user_id || investor.submission_id;
+    if (!idToDelete) return;
+
     Swal.fire({
       title: 'Are you sure?',
-      text: `You are about to delete investor ${investor.full_name} and ALL their associated data. This action cannot be undone!`,
+      text: `You are about to delete investor ${investor.full_name || 'this investor'} and ALL their associated data. This action cannot be undone!`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -255,7 +258,7 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
       confirmButtonText: 'Yes, delete it!'
     }).then((result: any) => {
       if (result.isConfirmed) {
-        this.api.adminDeleteInvestorEnrollment(investor.id).subscribe({
+        this.api.adminDeleteInvestorEnrollment(String(idToDelete)).subscribe({
           next: (res: any) => {
             if (res.success || res.status === 'success') {
               Swal.fire('Deleted!', 'Investor has been deleted.', 'success');
@@ -273,7 +276,8 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
   }
 
   updateInvestorStatus(investor: any, status: string, is_verified: boolean) {
-    if (!investor.investor_id) return;
+    const invId = investor.id || investor.investor_id || investor.user_id;
+    if (!invId) return;
     Swal.fire({
       title: 'Update Status?',
       text: `Are you sure you want to mark this investor as ${status}?`,
@@ -282,7 +286,7 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
       confirmButtonText: 'Yes, update it!'
     }).then((result: any) => {
       if (result.isConfirmed) {
-        this.api.adminUpdateInvestorUserStatus(investor.investor_id, { status, is_verified }).subscribe({
+        this.api.adminUpdateInvestorUserStatus(String(invId), { status, is_verified }).subscribe({
           next: (res: any) => {
             if (res.success || res.status === 'success') {
               Swal.fire('Updated!', `Investor status is now ${status}.`, 'success');

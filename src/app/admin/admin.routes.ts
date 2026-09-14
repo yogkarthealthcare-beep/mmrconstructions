@@ -91,6 +91,21 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./withdrawal-requests/admin-withdrawal-requests.component').then(m => m.AdminWithdrawalRequestsComponent) 
   },
   { 
+    path: 'receipts', 
+    loadComponent: () => import('./receipts/receipt-list/receipt-list.component').then(m => m.ReceiptListComponent),
+    title: 'Receipt Management'
+  },
+  { 
+    path: 'receipts/create', 
+    loadComponent: () => import('./receipts/receipt-form/receipt-form.component').then(m => m.ReceiptFormComponent),
+    title: 'Generate Receipt'
+  },
+  { 
+    path: 'receipts/view/:id', 
+    loadComponent: () => import('./receipts/receipt-view/receipt-view.component').then(m => m.ReceiptViewComponent),
+    title: 'View Receipt'
+  },
+  { 
     path: 'orders-mgmt', 
     loadComponent: () => import('./orders-mgmt/orders-mgmt.component').then(m => m.AdminOrdersMgmtComponent) 
   },

@@ -84,10 +84,12 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       ]
     },
     {
-      label: 'FINANCE & WALLET',
+      label: 'FINANCE / ACCOUNTS',
       icon: 'fas fa-wallet',
       expanded: false,
       items: [
+        { icon: 'fas fa-receipt', label: 'Receipt List', route: '/admin/receipts', badge: 'NEW' },
+        { icon: 'fas fa-plus-circle', label: 'Add Receipt', route: '/admin/receipts/create' },
         { icon: 'fas fa-rupee-sign', label: 'EMI & Payments', route: '/admin/emi-payments' },
         { icon: 'fas fa-hand-holding-usd', label: 'Commissions', route: '/admin/commissions' },
         { icon: 'fas fa-percent', label: 'Commission Settings', route: '/admin/commission-settings' },

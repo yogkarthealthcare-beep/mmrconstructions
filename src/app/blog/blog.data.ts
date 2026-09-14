@@ -3,49 +3,119 @@ import { BlogPost } from './blog.types';
 export const BLOG_POSTS: readonly BlogPost[] = [
   {
     id: 1,
-    title: 'Building Trust Through Genuine and Affordable Property Options',
+    title: 'MMR Constructions & Developers Private Limited – Building Dreams, Creating Better Spaces',
     slug: 'mmr-constructions-vision-safe-affordable-property',
     shortDescription:
-      'Discover MMR Constructions’ vision for helping families and investors find genuine, practical and affordable property opportunities.',
+      'MMR Constructions & Developers Private Limited is a private limited company based in Tribhuvan Kheda, Unnao, Uttar Pradesh, working in the construction and real estate development sector. The company focuses on creating well-planned residential spaces and providing customers with opportunities to build and invest in property with confidence.',
     featuredImage: '/assets/blog/mmr-vision.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Constructions & Developers',
     publishDate: '2026-06-19',
-    metaTitle: 'MMR Constructions Vision for Affordable Property',
+    metaTitle:
+      'MMR Constructions & Developers Private Limited | Construction & Real Estate Company in Unnao',
     metaDescription:
-      'Learn how MMR Constructions helps buyers explore genuine and affordable property options in Unnao, Kanpur, Lucknow, Kannauj and Raebareli.',
+      'Learn about MMR Constructions & Developers Private Limited, a construction and real estate development company based in Tribhuvan Kheda, Unnao, Uttar Pradesh. Explore our vision, mission and property development approach.',
     keywords:
-      'MMR Constructions, affordable property, property in Unnao, Kanpur property, Lucknow property',
+      'MMR Constructions, MMR Constructions and Developers, MMR Construction Unnao, MMR Developers Unnao, Construction Company in Unnao, Real Estate Company in Unnao, Property Developer in Unnao, Residential Property Unnao, Real Estate Development Uttar Pradesh, MMR Constructions & Developers Private Limited',
     content: [
       {
-        heading: 'A customer-first approach to property',
+        heading: 'Company Overview',
         paragraphs: [
-          'Buying land or a home is often one of the most important financial decisions a family makes. MMR Constructions focuses on making that journey easier to understand, more transparent and aligned with each customer’s real budget.',
-          'Our vision is to connect customers with genuine and affordable property options while encouraging careful document checks, clear communication and informed decision-making before any purchase.',
+          'MMR Constructions & Developers Private Limited was incorporated on 02 August 2025 and is registered with the Registrar of Companies (ROC), Kanpur. It is an unlisted, non-government private company limited by shares.',
+          'The company aims to contribute to the development of quality residential and real estate projects in and around Unnao, Uttar Pradesh, with a focus on planned development, practical residential spaces and a customer-oriented approach.',
         ],
       },
       {
-        heading: 'Serving growing cities and local communities',
+        heading: 'Vision',
         paragraphs: [
-          'MMR Constructions mainly serves customers looking for property in Unnao and also supports enquiries across Kanpur, Lucknow, Kannauj and Raebareli. Every city has different development patterns, price ranges and connectivity advantages, so buyers benefit from local guidance.',
-          'Whether the requirement is a residential plot, commercial space, agricultural land or a long-term investment, the right choice starts with understanding location, access, budget and intended use.',
+          'Our vision is to become a trusted name in the construction and real estate development sector by developing properties that combine quality, planning, accessibility and long-term value.',
+          'We believe that a home or property is more than just a physical space. It is an important investment for an individual and their family. Our goal is therefore to develop projects with attention to planning, infrastructure and customer requirements.',
         ],
       },
       {
-        heading: 'Affordable does not mean careless',
+        heading: 'Mission',
         paragraphs: [
-          'A lower price is valuable only when the property also matches the buyer’s needs and passes appropriate verification. Customers should review ownership records, boundaries, access, payment terms and applicable permissions with qualified professionals.',
+          'The mission of MMR Constructions & Developers is to create well-planned residential developments while maintaining a professional and customer-focused approach.',
         ],
         bullets: [
-          'Choose a location that supports your personal or investment goal.',
-          'Compare the complete cost instead of only the advertised price.',
-          'Keep payment records and written commitments organised.',
-          'Complete independent legal and technical verification before purchase.',
+          'Developing residential properties with proper planning',
+          'Focusing on quality construction and infrastructure',
+          'Providing clear and professional property information',
+          'Building lasting relationships with customers',
+          'Supporting customers throughout their property journey',
+          'Contributing to the development of the local region',
         ],
       },
       {
-        heading: 'A practical path to property ownership',
+        heading: 'MMR Constructions in Unnao',
         paragraphs: [
-          'Our goal is simple: help customers explore safe, sensible property opportunities at the minimum practical price without making the process feel overwhelming. Trust is built through useful information, realistic expectations and support at every stage of the buying journey.',
+          'Unnao, Uttar Pradesh is an important and developing region with growing residential and infrastructure requirements.',
+          'MMR Constructions & Developers operates from Tribhuvan Kheda, Unnao, and aims to participate in this growth by developing residential properties and projects designed around practical customer requirements.',
+          'The company’s focus is on developing spaces that can become part of people’s long-term plans for living, building and property ownership.',
+        ],
+      },
+      {
+        heading: 'Property Development Approach',
+        paragraphs: [
+          '1. Planning: Creating organized layouts and practical residential spaces.',
+          '2. Infrastructure: Considering roads, access, site development and other essential infrastructure requirements.',
+          '3. Quality: Maintaining a quality-oriented approach throughout the development process.',
+          '4. Transparency: Providing customers with clear and relevant information about projects and properties.',
+          '5. Customer Focus: Understanding customer requirements and helping them make informed property decisions.',
+        ],
+      },
+      {
+        heading: 'Building for the Future',
+        paragraphs: [
+          'Real estate is a long-term sector, and property decisions are often made with the future in mind.',
+          'MMR Constructions & Developers aims to develop projects that can serve present residential requirements while keeping future expectations in mind.',
+          'The objective is to create developments where customers can see the potential for living, building and long-term property ownership.',
+        ],
+      },
+      {
+        heading: 'Company Information',
+        paragraphs: [
+          'Official corporate credentials and registration details of the company:',
+        ],
+        bullets: [
+          'Legal Name: MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED',
+          'CIN: U68200UP2025PTC229203',
+          'Company Type: Private Limited Company',
+          'Company Category: Company Limited by Shares',
+          'Sub-Category: Non-Government Company',
+          'Company Status: Active',
+          'Date of Incorporation: 02 August 2025',
+          'ROC: Registrar of Companies, Kanpur',
+          'Registration Number: 229203',
+          'Listed Status: Unlisted',
+          'Authorized Share Capital: ₹10,00,000',
+          'Paid-up Share Capital: ₹1,00,000',
+          'Registered Office: C/O Rakesh, 00, Tribhuvan Kheda, Sheshpur, Unnao, Uttar Pradesh – 209801, India',
+        ],
+      },
+      {
+        heading: 'Why Choose MMR Constructions & Developers',
+        paragraphs: [
+          'Key factors that define our commitment to buyers and investors:',
+        ],
+        bullets: [
+          'Planned Development',
+          'Customer-Centric Approach',
+          'Professional Development',
+          'Local Presence in Unnao',
+          'Long-Term Vision',
+        ],
+      },
+      {
+        heading: 'Looking Ahead',
+        paragraphs: [
+          'As MMR Constructions & Developers continues to grow, the company aims to expand its presence in the construction and real estate development sector and contribute to the development of residential spaces in Uttar Pradesh.',
+          'The company believes that every development project represents an opportunity to create something meaningful for families, property owners and the surrounding community.',
+        ],
+      },
+      {
+        heading: 'Conclusion',
+        paragraphs: [
+          'MMR Constructions & Developers – Building Dreams, Developing Spaces, Creating a Better Tomorrow.',
         ],
       },
     ],

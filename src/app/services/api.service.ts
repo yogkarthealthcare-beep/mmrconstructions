@@ -404,7 +404,9 @@ export class ApiService {
   getMobileAppInfo() { return this.get('/api/mobile-app/info'); }
 
   // Orders Management & Utility
-  getBlob(path: string) { return this.http.get(this.url(path), { headers: this.headers(), responseType: 'blob' }); }
+  getBlob(path: string, admin = false): Observable<Blob> {
+    return this.http.get(`${BASE_URL}${path}`, { headers: this.headers(admin), responseType: 'blob' });
+  }
   adminDeleteOrder(invNum: string) { return this.delete(`/api/admin/orders/${invNum}`, true); }
 
   // Plot Map & Detector (Admin)
@@ -520,4 +522,14 @@ export class ApiService {
   getWalletBalance(params: any = {}) { return this.get('/api/wallet/balance', params); }
   requestWithdrawal(data: any) { return this.post('/api/wallet/withdraw-request', data); }
   getWithdrawalRequests(params: any = {}) { return this.get('/api/wallet/withdraw-requests', params); }
+
+  // ── RECEIPT MANAGEMENT (Admin) ────────────────────────────
+  adminGetReceipts(params: any = {}) { return this.get('/api/admin/receipts', params, true); }
+  adminGetNextReceiptNo() { return this.get('/api/admin/receipts/next-number', {}, true); }
+  adminCustomerLookup(q: string) { return this.get('/api/admin/receipts/customer-lookup', { q }, true); }
+  adminCreateReceipt(data: any) { return this.post('/api/admin/receipts', data, true); }
+  adminGetReceiptById(id: string | number) { return this.get(`/api/admin/receipts/${id}`, {}, true); }
+  adminDeleteReceipt(id: string | number, reason = '') { return this.delete(`/api/admin/receipts/${id}`, true); }
+  adminGetReceiptPdfBlob(id: string | number) { return this.getBlob(`/api/admin/receipts/${id}/pdf`, true); }
+  adminGetReceiptPrintData(id: string | number) { return this.get(`/api/admin/receipts/${id}/print`, {}, true); }
 }

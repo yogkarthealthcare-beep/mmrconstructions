@@ -1,0 +1,434 @@
+<div class="receipt-list-container">
+  <!-- Page Header -->
+  <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="header-icon-badge">
+          <i class="fas fa-file-invoice-dollar"></i>
+        </div>
+        <div>
+          <h1 class="page-title mb-0">Receipt Management</h1>
+          <p class="page-sub text-muted mt-1 mb-0">Track, search, print, and export official payment receipts for NEW M.M.R. CITY.</p>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a routerLink="/admin/receipts/create" class="btn btn-success">
+        <i class="fas fa-plus me-1"></i> Add New Receipt
+      </a>
+    </div>
+  </div>
+
+  <!-- Toast Alert -->
+  <div *ngIf="toastMessage" [class]="'toast-banner toast-' + toastType">
+    <i [class]="toastType === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+    <span>{{ toastMessage }}</span>
+  </div>
+
+  <!-- Summary KPI Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card">
+        <div class="kpi-icon-wrapper bg-primary-subtle text-primary">
+          <i class="fas fa-receipt"></i>
+        </div>
+        <div class="kpi-content">
+          <div class="kpi-label">Total Receipts</div>
+          <div class="kpi-value">{{ summary.totalReceipts | number }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card">
+        <div class="kpi-icon-wrapper bg-info-subtle text-info">
+          <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="kpi-content">
+          <div class="kpi-label">Today's Receipts</div>
+          <div class="kpi-value">{{ summary.todayReceipts | number }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card">
+        <div class="kpi-icon-wrapper bg-success-subtle text-success">
+          <i class="fas fa-hand-holding-usd"></i>
+        </div>
+        <div class="kpi-content">
+          <div class="kpi-label">Today's Collection</div>
+          <div class="kpi-value text-success">₹{{ summary.todayCollection | number:'1.2-2' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card">
+        <div class="kpi-icon-wrapper bg-warning-subtle text-warning">
+          <i class="fas fa-wallet"></i>
+        </div>
+        <div class="kpi-content">
+          <div class="kpi-label">Total Collection</div>
+          <div class="kpi-value text-primary">₹{{ summary.totalCollection | number:'1.2-2' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filters Card -->
+  <div class="filters-card mb-4">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-4 col-xl-3">
+        <label class="form-label">GLOBAL SEARCH</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input type="text" class="form-control" [(ngModel)]="search" (keyup.enter)="onFilterChange()"
+                 placeholder="Receipt #, Customer, Mobile, Plot, Advisor..." />
+        </div>
+      </div>
+
+      <div class="col-6 col-md-2 col-xl-2">
+        <label class="form-label">PAYMENT TYPE</label>
+        <select class="form-select" [(ngModel)]="paymentType" (change)="onFilterChange()">
+          <option value="">All Types</option>
+          <option value="Cash">Cash</option>
+          <option value="Cheque">Cheque</option>
+          <option value="Online / UPI">Online / UPI</option>
+          <option value="Bank Transfer (NEFT/RTGS)">Bank Transfer</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="col-6 col-md-2 col-xl-2">
+        <label class="form-label">PAYMENT MODE</label>
+        <select class="form-select" [(ngModel)]="paymentMode" (change)="onFilterChange()">
+          <option value="">All Modes</option>
+          <option value="Full Payment">Full Payment</option>
+          <option value="Installment">Installment</option>
+          <option value="Advance">Advance</option>
+          <option value="Booking Amount">Booking Amount</option>
+          <option value="Down Payment">Down Payment</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="col-6 col-md-2 col-xl-1">
+        <label class="form-label">STATUS</label>
+        <select class="form-select" [(ngModel)]="status" (change)="onFilterChange()">
+          <option value="">All</option>
+          <option value="Active">Active</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="col-6 col-md-2 col-xl-2">
+        <label class="form-label">FROM DATE</label>
+        <input type="date" class="form-control" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
+      </div>
+
+      <div class="col-6 col-md-2 col-xl-2">
+        <label class="form-label">TO DATE</label>
+        <input type="date" class="form-control" [(ngModel)]="dateTo" (change)="onFilterChange()" />
+      </div>
+
+      <div class="col-12 col-md-4 col-xl-12 d-flex justify-content-end gap-2 mt-2">
+        <button class="btn btn-primary" (click)="onFilterChange()">
+          <i class="fas fa-filter me-1"></i> Apply Filters
+        </button>
+        <button class="btn btn-outline-secondary" (click)="resetFilters()">
+          <i class="fas fa-undo me-1"></i> Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5 bg-white rounded shadow-sm border mb-4">
+    <div class="spinner-border text-success" role="status"></div>
+    <p class="mt-2 text-muted">Loading Receipt Records...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && receipts.length === 0" class="text-center py-5 bg-white rounded shadow-sm border mb-4">
+    <i class="fas fa-receipt fa-3x text-muted mb-3 opacity-50"></i>
+    <h5 class="text-secondary">No receipts found</h5>
+    <p class="text-muted small">No receipts matching your search criteria were found.</p>
+    <a routerLink="/admin/receipts/create" class="btn btn-sm btn-success">
+      <i class="fas fa-plus me-1"></i> Add First Receipt
+    </a>
+  </div>
+
+  <!-- Receipts Data Table -->
+  <div *ngIf="!loading && receipts.length > 0" class="table-card bg-white rounded shadow-sm border mb-4">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 receipt-data-table">
+        <thead class="table-light">
+          <tr>
+            <th>S.No.</th>
+            <th>Receipt No.</th>
+            <th>Date</th>
+            <th>Customer Name</th>
+            <th>Mobile</th>
+            <th>Plot Details</th>
+            <th>Payment Type</th>
+            <th>Payment Mode</th>
+            <th class="text-end">Paid Amount</th>
+            <th>Advisor</th>
+            <th>Status</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of receipts" [class.table-danger-subtle]="r.status === 'Cancelled'">
+            <td class="text-muted fw-bold">{{ r.serial_no }}</td>
+            <td>
+              <span class="fw-bold text-dark">{{ r.receipt_no }}</span>
+            </td>
+            <td>{{ r.receipt_date | date:'dd MMM yyyy' }}</td>
+            <td>
+              <div class="fw-semibold text-dark">{{ r.customer_name }}</div>
+              <small *ngIf="r.r_o_p" class="text-muted">{{ r.r_o_p }}</small>
+            </td>
+            <td>{{ r.mobile_no }}</td>
+            <td>
+              <span *ngIf="r.plot_no" class="badge bg-light text-dark border me-1">Plot: {{ r.plot_no }}</span>
+              <span *ngIf="r.plot_area" class="small text-muted">{{ r.plot_area }}</span>
+              <span *ngIf="!r.plot_no && !r.plot_area" class="text-muted">—</span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'bg-primary': r.payment_type === 'Cash',
+                'bg-warning text-dark': r.payment_type === 'Cheque',
+                'bg-info text-dark': r.payment_type.includes('UPI') || r.payment_type.includes('Online'),
+                'bg-secondary': r.payment_type === 'Other'
+              }">{{ r.payment_type }}</span>
+            </td>
+            <td>
+              <span class="badge bg-secondary-subtle text-secondary border">{{ r.payment_mode }}</span>
+            </td>
+            <td class="text-end">
+              <span class="fw-bold text-success">₹{{ r.paid_amount | number:'1.2-2' }}</span>
+              <div *ngIf="r.receipt_amount && r.receipt_amount !== r.paid_amount" class="small text-muted">
+                Total: ₹{{ r.receipt_amount | number:'1.2-2' }}
+              </div>
+            </td>
+            <td>{{ r.advisor_name || '—' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'bg-success': r.status === 'Active',
+                'bg-danger': r.status === 'Cancelled',
+                'bg-secondary': r.status === 'Deleted'
+              }">{{ r.status }}</span>
+            </td>
+            <td class="text-center">
+              <div class="btn-group btn-group-sm">
+                <!-- View -->
+                <button type="button" class="btn btn-outline-primary" title="View Receipt" (click)="viewReceipt(r)">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <!-- Print -->
+                <button type="button" class="btn btn-outline-dark" title="Print Receipt" (click)="printReceipt(r)">
+                  <i class="fas fa-print"></i>
+                </button>
+                <!-- PDF -->
+                <button type="button" class="btn btn-outline-success" title="Download PDF" (click)="downloadPdf(r)">
+                  <i class="fas fa-file-pdf"></i>
+                </button>
+                <!-- Cancel / Void -->
+                <button *ngIf="r.status === 'Active'" type="button" class="btn btn-outline-danger" title="Cancel Receipt" (click)="openCancelModal(r)">
+                  <i class="fas fa-ban"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap p-3 border-top gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small">Showing {{ (page - 1) * limit + 1 }} to {{ Math.min(page * limit, total) }} of {{ total }} records</span>
+        <select class="form-select form-select-sm w-auto" [(ngModel)]="limit" (change)="onLimitChange()">
+          <option [value]="10">10 / page</option>
+          <option [value]="25">25 / page</option>
+          <option [value]="50">50 / page</option>
+          <option [value]="100">100 / page</option>
+        </select>
+      </div>
+
+      <div class="d-flex align-items-center gap-1">
+        <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="changePage(page - 1)">
+          <i class="fas fa-chevron-left"></i> Prev
+        </button>
+        <span class="px-2 small text-muted">Page {{ page }} of {{ totalPages }}</span>
+        <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="changePage(page + 1)">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- VIEW RECEIPT MODAL                                       -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop-custom" *ngIf="showViewModal && selectedReceipt">
+    <div class="preview-modal-dialog">
+      <div class="preview-modal-content">
+        <div class="preview-modal-header d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-0 text-white"><i class="fas fa-receipt me-2"></i>Official Receipt Details</h5>
+            <small class="text-white-50">Receipt #{{ selectedReceipt.receipt_no }}</small>
+          </div>
+          <button type="button" class="btn-close btn-close-white" (click)="closeViewModal()"></button>
+        </div>
+
+        <div class="preview-modal-body p-4 bg-light">
+          <div class="receipt-paper shadow">
+            <!-- Header -->
+            <div class="receipt-head text-center">
+              <h2 class="company-title">NEW M.M.R. CITY</h2>
+              <p class="company-address">Kanpur Lucknow Road, N.H.-27 Road</p>
+              <p class="company-sub">Near Jajmau Tribhuwan Kheda (Unnao)</p>
+              <div class="receipt-badge-title">PAYMENT RECEIPT</div>
+            </div>
+
+            <!-- Meta -->
+            <div class="receipt-meta-grid">
+              <div><strong>Receipt No:</strong> {{ selectedReceipt.receipt_no }}</div>
+              <div><strong>Date:</strong> {{ selectedReceipt.receipt_date | date:'dd/MM/yyyy' }}</div>
+              <div><strong>Serial No:</strong> {{ selectedReceipt.serial_no }}</div>
+              <div><strong>Plotting Place:</strong> {{ selectedReceipt.plotting_place }}</div>
+            </div>
+
+            <hr class="receipt-divider" />
+
+            <!-- Table -->
+            <div class="table-responsive">
+              <table class="table table-bordered receipt-table mb-3">
+                <tbody>
+                  <tr>
+                    <td class="lbl">Customer Name:</td>
+                    <td class="val fw-bold">{{ selectedReceipt.customer_name }}</td>
+                    <td class="lbl">Mobile No:</td>
+                    <td class="val">{{ selectedReceipt.mobile_no }}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">R.O.P. (S/o, D/o, W/o):</td>
+                    <td class="val">{{ selectedReceipt.r_o_p || '—' }}</td>
+                    <td class="lbl">Plot No:</td>
+                    <td class="val">{{ selectedReceipt.plot_no || '—' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Plot Area:</td>
+                    <td class="val">{{ selectedReceipt.plot_area || '—' }}</td>
+                    <td class="lbl">Payment Mode:</td>
+                    <td class="val"><span class="badge bg-success">{{ selectedReceipt.payment_mode }}</span></td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Payment Type:</td>
+                    <td class="val"><span class="badge bg-primary">{{ selectedReceipt.payment_type }}</span></td>
+                    <td class="lbl">Amount Depositor:</td>
+                    <td class="val">{{ selectedReceipt.amount_depositor_name || '—' }}</td>
+                  </tr>
+                  <tr *ngIf="selectedReceipt.payment_type === 'Cheque'">
+                    <td class="lbl">Cheque No &amp; Date:</td>
+                    <td class="val">{{ selectedReceipt.cheque_no }} ({{ selectedReceipt.cheque_date | date:'dd/MM/yyyy' }})</td>
+                    <td class="lbl">Bank Name:</td>
+                    <td class="val">{{ selectedReceipt.bank_name }}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Advisor Name:</td>
+                    <td class="val">{{ selectedReceipt.advisor_name || '—' }}</td>
+                    <td class="lbl">Advisor Mobile:</td>
+                    <td class="val">{{ selectedReceipt.advisor_mobile || '—' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Financial Figures -->
+            <div class="receipt-amount-box p-3 rounded mb-3">
+              <div class="row text-center mb-2">
+                <div class="col-4">
+                  <div class="text-muted small">Receipt Amount</div>
+                  <div class="amount-val text-secondary">₹{{ selectedReceipt.receipt_amount | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-4">
+                  <div class="text-muted small">Paid Amount</div>
+                  <div class="amount-val text-success fw-bold">₹{{ selectedReceipt.paid_amount | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-4">
+                  <div class="text-muted small">Inward Amount</div>
+                  <div class="amount-val text-info">₹{{ selectedReceipt.inward_amount | number:'1.2-2' }}</div>
+                </div>
+              </div>
+              <div class="amount-words-line border-top pt-2 mt-2">
+                <strong>Amount in Words: </strong>
+                <span class="text-success fst-italic">{{ selectedAmountInWords }}</span>
+              </div>
+            </div>
+
+            <div *ngIf="selectedReceipt.notes" class="receipt-notes mb-3 small text-muted">
+              <strong>Notes:</strong> {{ selectedReceipt.notes }}
+            </div>
+
+            <!-- Signatures -->
+            <div class="receipt-signatures mt-4 pt-3 d-flex justify-content-between">
+              <div class="signature-box text-center">
+                <div class="sig-line"></div>
+                <div class="sig-label">Depositor's Signature</div>
+              </div>
+              <div class="signature-box text-center">
+                <div class="sig-line"></div>
+                <div class="sig-label">Authorized Signatory</div>
+                <div class="sig-sub">MMR Constructions &amp; Developers</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-modal-footer d-flex justify-content-between align-items-center p-3 border-top bg-white">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeViewModal()">Close</button>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-success" (click)="downloadPdf(selectedReceipt)">
+              <i class="fas fa-file-pdf me-1"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-primary" (click)="printReceipt(selectedReceipt)">
+              <i class="fas fa-print me-1"></i> Print Receipt
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- CANCEL CONFIRMATION MODAL                                -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop-custom" *ngIf="receiptToCancel">
+    <div class="preview-modal-dialog" style="max-width: 500px;">
+      <div class="preview-modal-content">
+        <div class="preview-modal-header bg-danger text-white p-3">
+          <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Cancel Receipt Confirmation</h5>
+        </div>
+        <div class="p-4 bg-white">
+          <p class="mb-3">Are you sure you want to cancel Receipt <strong>#{{ receiptToCancel.receipt_no }}</strong> for <strong>{{ receiptToCancel.customer_name }}</strong> (₹{{ receiptToCancel.paid_amount | number:'1.2-2' }})?</p>
+          <div class="mb-3">
+            <label class="form-label">Cancellation Reason / Remarks</label>
+            <input type="text" class="form-control" [(ngModel)]="cancelReason" placeholder="Enter reason for cancelling..." />
+          </div>
+          <small class="text-danger">Note: The record will be marked as Cancelled and recorded in the audit trail.</small>
+        </div>
+        <div class="d-flex justify-content-end gap-2 p-3 bg-light border-top">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeCancelModal()" [disabled]="cancelling">Back</button>
+          <button type="button" class="btn btn-danger" (click)="confirmCancelReceipt()" [disabled]="cancelling">
+            <span *ngIf="cancelling" class="spinner-border spinner-border-sm me-1"></span>
+            Confirm Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
