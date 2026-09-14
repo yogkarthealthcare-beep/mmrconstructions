@@ -1,18 +1,128 @@
-@import url('../../../panel.css');
+/* ── RECEIPT FORM MATCHING EXACT DESIGN THEME ── */
 
-.receipt-form-page {
+.receipt-management-shell {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #111827;
   width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
 }
 
-.section-badge-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
+/* 1. Header */
+.rm-header-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+  color: #059669;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 19px;
   flex-shrink: 0;
+}
+
+.rm-header-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.rm-header-sub {
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+.rm-btn-gold {
+  background: #f3ba4b;
+  color: #111827;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background 0.15s ease;
+  text-decoration: none;
+}
+
+.rm-btn-gold:hover {
+  background: #e5a837;
+  color: #111827;
+}
+
+/* 2. Panel Cards */
+.rm-panel-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  overflow: visible;
+}
+
+.rm-stat-icon-wrap {
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bg-green-subtle { background: #ecfdf5; }
+.text-green { color: #059669; }
+
+.bg-blue-subtle { background: #eff6ff; }
+.text-blue { color: #2563eb; }
+
+.bg-amber-subtle { background: #fef3c7; }
+.text-amber { color: #d97706; }
+
+.bg-purple-subtle { background: #f3e8ff; }
+.text-purple { color: #7c3aed; }
+
+/* 3. Form Controls */
+.rm-field-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.rm-input {
+  height: 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 12.5px;
+  padding: 5px 12px;
+  color: #111827;
+  background: #ffffff;
+}
+
+.rm-input:focus {
+  border-color: #064e3b;
+  box-shadow: 0 0 0 2px rgba(6, 78, 59, 0.1);
+}
+
+.rm-btn-apply {
+  background: #064e3b;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.rm-btn-apply:hover {
+  background: #043a2c;
+  color: #ffffff;
 }
 
 /* Customer Search Dropdown */
@@ -23,8 +133,8 @@
   right: 0;
   z-index: 1050;
   background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
   max-height: 220px;
   overflow-y: auto;
   margin-top: 4px;
@@ -32,7 +142,7 @@
 
 .customer-dropdown-item {
   cursor: pointer;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f3f4f6;
   transition: background 0.15s ease;
 }
 
@@ -40,22 +150,23 @@
   background: #f0fdf4;
 }
 
-/* Simulated Physical Receipt Paper */
+/* Modal styles */
+.rm-modal-head {
+  background: #064e3b;
+}
+
 .receipt-paper {
   background: #ffffff;
-  border: 1.5px solid #062b18;
+  border: 1.5px solid #064e3b;
   border-radius: 8px;
   padding: 1.5rem;
-  position: relative;
 }
 
 .receipt-head .company-title {
-  font-family: var(--ff-display, 'Playfair Display', Georgia, serif);
   font-size: 1.5rem;
   font-weight: 800;
-  color: #062b18;
+  color: #064e3b;
   margin-bottom: 0.15rem;
-  letter-spacing: 0.02em;
 }
 
 .receipt-head .company-address,
@@ -65,14 +176,10 @@
   margin-bottom: 0.1rem;
 }
 
-.receipt-head .company-sub {
-  margin-bottom: 0.5rem;
-}
-
 .receipt-badge-title {
   display: inline-block;
-  background: #062b18;
-  color: #e8c97a;
+  background: #064e3b;
+  color: #f3ba4b;
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.2rem 0.85rem;
@@ -89,7 +196,7 @@
 }
 
 .receipt-divider {
-  border-top: 1px solid #062b18;
+  border-top: 1px solid #064e3b;
   opacity: 0.2;
 }
 
@@ -134,42 +241,4 @@
 .sig-sub {
   font-size: 0.68rem;
   color: #64748b;
-}
-
-/* Button & Utility overrides */
-.btn-emerald {
-  background: #10b981;
-  color: #ffffff;
-  border: 1px solid #059669;
-}
-.btn-emerald:hover {
-  background: #059669;
-  color: #ffffff;
-}
-
-.btn-gold {
-  background: linear-gradient(135deg, #c9a84c 0%, #e8c97a 100%);
-  color: #062b18;
-  font-weight: 700;
-  border: none;
-}
-.btn-gold:hover {
-  background: linear-gradient(135deg, #b8973b 0%, #d7b869 100%);
-  color: #062b18;
-}
-
-.bg-dark-emerald {
-  background: linear-gradient(135deg, #062b18 0%, #0d4a2c 100%) !important;
-}
-
-.rounded-8 { border-radius: 8px !important; }
-.rounded-10 { border-radius: 10px !important; }
-.rounded-12 { border-radius: 12px !important; }
-.rounded-14 { border-radius: 14px !important; }
-
-/* Responsive Grid */
-@media (max-width: 768px) {
-  .receipt-meta-grid {
-    grid-template-columns: 1fr;
-  }
 }

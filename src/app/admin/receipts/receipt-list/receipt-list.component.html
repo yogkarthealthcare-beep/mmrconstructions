@@ -4,323 +4,383 @@
   <span>{{ toastMessage }}</span>
 </div>
 
-<div class="receipt-list-page">
-  <!-- TOP HERO EXECUTIVE BANNER -->
-  <div class="admin-hero-card mb-2.5">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+<div class="receipt-management-shell">
+  <!-- 1. TOP HEADER -->
+  <div class="rm-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rm-header-icon">
+        <i class="fas fa-file-invoice"></i>
+      </div>
       <div>
-        <div class="admin-hero-badge"><i class="fas fa-file-invoice-dollar me-1"></i>FINANCIAL CONTROL</div>
-        <h2 class="admin-hero-title mb-1">Receipt Management</h2>
-        <p class="admin-hero-sub mb-0">Track, search, verify &amp; generate official payment receipts for NEW M.M.R. CITY.</p>
+        <h2 class="rm-header-title mb-0">Receipt Management</h2>
+        <p class="rm-header-sub text-muted mb-0">Track, search, verify &amp; generate official payment receipts for NEW M.M.R. CITY.</p>
       </div>
+    </div>
 
-      <div class="d-flex align-items-center gap-2 ms-auto">
-        <button class="btn btn-outline-light btn-xs" (click)="loadReceipts()" [disabled]="loading">
-          <i class="fas fa-sync me-1" [class.fa-spin]="loading"></i> Refresh List
-        </button>
-        <a routerLink="/admin/receipts/create" class="btn btn-gold btn-xs">
-          <i class="fas fa-plus me-1"></i> Add New Receipt
-        </a>
+    <div class="d-flex align-items-center gap-2">
+      <a routerLink="/admin/receipts/create" class="btn rm-btn-gold">
+        <i class="fas fa-plus me-1.5"></i> Add New Receipt
+      </a>
+    </div>
+  </div>
+
+  <!-- 2. STAT SUMMARY CARDS (4 Columns) -->
+  <div class="row g-3 mb-3">
+    <!-- Total Receipts -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="rm-stat-card">
+        <div class="rm-stat-icon-wrap bg-green-subtle">
+          <i class="fas fa-file-alt text-green"></i>
+        </div>
+        <div class="rm-stat-content">
+          <div class="rm-stat-label">Total Receipts</div>
+          <div class="rm-stat-value">{{ summary.totalReceipts | number }}</div>
+          <div class="rm-stat-sub text-emerald">
+            <i class="fas fa-arrow-up me-1"></i>+{{ summary.todayReceipts }} this month
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Receipts -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="rm-stat-card">
+        <div class="rm-stat-icon-wrap bg-blue-subtle">
+          <i class="fas fa-calendar-alt text-blue"></i>
+        </div>
+        <div class="rm-stat-content">
+          <div class="rm-stat-label">Today's Receipts</div>
+          <div class="rm-stat-value">{{ summary.todayReceipts | number:'2.0-0' }}</div>
+          <div class="rm-stat-sub text-muted">
+            <i class="far fa-clock me-1"></i>Generated Today
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Collection -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="rm-stat-card">
+        <div class="rm-stat-icon-wrap bg-amber-subtle">
+          <i class="fas fa-rupee-sign text-amber"></i>
+        </div>
+        <div class="rm-stat-content">
+          <div class="rm-stat-label">Today's Collection</div>
+          <div class="rm-stat-value">₹{{ summary.todayCollection | number:'1.0-0' }}</div>
+          <div class="rm-stat-sub text-emerald">
+            <i class="fas fa-chart-line me-1"></i>Verified Today
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Collection -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="rm-stat-card">
+        <div class="rm-stat-icon-wrap bg-purple-subtle">
+          <i class="fas fa-layer-group text-purple"></i>
+        </div>
+        <div class="rm-stat-content">
+          <div class="rm-stat-label">Total Collection</div>
+          <div class="rm-stat-value">₹{{ formatIndianLakh(summary.totalCollection) }}</div>
+          <div class="rm-stat-sub text-emerald">
+            <i class="fas fa-check-circle me-1"></i>Lifetime Verified
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 4 STAT SUMMARY MINI CARDS -->
-  <div class="row g-2 mb-2.5">
-    <div class="col-6 col-md-3">
-      <div class="stat-mini-card box-customers h-100">
-        <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-          <span class="stat-mini-lbl text-truncate">Total Receipts</span>
-          <div class="icon-wrap bg-blue text-primary">
-            <i class="fas fa-receipt"></i>
-          </div>
-        </div>
-        <div class="stat-mini-val">{{ summary.totalReceipts | number }}</div>
-        <div class="fs-11 text-muted fw-600"><i class="fas fa-file-invoice text-primary me-1"></i>Issued Invoices</div>
-      </div>
-    </div>
-
-    <div class="col-6 col-md-3">
-      <div class="stat-mini-card box-plots h-100">
-        <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-          <span class="stat-mini-lbl text-truncate">Today's Receipts</span>
-          <div class="icon-wrap bg-purple text-purple">
-            <i class="fas fa-calendar-day"></i>
-          </div>
-        </div>
-        <div class="stat-mini-val">{{ summary.todayReceipts | number }}</div>
-        <div class="fs-11 text-muted fw-600"><i class="fas fa-clock text-purple me-1"></i>Generated Today</div>
-      </div>
-    </div>
-
-    <div class="col-6 col-md-3">
-      <div class="stat-mini-card box-emi h-100">
-        <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-          <span class="stat-mini-lbl text-truncate">Today's Collection</span>
-          <div class="icon-wrap bg-emerald-light text-emerald">
-            <i class="fas fa-hand-holding-usd"></i>
-          </div>
-        </div>
-        <div class="stat-mini-val text-emerald">₹{{ summary.todayCollection | number:'1.2-2' }}</div>
-        <div class="fs-11 text-muted fw-600"><i class="fas fa-arrow-down text-emerald me-1"></i>Received Today</div>
-      </div>
-    </div>
-
-    <div class="col-6 col-md-3">
-      <div class="stat-mini-card box-approvals h-100">
-        <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-          <span class="stat-mini-lbl text-truncate">Total Collection</span>
-          <div class="icon-wrap bg-amber text-orange">
-            <i class="fas fa-wallet"></i>
-          </div>
-        </div>
-        <div class="stat-mini-val text-primary">₹{{ summary.totalCollection | number:'1.2-2' }}</div>
-        <div class="fs-11 text-muted fw-600"><i class="fas fa-check-double text-orange me-1"></i>Lifetime Verified</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOOLBAR & MULTI-FILTER PANEL CARD -->
-  <div class="panel-card p-3 mb-2.5">
-    <!-- Quick Filter Tabs & Search Bar -->
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2.5">
-      <div class="filter-tabs">
-        <button class="filter-tab" [class.active]="!status && !paymentType" (click)="status=''; paymentType=''; onFilterChange()">
-          All Receipts ({{ summary.totalReceipts }})
+  <!-- 3. FILTER TABS & SEARCH BAR CARD -->
+  <div class="rm-panel-card mb-3">
+    <!-- Top Pill Tabs & Global Search -->
+    <div class="rm-filter-top d-flex align-items-center justify-content-between flex-wrap gap-2.5 p-3">
+      <div class="rm-pill-tabs d-flex align-items-center flex-wrap gap-2">
+        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='all'" (click)="selectTab('all')">
+          All ({{ summary.totalReceipts }})
         </button>
-        <button class="filter-tab" [class.active]="status==='Active'" (click)="status='Active'; onFilterChange()">
+        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Active'" (click)="selectTab('Active')">
           Active ({{ summary.activeReceipts }})
         </button>
-        <button class="filter-tab" [class.active]="status==='Cancelled'" (click)="status='Cancelled'; onFilterChange()">
+        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Cancelled'" (click)="selectTab('Cancelled')">
           Cancelled ({{ summary.cancelledReceipts }})
         </button>
-        <button class="filter-tab" [class.active]="paymentType==='Cash'" (click)="paymentType='Cash'; onFilterChange()">
+        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Cash'" (click)="selectTab('Cash')">
           Cash
         </button>
-        <button class="filter-tab" [class.active]="paymentType==='Cheque'" (click)="paymentType='Cheque'; onFilterChange()">
+        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Cheque'" (click)="selectTab('Cheque')">
           Cheque
         </button>
-        <button class="filter-tab" [class.active]="paymentType==='Online / UPI'" (click)="paymentType='Online / UPI'; onFilterChange()">
-          UPI / Online
+        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='UPI'" (click)="selectTab('UPI')">
+          UPI
         </button>
       </div>
 
-      <div class="search-box position-relative ms-auto" style="min-width: 250px;">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" (keyup.enter)="onFilterChange()"
-               placeholder="Search name, receipt #, plot...">
+      <div class="rm-search-box">
+        <i class="fas fa-search rm-search-icon"></i>
+        <input type="text" class="rm-search-input" [(ngModel)]="search" (keyup.enter)="onFilterChange()"
+               placeholder="Search receipts, customer, property..." />
       </div>
     </div>
 
-    <!-- Detailed Filters Grid -->
-    <div class="p-2.5 bg-light rounded-10 border">
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="fs-11 fw-700 text-dark uppercase"><i class="fas fa-sliders-h text-gold me-1.5"></i>Filter Parameters</span>
-        <button *ngIf="hasActiveFilters" type="button" class="btn btn-link btn-xs text-danger text-decoration-none p-0" (click)="resetFilters()">
-          <i class="fas fa-undo me-1"></i> Clear Filters
-        </button>
+    <!-- Collapsible Filters Accordion Bar -->
+    <div class="rm-filter-accordion-header px-3 py-2 d-flex align-items-center justify-content-between border-top cursor-pointer"
+         (click)="toggleFilters()">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-filter text-emerald fs-13"></i>
+        <span class="fw-700 fs-13 text-dark">Filters</span>
+        <span *ngIf="hasActiveFilters" class="badge bg-emerald-subtle text-emerald fs-10 py-0.5 px-2 rounded-pill">Active</span>
       </div>
+      <i class="fas" [class.fa-chevron-up]="filtersOpen" [class.fa-chevron-down]="!filtersOpen" style="color: #6b7280; font-size: 12px;"></i>
+    </div>
 
-      <div class="row g-2 align-items-end">
-        <!-- Customer Name -->
-        <div class="col-12 col-sm-6 col-md-3 col-lg-2">
-          <label class="form-label fs-10 fw-700 text-muted uppercase mb-1">Customer Name</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="customerName" (keyup.enter)="onFilterChange()"
-                 placeholder="Search customer..." />
+    <!-- Filter Inputs Row (Collapsible) -->
+    <div class="rm-filter-drawer px-3 py-3 border-top bg-light-subtle" *ngIf="filtersOpen">
+      <div class="row g-2.5 align-items-end">
+        <!-- Customer -->
+        <div class="col-12 col-sm-6 col-md-3 col-xl-2">
+          <label class="rm-field-label">Customer</label>
+          <div class="position-relative">
+            <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-2.5 text-muted fs-11"></i>
+            <input type="text" class="form-control rm-input ps-4" [(ngModel)]="customerName" (keyup.enter)="onFilterChange()"
+                   placeholder="Search customer..." />
+          </div>
         </div>
 
-        <!-- Receipt / Invoice No -->
-        <div class="col-12 col-sm-6 col-md-3 col-lg-2">
-          <label class="form-label fs-10 fw-700 text-muted uppercase mb-1">Receipt / Invoice #</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="invoiceNo" (keyup.enter)="onFilterChange()"
+        <!-- Receipt / Invoice # -->
+        <div class="col-12 col-sm-6 col-md-3 col-xl-2">
+          <label class="rm-field-label">Receipt / Invoice #</label>
+          <input type="text" class="form-control rm-input" [(ngModel)]="invoiceNo" (keyup.enter)="onFilterChange()"
                  placeholder="e.g. MMR/REC/..." />
         </div>
 
         <!-- From Date -->
-        <div class="col-6 col-sm-4 col-md-2 col-lg-2">
-          <label class="form-label fs-10 fw-700 text-muted uppercase mb-1">From Date</label>
-          <input type="date" class="form-control form-control-sm" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
+        <div class="col-6 col-sm-4 col-md-2 col-xl-1.5">
+          <label class="rm-field-label">From Date</label>
+          <input type="date" class="form-control rm-input" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
         </div>
 
         <!-- To Date -->
-        <div class="col-6 col-sm-4 col-md-2 col-lg-2">
-          <label class="form-label fs-10 fw-700 text-muted uppercase mb-1">To Date</label>
-          <input type="date" class="form-control form-control-sm" [(ngModel)]="dateTo" (change)="onFilterChange()" />
+        <div class="col-6 col-sm-4 col-md-2 col-xl-1.5">
+          <label class="rm-field-label">To Date</label>
+          <input type="date" class="form-control rm-input" [(ngModel)]="dateTo" (change)="onFilterChange()" />
         </div>
 
-        <!-- Amount -->
-        <div class="col-6 col-sm-4 col-md-2 col-lg-2">
-          <label class="form-label fs-10 fw-700 text-muted uppercase mb-1">Amount (₹)</label>
-          <input type="number" class="form-control form-control-sm" [(ngModel)]="exactAmount" (keyup.enter)="onFilterChange()"
-                 placeholder="Exact / Min..." min="0" />
+        <!-- Payment Mode -->
+        <div class="col-6 col-sm-4 col-md-2 col-xl-1.5">
+          <label class="rm-field-label">Payment Mode</label>
+          <select class="form-select rm-input" [(ngModel)]="paymentMode" (change)="onFilterChange()">
+            <option value="">All</option>
+            <option value="Full Payment">Full Payment</option>
+            <option value="Installment">Installment</option>
+            <option value="Advance">Advance</option>
+            <option value="Booking Amount">Booking Amount</option>
+            <option value="Down Payment">Down Payment</option>
+            <option value="Other">Other</option>
+          </select>
         </div>
 
-        <!-- Search Button -->
-        <div class="col-6 col-sm-12 col-md-12 col-lg-2 d-flex gap-1.5">
-          <button class="btn btn-emerald btn-xs w-100 py-1.5" (click)="onFilterChange()">
-            <i class="fas fa-search me-1"></i> Apply Filter
+        <!-- Amount (Min - Max) -->
+        <div class="col-12 col-sm-8 col-md-4 col-xl-2">
+          <label class="rm-field-label">Amount (₹)</label>
+          <div class="d-flex align-items-center gap-1">
+            <input type="number" class="form-control rm-input" [(ngModel)]="minAmount" (keyup.enter)="onFilterChange()" placeholder="Min" min="0" />
+            <span class="text-muted fs-11">-</span>
+            <input type="number" class="form-control rm-input" [(ngModel)]="maxAmount" (keyup.enter)="onFilterChange()" placeholder="Max" min="0" />
+          </div>
+        </div>
+
+        <!-- Clear All & Apply Filters -->
+        <div class="col-12 col-sm-4 col-md-12 col-xl-1.5 d-flex align-items-center justify-content-end gap-2 ms-auto">
+          <button type="button" class="btn btn-link text-decoration-none p-0 rm-clear-link" (click)="resetFilters()" *ngIf="hasActiveFilters">
+            Clear All
+          </button>
+          <button type="button" class="btn rm-btn-apply" (click)="onFilterChange()">
+            <i class="fas fa-filter me-1.5"></i> Apply Filters
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- LOADING STATE -->
-  <div class="panel-card text-center py-5 mb-2.5" *ngIf="loading">
-    <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
-    <p class="text-muted fs-12 mt-2 mb-0">Loading receipt records...</p>
-  </div>
+  <!-- 4. MAIN DATA TABLE CARD -->
+  <div class="rm-panel-card mb-3">
+    <!-- Loading Spinner -->
+    <div class="text-center py-5" *ngIf="loading">
+      <div class="spinner-border spinner-border-sm text-emerald mx-auto mb-2" role="status"></div>
+      <p class="text-muted fs-12 mb-0">Loading receipt records...</p>
+    </div>
 
-  <!-- MAIN DATA TABLE PANEL CARD -->
-  <div class="panel-card p-3 mb-2.5" *ngIf="!loading">
     <!-- Empty State -->
-    <div *ngIf="receipts.length === 0" class="text-center py-5">
-      <i class="fas fa-file-invoice text-muted fs-1 mb-2"></i>
-      <h6 class="fw-700 text-dark mb-1">No Receipts Found</h6>
-      <p class="text-muted fs-12 mb-3">No payment receipts match your current search/filter criteria.</p>
+    <div class="text-center py-5" *ngIf="!loading && receipts.length === 0">
+      <div class="rm-empty-icon mb-2">
+        <i class="fas fa-receipt"></i>
+      </div>
+      <h6 class="fw-700 text-dark mb-1">No receipts found</h6>
+      <p class="text-muted fs-12 mb-3">No receipt records matched the given search/filter criteria.</p>
       <div class="d-flex justify-content-center gap-2">
-        <button *ngIf="hasActiveFilters" class="btn btn-outline-secondary btn-xs" (click)="resetFilters()">
+        <button *ngIf="hasActiveFilters" class="btn btn-outline-secondary btn-sm rounded-pill" (click)="resetFilters()">
           <i class="fas fa-undo me-1"></i> Clear Filters
         </button>
-        <a routerLink="/admin/receipts/create" class="btn btn-gold btn-xs">
-          <i class="fas fa-plus me-1"></i> Add First Receipt
+        <a routerLink="/admin/receipts/create" class="btn rm-btn-gold btn-sm">
+          <i class="fas fa-plus me-1"></i> Add New Receipt
         </a>
       </div>
     </div>
 
-    <!-- Data Table Container -->
-    <div *ngIf="receipts.length > 0">
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <h6 class="fw-700 text-dark mb-0 fs-13">
-          <i class="fas fa-receipt text-emerald me-1.5"></i>Receipts Directory ({{ total }})
-        </h6>
-        <div class="fs-11 text-muted">
-          Showing page <strong>{{ page }}</strong> of <strong>{{ totalPages }}</strong>
-        </div>
-      </div>
+    <!-- Table Container -->
+    <div class="table-responsive" *ngIf="!loading && receipts.length > 0">
+      <table class="table rm-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th (click)="sortBy('receipt_no')" class="cursor-pointer">
+              Receipt No. <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+            </th>
+            <th (click)="sortBy('customer_name')" class="cursor-pointer">
+              Customer Name <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+            </th>
+            <th (click)="sortBy('plot_no')" class="cursor-pointer">
+              Property / Project <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+            </th>
+            <th (click)="sortBy('paid_amount')" class="cursor-pointer">
+              Amount (₹) <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+            </th>
+            <th (click)="sortBy('payment_type')" class="cursor-pointer">
+              Payment Mode <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+            </th>
+            <th (click)="sortBy('receipt_date')" class="cursor-pointer">
+              Date <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+            </th>
+            <th (click)="sortBy('status')" class="cursor-pointer">
+              Status <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+            </th>
+            <th class="text-center" style="width: 70px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of receipts" [class.rm-row-cancelled]="r.status === 'Cancelled'">
+            <!-- Receipt No -->
+            <td>
+              <span class="rm-receipt-number">{{ r.receipt_no }}</span>
+            </td>
 
-      <div class="table-responsive">
-        <table class="table align-middle custom-dash-table mb-0">
-          <thead>
-            <tr>
-              <th class="th-sno">#</th>
-              <th>Receipt Details</th>
-              <th>Customer Information</th>
-              <th>Property / Plot</th>
-              <th>Payment Particulars</th>
-              <th class="text-end">Paid Amount</th>
-              <th>Advisor</th>
-              <th class="text-center">Status</th>
-              <th class="text-end pe-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let r of receipts" [class.table-danger-subtle]="r.status === 'Cancelled'">
-              <td class="td-sno">{{ r.serial_no }}</td>
-              <td>
-                <div class="fw-700 text-dark fs-12">{{ r.receipt_no }}</div>
-                <div class="fs-10 text-muted"><i class="fas fa-calendar-alt me-1 text-gold"></i>{{ r.receipt_date | date:'dd MMM yyyy' }}</div>
-              </td>
-              <td>
-                <div class="fw-700 text-dark fs-12">{{ r.customer_name }}</div>
-                <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ r.mobile_no }}</div>
-                <div *ngIf="r.r_o_p" class="fs-9 text-muted">{{ r.r_o_p }}</div>
-              </td>
-              <td>
-                <span *ngIf="r.plot_no" class="badge bg-light text-dark border fs-10 me-1">Plot: {{ r.plot_no }}</span>
-                <span *ngIf="r.plot_area" class="fs-10 text-muted">{{ r.plot_area }}</span>
-                <span *ngIf="!r.plot_no && !r.plot_area" class="fs-11 text-muted">—</span>
-              </td>
-              <td>
-                <div>
-                  <span class="badge fs-9" [ngClass]="{
-                    'bg-primary': r.payment_type === 'Cash',
-                    'bg-warning text-dark': r.payment_type === 'Cheque',
-                    'bg-info text-dark': r.payment_type.includes('UPI') || r.payment_type.includes('Online'),
-                    'bg-secondary': r.payment_type === 'Other'
-                  }">{{ r.payment_type }}</span>
-                  <span class="badge bg-light text-secondary border fs-9 ms-1">{{ r.payment_mode }}</span>
-                </div>
-                <div *ngIf="r.payment_type === 'Cheque' && r.cheque_no" class="fs-9 text-muted mt-0.5">
-                  Chq: {{ r.cheque_no }} ({{ r.bank_name || 'Bank' }})
-                </div>
-              </td>
-              <td class="text-end">
-                <div class="fw-800 text-emerald fs-13">₹{{ r.paid_amount | number:'1.2-2' }}</div>
-                <div *ngIf="r.receipt_amount && r.receipt_amount !== r.paid_amount" class="fs-9 text-muted">
-                  Tot: ₹{{ r.receipt_amount | number:'1.2-2' }}
-                </div>
-              </td>
-              <td>
-                <div class="fs-11 fw-600 text-dark">{{ r.advisor_name || '—' }}</div>
-                <div *ngIf="r.advisor_mobile" class="fs-9 text-muted">{{ r.advisor_mobile }}</div>
-              </td>
-              <td class="text-center">
-                <span class="sbadge"
-                  [class.sbadge-green]="r.status === 'Active'"
-                  [class.sbadge-red]="r.status === 'Cancelled'"
-                  [class.sbadge-gray]="r.status === 'Deleted'">
-                  {{ r.status }}
+            <!-- Customer Name -->
+            <td>
+              <div class="fw-600 text-dark fs-13">{{ r.customer_name }}</div>
+              <div *ngIf="r.mobile_no" class="fs-10 text-muted">{{ r.mobile_no }}</div>
+            </td>
+
+            <!-- Property / Project -->
+            <td>
+              <div class="text-secondary fs-13" *ngIf="r.plot_no">Plot {{ r.plot_no }}</div>
+              <div class="text-secondary fs-13" *ngIf="!r.plot_no && r.plot_area">{{ r.plot_area }}</div>
+              <div class="text-muted fs-12" *ngIf="!r.plot_no && !r.plot_area">—</div>
+            </td>
+
+            <!-- Amount (₹) -->
+            <td>
+              <span class="fw-700 text-dark fs-13">₹{{ r.paid_amount | number:'1.0-0' }}</span>
+            </td>
+
+            <!-- Payment Mode Badge -->
+            <td>
+              <div class="d-inline-flex align-items-center gap-1.5">
+                <!-- UPI -->
+                <span *ngIf="r.payment_type.includes('UPI') || r.payment_type.includes('Online')" class="rm-pay-badge rm-pay-upi">
+                  <i class="fas fa-bolt"></i> UPI
                 </span>
-              </td>
-              <td class="text-end pe-2">
-                <div class="d-inline-flex gap-1">
-                  <!-- View Modal -->
-                  <button type="button" class="action-btn" title="View Details" (click)="viewReceipt(r)">
-                    <i class="fas fa-eye text-primary"></i>
-                  </button>
-                  <!-- Print -->
-                  <button type="button" class="action-btn" title="Print Receipt" (click)="printReceipt(r)">
-                    <i class="fas fa-print text-dark"></i>
-                  </button>
-                  <!-- PDF Download -->
-                  <button type="button" class="action-btn success" title="Download PDF" (click)="downloadPdf(r)">
-                    <i class="fas fa-file-pdf text-emerald"></i>
-                  </button>
-                  <!-- Cancel / Void -->
-                  <button *ngIf="r.status === 'Active'" type="button" class="action-btn danger" title="Cancel Receipt" (click)="openCancelModal(r)">
-                    <i class="fas fa-ban text-danger"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <!-- Cheque -->
+                <span *ngIf="r.payment_type === 'Cheque'" class="rm-pay-badge rm-pay-cheque">
+                  <i class="fas fa-money-check"></i> Cheque
+                </span>
+                <!-- Cash -->
+                <span *ngIf="r.payment_type === 'Cash'" class="rm-pay-badge rm-pay-cash">
+                  <i class="fas fa-money-bill-wave"></i> Cash
+                </span>
+                <!-- Other / Bank Transfer -->
+                <span *ngIf="r.payment_type !== 'Cash' && r.payment_type !== 'Cheque' && !r.payment_type.includes('UPI') && !r.payment_type.includes('Online')" class="rm-pay-badge rm-pay-other">
+                  <i class="fas fa-university"></i> {{ r.payment_type }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Date -->
+            <td>
+              <span class="text-secondary fs-13">{{ r.receipt_date | date:'dd MMM yyyy' }}</span>
+            </td>
+
+            <!-- Status -->
+            <td>
+              <span class="rm-status-pill rm-status-active" *ngIf="r.status === 'Active'">
+                <span class="rm-status-dot"></span> Active
+              </span>
+              <span class="rm-status-pill rm-status-pending" *ngIf="r.status === 'Pending'">
+                <span class="rm-status-dot"></span> Pending
+              </span>
+              <span class="rm-status-pill rm-status-cancelled" *ngIf="r.status === 'Cancelled' || r.status === 'Deleted'">
+                <span class="rm-status-dot"></span> Cancelled
+              </span>
+            </td>
+
+            <!-- Actions Dropdown -->
+            <td class="text-center position-relative">
+              <button type="button" class="rm-action-dots-btn" (click)="toggleRowMenu($event, r.id)" title="Actions">
+                <i class="fas fa-ellipsis-v"></i>
+              </button>
+
+              <!-- Dropdown Menu -->
+              <div class="rm-actions-dropdown shadow-lg" *ngIf="activeRowMenuId === r.id" (click)="$event.stopPropagation()">
+                <button type="button" class="rm-dropdown-item" (click)="viewReceipt(r); activeRowMenuId = null">
+                  <i class="fas fa-eye text-primary me-2"></i> View Details
+                </button>
+                <button type="button" class="rm-dropdown-item" (click)="printReceipt(r); activeRowMenuId = null">
+                  <i class="fas fa-print text-dark me-2"></i> Print Receipt
+                </button>
+                <button type="button" class="rm-dropdown-item text-success" (click)="downloadPdf(r); activeRowMenuId = null">
+                  <i class="fas fa-file-pdf text-success me-2"></i> Download PDF
+                </button>
+                <div class="dropdown-divider my-1" *ngIf="r.status === 'Active'"></div>
+                <button *ngIf="r.status === 'Active'" type="button" class="rm-dropdown-item text-danger" (click)="openCancelModal(r); activeRowMenuId = null">
+                  <i class="fas fa-ban text-danger me-2"></i> Cancel Receipt
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 5. PAGINATION FOOTER -->
+    <div class="rm-pagination-footer p-3 d-flex align-items-center justify-content-between flex-wrap gap-2 border-top" *ngIf="!loading && total > 0">
+      <div class="text-muted fs-13">
+        Showing <strong class="text-dark">{{ total === 0 ? 0 : (page - 1) * limit + 1 }} – {{ Math.min(page * limit, total) }}</strong> of <strong class="text-dark">{{ total }}</strong> receipts
       </div>
 
-      <!-- Pagination & Page Size Selector Bar -->
-      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-3 mt-2 border-top">
-        <div class="d-flex align-items-center gap-2">
-          <span class="fs-11 text-muted">
-            Showing <strong>{{ total === 0 ? 0 : (page - 1) * limit + 1 }}</strong> to <strong>{{ Math.min(page * limit, total) }}</strong> of <strong>{{ total }}</strong> receipts
-          </span>
-          <select class="form-select form-select-sm w-auto fs-11 py-1" [(ngModel)]="limit" (change)="onLimitChange()">
-            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }} / page</option>
-          </select>
-        </div>
+      <div class="rm-pagination-controls d-flex align-items-center gap-1">
+        <!-- Prev Button -->
+        <button class="rm-page-box" [disabled]="page <= 1" (click)="changePage(page - 1)" title="Previous Page">
+          <i class="fas fa-chevron-left"></i>
+        </button>
 
-        <div class="d-flex align-items-center gap-1">
-          <button class="btn btn-outline-secondary btn-xs" [disabled]="page <= 1" (click)="changePage(1)" title="First Page">
-            <i class="fas fa-angle-double-left"></i>
+        <!-- Dynamic Page Numbers -->
+        <ng-container *ngFor="let p of visiblePages">
+          <button class="rm-page-box" [class.active]="p === page" (click)="changePage(p)">
+            {{ p }}
           </button>
-          <button class="btn btn-outline-secondary btn-xs" [disabled]="page <= 1" (click)="changePage(page - 1)" title="Previous Page">
-            <i class="fas fa-chevron-left me-1"></i> Prev
-          </button>
+        </ng-container>
 
-          <ng-container *ngFor="let p of visiblePages">
-            <button class="btn btn-xs px-2" [ngClass]="p === page ? 'btn-emerald fw-bold' : 'btn-outline-secondary'"
-                    (click)="changePage(p)">
-              {{ p }}
-            </button>
-          </ng-container>
+        <!-- Ellipsis if needed -->
+        <span *ngIf="totalPages > 5 && page < totalPages - 2" class="px-1 text-muted fs-12">...</span>
 
-          <button class="btn btn-outline-secondary btn-xs" [disabled]="page >= totalPages" (click)="changePage(page + 1)" title="Next Page">
-            Next <i class="fas fa-chevron-right ms-1"></i>
-          </button>
-          <button class="btn btn-outline-secondary btn-xs" [disabled]="page >= totalPages" (click)="changePage(totalPages)" title="Last Page">
-            <i class="fas fa-angle-double-right"></i>
-          </button>
-        </div>
+        <!-- Last page jump -->
+        <button *ngIf="totalPages > 5 && !visiblePages.includes(totalPages)" class="rm-page-box" (click)="changePage(totalPages)">
+          {{ totalPages }}
+        </button>
+
+        <!-- Next Button -->
+        <button class="rm-page-box" [disabled]="page >= totalPages" (click)="changePage(page + 1)" title="Next Page">
+          <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </div>
   </div>
@@ -332,9 +392,9 @@
   <div class="modal d-block fade show" tabIndex="-1" *ngIf="showViewModal && selectedReceipt" (click)="closeViewModal()">
     <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
       <div class="modal-content border-0 rounded-14 shadow-lg overflow-hidden">
-        <div class="modal-header bg-dark-emerald text-white py-2.5 px-3.5 d-flex justify-content-between align-items-center">
+        <div class="modal-header rm-modal-head text-white py-2.5 px-3.5 d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-receipt text-gold fs-14"></i>
+            <i class="fas fa-receipt text-warning fs-14"></i>
             <div>
               <h6 class="modal-title fs-13 fw-700 text-white mb-0">Official Receipt Details</h6>
               <div class="fs-10 text-white-50">Receipt #{{ selectedReceipt.receipt_no }}</div>
@@ -454,7 +514,7 @@
             <button type="button" class="btn btn-outline-success btn-xs" (click)="downloadPdf(selectedReceipt)">
               <i class="fas fa-file-pdf me-1"></i> Download PDF
             </button>
-            <button type="button" class="btn btn-emerald btn-xs" (click)="printReceipt(selectedReceipt)">
+            <button type="button" class="btn rm-btn-apply btn-xs" (click)="printReceipt(selectedReceipt)">
               <i class="fas fa-print me-1"></i> Print Receipt
             </button>
           </div>

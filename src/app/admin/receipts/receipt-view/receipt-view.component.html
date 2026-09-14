@@ -4,39 +4,39 @@
   <span>{{ error }}</span>
 </div>
 
-<div class="receipt-view-page">
-  <!-- TOP HERO EXECUTIVE BANNER -->
-  <div class="admin-hero-card mb-2.5 no-print">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
-      <div class="d-flex align-items-center gap-2.5">
-        <a routerLink="/admin/receipts" class="btn btn-outline-light btn-xs" title="Back to Receipt Directory">
-          <i class="fas fa-arrow-left me-1"></i> Back to List
-        </a>
-        <div>
-          <div class="admin-hero-badge"><i class="fas fa-receipt me-1"></i>VERIFIED RECEIPT DOCUMENT</div>
-          <h2 class="admin-hero-title mb-0.5">Receipt View &amp; Print</h2>
-          <p class="admin-hero-sub mb-0" *ngIf="receipt">Official Record: {{ receipt.receipt_no }} (Serial #{{ receipt.serial_no }})</p>
-        </div>
+<div class="receipt-management-shell">
+  <!-- 1. TOP HEADER -->
+  <div class="rm-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3 no-print">
+    <div class="d-flex align-items-center gap-3">
+      <a routerLink="/admin/receipts" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px;" title="Back to Receipt Directory">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+      <div class="rm-header-icon">
+        <i class="fas fa-file-invoice"></i>
       </div>
+      <div>
+        <h2 class="rm-header-title mb-0">Receipt View &amp; Print</h2>
+        <p class="rm-header-sub text-muted mb-0" *ngIf="receipt">Official Record: {{ receipt.receipt_no }} (Serial #{{ receipt.serial_no }})</p>
+      </div>
+    </div>
 
-      <div class="d-flex align-items-center gap-2 ms-auto">
-        <a routerLink="/admin/receipts" class="btn btn-outline-light btn-xs">
-          <i class="fas fa-list me-1"></i> Receipt Directory
-        </a>
-        <button type="button" class="btn btn-outline-light btn-xs" (click)="downloadPdf()" [disabled]="!receipt">
-          <i class="fas fa-file-pdf text-emerald me-1"></i> Download PDF
-        </button>
-        <button type="button" class="btn btn-gold btn-xs" (click)="print()" [disabled]="!receipt">
-          <i class="fas fa-print me-1"></i> Print Receipt
-        </button>
-      </div>
+    <div class="d-flex align-items-center gap-2">
+      <a routerLink="/admin/receipts" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px;">
+        <i class="fas fa-list me-1.5"></i> Receipt List
+      </a>
+      <button type="button" class="btn btn-outline-success btn-sm" style="border-radius: 8px;" (click)="downloadPdf()" [disabled]="!receipt">
+        <i class="fas fa-file-pdf me-1.5"></i> Download PDF
+      </button>
+      <button type="button" class="btn rm-btn-apply" (click)="print()" [disabled]="!receipt">
+        <i class="fas fa-print me-1.5"></i> Print Receipt
+      </button>
     </div>
   </div>
 
   <!-- LOADING STATE -->
-  <div class="panel-card text-center py-5 mb-2.5" *ngIf="loading">
-    <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
-    <p class="text-muted fs-12 mt-2 mb-0">Loading receipt details...</p>
+  <div class="rm-panel-card text-center py-5 mb-3" *ngIf="loading">
+    <div class="spinner-border spinner-border-sm text-emerald mx-auto mb-2" role="status"></div>
+    <p class="text-muted fs-12 mb-0">Loading receipt details...</p>
   </div>
 
   <!-- MAIN DOCUMENT PANEL -->
@@ -153,8 +153,8 @@
     </div>
 
     <!-- Audit Trail Panel (Hidden on print) -->
-    <div *ngIf="auditLogs.length" class="no-print mt-2.5 panel-card p-3">
-      <div class="fw-700 fs-12 text-dark mb-2"><i class="fas fa-history text-gold me-1.5"></i>Audit Log &amp; Security History</div>
+    <div *ngIf="auditLogs.length" class="no-print mt-3 rm-panel-card p-3">
+      <div class="fw-700 fs-12 text-dark mb-2"><i class="fas fa-history text-muted me-1.5"></i>Audit Log &amp; Security History</div>
       <div class="fs-11 py-1.5 border-bottom d-flex align-items-center justify-content-between" *ngFor="let a of auditLogs">
         <div>
           <span class="badge bg-secondary fs-9 me-1.5">{{ a.action }}</span>

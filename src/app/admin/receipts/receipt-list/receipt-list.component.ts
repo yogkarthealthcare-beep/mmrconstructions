@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -27,26 +27,36 @@ export class ReceiptListComponent implements OnInit {
     cancelledReceipts: 0,
   };
 
+  // Tab State
+  activeTab = 'all';
+
+  // Collapsible Filters Panel
+  filtersOpen = true;
+
   // Filters Model
   search = '';
   customerName = '';
   invoiceNo = '';
   dateFrom = '';
   dateTo = '';
-  exactAmount: number | null = null;
   minAmount: number | null = null;
   maxAmount: number | null = null;
   paymentType = '';
   paymentMode = '';
-  plottingPlace = '';
   status = '';
   
+  // Sorting
+  sortField = 'receipt_date';
+  sortAsc = false;
+
   // Pagination
   page = 1;
   limit = 25;
   total = 0;
   totalPages = 1;
-  pageSizeOptions = [10, 25, 50, 100];
+
+  // Row Action Dropdown Menu
+  activeRowMenuId: number | string | null = null;
 
   // View Modal
   selectedReceipt: any = null;
@@ -68,6 +78,45 @@ export class ReceiptListComponent implements OnInit {
     this.loadReceipts();
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    this.activeRowMenuId = null;
+  }
+
+  toggleRowMenu(event: MouseEvent, id: number | string): void {
+    event.stopPropagation();
+    this.activeRowMenuId = this.activeRowMenuId === id ? null : id;
+  }
+
+  toggleFilters(): void {
+    this.filtersOpen = !this.filtersOpen;
+  }
+
+  selectTab(tab: string): void {
+    this.activeTab = tab;
+    this.page = 1;
+    if (tab === 'all') {
+      this.status = '';
+      this.paymentType = '';
+    } else if (tab === 'Active') {
+      this.status = 'Active';
+      this.paymentType = '';
+    } else if (tab === 'Cancelled') {
+      this.status = 'Cancelled';
+      this.paymentType = '';
+    } else if (tab === 'Cash') {
+      this.status = '';
+      this.paymentType = 'Cash';
+    } else if (tab === 'Cheque') {
+      this.status = '';
+      this.paymentType = 'Cheque';
+    } else if (tab === 'UPI') {
+      this.status = '';
+      this.paymentType = 'Online / UPI';
+    }
+    this.loadReceipts();
+  }
+
   loadReceipts(): void {
     this.loading = true;
     const params: any = {
@@ -80,9 +129,6 @@ export class ReceiptListComponent implements OnInit {
     if (this.invoiceNo.trim()) params.invoice_no = this.invoiceNo.trim();
     if (this.dateFrom) params.date_from = this.dateFrom;
     if (this.dateTo) params.date_to = this.dateTo;
-    if (this.exactAmount !== null && !isNaN(this.exactAmount) && this.exactAmount >= 0) {
-      params.amount = this.exactAmount;
-    }
     if (this.minAmount !== null && !isNaN(this.minAmount) && this.minAmount >= 0) {
       params.min_amount = this.minAmount;
     }
@@ -91,7 +137,6 @@ export class ReceiptListComponent implements OnInit {
     }
     if (this.paymentType) params.payment_type = this.paymentType;
     if (this.paymentMode) params.payment_mode = this.paymentMode;
-    if (this.plottingPlace) params.plotting_place = this.plottingPlace;
     if (this.status) params.status = this.status;
 
     this.api.adminGetReceipts(params).subscribe({
@@ -128,13 +173,12 @@ export class ReceiptListComponent implements OnInit {
     this.invoiceNo = '';
     this.dateFrom = '';
     this.dateTo = '';
-    this.exactAmount = null;
     this.minAmount = null;
     this.maxAmount = null;
     this.paymentType = '';
     this.paymentMode = '';
-    this.plottingPlace = '';
     this.status = '';
+    this.activeTab = 'all';
     this.page = 1;
     this.loadReceipts();
   }
@@ -146,11 +190,6 @@ export class ReceiptListComponent implements OnInit {
     }
   }
 
-  onLimitChange(): void {
-    this.page = 1;
-    this.loadReceipts();
-  }
-
   get hasActiveFilters(): boolean {
     return !!(
       this.search.trim() ||
@@ -158,13 +197,12 @@ export class ReceiptListComponent implements OnInit {
       this.invoiceNo.trim() ||
       this.dateFrom ||
       this.dateTo ||
-      this.exactAmount !== null ||
       this.minAmount !== null ||
       this.maxAmount !== null ||
       this.paymentType ||
       this.paymentMode ||
-      this.plottingPlace ||
-      this.status
+      this.status ||
+      this.activeTab !== 'all'
     );
   }
 
@@ -182,6 +220,46 @@ export class ReceiptListComponent implements OnInit {
       pages.push(i);
     }
     return pages;
+  }
+
+  formatIndianLakh(val: number): string {
+    const num = Number(val) || 0;
+    if (num >= 10000000) {
+      return (num / 10000000).toFixed(2) + ' Cr';
+    }
+    if (num >= 100000) {
+      return (num / 100000).toFixed(2) + ' L';
+    }
+    return num.toLocaleString('en-IN');
+  }
+
+  sortBy(field: string): void {
+    if (this.sortField === field) {
+      this.sortAsc = !this.sortAsc;
+    } else {
+      this.sortField = field;
+      this.sortAsc = true;
+    }
+
+    this.receipts.sort((a: any, b: any) => {
+      let valA = a[field];
+      let valB = b[field];
+
+      if (field === 'amount' || field === 'paid_amount') {
+        valA = Number(a.paid_amount || 0);
+        valB = Number(b.paid_amount || 0);
+      } else if (field === 'receipt_date') {
+        valA = new Date(a.receipt_date).getTime();
+        valB = new Date(b.receipt_date).getTime();
+      } else {
+        valA = String(valA || '').toLowerCase();
+        valB = String(valB || '').toLowerCase();
+      }
+
+      if (valA < valB) return this.sortAsc ? -1 : 1;
+      if (valA > valB) return this.sortAsc ? 1 : -1;
+      return 0;
+    });
   }
 
   // View Modal
