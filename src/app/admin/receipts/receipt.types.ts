@@ -40,6 +40,9 @@ export interface ReceiptSummary {
   totalCollection: number;
   activeReceipts: number;
   cancelledReceipts: number;
+  cashReceipts?: number;
+  chequeReceipts?: number;
+  upiReceipts?: number;
 }
 
 export interface ReceiptPagination {
