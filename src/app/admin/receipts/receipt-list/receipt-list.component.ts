@@ -262,18 +262,69 @@ export class ReceiptListComponent implements OnInit {
     });
   }
 
+  // Number to Words converter helper
+  numberToWordsHelper(num: number | string): string {
+    const n = Math.floor(Number(num) || 0);
+    if (n === 0) return 'Zero Rupees Only';
+
+    const a = [
+      '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+      'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'
+    ];
+    const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    const convertTwoDigits = (v: number): string => {
+      if (v < 20) return a[v];
+      return b[Math.floor(v / 10)] + (v % 10 !== 0 ? ' ' + a[v % 10] : '');
+    };
+
+    const convertThreeDigits = (v: number): string => {
+      let str = '';
+      if (v >= 100) {
+        str += a[Math.floor(v / 100)] + ' Hundred ';
+        v %= 100;
+      }
+      if (v > 0) {
+        str += convertTwoDigits(v);
+      }
+      return str.trim();
+    };
+
+    let words = '';
+    const crore = Math.floor(n / 10000000);
+    let rem = n % 10000000;
+    const lakh = Math.floor(rem / 100000);
+    rem %= 100000;
+    const thousand = Math.floor(rem / 1000);
+    rem %= 1000;
+    const hundred = rem;
+
+    if (crore > 0) words += convertThreeDigits(crore) + ' Crore ';
+    if (lakh > 0) words += convertThreeDigits(lakh) + ' Lakh ';
+    if (thousand > 0) words += convertThreeDigits(thousand) + ' Thousand ';
+    if (hundred > 0) words += convertThreeDigits(hundred) + ' ';
+
+    return (words.trim() + ' Rupees Only').replace(/\s+/g, ' ');
+  }
+
   // View Modal
   viewReceipt(receipt: Receipt): void {
+    // Immediate optimistic preview with existing table data
+    this.selectedReceipt = receipt;
+    this.selectedAmountInWords = this.numberToWordsHelper(receipt.paid_amount);
+    this.showViewModal = true;
+
     this.api.adminGetReceiptById(receipt.id).subscribe({
       next: (res: any) => {
-        if (res.success && res.data) {
+        if (res.success && res.data && res.data.receipt) {
           this.selectedReceipt = res.data.receipt;
-          this.selectedAmountInWords = res.data.amountInWords || '';
-          this.showViewModal = true;
+          if (res.data.amountInWords) {
+            this.selectedAmountInWords = res.data.amountInWords;
+          }
         }
       },
-      error: (err: any) => {
-        this.showToast(err?.error?.message || 'Error opening receipt view', 'danger');
+      error: () => {
+        // Silently maintain existing receipt view data without breaking UI
       }
     });
   }
@@ -306,7 +357,7 @@ export class ReceiptListComponent implements OnInit {
     this.viewReceipt(receipt);
     setTimeout(() => {
       window.print();
-    }, 500);
+    }, 400);
   }
 
   // Cancel / Void

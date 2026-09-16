@@ -1310,25 +1310,45 @@ button[style*="background: #166534"]:disabled {
 
 /* ---- Print Styles for Layouts ---- */
 @media print {
-  /* Hide sidebars and topbars */
-  .sidebar, .panel-topbar, .hamburger-toggle, .desktop-sidebar-toggle {
+  /* Hide sidebars, topbars, navigation, modals, and toasts */
+  .sidebar,
+  .panel-topbar,
+  .hamburger-toggle,
+  .desktop-toggle,
+  .desktop-sidebar-toggle,
+  .topbar-actions,
+  .sidebar-overlay,
+  .toast-popup,
+  .no-print {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
   }
   /* Remove layout paddings/margins for print */
+  .panel-shell,
   .panel-main {
+    margin-left: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    background: #ffffff !important;
   }
   .panel-content {
     margin: 0 !important;
     padding: 0 !important;
     height: auto !important;
     overflow: visible !important;
+    background: #ffffff !important;
   }
   body, html {
-    background: #fff !important;
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }
 
@@ -1504,4 +1524,373 @@ table td .btn-action {
 .table td .btn-xs:hover {
   opacity: 0.9 !important;
   transform: translateY(-0.5px) !important;
-}
+}
+
+/* ======================================================== */
+/* GLOBAL PRINT SETUP (A4 LANDSCAPE - 2-UP RECEIPT PER PAGE)*/
+/* ======================================================== */
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html,
+  body {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+
+  /* Force hide all non-printable chrome & UI */
+  .panel-topbar,
+  .sidebar,
+  .sidebar-overlay,
+  .hamburger-toggle,
+  .desktop-toggle,
+  .topbar-actions,
+  .toast-popup,
+  .rm-header,
+  .rm-stat-card,
+  .row.g-3,
+  .modal-header,
+  .modal-footer,
+  .btn-close,
+  .no-print,
+  .navbar,
+  header.header,
+  footer.footer,
+  .rm-panel-card:not(.modal-dialog *) {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  /* Reset layout shells */
+  .panel-shell,
+  .panel-main,
+  .panel-content,
+  .receipt-management-shell,
+  .receipt-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+
+  .modal {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    width: 100% !important;
+  }
+
+  .modal-dialog {
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    transform: none !important;
+  }
+
+  .modal-content {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    width: 100% !important;
+  }
+
+  .modal-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    width: 100% !important;
+  }
+
+  /* 2 Receipts Side-by-Side on 1 A4 Landscape Sheet */
+  .receipt-dual-landscape-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: stretch !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: visible !important;
+  }
+
+  .receipt-copy-card {
+    width: 48.5% !important;
+    max-width: 48.5% !important;
+    flex: 0 0 48.5% !important;
+    box-sizing: border-box !important;
+    border: 1.5px solid #064e3b !important;
+    border-radius: 6px !important;
+    padding: 8px 10px !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    background: #ffffff !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: visible !important;
+    min-height: 188mm !important;
+  }
+
+  .receipt-cut-divider {
+    width: 3% !important;
+    flex: 0 0 3% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .receipt-cut-divider .cut-line {
+    flex: 1 !important;
+    width: 0 !important;
+    border-left: 1px dashed #94a3b8 !important;
+  }
+
+  .receipt-cut-divider .cut-scissor {
+    color: #64748b !important;
+    font-size: 11px !important;
+    padding: 6px 0 !important;
+    transform: rotate(90deg) !important;
+  }
+
+  /* Header inside receipt */
+  .receipt-head {
+    margin-bottom: 4px !important;
+  }
+
+  .receipt-head .company-title {
+    font-size: 14.5px !important;
+    font-weight: 800 !important;
+    color: #064e3b !important;
+    margin-bottom: 2px !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  .receipt-head .company-address,
+  .receipt-head .company-sub {
+    font-size: 9px !important;
+    color: #475569 !important;
+    margin-bottom: 1px !important;
+    line-height: 1.25 !important;
+  }
+
+  .receipt-badge-title {
+    background: #064e3b !important;
+    color: #ffffff !important;
+    font-size: 8.5px !important;
+    font-weight: 700 !important;
+    padding: 2px 7px !important;
+    margin-bottom: 0 !important;
+    border-radius: 3px !important;
+    display: inline-block !important;
+  }
+
+  .receipt-copy-badge {
+    font-size: 8.5px !important;
+    padding: 2px 7px !important;
+    font-weight: 700 !important;
+    border-radius: 3px !important;
+    display: inline-block !important;
+  }
+
+  .customer-badge {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border: 1px solid #10b981 !important;
+  }
+
+  .company-badge {
+    background: #eff6ff !important;
+    color: #1e40af !important;
+    border: 1px solid #3b82f6 !important;
+  }
+
+  /* Meta Grid */
+  .receipt-meta-grid {
+    font-size: 9px !important;
+    line-height: 1.35 !important;
+    gap: 2px 6px !important;
+    margin-bottom: 3px !important;
+  }
+
+  .serial-highlight {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+    padding: 1px 5px !important;
+    border-radius: 3px !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    display: inline-block !important;
+  }
+
+  .receipt-divider {
+    border-top: 1px solid #064e3b !important;
+    opacity: 0.3 !important;
+    margin: 3px 0 !important;
+  }
+
+  /* Details Table */
+  .receipt-table {
+    margin-bottom: 4px !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  .receipt-table td {
+    padding: 2.5px 5px !important;
+    font-size: 9px !important;
+    line-height: 1.25 !important;
+    border: 1px solid #cbd5e1 !important;
+    vertical-align: middle !important;
+  }
+
+  .receipt-table .lbl {
+    background: #f8fafc !important;
+    color: #334155 !important;
+    font-weight: 600 !important;
+    width: 26% !important;
+  }
+
+  .receipt-table .val {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    width: 24% !important;
+  }
+
+  .receipt-table .badge {
+    font-size: 8px !important;
+    padding: 1px 5px !important;
+    font-weight: 700 !important;
+  }
+
+  /* Amount Summary Box */
+  .receipt-amount-box {
+    background: #f0fdf4 !important;
+    border: 1px solid #86efac !important;
+    padding: 4px 8px !important;
+    margin-bottom: 4px !important;
+    border-radius: 5px !important;
+  }
+
+  .receipt-amount-box .amt-lbl {
+    font-size: 8px !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+    line-height: 1.1 !important;
+  }
+
+  .receipt-amount-box .amt-val {
+    font-size: 10.5px !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+  }
+
+  .receipt-amount-box .amt-val.text-success {
+    color: #16a34a !important;
+    font-size: 12.5px !important;
+    font-weight: 800 !important;
+  }
+
+  .amount-words-line {
+    font-size: 8.5px !important;
+    padding-top: 3px !important;
+    margin-top: 3px !important;
+    line-height: 1.25 !important;
+    color: #166534 !important;
+    border-top: 1px dashed #86efac !important;
+  }
+
+  /* Notes & Disclaimer */
+  .receipt-notes {
+    font-size: 8px !important;
+    color: #64748b !important;
+    margin-bottom: 2px !important;
+    line-height: 1.2 !important;
+  }
+
+  .terms-disclaimer {
+    font-size: 7.5px !important;
+    color: #64748b !important;
+    font-style: italic !important;
+    margin-top: 2px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Signature Section Pinned to Bottom with Adequate Space */
+  .receipt-signatures {
+    margin-top: 20px !important;
+    padding-top: 6px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+  }
+
+  .signature-box {
+    width: 115px !important;
+    text-align: center !important;
+  }
+
+  .sig-line {
+    border-top: 1.2px solid #334155 !important;
+    margin: 0 auto 3px auto !important;
+    width: 100% !important;
+  }
+
+  .sig-label {
+    font-size: 8.5px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    line-height: 1.2 !important;
+  }
+
+  .sig-sub {
+    font-size: 7.5px !important;
+    color: #64748b !important;
+    line-height: 1.1 !important;
+  }
+}
+
+

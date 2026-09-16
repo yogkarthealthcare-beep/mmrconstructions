@@ -48,7 +48,7 @@ export class ReceiptFormComponent implements OnInit {
     advisor_name: '',
     advisor_mobile: '',
     full_payment_time: '',
-    plotting_place: 'NEW M.M.R. CITY, Kanpur Lucknow Road, N.H.-27 Road Near Jajmau Tribhuwan Kheda (Unnao)',
+    plotting_place: '00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India',
     depositor_signature: '',
     authorized_signature: '',
     notes: '',

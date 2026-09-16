@@ -5,7 +5,7 @@
 </div>
 
 <div class="receipt-management-shell">
-  <!-- 1. TOP HEADER -->
+  <!-- 1. TOP HEADER (Hidden on print) -->
   <div class="rm-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3 no-print">
     <div class="d-flex align-items-center gap-3">
       <a routerLink="/admin/receipts" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px;" title="Back to Receipt Directory">
@@ -28,7 +28,7 @@
         <i class="fas fa-file-pdf me-1.5"></i> Download PDF
       </button>
       <button type="button" class="btn rm-btn-apply" (click)="print()" [disabled]="!receipt">
-        <i class="fas fa-print me-1.5"></i> Print Receipt
+        <i class="fas fa-print me-1.5"></i> Print A4 Landscape (2 Copies)
       </button>
     </div>
   </div>
@@ -41,32 +41,38 @@
 
   <!-- MAIN DOCUMENT PANEL -->
   <div *ngIf="receipt && !loading" class="receipt-wrapper">
-    <div class="receipt-paper shadow-sm" [class.cancelled-receipt]="receipt.status === 'Cancelled'">
-      <div *ngIf="receipt.status === 'Cancelled'" class="cancelled-watermark">
-        CANCELLED
-      </div>
+    <!-- Dual Copy Container (Customer Copy & Company Copy on 1 A4 Landscape Sheet) -->
+    <div class="receipt-dual-landscape-wrapper">
+      
+      <!-- COPY 1: CUSTOMER COPY -->
+      <div class="receipt-paper receipt-copy-card shadow-sm" [class.cancelled-receipt]="receipt.status === 'Cancelled'">
+        <div *ngIf="receipt.status === 'Cancelled'" class="cancelled-watermark">
+          CANCELLED
+        </div>
 
-      <!-- Header -->
-      <div class="receipt-head text-center">
-        <h2 class="company-title">NEW M.M.R. CITY</h2>
-        <p class="company-address">Kanpur Lucknow Road, N.H.-27 Road</p>
-        <p class="company-sub">Near Jajmau Tribhuwan Kheda (Unnao)</p>
-        <div class="receipt-badge-title">PAYMENT RECEIPT</div>
-      </div>
+        <!-- Header -->
+        <div class="receipt-head text-center">
+          <h2 class="company-title">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</h2>
+          <p class="company-address">00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India</p>
+          <p class="company-contact">Email: support&#64;mmrconstructions.in | Contact: 9511119879</p>
+          <div class="d-flex align-items-center justify-content-center gap-1.5 my-1">
+            <span class="receipt-badge-title">PAYMENT RECEIPT</span>
+            <span class="receipt-copy-badge customer-badge">CUSTOMER COPY</span>
+          </div>
+        </div>
 
-      <!-- Meta Grid -->
-      <div class="receipt-meta-grid fs-11">
-        <div><strong>Receipt No:</strong> {{ receipt.receipt_no }}</div>
-        <div><strong>Date:</strong> {{ receipt.receipt_date | date:'dd/MM/yyyy' }}</div>
-        <div><strong>Serial No:</strong> {{ receipt.serial_no }}</div>
-        <div><strong>Plotting Place:</strong> {{ receipt.plotting_place }}</div>
-      </div>
+        <!-- Meta Grid -->
+        <div class="receipt-meta-grid">
+          <div><strong>Receipt No:</strong> {{ receipt.receipt_no }}</div>
+          <div><strong>Date:</strong> {{ receipt.receipt_date | date:'dd/MM/yyyy' }}</div>
+          <div><span class="serial-highlight"><strong>Serial No:</strong> {{ receipt.serial_no }}</span></div>
+          <div><strong>Plotting Place:</strong> {{ receipt.plotting_place || '00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India' }}</div>
+        </div>
 
-      <hr class="receipt-divider my-2" />
+        <hr class="receipt-divider" />
 
-      <!-- Details Table -->
-      <div class="table-responsive">
-        <table class="table table-bordered table-sm receipt-table mb-2">
+        <!-- Details Table -->
+        <table class="table table-bordered receipt-table">
           <tbody>
             <tr>
               <td class="lbl">Customer Name:</td>
@@ -78,17 +84,21 @@
               <td class="lbl">R.O.P. (S/o, D/o, W/o):</td>
               <td class="val">{{ receipt.r_o_p || '—' }}</td>
               <td class="lbl">Plot No:</td>
-              <td class="val">{{ receipt.plot_no || '—' }}</td>
+              <td class="val fw-bold">{{ receipt.plot_no || '—' }}</td>
             </tr>
             <tr>
               <td class="lbl">Plot Area:</td>
               <td class="val">{{ receipt.plot_area || '—' }}</td>
               <td class="lbl">Payment Mode:</td>
-              <td class="val"><span class="badge bg-success fs-10">{{ receipt.payment_mode }}</span></td>
+              <td class="val"><span class="badge bg-success fs-9 py-0.5 px-1.5">{{ receipt.payment_mode }}</span></td>
             </tr>
             <tr>
               <td class="lbl">Payment Type:</td>
-              <td class="val"><span class="badge bg-primary fs-10">{{ receipt.payment_type }}</span></td>
+              <td class="val">
+                <span class="badge fs-9 py-0.5 px-1.5" [ngClass]="{'bg-primary': receipt.payment_type==='Cash', 'bg-info': receipt.payment_type==='Cheque', 'bg-purple': receipt.payment_type==='UPI'}">
+                  {{ receipt.payment_type }}
+                </span>
+              </td>
               <td class="lbl">Amount Depositor:</td>
               <td class="val">{{ receipt.amount_depositor_name || '—' }}</td>
             </tr>
@@ -106,50 +116,175 @@
             </tr>
           </tbody>
         </table>
-      </div>
 
-      <!-- Financial Figures Summary Box -->
-      <div class="receipt-amount-box p-2.5 rounded mb-2">
-        <div class="row text-center mb-1">
-          <div class="col-4">
-            <div class="text-muted fs-10">Receipt Amount</div>
-            <div class="amount-val text-secondary fs-12">₹{{ receipt.receipt_amount | number:'1.2-2' }}</div>
+        <!-- Financial Figures Summary Box -->
+        <div class="receipt-amount-box">
+          <div class="row text-center g-0">
+            <div class="col-4">
+              <div class="amt-lbl">Receipt Amount</div>
+              <div class="amt-val text-secondary">₹{{ receipt.receipt_amount | number:'1.2-2' }}</div>
+            </div>
+            <div class="col-4">
+              <div class="amt-lbl">Paid Amount</div>
+              <div class="amt-val text-success fw-bold">₹{{ receipt.paid_amount | number:'1.2-2' }}</div>
+            </div>
+            <div class="col-4">
+              <div class="amt-lbl">Inward Amount</div>
+              <div class="amt-val text-info">₹{{ receipt.inward_amount | number:'1.2-2' }}</div>
+            </div>
           </div>
-          <div class="col-4">
-            <div class="text-muted fs-10">Paid Amount</div>
-            <div class="amount-val text-success fw-bold fs-14">₹{{ receipt.paid_amount | number:'1.2-2' }}</div>
-          </div>
-          <div class="col-4">
-            <div class="text-muted fs-10">Inward Amount</div>
-            <div class="amount-val text-info fs-12">₹{{ receipt.inward_amount | number:'1.2-2' }}</div>
+          <div class="amount-words-line">
+            <strong>Amount in Words: </strong>
+            <span class="text-success fst-italic">{{ amountInWords }}</span>
           </div>
         </div>
-        <div class="amount-words-line border-top pt-1 mt-1 fs-11">
-          <strong>Amount in Words: </strong>
-          <span class="text-success fst-italic">{{ amountInWords }}</span>
+
+        <div *ngIf="receipt.notes" class="receipt-notes">
+          <strong>Notes / Terms:</strong> {{ receipt.notes }}
+        </div>
+
+        <div class="terms-disclaimer">
+          * This receipt is a verified acknowledgment of payment for MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED. All payments via cheque are subject to clearance.
+        </div>
+
+        <!-- Signatures with Generous Top Space -->
+        <div class="receipt-signatures">
+          <div class="signature-box text-center">
+            <div class="sig-line"></div>
+            <div class="sig-label">Depositor's Signature</div>
+          </div>
+          <div class="signature-box text-center">
+            <div class="sig-line"></div>
+            <div class="sig-label">Authorized Signatory</div>
+            <div class="sig-sub">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</div>
+          </div>
         </div>
       </div>
 
-      <div *ngIf="receipt.notes" class="receipt-notes mb-2 fs-10 text-muted">
-        <strong>Notes / Terms:</strong> {{ receipt.notes }}
+      <!-- CENTER CUTTING DIVIDER (Perforation Line) -->
+      <div class="receipt-cut-divider">
+        <div class="cut-line"></div>
+        <div class="cut-scissor" title="Cut Here"><i class="fas fa-cut"></i></div>
+        <div class="cut-line"></div>
       </div>
 
-      <div class="terms-disclaimer text-muted fs-10 fst-italic mb-2">
-        * This receipt is a verified acknowledgment of payment for NEW M.M.R. CITY, Unnao. All payments via cheque are subject to clearance.
+      <!-- COPY 2: COMPANY / OFFICE COPY -->
+      <div class="receipt-paper receipt-copy-card shadow-sm" [class.cancelled-receipt]="receipt.status === 'Cancelled'">
+        <div *ngIf="receipt.status === 'Cancelled'" class="cancelled-watermark">
+          CANCELLED
+        </div>
+
+        <!-- Header -->
+        <div class="receipt-head text-center">
+          <h2 class="company-title">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</h2>
+          <p class="company-address">00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India</p>
+          <p class="company-contact">Email: support&#64;mmrconstructions.in | Contact: 9511119879</p>
+          <div class="d-flex align-items-center justify-content-center gap-1.5 my-1">
+            <span class="receipt-badge-title">PAYMENT RECEIPT</span>
+            <span class="receipt-copy-badge company-badge">COMPANY / OFFICE COPY</span>
+          </div>
+        </div>
+
+        <!-- Meta Grid -->
+        <div class="receipt-meta-grid">
+          <div><strong>Receipt No:</strong> {{ receipt.receipt_no }}</div>
+          <div><strong>Date:</strong> {{ receipt.receipt_date | date:'dd/MM/yyyy' }}</div>
+          <div><span class="serial-highlight"><strong>Serial No:</strong> {{ receipt.serial_no }}</span></div>
+          <div><strong>Plotting Place:</strong> {{ receipt.plotting_place || '00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India' }}</div>
+        </div>
+
+        <hr class="receipt-divider" />
+
+        <!-- Details Table -->
+        <table class="table table-bordered receipt-table">
+          <tbody>
+            <tr>
+              <td class="lbl">Customer Name:</td>
+              <td class="val fw-bold">{{ receipt.customer_name }}</td>
+              <td class="lbl">Mobile No:</td>
+              <td class="val">{{ receipt.mobile_no }}</td>
+            </tr>
+            <tr>
+              <td class="lbl">R.O.P. (S/o, D/o, W/o):</td>
+              <td class="val">{{ receipt.r_o_p || '—' }}</td>
+              <td class="lbl">Plot No:</td>
+              <td class="val fw-bold">{{ receipt.plot_no || '—' }}</td>
+            </tr>
+            <tr>
+              <td class="lbl">Plot Area:</td>
+              <td class="val">{{ receipt.plot_area || '—' }}</td>
+              <td class="lbl">Payment Mode:</td>
+              <td class="val"><span class="badge bg-success fs-9 py-0.5 px-1.5">{{ receipt.payment_mode }}</span></td>
+            </tr>
+            <tr>
+              <td class="lbl">Payment Type:</td>
+              <td class="val">
+                <span class="badge fs-9 py-0.5 px-1.5" [ngClass]="{'bg-primary': receipt.payment_type==='Cash', 'bg-info': receipt.payment_type==='Cheque', 'bg-purple': receipt.payment_type==='UPI'}">
+                  {{ receipt.payment_type }}
+                </span>
+              </td>
+              <td class="lbl">Amount Depositor:</td>
+              <td class="val">{{ receipt.amount_depositor_name || '—' }}</td>
+            </tr>
+            <tr *ngIf="receipt.payment_type === 'Cheque'">
+              <td class="lbl">Cheque No &amp; Date:</td>
+              <td class="val">{{ receipt.cheque_no }} ({{ receipt.cheque_date | date:'dd/MM/yyyy' }})</td>
+              <td class="lbl">Bank Name:</td>
+              <td class="val">{{ receipt.bank_name }}</td>
+            </tr>
+            <tr>
+              <td class="lbl">Advisor Name:</td>
+              <td class="val">{{ receipt.advisor_name || '—' }}</td>
+              <td class="lbl">Advisor Mobile:</td>
+              <td class="val">{{ receipt.advisor_mobile || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Financial Figures Summary Box -->
+        <div class="receipt-amount-box">
+          <div class="row text-center g-0">
+            <div class="col-4">
+              <div class="amt-lbl">Receipt Amount</div>
+              <div class="amt-val text-secondary">₹{{ receipt.receipt_amount | number:'1.2-2' }}</div>
+            </div>
+            <div class="col-4">
+              <div class="amt-lbl">Paid Amount</div>
+              <div class="amt-val text-success fw-bold">₹{{ receipt.paid_amount | number:'1.2-2' }}</div>
+            </div>
+            <div class="col-4">
+              <div class="amt-lbl">Inward Amount</div>
+              <div class="amt-val text-info">₹{{ receipt.inward_amount | number:'1.2-2' }}</div>
+            </div>
+          </div>
+          <div class="amount-words-line">
+            <strong>Amount in Words: </strong>
+            <span class="text-success fst-italic">{{ amountInWords }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="receipt.notes" class="receipt-notes">
+          <strong>Notes / Terms:</strong> {{ receipt.notes }}
+        </div>
+
+        <div class="terms-disclaimer">
+          * This receipt is a verified acknowledgment of payment for MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED. All payments via cheque are subject to clearance.
+        </div>
+
+        <!-- Signatures with Generous Top Space -->
+        <div class="receipt-signatures">
+          <div class="signature-box text-center">
+            <div class="sig-line"></div>
+            <div class="sig-label">Depositor's Signature</div>
+          </div>
+          <div class="signature-box text-center">
+            <div class="sig-line"></div>
+            <div class="sig-label">Authorized Signatory</div>
+            <div class="sig-sub">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</div>
+          </div>
+        </div>
       </div>
 
-      <!-- Signatures -->
-      <div class="receipt-signatures mt-3 pt-2 d-flex justify-content-between">
-        <div class="signature-box text-center">
-          <div class="sig-line"></div>
-          <div class="sig-label">Depositor's Signature</div>
-        </div>
-        <div class="signature-box text-center">
-          <div class="sig-line"></div>
-          <div class="sig-label">Authorized Signatory</div>
-          <div class="sig-sub">MMR Constructions &amp; Developers</div>
-        </div>
-      </div>
     </div>
 
     <!-- Audit Trail Panel (Hidden on print) -->

@@ -17,7 +17,34 @@ export class SiteToggleService {
   private activeSiteIdSubject = new BehaviorSubject<number | null>(null);
   public activeSiteId$: Observable<number | null> = this.activeSiteIdSubject.asObservable();
 
-  constructor(private api: ApiService) {}
+  private masterToggleSubject = new BehaviorSubject<boolean>(true); // default true
+  public masterToggleState$: Observable<boolean> = this.masterToggleSubject.asObservable();
+
+  constructor(private api: ApiService) {
+    try {
+      const stored = localStorage.getItem('mmr_master_property_tools');
+      if (stored === 'off') {
+        this.masterToggleSubject.next(false);
+      } else if (stored === 'on') {
+        this.masterToggleSubject.next(true);
+      }
+    } catch (_) {}
+
+    // Fetch from backend home page settings
+    this.api.getHomePageSettings().subscribe({
+      next: (res: any) => {
+        const data = res?.data || {};
+        if (data.section_visibility && data.section_visibility.master_property_tools !== undefined) {
+          const val = Boolean(data.section_visibility.master_property_tools);
+          this.masterToggleSubject.next(val);
+          try {
+            localStorage.setItem('mmr_master_property_tools', val ? 'on' : 'off');
+          } catch (_) {}
+        }
+      },
+      error: () => {}
+    });
+  }
 
   /**
    * Checks if interactive plot mode is enabled for a given site.
@@ -62,9 +89,6 @@ export class SiteToggleService {
     }
   }
 
-  private masterToggleSubject = new BehaviorSubject<boolean>(true); // default true
-  public masterToggleState$: Observable<boolean> = this.masterToggleSubject.asObservable();
-
   /**
    * Master toggle for Admin Property & Plot tools menu items
    */
@@ -74,6 +98,9 @@ export class SiteToggleService {
 
   setMasterPropertyPlotEnabled(enabled: boolean): void {
     this.masterToggleSubject.next(enabled);
+    try {
+      localStorage.setItem('mmr_master_property_tools', enabled ? 'on' : 'off');
+    } catch (_) {}
     
     // Save to backend so public site sees it
     this.api.adminGetHomePageSettings().subscribe({
@@ -87,7 +114,17 @@ export class SiteToggleService {
            section_visibility: currentVisibility
         };
         
-        this.api.adminUpdateHomePageSettings(payload).subscribe();
+        this.api.adminUpdateHomePageSettings(payload).subscribe({
+          error: (err) => console.warn('Could not update backend home settings:', err)
+        });
+      },
+      error: () => {
+        const payload = {
+          section_visibility: { master_property_tools: enabled }
+        };
+        this.api.adminUpdateHomePageSettings(payload).subscribe({
+          error: () => {}
+        });
       }
     });
   }
@@ -95,6 +132,9 @@ export class SiteToggleService {
   // Allow setting state from API response
   syncMasterPropertyPlotEnabled(enabled: boolean): void {
     this.masterToggleSubject.next(enabled);
+    try {
+      localStorage.setItem('mmr_master_property_tools', enabled ? 'on' : 'off');
+    } catch (_) {}
   }
 
   /**

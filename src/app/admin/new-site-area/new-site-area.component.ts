@@ -54,6 +54,13 @@ export class NewSiteAreaComponent implements OnInit {
 
   togglePropertyPlotMaster(enabled: boolean) {
     this.siteToggle.setMasterPropertyPlotEnabled(enabled);
+    this.toast = `Property & Plot tools ${enabled ? 'Enabled (ON)' : 'Disabled (OFF)'}`;
+    this.toastType = 'success';
+    setTimeout(() => {
+      if (this.toast.includes('Property & Plot tools')) {
+        this.toast = '';
+      }
+    }, 3000);
   }
 
   get activePlotModeSitesCount(): number {
