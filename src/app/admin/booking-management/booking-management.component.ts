@@ -300,9 +300,9 @@ export class BookingManagementComponent implements OnInit {
 
   loadBookings() {
     this.loading = true;
-    this.api.adminGetBookings({}).subscribe({
+    this.api.adminGetBookings({ limit: 500 }).subscribe({
       next: (res: any) => {
-        this.bookings = res?.data || [];
+        this.bookings = Array.isArray(res) ? res : (res?.data || []);
         this.loading = false;
         if (this.selected?.booking_id) {
           const fresh = this.bookings.find(b => b.booking_id === this.selected.booking_id);
