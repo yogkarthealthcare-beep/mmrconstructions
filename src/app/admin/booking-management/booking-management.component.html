@@ -741,7 +741,7 @@
           <div class="input-with-icon">
             <i class="fas fa-search search-icon text-muted"></i>
             <input type="text" 
-                   class="erp-input ps-4 fs-12" 
+                   class="erp-input customer-search-field fs-12" 
                    [ngModel]="customerSearchQuery" 
                    (ngModelChange)="onCustomerSearchType($event)" 
                    placeholder="Search by Name, User ID, Member ID (MMR-CUST-...), Mobile, or Email...">
@@ -754,19 +754,19 @@
           <div class="customer-results-dropdown shadow-sm" *ngIf="customerSearchResults.length">
             <div class="customer-result-item" *ngFor="let c of customerSearchResults" (click)="selectCustomer(c)">
               <div class="d-flex justify-content-between align-items-center mb-0.5">
-                <strong class="fs-12 text-dark">{{ c.full_name }}</strong>
+                <strong class="cust-result-name">{{ c.full_name }}</strong>
                 <div class="d-flex gap-1 align-items-center">
-                  <span class="badge bg-light text-dark border fs-10">{{ c.user_type || 'Customer' }}</span>
-                  <span class="badge" [ngClass]="c.is_verified || c.account_status === 'Active' ? 'bg-success' : 'bg-warning text-dark'" style="font-size: 9px;">
+                  <span class="badge cust-badge-role">{{ c.user_type || 'Customer' }}</span>
+                  <span class="badge cust-badge-kyc" [ngClass]="c.is_verified || c.account_status === 'Active' ? 'bg-success' : 'bg-warning text-dark'">
                     {{ c.is_verified || c.account_status === 'Active' ? 'KYC Verified' : 'Pending KYC' }}
                   </span>
                 </div>
               </div>
-              <div class="fs-11 text-muted d-flex gap-2 flex-wrap">
-                <span><i class="fas fa-id-card me-1"></i>ID: {{ c.member_id || ('Cust #' + c.user_id) }}</span>
-                <span><i class="fas fa-phone-alt me-1"></i>{{ c.mobile_no }}</span>
-                <span *ngIf="c.email"><i class="fas fa-envelope me-1"></i>{{ c.email }}</span>
-                <span *ngIf="c.sponsor_name" class="text-primary"><i class="fas fa-user-friends me-1"></i>Ref: {{ c.sponsor_name }}</span>
+              <div class="cust-result-meta">
+                <span><i class="fas fa-id-card"></i>ID: {{ c.member_id || ('Cust #' + c.user_id) }}</span>
+                <span><i class="fas fa-phone-alt"></i>{{ c.mobile_no }}</span>
+                <span *ngIf="c.email"><i class="fas fa-envelope"></i>{{ c.email }}</span>
+                <span *ngIf="c.sponsor_name" class="text-primary"><i class="fas fa-user-friends"></i>Ref: {{ c.sponsor_name }}</span>
               </div>
             </div>
           </div>
