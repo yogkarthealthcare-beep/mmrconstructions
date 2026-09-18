@@ -711,122 +711,143 @@
 </ng-container>
 
 <!-- ========================================================================= -->
-<!-- MODAL: PLOT ALLOCATION MODAL -->
+<!-- MODAL: PLOT ALLOCATION & INITIAL PAYMENT POPUP (REDESIGNED) -->
 <!-- ========================================================================= -->
-<div class="erp-modal-backdrop" *ngIf="showAllocateModal">
-  <div class="erp-modal-box modal-lg">
-    <div class="erp-modal-header bg-dark text-white">
+<div class="erp-modal-backdrop" *ngIf="showAllocateModal" (click)="showAllocateModal = false">
+  <div class="erp-modal-box compact-allocation-modal" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="erp-modal-header bg-dark-slate py-2.5 px-3.5">
       <div class="d-flex align-items-center gap-2">
-        <i class="fas fa-vector-square text-gold fs-18"></i>
-        <h5 class="modal-title text-white mb-0">Plot Allocation &amp; Booking Desk</h5>
+        <div class="modal-icon-badge"><i class="fas fa-map-marked-alt text-gold"></i></div>
+        <div>
+          <h6 class="modal-title text-white mb-0 fw-bold fs-14">Plot Allocation</h6>
+          <small class="text-white-50 fs-11">Allocate plot to customer and record initial payment</small>
+        </div>
       </div>
-      <button type="button" class="btn-close-modal text-white" (click)="showAllocateModal = false">&times;</button>
+      <button type="button" class="btn-close-modal text-white fs-18" (click)="showAllocateModal = false" title="Close">&times;</button>
     </div>
 
     <div class="erp-modal-body p-3">
       
-      <!-- STEP 1: Search & Select Customer -->
-      <div class="allocation-step-card mb-3">
-        <label class="erp-label fw-bold"><i class="fas fa-user-check text-emerald me-1.5"></i> Select Registered Customer <span class="text-danger">*</span></label>
+      <!-- SECTION 1: Customer Search & Selection -->
+      <div class="modal-section-box mb-2.5">
+        <label class="section-label-sm">
+          <i class="fas fa-user-check text-emerald me-1"></i> Customer Selection <span class="text-danger">*</span>
+        </label>
         
+        <!-- Search Input Bar (when no customer selected) -->
         <div class="customer-search-wrap" *ngIf="!selectedCustomer">
           <div class="input-with-icon">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" class="erp-input ps-4" 
+            <i class="fas fa-search search-icon text-muted"></i>
+            <input type="text" 
+                   class="erp-input ps-4 fs-12" 
                    [ngModel]="customerSearchQuery" 
                    (ngModelChange)="onCustomerSearchType($event)" 
-                   placeholder="Type Customer Name, Member ID (MMR-CUST-...), Phone, or Email...">
+                   placeholder="Search by Name, User ID, Member ID (MMR-CUST-...), Mobile, or Email...">
           </div>
-          <div *ngIf="customerSearching" class="search-indicator"><i class="fas fa-circle-notch fa-spin me-1"></i> Searching customers...</div>
+          <div *ngIf="customerSearching" class="search-indicator fs-11 text-muted py-1">
+            <i class="fas fa-circle-notch fa-spin me-1 text-gold"></i> Searching customer directory...
+          </div>
           
-          <!-- Autocomplete Results Dropdown -->
-          <div class="customer-results-dropdown" *ngIf="customerSearchResults.length">
+          <!-- Compact Autocomplete Results Dropdown -->
+          <div class="customer-results-dropdown shadow-sm" *ngIf="customerSearchResults.length">
             <div class="customer-result-item" *ngFor="let c of customerSearchResults" (click)="selectCustomer(c)">
-              <div class="d-flex justify-content-between align-items-center">
-                <strong>{{ c.full_name }}</strong>
-                <span class="erp-badge badge-emerald">{{ c.user_type || 'Customer' }}</span>
+              <div class="d-flex justify-content-between align-items-center mb-0.5">
+                <strong class="fs-12 text-dark">{{ c.full_name }}</strong>
+                <div class="d-flex gap-1 align-items-center">
+                  <span class="badge bg-light text-dark border fs-10">{{ c.user_type || 'Customer' }}</span>
+                  <span class="badge" [ngClass]="c.is_verified || c.account_status === 'Active' ? 'bg-success' : 'bg-warning text-dark'" style="font-size: 9px;">
+                    {{ c.is_verified || c.account_status === 'Active' ? 'KYC Verified' : 'Pending KYC' }}
+                  </span>
+                </div>
               </div>
-              <div class="fs-11 text-muted">ID: {{ c.member_id || ('Cust #' + c.user_id) }} · Phone: {{ c.mobile_no }} · {{ c.email }}</div>
+              <div class="fs-11 text-muted d-flex gap-2 flex-wrap">
+                <span><i class="fas fa-id-card me-1"></i>ID: {{ c.member_id || ('Cust #' + c.user_id) }}</span>
+                <span><i class="fas fa-phone-alt me-1"></i>{{ c.mobile_no }}</span>
+                <span *ngIf="c.email"><i class="fas fa-envelope me-1"></i>{{ c.email }}</span>
+                <span *ngIf="c.sponsor_name" class="text-primary"><i class="fas fa-user-friends me-1"></i>Ref: {{ c.sponsor_name }}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Selected Customer Card -->
-        <div class="selected-customer-banner" *ngIf="selectedCustomer">
-          <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2.5">
-              <div class="customer-avatar-sm">{{ getCustomerInitials(selectedCustomer.full_name) }}</div>
+        <!-- Compact Selected Customer Card -->
+        <div class="selected-customer-card" *ngIf="selectedCustomer">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <div class="customer-avatar-xs">{{ getCustomerInitials(selectedCustomer.full_name) }}</div>
               <div>
-                <strong class="fs-13 text-dark d-block">{{ selectedCustomer.full_name }}</strong>
+                <div class="d-flex align-items-center gap-1.5">
+                  <strong class="fs-12 text-dark">{{ selectedCustomer.full_name }}</strong>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle fs-10 py-0 px-1">
+                    {{ selectedCustomer.member_id || ('Cust #' + (selectedCustomer.user_id || selectedCustomer.id)) }}
+                  </span>
+                  <span class="badge bg-light text-muted border fs-10 py-0 px-1">{{ selectedCustomer.user_type || 'Customer' }}</span>
+                </div>
                 <div class="fs-11 text-muted">
-                  <span>ID: {{ selectedCustomer.member_id || ('Cust #' + selectedCustomer.user_id) }}</span> · 
-                  <span><i class="fas fa-phone-alt"></i> {{ selectedCustomer.mobile_no }}</span>
+                  <span><i class="fas fa-phone-alt me-1 text-muted"></i>{{ selectedCustomer.mobile_no }}</span>
+                  <span *ngIf="selectedCustomer.email" class="ms-2"><i class="fas fa-envelope me-1 text-muted"></i>{{ selectedCustomer.email }}</span>
+                  <span *ngIf="selectedCustomer.sponsor_name" class="ms-2 text-primary"><i class="fas fa-user-friends me-1"></i>Ref: {{ selectedCustomer.sponsor_name }}</span>
                 </div>
               </div>
             </div>
-            <button type="button" class="btn btn-outline-danger btn-xs" (click)="clearSelectedCustomer()"><i class="fas fa-times me-1"></i> Change</button>
+            <button type="button" class="btn btn-outline-secondary btn-xs py-0.5 px-2 fs-11" (click)="clearSelectedCustomer()" title="Select another customer">
+              <i class="fas fa-times me-1 text-danger"></i> Change
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- STEP 2: Site Selection & Manual Plot Validation -->
-      <div class="allocation-step-card mb-3">
-        <label class="erp-label fw-bold"><i class="fas fa-map-marked-alt text-gold me-1.5"></i> Site &amp; Plot Verification <span class="text-danger">*</span></label>
+      <!-- SECTION 2: Site Selection & Manual Plot Number Input (Aligned in same row) -->
+      <div class="modal-section-box mb-2.5">
+        <label class="section-label-sm">
+          <i class="fas fa-map-marker-alt text-gold me-1"></i> Site &amp; Plot Details <span class="text-danger">*</span>
+        </label>
         
-        <div class="row g-2 mb-2">
+        <div class="row g-2">
+          <!-- Site Dropdown -->
           <div class="col-md-6">
             <label class="erp-label-sm">Project Site <span class="text-danger">*</span></label>
-            <select class="erp-input" [(ngModel)]="allocateSiteId" (change)="onSiteOrPlotChange()">
+            <select class="erp-input fs-12" [(ngModel)]="allocateSiteId">
               <option [ngValue]="null">-- Select Project Site --</option>
               <option *ngFor="let s of sites" [ngValue]="s.site_id">{{ s.site_name }} ({{ s.city }})</option>
             </select>
           </div>
 
+          <!-- Manual Plot Number / Name (Pure Text Input) -->
           <div class="col-md-6">
-            <label class="erp-label-sm">Plot Number / Name <span class="text-danger">* (Text Input)</span></label>
-            <div class="input-group">
-              <input type="text" class="erp-input" [(ngModel)]="allocatePlotNumber" (input)="onSiteOrPlotChange()" (blur)="validatePlot()" placeholder="e.g. 104, 42, A-12">
-              <button class="btn btn-outline-secondary btn-sm" type="button" (click)="validatePlot()" [disabled]="!allocateSiteId || !allocatePlotNumber">
-                <i class="fas fa-check-double"></i> Check
-              </button>
-            </div>
+            <label class="erp-label-sm">Plot Number / Name <span class="text-danger">*</span></label>
+            <input type="text" 
+                   class="erp-input fs-12" 
+                   [(ngModel)]="allocatePlotNumber" 
+                   placeholder="e.g. Plot 1, Plot No. 12A, A-101, Corner Plot">
+            <div class="fs-10 text-muted mt-0.5">Enter the plot number or plot name manually.</div>
           </div>
-        </div>
-
-        <!-- Real-Time Validation Alert Banner -->
-        <div *ngIf="plotValidation.loading" class="alert alert-info py-2 fs-12 mb-0">
-          <i class="fas fa-circle-notch fa-spin me-1"></i> Verifying plot in site layout...
-        </div>
-
-        <div *ngIf="plotValidation.checked && !plotValidation.loading" class="alert py-2 fs-12 mb-0" 
-             [ngClass]="plotValidation.is_available ? 'alert-success' : 'alert-danger'">
-          <i class="fas" [ngClass]="plotValidation.is_available ? 'fa-check-circle' : 'fa-exclamation-triangle'" class="me-1"></i>
-          {{ plotValidation.message }}
-          <span *ngIf="plotValidation.is_available && plotValidation.plot" class="d-block mt-1">
-            <strong>Area:</strong> {{ plotValidation.plot.plot_area }} sq.ft · <strong>Category:</strong> {{ plotValidation.plot.plot_category || 'Residential' }} · <strong>Standard Price:</strong> ₹{{ plotValidation.plot.base_price | number:'1.0-0' }}
-          </span>
         </div>
       </div>
 
-      <!-- STEP 3: Financials & Initial Advance Payment -->
+      <!-- SECTION 3: Pricing & Initial Payment Entry (Clean Grid Layout) -->
       <form [formGroup]="allocateForm">
-        <div class="allocation-step-card">
-          <label class="erp-label fw-bold"><i class="fas fa-coins text-emerald me-1.5"></i> Pricing &amp; Initial Payment Entry</label>
+        <div class="modal-section-box mb-2.5">
+          <label class="section-label-sm">
+            <i class="fas fa-coins text-emerald me-1"></i> Pricing &amp; Initial Payment Entry
+          </label>
           
           <div class="row g-2 mb-2">
             <div class="col-md-6">
               <label class="erp-label-sm">Total Plot Price (₹) <span class="text-danger">*</span></label>
-              <input type="number" class="erp-input" formControlName="total_price" placeholder="e.g. 1000000">
+              <input type="number" class="erp-input fs-12" formControlName="total_price" placeholder="e.g. 1000000">
             </div>
 
             <div class="col-md-6">
               <label class="erp-label-sm">Initial Amount Received (₹)</label>
-              <input type="number" class="erp-input" formControlName="initial_payment_amount" placeholder="e.g. 200000">
+              <input type="number" class="erp-input fs-12" formControlName="initial_payment_amount" placeholder="e.g. 200000">
             </div>
 
             <div class="col-md-6">
-              <label class="erp-label-sm">Payment Mode</label>
-              <select class="erp-input" formControlName="payment_mode">
+              <label class="erp-label-sm">Payment Mode <span class="text-danger">*</span></label>
+              <select class="erp-input fs-12" formControlName="payment_mode">
                 <option value="Cash">Cash</option>
                 <option value="Bank Transfer">Bank Transfer / NEFT / RTGS</option>
                 <option value="UPI">UPI</option>
@@ -838,39 +859,70 @@
 
             <div class="col-md-6">
               <label class="erp-label-sm">Transaction / Cheque / UTR Ref</label>
-              <input type="text" class="erp-input" formControlName="payment_reference" placeholder="e.g. UTR-998827 or CHQ-004812">
+              <input type="text" class="erp-input fs-12" formControlName="payment_reference" placeholder="e.g. UTR-998827 or CHQ-004812">
             </div>
 
             <div class="col-12">
-              <label class="erp-label-sm">Allocation Remarks / Audit Notes</label>
-              <input type="text" class="erp-input" formControlName="remarks" placeholder="Notes on allocation terms, token agreement, etc.">
+              <label class="erp-label-sm">Remarks / Allocation Notes</label>
+              <input type="text" class="erp-input fs-12" formControlName="remarks" placeholder="Optional notes on allocation terms...">
             </div>
           </div>
 
-          <!-- Dynamic Remaining Balance Preview Box -->
-          <div class="balance-preview-box">
-            <div class="d-flex justify-content-between align-items-center">
-              <span>Calculated Outstanding Balance:</span>
-              <strong class="fs-15 text-danger">₹{{ remainingBalancePreview | number:'1.0-0' }}</strong>
+          <!-- SECTION 4: Live Financial Summary Box -->
+          <div class="live-financial-summary-card">
+            <div class="row g-2 text-center align-items-center">
+              <div class="col-3">
+                <div class="summary-metric-box">
+                  <span class="metric-label">Total Price</span>
+                  <strong class="metric-val text-dark">₹{{ totalPriceInput | number:'1.0-0' }}</strong>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="summary-metric-box">
+                  <span class="metric-label">Initial Payment</span>
+                  <strong class="metric-val text-emerald">₹{{ initialPaymentInput | number:'1.0-0' }}</strong>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="summary-metric-box">
+                  <span class="metric-label">Remaining Balance</span>
+                  <strong class="metric-val text-danger">₹{{ remainingBalancePreview | number:'1.0-0' }}</strong>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="summary-metric-box">
+                  <span class="metric-label">Progress</span>
+                  <strong class="metric-val text-primary">{{ paymentProgressPercent }}%</strong>
+                </div>
+              </div>
             </div>
-            <div class="fs-10 text-muted mt-1">
-              * Non-online payments are recorded under verification and will be confirmed by Finance before finalizing the approved balance.
+            
+            <div class="progress mt-1.5" style="height: 4px;">
+              <div class="progress-bar bg-success" role="progressbar" [style.width.%]="paymentProgressPercent"></div>
+            </div>
+            
+            <div class="fs-10 text-muted mt-1 text-center">
+              * Cash, Bank Transfer, UPI, and Cheque payments are recorded under verification and will be verified by Accounts before reducing final ledger balance.
             </div>
           </div>
+
         </div>
       </form>
 
     </div>
 
-    <div class="erp-modal-footer">
-      <button type="button" class="btn btn-secondary btn-sm" (click)="showAllocateModal = false">Cancel</button>
-      <button type="button" class="btn btn-emerald-action btn-sm fw-bold" 
-              [disabled]="!selectedCustomer || !plotValidation.is_available || allocateForm.invalid || allocateSubmitting"
+    <!-- Action Footer -->
+    <div class="erp-modal-footer py-2 px-3 bg-light border-top d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-secondary btn-sm fs-12 px-3" (click)="showAllocateModal = false">Cancel</button>
+      <button type="button" 
+              class="btn btn-emerald-action btn-sm fw-bold fs-12 px-3.5" 
+              [disabled]="!isAllocationFormValid"
               (click)="submitPlotAllocation()">
         <i class="fas fa-check-circle me-1"></i>
         {{ allocateSubmitting ? 'Allocating Plot...' : 'Confirm & Allocate Plot' }}
       </button>
     </div>
+
   </div>
 </div>
 

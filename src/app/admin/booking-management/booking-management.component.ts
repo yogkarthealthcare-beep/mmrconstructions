@@ -69,14 +69,6 @@ export class BookingManagementComponent implements OnInit {
   // Selected Site & Manual Plot Text
   allocateSiteId: number | null = null;
   allocatePlotNumber = '';
-  plotValidation = {
-    checked: false,
-    loading: false,
-    exists: false,
-    is_available: false,
-    plot: null as any,
-    message: ''
-  };
 
   // Allocation Form
   allocateForm = this.fb.group({
@@ -347,21 +339,14 @@ export class BookingManagementComponent implements OnInit {
   // PLOT ALLOCATION MODAL LOGIC
   // ==========================================
   openAllocateModal(prefillCustomer: any = null, prefillInquiry: any = null) {
-    this.linkedInquiryId = prefillInquiry ? Number(prefillInquiry.inquiry_id) : null;
     this.selectedCustomer = prefillCustomer || null;
-    this.customerSearchQuery = prefillCustomer ? `${prefillCustomer.full_name} (${prefillCustomer.mobile_no || prefillCustomer.member_id})` : '';
+    this.customerSearchQuery = prefillCustomer ? `${prefillCustomer.full_name} (${prefillCustomer.member_id || prefillCustomer.mobile_no || 'Cust #' + prefillCustomer.user_id})` : '';
     this.customerSearchResults = [];
-    this.allocateSiteId = prefillInquiry?.site_id ? Number(prefillInquiry.site_id) : (this.sites.length ? this.sites[0].site_id : null);
-    this.allocatePlotNumber = prefillInquiry?.plot_number ? String(prefillInquiry.plot_number).trim() : '';
+    this.customerSearching = false;
+    this.linkedInquiryId = prefillInquiry?.inquiry_id || null;
 
-    this.plotValidation = {
-      checked: false,
-      loading: false,
-      exists: false,
-      is_available: false,
-      plot: null,
-      message: ''
-    };
+    this.allocateSiteId = prefillInquiry?.site_id ? Number(prefillInquiry.site_id) : (this.sites.length > 0 ? this.sites[0].site_id : null);
+    this.allocatePlotNumber = prefillInquiry?.plot_number ? String(prefillInquiry.plot_number).trim() : '';
 
     this.allocateForm.reset({
       total_price: null,
@@ -372,10 +357,6 @@ export class BookingManagementComponent implements OnInit {
     });
 
     this.showAllocateModal = true;
-
-    if (this.allocateSiteId && this.allocatePlotNumber) {
-      this.validatePlot();
-    }
   }
 
   onCustomerSearchType(text: string) {
@@ -395,53 +376,33 @@ export class BookingManagementComponent implements OnInit {
     this.customerSearchResults = [];
   }
 
-  onSiteOrPlotChange() {
-    this.plotValidation.checked = false;
-    this.plotValidation.exists = false;
-    this.plotValidation.is_available = false;
-    this.plotValidation.plot = null;
-    this.plotValidation.message = '';
-
-    if (this.allocateSiteId && this.allocatePlotNumber.trim().length >= 1) {
-      this.validatePlot();
-    }
+  get totalPriceInput(): number {
+    return Number(this.allocateForm.value.total_price || 0);
   }
 
-  validatePlot() {
-    if (!this.allocateSiteId || !this.allocatePlotNumber.trim()) return;
-
-    this.plotValidation.loading = true;
-    this.api.adminValidatePlotAvailability(this.allocateSiteId, this.allocatePlotNumber.trim()).subscribe({
-      next: (res: any) => {
-        this.plotValidation.loading = false;
-        this.plotValidation.checked = true;
-        const data = res?.data || res;
-        this.plotValidation.exists = Boolean(data?.exists);
-        this.plotValidation.is_available = Boolean(data?.is_available);
-        this.plotValidation.plot = data?.plot || null;
-        this.plotValidation.message = data?.message || '';
-
-        if (this.plotValidation.is_available && this.plotValidation.plot) {
-          const basePrice = Number(this.plotValidation.plot.base_price || 0);
-          if (basePrice > 0 && !this.allocateForm.value.total_price) {
-            this.allocateForm.patchValue({ total_price: basePrice });
-          }
-        }
-      },
-      error: (e: any) => {
-        this.plotValidation.loading = false;
-        this.plotValidation.checked = true;
-        this.plotValidation.exists = false;
-        this.plotValidation.is_available = false;
-        this.plotValidation.message = e?.error?.message || 'Error validating plot availability.';
-      }
-    });
+  get initialPaymentInput(): number {
+    return Number(this.allocateForm.value.initial_payment_amount || 0);
   }
 
   get remainingBalancePreview(): number {
-    const total = Number(this.allocateForm.value.total_price || 0);
-    const init = Number(this.allocateForm.value.initial_payment_amount || 0);
-    return Math.max(0, total - init);
+    return Math.max(0, this.totalPriceInput - this.initialPaymentInput);
+  }
+
+  get paymentProgressPercent(): number {
+    if (this.totalPriceInput <= 0) return 0;
+    return Math.min(100, Math.round((this.initialPaymentInput / this.totalPriceInput) * 100));
+  }
+
+  get isAllocationFormValid(): boolean {
+    return (
+      Boolean(this.selectedCustomer) &&
+      Boolean(this.allocateSiteId) &&
+      Boolean(this.allocatePlotNumber && this.allocatePlotNumber.trim().length > 0) &&
+      this.totalPriceInput > 0 &&
+      this.initialPaymentInput >= 0 &&
+      this.initialPaymentInput <= this.totalPriceInput &&
+      !this.allocateSubmitting
+    );
   }
 
   submitPlotAllocation() {
@@ -453,16 +414,21 @@ export class BookingManagementComponent implements OnInit {
       this.showToast('Please select a project site.', 'error');
       return;
     }
-    if (!this.allocatePlotNumber.trim()) {
-      this.showToast('Please enter a plot number.', 'error');
+    const cleanPlotNum = String(this.allocatePlotNumber || '').trim();
+    if (!cleanPlotNum) {
+      this.showToast('Please enter a valid plot number or name.', 'error');
       return;
     }
-    if (!this.plotValidation.checked || !this.plotValidation.exists || !this.plotValidation.is_available) {
-      this.showToast(this.plotValidation.message || 'Plot is not available for allocation.', 'error');
+    if (this.totalPriceInput <= 0) {
+      this.showToast('Total plot price must be greater than 0.', 'error');
       return;
     }
-    if (this.allocateForm.invalid) {
-      this.showToast('Please fill all required allocation and pricing fields.', 'error');
+    if (this.initialPaymentInput < 0) {
+      this.showToast('Initial payment cannot be negative.', 'error');
+      return;
+    }
+    if (this.initialPaymentInput > this.totalPriceInput) {
+      this.showToast('Initial payment cannot exceed total plot price.', 'error');
       return;
     }
 
@@ -472,7 +438,7 @@ export class BookingManagementComponent implements OnInit {
     this.api.adminAllocatePlot({
       user_id: this.selectedCustomer.user_id || this.selectedCustomer.id,
       site_id: this.allocateSiteId,
-      plot_number: this.allocatePlotNumber.trim(),
+      plot_number: cleanPlotNum,
       total_price: Number(total_price),
       initial_payment_amount: Number(initial_payment_amount || 0),
       payment_mode: payment_mode || 'Cash',
