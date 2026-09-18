@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
@@ -45,7 +46,8 @@ export class AdminEnrollmentsComponent implements OnInit {
 
   constructor(
     private api: ApiService,
-    private exportService: AdminExportService
+    private exportService: AdminExportService,
+    private route: ActivatedRoute
   ) {}
 
   get pagedItems(): any[] {
@@ -165,8 +167,13 @@ export class AdminEnrollmentsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadData();
-    this.loadStats();
+    this.route.queryParams.subscribe(params => {
+      if (params['tab'] && ['customer', 'associate', 'investor'].includes(params['tab'])) {
+        this.activeCategory = params['tab'] as CategoryType;
+      }
+      this.loadData();
+      this.loadStats();
+    });
   }
 
   setCategory(cat: CategoryType) {
