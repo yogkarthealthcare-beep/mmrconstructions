@@ -554,4 +554,24 @@ export class ApiService {
   adminDeleteReceipt(id: string | number, reason = '') { return this.delete(`/api/admin/receipts/${id}`, true); }
   adminGetReceiptPdfBlob(id: string | number) { return this.getBlob(`/api/admin/receipts/${id}/pdf`, true); }
   adminGetReceiptPrintData(id: string | number) { return this.get(`/api/admin/receipts/${id}/print`, {}, true); }
+
+  // ── UNIFIED PAYMENT MANAGEMENT SYSTEM ─────────────────────
+  // Customer
+  getPlotPaymentDossier(plotId: number | string) { return this.get(`/api/plots/${plotId}/payment-dossier`); }
+  initiateUnifiedPayment(data: any) { return this.post('/api/payments/initiate', data); }
+  reportMissingPayment(data: any) { return this.post('/api/payments/report-missing', data); }
+
+  // Admin & Accounts
+  adminGetPaymentLedger(params: any = {}) { return this.get('/api/admin/payment-ledger', params, true); }
+  adminApprovePayment(id: number | string) { return this.post(`/api/admin/payments/${id}/approve`, {}, true); }
+  adminRejectPayment(id: number | string, rejection_reason: string) { return this.post(`/api/admin/payments/${id}/reject`, { rejection_reason }, true); }
+  adminCreateCashCollection(data: any) { return this.post('/api/admin/cash-collections/create', data, true); }
+  adminGetCashCollections(params: any = {}) { return this.get('/api/admin/cash-collections', params, true); }
+  adminGetCheques(params: any = {}) { return this.get('/api/admin/cheques', params, true); }
+  adminUpdateChequeStatus(id: number | string, data: any) { return this.patch(`/api/admin/cheques/${id}/update-status`, data, true); }
+  adminGetMissingPayments(params: any = {}) { return this.get('/api/admin/missing-payments', params, true); }
+  adminResolveMissingPayment(id: number | string, data: any) { return this.patch(`/api/admin/missing-payments/${id}/resolve`, data, true); }
+  adminGetReconciliationDashboard() { return this.get('/api/admin/reconciliation/dashboard', {}, true); }
+  adminRunPaymentMigration() { return this.post('/api/admin/reconciliation/run-migration', {}, true); }
 }
+

@@ -85,6 +85,11 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./emi-payments/emi-payments.component').then(m => m.EmiPaymentsComponent) 
   },
   { 
+    path: 'payment-management', 
+    loadComponent: () => import('./payment-management/admin-payment-management.component').then(m => m.AdminPaymentManagementComponent),
+    title: 'Payment & Collections Ledger'
+  },
+  { 
     path: 'commissions', 
     loadComponent: () => import('./commissions/commissions.component').then(m => m.CommissionsComponent) 
   },

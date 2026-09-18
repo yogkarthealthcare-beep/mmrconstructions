@@ -1,0 +1,547 @@
+<div class="admin-payment-mgmt-wrap p-3">
+
+  <!-- Header Banner -->
+  <div class="card shadow-sm border-0 mb-3 bg-dark text-white rounded-3">
+    <div class="card-body p-3.5 d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="header-icon-box"><i class="fas fa-university text-gold fs-22"></i></div>
+        <div>
+          <h4 class="mb-0 fw-bold text-white fs-18">Unified Payment &amp; Collections Management</h4>
+          <small class="text-light opacity-75 fs-12">Master Ledger · Cash Register · Cheque Lifecycle · Disputes · Reconciliation</small>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-warning btn-sm fw-semibold" (click)="openNewCashModal()">
+          <i class="fas fa-money-bill-wave me-1"></i>Record Cash Collection
+        </button>
+        <button class="btn btn-outline-light btn-sm" (click)="loadCurrentTabData()">
+          <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i>Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Message -->
+  <div *ngIf="toastMsg" class="alert alert-dismissible fade show fs-12 py-2 mb-3" [ngClass]="toastType === 'success' ? 'alert-success' : 'alert-danger'">
+    <i class="fas" [ngClass]="toastType === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'" class="me-1.5"></i>{{ toastMsg }}
+    <button type="button" class="btn-close btn-close-sm py-2" (click)="toastMsg = ''"></button>
+  </div>
+
+  <!-- Master Tabs Navigation -->
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header bg-white border-bottom p-2">
+      <ul class="nav nav-pills gap-2">
+        <li class="nav-item">
+          <button class="nav-link fs-12 fw-semibold" [class.active]="activeTab === 'ledger'" (click)="setTab('ledger')">
+            <i class="fas fa-book me-1.5"></i>Master Payment Ledger
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fs-12 fw-semibold" [class.active]="activeTab === 'cash'" (click)="setTab('cash')">
+            <i class="fas fa-cash-register me-1.5"></i>Cash Collection Register ({{ cashCollections.length }})
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fs-12 fw-semibold" [class.active]="activeTab === 'cheques'" (click)="setTab('cheques')">
+            <i class="fas fa-money-check me-1.5"></i>Cheque Registry ({{ chequeList.length }})
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fs-12 fw-semibold" [class.active]="activeTab === 'disputes'" (click)="setTab('disputes')">
+            <i class="fas fa-exclamation-triangle me-1.5"></i>Missing Disputes ({{ disputeList.length }})
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fs-12 fw-semibold" [class.active]="activeTab === 'reconciliation'" (click)="setTab('reconciliation')">
+            <i class="fas fa-balance-scale me-1.5"></i>Reconciliation &amp; Migration
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- TAB 1: MASTER PAYMENT LEDGER -->
+    <div class="card-body p-3" *ngIf="activeTab === 'ledger'">
+      
+      <!-- KPI Top Summary -->
+      <div class="row g-2.5 mb-3">
+        <div class="col-md-4 col-12">
+          <div class="card p-2.5 bg-light border rounded-3 text-center">
+            <span class="fs-11 text-muted text-uppercase fw-semibold">Total Filtered Transactions</span>
+            <h5 class="fw-bold text-dark mb-0 mt-1">{{ ledgerTotal }}</h5>
+          </div>
+        </div>
+        <div class="col-md-4 col-6">
+          <div class="card p-2.5 bg-success-subtle border-success border rounded-3 text-center">
+            <span class="fs-11 text-success text-uppercase fw-semibold">Total Approved Volume</span>
+            <h5 class="fw-bold text-success mb-0 mt-1">₹{{ totalApproved | number }}</h5>
+          </div>
+        </div>
+        <div class="col-md-4 col-6">
+          <div class="card p-2.5 bg-warning-subtle border-warning border rounded-3 text-center">
+            <span class="fs-11 text-warning-emphasis text-uppercase fw-semibold">Under Verification</span>
+            <h5 class="fw-bold text-warning-emphasis mb-0 mt-1">₹{{ totalPending | number }}</h5>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters Bar -->
+      <div class="row g-2 mb-3 bg-light p-2.5 rounded-3 border">
+        <div class="col-md-3 col-6">
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="ledgerFilters.search" (keyup.enter)="loadLedger()" placeholder="Search customer / plot / UTR...">
+        </div>
+        <div class="col-md-2 col-6">
+          <select class="form-select form-select-sm" [(ngModel)]="ledgerFilters.status" (change)="loadLedger()">
+            <option value="">All Statuses</option>
+            <option value="Submitted">Submitted (Pending)</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Bounced">Bounced</option>
+          </select>
+        </div>
+        <div class="col-md-2 col-6">
+          <select class="form-select form-select-sm" [(ngModel)]="ledgerFilters.mode" (change)="loadLedger()">
+            <option value="">All Payment Modes</option>
+            <option value="Online">Online Gateway</option>
+            <option value="Cash">Cash</option>
+            <option value="Cheque">Cheque</option>
+            <option value="BankTransfer">Bank Transfer</option>
+            <option value="UPI">UPI</option>
+            <option value="Wallet">Wallet</option>
+          </select>
+        </div>
+        <div class="col-md-2 col-6">
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="ledgerFilters.start_date" (change)="loadLedger()" placeholder="Start Date">
+        </div>
+        <div class="col-md-2 col-6">
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="ledgerFilters.end_date" (change)="loadLedger()" placeholder="End Date">
+        </div>
+        <div class="col-md-1 col-12">
+          <button class="btn btn-primary btn-sm w-100" (click)="loadLedger()"><i class="fas fa-filter"></i></button>
+        </div>
+      </div>
+
+      <!-- Master Ledger Table -->
+      <div class="table-responsive" *ngIf="ledgerList.length > 0">
+        <table class="table table-hover table-sm align-middle fs-12 mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>Serial / Ref</th>
+              <th>Customer</th>
+              <th>Plot &amp; Site</th>
+              <th>Date</th>
+              <th>Mode</th>
+              <th>Purpose</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Verified By</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of ledgerList">
+              <td>
+                <div class="fw-bold text-dark">{{ item.payment_serial }}</div>
+                <small *ngIf="item.utr_number" class="text-muted d-block fs-10">UTR: {{ item.utr_number }}</small>
+              </td>
+              <td>
+                <div class="fw-semibold">{{ item.customer_name }}</div>
+                <small class="text-muted">{{ item.customer_mobile }}</small>
+              </td>
+              <td>
+                <div class="fw-semibold text-primary">{{ item.plot_number }}</div>
+                <small class="text-muted">{{ item.site_name }}</small>
+              </td>
+              <td>{{ item.payment_date | date:'dd MMM yyyy' }}</td>
+              <td><span class="badge bg-light text-dark border">{{ item.payment_mode }}</span></td>
+              <td><span class="badge bg-secondary-subtle text-dark">{{ item.payment_purpose }}</span></td>
+              <td class="fw-bold text-success">₹{{ item.gross_amount | number }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'bg-success': item.payment_status === 'Approved',
+                  'bg-warning text-dark': item.payment_status === 'Submitted' || item.payment_status === 'UnderVerification',
+                  'bg-danger': item.payment_status === 'Rejected' || item.payment_status === 'Bounced'
+                }">{{ item.payment_status }}</span>
+              </td>
+              <td><small class="text-muted">{{ item.verified_by_name || '—' }}</small></td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <!-- Approve / Reject for Pending -->
+                  <button *ngIf="item.payment_status !== 'Approved'" class="btn btn-success btn-xs" (click)="approvePayment(item)" title="Approve & Allocate">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button *ngIf="item.payment_status !== 'Approved' && item.payment_status !== 'Rejected'" class="btn btn-danger btn-xs" (click)="openRejectModal(item)" title="Reject Payment">
+                    <i class="fas fa-times"></i>
+                  </button>
+                  <!-- Download Receipt / Voucher -->
+                  <button *ngIf="item.receipt_id" class="btn btn-outline-danger btn-xs" (click)="downloadReceipt(item.receipt_id)" title="Download 2-Copy PDF Receipt">
+                    <i class="fas fa-file-pdf"></i>
+                  </button>
+                  <button *ngIf="item.voucher_id" class="btn btn-outline-secondary btn-xs" (click)="downloadVoucher(item.voucher_id)" title="Download Voucher">
+                    <i class="fas fa-receipt"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="ledgerList.length === 0 && !loading" class="text-center py-5 text-muted fs-12">
+        No payment transactions found matching the filter criteria.
+      </div>
+
+    </div>
+
+    <!-- TAB 2: CASH COLLECTION REGISTER -->
+    <div class="card-body p-3" *ngIf="activeTab === 'cash'">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold text-dark mb-0"><i class="fas fa-cash-register text-success me-1.5"></i>Field &amp; Office Cash Collections</h6>
+        <button class="btn btn-success btn-sm" (click)="openNewCashModal()">
+          <i class="fas fa-plus me-1"></i>New Cash Entry
+        </button>
+      </div>
+
+      <div class="table-responsive" *ngIf="cashCollections.length > 0">
+        <table class="table table-hover table-sm align-middle fs-12 mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Collection ID</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Plot &amp; Site</th>
+              <th>Collected By</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Location</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of cashCollections">
+              <td class="fw-bold">{{ c.collection_serial }}</td>
+              <td>{{ c.collection_date | date:'dd MMM yyyy' }}</td>
+              <td>{{ c.customer_name }} ({{ c.customer_mobile }})</td>
+              <td>{{ c.plot_number }} · {{ c.site_name }}</td>
+              <td class="fw-semibold text-primary">{{ c.collector_name || 'Staff' }}</td>
+              <td class="fw-bold text-success">₹{{ c.amount | number }}</td>
+              <td><span class="badge bg-warning text-dark">{{ c.verification_status }}</span></td>
+              <td><small class="text-muted">{{ c.site_location || 'Office' }}</small></td>
+              <td><small class="text-muted">{{ c.remarks || '—' }}</small></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="cashCollections.length === 0 && !loading" class="text-center py-5 text-muted fs-12">
+        No cash collections recorded yet.
+      </div>
+    </div>
+
+    <!-- TAB 3: CHEQUE REGISTRY -->
+    <div class="card-body p-3" *ngIf="activeTab === 'cheques'">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h6 class="fw-bold text-dark mb-0"><i class="fas fa-money-check text-primary me-1.5"></i>Cheque Clearing &amp; Bounce Lifecycle</h6>
+        <select class="form-select form-select-sm" style="width: 180px;" [(ngModel)]="chequeStatusFilter" (change)="loadCheques()">
+          <option value="">All Cheque States</option>
+          <option value="ChequeReceived">Cheque Received</option>
+          <option value="Deposited">Deposited</option>
+          <option value="UnderClearing">Under Clearing</option>
+          <option value="Cleared">Cleared (Approved)</option>
+          <option value="Bounced">Bounced (Dishonoured)</option>
+        </select>
+      </div>
+
+      <div class="table-responsive" *ngIf="chequeList.length > 0">
+        <table class="table table-hover table-sm align-middle fs-12 mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Cheque No.</th>
+              <th>Bank Name</th>
+              <th>Cheque Date</th>
+              <th>Customer</th>
+              <th>Plot</th>
+              <th>Amount</th>
+              <th>Lifecycle Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cq of chequeList">
+              <td class="fw-bold text-dark">{{ cq.cheque_number }}</td>
+              <td>{{ cq.bank_name }}</td>
+              <td>{{ cq.cheque_date | date:'dd MMM yyyy' }}</td>
+              <td>{{ cq.customer_name }}</td>
+              <td>{{ cq.plot_number }} · {{ cq.site_name }}</td>
+              <td class="fw-bold text-success">₹{{ cq.cheque_amount | number }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'bg-success': cq.cheque_status === 'Cleared',
+                  'bg-warning text-dark': cq.cheque_status === 'Deposited' || cq.cheque_status === 'UnderClearing',
+                  'bg-info text-dark': cq.cheque_status === 'ChequeReceived',
+                  'bg-danger': cq.cheque_status === 'Bounced'
+                }">{{ cq.cheque_status }}</span>
+              </td>
+              <td>
+                <button class="btn btn-outline-primary btn-xs" (click)="openChequeModal(cq)">
+                  <i class="fas fa-edit me-1"></i>Update Status
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="chequeList.length === 0 && !loading" class="text-center py-5 text-muted fs-12">
+        No cheques found in the registry.
+      </div>
+    </div>
+
+    <!-- TAB 4: MISSING PAYMENT DISPUTES -->
+    <div class="card-body p-3" *ngIf="activeTab === 'disputes'">
+      <div class="table-responsive" *ngIf="disputeList.length > 0">
+        <table class="table table-hover table-sm align-middle fs-12 mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Dispute ID</th>
+              <th>Customer</th>
+              <th>Plot &amp; Site</th>
+              <th>Payment Date</th>
+              <th>Claimed Mode</th>
+              <th>Claimed Amount</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of disputeList">
+              <td class="fw-bold text-dark">{{ d.complaint_serial }}</td>
+              <td>{{ d.customer_name }} ({{ d.member_id }})</td>
+              <td>{{ d.plot_number }} · {{ d.site_name }}</td>
+              <td>{{ d.claimed_payment_date | date:'dd MMM yyyy' }}</td>
+              <td><span class="badge bg-light text-dark border">{{ d.claimed_payment_mode }}</span></td>
+              <td class="fw-bold text-danger">₹{{ d.claimed_amount | number }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'bg-warning text-dark': d.complaint_status === 'Submitted' || d.complaint_status === 'UnderInvestigation',
+                  'bg-success': d.complaint_status === 'ApprovedAndLinked',
+                  'bg-danger': d.complaint_status === 'Rejected'
+                }">{{ d.complaint_status }}</span>
+              </td>
+              <td>
+                <button class="btn btn-primary btn-xs" (click)="openResolveModal(d)">
+                  <i class="fas fa-gavel me-1"></i>Investigate / Resolve
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="disputeList.length === 0 && !loading" class="text-center py-5 text-muted fs-12">
+        No open missing payment disputes.
+      </div>
+    </div>
+
+    <!-- TAB 5: RECONCILIATION & MIGRATION -->
+    <div class="card-body p-3" *ngIf="activeTab === 'reconciliation'">
+      <div *ngIf="reconciliationData" class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+          <div class="card p-3 bg-light border text-center rounded-3">
+            <span class="fs-11 text-muted text-uppercase fw-semibold">Total Ledger Transactions</span>
+            <h4 class="fw-bold text-dark mb-0 mt-1">{{ reconciliationData.stats.total_transactions }}</h4>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card p-3 bg-success-subtle border-success border text-center rounded-3">
+            <span class="fs-11 text-success text-uppercase fw-semibold">Approved Volume</span>
+            <h4 class="fw-bold text-success mb-0 mt-1">₹{{ reconciliationData.stats.total_approved_volume | number }}</h4>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card p-3 bg-warning-subtle border-warning border text-center rounded-3">
+            <span class="fs-11 text-warning-emphasis text-uppercase fw-semibold">Pending Volume</span>
+            <h4 class="fw-bold text-warning-emphasis mb-0 mt-1">₹{{ reconciliationData.stats.total_pending_volume | number }}</h4>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card p-3 bg-info-subtle border-info border text-center rounded-3">
+            <span class="fs-11 text-info text-uppercase fw-semibold">Unallocated Excess</span>
+            <h4 class="fw-bold text-info mb-0 mt-1">₹{{ reconciliationData.stats.total_unallocated_excess | number }}</h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- Migration Tool Card -->
+      <div class="card border rounded-3 p-4 bg-light mb-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div>
+            <h6 class="fw-bold text-dark mb-1"><i class="fas fa-database text-primary me-1.5"></i>Historical Payment Reconciliation Tool</h6>
+            <small class="text-muted fs-12">Safely syncs and backfills all legacy paid EMIs, booking advances, and receipts into the unified ledger.</small>
+          </div>
+          <button class="btn btn-primary btn-sm fw-semibold" [disabled]="migrationRunning" (click)="runMigration()">
+            <i class="fas fa-sync-alt me-1" [class.fa-spin]="migrationRunning"></i>
+            Run Historical Reconciliation
+          </button>
+        </div>
+
+        <div *ngIf="migrationResult" class="alert alert-success mt-3 mb-0 fs-12">
+          <i class="fas fa-check-circle me-1.5"></i>
+          <strong>Migration Summary:</strong> {{ migrationResult.migratedEmis || 0 }} EMIs backfilled, {{ migrationResult.migratedAdvances || 0 }} advances backfilled, {{ migrationResult.linkedReceipts || 0 }} receipts linked.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- REJECT PAYMENT MODAL -->
+<div class="modal-backdrop fade show" *ngIf="rejectModalOpen" (click)="closeRejectModal()"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="rejectModalOpen" (click)="closeRejectModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-danger text-white py-2.5 px-3">
+        <h6 class="modal-title mb-0 fw-bold text-white">Reject Payment Transaction</h6>
+        <button type="button" class="btn-close btn-close-white" (click)="closeRejectModal()"></button>
+      </div>
+      <div class="modal-body p-3">
+        <p class="fs-12 text-dark mb-2">
+          Rejecting payment <strong>{{ selectedPaymentForReject?.payment_serial }}</strong> of ₹{{ selectedPaymentForReject?.gross_amount }}.
+        </p>
+        <div class="mb-3">
+          <label class="form-label fs-12 fw-semibold text-dark">Mandatory Rejection Reason</label>
+          <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="rejectionReason" placeholder="e.g. UTR number invalid, payment screenshot illegible, or amount mismatch"></textarea>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-secondary btn-sm" (click)="closeRejectModal()">Cancel</button>
+          <button class="btn btn-danger btn-sm" [disabled]="rejectSubmitting" (click)="submitPaymentRejection()">
+            Confirm Rejection
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UPDATE CHEQUE MODAL -->
+<div class="modal-backdrop fade show" *ngIf="chequeModalOpen" (click)="closeChequeModal()"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="chequeModalOpen" (click)="closeChequeModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white py-2.5 px-3">
+        <h6 class="modal-title mb-0 fw-bold text-white">Update Cheque Lifecycle Status</h6>
+        <button type="button" class="btn-close btn-close-white" (click)="closeChequeModal()"></button>
+      </div>
+      <div class="modal-body p-3">
+        <div class="mb-3">
+          <label class="form-label fs-12 fw-semibold text-dark">Cheque Status</label>
+          <select class="form-select form-select-sm" [(ngModel)]="chequeStatusUpdateForm.status">
+            <option value="ChequeReceived">Cheque Received</option>
+            <option value="Deposited">Deposited to Bank</option>
+            <option value="UnderClearing">Under Clearing</option>
+            <option value="Cleared">Cleared (Credit to Ledger &amp; Approve)</option>
+            <option value="Bounced">Bounced (Dishonoured)</option>
+          </select>
+        </div>
+        <div class="mb-3" *ngIf="chequeStatusUpdateForm.status === 'Deposited'">
+          <label class="form-label fs-12 fw-semibold text-dark">Deposited Bank Account</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="chequeStatusUpdateForm.deposited_bank_account" placeholder="e.g. MMR Constructions Current A/C">
+        </div>
+        <div class="mb-3" *ngIf="chequeStatusUpdateForm.status === 'Bounced'">
+          <label class="form-label fs-12 fw-semibold text-dark">Bounce Reason</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="chequeStatusUpdateForm.bounce_reason" placeholder="e.g. Insufficient funds / signature mismatch">
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-secondary btn-sm" (click)="closeChequeModal()">Cancel</button>
+          <button class="btn btn-primary btn-sm" [disabled]="chequeSubmitting" (click)="submitChequeStatusUpdate()">
+            Update Status
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESOLVE DISPUTE MODAL -->
+<div class="modal-backdrop fade show" *ngIf="resolveModalOpen" (click)="closeResolveModal()"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="resolveModalOpen" (click)="closeResolveModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-dark text-white py-2.5 px-3">
+        <h6 class="modal-title mb-0 fw-bold text-white">Investigate &amp; Resolve Dispute Claim</h6>
+        <button type="button" class="btn-close btn-close-white" (click)="closeResolveModal()"></button>
+      </div>
+      <div class="modal-body p-3">
+        <p class="fs-12 text-dark mb-2">Claim ID: <strong>{{ selectedDispute?.complaint_serial }}</strong> for ₹{{ selectedDispute?.claimed_amount }}</p>
+        <div class="mb-3">
+          <label class="form-label fs-12 fw-semibold text-dark">Resolution Action</label>
+          <select class="form-select form-select-sm" [(ngModel)]="disputeResolveForm.status">
+            <option value="ApprovedAndLinked">Approve Claim &amp; Credit to Ledger</option>
+            <option value="UnderInvestigation">Keep Under Investigation</option>
+            <option value="Rejected">Reject Claim (Not Found)</option>
+            <option value="DuplicateClaim">Mark as Duplicate Claim</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fs-12 fw-semibold text-dark">Investigation Notes</label>
+          <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="disputeResolveForm.investigation_notes" placeholder="Notes for customer &amp; audit trail"></textarea>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-secondary btn-sm" (click)="closeResolveModal()">Cancel</button>
+          <button class="btn btn-primary btn-sm" [disabled]="disputeSubmitting" (click)="submitDisputeResolution()">
+            Save Resolution
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECORD CASH COLLECTION MODAL -->
+<div class="modal-backdrop fade show" *ngIf="newCashModalOpen" (click)="closeNewCashModal()"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="newCashModalOpen" (click)="closeNewCashModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-success text-white py-2.5 px-3">
+        <h6 class="modal-title mb-0 fw-bold text-white">Record Cash Collection Entry</h6>
+        <button type="button" class="btn-close btn-close-white" (click)="closeNewCashModal()"></button>
+      </div>
+      <div class="modal-body p-3">
+        <form (ngSubmit)="submitNewCashCollection()">
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label fs-12 fw-semibold text-dark">Customer User ID</label>
+              <input type="number" class="form-control form-control-sm" [(ngModel)]="cashForm.customer_id" name="customer_id" required placeholder="e.g. 6">
+            </div>
+            <div class="col-6">
+              <label class="form-label fs-12 fw-semibold text-dark">Booking ID</label>
+              <input type="number" class="form-control form-control-sm" [(ngModel)]="cashForm.booking_id" name="booking_id" required placeholder="e.g. 12">
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label fs-12 fw-semibold text-dark">Collected Amount (₹)</label>
+              <input type="number" class="form-control form-control-sm fw-bold" [(ngModel)]="cashForm.amount" name="amount" required min="1">
+            </div>
+            <div class="col-6">
+              <label class="form-label fs-12 fw-semibold text-dark">Collection Date</label>
+              <input type="date" class="form-control form-control-sm" [(ngModel)]="cashForm.collection_date" name="collection_date" required>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label fs-12 fw-semibold text-dark">Site Location / Office</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="cashForm.site_location" name="site_location" placeholder="e.g. Unnao Site Office">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fs-12 fw-semibold text-dark">Remarks</label>
+            <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="cashForm.remarks" name="remarks" placeholder="Optional notes"></textarea>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="closeNewCashModal()">Cancel</button>
+            <button type="submit" class="btn btn-success btn-sm fw-semibold" [disabled]="newCashSubmitting">
+              Record Collection
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
