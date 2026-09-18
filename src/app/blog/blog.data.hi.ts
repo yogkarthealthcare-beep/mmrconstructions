@@ -3,24 +3,24 @@ import { BlogPost } from './blog.types';
 export const BLOG_POSTS_HI: readonly BlogPost[] = [
   {
     id: 1,
-    title: 'MMR Constructions & Developers Private Limited – सपनों का निर्माण, बेहतर स्थानों का विकास',
+    title: 'MMR Construction & Developers Private Limited – सपनों का निर्माण, बेहतर स्थानों का विकास',
     slug: 'mmr-constructions-vision-safe-affordable-property',
     shortDescription:
-      'MMR Constructions & Developers Private Limited त्रिभुवन खेड़ा, उन्नाव, उत्तर प्रदेश स्थित एक प्राइवेट लिमिटेड कंपनी है जो निर्माण एवं रियल एस्टेट विकास क्षेत्र में कार्यरत है। कंपनी सुनियोजित आवासीय स्थान बनाने और ग्राहकों को विश्वास के साथ संपत्ति निर्माण व निवेश के अवसर प्रदान करने पर केंद्रित है।',
+      'MMR Construction & Developers Private Limited त्रिभुवन खेड़ा, उन्नाव, उत्तर प्रदेश स्थित एक प्राइवेट लिमिटेड कंपनी है जो निर्माण एवं रियल एस्टेट विकास क्षेत्र में कार्यरत है। कंपनी सुनियोजित आवासीय स्थान बनाने और ग्राहकों को विश्वास के साथ संपत्ति निर्माण व निवेश के अवसर प्रदान करने पर केंद्रित है।',
     featuredImage: '/assets/blog/mmr-vision.svg',
-    author: 'MMR Constructions & Developers',
+    author: 'MMR Construction & Developers',
     publishDate: '2026-06-19',
     metaTitle:
-      'MMR Constructions & Developers Private Limited | उन्नाव में निर्माण एवं रियल एस्टेट कंपनी',
+      'MMR Construction & Developers Private Limited | उन्नाव में निर्माण एवं रियल एस्टेट कंपनी',
     metaDescription:
-      'त्रिभुवन खेड़ा, उन्नाव, उत्तर प्रदेश स्थित निर्माण एवं रियल एस्टेट विकास कंपनी MMR Constructions & Developers Private Limited के बारे में जानें। हमारा विज़न, मिशन और दृष्टिकोण देखें।',
+      'त्रिभुवन खेड़ा, उन्नाव, उत्तर प्रदेश स्थित निर्माण एवं रियल एस्टेट विकास कंपनी MMR Construction & Developers Private Limited के बारे में जानें। हमारा विज़न, मिशन और दृष्टिकोण देखें।',
     keywords:
-      'MMR Constructions, MMR Constructions and Developers, MMR Construction Unnao, MMR Developers Unnao, Construction Company in Unnao, Real Estate Company in Unnao, Property Developer in Unnao, Residential Property Unnao, Real Estate Development Uttar Pradesh, MMR Constructions & Developers Private Limited',
+      'MMR Construction, MMR Construction and Developers, MMR Construction Unnao, MMR Developers Unnao, Construction Company in Unnao, Real Estate Company in Unnao, Property Developer in Unnao, Residential Property Unnao, Real Estate Development Uttar Pradesh, MMR Construction & Developers Private Limited',
     content: [
       {
         heading: 'कंपनी का परिचय (Company Overview)',
         paragraphs: [
-          'MMR Constructions & Developers Private Limited का निगमन 02 अगस्त 2025 को हुआ था और यह कंपनी रजिस्ट्रार (ROC), कानपुर के पास पंजीकृत है। यह शेयरों द्वारा सीमित एक गैर-सरकारी, असूचीबद्ध प्राइवेट कंपनी है।',
+          'MMR Construction & Developers Private Limited का निगमन 02 अगस्त 2025 को हुआ था और यह कंपनी रजिस्ट्रार (ROC), कानपुर के पास पंजीकृत है। यह शेयरों द्वारा सीमित एक गैर-सरकारी, असूचीबद्ध प्राइवेट कंपनी है।',
           'कंपनी का उद्देश्य सुनियोजित विकास, व्यावहारिक आवासीय स्थानों और ग्राहक-उन्मुख दृष्टिकोण के साथ उन्नाव, उत्तर प्रदेश और आसपास के क्षेत्रों में गुणवत्तापूर्ण आवासीय एवं रियल एस्टेट परियोजनाओं के विकास में योगदान देना है।',
         ],
       },
@@ -34,7 +34,7 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
       {
         heading: 'मिशन (Mission)',
         paragraphs: [
-          'MMR Constructions & Developers का मिशन एक पेशेवर और ग्राहक-केंद्रित दृष्टिकोण बनाए रखते हुए सुनियोजित आवासीय विकास का निर्माण करना है। हमारे मिशन में शामिल हैं:',
+          'MMR Construction & Developers का मिशन एक पेशेवर और ग्राहक-केंद्रित दृष्टिकोण बनाए रखते हुए सुनियोजित आवासीय विकास का निर्माण करना है। हमारे मिशन में शामिल हैं:',
         ],
         bullets: [
           'उचित योजना के साथ आवासीय संपत्तियों का विकास करना',
@@ -46,10 +46,10 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
         ],
       },
       {
-        heading: 'उन्नाव में MMR Constructions (MMR Constructions in Unnao)',
+        heading: 'उन्नाव में MMR Construction (MMR Construction in Unnao)',
         paragraphs: [
           'उन्नाव, उत्तर प्रदेश बढ़ती आवासीय और बुनियादी ढांचा आवश्यकताओं वाला एक महत्वपूर्ण और विकासशील क्षेत्र है।',
-          'MMR Constructions & Developers त्रिभुवन खेड़ा, उन्नाव से संचालित होती है और व्यावहारिक ग्राहक आवश्यकताओं के आधार पर डिजाइन की गई आवासीय संपत्तियों और परियोजनाओं को विकसित करके इस वृद्धि में भाग लेने का लक्ष्य रखती है।',
+          'MMR Construction & Developers त्रिभुवन खेड़ा, उन्नाव से संचालित होती है और व्यावहारिक ग्राहक आवश्यकताओं के आधार पर डिजाइन की गई आवासीय संपत्तियों और परियोजनाओं को विकसित करके इस वृद्धि में भाग लेने का लक्ष्य रखती है।',
           'कंपनी का ध्यान ऐसे स्थान विकसित करने पर है जो लोगों की रहने, निर्माण करने और संपत्ति स्वामित्व की दीर्घकालिक योजनाओं का हिस्सा बन सकें।',
         ],
       },
@@ -67,7 +67,7 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
         heading: 'भविष्य के लिए निर्माण (Building for the Future)',
         paragraphs: [
           'रियल एस्टेट एक दीर्घकालिक क्षेत्र है, और संपत्ति संबंधी निर्णय अक्सर भविष्य को ध्यान में रखकर लिए जाते हैं।',
-          'MMR Constructions & Developers ऐसी परियोजनाओं को विकसित करने का लक्ष्य रखती है जो भविष्य की अपेक्षाओं को ध्यान में रखते हुए वर्तमान आवासीय आवश्यकताओं को पूरा कर सकें।',
+          'MMR Construction & Developers ऐसी परियोजनाओं को विकसित करने का लक्ष्य रखती है जो भविष्य की अपेक्षाओं को ध्यान में रखते हुए वर्तमान आवासीय आवश्यकताओं को पूरा कर सकें।',
           'इसका उद्देश्य ऐसे विकास कार्य तैयार करना है जहाँ ग्राहक रहने, निर्माण करने और दीर्घकालिक संपत्ति स्वामित्व की क्षमता देख सकें।',
         ],
       },
@@ -93,7 +93,7 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
         ],
       },
       {
-        heading: 'MMR Constructions & Developers को क्यों चुनें (Why Choose MMR Constructions & Developers)',
+        heading: 'MMR Construction & Developers को क्यों चुनें (Why Choose MMR Construction & Developers)',
         paragraphs: [
           'ग्राहकों और समुदाय के प्रति हमारी प्रतिबद्धता को परिभाषित करने वाले प्रमुख कारक:',
         ],
@@ -108,14 +108,14 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
       {
         heading: 'आगे का मार्ग (Looking Ahead)',
         paragraphs: [
-          'जैसे-जैसे MMR Constructions & Developers का विस्तार हो रहा है, कंपनी निर्माण और रियल एस्टेट विकास क्षेत्र में अपनी उपस्थिति बढ़ाने और उत्तर प्रदेश में आवासीय स्थानों के विकास में योगदान देने का लक्ष्य रखती है।',
+          'जैसे-जैसे MMR Construction & Developers का विस्तार हो रहा है, कंपनी निर्माण और रियल एस्टेट विकास क्षेत्र में अपनी उपस्थिति बढ़ाने और उत्तर प्रदेश में आवासीय स्थानों के विकास में योगदान देने का लक्ष्य रखती है।',
           'कंपनी का मानना है कि प्रत्येक विकास परियोजना परिवारों, संपत्ति मालिकों और आसपास के समुदाय के लिए कुछ सार्थक बनाने का अवसर है।',
         ],
       },
       {
         heading: 'निष्कर्ष (Conclusion)',
         paragraphs: [
-          'MMR Constructions & Developers – सपनों का निर्माण, स्थानों का विकास, बेहतर कल का निर्माण।',
+          'MMR Construction & Developers – सपनों का निर्माण, स्थानों का विकास, बेहतर कल का निर्माण।',
         ],
       },
     ],
@@ -126,7 +126,7 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
     slug: 'affordable-genuine-plots-how-to-choose',
     shortDescription: 'किफायती संपत्ति चुनने से पहले प्लॉट की कीमत, स्थान, दस्तावेज़ और भुगतान योजनाओं की तुलना करने की व्यावहारिक मार्गदर्शिका।',
     featuredImage: '/assets/blog/affordable-plots.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Construction',
     publishDate: '2026-06-16',
     metaTitle: 'किफायती और वास्तविक प्लॉट कैसे चुनें',
     metaDescription: 'स्थान, दस्तावेज़, पहुँच, कीमत और भुगतान योजना की जाँच करके आत्मविश्वास से किफायती प्लॉट चुनें।',
@@ -172,7 +172,7 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
     slug: 'property-investment-in-unnao',
     shortDescription: 'कनेक्टिविटी, स्थानीय माँग, बजट और दस्तावेज़ सत्यापन सहित उन्नाव में संपत्ति निवेश को प्रभावित करने वाले कारक समझें।',
     featuredImage: '/assets/blog/unnao-investment.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Construction',
     publishDate: '2026-06-12',
     metaTitle: 'उन्नाव में संपत्ति निवेश: खरीदार मार्गदर्शिका',
     metaDescription: 'उन्नाव में आवासीय प्लॉट, कनेक्टिविटी, बजट और जरूरी सत्यापन चरणों के बारे में जानें।',
@@ -218,7 +218,7 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
     slug: 'property-opportunities-in-kanpur',
     shortDescription: 'कानपुर के विविध और बढ़ते स्थानीय बाजारों में आवासीय तथा निवेश संपत्ति अवसरों का मूल्यांकन करना सीखें।',
     featuredImage: '/assets/blog/kanpur-opportunities.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Construction',
     publishDate: '2026-06-08',
     metaTitle: 'खरीदारों के लिए कानपुर में संपत्ति के अवसर',
     metaDescription: 'जानें कि कनेक्टिविटी, स्थानीय माँग, बजट और सत्यापन कानपुर में समझदारीपूर्ण संपत्ति खरीद को कैसे प्रभावित करते हैं।',
@@ -253,7 +253,7 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
       {
         heading: 'स्थानीय तुलना का उपयोग करें',
         paragraphs: [
-          'निर्णय से पहले समान पहुँच और आकार वाली कई संपत्तियों की तुलना करें। MMR Constructions ग्राहकों को प्राथमिकताएँ तय करने और कानपुर तथा निकट उन्नाव के विकल्पों का मूल्यांकन करने में मदद करता है।',
+          'निर्णय से पहले समान पहुँच और आकार वाली कई संपत्तियों की तुलना करें। MMR Construction ग्राहकों को प्राथमिकताएँ तय करने और कानपुर तथा निकट उन्नाव के विकल्पों का मूल्यांकन करने में मदद करता है।',
         ],
       },
     ],
@@ -264,7 +264,7 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
     slug: 'property-opportunities-lucknow-kannauj-raebareli',
     shortDescription: 'जीवनशैली, कनेक्टिविटी, बजट और निवेश लक्ष्यों के आधार पर लखनऊ, कन्नौज और रायबरेली के संपत्ति अवसरों की तुलना करें।',
     featuredImage: '/assets/blog/regional-opportunities.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Construction',
     publishDate: '2026-06-04',
     metaTitle: 'लखनऊ, कन्नौज और रायबरेली में संपत्ति',
     metaDescription: 'स्थान, बजट, उद्देश्य और सत्यापन पर व्यावहारिक मार्गदर्शन के साथ इन शहरों के संपत्ति अवसरों की तुलना करें।',
@@ -298,7 +298,7 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
       {
         heading: 'शहर-दर-शहर तुलना करें',
         paragraphs: [
-          'कुल बजट, यात्रा समय, बुनियादी ढाँचा, प्लॉट आकार और उपयोग की सरल तुलना बनाएँ। MMR Constructions सुरक्षा और व्यावहारिक मूल्य को ध्यान में रखते हुए विकल्प खोजने में मदद करता है।',
+          'कुल बजट, यात्रा समय, बुनियादी ढाँचा, प्लॉट आकार और उपयोग की सरल तुलना बनाएँ। MMR Construction सुरक्षा और व्यावहारिक मूल्य को ध्यान में रखते हुए विकल्प खोजने में मदद करता है।',
         ],
       },
     ],
@@ -309,7 +309,7 @@ export const BLOG_POSTS_HI: readonly BlogPost[] = [
     slug: 'safe-verified-property-buying-guide',
     shortDescription: 'साइट निरीक्षण, स्वामित्व, दस्तावेज़, भुगतान और पेशेवर सत्यापन के लिए स्पष्ट और व्यावहारिक चेकलिस्ट अपनाएँ।',
     featuredImage: '/assets/blog/safe-buying-guide.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Construction',
     publishDate: '2026-05-30',
     metaTitle: 'सुरक्षित और सत्यापित संपत्ति खरीद मार्गदर्शिका',
     metaDescription: 'खरीद से पहले स्वामित्व, दस्तावेज़, साइट पहुँच, भुगतान और पेशेवर सत्यापन की जाँच करें।',

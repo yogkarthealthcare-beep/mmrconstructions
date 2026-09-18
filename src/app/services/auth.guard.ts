@@ -16,7 +16,8 @@ export const enrollmentGuard: CanActivateFn = (_route, state) => {
   const isUser = auth.isUserLoggedIn();
 
   if (!isInvestor && !isUser) {
-    return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+    const targetLogin = url.startsWith('/investor') ? '/investor/login' : '/login';
+    return router.createUrlTree([targetLogin], { queryParams: { returnUrl: state.url } });
   }
 
   const isCompleted = auth.isEnrollmentCompleted();
@@ -92,7 +93,7 @@ export const investorGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
   if (!auth.isInvestorLoggedIn()) {
-    return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+    return router.createUrlTree(['/investor/login'], { queryParams: { returnUrl: state.url } });
   }
   const url = state.url.toLowerCase();
   const isCompleted = auth.isEnrollmentCompleted();

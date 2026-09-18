@@ -66,8 +66,8 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   private updateSeo(): void {
     if (!this.post) {
       this.seo.set({
-        title: 'Blog Not Found | MMR Constructions',
-        description: 'The requested MMR Constructions blog article could not be found.',
+        title: 'Blog Not Found | MMR Construction',
+        description: 'The requested MMR Construction blog article could not be found.',
         canonical: 'https://mmrconstructions.in/blog',
       });
       return;
@@ -96,7 +96,7 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
         },
         publisher: {
           '@type': 'Organization',
-          name: 'MMR Constructions and Developers Private Limited',
+          name: 'MMR Construction and Developers Private Limited',
           url: 'https://mmrconstructions.in',
         },
         mainEntityOfPage: canonical,

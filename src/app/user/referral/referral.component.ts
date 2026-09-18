@@ -251,7 +251,7 @@ export class ReferralComponent implements OnInit {
   }
 
   shareWhatsApp() {
-    const msg = encodeURIComponent(`MMR Constructions & Developers में plot book करें! मेरा Referral Code: ${this.invitationCode} \nरजिस्टर करने के लिए लिंक: ${this.referralLink}`);
+    const msg = encodeURIComponent(`MMR Construction & Developers में plot book करें! मेरा Referral Code: ${this.invitationCode} \nरजिस्टर करने के लिए लिंक: ${this.referralLink}`);
     window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
   }
 

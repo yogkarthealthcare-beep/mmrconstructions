@@ -22,8 +22,8 @@ export class BuybackTermsComponent implements OnInit {
 
   ngOnInit() {
     this.seo.set({
-      title: 'Buyback Terms & Conditions | MMR Constructions',
-      description: 'Read the current Buyback Guarantee Terms & Conditions published by MMR Constructions.',
+      title: 'Buyback Terms & Conditions | MMR Construction',
+      description: 'Read the current Buyback Guarantee Terms & Conditions published by MMR Construction.',
       canonical: 'https://mmrconstructions.in/buyback',
     });
 

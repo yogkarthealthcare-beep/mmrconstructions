@@ -125,11 +125,42 @@ export class UserLayoutComponent implements OnInit {
     }
     this._cachedPrefix = p;
 
+    // CUSTOMER PORTAL NAVIGATION (Strictly Customer only - No wallet, no associate features)
+    if (p === '/customer' || (!this.auth.isAssociate() && !this.isAssociate)) {
+      this.navGroups = [
+        {
+          label: 'MAIN MENU',
+          icon: 'fas fa-compass',
+          expanded: true,
+          items: [
+            { icon: 'fas fa-th-large', label: 'Dashboard', route: `${p}/dashboard` },
+            { icon: 'fas fa-map-marked-alt', label: 'My Properties', route: `${p}/my-plots` },
+            { icon: 'fas fa-calendar-check', label: 'EMI & Installments', route: `${p}/emi-history` },
+            { icon: 'fas fa-receipt', label: 'Payment History', route: `${p}/payments` },
+            { icon: 'fas fa-folder-open', label: 'Documents', route: `${p}/documents` },
+            { icon: 'fas fa-shield-alt', label: 'Buyback Requests', route: `${p}/buyback` },
+            { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` },
+          ]
+        },
+        {
+          label: 'ACCOUNT & COMPLIANCE',
+          icon: 'fas fa-user-shield',
+          expanded: true,
+          items: [
+            { icon: 'fas fa-file-contract', label: 'Enrollment Form', route: `${p}/enrollment` },
+            { icon: 'fas fa-user-edit', label: 'Edit Profile', route: `${p}/profile` },
+          ]
+        }
+      ];
+      this.checkActiveGroup(this.router.url);
+      return;
+    }
+
+    // ASSOCIATE / OTHER ROLE NAVIGATION (Preserved for Associates)
     const accountItems: NavItem[] = [
       { icon: 'fas fa-folder-open', label: 'My Documents', route: `${p}/documents` }
     ];
 
-    // Show Enrollment Form in menu ONLY if not yet completed
     if (!this.auth.isEnrollmentCompleted() && (p === '/associate' || p === '/customer')) {
       accountItems.push({ icon: 'fas fa-file-contract', label: 'Enrollment Form', route: `${p}/enrollment` });
     }
@@ -211,6 +242,21 @@ export class UserLayoutComponent implements OnInit {
     this.navGroups.forEach(group => {
       group.expanded = (group === matchedGroup);
     });
+  }
+
+  get isAssociate(): boolean {
+    const type = String(this.userData?.user_type || this.userData?.role || '').toLowerCase();
+    return this.auth.isAssociate() || type.includes('associate');
+  }
+
+  get isCustomer(): boolean {
+    return !this.isAssociate;
+  }
+
+  get roleLabel(): string {
+    if (this.isAssociate) return 'Associate';
+    if (this.userData?.user_type === 'Investor') return 'Investor';
+    return 'Customer';
   }
 
   get initials(): string {

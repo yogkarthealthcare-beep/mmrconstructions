@@ -171,7 +171,8 @@ export class InvestorProfileComponent implements OnInit {
         this.personalSaving = false;
         if (res.success) {
           this.personalMsg = 'Personal details updated successfully!';
-          this.auth.setInvestorSession({ user: res.data });
+          this.profile = { ...this.profile, ...(res.data || this.personalForm) };
+          this.auth.updateInvestorUser(res.data || this.personalForm);
         } else {
           this.personalErr = res.message || 'Update failed.';
         }
@@ -193,6 +194,8 @@ export class InvestorProfileComponent implements OnInit {
         this.bankSaving = false;
         if (res.success) {
           this.bankMsg = 'Bank details updated successfully!';
+          this.profile = { ...this.profile, ...(res.data || this.bankForm) };
+          this.auth.updateInvestorUser(res.data || this.bankForm);
         } else {
           this.bankErr = res.message || 'Bank details update failed.';
         }

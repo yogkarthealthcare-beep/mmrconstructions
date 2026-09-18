@@ -1,95 +1,75 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { ApiService } from '../../services/api.service';
-
-export interface EmiPlan {
-  id?: number;
-  plot_size: string;
-  dp: string;
-  emi: string;
-  total: string;
-  tenure: string;
-  fileCharge?: string;
-}
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-emi-calculator',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './emi-calculator.component.html',
   styleUrls: ['./emi-calculator.component.css']
 })
 export class EmiCalculatorComponent implements OnInit {
-  loading = true;
-  plansList: EmiPlan[] = [];
-  selectedPlanIndex = 0;
+  // Input models as string (text inputs)
+  loanAmount: string = '300000';
+  tenureMonths: string = '60';
+  annualInterestRate: number = 0; // 0% standard installment
 
-  // Fallback plans in case backend has no EMI plans yet
-  fallbackPlans: EmiPlan[] = [
-    { plot_size: '100 Gaj', dp: '₹1,00,000', emi: '₹6,000', total: '₹4,60,000', tenure: '60 months', fileCharge: '₹499' },
-    { plot_size: '50 Gaj',  dp: '₹51,000',   emi: '₹3,000', total: '₹2,31,000', tenure: '60 months', fileCharge: '₹499' }
-  ];
+  // Calculated values
+  monthlyEmi: number = 5000;
+  totalPayable: number = 300000;
+  fileCharge: string = '₹499';
 
-  constructor(private api: ApiService) {}
-
-  ngOnInit() {
-    this.fetchEmiPlans();
+  ngOnInit(): void {
+    this.calculateEmi();
   }
 
-  fetchEmiPlans() {
-    this.loading = true;
-    this.api.getEmiCalculatorPlans().subscribe({
-      next: (res: any) => {
-        const data = res?.data || res;
-        if (Array.isArray(data) && data.length > 0) {
-          this.plansList = data.map((item: any) => this.formatPlan(item));
-        } else {
-          this.plansList = this.fallbackPlans;
-        }
-        this.loading = false;
-      },
-      error: () => {
-        this.plansList = this.fallbackPlans;
-        this.loading = false;
-      }
-    });
+  parseNumeric(val: any): number {
+    if (val === null || val === undefined) return 0;
+    const clean = String(val).replace(/[^0-9.]/g, '');
+    const num = parseFloat(clean);
+    return isNaN(num) ? 0 : num;
   }
 
-  selectPlan(index: number) {
-    this.selectedPlanIndex = index;
-  }
+  calculateEmi(): void {
+    const P = Math.max(0, this.parseNumeric(this.loanAmount));
+    const N = Math.max(1, Math.round(this.parseNumeric(this.tenureMonths) || 1));
+    const annualRate = Math.max(0, Number(this.annualInterestRate) || 0);
 
-  get activePlan(): EmiPlan {
-    if (this.plansList && this.plansList.length > this.selectedPlanIndex) {
-      return this.plansList[this.selectedPlanIndex];
+    if (P <= 0) {
+      this.monthlyEmi = 0;
+      this.totalPayable = 0;
+      return;
     }
-    return this.fallbackPlans[0];
+
+    const monthlyRate = annualRate / 12 / 100;
+    if (monthlyRate > 0) {
+      // Standard Reducing Balance EMI Formula: EMI = [P × R × (1 + R)^N] / [(1 + R)^N − 1]
+      const factor = Math.pow(1 + monthlyRate, N);
+      this.monthlyEmi = Math.round((P * monthlyRate * factor) / (factor - 1));
+      this.totalPayable = Math.round(this.monthlyEmi * N);
+    } else {
+      // Direct installment calculation (0% interest)
+      this.monthlyEmi = Math.round(P / N);
+      this.totalPayable = P;
+    }
   }
 
-  private formatPlan(item: any): EmiPlan {
-    const formatCurrency = (val: any) => {
-      const num = Number(val) || 0;
-      return '₹' + num.toLocaleString('en-IN');
-    };
+  get formattedLoanAmount(): string {
+    const p = Math.max(0, this.parseNumeric(this.loanAmount));
+    return '₹' + p.toLocaleString('en-IN');
+  }
 
-    const rawSize = item.plot_size || (item.size ? `${item.size} Gaj` : 'Plot Plan');
-    const sizeStr = String(rawSize).toLowerCase().includes('gaj') ? String(rawSize) : `${rawSize} Gaj`;
+  get formattedMonthlyEmi(): string {
+    return '₹' + (this.monthlyEmi || 0).toLocaleString('en-IN');
+  }
 
-    const dp = item.down_payment ? formatCurrency(item.down_payment) : (item.dp || '₹0');
-    const emi = item.monthly_emi ? formatCurrency(item.monthly_emi) : (item.emi || '₹0');
-    const total = item.plot_price ? formatCurrency(item.plot_price) : (item.total || '₹0');
-    const tenure = item.tenure_months ? `${item.tenure_months} months` : (item.tenure || '60 months');
-    const fileCharge = item.processing_fee ? formatCurrency(item.processing_fee) : '₹499';
+  get formattedTotalPayable(): string {
+    return '₹' + (this.totalPayable || 0).toLocaleString('en-IN');
+  }
 
-    return {
-      id: item.id,
-      plot_size: sizeStr,
-      dp,
-      emi,
-      total,
-      tenure,
-      fileCharge
-    };
+  get formattedTenure(): string {
+    const n = Math.max(1, Math.round(this.parseNumeric(this.tenureMonths) || 1));
+    return `${n} months`;
   }
 }

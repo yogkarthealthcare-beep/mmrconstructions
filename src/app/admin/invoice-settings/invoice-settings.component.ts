@@ -16,7 +16,7 @@ export class AdminInvoiceSettingsComponent implements OnInit {
   saving = false;
 
   settings: any = {
-    company_name: 'MMR Constructions & Developers',
+    company_name: 'MMR Construction & Developers',
     company_logo: '',
     address: 'Head Office: Main Road, Lucknow, Uttar Pradesh - 226001',
     phone: '+91 98765 43210 / +91 91234 56789',
@@ -24,7 +24,7 @@ export class AdminInvoiceSettingsComponent implements OnInit {
     website: 'www.mmrconstructions.com',
     gst_number: '09AAAAA0000A1Z5',
     terms_and_conditions: '1. All payments are subject to clearance.\n2. Plot allocation is subject to company guidelines and approval.\n3. Taxes and statutory charges are as per government norms.\n4. This is a system-generated invoice.',
-    notes: 'Thank you for choosing MMR Constructions & Developers.',
+    notes: 'Thank you for choosing MMR Construction & Developers.',
     bank_name: 'State Bank of India',
     account_no: '123456789012',
     ifsc_code: 'SBIN0001234',
@@ -34,7 +34,7 @@ export class AdminInvoiceSettingsComponent implements OnInit {
     stamp_url: '',
     invoice_prefix: 'MMR',
     invoice_starting_number: 1,
-    invoice_footer: 'System Generated Invoice - MMR Constructions & Developers',
+    invoice_footer: 'System Generated Invoice - MMR Construction & Developers',
     theme_color: '#14532d'
   };
 

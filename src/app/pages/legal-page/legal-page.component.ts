@@ -13,7 +13,7 @@ const TERMS_SECTIONS: LegalSection[] = [
   {
     title: 'Website Use and Information',
     paragraphs: [
-      'This website provides general information about MMR Constructions & Developers Private Limited, its projects, services, payment options and customer programmes. Website content is intended for preliminary information and should not replace the final written agreement, allotment letter, sale documentation or other documents signed for a specific transaction.',
+      'This website provides general information about MMR Construction & Developers Private Limited, its projects, services, payment options and customer programmes. Website content is intended for preliminary information and should not replace the final written agreement, allotment letter, sale documentation or other documents signed for a specific transaction.',
       'Visitors must use the website lawfully and must not attempt to disrupt, misuse, copy, reverse engineer or gain unauthorised access to the website, customer accounts, admin systems or connected services.',
     ],
   },
@@ -41,7 +41,7 @@ const TERMS_SECTIONS: LegalSection[] = [
   {
     title: 'Intellectual Property and Liability',
     paragraphs: [
-      'Website text, branding, graphics, layouts and software are owned by or licensed to MMR Constructions. They may not be commercially reused without written permission.',
+      'Website text, branding, graphics, layouts and software are owned by or licensed to MMR Construction. They may not be commercially reused without written permission.',
       'The company takes reasonable steps to keep information and services available, but does not guarantee uninterrupted access or freedom from all technical errors. Liability remains subject to applicable law and the governing transaction documents.',
     ],
   },
@@ -93,7 +93,7 @@ const PRIVACY_SECTIONS: LegalSection[] = [
     title: 'Policy Updates and Contact',
     paragraphs: [
       'This Privacy Policy may be updated to reflect changes in technology, services or legal requirements. Material changes will be reflected on this page.',
-      'For privacy questions, contact MMR Constructions through the phone, email or office details published on the website.',
+      'For privacy questions, contact MMR Construction through the phone, email or office details published on the website.',
     ],
   },
 ];
@@ -102,7 +102,7 @@ const TERMS_SECTIONS_HI: LegalSection[] = [
   {
     title: 'वेबसाइट का उपयोग और जानकारी',
     paragraphs: [
-      'यह वेबसाइट MMR Constructions & Developers Private Limited, उसकी परियोजनाओं, सेवाओं, भुगतान विकल्पों और ग्राहक कार्यक्रमों की सामान्य जानकारी देती है। यह प्रारंभिक जानकारी है और किसी विशेष लेन-देन के अंतिम लिखित समझौते, आवंटन पत्र, बिक्री दस्तावेज़ या हस्ताक्षरित दस्तावेज़ों का स्थान नहीं लेती।',
+      'यह वेबसाइट MMR Construction & Developers Private Limited, उसकी परियोजनाओं, सेवाओं, भुगतान विकल्पों और ग्राहक कार्यक्रमों की सामान्य जानकारी देती है। यह प्रारंभिक जानकारी है और किसी विशेष लेन-देन के अंतिम लिखित समझौते, आवंटन पत्र, बिक्री दस्तावेज़ या हस्ताक्षरित दस्तावेज़ों का स्थान नहीं लेती।',
       'वेबसाइट का उपयोग कानूनी रूप से किया जाना चाहिए। वेबसाइट, ग्राहक खातों, एडमिन सिस्टम या जुड़ी सेवाओं को बाधित करने, दुरुपयोग करने, कॉपी करने, रिवर्स इंजीनियर करने या अनधिकृत पहुँच पाने का प्रयास नहीं किया जाना चाहिए।',
     ],
   },
@@ -130,7 +130,7 @@ const TERMS_SECTIONS_HI: LegalSection[] = [
   {
     title: 'बौद्धिक संपदा और उत्तरदायित्व',
     paragraphs: [
-      'वेबसाइट का पाठ, ब्रांडिंग, ग्राफिक्स, लेआउट और सॉफ्टवेयर MMR Constructions के स्वामित्व या लाइसेंस में हैं। लिखित अनुमति के बिना उनका व्यावसायिक पुनः उपयोग नहीं किया जा सकता।',
+      'वेबसाइट का पाठ, ब्रांडिंग, ग्राफिक्स, लेआउट और सॉफ्टवेयर MMR Construction के स्वामित्व या लाइसेंस में हैं। लिखित अनुमति के बिना उनका व्यावसायिक पुनः उपयोग नहीं किया जा सकता।',
       'कंपनी जानकारी और सेवाएँ उपलब्ध रखने के उचित प्रयास करती है, लेकिन निर्बाध पहुँच या सभी तकनीकी त्रुटियों से पूर्ण मुक्ति की गारंटी नहीं देती। उत्तरदायित्व लागू कानून और लेन-देन दस्तावेज़ों के अधीन रहेगा।',
     ],
   },
@@ -182,7 +182,7 @@ const PRIVACY_SECTIONS_HI: LegalSection[] = [
     title: 'नीति अपडेट और संपर्क',
     paragraphs: [
       'तकनीक, सेवाओं या कानूनी आवश्यकताओं में बदलाव के अनुसार यह गोपनीयता नीति अपडेट की जा सकती है। महत्वपूर्ण बदलाव इस पेज पर दिखाए जाएँगे।',
-      'गोपनीयता से जुड़े प्रश्नों के लिए वेबसाइट पर प्रकाशित फोन, ईमेल या कार्यालय विवरण से MMR Constructions से संपर्क करें।',
+      'गोपनीयता से जुड़े प्रश्नों के लिए वेबसाइट पर प्रकाशित फोन, ईमेल या कार्यालय विवरण से MMR Construction से संपर्क करें।',
     ],
   },
 ];
@@ -225,21 +225,21 @@ export class LegalPageComponent implements OnInit {
       : (hindi ? 'नियम और शर्तें' : 'Terms & Conditions');
     this.description = privacy
       ? (hindi
-          ? 'जानें कि MMR Constructions वेबसाइट, ग्राहक और लेन-देन की जानकारी कैसे एकत्र, उपयोग और सुरक्षित करता है।'
-          : 'Learn how MMR Constructions collects, uses and protects website, customer and transaction information.')
+          ? 'जानें कि MMR Construction वेबसाइट, ग्राहक और लेन-देन की जानकारी कैसे एकत्र, उपयोग और सुरक्षित करता है।'
+          : 'Learn how MMR Construction collects, uses and protects website, customer and transaction information.')
       : (hindi
-          ? 'MMR Constructions वेबसाइट, संपत्ति जानकारी, बुकिंग और ग्राहक सेवाओं के उपयोग से जुड़े नियम पढ़ें।'
-          : 'Read the terms governing use of the MMR Constructions website, property information, bookings and customer services.');
+          ? 'MMR Construction वेबसाइट, संपत्ति जानकारी, बुकिंग और ग्राहक सेवाओं के उपयोग से जुड़े नियम पढ़ें।'
+          : 'Read the terms governing use of the MMR Construction website, property information, bookings and customer services.');
     this.icon = privacy ? 'fas fa-user-shield' : 'fas fa-file-contract';
     this.sections = privacy
       ? (hindi ? PRIVACY_SECTIONS_HI : PRIVACY_SECTIONS)
       : (hindi ? TERMS_SECTIONS_HI : TERMS_SECTIONS);
     const path = privacy ? '/privacy-policy' : '/terms-and-conditions';
     this.seo.set({
-      title: `${this.title} | MMR Constructions`,
+      title: `${this.title} | MMR Construction`,
       description: this.description,
       canonical: `https://mmrconstructions.in${path}`,
-      keywords: `${this.title}, MMR Constructions, property booking policy, real estate Unnao`,
+      keywords: `${this.title}, MMR Construction, property booking policy, real estate Unnao`,
     });
     this.seo.setBreadcrumb([
       { name: 'Home', url: '/' },

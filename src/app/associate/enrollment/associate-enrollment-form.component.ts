@@ -391,7 +391,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
           // If no sponsor exists, fallback to Admin sponsor (MMR0001 / Suraj Kumar Verma / 7071951011)
           const hasCustomSponsor = Boolean(
             (u.sponsor_user_id && Number(u.sponsor_user_id) !== 1) ||
-            (u.sponsor_name && u.sponsor_name !== 'MMR Constructions' && u.sponsor_name !== 'Suraj Kumar Verma') ||
+            (u.sponsor_name && u.sponsor_name !== 'MMR Construction' && u.sponsor_name !== 'Suraj Kumar Verma') ||
             (u.sponsor_id && u.sponsor_id !== 'MMR0001' && u.sponsor_id !== 'MMR00001') ||
             (sessionUser.sponsor_name && sessionUser.sponsor_name !== 'Suraj Kumar Verma')
           );

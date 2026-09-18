@@ -59,7 +59,7 @@ export class InvestorDashboardComponent implements OnInit {
   }
 
   shareOnWhatsapp() {
-    const text = encodeURIComponent(`MMR Constructions में Invest / Plot Registration के लिए मेरा Referral Link: ${this.referralLink}`);
+    const text = encodeURIComponent(`MMR Construction में Invest / Plot Registration के लिए मेरा Referral Link: ${this.referralLink}`);
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   }
 

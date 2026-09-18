@@ -235,7 +235,7 @@ export class MobileAppComponent implements OnInit {
     this.settingsId = data?.id || null;
     this.form = {
       platform: data?.platform || 'google_play',
-      app_name: data?.app_name || 'MMR Constructions',
+      app_name: data?.app_name || 'MMR Construction',
       app_logo_url: data?.app_logo_url || '',
       play_store_url: data?.play_store_url || '',
       package_name: data?.package_name || '',
@@ -264,7 +264,7 @@ export class MobileAppComponent implements OnInit {
   private emptyForm(): MobileAppForm {
     return {
       platform: 'google_play',
-      app_name: 'MMR Constructions',
+      app_name: 'MMR Construction',
       app_logo_url: '',
       play_store_url: '',
       package_name: '',

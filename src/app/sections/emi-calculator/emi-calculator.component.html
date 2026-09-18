@@ -1,11 +1,12 @@
 <section id="emi" class="sec-py emi-section">
   <div class="mmr-container">
     <div class="row g-4 g-lg-5 align-items-center">
+      <!-- Left Column: Description & Features -->
       <div class="col-lg-5">
         <div class="sec-label">Transparent Pricing</div>
         <h2 class="sec-title">EMI <span>Calculator</span></h2>
         <div class="sec-line"></div>
-        <p class="sec-desc mb-4">कोई hidden fees नहीं। Plot size चुनें और instant EMI breakdown देखें।</p>
+        <p class="sec-desc mb-4">कोई hidden fees नहीं। Loan amount और tenure दर्ज करें और instant EMI breakdown देखें।</p>
         <ul class="emi-feature-list">
           <li>
             <div class="check-circle"><i class="fas fa-check"></i></div>
@@ -13,7 +14,7 @@
           </li>
           <li>
             <div class="check-circle"><i class="fas fa-check"></i></div>
-            <span>60 months (5 year) tenure</span>
+            <span>Flexible 12 to 60 months tenure</span>
           </li>
           <li>
             <div class="check-circle"><i class="fas fa-check"></i></div>
@@ -26,60 +27,93 @@
         </ul>
       </div>
 
+      <!-- Right Column: EMI Calculator Box -->
       <div class="col-lg-7">
         <div class="emi-box">
-          <h5 class="emi-box-title">Select Plot Size</h5>
+          <h5 class="emi-box-title">Calculate Your Monthly EMI</h5>
 
-          <!-- Dynamic Plot Size Buttons from Database -->
-          <div class="emi-toggle-wrap mb-4">
+          <!-- Editable Input Textboxes for Loan Amount & Loan Tenure -->
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-sm-6">
+              <div class="emi-input-group">
+                <label for="emiLoanAmountInput" class="stat-lbl">Loan Amount (₹)</label>
+                <div class="emi-input-wrap">
+                  <span class="emi-input-prefix">₹</span>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    id="emiLoanAmountInput"
+                    class="emi-text-input"
+                    [(ngModel)]="loanAmount"
+                    (keyup.enter)="calculateEmi()"
+                    name="loanAmount"
+                    placeholder="Enter Loan Amount"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <div class="emi-input-group">
+                <label for="emiTenureInput" class="stat-lbl">Loan Tenure (Months)</label>
+                <div class="emi-input-wrap">
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    id="emiTenureInput"
+                    class="emi-text-input"
+                    [(ngModel)]="tenureMonths"
+                    (keyup.enter)="calculateEmi()"
+                    name="tenureMonths"
+                    placeholder="Enter Tenure (Months)"
+                  />
+                  <span class="emi-input-suffix">Months</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calculate EMI Button -->
+          <div class="mb-4">
             <button
-              *ngFor="let p of plansList; let i = index"
               type="button"
-              class="emi-btn"
-              [class.active]="selectedPlanIndex === i"
-              (click)="selectPlan(i)"
+              class="btn btn-gold w-100 py-2.5 fw-700 shadow-sm d-flex align-items-center justify-content-center gap-2"
+              (click)="calculateEmi()"
             >
-              {{ p.plot_size }}
+              <i class="fas fa-calculator"></i> Calculate EMI
             </button>
           </div>
 
-          <!-- Down Payment & Monthly EMI Cards -->
+          <!-- Principal & Monthly EMI Stat Cards -->
           <div class="row g-3 mb-4">
             <div class="col-12 col-sm-6">
               <div class="emi-stat-card">
-                <div class="stat-lbl">Down Payment</div>
-                <div class="stat-val text-white">{{ activePlan.dp }}</div>
+                <div class="stat-lbl">Principal Amount</div>
+                <div class="stat-val text-white">{{ formattedLoanAmount }}</div>
               </div>
             </div>
             <div class="col-12 col-sm-6">
               <div class="emi-stat-card emi-stat-highlight">
-                <div class="stat-lbl">Monthly EMI</div>
-                <div class="stat-val text-gold">{{ activePlan.emi }}</div>
+                <div class="stat-lbl">Estimated Monthly EMI</div>
+                <div class="stat-val text-gold">{{ formattedMonthlyEmi }}</div>
               </div>
             </div>
           </div>
 
-          <!-- EMI Breakdown Result Grid -->
+          <!-- EMI Breakdown Result Grid (Without Apply/Register Button) -->
           <div class="emi-result">
             <div class="row text-center g-2 g-sm-3">
               <div class="col-4">
                 <div class="result-lbl">Total Payable</div>
-                <div class="emi-amount">{{ activePlan.total }}</div>
+                <div class="emi-amount">{{ formattedTotalPayable }}</div>
               </div>
               <div class="col-4">
                 <div class="result-lbl">Tenure</div>
-                <div class="emi-amount">{{ activePlan.tenure }}</div>
+                <div class="emi-amount">{{ formattedTenure }}</div>
               </div>
               <div class="col-4">
                 <div class="result-lbl">File Charge</div>
-                <div class="emi-amount">{{ activePlan.fileCharge || '₹499' }}</div>
+                <div class="emi-amount">{{ fileCharge }}</div>
               </div>
-            </div>
-
-            <div class="emi-book-cta mt-4 pt-3 border-top border-white border-opacity-10">
-              <a routerLink="/register" class="btn btn-gold btn-lg w-100">
-                <i class="fas fa-user-check me-2"></i>Book a Plot Now
-              </a>
             </div>
           </div>
 

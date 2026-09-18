@@ -38,6 +38,16 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./associates/associates.component').then(m => m.AssociatesComponent) 
   },
   { 
+    path: 'site-gallery', 
+    loadComponent: () => import('./site-gallery/site-gallery.component').then(m => m.AdminSiteGalleryComponent),
+    title: 'Site Gallery Management'
+  },
+  { 
+    path: 'site-gallery/plot', 
+    loadComponent: () => import('./site-gallery/site-gallery.component').then(m => m.AdminSiteGalleryComponent),
+    title: 'Site Gallery — Plot Category'
+  },
+  { 
     path: 'booking-report', 
     loadComponent: () => import('./booking-report/booking-report.component').then(m => m.BookingReportComponent), 
     title: 'Booking Report' 

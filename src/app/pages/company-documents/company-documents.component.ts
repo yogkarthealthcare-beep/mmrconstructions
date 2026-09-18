@@ -28,10 +28,10 @@ export class CompanyDocumentsComponent implements OnInit {
 
   ngOnInit(): void {
     this.seo.set({
-      title: 'Company Verification Documents | MMR Constructions',
-      description: 'View official company registration, tax and verification documents published by MMR Constructions & Developers Private Limited.',
+      title: 'Company Verification Documents | MMR Construction',
+      description: 'View official company registration, tax and verification documents published by MMR Construction & Developers Private Limited.',
       canonical: 'https://mmrconstructions.in/company-documents',
-      keywords: 'MMR Constructions documents, company verification, GST certificate, company registration certificate',
+      keywords: 'MMR Construction documents, company verification, GST certificate, company registration certificate',
     });
     this.seo.setBreadcrumb([
       { name: 'Home', url: '/' },

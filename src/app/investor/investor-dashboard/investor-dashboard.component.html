@@ -1,218 +1,293 @@
-<div class="inv-page-shell">
-  <!-- TOP REFERRAL LINK BANNER -->
-  <div class="inv-card p-3 mb-3 border-0 shadow-sm" *ngIf="referralCode" style="background: linear-gradient(135deg, #072a17 0%, #0f3d27 60%, #175e38 100%); color: #fff;">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="inv-stat-icon-wrap" style="background: rgba(232, 201, 122, 0.2); color: #e8c97a; width: 44px; height: 44px;">
-          <i class="fas fa-share-alt"></i>
+<div class="inv-dashboard-container">
+  <!-- TOP REFERRAL LINK BANNER (When Referral Code Exists) -->
+  <div class="inv-referral-banner mb-3" *ngIf="referralCode">
+    <div class="inv-ref-inner">
+      <div class="inv-ref-info">
+        <div class="inv-ref-icon">
+          <i class="fas fa-share-nodes"></i>
         </div>
         <div>
-          <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="inv-badge" style="background: rgba(232, 201, 122, 0.25); color: #e8c97a; border-color: rgba(232, 201, 122, 0.35); font-size: 10px;">
-              INVESTOR REFERRAL
-            </span>
-            <span class="inv-mono-chip" style="background: rgba(255, 255, 255, 0.15); color: #ffffff; border-color: rgba(255, 255, 255, 0.25);">
-              <i class="fas fa-key me-1 text-gold"></i>{{ referralCode }}
+          <div class="inv-ref-tags">
+            <span class="inv-ref-badge">INVESTOR REFERRAL</span>
+            <span class="inv-ref-code">
+              <i class="fas fa-key text-gold me-1"></i>{{ referralCode }}
             </span>
           </div>
-          <div class="mt-1 d-flex align-items-center gap-1.5" style="font-size: 12px; color: rgba(255, 255, 255, 0.85);">
-            <i class="fas fa-link text-gold" style="color: #e8c97a;"></i>
-            <span class="font-monospace text-truncate" style="max-width: 320px;">{{ referralLink }}</span>
+          <div class="inv-ref-url-wrap">
+            <i class="fas fa-link text-gold me-1"></i>
+            <span class="inv-ref-url">{{ referralLink }}</span>
           </div>
         </div>
       </div>
 
-      <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-        <button type="button" class="inv-btn inv-btn-gold inv-btn-sm" (click)="copyReferralLink()">
+      <div class="inv-ref-actions">
+        <button type="button" class="btn-ref-copy" (click)="copyReferralLink()" [class.copied]="copiedLink">
           <i [class]="copiedLink ? 'fas fa-check text-success' : 'fas fa-copy'"></i>
-          {{ copiedLink ? 'Copied!' : 'Copy Link' }}
+          <span>{{ copiedLink ? 'Copied!' : 'Copy Link' }}</span>
         </button>
-        <button type="button" class="inv-btn inv-btn-sm" (click)="shareOnWhatsapp()" style="background: #25D366; color: #fff; border-color: #25D366;">
-          <i class="fab fa-whatsapp"></i> Share on WhatsApp
+        <button type="button" class="btn-ref-whatsapp" (click)="shareOnWhatsapp()">
+          <i class="fab fa-whatsapp"></i>
+          <span>Share on WhatsApp</span>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- WELCOME / PORTFOLIO HEADER -->
-  <div class="inv-page-header">
-    <div class="inv-page-header-main">
-      <div class="inv-page-icon-badge">
-        <i class="fas fa-chart-pie"></i>
+  <!-- WELCOME SECTION -->
+  <div class="inv-welcome-section mb-3">
+    <div class="inv-welcome-content">
+      <div class="inv-welcome-header">
+        <div class="inv-welcome-avatar-wrap">
+          <div class="inv-welcome-icon">
+            <i class="fas fa-chart-pie"></i>
+          </div>
+        </div>
+        <div class="inv-welcome-text">
+          <div class="inv-welcome-title-row">
+            <h1 class="inv-welcome-title">
+              <span>Welcome back, {{ dashboardData?.investor?.full_name || 'Test 13' }}</span>
+              <app-verified-badge [user]="dashboardData?.investor" size="md"></app-verified-badge>
+              <span class="inv-wave-hand">👋</span>
+            </h1>
+          </div>
+          <p class="inv-welcome-subtitle">
+            Here’s a quick overview of your investment portfolio and financial performance.
+          </p>
+        </div>
       </div>
-      <div>
-        <h1 class="inv-page-title d-flex align-items-center gap-1.5 flex-wrap">
-          <span>Welcome back, {{ dashboardData?.investor?.full_name || 'Investor' }}</span>
-          <app-verified-badge [user]="dashboardData?.investor" size="md"></app-verified-badge>
-          <span>👋</span>
-        </h1>
-        <p class="inv-page-subtitle">Overview of your investment portfolio and financial performance</p>
+
+      <div class="inv-welcome-actions">
+        <a routerLink="/investor/deposit" class="inv-btn-action inv-btn-deposit">
+          <i class="fas fa-plus-circle"></i>
+          <span>Make Deposit</span>
+        </a>
+        <a routerLink="/investor/withdrawal" class="inv-btn-action inv-btn-withdraw">
+          <i class="fas fa-arrow-up-right-from-square"></i>
+          <span>Withdraw</span>
+        </a>
       </div>
-    </div>
-    <div class="inv-page-actions">
-      <a routerLink="/investor/deposit" class="inv-btn inv-btn-primary">
-        <i class="fas fa-plus-circle"></i> Make Deposit
-      </a>
-      <a routerLink="/investor/withdrawal" class="inv-btn inv-btn-outline">
-        <i class="fas fa-arrow-alt-circle-up"></i> Withdraw
-      </a>
     </div>
   </div>
 
-  <div *ngIf="errorMessage" class="inv-alert inv-alert-danger">
-    <i class="fas fa-exclamation-circle mt-0.5"></i>
+  <!-- Error Message Banner -->
+  <div *ngIf="errorMessage" class="inv-error-alert mb-3">
+    <i class="fas fa-circle-exclamation me-2"></i>
     <div>{{ errorMessage }}</div>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border spinner-border-sm text-success me-2"></div>
+  <div *ngIf="loading" class="inv-loading-state py-5">
+    <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
     <span class="text-muted small">Loading portfolio summary...</span>
   </div>
 
   <div *ngIf="!loading">
-    <!-- Summary Cards Grid -->
-    <div class="row g-3 mb-3">
-      <!-- 1. Current Wallet Balance Card -->
+    <!-- PORTFOLIO SUMMARY CARDS (4-Column Grid) -->
+    <div class="row g-3 mb-4">
+      <!-- CARD 1: WALLET BALANCE -->
       <div class="col-xl-3 col-md-6">
-        <div class="inv-stat-card accent-emerald h-100">
-          <div>
-            <div class="inv-stat-label">
-              <i class="fas fa-wallet text-success"></i> Wallet Balance
+        <div class="inv-stat-card card-accent-emerald h-100">
+          <div class="inv-stat-top">
+            <span class="inv-stat-label">
+              <i class="fas fa-wallet text-emerald me-1.5"></i> WALLET BALANCE
+            </span>
+            <div class="inv-stat-icon icon-emerald">
+              <i class="fas fa-wallet"></i>
             </div>
-            <h3 class="inv-stat-value text-emerald">
+          </div>
+
+          <div class="inv-stat-body">
+            <div class="inv-stat-figure text-emerald">
               ₹{{ (dashboardData?.summary?.available_balance || 0) | number:'1.2-2' }}
-            </h3>
-            <div class="mt-2 d-flex gap-2" style="font-size: 11.5px;">
-              <a routerLink="/investor/deposit" class="text-success text-decoration-none fw-bold">
-                <i class="fas fa-plus-circle me-0.5"></i> Add Fund
-              </a>
-              <a routerLink="/investor/withdrawal" class="text-muted text-decoration-none fw-semibold">
-                <i class="fas fa-arrow-up me-0.5"></i> Withdraw
-              </a>
             </div>
           </div>
-          <div class="inv-stat-icon-wrap bg-emerald-soft">
-            <i class="fas fa-wallet"></i>
+
+          <div class="inv-stat-footer">
+            <div class="inv-stat-actions">
+              <a routerLink="/investor/deposit" class="inv-card-quick-link link-deposit">
+                <i class="fas fa-plus-circle me-1"></i> + Add Fund
+              </a>
+              <span class="inv-action-sep">•</span>
+              <a routerLink="/investor/withdrawal" class="inv-card-quick-link link-withdraw">
+                <i class="fas fa-arrow-up me-1"></i> ↑ Withdraw
+              </a>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 2. Total Fund / Investment Card -->
+      <!-- CARD 2: TOTAL INVESTMENT -->
       <div class="col-xl-3 col-md-6">
-        <div class="inv-stat-card accent-blue h-100">
-          <div>
-            <div class="inv-stat-label">
-              <i class="fas fa-chart-line text-primary"></i> Total Investment
+        <div class="inv-stat-card card-accent-blue h-100">
+          <div class="inv-stat-top">
+            <span class="inv-stat-label">
+              <i class="fas fa-landmark text-blue me-1.5"></i> TOTAL INVESTMENT
+            </span>
+            <div class="inv-stat-icon icon-blue">
+              <i class="fas fa-landmark"></i>
             </div>
-            <h3 class="inv-stat-value">
+          </div>
+
+          <div class="inv-stat-body">
+            <div class="inv-stat-figure text-navy">
               ₹{{ (dashboardData?.summary?.total_investment || dashboardData?.summary?.total_deposits || 0) | number:'1.2-2' }}
-            </h3>
-            <div class="inv-stat-sub">Deposited capital</div>
+            </div>
           </div>
-          <div class="inv-stat-icon-wrap bg-blue-soft">
-            <i class="fas fa-landmark"></i>
+
+          <div class="inv-stat-footer">
+            <div class="inv-stat-subtitle">
+              <i class="fas fa-shield-halved text-blue-muted me-1"></i> Deposited capital
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 3. Total Earnings Card -->
+      <!-- CARD 3: TOTAL EARNINGS -->
       <div class="col-xl-3 col-md-6">
-        <div class="inv-stat-card accent-gold h-100">
-          <div>
-            <div class="inv-stat-label">
-              <i class="fas fa-coins text-warning"></i> Total Earnings
+        <div class="inv-stat-card card-accent-gold h-100">
+          <div class="inv-stat-top">
+            <span class="inv-stat-label">
+              <i class="fas fa-coins text-gold-dark me-1.5"></i> TOTAL EARNINGS
+            </span>
+            <div class="inv-stat-icon icon-gold">
+              <i class="fas fa-chart-line"></i>
             </div>
-            <h3 class="inv-stat-value text-gold">
+          </div>
+
+          <div class="inv-stat-body">
+            <div class="inv-stat-figure text-gold-deep">
               ₹{{ (dashboardData?.summary?.total_earnings || 0) | number:'1.2-2' }}
-            </h3>
-            <div class="inv-stat-sub">Profit &amp; yield earned</div>
+            </div>
           </div>
-          <div class="inv-stat-icon-wrap bg-gold-soft">
-            <i class="fas fa-chart-line"></i>
+
+          <div class="inv-stat-footer">
+            <div class="inv-stat-subtitle">
+              <i class="fas fa-arrow-trend-up text-gold me-1"></i> Profit &amp; yield earned
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 4. Total Withdrawals Card -->
+      <!-- CARD 4: TOTAL WITHDRAWALS -->
       <div class="col-xl-3 col-md-6">
-        <div class="inv-stat-card accent-rose h-100">
-          <div>
-            <div class="inv-stat-label">
-              <i class="fas fa-arrow-up text-danger"></i> Total Withdrawals
+        <div class="inv-stat-card card-accent-rose h-100">
+          <div class="inv-stat-top">
+            <span class="inv-stat-label">
+              <i class="fas fa-hand-holding-dollar text-rose me-1.5"></i> TOTAL WITHDRAWALS
+            </span>
+            <div class="inv-stat-icon icon-rose">
+              <i class="fas fa-hand-holding-usd"></i>
             </div>
-            <h3 class="inv-stat-value">
-              ₹{{ (dashboardData?.summary?.total_withdrawals || 0) | number:'1.2-2' }}
-            </h3>
-            <div class="inv-stat-sub">Approved payouts released</div>
           </div>
-          <div class="inv-stat-icon-wrap bg-rose-soft">
-            <i class="fas fa-hand-holding-usd"></i>
+
+          <div class="inv-stat-body">
+            <div class="inv-stat-figure text-slate">
+              ₹{{ (dashboardData?.summary?.total_withdrawals || 0) | number:'1.2-2' }}
+            </div>
+          </div>
+
+          <div class="inv-stat-footer">
+            <div class="inv-stat-subtitle">
+              <i class="fas fa-circle-check text-rose me-1"></i> Approved payouts released
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Recent Transactions Table Card -->
-    <div class="inv-card">
-      <div class="inv-card-header">
-        <div class="inv-card-header-left">
-          <div class="inv-card-header-icon primary">
-            <i class="fas fa-receipt"></i>
+    <!-- RECENT TRANSACTIONS TABLE SECTION -->
+    <div class="inv-table-card">
+      <div class="inv-table-card-header">
+        <div class="inv-table-header-title-wrap">
+          <div class="inv-table-header-icon">
+            <i class="fas fa-clock-rotate-left"></i>
           </div>
           <div>
-            <h2 class="inv-card-title">Recent Transactions</h2>
-            <p class="inv-card-desc">Latest activity on your investor account</p>
+            <h2 class="inv-table-title">Recent Transactions</h2>
+            <p class="inv-table-subtitle">Latest activity on your investor account</p>
           </div>
         </div>
-        <a routerLink="/investor/transactions" class="inv-btn inv-btn-sm inv-btn-outline">
-          View All Transactions <i class="fas fa-chevron-right ms-1"></i>
-        </a>
+        <div class="inv-table-header-actions">
+          <a routerLink="/investor/transactions" class="inv-btn-view-all">
+            <span>View All Transactions</span>
+            <i class="fas fa-arrow-right ms-1"></i>
+          </a>
+        </div>
       </div>
 
-      <div class="inv-card-body p-0">
-        <div class="inv-table-wrapper" *ngIf="dashboardData?.recent_transactions?.length">
-          <table class="inv-table">
+      <div class="inv-table-card-body">
+        <div class="inv-table-responsive" *ngIf="dashboardData?.recent_transactions?.length">
+          <table class="inv-modern-table">
             <thead>
               <tr>
-                <th class="ps-3">Date</th>
-                <th>Transaction ID</th>
-                <th>Type</th>
-                <th class="text-end">Amount</th>
-                <th>Method</th>
-                <th class="pe-3">Status</th>
+                <th class="col-date">DATE</th>
+                <th class="col-txid">TRANSACTION ID</th>
+                <th class="col-type">TYPE</th>
+                <th class="col-amount text-end">AMOUNT</th>
+                <th class="col-method">METHOD</th>
+                <th class="col-status text-center">STATUS</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let tx of dashboardData?.recent_transactions">
-                <td class="ps-3 text-muted" style="white-space: nowrap; font-size: 12px;">
-                  {{ tx.created_at | date:'mediumDate' }}
+                <!-- Date -->
+                <td class="col-date">
+                  <span class="tx-date-text">{{ tx.created_at | date:'mediumDate' }}</span>
                 </td>
-                <td>
-                  <span class="inv-mono-chip fw-bold">{{ tx.transaction_id }}</span>
-                </td>
-                <td>
-                  <span class="inv-badge text-uppercase"
-                        [class.inv-badge-approved]="tx.type === 'deposit' || tx.type === 'credit'"
-                        [class.inv-badge-danger]="tx.type === 'withdrawal' || tx.type === 'debit'">
-                    <i [class]="tx.type === 'deposit' || tx.type === 'credit' ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
-                    {{ tx.type }}
+
+                <!-- Transaction ID -->
+                <td class="col-txid">
+                  <span class="tx-id-pill" [title]="tx.transaction_id">
+                    <i class="fas fa-receipt tx-id-icon"></i>
+                    <span class="tx-id-code">{{ tx.transaction_id }}</span>
                   </span>
                 </td>
-                <td class="text-end fw-bold" style="white-space: nowrap;"
-                    [class.text-success]="tx.type === 'deposit' || tx.type === 'credit'"
-                    [class.text-danger]="tx.type === 'withdrawal' || tx.type === 'debit'">
-                  {{ (tx.type === 'deposit' || tx.type === 'credit') ? '+' : '−' }} ₹{{ tx.amount | number:'1.2-2' }}
+
+                <!-- Type -->
+                <td class="col-type">
+                  <span class="tx-type-badge"
+                        [class.type-deposit]="tx.type === 'deposit' || tx.type === 'credit'"
+                        [class.type-withdrawal]="tx.type === 'withdrawal' || tx.type === 'debit'">
+                    <i [class]="tx.type === 'deposit' || tx.type === 'credit' ? 'fas fa-arrow-down-left' : 'fas fa-arrow-up-right'"></i>
+                    <span class="text-uppercase">{{ tx.type }}</span>
+                  </span>
                 </td>
-                <td class="text-secondary small text-capitalize">
-                  {{ tx.payment_method?.replace('_', ' ') || '-' }}
+
+                <!-- Amount -->
+                <td class="col-amount text-end">
+                  <span class="tx-amount-value"
+                        [class.amount-positive]="tx.type === 'deposit' || tx.type === 'credit'"
+                        [class.amount-negative]="tx.type === 'withdrawal' || tx.type === 'debit'">
+                    {{ (tx.type === 'deposit' || tx.type === 'credit') ? '+' : '−' }} ₹{{ tx.amount | number:'1.2-2' }}
+                  </span>
                 </td>
-                <td class="pe-3">
-                  <span class="inv-badge"
-                        [class.inv-badge-approved]="tx.status === 'approved'"
-                        [class.inv-badge-pending]="tx.status === 'pending'"
-                        [class.inv-badge-rejected]="tx.status === 'rejected'">
-                    {{ tx.status }}
+
+                <!-- Method -->
+                <td class="col-method">
+                  <span class="tx-method-text">
+                    <i class="fas fa-wallet text-muted me-1.5" *ngIf="tx.payment_method?.includes('wallet')"></i>
+                    <i class="fas fa-qrcode text-muted me-1.5" *ngIf="tx.payment_method?.includes('upi')"></i>
+                    <i class="fas fa-building-columns text-muted me-1.5" *ngIf="!tx.payment_method?.includes('wallet') && !tx.payment_method?.includes('upi')"></i>
+                    <span>{{ tx.payment_method?.replace('_', ' ') || 'Manual UPI' }}</span>
+                  </span>
+                </td>
+
+                <!-- Status -->
+                <td class="col-status text-center">
+                  <span class="tx-status-badge badge-approved" *ngIf="tx.status === 'approved'">
+                    <i class="fas fa-circle-check"></i>
+                    <span>Approved</span>
+                  </span>
+                  <span class="tx-status-badge badge-pending" *ngIf="tx.status === 'pending'">
+                    <i class="fas fa-clock"></i>
+                    <span>Pending</span>
+                  </span>
+                  <span class="tx-status-badge badge-rejected" *ngIf="tx.status === 'rejected'">
+                    <i class="fas fa-circle-xmark"></i>
+                    <span>Rejected</span>
+                  </span>
+                  <span class="tx-status-badge badge-neutral" *ngIf="tx.status !== 'approved' && tx.status !== 'pending' && tx.status !== 'rejected'">
+                    <span>{{ tx.status | titlecase }}</span>
                   </span>
                 </td>
               </tr>
@@ -220,11 +295,12 @@
           </table>
         </div>
 
-        <div class="inv-empty-state" *ngIf="!dashboardData?.recent_transactions?.length">
-          <div class="inv-empty-icon">
-            <i class="fas fa-receipt"></i>
+        <!-- Empty State -->
+        <div class="inv-empty-state-card" *ngIf="!dashboardData?.recent_transactions?.length">
+          <div class="inv-empty-icon-wrap">
+            <i class="fas fa-file-invoice-dollar"></i>
           </div>
-          <div class="inv-empty-title">No transactions recorded yet</div>
+          <h3 class="inv-empty-title">No transactions recorded yet</h3>
           <p class="inv-empty-desc">Your recent financial activity will appear here once deposits or earnings are logged.</p>
         </div>
       </div>

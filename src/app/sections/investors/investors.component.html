@@ -19,19 +19,19 @@
     <!-- DYNAMIC MULTI-ROW INVESTOR CONTAINER (MAX 10 PER ROW, STRICTLY CENTER ALIGNED) -->
     <div class="investor-rows-wrapper d-flex flex-column gap-3" *ngIf="!loading && investors.length">
       <div *ngFor="let row of investorRows; let rIdx = index" class="investor-row d-flex justify-content-center align-items-center flex-wrap">
-        <article *ngFor="let investor of row; let cIdx = index" class="investor-card" [ngClass]="cardSizeClass" [class.rank-top3]="(rIdx * 10 + cIdx) < 3">
+        <a routerLink="/login" [queryParams]="{ returnUrl: '/investor/dashboard' }" *ngFor="let investor of row; let cIdx = index" class="investor-card text-decoration-none" [ngClass]="cardSizeClass" [class.rank-top3]="(rIdx * 10 + cIdx) < 3">
           <div class="rank-badge" *ngIf="(rIdx * 10 + cIdx) < 3" [title]="'Rank #' + (rIdx * 10 + cIdx + 1)">
             <i class="fas fa-crown text-gold"></i> #{{ rIdx * 10 + cIdx + 1 }}
           </div>
           <div class="portrait-wrap">
-            <img [src]="getImageUrl(investor)" [alt]="investor.name + ' — MMR Constructions investor'" loading="lazy" (error)="imageError($event)">
+            <img [src]="getImageUrl(investor)" [alt]="investor.name + ' — MMR Construction investor'" loading="lazy" (error)="imageError($event)">
           </div>
           <h6 class="inv-name" [title]="investor.name">{{ investor.name }}</h6>
           <div class="inv-amount text-gold-dark" *ngIf="investor.investment_amount">
             ₹{{ investor.investment_amount | number }}
           </div>
           <span class="investor-role-tag"><i class="fas fa-shield-alt me-1"></i>Key Partner</span>
-        </article>
+        </a>
       </div>
     </div>
 

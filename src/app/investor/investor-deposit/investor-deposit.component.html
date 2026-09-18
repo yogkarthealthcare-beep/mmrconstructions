@@ -83,7 +83,7 @@
               </select>
             </div>
 
-            <!-- Manual UPI Payment Highlight Box -->
+            <!-- 1. Manual UPI Payment Box -->
             <div class="inv-upi-box mb-3" *ngIf="form.payment_method === 'manual_upi'">
               <div class="d-flex align-items-center justify-content-between mb-2">
                 <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
@@ -107,23 +107,54 @@
               </div>
             </div>
 
-            <!-- Transaction Reference / UTR Number -->
-            <div class="inv-form-group" *ngIf="form.payment_method === 'manual_upi'">
+            <!-- 2. Bank Transfer Info Box -->
+            <div class="inv-upi-box mb-3" *ngIf="form.payment_method === 'bank_transfer'">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="fas fa-university text-primary"></i> Company Bank Account
+                </span>
+                <span class="inv-badge inv-badge-approved" style="font-size: 10px;">Current A/C</span>
+              </div>
+              <div class="small text-secondary bg-white p-2.5 rounded border">
+                <div><strong>A/C Name:</strong> {{ companyBankDetails.accountName }}</div>
+                <div><strong>A/C Number:</strong> <span class="font-monospace text-dark fw-bold">{{ companyBankDetails.accountNumber }}</span></div>
+                <div><strong>IFSC Code:</strong> <span class="font-monospace text-dark fw-bold">{{ companyBankDetails.ifscCode }}</span></div>
+                <div><strong>Bank:</strong> {{ companyBankDetails.bankName }} ({{ companyBankDetails.branch }})</div>
+              </div>
+            </div>
+
+            <!-- 3. Offline Cash / Cheque Info Box -->
+            <div class="inv-upi-box mb-3" *ngIf="form.payment_method === 'offline_cash'">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
+                  <i class="fas fa-money-bill-wave text-warning"></i> Office Cash / Cheque / DD
+                </span>
+                <span class="inv-badge inv-badge-neutral" style="font-size: 10px;">Offline Receipt</span>
+              </div>
+              <p class="small text-muted mb-0">
+                Deposit cash/cheque directly at our branch office. Enter the Receipt Slip / Cheque number below and upload a photo of the slip.
+              </p>
+            </div>
+
+            <!-- Transaction Reference / UTR Number (for all non-online) -->
+            <div class="inv-form-group" *ngIf="form.payment_method !== 'online'">
               <label class="inv-label" for="txnRef">
-                Transaction Reference / UTR Number <span class="req">*</span>
+                {{ form.payment_method === 'offline_cash' ? 'Receipt Slip / Cheque / DD Number' : 'Transaction Reference / UTR Number' }} <span class="req">*</span>
               </label>
               <input id="txnRef"
                      type="text"
                      class="inv-input"
                      [(ngModel)]="form.transaction_reference"
                      name="transaction_reference"
-                     placeholder="Enter 12-digit UTR / Txn Reference"
+                     [placeholder]="form.payment_method === 'offline_cash' ? 'e.g. REC-10294 or Cheque No.' : 'Enter 12-digit UTR / Txn Reference'"
                      required />
             </div>
 
-            <!-- Upload Screenshot -->
-            <div class="inv-form-group" *ngIf="form.payment_method === 'manual_upi'">
-              <label class="inv-label" for="screenshotUpload">Upload Payment Proof (Optional)</label>
+            <!-- Upload Screenshot / Proof -->
+            <div class="inv-form-group" *ngIf="form.payment_method !== 'online'">
+              <label class="inv-label" for="screenshotUpload">
+                Upload Payment Proof / Receipt Slip <span class="text-muted">(Optional)</span>
+              </label>
               <input id="screenshotUpload"
                      type="file"
                      class="inv-input"

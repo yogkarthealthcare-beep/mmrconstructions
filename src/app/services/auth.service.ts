@@ -114,9 +114,13 @@ export class AuthService {
       }
     }
 
-    // 3. Fallback: If login_date or expires_at is missing for an active token,
-    // expire it strictly so sessions never persist beyond the intended day.
-    return true;
+    // 3. Fallback: If token exists but login_date or expires_at is missing,
+    // auto-populate them with today's date and next midnight to keep session intact
+    const loginDate = currentDateStr;
+    const expiresAt = this.getNextDayMidnightTimestamp(now);
+    this.saveAuthItem(loginDateKey, loginDate);
+    this.saveAuthItem(expKey, String(expiresAt));
+    return false;
   }
 
   private getExpirationMs(scope: 'admin' | 'user' | 'investor'): number | null {
@@ -281,8 +285,8 @@ export class AuthService {
   // ── Admin ──────────────────────
   setAdminSession(data: any) {
     if (!data) return;
-    this.clearAdminStorage();
     if (data.token) {
+      this.clearAdminStorage();
       const now = new Date();
       const loginDate = this.getLocalDateString(now);
       const expiresAt = this.getNextDayMidnightTimestamp(now);
@@ -292,8 +296,12 @@ export class AuthService {
       this.saveAuthItem('mmr_admin_expires_at', String(expiresAt));
     }
     if (data.refresh_token) this.saveAuthItem('mmr_admin_refresh', data.refresh_token);
-    if (data.admin) this.saveAuthItem('mmr_admin_user', JSON.stringify(data.admin));
-    this._adminUser$.next(data.admin || null);
+    if (data.admin) {
+      const current = this.getAdminUser() || {};
+      const updated = (typeof data.admin === 'object') ? { ...current, ...data.admin } : data.admin;
+      this.saveAuthItem('mmr_admin_user', JSON.stringify(updated));
+      this._adminUser$.next(updated);
+    }
     this.scheduleScopeAutoLogout('admin');
   }
 
@@ -345,12 +353,12 @@ export class AuthService {
   // ── User / Associate / Customer ──────────────────────
   setUserSession(data: any) {
     if (!data) return;
-    this.clearUserStorage();
     const token = data.token || data.access_token || data.jwt || (typeof data === 'string' ? data : null);
     const refreshToken = data.refresh_token || data.refreshToken || '';
     const userObj = data.user || data.data?.user || (data.user_id ? data : null);
 
     if (token) {
+      this.clearUserStorage();
       const now = new Date();
       const loginDate = this.getLocalDateString(now);
       const expiresAt = this.getNextDayMidnightTimestamp(now);
@@ -363,10 +371,21 @@ export class AuthService {
       this.saveAuthItem('mmr_user_refresh', refreshToken);
     }
     if (userObj) {
-      this.saveAuthItem('mmr_user', JSON.stringify(userObj));
-      this._user$.next(userObj);
+      const current = this.getUser() || {};
+      const updated = (typeof userObj === 'object') ? { ...current, ...userObj } : userObj;
+      this.saveAuthItem('mmr_user', JSON.stringify(updated));
+      this._user$.next(updated);
     }
     this.scheduleScopeAutoLogout('user');
+  }
+
+  updateUser(user: any) {
+    if (user) {
+      const current = this.getUser() || {};
+      const updated = (typeof user === 'object') ? { ...current, ...user } : user;
+      this.saveAuthItem('mmr_user', JSON.stringify(updated));
+      this._user$.next(updated);
+    }
   }
 
   getUser(): any {
@@ -473,7 +492,6 @@ export class AuthService {
 
   setInvestorSession(tokenOrData: any, userObj?: any) {
     if (!tokenOrData) return;
-    this.clearInvestorStorage();
     let token: string | null = null;
     let refreshToken: string | null = null;
     let user: any = null;
@@ -488,6 +506,7 @@ export class AuthService {
     }
 
     if (token) {
+      this.clearInvestorStorage();
       const now = new Date();
       const loginDate = this.getLocalDateString(now);
       const expiresAt = this.getNextDayMidnightTimestamp(now);
@@ -500,16 +519,20 @@ export class AuthService {
       this.saveAuthItem('mmr_investor_refresh', refreshToken);
     }
     if (user) {
-      this.saveAuthItem('mmr_investor_user', JSON.stringify(user));
-      this._investorUser$.next(user);
+      const current = this.getInvestorUser() || {};
+      const updated = (typeof user === 'object') ? { ...current, ...user } : user;
+      this.saveAuthItem('mmr_investor_user', JSON.stringify(updated));
+      this._investorUser$.next(updated);
     }
     this.scheduleScopeAutoLogout('investor');
   }
 
   updateInvestorUser(user: any) {
     if (user) {
-      this.saveAuthItem('mmr_investor_user', JSON.stringify(user));
-      this._investorUser$.next(user);
+      const current = this.getInvestorUser() || {};
+      const updated = (typeof user === 'object') ? { ...current, ...user } : user;
+      this.saveAuthItem('mmr_investor_user', JSON.stringify(updated));
+      this._investorUser$.next(updated);
     }
   }
 

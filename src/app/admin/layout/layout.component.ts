@@ -13,6 +13,7 @@ interface NavItem {
   route: string;
   badge?: string | null;
   red?: boolean;
+  queryParams?: Record<string, any>;
 }
 
 interface NavGroup {
@@ -62,6 +63,21 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       ]
     },
     {
+      label: 'SITE GALLERY',
+      icon: 'fas fa-images',
+      expanded: false,
+      items: [
+        { icon: 'fas fa-layer-group', label: 'Plot Sites', route: '/admin/site-gallery' },
+      ]
+    },
+    /*
+    ================================================================================
+    PRESERVED FOR FUTURE REACTIVATION — PLOT BOOKING NAV GROUPS
+    To reactivate:
+    1. Uncomment the groups below and include them in rawNavGroups.
+    2. Re-enable the SiteToggleService sync in ngOnInit.
+    ================================================================================
+    {
       label: 'BOOKING REPORT',
       icon: 'fas fa-file-signature',
       expanded: false,
@@ -83,6 +99,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-tasks', label: 'Booking Workflow', route: '/admin/booking-workflow' },
       ]
     },
+    */
     {
       label: 'RECEIPTS',
       icon: 'fas fa-receipt',
@@ -122,8 +139,11 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       icon: 'fas fa-piggy-bank',
       expanded: false,
       items: [
-        { icon: 'fas fa-user-circle', label: 'Investors List', route: '/admin/investors' },
-        { icon: 'fas fa-chart-bar', label: 'Investor Management', route: '/admin/investor-portal' },
+        { icon: 'fas fa-users-cog', label: 'Investor Accounts', route: '/admin/investor-portal', queryParams: { tab: 'investors' } },
+        { icon: 'fas fa-arrow-down-long', label: 'Deposit Requests', route: '/admin/investor-portal', queryParams: { tab: 'deposits' } },
+        { icon: 'fas fa-arrow-up-long', label: 'Withdrawal Requests', route: '/admin/investor-portal', queryParams: { tab: 'withdrawals' } },
+        { icon: 'fas fa-receipt', label: 'All Transactions', route: '/admin/investor-portal', queryParams: { tab: 'transactions' } },
+        { icon: 'fas fa-award', label: 'Top Showcase', route: '/admin/investors' },
       ]
     },
     {
@@ -164,41 +184,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.auth.adminUser$.subscribe(u => this.adminUser = u);
-    
-    // Fetch initial master toggle state from backend
-    this.api.adminGetHomePageSettings().subscribe({
-      next: (res: any) => {
-        const data = res?.data || {};
-        const currentVisibility = data.section_visibility || {};
-        if (currentVisibility.master_property_tools !== undefined) {
-          this.siteToggle.syncMasterPropertyPlotEnabled(currentVisibility.master_property_tools);
-        }
-      }
-    });
-
-    // Subscribe to site toggle changes
-    this.toggleSub = this.siteToggle.toggleState$.subscribe(ev => {
-      const activeId = this.siteToggle.getActiveSiteId();
-      if (activeId === ev.siteId || !activeId) {
-        this.activeSiteInteractive = ev.enabled;
-        this.updateNavGroups();
-      }
-    });
-
-    this.siteToggle.activeSiteId$.subscribe(siteId => {
-      if (siteId) {
-        this.activeSiteInteractive = this.siteToggle.isSiteInteractive(siteId);
-        this.updateNavGroups();
-      }
-    });
-
-    this.propertyPlotMasterEnabled = this.siteToggle.isMasterPropertyPlotEnabled();
     this.updateNavGroups();
-
-    this.masterToggleSub = this.siteToggle.masterToggleState$.subscribe(enabled => {
-      this.propertyPlotMasterEnabled = enabled;
-      this.updateNavGroups();
-    });
 
     this.checkActiveGroup(this.router.url);
 
@@ -224,15 +210,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   }
 
   updateNavGroups() {
-    this.filteredNavGroups = this.rawNavGroups.map(group => {
-      if (group.label === 'PROPERTY & PLOT' && !this.propertyPlotMasterEnabled) {
-        return {
-          ...group,
-          items: group.items.filter(item => item.route === '/admin/new-site-area')
-        };
-      }
-      return group;
-    });
+    this.filteredNavGroups = [...this.rawNavGroups];
   }
 
   toggleGroup(group: NavGroup) {

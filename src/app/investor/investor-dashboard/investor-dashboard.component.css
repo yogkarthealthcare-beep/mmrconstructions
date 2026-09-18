@@ -1,4 +1,834 @@
-/* Investor Dashboard Component Styles */
+/* ==========================================================================
+   MMR CONSTRUCTIONS - INVESTOR DASHBOARD (MAIN CONTENT AREA)
+   Elite Real Estate Investment Dashboard
+   ========================================================================== */
+
 :host {
   display: block;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #1e293b;
+}
+
+/* Base Container */
+.inv-dashboard-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Typography & Numeral Defaults (Ensures sans-serif figures instead of serif Playfair) */
+.inv-dashboard-container h1,
+.inv-dashboard-container h2,
+.inv-dashboard-container h3,
+.inv-dashboard-container h4,
+.inv-dashboard-container h5,
+.inv-dashboard-container h6 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  color: #0f172a;
+}
+
+/* --------------------------------------------------------------------------
+   1. REFERRAL BANNER (When Active)
+   -------------------------------------------------------------------------- */
+.inv-referral-banner {
+  background: linear-gradient(135deg, #072a17 0%, #0f3d27 60%, #155e38 100%);
+  border: 1px solid rgba(232, 201, 122, 0.25);
+  border-radius: 12px;
+  padding: 12px 18px;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(7, 42, 23, 0.15);
+}
+
+.inv-ref-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.inv-ref-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.inv-ref-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(232, 201, 122, 0.15);
+  color: #e8c97a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.inv-ref-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.inv-ref-badge {
+  background: rgba(232, 201, 122, 0.2);
+  color: #e8c97a;
+  border: 1px solid rgba(232, 201, 122, 0.35);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.inv-ref-code {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.inv-ref-url-wrap {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.inv-ref-url {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inv-ref-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.btn-ref-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #c9a84c 0%, #dfbf68 100%);
+  color: #0b331e;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #c9a84c;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(201, 168, 76, 0.25);
+}
+
+.btn-ref-copy:hover {
+  background: linear-gradient(135deg, #b89337 0%, #c9a84c 100%);
+  transform: translateY(-1px);
+}
+
+.btn-ref-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #25D366;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #22bf5b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-ref-whatsapp:hover {
+  background: #1ebc59;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   2. WELCOME SECTION
+   -------------------------------------------------------------------------- */
+.inv-welcome-section {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle architectural real-estate ambient glow */
+.inv-welcome-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 260px;
+  height: 100%;
+  background: radial-gradient(circle at 100% 50%, rgba(15, 61, 39, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.inv-welcome-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.inv-welcome-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.inv-welcome-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.inv-welcome-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0f3d27 0%, #1a5c3a 100%);
+  color: #e8c97a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  box-shadow: 0 2px 6px rgba(15, 61, 39, 0.15);
+}
+
+.inv-welcome-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inv-welcome-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.015em;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  line-height: 1.3;
+}
+
+.inv-wave-hand {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.inv-welcome-subtitle {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 3px 0 0 0;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.inv-welcome-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.inv-btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.inv-btn-deposit {
+  background: #0f3d27;
+  color: #ffffff !important;
+  border: 1px solid #0f3d27;
+  box-shadow: 0 2px 6px rgba(15, 61, 39, 0.18);
+}
+
+.inv-btn-deposit:hover {
+  background: #166534;
+  border-color: #166534;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 61, 39, 0.25);
+  color: #ffffff !important;
+}
+
+.inv-btn-withdraw {
+  background: #ffffff;
+  color: #0f3d27 !important;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.inv-btn-withdraw:hover {
+  background: #f0fdf4;
+  border-color: #059669;
+  color: #059669 !important;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   3. ERROR & LOADING STATES
+   -------------------------------------------------------------------------- */
+.inv-error-alert {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  display: flex;
+  align-items: center;
+}
+
+.inv-loading-state {
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   4. PORTFOLIO SUMMARY CARDS (Balanced 4-Column Grid)
+   -------------------------------------------------------------------------- */
+.inv-stat-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 140px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.inv-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 61, 39, 0.06);
+  border-color: #cbd5e1;
+}
+
+/* Subtle Left Edge Accent Line */
+.inv-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3.5px;
+}
+
+.card-accent-emerald::before { background: #059669; }
+.card-accent-blue::before { background: #2563eb; }
+.card-accent-gold::before { background: #c9a84c; }
+.card-accent-rose::before { background: #e11d48; }
+
+/* Tier 1: Stat Top (Label + Icon) */
+.inv-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.inv-stat-label {
+  font-size: 0.70rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+}
+
+.inv-stat-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.icon-emerald { background: #ecfdf5; color: #059669; border: 1px solid #d1fae5; }
+.icon-blue { background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; }
+.icon-gold { background: #fdfaf2; color: #b4851e; border: 1px solid #fef3c7; }
+.icon-rose { background: #fff1f2; color: #e11d48; border: 1px solid #ffe4e6; }
+
+/* Tier 2: Stat Body (Primary Large Metric Amount) */
+.inv-stat-body {
+  margin: 10px 0 8px 0;
+}
+
+.inv-stat-figure {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-emerald { color: #059669 !important; }
+.text-navy { color: #0f172a !important; }
+.text-gold-deep { color: #0f172a !important; }
+.text-slate { color: #0f172a !important; }
+
+.text-blue { color: #2563eb !important; }
+.text-gold-dark { color: #b4851e !important; }
+.text-gold { color: #c9a84c !important; }
+.text-rose { color: #e11d48 !important; }
+.text-blue-muted { color: #60a5fa !important; }
+
+/* Tier 3: Stat Footer (Actions or Subtitles) */
+.inv-stat-footer {
+  display: flex;
+  align-items: center;
+  min-height: 22px;
+}
+
+.inv-stat-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+}
+
+.inv-card-quick-link {
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.link-deposit {
+  color: #059669;
+}
+
+.link-deposit:hover {
+  color: #047857;
+  text-decoration: underline;
+}
+
+.link-withdraw {
+  color: #64748b;
+}
+
+.link-withdraw:hover {
+  color: #0f172a;
+  text-decoration: underline;
+}
+
+.inv-action-sep {
+  color: #cbd5e1;
+  font-size: 10px;
+}
+
+.inv-stat-subtitle {
+  font-size: 0.735rem;
+  color: #64748b;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   5. RECENT TRANSACTIONS TABLE CARD
+   -------------------------------------------------------------------------- */
+.inv-table-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.inv-table-card-header {
+  padding: 14px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.inv-table-header-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inv-table-header-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.inv-table-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.inv-table-subtitle {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 1px 0 0 0;
+  font-weight: 400;
+}
+
+.inv-table-header-actions {
+  display: flex;
+  align-items: center;
+}
+
+.inv-btn-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0f3d27;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.inv-btn-view-all:hover {
+  background: #f0fdf4;
+  border-color: #059669;
+  color: #059669;
+}
+
+.inv-table-card-body {
+  padding: 0;
+}
+
+/* Responsive Table Wrapper */
+.inv-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Modern Institutional Table */
+.inv-modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.inv-modern-table thead th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.70rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.inv-modern-table tbody td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  transition: background-color 0.15s ease;
+}
+
+.inv-modern-table tbody tr:hover td {
+  background-color: #fbfdfc;
+}
+
+.inv-modern-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Specific Column Styles */
+.col-date {
+  width: 130px;
+}
+
+.tx-date-text {
+  color: #64748b;
+  font-size: 0.785rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.col-txid {
+  min-width: 180px;
+}
+
+.tx-id-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 3px 8px;
+  color: #334155;
+}
+
+.tx-id-icon {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.tx-id-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.col-type {
+  width: 130px;
+}
+
+.tx-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.70rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.tx-type-badge.type-deposit {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.tx-type-badge.type-withdrawal {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+}
+
+.col-amount {
+  width: 160px;
+}
+
+.tx-amount-value {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  white-space: nowrap;
+}
+
+.amount-positive {
+  color: #059669;
+}
+
+.amount-negative {
+  color: #dc2626;
+}
+
+.col-method {
+  min-width: 140px;
+}
+
+.tx-method-text {
+  font-size: 0.785rem;
+  color: #475569;
+  font-weight: 500;
+  text-transform: capitalize;
+  display: inline-flex;
+  align-items: center;
+}
+
+.col-status {
+  width: 120px;
+}
+
+.tx-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 0.725rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.badge-approved {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-pending {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.badge-rejected {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.badge-neutral {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+/* Empty State */
+.inv-empty-state-card {
+  padding: 36px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.inv-empty-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.inv-empty-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.inv-empty-desc {
+  font-size: 0.775rem;
+  color: #64748b;
+  margin: 0;
+  max-width: 320px;
+}
+
+/* --------------------------------------------------------------------------
+   6. RESPONSIVE BREAKPOINTS
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .inv-welcome-section {
+    padding: 14px 16px;
+  }
+
+  .inv-welcome-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .inv-welcome-actions {
+    width: 100%;
+  }
+
+  .inv-btn-action {
+    flex: 1;
+    text-align: center;
+  }
+
+  .inv-ref-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .inv-ref-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .btn-ref-copy,
+  .btn-ref-whatsapp {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .inv-table-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .inv-btn-view-all {
+    width: 100%;
+    justify-content: center;
+  }
 }

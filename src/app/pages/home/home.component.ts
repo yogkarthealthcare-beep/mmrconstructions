@@ -57,7 +57,7 @@ export class HomeComponent implements OnInit {
     { icon: 'fas fa-award', title: '10 Years of Trust', desc: '10 वर्षों से ग्राहकों का अटूट विश्वास। सुरक्षित रियल एस्टेट निवेश एवं 100% पारदर्शी कार्य।' },
     { icon: 'fas fa-money-bill-wave', title: 'Easy EMI', desc: '₹51,000 down payment से शुरू। ₹3,000/month EMI। Bank finance भी available।' },
     { icon: 'fas fa-map-marked-alt', title: 'Prime Locations', desc: 'Highway, Airport, Station के नजदीक। High appreciation potential वाले plots।' },
-    { icon: 'fas fa-building', title: 'Registered Company', desc: 'Govt. Registered Company (CIN: U68200UP2025PTC229203)। Transparent paperwork एवं दाखिला-खारिज।' },
+    { icon: 'fas fa-building', title: 'Registered Company', desc: 'Govt. Registered Company (CIN: U68200UP2025PTC229203 | GSTIN: 09AATCM6753A1Z5)। Transparent paperwork एवं दाखिला-खारिज।' },
   ];
   facilities = [
     { icon: 'fas fa-road',         title: 'Paved Roads',     desc: 'Internal paved road network सभी sites पर।' },
@@ -76,17 +76,17 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.seo.set({
-      title: 'MMR Constructions & Developers — Premium Plots | Kanpur · Unnao · Lucknow',
-      description: 'Buy approved residential & commercial plots in Kanpur, Unnao & Lucknow with MMR Constructions. Easy EMI, Buyback Guarantee. CIN: U68200UP2025PTC229203.',
+      title: 'MMR Construction & Developers — Premium Plots | Kanpur · Unnao · Lucknow',
+      description: 'Buy approved residential & commercial plots in Kanpur, Unnao & Lucknow with MMR Construction. Easy EMI, Buyback Guarantee. CIN: U68200UP2025PTC229203 | GSTIN: 09AATCM6753A1Z5.',
       canonical: '/',
-      keywords: 'MMR Constructions, plots in kanpur, plots in unnao, plots in lucknow, real estate developers uttar pradesh, buy plot on emi',
+      keywords: 'MMR Construction, plots in kanpur, plots in unnao, plots in lucknow, real estate developers uttar pradesh, buy plot on emi',
       schema: {
         '@context': 'https://schema.org',
         '@graph': [
           {
             '@type': ['Organization', 'RealEstateAgent'],
             '@id': 'https://mmrconstructions.in/#organization',
-            name: 'M.M.R. Constructions & Developers Private Limited',
+            name: 'M.M.R. Construction & Developers Private Limited',
             url: 'https://mmrconstructions.in',
             logo: 'https://mmrconstructions.in/assets/mmr-logo.png',
             image: 'https://mmrconstructions.in/assets/mmr-logo.png',
@@ -131,14 +131,16 @@ export class HomeComponent implements OnInit {
       error: () => {}
     });
 
-    this.api.getSites().subscribe({
+    this.api.getSiteGallery('Plot').subscribe({
       next: (res: any) => {
         const raw = Array.isArray(res) ? res : (res?.data || []);
-        this.sites = raw.map((s: any) => ({
-          site_id: Number(s.site_id || s.id),
-          site_name: s.site_name || s.name || 'Project Site',
-          city: s.city || 'Uttar Pradesh'
-        }));
+        if (Array.isArray(raw) && raw.length > 0) {
+          this.sites = raw.map((s: any) => ({
+            site_id: Number(s.id),
+            site_name: s.site_name || 'Project Site',
+            city: s.site_address || 'Uttar Pradesh'
+          }));
+        }
       },
       error: () => {}
     });

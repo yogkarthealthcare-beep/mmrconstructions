@@ -1,20 +1,23 @@
 <!-- TOAST NOTIFICATION BANNER -->
-<div *ngIf="toast" class="toast-floating-banner shadow-lg">
-  <i class="fas fa-check-circle text-success me-2"></i> {{ toast }}
+<div *ngIf="toast" class="toast-floating-banner shadow-lg" [class.border-emerald]="toastType==='success'" [class.border-danger]="toastType==='error'">
+  <i [class]="toastType==='success' ? 'fas fa-check-circle text-success me-2' : 'fas fa-exclamation-circle text-danger me-2'"></i> {{ toast }}
 </div>
 
 <!-- PAGE HERO HEADER BANNER -->
 <div class="plots-hero-card mb-2">
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
     <div>
-      <div class="plots-hero-badge"><i class="fas fa-map-marked-alt me-1"></i>PROPERTY PORTFOLIO</div>
-      <h2 class="plots-hero-title mb-1">My Booked Plots</h2>
-      <p class="plots-hero-sub mb-0">Overview of all active plot bookings, installment schedules &amp; buyback options.</p>
+      <div class="plots-hero-badge"><i class="fas fa-city me-1"></i>PROPERTY ASSET PORTFOLIO</div>
+      <h2 class="plots-hero-title mb-1">My Properties &amp; Plots</h2>
+      <p class="plots-hero-sub mb-0">Complete dossier of your real-estate plots, individual property valuations, payment progress &amp; repayment records.</p>
     </div>
 
-    <div class="d-flex align-items-center gap-2 ms-auto">
-      <a [routerLink]="[basePrefix, 'emi-history']" class="btn btn-gold btn-xs px-3 shadow-sm">
-        <i class="fas fa-calendar-check me-1"></i> EMI Schedule
+    <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+      <button class="btn btn-gold btn-xs px-3 shadow-sm" (click)="openInquiryModal()">
+        <i class="fas fa-plus-circle me-1"></i> Buy a New Plot / Inquire
+      </button>
+      <a [routerLink]="[basePrefix, 'emi-history']" class="btn btn-outline-light btn-xs px-3">
+        <i class="fas fa-calendar-check me-1"></i> EMI Ledger
       </a>
     </div>
   </div>
@@ -26,159 +29,380 @@
     <div class="stat-mini-card h-100">
       <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-layer-group"></i></div>
       <div>
-        <div class="stat-mini-val text-success">{{ bookings.length }}</div>
-        <div class="stat-mini-lbl">Total Bookings</div>
+        <div class="stat-mini-val text-success">{{ totalPurchasedCount }}</div>
+        <div class="stat-mini-lbl">Purchased Plots</div>
       </div>
     </div>
   </div>
 
   <div class="col-6 col-md-3">
     <div class="stat-mini-card h-100">
-      <div class="icon-wrap bg-blue-light text-blue"><i class="fas fa-check-circle"></i></div>
+      <div class="icon-wrap bg-purple-light text-purple"><i class="fas fa-handshake"></i></div>
       <div>
-        <div class="stat-mini-val text-primary">{{ confirmedCount }}</div>
-        <div class="stat-mini-lbl">Confirmed Plots</div>
+        <div class="stat-mini-val text-purple">{{ totalSoldCount }}</div>
+        <div class="stat-mini-lbl">Sold / Buyback Plots</div>
       </div>
     </div>
   </div>
 
   <div class="col-6 col-md-3">
     <div class="stat-mini-card h-100">
-      <div class="icon-wrap bg-gold-light text-gold-dark"><i class="fas fa-vector-square"></i></div>
+      <div class="icon-wrap bg-gold-light text-gold-dark"><i class="fas fa-wallet"></i></div>
       <div>
-        <div class="stat-mini-val text-gold-dark">{{ totalGaj | number }} <small class="fs-12">Gaj</small></div>
-        <div class="stat-mini-lbl">Total Plot Area</div>
+        <div class="stat-mini-val text-gold-dark">₹{{ totalPaidSum | number }}</div>
+        <div class="stat-mini-lbl">Total Confirmed Paid</div>
       </div>
     </div>
   </div>
 
   <div class="col-6 col-md-3">
     <div class="stat-mini-card h-100">
-      <div class="icon-wrap bg-purple-light text-purple"><i class="fas fa-wallet"></i></div>
+      <div class="icon-wrap bg-crimson-light text-danger"><i class="fas fa-hourglass-half"></i></div>
       <div>
-        <div class="stat-mini-val text-purple">₹{{ totalAdvance | number }}</div>
-        <div class="stat-mini-lbl">Total Advance Paid</div>
+        <div class="stat-mini-val text-danger">₹{{ totalUnpaidSum | number }}</div>
+        <div class="stat-mini-lbl">Total Unpaid Balance</div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- SEARCH & FILTER TOOLBAR -->
-<div class="toolbar-card mb-2" *ngIf="!loading && bookings.length > 0">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-    <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-width: 500px;">
-      <div class="search-input-wrap flex-fill">
+<div class="toolbar-card mb-2" *ngIf="!loading">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-width: 750px;">
+      <div class="search-input-wrap flex-fill" style="min-width: 220px;">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" class="form-control form-control-sm search-field" placeholder="Search by Plot No, Site Name, or Serial #..." [(ngModel)]="searchTerm" />
+        <input type="text" class="form-control form-control-sm search-field" placeholder="Search by Plot #, Site Name, ID..." [(ngModel)]="searchTerm" />
       </div>
 
-      <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 150px;">
+      <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 140px;">
         <option value="all">All Status</option>
-        <option value="confirmed">Confirmed</option>
-        <option value="pending">Pending / Process</option>
+        <option value="active">Confirmed / Active</option>
+        <option value="pending">In Process</option>
+        <option value="sold">Sold / Buyback</option>
+        <option value="buyback">Buyback In Review</option>
+      </select>
+
+      <select class="form-select form-select-sm status-select" [(ngModel)]="paymentFilter" style="width: 140px;">
+        <option value="all">All Payments</option>
+        <option value="fully_paid">Fully Paid</option>
+        <option value="partial">In EMI / Partial</option>
+        <option value="overdue">Overdue</option>
+      </select>
+
+      <select class="form-select form-select-sm status-select" [(ngModel)]="sortBy" style="width: 140px;">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="price_asc">Price: Low to High</option>
       </select>
     </div>
 
-    <button class="btn btn-outline-secondary btn-sm ms-auto" (click)="loadBookings()">
+    <button class="btn btn-outline-secondary btn-xs ms-auto" (click)="loadAllData()">
       <i class="fas fa-sync-alt me-1"></i> Refresh
     </button>
   </div>
 </div>
 
 <!-- LOADING STATE -->
-<div class="panel-card text-center py-5 mb-4" *ngIf="loading">
+<div class="panel-card text-center py-5 mb-3" *ngIf="loading">
   <div class="spinner-border text-gold me-2" role="status"></div>
-  <span class="text-muted">Loading plot booking records...</span>
+  <span class="text-muted fs-13">Loading verified property records &amp; installment ledgers...</span>
 </div>
 
 <!-- EMPTY STATE -->
-<div *ngIf="!loading && bookings.length === 0" class="panel-card py-5 text-center my-4">
+<div *ngIf="!loading && bookings.length === 0" class="panel-card py-5 text-center my-3">
   <div class="empty-icon-box mx-auto mb-3">
-    <i class="fas fa-map-marked-alt text-gold fs-1"></i>
+    <i class="fas fa-city text-gold fs-1"></i>
   </div>
-  <h4 class="fw-700 text-dark mb-2">No Plots Booked Yet</h4>
-  <p class="text-muted max-w-500 mx-auto fs-14 mb-4">
-    Explore our prime township plot locations across UP &amp; Delhi NCR to book your plot today!
+  <h4 class="fw-700 text-dark mb-2">No Property Records Found</h4>
+  <p class="text-muted max-w-500 mx-auto fs-13 mb-4">
+    You do not have any property or plot bookings registered yet. Submit an inquiry to explore our prime residential &amp; commercial townships!
   </p>
-  <a routerLink="/" class="btn btn-green btn-md">
-    <i class="fas fa-compass me-1"></i> Explore Sites &amp; Plots
-  </a>
+  <button class="btn btn-green btn-md" (click)="openInquiryModal()">
+    <i class="fas fa-paper-plane me-1"></i> Submit Property Inquiry
+  </button>
 </div>
 
-<!-- PLOTS CARDS GRID -->
-<div class="row g-4 mb-4" *ngIf="!loading && bookings.length > 0">
+<!-- NO FILTER MATCH STATE -->
+<div *ngIf="!loading && bookings.length > 0 && filteredBookings.length === 0" class="panel-card py-4 text-center my-3">
+  <i class="fas fa-search fs-2 text-gold mb-2 d-block"></i>
+  <h6 class="fw-700 text-dark mb-1">No Properties Match Your Filters</h6>
+  <p class="text-muted fs-12 mb-3">Try adjusting your search keywords or filter dropdowns.</p>
+  <button class="btn btn-outline-secondary btn-xs" (click)="searchTerm=''; statusFilter='all'; paymentFilter='all'">
+    <i class="fas fa-redo me-1"></i> Reset Filters
+  </button>
+</div>
+
+<!-- PROPERTY DOSSIER CARDS GRID -->
+<div class="row g-3 mb-3" *ngIf="!loading && filteredBookings.length > 0">
   <div class="col-lg-6" *ngFor="let b of filteredBookings">
-    <div class="plot-property-card">
+    <div class="property-dossier-card h-100 d-flex flex-column justify-content-between">
       
-      <!-- Card Top Header -->
-      <div class="plot-card-header p-3 bg-dark-green text-white d-flex justify-content-between align-items-center">
-        <div>
-          <div class="fs-18 fw-700 text-gold font-display mb-1">
-            <i class="fas fa-map-pin me-1"></i>Plot {{ b.plot_number }}
+      <!-- Top Header -->
+      <div>
+        <div class="dossier-header p-3 bg-dark-green text-white d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+              <span class="badge bg-gold text-dark fw-800 fs-12">
+                <i class="fas fa-map-pin me-1"></i>Plot {{ b.plot_number }}
+              </span>
+              <span class="fs-12 text-gold-light fw-600">
+                <i class="fas fa-fingerprint me-1"></i>{{ b.booking_serial || ('#BK-' + b.booking_id) }}
+              </span>
+            </div>
+            <div class="fs-14 fw-700 text-white font-display">
+              {{ b.site_name || 'MMR Green Valley' }}
+            </div>
+            <div class="fs-11 text-white-70">
+              <i class="fas fa-map-marker-alt me-1 text-gold"></i>{{ b.location || b.city || 'Lucknow / Unnao Highway, UP' }}
+            </div>
           </div>
-          <div class="fs-12 opacity-85">
-            <i class="fas fa-city me-1"></i>{{ b.site_name }} &bull; {{ b.city || 'Unnao / Kanpur' }}
+
+          <div class="d-flex flex-column align-items-end gap-1">
+            <span class="sbadge" 
+                  [class.sbadge-green]="b.computedStatus==='Confirmed'||b.computedStatus==='Active'"
+                  [class.sbadge-yellow]="b.computedStatus==='PaymentPending'||b.computedStatus==='InProcess'"
+                  [class.sbadge-blue]="b.computedStatus==='Buyback In Review'"
+                  [class.sbadge-red]="b.computedStatus==='Sold'">
+              {{ b.computedStatus }}
+            </span>
+            <span class="sbadge fs-10" 
+                  [class.sbadge-green]="b.financialStatus==='Fully Paid'" 
+                  [class.sbadge-yellow]="b.financialStatus==='Partial Paid'"
+                  [class.sbadge-red]="b.financialStatus==='Overdue'">
+              {{ b.financialStatus }}
+            </span>
           </div>
         </div>
-        <span class="sbadge" [class.sbadge-green]="b.booking_status==='Confirmed'||b.booking_status==='Active'" [class.sbadge-yellow]="b.booking_status==='PaymentPending'" [class.sbadge-blue]="b.booking_status==='InProcess'">
-          {{ b.booking_status === 'Active' ? 'Confirmed' : b.booking_status }}
-        </span>
+
+        <!-- Body & Spec Details -->
+        <div class="p-3 bg-white">
+          <!-- 4-Grid Specs -->
+          <div class="row g-2 mb-3">
+            <div class="col-6 col-sm-3">
+              <div class="spec-tile p-2">
+                <div class="spec-lbl">Plot Area</div>
+                <div class="spec-val text-success">{{ b.plot_area || '—' }} <small>Gaj</small></div>
+              </div>
+            </div>
+            <div class="col-6 col-sm-3">
+              <div class="spec-tile p-2">
+                <div class="spec-lbl">Booking Date</div>
+                <div class="spec-val text-dark">{{ (b.booking_date || b.created_at) | date:'dd MMM yyyy' }}</div>
+              </div>
+            </div>
+            <div class="col-6 col-sm-3">
+              <div class="spec-tile p-2">
+                <div class="spec-lbl">Payment Plan</div>
+                <div class="spec-val text-dark">{{ b.payment_type || 'EMI Schedule' }}</div>
+              </div>
+            </div>
+            <div class="col-6 col-sm-3">
+              <div class="spec-tile p-2">
+                <div class="spec-lbl">Installments</div>
+                <div class="spec-val text-primary">{{ b.paidInstallmentsCount }} / {{ b.totalInstallments || 0 }} Paid</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Financial Breakdown Card -->
+          <div class="fin-breakdown-box p-3 rounded-3 mb-3 bg-light border">
+            <div class="row g-2 text-center mb-2">
+              <div class="col-4 border-end">
+                <div class="fs-10 text-uppercase text-muted fw-700">Total Price</div>
+                <div class="fs-13 fw-800 text-dark">₹{{ b.totalPrice | number }}</div>
+              </div>
+              <div class="col-4 border-end">
+                <div class="fs-10 text-uppercase text-emerald fw-700">Confirmed Paid</div>
+                <div class="fs-13 fw-800 text-success">₹{{ b.confirmedPaid | number }}</div>
+              </div>
+              <div class="col-4">
+                <div class="fs-10 text-uppercase text-danger fw-700">Unpaid Balance</div>
+                <div class="fs-13 fw-800 text-danger">₹{{ b.unpaidAmount | number }}</div>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="d-flex justify-content-between align-items-center fs-11 mb-1">
+              <span class="text-muted fw-600">Settlement Progress</span>
+              <strong class="text-success">{{ b.progressPercent }}% Cleared</strong>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-success" role="progressbar" [style.width.%]="b.progressPercent"></div>
+            </div>
+          </div>
+
+          <!-- Next EMI Alert Banner (If Applicable) -->
+          <div *ngIf="b.nextEmi" class="next-emi-strip p-2 px-3 rounded-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2" [class.overdue-strip]="b.nextEmi.overdue_days > 0">
+            <div class="d-flex align-items-center gap-2">
+              <i [class]="b.nextEmi.overdue_days > 0 ? 'fas fa-exclamation-circle text-danger' : 'fas fa-calendar-alt text-gold'"></i>
+              <span class="fs-12 text-dark">
+                Next Installment: <strong>₹{{ b.nextEmi.emi_amount | number }}</strong>
+                <span class="text-muted ms-1">(Due: {{ b.nextEmi.due_date | date:'dd MMM yyyy' }})</span>
+                <span *ngIf="b.nextEmi.overdue_days > 0" class="badge bg-danger ms-1">{{ b.nextEmi.overdue_days }}d Overdue</span>
+                <span *ngIf="b.nextEmi.emi_status === 'ProofSubmitted'" class="badge bg-gold-subtle text-dark ms-1">Proof Submitted</span>
+              </span>
+            </div>
+            <button class="btn btn-xs btn-gold" (click)="openPaymentModal(b)">
+              <i class="fas fa-upload me-1"></i> Pay / Upload
+            </button>
+          </div>
+
+          <div *ngIf="!b.nextEmi && b.financialStatus === 'Fully Paid'" class="p-2 px-3 rounded-3 mb-3 bg-emerald-light border border-success text-success fs-12 fw-700 d-flex align-items-center gap-2">
+            <i class="fas fa-check-double"></i> 100% Property Payments Verified &amp; Completed
+          </div>
+        </div>
       </div>
 
-      <!-- Card Body -->
-      <div class="p-3 bg-white">
-        <!-- 4-Grid Detail Box -->
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <div class="detail-box p-2">
-              <span class="lbl">Booking Serial</span>
-              <span class="val text-dark">{{ b.booking_serial || ('#BK-' + b.booking_id) }}</span>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="detail-box p-2">
-              <span class="lbl">Plot Area</span>
-              <span class="val text-success">{{ (b.plot_area || '—') }} Gaj</span>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="detail-box p-2">
-              <span class="lbl">Payment Plan</span>
-              <span class="val text-dark">{{ b.payment_type || 'EMI Plan' }}</span>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="detail-box p-2">
-              <span class="lbl">Advance Paid</span>
-              <span class="val text-gold-dark">₹{{ (b.advance_amount || 0) | number }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Booking Date Banner -->
-        <div class="panel-date-banner p-2 px-3 rounded-3 mb-3 d-flex align-items-center gap-2">
-          <i class="fas fa-calendar-check text-primary fs-14"></i>
-          <span class="fs-12 text-muted">Confirmation Date: <strong class="text-dark">{{ (b.booking_date || b.created_at) | date:'dd MMM yyyy' }}</strong></span>
-        </div>
-
-        <!-- Card Action Buttons -->
-        <div class="d-flex gap-2 flex-wrap">
-          <a [routerLink]="[basePrefix, 'emi-history']" class="btn btn-outline-green btn-sm flex-fill text-center">
-            <i class="fas fa-calendar-alt me-1"></i> EMI Schedule
-          </a>
-          <button *ngIf="b.booking_status === 'Confirmed' || b.booking_status === 'Active'" class="btn btn-gold btn-sm flex-fill" (click)="buybackModal = b">
-            <i class="fas fa-shield-alt me-1"></i> Apply Buyback
-          </button>
-        </div>
-
+      <!-- Action Footer -->
+      <div class="p-3 bg-light border-top d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-green btn-xs flex-fill" (click)="openPaymentModal(b)" *ngIf="b.unpaidAmount > 0">
+          <i class="fas fa-money-bill-wave me-1"></i> Submit Payment Proof
+        </button>
+        <a [routerLink]="[basePrefix, 'emi-history']" class="btn btn-outline-secondary btn-xs flex-fill text-center">
+          <i class="fas fa-list-ol me-1"></i> View EMI Schedule
+        </a>
+        <button *ngIf="(b.computedStatus === 'Confirmed' || b.computedStatus === 'Active') && !b.isBuybackPending && !b.isBuybackApproved" 
+                class="btn btn-gold btn-xs flex-fill" 
+                (click)="buybackModal = b">
+          <i class="fas fa-shield-alt me-1"></i> Apply Buyback
+        </button>
       </div>
+
     </div>
+  </div>
+</div>
+
+<!-- PROPERTY INQUIRY MODAL -->
+<div *ngIf="showInquiryModal" class="modal-backdrop-custom">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border max-w-550">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+      <div>
+        <h5 class="fw-700 text-dark mb-0"><i class="fas fa-city text-gold me-2"></i>Buy a New Plot / Inquire</h5>
+        <div class="fs-11 text-muted">Directly connects with MMR Sales &amp; CRM team</div>
+      </div>
+      <button type="button" class="btn-close" (click)="showInquiryModal = false"></button>
+    </div>
+
+    <form (ngSubmit)="submitInquiry()" #inqForm="ngForm">
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Full Name *</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="inquiryForm.customer_name" name="customer_name" required placeholder="Enter your full name" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Phone Number *</label>
+          <input type="tel" class="form-control form-control-sm" [(ngModel)]="inquiryForm.phone" name="phone" required placeholder="10-digit mobile number" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Email Address</label>
+          <input type="email" class="form-control form-control-sm" [(ngModel)]="inquiryForm.email" name="email" placeholder="name@example.com" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Preferred Project / Site</label>
+          <select class="form-select form-select-sm" [(ngModel)]="inquiryForm.project_name" name="project_name">
+            <option value="">-- Choose Project --</option>
+            <option value="MMR Green Valley Phase 1">MMR Green Valley Phase 1</option>
+            <option value="MMR Green Valley Phase 2">MMR Green Valley Phase 2</option>
+            <option value="MMR Royal City">MMR Royal City</option>
+            <option value="MMR Highway Township">MMR Highway Township</option>
+            <option value="Other / General Inquiry">Other / General Inquiry</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Preferred Plot Size</label>
+          <select class="form-select form-select-sm" [(ngModel)]="inquiryForm.preferred_plot_size" name="preferred_plot_size">
+            <option value="50 Gaj">50 Gaj (450 Sq.Ft)</option>
+            <option value="100 Gaj">100 Gaj (900 Sq.Ft)</option>
+            <option value="150 Gaj">150 Gaj (1350 Sq.Ft)</option>
+            <option value="200 Gaj">200 Gaj (1800 Sq.Ft)</option>
+            <option value="Commercial Plot">Commercial Corner Plot</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Budget Range</label>
+          <select class="form-select form-select-sm" [(ngModel)]="inquiryForm.budget_range" name="budget_range">
+            <option value="Below ₹5 Lakhs">Below ₹5 Lakhs</option>
+            <option value="₹5 Lakhs - ₹10 Lakhs">₹5 Lakhs - ₹10 Lakhs</option>
+            <option value="₹10 Lakhs - ₹20 Lakhs">₹10 Lakhs - ₹20 Lakhs</option>
+            <option value="₹20 Lakhs+">₹20 Lakhs+</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Requirements / Remarks</label>
+          <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="inquiryForm.message" name="message" placeholder="Specify any corner preference, immediate registry requirement, etc."></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-green flex-fill" [disabled]="inquirySubmitting">
+          <i [class]="inquirySubmitting ? 'fas fa-spinner fa-spin me-1' : 'fas fa-paper-plane me-1'"></i>
+          {{ inquirySubmitting ? 'Submitting Inquiry...' : 'Submit Property Inquiry' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary flex-fill" (click)="showInquiryModal = false">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- PAYMENT PROOF SUBMISSION MODAL -->
+<div *ngIf="paymentModalBooking" class="modal-backdrop-custom">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border max-w-500">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+      <div>
+        <h5 class="fw-700 text-dark mb-0"><i class="fas fa-upload text-gold me-2"></i>Submit Payment Proof</h5>
+        <div class="fs-12 text-muted">Plot <strong>#{{ paymentModalBooking.plot_number }}</strong> &bull; {{ paymentModalBooking.site_name }}</div>
+      </div>
+      <button type="button" class="btn-close" (click)="paymentModalBooking = null"></button>
+    </div>
+
+    <form (ngSubmit)="submitPaymentProof()">
+      <div class="mb-2">
+        <label class="form-label fs-11 fw-700 text-dark mb-1">Amount Paid (₹) *</label>
+        <input type="number" class="form-control form-control-sm" [(ngModel)]="paymentProofData.amount" name="amount" required placeholder="e.g. 15000" />
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label fs-11 fw-700 text-dark mb-1">Payment Mode *</label>
+        <select class="form-select form-select-sm" [(ngModel)]="paymentProofData.payment_mode" name="payment_mode">
+          <option value="UPI">UPI / GooglePay / PhonePe / Paytm</option>
+          <option value="BankTransfer">Bank Transfer / NEFT / RTGS / IMPS</option>
+          <option value="Cheque">Cheque / Demand Draft</option>
+          <option value="Cash">Cash Deposit at Office</option>
+        </select>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label fs-11 fw-700 text-dark mb-1">Transaction Ref / UTR / Cheque #</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="paymentProofData.reference_number" name="reference_number" placeholder="e.g. UPI Ref / UTR 12-digit number" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fs-11 fw-700 text-dark mb-1">Upload Receipt / Screenshot *</label>
+        <input type="file" class="form-control form-control-sm" accept="image/*,.pdf" (change)="onFileSelected($event)" required />
+        <div class="form-text fs-10 text-muted">Supports JPG, PNG, PDF (Max 5MB)</div>
+      </div>
+
+      <div class="alert alert-warning p-2 fs-11 rounded-3 mb-3 d-flex align-items-center gap-2">
+        <i class="fas fa-shield-alt text-warning fs-5"></i>
+        <span>Uploaded payments are marked <strong>Under Verification</strong> and confirmed after Admin approval.</span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-green flex-fill" [disabled]="paymentProofSubmitting">
+          <i [class]="paymentProofSubmitting ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check me-1'"></i>
+          {{ paymentProofSubmitting ? 'Uploading...' : 'Submit for Verification' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary flex-fill" (click)="paymentModalBooking = null">Cancel</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <!-- BUYBACK APPLICATION MODAL -->
 <div *ngIf="buybackModal" class="modal-backdrop-custom">
-  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border max-w-500">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="fw-700 text-dark mb-0"><i class="fas fa-shield-alt text-gold me-2"></i>Apply 2-Year Buyback</h5>
       <button type="button" class="btn-close" (click)="buybackModal = null"></button>
@@ -187,8 +411,8 @@
     <div class="panel-alert-banner mb-4 p-3 rounded-3">
       <i class="fas fa-info-circle text-gold me-2 fs-5"></i>
       <span class="fs-13 text-dark">
-        Confirm buyback guarantee application for Plot <strong>{{ buybackModal.plot_number }}</strong>?
-        Our team will verify the 2-year purchase eligibility window (+₹1,00,000 return bonus).
+        Confirm buyback guarantee claim for Plot <strong>{{ buybackModal.plot_number }}</strong> ({{ buybackModal.site_name }})?
+        Our CRM team will verify the 2-year eligibility window (+₹1,00,000 return bonus).
       </span>
     </div>
 
@@ -200,3 +424,4 @@
     </div>
   </div>
 </div>
+

@@ -5,7 +5,7 @@
   <div class="mmr-container">
     <div class="hero-badge mb-2"><i class="fas fa-award me-1"></i>OUR VALUED PARTNERS</div>
     <h1 class="hero-title text-white mb-2">All Registered Investors</h1>
-    <p class="hero-sub text-gold-lt mx-auto">Explore our esteemed network of real estate investors sorted by highest investment contribution.</p>
+    <p class="hero-sub text-white mx-auto">Explore our esteemed network of real estate investors sorted by highest investment contribution.</p>
   </div>
 </div>
 
@@ -34,7 +34,7 @@
 
     <!-- INVESTOR GRID (10 CARDS PER ROW) -->
     <div class="investor-grid-10" *ngIf="!loading && filteredInvestors.length > 0">
-      <article *ngFor="let investor of filteredInvestors; let idx = index" class="investor-card-sm" [class.rank-top3]="idx < 3">
+      <a routerLink="/login" [queryParams]="{ returnUrl: '/investor/dashboard' }" *ngFor="let investor of filteredInvestors; let idx = index" class="investor-card-sm text-decoration-none" [class.rank-top3]="idx < 3">
         <div class="rank-badge" *ngIf="idx < 3" [title]="'Rank #' + (idx + 1)">
           <i class="fas fa-crown text-gold"></i> #{{ idx + 1 }}
         </div>
@@ -46,7 +46,7 @@
           ₹{{ investor.investment_amount | number }}
         </div>
         <span class="badge-role">Key Partner</span>
-      </article>
+      </a>
     </div>
 
     <!-- EMPTY STATE -->

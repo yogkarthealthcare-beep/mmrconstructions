@@ -41,7 +41,7 @@ export class SeoService {
 
     // Standard Meta Tags
     this.updateTag('description', config.description);
-    this.updateTag('keywords', config.keywords || 'MMR constructions, plots in kanpur, plots in unnao, plots in lucknow, real estate developers uttar pradesh');
+    this.updateTag('keywords', config.keywords || 'MMR construction, plots in kanpur, plots in unnao, plots in lucknow, real estate developers uttar pradesh');
     this.updateTag('robots', 'index, follow');
 
     // Open Graph
@@ -50,7 +50,7 @@ export class SeoService {
     this.updateProperty('og:url', canonical);
     this.updateProperty('og:image', ogImage);
     this.updateProperty('og:type', config.ogType || 'website');
-    this.updateProperty('og:site_name', 'MMR Constructions & Developers');
+    this.updateProperty('og:site_name', 'MMR Construction & Developers');
     this.updateProperty('og:locale', 'hi_IN');
 
     // Twitter Cards

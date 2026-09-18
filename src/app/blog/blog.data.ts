@@ -3,24 +3,24 @@ import { BlogPost } from './blog.types';
 export const BLOG_POSTS: readonly BlogPost[] = [
   {
     id: 1,
-    title: 'MMR Constructions & Developers Private Limited – Building Dreams, Creating Better Spaces',
+    title: 'MMR Construction & Developers Private Limited – Building Dreams, Creating Better Spaces',
     slug: 'mmr-constructions-vision-safe-affordable-property',
     shortDescription:
-      'MMR Constructions & Developers Private Limited is a private limited company based in Tribhuvan Kheda, Unnao, Uttar Pradesh, working in the construction and real estate development sector. The company focuses on creating well-planned residential spaces and providing customers with opportunities to build and invest in property with confidence.',
+      'MMR Construction & Developers Private Limited is a private limited company based in Tribhuvan Kheda, Unnao, Uttar Pradesh, working in the construction and real estate development sector. The company focuses on creating well-planned residential spaces and providing customers with opportunities to build and invest in property with confidence.',
     featuredImage: '/assets/blog/mmr-vision.svg',
-    author: 'MMR Constructions & Developers',
+    author: 'MMR Construction & Developers',
     publishDate: '2026-06-19',
     metaTitle:
-      'MMR Constructions & Developers Private Limited | Construction & Real Estate Company in Unnao',
+      'MMR Construction & Developers Private Limited | Construction & Real Estate Company in Unnao',
     metaDescription:
-      'Learn about MMR Constructions & Developers Private Limited, a construction and real estate development company based in Tribhuvan Kheda, Unnao, Uttar Pradesh. Explore our vision, mission and property development approach.',
+      'Learn about MMR Construction & Developers Private Limited, a construction and real estate development company based in Tribhuvan Kheda, Unnao, Uttar Pradesh. Explore our vision, mission and property development approach.',
     keywords:
-      'MMR Constructions, MMR Constructions and Developers, MMR Construction Unnao, MMR Developers Unnao, Construction Company in Unnao, Real Estate Company in Unnao, Property Developer in Unnao, Residential Property Unnao, Real Estate Development Uttar Pradesh, MMR Constructions & Developers Private Limited',
+      'MMR Construction, MMR Construction and Developers, MMR Construction Unnao, MMR Developers Unnao, Construction Company in Unnao, Real Estate Company in Unnao, Property Developer in Unnao, Residential Property Unnao, Real Estate Development Uttar Pradesh, MMR Construction & Developers Private Limited',
     content: [
       {
         heading: 'Company Overview',
         paragraphs: [
-          'MMR Constructions & Developers Private Limited was incorporated on 02 August 2025 and is registered with the Registrar of Companies (ROC), Kanpur. It is an unlisted, non-government private company limited by shares.',
+          'MMR Construction & Developers Private Limited was incorporated on 02 August 2025 and is registered with the Registrar of Companies (ROC), Kanpur. It is an unlisted, non-government private company limited by shares.',
           'The company aims to contribute to the development of quality residential and real estate projects in and around Unnao, Uttar Pradesh, with a focus on planned development, practical residential spaces and a customer-oriented approach.',
         ],
       },
@@ -34,7 +34,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       {
         heading: 'Mission',
         paragraphs: [
-          'The mission of MMR Constructions & Developers is to create well-planned residential developments while maintaining a professional and customer-focused approach.',
+          'The mission of MMR Construction & Developers is to create well-planned residential developments while maintaining a professional and customer-focused approach.',
         ],
         bullets: [
           'Developing residential properties with proper planning',
@@ -46,10 +46,10 @@ export const BLOG_POSTS: readonly BlogPost[] = [
         ],
       },
       {
-        heading: 'MMR Constructions in Unnao',
+        heading: 'MMR Construction in Unnao',
         paragraphs: [
           'Unnao, Uttar Pradesh is an important and developing region with growing residential and infrastructure requirements.',
-          'MMR Constructions & Developers operates from Tribhuvan Kheda, Unnao, and aims to participate in this growth by developing residential properties and projects designed around practical customer requirements.',
+          'MMR Construction & Developers operates from Tribhuvan Kheda, Unnao, and aims to participate in this growth by developing residential properties and projects designed around practical customer requirements.',
           'The company’s focus is on developing spaces that can become part of people’s long-term plans for living, building and property ownership.',
         ],
       },
@@ -67,7 +67,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
         heading: 'Building for the Future',
         paragraphs: [
           'Real estate is a long-term sector, and property decisions are often made with the future in mind.',
-          'MMR Constructions & Developers aims to develop projects that can serve present residential requirements while keeping future expectations in mind.',
+          'MMR Construction & Developers aims to develop projects that can serve present residential requirements while keeping future expectations in mind.',
           'The objective is to create developments where customers can see the potential for living, building and long-term property ownership.',
         ],
       },
@@ -93,7 +93,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
         ],
       },
       {
-        heading: 'Why Choose MMR Constructions & Developers',
+        heading: 'Why Choose MMR Construction & Developers',
         paragraphs: [
           'Key factors that define our commitment to buyers and investors:',
         ],
@@ -108,14 +108,14 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       {
         heading: 'Looking Ahead',
         paragraphs: [
-          'As MMR Constructions & Developers continues to grow, the company aims to expand its presence in the construction and real estate development sector and contribute to the development of residential spaces in Uttar Pradesh.',
+          'As MMR Construction & Developers continues to grow, the company aims to expand its presence in the construction and real estate development sector and contribute to the development of residential spaces in Uttar Pradesh.',
           'The company believes that every development project represents an opportunity to create something meaningful for families, property owners and the surrounding community.',
         ],
       },
       {
         heading: 'Conclusion',
         paragraphs: [
-          'MMR Constructions & Developers – Building Dreams, Developing Spaces, Creating a Better Tomorrow.',
+          'MMR Construction & Developers – Building Dreams, Developing Spaces, Creating a Better Tomorrow.',
         ],
       },
     ],
@@ -127,7 +127,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
     shortDescription:
       'A practical guide to comparing plot prices, locations, documents and payment plans before choosing an affordable property.',
     featuredImage: '/assets/blog/affordable-plots.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Construction',
     publishDate: '2026-06-16',
     metaTitle: 'How to Choose Affordable and Genuine Plots',
     metaDescription:
@@ -164,7 +164,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       {
         heading: 'Balance price with long-term value',
         paragraphs: [
-          'The cheapest plot is not always the most affordable over time. A correctly located plot with clear access and suitable documentation may offer better usability and resale potential. MMR Constructions helps customers compare options in a practical, budget-aware way.',
+          'The cheapest plot is not always the most affordable over time. A correctly located plot with clear access and suitable documentation may offer better usability and resale potential. MMR Construction helps customers compare options in a practical, budget-aware way.',
         ],
       },
     ],
@@ -176,7 +176,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
     shortDescription:
       'Understand the factors shaping property investment in Unnao, from connectivity and local demand to budget and document verification.',
     featuredImage: '/assets/blog/unnao-investment.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Construction',
     publishDate: '2026-06-12',
     metaTitle: 'Property Investment in Unnao: A Buyer’s Guide',
     metaDescription:
@@ -213,7 +213,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       {
         heading: 'Verification protects the investment',
         paragraphs: [
-          'Before buying property in Unnao, independently verify title records, seller details, plot boundaries, access and any approvals applicable to the land. MMR Constructions encourages buyers to complete appropriate legal and technical due diligence before making a final commitment.',
+          'Before buying property in Unnao, independently verify title records, seller details, plot boundaries, access and any approvals applicable to the land. MMR Construction encourages buyers to complete appropriate legal and technical due diligence before making a final commitment.',
         ],
       },
     ],
@@ -225,7 +225,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
     shortDescription:
       'Learn how to evaluate residential and investment property opportunities across Kanpur’s diverse and expanding local markets.',
     featuredImage: '/assets/blog/kanpur-opportunities.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Construction',
     publishDate: '2026-06-08',
     metaTitle: 'Property Opportunities in Kanpur for Buyers',
     metaDescription:
@@ -262,7 +262,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       {
         heading: 'Use local comparisons',
         paragraphs: [
-          'Compare several properties with similar access and plot sizes before deciding. MMR Constructions supports customers exploring Kanpur property by helping them organise their priorities and evaluate available options alongside opportunities in nearby Unnao.',
+          'Compare several properties with similar access and plot sizes before deciding. MMR Construction supports customers exploring Kanpur property by helping them organise their priorities and evaluate available options alongside opportunities in nearby Unnao.',
         ],
       },
     ],
@@ -274,7 +274,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
     shortDescription:
       'Compare property opportunities in Lucknow, Kannauj and Raebareli according to lifestyle, connectivity, budget and investment goals.',
     featuredImage: '/assets/blog/regional-opportunities.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Construction',
     publishDate: '2026-06-04',
     metaTitle: 'Property in Lucknow, Kannauj and Raebareli',
     metaDescription:
@@ -310,7 +310,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       {
         heading: 'Make a city-to-city comparison',
         paragraphs: [
-          'Create a simple comparison of total budget, travel time, infrastructure, plot size and intended use. MMR Constructions helps customers explore affordable property opportunities across these cities without losing sight of safety and practical value.',
+          'Create a simple comparison of total budget, travel time, infrastructure, plot size and intended use. MMR Construction helps customers explore affordable property opportunities across these cities without losing sight of safety and practical value.',
         ],
       },
     ],
@@ -322,7 +322,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
     shortDescription:
       'Follow a clear, practical checklist for site inspection, ownership review, documentation, payments and professional verification.',
     featuredImage: '/assets/blog/safe-buying-guide.svg',
-    author: 'MMR Constructions',
+    author: 'MMR Construction',
     publishDate: '2026-05-30',
     metaTitle: 'Safe and Verified Property Buying Guide',
     metaDescription:
@@ -359,7 +359,7 @@ export const BLOG_POSTS: readonly BlogPost[] = [
       {
         heading: 'Take time before the final decision',
         paragraphs: [
-          'Pressure to pay immediately is a reason to slow down and verify more carefully. Compare alternatives, calculate the complete cost and seek independent advice. MMR Constructions believes an informed customer is better placed to choose genuine property in Unnao, Kanpur, Lucknow, Kannauj or Raebareli.',
+          'Pressure to pay immediately is a reason to slow down and verify more carefully. Compare alternatives, calculate the complete cost and seek independent advice. MMR Construction believes an informed customer is better placed to choose genuine property in Unnao, Kanpur, Lucknow, Kannauj or Raebareli.',
         ],
       },
     ],

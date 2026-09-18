@@ -18,7 +18,7 @@ export class AdminSettingsComponent implements OnInit {
   // ── Email Config ─────────────────────────────────────────────
   emailCfg = {
     active_provider:   'brevo',
-    sender_name:       'MMR Constructions',
+    sender_name:       'MMR Construction',
     sender_email:      '',
     brevo_api_key:     '',
     gmail_email:       '',

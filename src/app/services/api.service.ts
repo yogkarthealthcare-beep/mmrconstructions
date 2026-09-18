@@ -10,7 +10,7 @@ export const BASE_URL = environment.apiBaseUrl || 'https://api.mmrconstructions.
 export class ApiService {
   constructor(private http: HttpClient) {}
 
-  private headers(admin = false): HttpHeaders {
+  private headers(admin = false, path = ''): HttpHeaders {
     const getToken = (key: string, loginDateKey?: string, expKey?: string) => {
       const v = sessionStorage.getItem(key) || localStorage.getItem(key);
       if (!v || v === 'undefined' || v === 'null') return null;
@@ -31,9 +31,13 @@ export class ApiService {
       return v;
     };
 
+    const isInvestorRoute = path.includes('/investor') || (typeof window !== 'undefined' && window.location.pathname.startsWith('/investor'));
+
     let token = admin
       ? getToken('mmr_admin_token', 'mmr_admin_login_date', 'mmr_admin_expires_at')
-      : (getToken('mmr_user_token', 'mmr_user_login_date', 'mmr_user_expires_at') || getToken('mmr_investor_token', 'mmr_investor_login_date', 'mmr_investor_expires_at'));
+      : (isInvestorRoute
+          ? (getToken('mmr_investor_token', 'mmr_investor_login_date', 'mmr_investor_expires_at') || getToken('mmr_user_token', 'mmr_user_login_date', 'mmr_user_expires_at'))
+          : (getToken('mmr_user_token', 'mmr_user_login_date', 'mmr_user_expires_at') || getToken('mmr_investor_token', 'mmr_investor_login_date', 'mmr_investor_expires_at')));
 
     return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }
@@ -42,28 +46,28 @@ export class ApiService {
   get(path: string, params: any = {}, admin = false): Observable<any> {
     let p = new HttpParams();
     Object.keys(params).forEach(k => params[k] != null && (p = p.set(k, params[k])));
-    return this.http.get(`${BASE_URL}${path}`, { headers: this.headers(admin), params: p });
+    return this.http.get(`${BASE_URL}${path}`, { headers: this.headers(admin, path), params: p });
   }
   post(path: string, body: any = {}, admin = false): Observable<any> {
-    return this.http.post(`${BASE_URL}${path}`, body, { headers: this.headers(admin) });
+    return this.http.post(`${BASE_URL}${path}`, body, { headers: this.headers(admin, path) });
   }
   put(path: string, body: any = {}, admin = false): Observable<any> {
-    return this.http.put(`${BASE_URL}${path}`, body, { headers: this.headers(admin) });
+    return this.http.put(`${BASE_URL}${path}`, body, { headers: this.headers(admin, path) });
   }
   patch(path: string, body: any = {}, admin = false): Observable<any> {
-    return this.http.patch(`${BASE_URL}${path}`, body, { headers: this.headers(admin) });
+    return this.http.patch(`${BASE_URL}${path}`, body, { headers: this.headers(admin, path) });
   }
   delete(path: string, admin = false): Observable<any> {
-    return this.http.delete(`${BASE_URL}${path}`, { headers: this.headers(admin) });
+    return this.http.delete(`${BASE_URL}${path}`, { headers: this.headers(admin, path) });
   }
   del(path: string, admin = false): Observable<any> {
     return this.delete(path, admin);
   }
   postForm(path: string, form: FormData, admin = false): Observable<any> {
-    return this.http.post(`${BASE_URL}${path}`, form, { headers: this.headers(admin) });
+    return this.http.post(`${BASE_URL}${path}`, form, { headers: this.headers(admin, path) });
   }
   putForm(path: string, form: FormData, admin = false): Observable<any> {
-    return this.http.put(`${BASE_URL}${path}`, form, { headers: this.headers(admin) });
+    return this.http.put(`${BASE_URL}${path}`, form, { headers: this.headers(admin, path) });
   }
 
   // ── AUTH — User ──────────────────────────────────
@@ -200,6 +204,12 @@ export class ApiService {
     return this.postForm(`/api/emi/${emiId}/upload-proof`, form);
   }
   getEmiVoucher(emiId: number)      { return this.get(`/api/emi/${emiId}/voucher`); }
+  downloadReceiptPdf(id: string | number) {
+    return this.http.get(`${BASE_URL}/api/receipts/${id}/pdf`, {
+      headers: this.headers(false, `/api/receipts/${id}/pdf`),
+      responseType: 'blob'
+    });
+  }
 
   // ── Associate ─────────────────────────────────────
   getDashboardOverview()           { return this.get('/api/dashboard'); }
@@ -332,6 +342,18 @@ export class ApiService {
   // ── PUBLIC & SECTIONS ─────────────────────────────
   getHomePageSettings()                        { return this.get('/api/home-page/settings'); }
   getInvestors()                   { return this.get('/api/investors'); }
+  getSiteGallery(category = 'Plot') { return this.get('/api/site-gallery', { category }); }
+
+  // ── ADMIN — Site Gallery ──────────────────────────
+  adminGetSiteGallery(category = 'Plot') { return this.get('/api/admin/site-gallery', { category }, true); }
+  adminGetSiteGalleryItem(id: number) { return this.get(`/api/admin/site-gallery/${id}`, {}, true); }
+  adminCreateSiteGallery(data: FormData | any) {
+    return data instanceof FormData ? this.postForm('/api/admin/site-gallery', data, true) : this.post('/api/admin/site-gallery', data, true);
+  }
+  adminUpdateSiteGallery(id: number, data: FormData | any) {
+    return data instanceof FormData ? this.putForm(`/api/admin/site-gallery/${id}`, data, true) : this.put(`/api/admin/site-gallery/${id}`, data, true);
+  }
+  adminDeleteSiteGallery(id: number) { return this.delete(`/api/admin/site-gallery/${id}`, true); }
 
   // ── ADMIN — Analytics ─────────────────────────────
   getAdminAnalytics(params: any = {}) { return this.get('/api/admin/analytics', params, true); }
@@ -370,8 +392,8 @@ export class ApiService {
   adminGetInvestorPortalDeposits() { return this.get('/api/admin/investors-portal/deposits', {}, true); }
   adminGetInvestorPortalWithdrawals() { return this.get('/api/admin/investors-portal/withdrawals', {}, true); }
   adminGetInvestorPortalTransactions() { return this.get('/api/admin/investors-portal/transactions', {}, true); }
-  adminUpdateInvestorPortalDepositStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/deposits/${id}`, data, true); }
-  adminUpdateInvestorPortalWithdrawalStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/withdrawals/${id}`, data, true); }
+  adminUpdateInvestorPortalDepositStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/deposits/${id}/status`, data, true); }
+  adminUpdateInvestorPortalWithdrawalStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/withdrawals/${id}/status`, data, true); }
   adminUpdateInvestorPortalStatus(id: number, data: any) { return this.put(`/api/admin/investors-portal/${id}/status`, data, true); }
   adminLoginAsUser(id: number, role: string) { return this.post('/api/admin/login-as-user', { user_id: id, user_type: role, role }, true); }
   adminGetInvestors() { return this.get('/api/admin/investors', {}, true); }
@@ -454,10 +476,10 @@ export class ApiService {
   // ── Investor Portal (User Side) ───────────────────────────
   deleteInvestorDocument(id: number) { return this.delete(`/api/investor/documents/${id}`); }
   investorDocumentUrl(id: any) { return `${BASE_URL}/api/investor/documents/${id}`; }
-  investorForgotPassword(emailOrData: any) { return this.post('/api/investor/auth/forgot-password', typeof emailOrData === 'string' ? { email: emailOrData } : emailOrData); }
-  investorResetPassword(data: any) { return this.post('/api/investor/auth/reset-password', data); }
-  verifyInvestorEmail(token: string) { return this.post('/api/investor/auth/verify-email', { token }); }
-  investorLogin(emailOrData: any, password?: string) { return typeof emailOrData === 'object' ? this.post('/api/investor/auth/login', emailOrData) : this.post('/api/investor/auth/login', { email: emailOrData, password }); }
+  investorForgotPassword(emailOrData: any) { return this.post('/api/investor/forgot-password', typeof emailOrData === 'string' ? { email: emailOrData } : emailOrData); }
+  investorResetPassword(data: any) { return this.post('/api/investor/reset-password', data); }
+  verifyInvestorEmail(token: string) { return this.get('/api/investor/verify-email', { token }); }
+  investorLogin(emailOrData: any, password?: string) { return typeof emailOrData === 'object' ? this.post('/api/investor/login', emailOrData) : this.post('/api/investor/login', { email: emailOrData, password }); }
   getInvestorDashboard() { return this.get('/api/investor/dashboard'); }
   getInvestorDeposits() { return this.get('/api/investor/deposits'); }
   submitInvestorDepositForm(data: FormData) { return this.postForm('/api/investor/deposit', data); }
@@ -469,15 +491,15 @@ export class ApiService {
   uploadInvestorProfilePhoto(data: FormData) { return this.postForm('/api/investor/profile/photo', data); }
   getInvestorProfile() { return this.get('/api/investor/profile'); }
   updateInvestorProfile(data: any) { return this.put('/api/investor/profile', data); }
-  updateInvestorBankDetails(data: any) { return this.put('/api/investor/profile/bank', data); }
+  updateInvestorBankDetails(data: any) { return this.put('/api/investor/bank-details', data); }
   changeInvestorPassword(data: any) { return this.put('/api/investor/change-password', data); }
   getInvestorSettlementPreference() { return this.get('/api/investor/settlement-preference'); }
   setInvestorSettlementPreference(pref: string) { return this.post('/api/investor/settlement-preference', { frequency: pref, preference: pref }); }
   requestInvestorSettlementChange(data: any) { return this.post('/api/investor/settlement-change-request', data); }
-  investorSignup(data: any) { return this.post('/api/investor/auth/signup', data); }
+  investorSignup(data: any) { return this.post('/api/investor/signup', data); }
   getInvestorWallet() { return this.get('/api/investor/wallet'); }
   getInvestorWithdrawals() { return this.get('/api/investor/withdrawals'); }
-  submitInvestorWithdrawal(data: any) { return this.post('/api/investor/withdrawals', data); }
+  submitInvestorWithdrawal(data: any) { return this.post('/api/investor/withdraw', data); }
 
   // ── Additional Admin Methods ─────────────────────────────
   adminGetAssociate(id: number) { return this.get(`/api/admin/associates/${id}`, {}, true); }

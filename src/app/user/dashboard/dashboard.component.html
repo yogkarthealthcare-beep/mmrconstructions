@@ -1,253 +1,560 @@
 <div class="panel-loading" *ngIf="loading">
   <i class="fas fa-spinner fa-spin"></i>
-  <span>Loading your dashboard metrics...</span>
+  <span>Loading your property portfolio metrics...</span>
 </div>
 
 <ng-container *ngIf="!loading">
 
-  <!-- TOP REFERRAL LINK BANNER (रेफ़रल लिंक पट्टी) -->
-  <div class="referral-banner-card mb-2" *ngIf="referralCode">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="referral-icon-circle">
-          <i class="fas fa-share-alt"></i>
-        </div>
-        <div>
-          <div class="d-flex align-items-center gap-2">
-            <span class="ref-badge">YOUR SPONSOR / REFERRAL LINK</span>
-            <span class="ref-code-chip"><i class="fas fa-key me-1"></i>{{ referralCode }}</span>
-          </div>
-          <div class="referral-link-display mt-1">
-            <i class="fas fa-link me-2 text-gold"></i>
-            <span class="ref-url-text">{{ referralLink }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Copy & Share Action Buttons -->
-      <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-        <button type="button" class="btn btn-copy-link btn-xs" (click)="copyReferralLink()">
-          <i [class]="copiedLink ? 'fas fa-check text-success me-1' : 'fas fa-copy me-1'"></i>
-          {{ copiedLink ? 'Copied!' : 'Copy Link' }}
-        </button>
-        <button type="button" class="btn btn-whatsapp-share btn-xs" (click)="shareOnWhatsapp()">
-          <i class="fab fa-whatsapp me-1"></i> Share on WhatsApp
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- WELCOME HEADER HERO BANNER -->
-  <div class="dash-welcome-hero mb-2">
+  <div class="dash-welcome-hero mb-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3" style="position:relative; z-index:2;">
       <div>
-        <p class="dash-hero-tag">WELCOME BACK TO MMR CONSTRUCTIONS</p>
-        <h2 class="dash-hero-title d-flex align-items-center gap-1.5 flex-wrap">
-          <span>{{ profile.full_name || userData?.full_name || 'Valued Partner' }}</span>
+        <p class="dash-hero-tag">MMR CONSTRUCTIONS &amp; DEVELOPERS · CUSTOMER PORTAL</p>
+        <h2 class="dash-hero-title d-flex align-items-center gap-2 flex-wrap">
+          <span>{{ profile.full_name || userData?.full_name || 'Valued Customer' }}</span>
           <app-verified-badge [user]="profile.user_id ? profile : userData" size="md"></app-verified-badge>
         </h2>
         <div class="d-flex align-items-center gap-2 flex-wrap">
-          <span class="dash-meta-badge"><i class="fas fa-id-badge me-1"></i>ID: {{ profile.member_id || '—' }}</span>
-          <span class="dash-role-badge" [class.badge-associate]="isAssociate" [class.badge-investor]="isInvestor">
-            {{ profile.user_type || userData?.user_type || 'Customer' }}
-          </span>
-          <span class="dash-status-dot" *ngIf="profile.account_status==='Active'"></span>
-          <span class="fs-12 text-white opacity-75" *ngIf="profile.account_status==='Active'">Active Account</span>
+          <span class="dash-meta-badge"><i class="fas fa-id-badge me-1"></i>Customer ID: {{ profile.member_id || userData?.member_id || 'MMR-CUST' }}</span>
+          <span class="dash-role-badge">Verified Customer</span>
+          <span class="dash-status-dot"></span>
+          <span class="fs-12 text-white opacity-75">Active Property Owner</span>
         </div>
       </div>
 
       <div class="d-flex gap-2 flex-wrap">
-        <a [routerLink]="basePrefix + '/wallet/add-fund'" class="btn btn-hero-gold btn-xs"><i class="fas fa-plus-circle me-1"></i>Add Fund</a>
-        <a [routerLink]="basePrefix + '/wallet/withdraw'" class="btn btn-hero-outline btn-xs"><i class="fas fa-arrow-alt-circle-up me-1"></i>Withdraw</a>
-        <a [routerLink]="basePrefix + '/wallet'" class="btn btn-hero-outline btn-xs"><i class="fas fa-wallet me-1"></i>My Wallet</a>
-        <a [routerLink]="basePrefix + '/emi-history'" class="btn btn-hero-outline btn-xs"><i class="fas fa-calendar-check me-1"></i>Pay EMI</a>
+        <button type="button" class="btn btn-hero-gold btn-sm" (click)="openInquiryModal()">
+          <i class="fas fa-plus-circle me-1.5"></i>Buy a New Plot / Inquiry
+        </button>
+        <a [routerLink]="basePrefix + '/my-plots'" class="btn btn-hero-outline btn-sm">
+          <i class="fas fa-map-marked-alt me-1.5"></i>My Properties
+        </a>
+        <a [routerLink]="basePrefix + '/emi-history'" class="btn btn-hero-outline btn-sm">
+          <i class="fas fa-calendar-check me-1.5"></i>EMI Schedule
+        </a>
       </div>
     </div>
   </div>
 
-  <!-- VIBRANT ANIMATED STAT CARDS GRID (विज़ुअल डिब्बे & कार्ड्स) -->
-  <div class="row g-2 mb-2">
+  <!-- TOP SUMMARY 4 KPI BOXES -->
+  <div class="row g-2.5 mb-3">
 
-    <!-- Card 1: Wallet Available Balance -->
+    <!-- Box 1: Purchased Plots -->
     <div class="col-6 col-lg-3">
-      <div class="dash-stat-card card-emerald">
+      <a [routerLink]="basePrefix + '/my-plots'" class="dash-stat-card card-emerald text-decoration-none">
         <div class="stat-top">
-          <div class="stat-icon-wrap icon-emerald"><i class="fas fa-wallet"></i></div>
-          <span class="stat-badge-tag tag-emerald">Wallet Balance</span>
+          <div class="stat-icon-wrap icon-emerald"><i class="fas fa-map-marked-alt"></i></div>
+          <span class="stat-badge-tag tag-emerald">Portfolio</span>
         </div>
-        <div class="stat-value">
-          ₹{{ (walletData?.available_balance || assocStats?.wallet_balance || 0) | number:'1.2-2' }}
-        </div>
-        <div class="stat-label">Available Wallet Balance</div>
+        <div class="stat-value">{{ purchasedPlotsCount }}</div>
+        <div class="stat-label">Purchased Plots</div>
         <div class="stat-footer text-success d-flex justify-content-between align-items-center">
-          <a [routerLink]="basePrefix + '/wallet/add-fund'" class="text-success text-decoration-none fw-bold me-2"><i class="fas fa-plus-circle me-1"></i>Add Fund</a>
-          <a [routerLink]="basePrefix + '/wallet/withdraw'" class="text-secondary text-decoration-none fw-bold"><i class="fas fa-arrow-up me-1"></i>Withdraw</a>
+          <span><i class="fas fa-check-circle me-1"></i>Active Properties</span>
+          <i class="fas fa-arrow-right"></i>
         </div>
-      </div>
+      </a>
     </div>
 
-    <!-- Card 2: Total Sales / Total Gaj Sold -->
+    <!-- Box 2: Sold / Returned Plots -->
     <div class="col-6 col-lg-3">
       <div class="dash-stat-card card-blue">
         <div class="stat-top">
-          <div class="stat-icon-wrap icon-blue"><i class="fas fa-chart-line"></i></div>
-          <span class="stat-badge-tag tag-blue">Total Sales</span>
+          <div class="stat-icon-wrap icon-blue"><i class="fas fa-handshake"></i></div>
+          <span class="stat-badge-tag tag-blue">Resale / Return</span>
         </div>
-        <div class="stat-value">
-          ₹{{ (assocStats?.tracker?.total_sales_amount || assocStats?.my_sales_amount || 0) | number }}
-        </div>
-        <div class="stat-label">
-          Total Sales ({{ assocStats?.tracker?.total_gaj_sold || dashboardOverview?.associateSalesStats?.total_gaj_sold || 0 }} Gaj)
-        </div>
+        <div class="stat-value">{{ soldPlotsCount }}</div>
+        <div class="stat-label">Sold / Buyback Plots</div>
         <div class="stat-footer text-primary">
-          <i class="fas fa-check-circle me-1"></i>
-          {{ assocStats?.current_monthly_net ? ('Monthly Net: ₹'+(assocStats.current_monthly_net | number)) : 'Total Sales Tracked' }}
+          <i class="fas fa-history me-1"></i>
+          {{ buybackApplications.length }} Buyback Applications
         </div>
       </div>
     </div>
 
-    <!-- Card 3: Total Earnings & Commission -->
+    <!-- Box 3: Confirmed Paid Amount -->
     <div class="col-6 col-lg-3">
       <div class="dash-stat-card card-gold">
         <div class="stat-top">
-          <div class="stat-icon-wrap icon-gold"><i class="fas fa-hand-holding-usd"></i></div>
-          <span class="stat-badge-tag tag-gold">Earnings</span>
+          <div class="stat-icon-wrap icon-gold"><i class="fas fa-coins"></i></div>
+          <span class="stat-badge-tag tag-gold">Total Paid</span>
         </div>
-        <div class="stat-value">
-          ₹{{ (assocStats?.tracker?.total_commission_earned || walletData?.total_commission || dashboardOverview?.associateSalesStats?.commission_earned || totalPaid || 0) | number }}
-        </div>
-        <div class="stat-label">Total Earnings &amp; Commission</div>
+        <div class="stat-value">₹{{ totalConfirmedPaid | number }}</div>
+        <div class="stat-label">Confirmed Paid Amount</div>
         <div class="stat-footer text-warning">
-          <i class="fas fa-hourglass-half me-1"></i>
-          Pending: ₹{{ (assocStats?.pending_commission || walletData?.pending_withdrawal_balance || 0) | number }}
+          <i class="fas fa-shield-alt me-1"></i>
+          Verified &amp; Approved Payments
         </div>
       </div>
     </div>
 
-    <!-- Card 4: Total Added Fund / Pending EMI -->
+    <!-- Box 4: Remaining Unpaid Amount -->
     <div class="col-6 col-lg-3">
       <div class="dash-stat-card card-crimson">
         <div class="stat-top">
-          <div class="stat-icon-wrap icon-crimson"><i class="fas fa-piggy-bank"></i></div>
-          <span class="stat-badge-tag tag-crimson">Total Fund</span>
+          <div class="stat-icon-wrap icon-crimson"><i class="fas fa-file-invoice-dollar"></i></div>
+          <span class="stat-badge-tag tag-crimson">Remaining</span>
         </div>
-        <div class="stat-value">
-          ₹{{ (walletData?.total_added_fund || 0) | number }}
-        </div>
-        <div class="stat-label">Total Added Wallet Fund</div>
+        <div class="stat-value">₹{{ totalUnpaidAmount | number }}</div>
+        <div class="stat-label">Total Unpaid Balance</div>
         <div class="stat-footer text-danger">
-          <i class="fas fa-calendar-alt me-1"></i>
-          {{ nextEmi ? ('Next EMI: ₹' + (nextEmi.emi_amount | number)) : 'Total Fund Deposited' }}
+          <i class="fas fa-hourglass-half me-1"></i>
+          Total Price - Confirmed Paid
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- ASSOCIATE NETWORK & MILESTONE BANNER (If Associate) -->
-  <div class="dash-milestone-banner mb-4" *ngIf="isAssociate || assocStats">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="milestone-icon"><i class="fas fa-trophy"></i></div>
-        <div>
-          <h5 class="mb-1 text-white fw-700">Associate Performance &amp; Network</h5>
-          <p class="mb-0 fs-13 text-white opacity-80">
-            Direct Network: <strong>{{ assocStats?.direct_network_count || dashboardOverview?.associateSalesStats?.direct_referrals || 0 }} Members</strong> &nbsp;·&nbsp;
-            Milestone (2,000 Gaj Target): <strong>{{ assocStats?.milestone_achieved ? 'Achieved 🏆' : ((assocStats?.tracker?.total_gaj_sold || 0) + ' / 2,000 Gaj') }}</strong>
-          </p>
+  <!-- PROPERTY-WISE DETAILS (Every Plot Displayed Separately) -->
+  <div class="card shadow-sm border-0 mb-3 property-portfolio-card">
+    <div class="card-header bg-white border-bottom py-2.5 px-3">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <div class="section-header-icon"><i class="fas fa-building text-primary"></i></div>
+          <div>
+            <h6 class="mb-0 fw-bold text-dark">My Properties &amp; Plots</h6>
+            <small class="text-muted fs-11">Individual property records with plot-wise financial calculations</small>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="input-group input-group-sm search-group" style="width: 220px;">
+            <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted fs-12"></i></span>
+            <input type="text" [(ngModel)]="searchTerm" class="form-control border-start-0 ps-0 fs-12" placeholder="Search Plot No / Site...">
+          </div>
+
+          <select [(ngModel)]="selectedSiteFilter" class="form-select form-select-sm fs-12" style="width: 150px;">
+            <option value="all">All Project Sites</option>
+            <option *ngFor="let s of sites" [value]="s.site_name">{{ s.site_name }}</option>
+          </select>
+
+          <select [(ngModel)]="selectedStatusFilter" class="form-select form-select-sm fs-12" style="width: 140px;">
+            <option value="all">All Payment Status</option>
+            <option value="fully_paid">Fully Paid</option>
+            <option value="partially_paid">Partially Paid</option>
+            <option value="pending">Pending</option>
+          </select>
+
+          <button type="button" class="btn btn-outline-primary btn-sm fs-12" (click)="openInquiryModal()">
+            <i class="fas fa-plus me-1"></i>Inquiry
+          </button>
         </div>
       </div>
-      <a [routerLink]="basePrefix + '/referral'" class="btn btn-hero-gold btn-sm"><i class="fas fa-sitemap me-1"></i>View Network Tree</a>
     </div>
-  </div>
 
-  <!-- MAIN DASHBOARD CONTENT GRID -->
-  <div class="row g-4 mb-4">
+    <!-- Empty State -->
+    <div class="card-body text-center py-5" *ngIf="filteredProperties.length === 0">
+      <div class="empty-icon-wrap mb-2"><i class="fas fa-map-marked-alt text-muted fs-1"></i></div>
+      <h6 class="fw-bold text-secondary mb-1">No property records found</h6>
+      <p class="text-muted fs-12 mb-3">You do not have any property bookings matching the selected criteria.</p>
+      <button type="button" class="btn btn-primary btn-sm" (click)="openInquiryModal()">
+        <i class="fas fa-paper-plane me-1.5"></i>Submit New Property Inquiry
+      </button>
+    </div>
 
-    <!-- MY PLOT BOOKINGS -->
-    <div class="col-lg-6">
-      <div class="panel-card h-100">
-        <div class="panel-card-title d-flex justify-content-between align-items-center">
-          <span><i class="fas fa-map-marked-alt text-emerald me-2"></i>My Plot Bookings</span>
-          <a [routerLink]="basePrefix + '/my-plots'" class="pc-link">View All Plots →</a>
-        </div>
+    <!-- Property Dossier Grid -->
+    <div class="card-body p-3" *ngIf="filteredProperties.length > 0">
+      <div class="row g-3">
+        <div class="col-12 col-xl-6" *ngFor="let p of filteredProperties">
+          <div class="property-dossier-box">
+            
+            <!-- Dossier Header -->
+            <div class="pdb-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <div class="plot-number-badge">
+                  <span class="lbl">PLOT</span>
+                  <span class="val">{{ p.plot_number }}</span>
+                </div>
+                <div>
+                  <h6 class="pdb-title mb-0">{{ p.site_name }}</h6>
+                  <div class="pdb-sub fs-11 text-muted">
+                    <span><i class="fas fa-layer-group me-1"></i>{{ p.block_name }}</span> · 
+                    <span><i class="fas fa-barcode me-1"></i>{{ p.booking_serial }}</span>
+                  </div>
+                </div>
+              </div>
 
-        <div *ngIf="bookings.length === 0" class="panel-empty py-4 text-center">
-          <i class="fas fa-map-marked-alt text-muted fs-1 mb-2"></i>
-          <p class="text-muted">No plots booked yet. Explore premium plot locations today!</p>
-          <a [routerLink]="basePrefix + '/my-plots'" class="btn btn-sm btn-outline-green mt-2">Explore Plots</a>
-        </div>
+              <div class="d-flex align-items-center gap-1.5">
+                <span class="badge" [ngClass]="{
+                  'bg-success-subtle text-success border border-success-subtle': p.payment_status === 'Fully Paid',
+                  'bg-warning-subtle text-warning-emphasis border border-warning-subtle': p.payment_status === 'Partially Paid',
+                  'bg-danger-subtle text-danger border border-danger-subtle': p.payment_status === 'Pending'
+                }">{{ p.payment_status }}</span>
 
-        <div *ngFor="let b of bookings" class="booking-item-card mb-3">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-              <span class="booking-plot-num">{{ b.plot_number }}</span>
-              <span class="booking-site-name ms-2"><i class="fas fa-map-marker-alt me-1 text-gold"></i>{{ b.site_name }}</span>
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                  {{ p.booking_status }}
+                </span>
+              </div>
             </div>
-            <span class="sbadge" [class.sbadge-green]="b.booking_status==='Confirmed'" [class.sbadge-yellow]="b.booking_status==='PaymentPending'" [class.sbadge-blue]="b.booking_status==='InProcess'">
-              {{ b.booking_status }}
-            </span>
-          </div>
 
-          <div class="progress-bar-wrap">
-            <div class="progress-bar-fill" [style.width]="emiPct(b)+'%'"></div>
-          </div>
-          <div class="d-flex justify-content-between mt-2 fs-12">
-            <span class="fw-600 text-success"><i class="fas fa-check-circle me-1"></i>{{ emiPct(b) }}% Paid</span>
-            <span class="text-muted">{{ b.plot_area || '—' }} Gaj</span>
+            <!-- Dossier Dimensions & Financial Grid -->
+            <div class="pdb-metrics-grid mt-2.5">
+              <div class="metric-cell">
+                <span class="cell-lbl">Plot Area</span>
+                <span class="cell-val">{{ p.area_gaj }} Gaj <small class="text-muted fs-10">({{ p.area_sqft }} sq.ft)</small></span>
+              </div>
+              <div class="metric-cell">
+                <span class="cell-lbl">Total Plot Price</span>
+                <span class="cell-val text-dark fw-bold">₹{{ p.total_price | number }}</span>
+              </div>
+              <div class="metric-cell">
+                <span class="cell-lbl">Confirmed Paid</span>
+                <span class="cell-val text-success fw-bold">₹{{ p.confirmed_paid | number }}</span>
+              </div>
+              <div class="metric-cell">
+                <span class="cell-lbl">Unpaid Balance</span>
+                <span class="cell-val text-danger fw-bold">₹{{ p.unpaid_balance | number }}</span>
+              </div>
+            </div>
+
+            <!-- Payment Progress Bar -->
+            <div class="pdb-progress-wrap mt-2.5">
+              <div class="d-flex justify-content-between align-items-center fs-11 mb-1">
+                <span class="text-muted fw-semibold">Payment Progress</span>
+                <span class="fw-bold" [ngClass]="p.payment_progress === 100 ? 'text-success' : 'text-primary'">{{ p.payment_progress }}% Paid</span>
+              </div>
+              <div class="progress progress-compact" style="height: 7px;">
+                <div class="progress-bar progress-bar-striped"
+                     [ngClass]="p.payment_progress === 100 ? 'bg-success' : 'bg-primary'"
+                     [style.width.%]="p.payment_progress"></div>
+              </div>
+            </div>
+
+            <!-- Next EMI or Allotment Info -->
+            <div class="pdb-next-emi-bar mt-2.5 d-flex align-items-center justify-content-between flex-wrap gap-2" *ngIf="p.next_emi">
+              <div class="d-flex align-items-center gap-1.5 fs-11 text-secondary">
+                <i class="fas fa-calendar-alt text-warning"></i>
+                <span>Next EMI #{{ p.next_emi.installment_no }}: <strong>₹{{ p.next_emi.emi_amount | number }}</strong></span>
+                <span class="text-muted">· Due: {{ p.next_emi.due_date | date:'dd MMM yyyy' }}</span>
+              </div>
+              <span class="badge badge-xs" [ngClass]="{
+                'bg-success': p.next_emi.emi_status === 'Paid',
+                'bg-warning text-dark': p.next_emi.emi_status === 'Pending',
+                'bg-danger': p.next_emi.emi_status === 'Overdue',
+                'bg-info text-dark': p.next_emi.emi_status === 'ProofSubmitted'
+              }">{{ p.next_emi.emi_status }}</span>
+            </div>
+
+            <!-- Dossier Actions Footer -->
+            <div class="pdb-actions-footer mt-3 pt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="fs-11 text-muted">
+                <i class="fas fa-calendar-check me-1"></i>Booked: {{ p.booking_date | date:'dd MMM yyyy' }}
+              </div>
+              <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                <button type="button" class="btn btn-outline-success btn-xs" (click)="openPartialPaymentModal(p)">
+                  <i class="fas fa-money-bill-wave me-1"></i>Make Payment
+                </button>
+                <a [routerLink]="basePrefix + '/emi-history'" class="btn btn-outline-primary btn-xs">
+                  <i class="fas fa-list-ol me-1"></i>EMI Schedule
+                </a>
+                <a [routerLink]="basePrefix + '/documents'" class="btn btn-outline-secondary btn-xs" title="Documents">
+                  <i class="fas fa-folder-open"></i>
+                </a>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
     </div>
-
-    <!-- RECENT EMI PAYMENTS -->
-    <div class="col-lg-6">
-      <div class="panel-card h-100">
-        <div class="panel-card-title d-flex justify-content-between align-items-center">
-          <span><i class="fas fa-file-invoice-dollar text-gold me-2"></i>Recent EMI Payments</span>
-          <a [routerLink]="basePrefix + '/emi-history'" class="pc-link">View History →</a>
-        </div>
-
-        <div *ngIf="recentEmis.length === 0" class="panel-empty py-4 text-center">
-          <i class="fas fa-calendar-alt text-muted fs-1 mb-2"></i>
-          <p class="text-muted">No EMI payment history available yet.</p>
-        </div>
-
-        <div class="table-responsive" *ngIf="recentEmis.length > 0">
-          <table class="table align-middle">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Plot</th>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let e of recentEmis">
-                <td class="fw-700 text-primary">#{{ e.installment_no }}</td>
-                <td class="fw-600">{{ e.plot_number }}</td>
-                <td class="fw-700 text-dark">₹{{ e.paid_amount | number }}</td>
-                <td class="fs-12 text-muted">{{ e.paid_date | date:'dd MMM yyyy' }}</td>
-                <td><span class="sbadge sbadge-green"><i class="fas fa-check me-1"></i>Paid</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- BUYBACK GUARANTEE NOTICE BANNER -->
-  <div class="panel-alert panel-alert-warning d-flex align-items-center gap-3" *ngIf="bookings.length > 0">
-    <i class="fas fa-shield-alt text-gold fs-2"></i>
-    <div class="flex-fill">
-      <strong class="text-dark fs-15">2-Year Buyback Guarantee Active 🏆</strong><br/>
-      <span class="fs-13 text-muted">2 साल की buyback window active है। Original price + ₹1,00,000 guaranteed returns.</span>
+  <!-- BOTTOM 2-COLUMN SECTION: UPCOMING EMIS & RECENT PAYMENTS -->
+  <div class="row g-3 mb-3">
+    
+    <!-- Upcoming EMI Installments -->
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-white border-bottom py-2.5 px-3 d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-calendar-alt text-warning"></i>
+            <h6 class="mb-0 fw-bold text-dark fs-13">Upcoming EMI Schedules</h6>
+          </div>
+          <a [routerLink]="basePrefix + '/emi-history'" class="fs-11 text-primary fw-semibold text-decoration-none">View All &rarr;</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive" *ngIf="upcomingEmisList.length > 0">
+            <table class="table table-sm table-hover align-middle mb-0 fs-12 compact-table">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Plot #</th>
+                  <th>EMI #</th>
+                  <th>Due Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th class="text-end pe-3">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let emi of upcomingEmisList">
+                  <td class="ps-3 fw-bold text-dark">{{ emi.plot_number }}</td>
+                  <td>#{{ emi.installment_no }}</td>
+                  <td>{{ emi.due_date | date:'dd MMM yyyy' }}</td>
+                  <td class="fw-bold text-dark">₹{{ emi.emi_amount | number }}</td>
+                  <td>
+                    <span class="badge badge-xs" [ngClass]="{
+                      'bg-success': emi.emi_status === 'Paid',
+                      'bg-warning text-dark': emi.emi_status === 'Pending',
+                      'bg-danger': emi.emi_status === 'Overdue',
+                      'bg-info text-dark': emi.emi_status === 'ProofSubmitted'
+                    }">{{ emi.emi_status }}</span>
+                  </td>
+                  <td class="text-end pe-3">
+                    <a [routerLink]="basePrefix + '/emi-history'" class="btn btn-outline-primary btn-xs">
+                      <i class="fas fa-upload me-1"></i>Pay/Proof
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="text-center py-4 text-muted fs-12" *ngIf="upcomingEmisList.length === 0">
+            <i class="fas fa-check-circle text-success fs-3 mb-1 d-block"></i>
+            No pending or overdue installments!
+          </div>
+        </div>
+      </div>
     </div>
-    <a [routerLink]="basePrefix + '/my-plots'" class="btn btn-gold btn-sm">View Details</a>
+
+    <!-- Recent Payments & Verification Feed -->
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-white border-bottom py-2.5 px-3 d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-receipt text-success"></i>
+            <h6 class="mb-0 fw-bold text-dark fs-13">Recent Payments &amp; Verifications</h6>
+          </div>
+          <a [routerLink]="basePrefix + '/payments'" class="fs-11 text-primary fw-semibold text-decoration-none">Payment History &rarr;</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive" *ngIf="recentPaymentsList.length > 0">
+            <table class="table table-sm table-hover align-middle mb-0 fs-12 compact-table">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Plot #</th>
+                  <th>Installment</th>
+                  <th>Paid Date</th>
+                  <th>Amount</th>
+                  <th>Approval Status</th>
+                  <th class="text-end pe-3">Receipt</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of recentPaymentsList">
+                  <td class="ps-3 fw-bold text-dark">{{ p.plot_number }}</td>
+                  <td>EMI #{{ p.installment_no }}</td>
+                  <td>{{ (p.paid_date || p.due_date) | date:'dd MMM yyyy' }}</td>
+                  <td class="fw-bold text-success">₹{{ (p.paid_amount || p.emi_amount) | number }}</td>
+                  <td>
+                    <span class="badge badge-xs" [ngClass]="p.emi_status === 'Paid' ? 'bg-success' : 'bg-warning text-dark'">
+                      {{ p.emi_status === 'Paid' ? 'Confirmed / Approved' : 'Under Verification' }}
+                    </span>
+                  </td>
+                  <td class="text-end pe-3">
+                    <a [routerLink]="basePrefix + '/payments'" class="btn btn-outline-secondary btn-xs" title="View Receipt">
+                      <i class="fas fa-file-invoice"></i>
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="text-center py-4 text-muted fs-12" *ngIf="recentPaymentsList.length === 0">
+            <i class="fas fa-info-circle text-muted fs-3 mb-1 d-block"></i>
+            No recent payments recorded.
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </ng-container>
+
+<!-- =====================================================================
+     MODAL 1: BUY A NEW PLOT / PROPERTY INQUIRY MODAL
+===================================================================== -->
+<div class="modal-backdrop fade show" *ngIf="inquiryModalOpen" (click)="closeInquiryModal()"></div>
+<div class="modal fade show d-block" *ngIf="inquiryModalOpen" tabindex="-1" role="dialog" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-gradient-navy text-white py-2.5 px-3">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fas fa-home text-gold"></i>
+          <h6 class="modal-title mb-0 fw-bold">Submit Property Purchase Inquiry</h6>
+        </div>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeInquiryModal()"></button>
+      </div>
+
+      <div class="modal-body p-3">
+        <div class="alert alert-success d-flex align-items-center gap-2 py-2 px-3 mb-0" *ngIf="inquirySubmitted">
+          <i class="fas fa-check-circle fs-4 text-success"></i>
+          <div>
+            <div class="fw-bold">Inquiry Submitted Successfully!</div>
+            <div class="fs-12">Our property sales executive will contact you shortly. You can track inquiries with Admin.</div>
+          </div>
+        </div>
+
+        <form (ngSubmit)="submitPropertyInquiry()" *ngIf="!inquirySubmitted">
+          <div class="alert alert-danger py-1.5 px-2.5 fs-12 mb-2" *ngIf="inquiryError">
+            <i class="fas fa-exclamation-circle me-1"></i>{{ inquiryError }}
+          </div>
+
+          <div class="row g-2">
+            <div class="col-12 col-sm-6">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Full Name <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="inquiryForm.full_name" name="full_name" class="form-control form-control-sm fs-12" required>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Mobile Number <span class="text-danger">*</span></label>
+              <input type="tel" [(ngModel)]="inquiryForm.mobile_no" name="mobile_no" class="form-control form-control-sm fs-12" required>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Email Address</label>
+              <input type="email" [(ngModel)]="inquiryForm.email" name="email" class="form-control form-control-sm fs-12">
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Preferred Project Site</label>
+              <select [(ngModel)]="inquiryForm.site_id" name="site_id" class="form-select form-select-sm fs-12">
+                <option [ngValue]="null">Select Project Location</option>
+                <option *ngFor="let s of sites" [ngValue]="s.site_id">{{ s.site_name }}</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Inquiry Type / Requirement</label>
+              <select [(ngModel)]="inquiryForm.inquiry_type" name="inquiry_type" class="form-select form-select-sm fs-12">
+                <option value="Plot Purchase — 50 Gaj">Plot Purchase — 50 Gaj</option>
+                <option value="Plot Purchase — 100 Gaj">Plot Purchase — 100 Gaj</option>
+                <option value="Plot Purchase — 150 Gaj">Plot Purchase — 150 Gaj</option>
+                <option value="Plot Purchase — 200+ Gaj">Plot Purchase — 200+ Gaj</option>
+                <option value="Commercial Plot Inquiry">Commercial Plot Inquiry</option>
+                <option value="General Property Consultation">General Property Consultation</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Your Message / Specific Requirements</label>
+              <textarea [(ngModel)]="inquiryForm.inquiry_message" name="inquiry_message" rows="2" class="form-control form-control-sm fs-12" placeholder="Mention preferred block, budget, payment plan preference..."></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer px-0 pb-0 pt-3 mt-2 border-top d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light btn-sm fs-12" (click)="closeInquiryModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm fs-12" [disabled]="inquirySubmitting">
+              <i class="fas fa-spinner fa-spin me-1" *ngIf="inquirySubmitting"></i>
+              <i class="fas fa-paper-plane me-1" *ngIf="!inquirySubmitting"></i>
+              Submit Inquiry
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer py-2 px-3 bg-light border-top" *ngIf="inquirySubmitted">
+        <button type="button" class="btn btn-primary btn-sm fs-12" (click)="closeInquiryModal()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     MODAL 2: PROPERTY-WISE PARTIAL PAYMENT / PROOF SUBMISSION MODAL
+===================================================================== -->
+<div class="modal-backdrop fade show" *ngIf="paymentModalOpen" (click)="closePaymentModal()"></div>
+<div class="modal fade show d-block" *ngIf="paymentModalOpen" tabindex="-1" role="dialog" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-gradient-navy text-white py-2.5 px-3">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fas fa-money-check-alt text-gold"></i>
+          <h6 class="modal-title mb-0 fw-bold">Submit Payment for Plot {{ selectedPropertyForPayment?.plot_number }}</h6>
+        </div>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closePaymentModal()"></button>
+      </div>
+
+      <div class="modal-body p-3">
+        
+        <!-- Property Summary Pill -->
+        <div class="bg-light p-2.5 rounded-2 border mb-3 fs-12" *ngIf="selectedPropertyForPayment">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Site / Project:</span>
+            <span class="fw-bold text-dark">{{ selectedPropertyForPayment.site_name }} ({{ selectedPropertyForPayment.block_name }})</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Total Price:</span>
+            <span class="fw-bold text-dark">₹{{ selectedPropertyForPayment.total_price | number }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Paid So Far:</span>
+            <span class="fw-bold text-success">₹{{ selectedPropertyForPayment.confirmed_paid | number }}</span>
+          </div>
+          <div class="d-flex justify-content-between border-top pt-1">
+            <span class="text-muted fw-bold">Remaining Unpaid:</span>
+            <span class="fw-bold text-danger">₹{{ selectedPropertyForPayment.unpaid_balance | number }}</span>
+          </div>
+        </div>
+
+        <div class="alert alert-success py-2 px-3 fs-12 mb-2" *ngIf="paymentSuccessMsg">
+          <i class="fas fa-check-circle me-1"></i>{{ paymentSuccessMsg }}
+        </div>
+
+        <div class="alert alert-danger py-1.5 px-2.5 fs-12 mb-2" *ngIf="paymentErrorMsg">
+          <i class="fas fa-exclamation-circle me-1"></i>{{ paymentErrorMsg }}
+        </div>
+
+        <form (ngSubmit)="submitPartialPayment()" *ngIf="!paymentSuccessMsg">
+          <div class="row g-2">
+            <div class="col-12 col-sm-6">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Payment Amount (₹) <span class="text-danger">*</span></label>
+              <input type="number" [(ngModel)]="paymentForm.amount" name="amount" class="form-control form-control-sm fs-12" min="1" required>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Payment Mode <span class="text-danger">*</span></label>
+              <select [(ngModel)]="paymentForm.payment_mode" name="payment_mode" class="form-select form-select-sm fs-12">
+                <option value="Bank Transfer">Bank Transfer / NEFT / RTGS</option>
+                <option value="UPI">UPI / QR Code</option>
+                <option value="Cash">Cash Deposit</option>
+                <option value="Cheque">Cheque</option>
+                <option value="TD/DD">Demand Draft (DD)</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-sm-6" *ngIf="paymentForm.payment_mode === 'Cheque' || paymentForm.payment_mode === 'TD/DD'">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Cheque / DD Number <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="paymentForm.cheque_no" name="cheque_no" class="form-control form-control-sm fs-12" placeholder="e.g. 000124">
+            </div>
+
+            <div class="col-12 col-sm-6" *ngIf="paymentForm.payment_mode === 'Cheque' || paymentForm.payment_mode === 'TD/DD' || paymentForm.payment_mode === 'Bank Transfer'">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Bank Name</label>
+              <input type="text" [(ngModel)]="paymentForm.bank_name" name="bank_name" class="form-control form-control-sm fs-12" placeholder="e.g. State Bank of India">
+            </div>
+
+            <div class="col-12" *ngIf="paymentForm.payment_mode !== 'Cheque'">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">UTR / Transaction Reference No.</label>
+              <input type="text" [(ngModel)]="paymentForm.reference_no" name="reference_no" class="form-control form-control-sm fs-12" placeholder="e.g. UTR123456789">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Attach Payment Proof Slip / Screenshot <span class="text-danger">*</span></label>
+              <input type="file" (change)="onProofFileChange($event)" accept="image/*,application/pdf" class="form-control form-control-sm fs-12" required>
+              <small class="text-muted fs-10">Upload Bank Deposit Slip, Cheque Photo, or UPI Screenshot (JPG, PNG, PDF up to 5MB)</small>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fs-11 fw-semibold text-secondary mb-1">Remarks / Note</label>
+              <input type="text" [(ngModel)]="paymentForm.remarks" name="remarks" class="form-control form-control-sm fs-12" placeholder="Installment payment for plot...">
+            </div>
+          </div>
+
+          <div class="modal-footer px-0 pb-0 pt-3 mt-2 border-top d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light btn-sm fs-12" (click)="closePaymentModal()">Cancel</button>
+            <button type="submit" class="btn btn-success btn-sm fs-12" [disabled]="paymentSubmitting">
+              <i class="fas fa-spinner fa-spin me-1" *ngIf="paymentSubmitting"></i>
+              <i class="fas fa-upload me-1" *ngIf="!paymentSubmitting"></i>
+              Submit Payment for Verification
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -6,27 +6,27 @@
       <div class="sidebar-brand">
         <div class="sidebar-brand-icon"><span>M</span></div>
         <div class="sidebar-brand-text">
-          <span class="name">M.M.R. Constructions</span>
-          <span class="role">{{ userData?.user_type || 'Associate' }} Portal</span>
+          <span class="name">M.M.R. Construction</span>
+          <span class="role">{{ roleLabel }} Portal</span>
         </div>
       </div>
     </div>
 
     <!-- User Profile Card -->
     <div class="sidebar-user-card">
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2.5">
         <div class="sidebar-avatar">{{ initials }}</div>
-        <div style="min-width:0;">
+        <div style="min-width:0;" class="flex-fill">
           <div class="sidebar-user-name d-flex align-items-center gap-1" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
             <span class="text-truncate">{{ userData?.full_name || 'User' }}</span>
             <app-verified-badge [user]="userData" size="xs"></app-verified-badge>
           </div>
-          <div class="sidebar-user-id">{{ userData?.member_id || '—' }} · {{ userData?.user_type || 'Associate' }}</div>
+          <div class="sidebar-user-id">{{ userData?.member_id || '—' }} · {{ roleLabel }}</div>
         </div>
       </div>
     </div>
 
-    <!-- Accordion Nav Groups (Admin-style) -->
+    <!-- Accordion / Grouped Nav -->
     <nav class="sidebar-nav">
       <div *ngFor="let group of navGroups" class="nav-group-wrapper">
         <div class="nav-group-header" (click)="toggleGroup(group)">
@@ -59,7 +59,7 @@
           <span>{{ userData?.full_name || 'My Account' }}</span>
           <app-verified-badge [user]="userData" size="sm"></app-verified-badge>
         </div>
-        <div class="topbar-page-sub">{{ userData?.member_id }} · {{ userData?.user_type || 'Associate' }}</div>
+        <div class="topbar-page-sub">{{ userData?.member_id }} · {{ roleLabel }} Portal</div>
       </div>
       <div class="topbar-actions">
         <!-- Notification Bell Dropdown -->
@@ -79,14 +79,14 @@
                 <div class="notif-icon"><i class="fas fa-bell"></i></div>
                 <div class="notif-text">
                   <div class="notif-title">Account Alerts &amp; Updates</div>
-                  <div class="notif-desc">Check your recent transaction and enrollment notifications.</div>
+                  <div class="notif-desc">Check your recent booking and payment updates.</div>
                 </div>
               </a>
-              <a [routerLink]="basePrefix + '/wallet/transactions'" (click)="closeDropdowns()" class="notif-item">
-                <div class="notif-icon"><i class="fas fa-wallet"></i></div>
+              <a [routerLink]="basePrefix + '/emi-history'" (click)="closeDropdowns()" class="notif-item">
+                <div class="notif-icon"><i class="fas fa-calendar-check"></i></div>
                 <div class="notif-text">
-                  <div class="notif-title">Wallet &amp; Payouts</div>
-                  <div class="notif-desc">Track latest commission credits and payouts.</div>
+                  <div class="notif-title">EMI &amp; Installments</div>
+                  <div class="notif-desc">Track installment schedules and payment proofs.</div>
                 </div>
               </a>
             </div>
@@ -104,16 +104,19 @@
 
           <div class="topbar-dropdown settings-dropdown" *ngIf="activeDropdown === 'settings'" (click)="$event.stopPropagation()">
             <div class="notif-dropdown-header">
-              <h6>Quick Settings</h6>
+              <h6>Quick Navigation</h6>
             </div>
             <div class="topbar-dropdown-menu">
               <a [routerLink]="basePrefix + '/profile'" (click)="closeDropdowns()" class="topbar-dropdown-item">
                 <i class="fas fa-user-circle"></i> Profile &amp; KYC
               </a>
+              <a [routerLink]="basePrefix + '/my-plots'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-map-marked-alt"></i> My Properties
+              </a>
               <a [routerLink]="basePrefix + '/documents'" (click)="closeDropdowns()" class="topbar-dropdown-item">
                 <i class="fas fa-folder-open"></i> My Documents
               </a>
-              <a [routerLink]="basePrefix + '/wallet'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+              <a *ngIf="!isCustomer" [routerLink]="basePrefix + '/wallet'" (click)="closeDropdowns()" class="topbar-dropdown-item">
                 <i class="fas fa-wallet"></i> Wallet &amp; Bank
               </a>
               <a [routerLink]="basePrefix + '/notifications'" (click)="closeDropdowns()" class="topbar-dropdown-item">
@@ -144,7 +147,7 @@
                   <span>{{ userData?.full_name || 'My Account' }}</span>
                   <app-verified-badge [user]="userData" size="xs"></app-verified-badge>
                 </div>
-                <div class="duc-role">{{ userData?.user_type || 'Associate' }}</div>
+                <div class="duc-role">{{ roleLabel }}</div>
                 <div class="duc-sub">{{ userData?.member_id }} · {{ userData?.mobile_no }}</div>
               </div>
             </div>
@@ -152,7 +155,10 @@
               <a [routerLink]="basePrefix + '/profile'" (click)="closeDropdowns()" class="topbar-dropdown-item">
                 <i class="fas fa-user-circle"></i> My Profile &amp; KYC
               </a>
-              <a [routerLink]="basePrefix + '/wallet'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+              <a [routerLink]="basePrefix + '/my-plots'" (click)="closeDropdowns()" class="topbar-dropdown-item">
+                <i class="fas fa-map-marked-alt"></i> My Properties
+              </a>
+              <a *ngIf="!isCustomer" [routerLink]="basePrefix + '/wallet'" (click)="closeDropdowns()" class="topbar-dropdown-item">
                 <i class="fas fa-coins"></i> My Wallet &amp; Earnings
               </a>
               <a [routerLink]="basePrefix + '/documents'" (click)="closeDropdowns()" class="topbar-dropdown-item">

@@ -80,13 +80,13 @@ export class AdminExportService {
           return '';
         });
       });
-      this.renderPdf(title, headers, rows, 'MMR Constructions & Developers — Admin Report');
+      this.renderPdf(title, headers, rows, 'MMR Construction & Developers — Admin Report');
     } else {
       // Called as: exportToPdf(title, headers, rows, subtitle)
       const title = String(titleOrData || 'Report');
       const headers = (headersOrColumns as string[]) || [];
       const rows = (rowsOrFilename as any[][]) || [];
-      const subtitle = subtitleOrTitle || 'MMR Constructions & Developers — Admin Report';
+      const subtitle = subtitleOrTitle || 'MMR Construction & Developers — Admin Report';
       this.renderPdf(title, headers, rows, subtitle);
     }
   }
@@ -95,7 +95,7 @@ export class AdminExportService {
     title: string,
     headers: string[],
     rows: any[][],
-    subtitle: string = 'MMR Constructions & Developers — Admin Report'
+    subtitle: string = 'MMR Construction & Developers — Admin Report'
   ): void {
     if (!rows || rows.length === 0) {
       alert('No data available to export.');
@@ -120,7 +120,7 @@ export class AdminExportService {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>${this.escapeHtml(title)} - MMR Constructions</title>
+        <title>${this.escapeHtml(title)} - MMR Construction</title>
         <meta charset="utf-8" />
         <style>
           @page { size: landscape; margin: 12mm; }
@@ -142,7 +142,7 @@ export class AdminExportService {
       <body>
         <div class="report-header">
           <div>
-            <div class="report-brand">MMR CONSTRUCTIONS &amp; DEVELOPERS</div>
+            <div class="report-brand">MMR CONSTRUCTION &amp; DEVELOPERS</div>
             <div class="report-sub">${this.escapeHtml(subtitle)}</div>
             <div class="report-title">${this.escapeHtml(title)}</div>
           </div>
@@ -163,7 +163,7 @@ export class AdminExportService {
         </table>
 
         <div class="report-footer">
-          <div>MMR Constructions Admin Management Console &bull; Generated Automatically</div>
+          <div>MMR Construction Admin Management Console &bull; Generated Automatically</div>
           <div>Page 1 &bull; Total Rows: ${rows.length}</div>
         </div>
 

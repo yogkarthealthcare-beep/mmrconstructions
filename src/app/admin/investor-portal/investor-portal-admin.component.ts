@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
@@ -66,12 +67,17 @@ export class AdminInvestorPortalComponent implements OnInit {
   actionType: 'approve_deposit' | 'reject_deposit' | 'approve_withdrawal' | 'reject_withdrawal' | 'toggle_status' | null = null;
   adminRemarks = '';
   processingAction = false;
+  previewImageUrl: string | null = null;
 
   // Hover Tooltip for Free/Disabled and Row Records
   hoveredInvestor: any = null;
   tooltipPos = { x: 0, y: 0 };
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   isFreeOrDisabled(inv: any): boolean {
     if (!inv) return false;
@@ -110,7 +116,12 @@ export class AdminInvestorPortalComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadData();
+    this.route.queryParams.subscribe(params => {
+      if (params['tab'] && ['investors', 'deposits', 'withdrawals', 'transactions'].includes(params['tab'])) {
+        this.activeTab = params['tab'];
+      }
+      this.loadData();
+    });
   }
 
   loadData() {
@@ -168,7 +179,20 @@ export class AdminInvestorPortalComponent implements OnInit {
   switchTab(tab: string) {
     this.activeTab = tab;
     this.page = 1;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge'
+    });
     this.loadData();
+  }
+
+  openProofImage(url: string) {
+    this.previewImageUrl = this.api.url(url);
+  }
+
+  closeProofImage() {
+    this.previewImageUrl = null;
   }
 
   // Action Modals

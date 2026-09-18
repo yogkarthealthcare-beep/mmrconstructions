@@ -204,6 +204,7 @@
                 <th class="text-end">Amount</th>
                 <th>Method</th>
                 <th>Txn Reference / UTR</th>
+                <th class="text-center">Proof</th>
                 <th class="text-center">Status</th>
                 <th class="text-end pe-3">Actions</th>
               </tr>
@@ -218,7 +219,13 @@
                 </td>
                 <td class="fw-bold text-success fs-13 text-end">₹{{ dep.amount | number:'1.2-2' }}</td>
                 <td class="fs-12 text-secondary">{{ dep.payment_method }}</td>
-                <td class="font-monospace fs-11 text-dark text-truncate" [title]="dep.transaction_reference">{{ dep.transaction_reference }}</td>
+                <td class="font-monospace fs-11 text-dark text-truncate" [title]="dep.transaction_reference">{{ dep.transaction_reference || 'N/A' }}</td>
+                <td class="text-center">
+                  <button *ngIf="dep.payment_screenshot_url" type="button" class="btn btn-sm btn-outline-info py-0 px-2 fs-11" (click)="openProofImage(dep.payment_screenshot_url)">
+                    <i class="fas fa-image me-1"></i>View
+                  </button>
+                  <span *ngIf="!dep.payment_screenshot_url" class="text-muted fs-11">—</span>
+                </td>
                 <td class="text-center">
                   <span class="status-pill-custom text-nowrap" [ngClass]="'status-' + (dep.status || 'pending').toLowerCase()">
                     <i [class]="{
@@ -415,30 +422,79 @@
 </div>
 
 <!-- Action Modal for Admin Remarks -->
-<div class="modal fade show d-block" *ngIf="actionType" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+<div class="modal fade show d-block" *ngIf="actionType" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold">
+    <div class="modal-content border-0 shadow-lg rounded-3">
+      <div class="modal-header" [class.bg-success-subtle]="actionType.includes('approve')" [class.bg-danger-subtle]="actionType.includes('reject')">
+        <h5 class="modal-title fw-bold" [class.text-success]="actionType.includes('approve')" [class.text-danger]="actionType.includes('reject')">
+          <i class="fas" [class.fa-check-circle]="actionType.includes('approve')" [class.fa-times-circle]="actionType.includes('reject')"></i>
           Confirm {{ actionType.replace('_', ' ') | uppercase }}
         </h5>
         <button type="button" class="btn-close" (click)="closeActionModal()"></button>
       </div>
-      <div class="modal-body">
-        <p class="mb-2">Amount: <strong>₹{{ selectedItem?.amount | number:'1.2-2' }}</strong></p>
-        <p class="mb-3 text-muted small" *ngIf="selectedItem?.investor_name">Investor: {{ selectedItem?.investor_name }}</p>
+      <div class="modal-body p-4">
+        <div class="bg-light p-3 rounded-2 mb-3 border">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted small">Investor:</span>
+            <span class="fw-bold">{{ selectedItem?.investor_name || selectedItem?.full_name || 'N/A' }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted small">Amount:</span>
+            <span class="fw-bold text-success fs-14">₹{{ selectedItem?.amount | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1" *ngIf="selectedItem?.payment_method">
+            <span class="text-muted small">Method:</span>
+            <span class="fw-medium text-capitalize">{{ selectedItem?.payment_method }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1" *ngIf="selectedItem?.transaction_reference">
+            <span class="text-muted small">UTR / Ref:</span>
+            <span class="font-monospace small">{{ selectedItem?.transaction_reference }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top" *ngIf="selectedItem?.payment_screenshot_url">
+            <span class="text-muted small">Payment Proof:</span>
+            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fs-11" (click)="openProofImage(selectedItem?.payment_screenshot_url)">
+              <i class="fas fa-eye me-1"></i>View Uploaded Slip
+            </button>
+          </div>
+        </div>
 
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Admin Remarks / Note (Optional)</label>
-          <textarea class="form-control" rows="2" [(ngModel)]="adminRemarks" placeholder="Enter remarks..."></textarea>
+        <div class="alert alert-info py-2 px-3 fs-12 mb-3" *ngIf="actionType === 'approve_deposit'">
+          <i class="fas fa-info-circle me-1"></i>
+          Approving this deposit will automatically credit <strong>₹{{ selectedItem?.amount | number:'1.2-2' }}</strong> to the investor's available balance &amp; total investment.
+        </div>
+
+        <div>
+          <label class="form-label fw-semibold small">Admin Remarks / Note (Optional)</label>
+          <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="adminRemarks" placeholder="Enter remarks (e.g. UTR verified from bank statement)..."></textarea>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeActionModal()">Cancel</button>
-        <button type="button" class="btn" [class.btn-success]="actionType.includes('approve')" [class.btn-danger]="actionType.includes('reject')" (click)="confirmAction()" [disabled]="processingAction">
+      <div class="modal-footer bg-light p-2 px-3">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="closeActionModal()">Cancel</button>
+        <button type="button" class="btn btn-sm px-4 fw-bold" [class.btn-success]="actionType.includes('approve')" [class.btn-danger]="actionType.includes('reject')" (click)="confirmAction()" [disabled]="processingAction">
           <span *ngIf="processingAction" class="spinner-border spinner-border-sm me-1"></span>
-          Confirm
+          {{ actionType.includes('approve') ? 'Approve & Credit Funds' : 'Reject Request' }}
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Proof Viewer Modal -->
+<div class="modal fade show d-block" *ngIf="previewImageUrl" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 1060;">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-dark text-white border-0">
+      <div class="modal-header border-secondary p-2 px-3">
+        <h6 class="modal-title m-0"><i class="fas fa-receipt me-1.5 text-warning"></i>Payment Proof / Receipt Slip</h6>
+        <button type="button" class="btn-close btn-close-white" (click)="closeProofImage()"></button>
+      </div>
+      <div class="modal-body text-center p-3">
+        <img [src]="previewImageUrl" alt="Payment Proof" class="img-fluid rounded border" style="max-height: 70vh; object-fit: contain;" />
+      </div>
+      <div class="modal-footer border-secondary p-2 px-3 d-flex justify-content-between">
+        <a [href]="previewImageUrl" target="_blank" class="btn btn-sm btn-outline-light">
+          <i class="fas fa-external-link-alt me-1"></i>Open Full Size in New Tab
+        </a>
+        <button type="button" class="btn btn-sm btn-secondary" (click)="closeProofImage()">Close</button>
       </div>
     </div>
   </div>

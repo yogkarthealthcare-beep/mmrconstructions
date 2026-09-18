@@ -294,7 +294,7 @@ export class MyTeamComponent implements OnInit {
 
   shareWhatsapp(): void {
     const code = this.currentUser?.invitation_code || this.currentUser?.member_id || '';
-    const text = encodeURIComponent(`Join my MMR Constructions Team Network! Referral Code: ${code}\nRegister link: ${this.referralLink}`);
+    const text = encodeURIComponent(`Join my MMR Construction Team Network! Referral Code: ${code}\nRegister link: ${this.referralLink}`);
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   }
 

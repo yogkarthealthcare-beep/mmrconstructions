@@ -23,7 +23,8 @@ export class AboutUsComponent implements OnInit {
   ];
 
   details = [
-    { icon: 'fas fa-building', label: 'Company Name', value: 'M.M.R. Constructions & Developers Pvt. Ltd.' },
+    { icon: 'fas fa-building', label: 'Company Name', value: 'M.M.R. Construction & Developers Pvt. Ltd.' },
+    { icon: 'fas fa-certificate', label: 'CIN & GSTIN', value: 'CIN: U68200UP2025PTC229203 | GST: 09AATCM6753A1Z5' },
     { icon: 'fas fa-map-marker-alt', label: 'Registered Office', value: 'Tribhuvan Khera, Unnao, Uttar Pradesh - 209862' },
     { icon: 'fas fa-phone-alt', label: 'Contact Number', value: '+91 95111 19879' },
     { icon: 'fas fa-map-marked-alt', label: 'Service Areas', value: 'Unnao, Kanpur, Lucknow and nearby growth corridors' },
@@ -48,14 +49,14 @@ export class AboutUsComponent implements OnInit {
 
   ngOnInit() {
     this.seo.set({
-      title: 'About Us | MMR Constructions & Developers Pvt. Ltd.',
-      description: 'Learn about MMR Constructions & Developers Pvt. Ltd., a property and plot development company serving Unnao, Kanpur and Lucknow with transparent real estate guidance.',
-      keywords: 'About MMR Constructions, MMR Constructions company details, MMR Developers Unnao, property dealer Unnao, plots Kanpur Lucknow',
+      title: 'About Us | MMR Construction & Developers Pvt. Ltd.',
+      description: 'Learn about MMR Construction & Developers Pvt. Ltd., a property and plot development company serving Unnao, Kanpur and Lucknow with transparent real estate guidance.',
+      keywords: 'About MMR Construction, MMR Construction company details, MMR Developers Unnao, property dealer Unnao, plots Kanpur Lucknow',
       canonical: '/about-us',
       schema: {
         '@context': 'https://schema.org',
         '@type': 'RealEstateAgent',
-        name: 'M.M.R. Constructions & Developers Pvt. Ltd.',
+        name: 'M.M.R. Construction & Developers Pvt. Ltd.',
         telephone: '+91-9511119879',
         address: {
           '@type': 'PostalAddress',

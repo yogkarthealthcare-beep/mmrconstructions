@@ -32,9 +32,9 @@ export class BlogListComponent implements OnInit {
 
   ngOnInit(): void {
     this.seo.set({
-      title: 'Blogs | Property Insights by MMR Constructions',
+      title: 'Blogs | Property Insights by MMR Construction',
       description:
-        'Read practical property insights for Unnao, Kanpur, Lucknow, Kannauj and Raebareli from MMR Constructions.',
+        'Read practical property insights for Unnao, Kanpur, Lucknow, Kannauj and Raebareli from MMR Construction.',
       keywords:
         'property blogs, property in Unnao, Kanpur property, Lucknow property, Kannauj property, Raebareli property',
       canonical: 'https://mmrconstructions.in/blog',

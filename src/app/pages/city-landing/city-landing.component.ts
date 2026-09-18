@@ -68,33 +68,33 @@ export class CityLandingComponent implements OnInit {
   private cities: Record<string, CityData> = {
     barabanki: {
       city: 'Barabanki', slug: 'barabanki',
-      description: 'MMR Constructions Private Limited helps buyers compare plots, land and real estate investment opportunities around Barabanki and nearby Uttar Pradesh growth corridors.',
+      description: 'MMR Construction Private Limited helps buyers compare plots, land and real estate investment opportunities around Barabanki and nearby Uttar Pradesh growth corridors.',
       highlights: ['Residential plot guidance', 'Commercial land enquiries', 'Investment consultation', 'Site visit coordination', 'Documentation support', 'Uttar Pradesh market knowledge'],
       faqs: [
         { q: 'Can MMR help with property in Barabanki?', a: 'Yes. The team can guide buyers for plots, land and investment consultation based on current availability and budget.' },
         { q: 'Is Barabanki suitable for plot investment?', a: 'Barabanki can be considered for long-term property investment when title, access road, location and development scope are verified.' }
       ],
-      schema: { '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: 'MMR Constructions - Barabanki', areaServed: 'Barabanki' }
+      schema: { '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: 'MMR Construction - Barabanki', areaServed: 'Barabanki' }
     },
     raebareli: {
       city: 'Raebareli', slug: 'raebareli',
-      description: 'Explore property consultation for plots, houses and land around Raebareli with MMR Constructions Private Limited.',
+      description: 'Explore property consultation for plots, houses and land around Raebareli with MMR Construction Private Limited.',
       highlights: ['Plot buying support', 'House enquiry assistance', 'Land investment guidance', 'Local market comparison', 'Site visit support', 'Transparent documentation guidance'],
       faqs: [
         { q: 'Does MMR provide property dealer services in Raebareli?', a: 'MMR assists buyers with property enquiries, site visits and consultation for Raebareli and nearby areas.' },
         { q: 'How do I compare land for sale in Raebareli?', a: 'Check title, road access, land use, locality demand, payment terms and current market rates before booking.' }
       ],
-      schema: { '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: 'MMR Constructions - Raebareli', areaServed: 'Raebareli' }
+      schema: { '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: 'MMR Construction - Raebareli', areaServed: 'Raebareli' }
     },
     achalganj: {
       city: 'Achalganj', slug: 'achalganj',
-      description: 'Find residential plot, land and local property guidance in Achalganj, Unnao with MMR Constructions Private Limited.',
+      description: 'Find residential plot, land and local property guidance in Achalganj, Unnao with MMR Construction Private Limited.',
       highlights: ['Achalganj local guidance', 'Residential plot enquiries', 'Land development consultation', 'Budget property options', 'Site visit coordination', 'Documentation assistance'],
       faqs: [
         { q: 'Is Achalganj good for residential plots?', a: 'Achalganj can be suitable for buyers seeking budget-focused plots near Unnao, subject to current inventory and document verification.' },
-        { q: 'Can I schedule a site visit in Achalganj?', a: 'Yes. Contact MMR Constructions for current availability and site visit support.' }
+        { q: 'Can I schedule a site visit in Achalganj?', a: 'Yes. Contact MMR Construction for current availability and site visit support.' }
       ],
-      schema: { '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: 'MMR Constructions - Achalganj', areaServed: 'Achalganj' }
+      schema: { '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: 'MMR Construction - Achalganj', areaServed: 'Achalganj' }
     },
     lucknow: {
       city: 'Lucknow', slug: 'lucknow',
@@ -104,7 +104,7 @@ export class CityLandingComponent implements OnInit {
         { q: 'Where are plots available near Lucknow?', a: 'Availability changes by project. Contact the team for current highway-connected locations and site visits.' },
         { q: 'Are payment plans available?', a: 'Payment options depend on the selected plot and current project configuration.' }
       ],
-      schema: { '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: 'MMR Constructions – Lucknow', areaServed: 'Lucknow' }
+      schema: { '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: 'MMR Construction – Lucknow', areaServed: 'Lucknow' }
     },
     kanpur: {
       city: 'Kanpur', slug: 'kanpur',
@@ -114,7 +114,7 @@ export class CityLandingComponent implements OnInit {
         { q: 'Are residential plots available near Kanpur?', a: 'Yes, subject to current project inventory. Contact the team for available plot sizes and locations.' },
         { q: 'Can I schedule a site visit?', a: 'Yes. Contact the property team to arrange a suitable visit.' }
       ],
-      schema: { '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: 'MMR Constructions – Kanpur', areaServed: 'Kanpur' }
+      schema: { '@context': 'https://schema.org', '@type': 'RealEstateAgent', name: 'MMR Construction – Kanpur', areaServed: 'Kanpur' }
     },
     unnao: {
       city: 'Unnao', slug: 'unnao',
@@ -188,26 +188,26 @@ export class CityLandingComponent implements OnInit {
       key: 'property',
       label: 'Property',
       h1: city => `Property Dealer in ${city} for Plots, Land & Houses`,
-      title: city => `Property Dealer in ${city} | MMR Constructions Private Limited`,
-      description: city => `MMR Constructions Private Limited is a real estate company and property dealer in ${city} for residential plots, commercial plots, land, houses and investment consultation.`,
-      keywords: city => `Property Dealer in ${city}, Real Estate Company in ${city}, Real Estate Agent in ${city}, Property for Sale in ${city}, Land for Sale in ${city}, MMR Constructions Private Limited`,
-      contentLead: city => `If you are searching for a reliable Property Dealer in ${city}, MMR Constructions Private Limited supports residential plot buying and selling, commercial plot enquiries, house buying and selling, land development, plotting and real estate brokerage services.`
+      title: city => `Property Dealer in ${city} | MMR Construction Private Limited`,
+      description: city => `MMR Construction Private Limited is a real estate company and property dealer in ${city} for residential plots, commercial plots, land, houses and investment consultation.`,
+      keywords: city => `Property Dealer in ${city}, Real Estate Company in ${city}, Real Estate Agent in ${city}, Property for Sale in ${city}, Land for Sale in ${city}, MMR Construction Private Limited`,
+      contentLead: city => `If you are searching for a reliable Property Dealer in ${city}, MMR Construction Private Limited supports residential plot buying and selling, commercial plot enquiries, house buying and selling, land development, plotting and real estate brokerage services.`
     },
     plot: {
       key: 'plot',
       label: 'Plot for Sale',
       h1: city => `Plot for Sale in ${city} - Residential & Commercial Plots`,
-      title: city => `Plot for Sale in ${city} | Residential Plots | MMR Constructions`,
-      description: city => `Explore plot for sale in ${city} with MMR Constructions Private Limited. Get help for residential plots, commercial plots, land for sale and site visits.`,
+      title: city => `Plot for Sale in ${city} | Residential Plots | MMR Construction`,
+      description: city => `Explore plot for sale in ${city} with MMR Construction Private Limited. Get help for residential plots, commercial plots, land for sale and site visits.`,
       keywords: city => `Plot for Sale in ${city}, Residential Plot in ${city}, Commercial Plot in ${city}, Land for Sale in ${city}, Property for Sale in ${city}`,
-      contentLead: city => `MMR Constructions Private Limited helps buyers compare plot for sale in ${city} by location, road access, plot size, payment plan, registry status and long-term investment suitability.`
+      contentLead: city => `MMR Construction Private Limited helps buyers compare plot for sale in ${city} by location, road access, plot size, payment plan, registry status and long-term investment suitability.`
     },
     house: {
       key: 'house',
       label: 'House for Sale',
       h1: city => `House for Sale in ${city} with Property Consultation`,
-      title: city => `House for Sale in ${city} | Property Dealer | MMR Constructions`,
-      description: city => `Find house for sale in ${city}, property for sale and real estate consultation with MMR Constructions Private Limited.`,
+      title: city => `House for Sale in ${city} | Property Dealer | MMR Construction`,
+      description: city => `Find house for sale in ${city}, property for sale and real estate consultation with MMR Construction Private Limited.`,
       keywords: city => `House for Sale in ${city}, Property for Sale in ${city}, Property Dealer in ${city}, Real Estate Agent in ${city}`,
       contentLead: city => `For house for sale in ${city}, buyers should compare location, construction condition, registry documents, nearby facilities, resale demand and total cost before final decision.`
     },
@@ -215,8 +215,8 @@ export class CityLandingComponent implements OnInit {
       key: 'residential',
       label: 'Residential Plot',
       h1: city => `Residential Plot in ${city} for Home Buyers`,
-      title: city => `Residential Plot in ${city} | MMR Constructions Private Limited`,
-      description: city => `Explore residential plot in ${city} with site visit support, transparent guidance and real estate consultation from MMR Constructions Private Limited.`,
+      title: city => `Residential Plot in ${city} | MMR Construction Private Limited`,
+      description: city => `Explore residential plot in ${city} with site visit support, transparent guidance and real estate consultation from MMR Construction Private Limited.`,
       keywords: city => `Residential Plot in ${city}, Plot for Sale in ${city}, Property Dealer in ${city}, Land for Sale in ${city}`,
       contentLead: city => `Residential plot buyers in ${city} should evaluate family needs, connectivity, future development, documentation and payment comfort before choosing a plot.`
     },
@@ -225,7 +225,7 @@ export class CityLandingComponent implements OnInit {
       label: 'Property Rate',
       h1: city => `Property Rate in ${city} - Local Real Estate Guidance`,
       title: city => `Property Rate in ${city} | Plot & Land Price Guidance`,
-      description: city => `Understand property rate in ${city}, plot price factors, locality comparison and land investment guidance with MMR Constructions Private Limited.`,
+      description: city => `Understand property rate in ${city}, plot price factors, locality comparison and land investment guidance with MMR Construction Private Limited.`,
       keywords: city => `Property Rate in ${city}, Plot Rate in ${city}, Land Rate in ${city}, Property Dealer in ${city}`,
       contentLead: city => `Property rates in ${city} vary by road width, land use, registry status, market access, frontage, plot size and surrounding development. Always verify current quotations before payment.`
     }
@@ -280,8 +280,8 @@ export class CityLandingComponent implements OnInit {
         {
           '@type': ['Organization', 'LocalBusiness', 'RealEstateAgent'],
           '@id': 'https://mmrconstructions.in/#organization',
-          name: 'MMR Constructions Private Limited',
-          alternateName: ['MMR Constructions', 'MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED'],
+          name: 'MMR Construction Private Limited',
+          alternateName: ['MMR Construction', 'MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED'],
           url: 'https://mmrconstructions.in/',
           telephone: '+91-9511119879',
           image: 'https://mmrconstructions.in/assets/mmr-og-image.jpg',

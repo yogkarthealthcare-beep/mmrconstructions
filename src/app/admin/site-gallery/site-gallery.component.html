@@ -1,0 +1,251 @@
+<div class="site-gallery-admin-container">
+  <!-- PAGE HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">
+        <i class="fas fa-images text-emerald me-2"></i>Site Gallery Management
+      </h3>
+      <p class="text-muted fs-14 mb-0">Manage project sites displayed in the public Site Gallery showcase.</p>
+    </div>
+    <button type="button" class="btn btn-green d-inline-flex align-items-center gap-2 px-3 py-2 fw-600 shadow-sm" (click)="openAddModal()">
+      <i class="fas fa-plus-circle"></i> Add New Site
+    </button>
+  </div>
+
+  <!-- ALERT NOTIFICATION -->
+  <div *ngIf="alertMessage" class="alert alert-dismissible fade show d-flex align-items-center gap-2 mb-4" [ngClass]="alertType === 'success' ? 'alert-success border-success' : 'alert-danger border-danger'" role="alert">
+    <i [class]="alertType === 'success' ? 'fas fa-check-circle text-success' : 'fas fa-exclamation-circle text-danger'"></i>
+    <div class="flex-grow-1">{{ alertMessage }}</div>
+    <button type="button" class="btn-close" (click)="alertMessage=''"></button>
+  </div>
+
+  <!-- CATEGORY TABS -->
+  <div class="category-tabs-wrapper mb-4">
+    <div class="d-flex align-items-center gap-2 border-bottom pb-2">
+      <button 
+        *ngFor="let cat of categories" 
+        type="button" 
+        class="category-tab-btn" 
+        [class.active]="activeCategory === cat" 
+        (click)="setCategory(cat)">
+        <i class="fas fa-layer-group me-1.5"></i> {{ cat }} Category
+        <span class="badge bg-emerald-subtle text-emerald ms-2">{{ sites.length }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-emerald" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2 fs-14">Loading site gallery...</p>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="!loading && sites.length === 0" class="empty-state-card text-center py-5 p-4 rounded-16 border bg-white shadow-xs">
+    <div class="empty-icon-wrap mb-3 mx-auto">
+      <i class="fas fa-images fs-1 text-muted opacity-50"></i>
+    </div>
+    <h5 class="fw-700 text-dark mb-1">No Sites Found in {{ activeCategory }} Category</h5>
+    <p class="text-muted fs-14 mb-4">Add your first project site with image, name, and address to display it on the website.</p>
+    <button type="button" class="btn btn-green px-4 py-2 fw-600" (click)="openAddModal()">
+      <i class="fas fa-plus-circle me-1.5"></i> Add First Site
+    </button>
+  </div>
+
+  <!-- SITES GRID -->
+  <div class="row g-4" *ngIf="!loading && sites.length > 0">
+    <div class="col-md-6 col-xl-4" *ngFor="let site of sites">
+      <div class="admin-site-card bg-white rounded-16 border shadow-xs h-100 d-flex flex-column overflow-hidden">
+        <!-- Site Image Header -->
+        <div class="admin-site-img position-relative">
+          <img [src]="resolveImageUrl(site.site_image)" [alt]="site.site_name" (error)="onImageError($event)"/>
+          <div class="position-absolute top-0 start-0 m-3">
+            <span class="badge bg-dark-green text-white px-2.5 py-1 rounded-pill fs-11 fw-600">
+              {{ site.category || 'Plot' }}
+            </span>
+          </div>
+          <div class="position-absolute top-0 end-0 m-3">
+            <span class="badge px-2.5 py-1 rounded-pill fs-11 fw-600" [ngClass]="site.is_active !== false ? 'bg-success text-white' : 'bg-secondary text-white'">
+              {{ site.is_active !== false ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Site Body -->
+        <div class="admin-site-body p-4 d-flex flex-column flex-grow-1">
+          <h5 class="fw-700 text-dark mb-2">{{ site.site_name }}</h5>
+          <div class="site-address-text text-muted fs-13 mb-4">
+            <i class="fas fa-map-marker-alt text-gold me-1.5 flex-shrink-0"></i>
+            <span>{{ site.site_address }}</span>
+          </div>
+
+          <!-- Actions Footer -->
+          <div class="admin-site-actions mt-auto pt-3 border-top d-flex gap-2 justify-content-end">
+            <button type="button" class="btn btn-outline-secondary btn-sm px-3 fw-600 d-inline-flex align-items-center gap-1.5" (click)="openEditModal(site)">
+              <i class="fas fa-edit text-primary"></i> Edit
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm px-3 fw-600 d-inline-flex align-items-center gap-1.5" (click)="confirmDelete(site)">
+              <i class="fas fa-trash-alt"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT SITE MODAL -->
+<div class="modal-backdrop-custom" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+    <div class="modal-content-custom bg-white rounded-16 shadow-lg border">
+      <!-- Modal Header -->
+      <div class="modal-header-custom p-4 border-bottom d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="fw-700 text-dark mb-0">
+            <i [class]="isEditing ? 'fas fa-edit text-primary' : 'fas fa-plus-circle text-emerald'" class="me-2"></i>
+            {{ isEditing ? 'Edit Project Site' : 'Add New Project Site' }}
+          </h5>
+          <small class="text-muted">Category: <span class="fw-600 text-emerald">{{ formData.category }}</span></small>
+        </div>
+        <button type="button" class="btn-close-custom border-0 bg-transparent" (click)="closeModal()" aria-label="Close modal">
+          <i class="fas fa-times fs-5 text-muted"></i>
+        </button>
+      </div>
+
+      <!-- Modal Form Body -->
+      <div class="modal-body-custom p-4">
+        <form (ngSubmit)="saveSite()">
+          <!-- 1. Site Image Upload & Preview -->
+          <div class="mb-4">
+            <label class="form-label fw-600 text-dark fs-13">
+              Site Image <span class="text-danger">*</span>
+            </label>
+            
+            <!-- Image Preview Box -->
+            <div class="image-preview-container mb-3" *ngIf="imagePreviewUrl">
+              <img [src]="imagePreviewUrl" alt="Site Preview" class="img-fluid rounded-12 border object-cover w-100" style="max-height: 200px;"/>
+              <div class="text-muted fs-12 mt-1">Image Preview</div>
+            </div>
+
+            <!-- Upload Input -->
+            <div class="upload-dropzone p-3 border border-2 border-dashed rounded-12 text-center bg-light">
+              <i class="fas fa-cloud-upload-alt fs-2 text-emerald mb-2"></i>
+              <div class="fs-13 fw-600 text-dark mb-1">Click to browse or drop an image file</div>
+              <div class="fs-11 text-muted mb-2">JPG, PNG, WEBP or SVG up to 15MB</div>
+              <input type="file" (change)="onFileSelected($event)" accept="image/*" class="form-control form-control-sm"/>
+            </div>
+            
+            <!-- Or URL fallback input -->
+            <div class="mt-2" *ngIf="!selectedFile">
+              <span class="fs-12 text-muted">Or enter Image URL:</span>
+              <input 
+                type="url" 
+                class="form-control form-control-sm mt-1" 
+                placeholder="https://example.com/site-photo.jpg" 
+                [(ngModel)]="formData.site_image" 
+                name="site_image_url"
+                (input)="imagePreviewUrl = formData.site_image"
+              />
+            </div>
+            <div *ngIf="formErrors['site_image']" class="text-danger fs-12 mt-1">
+              <i class="fas fa-exclamation-triangle me-1"></i>{{ formErrors['site_image'] }}
+            </div>
+          </div>
+
+          <!-- 2. Site Name -->
+          <div class="mb-3">
+            <label for="siteNameInput" class="form-label fw-600 text-dark fs-13">
+              Site Name <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="fas fa-building text-muted"></i></span>
+              <input 
+                type="text" 
+                id="siteNameInput"
+                class="form-control" 
+                placeholder="e.g. AIMA Site, Tribhuwan Khera" 
+                [(ngModel)]="formData.site_name" 
+                name="site_name"
+                required
+                [class.is-invalid]="formErrors['site_name']"
+              />
+            </div>
+            <div *ngIf="formErrors['site_name']" class="text-danger fs-12 mt-1">
+              <i class="fas fa-exclamation-triangle me-1"></i>{{ formErrors['site_name'] }}
+            </div>
+          </div>
+
+          <!-- 3. Site Address -->
+          <div class="mb-3">
+            <label for="siteAddressInput" class="form-label fw-600 text-dark fs-13">
+              Site Address <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="fas fa-map-marker-alt text-muted"></i></span>
+              <textarea 
+                id="siteAddressInput"
+                class="form-control" 
+                rows="3" 
+                placeholder="e.g. Dhodi Ghaat Road, Rooma, Kanpur" 
+                [(ngModel)]="formData.site_address" 
+                name="site_address"
+                required
+                [class.is-invalid]="formErrors['site_address']"
+              ></textarea>
+            </div>
+            <div *ngIf="formErrors['site_address']" class="text-danger fs-12 mt-1">
+              <i class="fas fa-exclamation-triangle me-1"></i>{{ formErrors['site_address'] }}
+            </div>
+          </div>
+
+          <!-- Active & Order Options (Subtle) -->
+          <div class="row g-2 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-600 text-dark fs-12">Display Order</label>
+              <input type="number" class="form-control form-control-sm" [(ngModel)]="formData.display_order" name="display_order" min="0"/>
+            </div>
+            <div class="col-sm-6 d-flex align-items-end">
+              <div class="form-check form-switch mb-1">
+                <input class="form-check-input" type="checkbox" id="isActiveSwitch" [(ngModel)]="formData.is_active" name="is_active">
+                <label class="form-check-label fs-13 fw-600 text-dark" for="isActiveSwitch">Active (Visible)</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Footer Actions -->
+          <div class="modal-footer-custom pt-3 border-top d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light px-4 fw-600" (click)="closeModal()" [disabled]="saving">Cancel</button>
+            <button type="submit" class="btn btn-green px-4 fw-600 d-inline-flex align-items-center gap-2" [disabled]="saving">
+              <i class="fas" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+              {{ saving ? 'Saving...' : (isEditing ? 'Update Site' : 'Save Site') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="modal-backdrop-custom" *ngIf="showDeleteModal" (click)="showDeleteModal=false">
+  <div class="modal-dialog-custom modal-sm-custom" (click)="$event.stopPropagation()">
+    <div class="modal-content-custom bg-white rounded-16 shadow-lg border p-4 text-center">
+      <div class="delete-icon-wrap mx-auto mb-3 bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+        <i class="fas fa-trash-alt fs-4"></i>
+      </div>
+      <h5 class="fw-700 text-dark mb-2">Delete Project Site?</h5>
+      <p class="text-muted fs-13 mb-4">
+        Are you sure you want to delete <strong>{{ siteToDelete?.site_name }}</strong> from the Site Gallery? This action cannot be undone.
+      </p>
+      <div class="d-flex justify-content-center gap-2">
+        <button type="button" class="btn btn-light px-3 fw-600" (click)="showDeleteModal=false" [disabled]="deleting">Cancel</button>
+        <button type="button" class="btn btn-danger px-4 fw-600 d-inline-flex align-items-center gap-2" (click)="deleteSite()" [disabled]="deleting">
+          <i class="fas" [ngClass]="deleting ? 'fa-spinner fa-spin' : 'fa-trash-alt'"></i>
+          {{ deleting ? 'Deleting...' : 'Yes, Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

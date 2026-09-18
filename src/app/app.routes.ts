@@ -7,27 +7,27 @@ export const routes: Routes = [
   { 
     path: '', 
     loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent),
-    title: 'MMR Constructions & Developers — Premium Plots | Kanpur · Unnao · Lucknow'
+    title: 'MMR Construction & Developers — Premium Plots | Kanpur · Unnao · Lucknow'
   },
   { 
     path: 'login', 
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent),
-    title: 'Login — MMR Constructions'
+    title: 'Login — MMR Construction'
   },
   { 
     path: 'register', 
     loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
-    title: 'Register — MMR Constructions'
+    title: 'Register — MMR Construction'
   },
   { 
     path: 'signup', 
     loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
-    title: 'Sign Up — MMR Constructions'
+    title: 'Sign Up — MMR Construction'
   },
   { 
     path: 'registration', 
     loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
-    title: 'Registration — MMR Constructions'
+    title: 'Registration — MMR Construction'
   },
   { 
     path: 'register-old', 
@@ -36,12 +36,12 @@ export const routes: Routes = [
   { 
     path: 'verify-otp', 
     loadComponent: () => import('./pages/verify-otp/verify-otp.component').then(m => m.VerifyOtpComponent),
-    title: 'Verify OTP — MMR Constructions'
+    title: 'Verify OTP — MMR Construction'
   },
   { 
     path: 'forgot-password', 
     loadComponent: () => import('./pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
-    title: 'Forgot Password — MMR Constructions'
+    title: 'Forgot Password — MMR Construction'
   },
   { 
     path: 'auth/impersonate-login', 
@@ -54,27 +54,27 @@ export const routes: Routes = [
   { 
     path: 'admin-login', 
     loadComponent: () => import('./pages/admin-login/admin-login.component').then(m => m.AdminLoginComponent),
-    title: 'Admin Portal Login — MMR Constructions'
+    title: 'Admin Portal Login — MMR Construction'
   },
   { 
     path: 'investor-login', 
-    loadComponent: () => import('./investor/investor-login/investor-login.component').then(m => m.InvestorLoginComponent),
-    title: 'Investor Login — MMR Constructions'
+    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent),
+    title: 'Investor Login — MMR Construction'
   },
   { 
     path: 'investor/login', 
-    loadComponent: () => import('./investor/investor-login/investor-login.component').then(m => m.InvestorLoginComponent),
-    title: 'Investor Login — MMR Constructions'
+    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent),
+    title: 'Investor Login — MMR Construction'
   },
   { 
     path: 'investor/signup', 
     loadComponent: () => import('./investor/investor-signup/investor-signup.component').then(m => m.InvestorSignupComponent),
-    title: 'Investor Registration — MMR Constructions'
+    title: 'Investor Registration — MMR Construction'
   },
   { 
     path: 'investor/register', 
     loadComponent: () => import('./investor/investor-signup/investor-signup.component').then(m => m.InvestorSignupComponent),
-    title: 'Investor Registration — MMR Constructions'
+    title: 'Investor Registration — MMR Construction'
   },
   { 
     path: 'investor/forgot-password', 
@@ -83,12 +83,12 @@ export const routes: Routes = [
   { 
     path: 'investors', 
     loadComponent: () => import('./pages/all-investors/all-investors.component').then(m => m.AllInvestorsComponent),
-    title: 'Investor Opportunities & Guaranteed Returns — MMR Constructions'
+    title: 'Investor Opportunities & Guaranteed Returns — MMR Construction'
   },
   { 
     path: 'blog', 
     loadComponent: () => import('./pages/blog-list/blog-list.component').then(m => m.BlogListComponent),
-    title: 'Real Estate Blogs & Property Insights — MMR Constructions'
+    title: 'Real Estate Blogs & Property Insights — MMR Construction'
   },
   { 
     path: 'blog/:slug', 
@@ -97,29 +97,29 @@ export const routes: Routes = [
   { 
     path: 'company-documents', 
     loadComponent: () => import('./pages/company-documents/company-documents.component').then(m => m.CompanyDocumentsComponent),
-    title: 'Company Legal Documents & Certificates — MMR Constructions'
+    title: 'Company Legal Documents & Certificates — MMR Construction'
   },
   { 
     path: 'privacy-policy', 
     loadComponent: () => import('./pages/legal-page/legal-page.component').then(m => m.LegalPageComponent), 
     data: { type: 'privacy' },
-    title: 'Privacy Policy — MMR Constructions'
+    title: 'Privacy Policy — MMR Construction'
   },
   { 
     path: 'terms-and-conditions', 
     loadComponent: () => import('./pages/legal-page/legal-page.component').then(m => m.LegalPageComponent), 
     data: { type: 'terms' },
-    title: 'Terms and Conditions — MMR Constructions'
+    title: 'Terms and Conditions — MMR Construction'
   },
   { 
     path: 'site-map/:id', 
     loadComponent: () => import('./pages/site-map/site-map.component').then(m => m.SiteMapComponent),
-    title: 'Interactive Site Map Viewer — MMR Constructions'
+    title: 'Interactive Site Map Viewer — MMR Construction'
   },
   { 
     path: 'site-map', 
     loadComponent: () => import('./pages/site-map/site-map.component').then(m => m.SiteMapComponent),
-    title: 'Interactive Site Map Viewer — MMR Constructions'
+    title: 'Interactive Site Map Viewer — MMR Construction'
   },
   { 
     path: 'site-map-new/:id', 
@@ -132,7 +132,7 @@ export const routes: Routes = [
   { 
     path: 'all-sites', 
     loadComponent: () => import('./pages/all-sites/all-sites.component').then(m => m.AllSitesComponent),
-    title: 'All Property Sites & Plots — MMR Constructions'
+    title: 'All Property Sites & Plots — MMR Construction'
   },
 
   // Feature Tree: Admin (Lazy Loaded Layout & Routes)
@@ -183,26 +183,26 @@ export const routes: Routes = [
   { 
     path: '404', 
     loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent),
-    title: 'Page Not Found — MMR Constructions'
+    title: 'Page Not Found — MMR Construction'
   },
   { 
     path: 'not-found', 
     loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent),
-    title: 'Page Not Found — MMR Constructions'
+    title: 'Page Not Found — MMR Construction'
   },
   { 
     path: 'error', 
     loadComponent: () => import('./pages/error/error.component').then(m => m.ErrorComponent),
-    title: 'Error — MMR Constructions'
+    title: 'Error — MMR Construction'
   },
   { 
     path: 'something-went-wrong', 
     loadComponent: () => import('./pages/error/error.component').then(m => m.ErrorComponent),
-    title: 'Error — MMR Constructions'
+    title: 'Error — MMR Construction'
   },
   { 
     path: '**', 
     loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent),
-    title: 'Page Not Found — MMR Constructions'
+    title: 'Page Not Found — MMR Construction'
   }
 ];

@@ -27,13 +27,23 @@ export class InvestorDepositComponent implements OnInit {
   selectedScreenshot?: File;
 
   paymentMethods = [
-    { value: 'online', label: 'Online Payment' },
-    { value: 'manual_upi', label: 'Manual UPI Payment' }
+    { value: 'manual_upi', label: 'Manual UPI (QR Code / UPI ID)' },
+    { value: 'bank_transfer', label: 'Bank Transfer (IMPS / NEFT / RTGS)' },
+    { value: 'offline_cash', label: 'Cash / Cheque / DD (Office Deposit)' },
+    { value: 'online', label: 'Online Payment Gateway' }
   ];
   gateways = ['razorpay', 'cashfree'];
   companyUpiId = 'mmrconstructions@upi';
   companyQrUrl = 'assets/mmr-logo.png';
   copiedUpi = false;
+
+  companyBankDetails = {
+    accountName: 'MMR Construction & Developers',
+    accountNumber: '50200012345678',
+    ifscCode: 'HDFC0001234',
+    bankName: 'HDFC Bank Ltd',
+    branch: 'Civil Lines, Kanpur'
+  };
 
   copyUpiId() {
     navigator.clipboard.writeText(this.companyUpiId).then(() => {
@@ -68,8 +78,8 @@ export class InvestorDepositComponent implements OnInit {
       this.errorMessage = 'Please enter a valid deposit amount.';
       return;
     }
-    if (this.form.payment_method === 'manual_upi' && !this.form.transaction_reference.trim()) {
-      this.errorMessage = 'Transaction Reference / UTR Number is required.';
+    if (this.form.payment_method !== 'online' && !this.form.transaction_reference.trim()) {
+      this.errorMessage = 'Transaction Reference / UTR / Receipt Number is required.';
       return;
     }
     if (this.selectedScreenshot && this.selectedScreenshot.size > 5 * 1024 * 1024) {

@@ -1,5 +1,5 @@
 /**
- * Shared Form Validation & Conversion Helpers for MMR Constructions
+ * Shared Form Validation & Conversion Helpers for MMR Construction
  */
 
 export const MOBILE_PATTERN = /^[0-9]{10}$/;
