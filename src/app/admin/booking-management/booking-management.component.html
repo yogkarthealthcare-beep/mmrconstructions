@@ -1,61 +1,272 @@
-<div *ngIf="toast" class="site-toast" [class.error]="toastType === 'error'"><i class="fas fa-info-circle"></i>{{ toast }}</div>
-
-<div class="booking-head">
-  <div class="pg-header">
-    <h4>Plot Booking Management</h4>
-    <p>Review booking requests, payment proofs, and plot status</p>
-  </div>
-  <button class="btn btn-outline-green btn-sm" (click)="loadBookings()"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+<!-- Toast Alert -->
+<div *ngIf="toast" class="site-toast" [class.error]="toastType === 'error'">
+  <i class="fas" [ngClass]="toastType === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'"></i>
+  <span>{{ toast }}</span>
+  <button type="button" class="toast-close" (click)="toast = ''">&times;</button>
 </div>
 
-<form class="filter-card panel-card" [formGroup]="filterForm">
-  <input class="f-input" formControlName="search" placeholder="Search booking, customer, plot, site">
-  <select class="f-input" formControlName="status">
-    <option value="">All Status</option>
-    <option value="Pending">Pending</option>
-    <option value="PaymentPending">Payment Pending</option>
-    <option value="Confirmed">Confirmed</option>
-    <option value="Cancelled">Cancelled</option>
-  </select>
-</form>
+<!-- Header Executive Banner -->
+<div class="booking-head-banner">
+  <div class="banner-left">
+    <div class="banner-icon-box">
+      <i class="fas fa-file-invoice-dollar"></i>
+    </div>
+    <div>
+      <div class="banner-badge">Real Estate ERP Desk</div>
+      <h3 class="banner-title">Plot Booking & Allotment Management</h3>
+      <p class="banner-subtitle">Review booking applications, verify offline proofs, approve plot allotments & track customer schedules</p>
+    </div>
+  </div>
+  <div class="banner-right">
+    <button class="btn btn-gold-outline btn-sm" (click)="loadBookings()" [disabled]="loading">
+      <i class="fas fa-sync-alt me-1.5" [class.fa-spin]="loading"></i> Refresh
+    </button>
+  </div>
+</div>
 
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+<!-- KPI Metric Summary Cards -->
+<div class="kpi-grid">
+  <!-- KPI 1: Total Bookings -->
+  <div class="kpi-card">
+    <div class="kpi-icon-wrap kpi-blue">
+      <i class="fas fa-file-signature"></i>
+    </div>
+    <div class="kpi-content">
+      <span class="kpi-label">Total Bookings</span>
+      <h4 class="kpi-value">{{ totalBookingsCount }}</h4>
+      <span class="kpi-subtext">Total Value: ₹{{ totalBookingVolume | number:'1.0-0' }}</span>
+    </div>
+  </div>
 
-<div class="booking-grid" *ngIf="!loading">
-  <section class="panel-card">
-    <app-admin-table-container [title]="'Plot Bookings'" [count]="filteredBookings.length">
+  <!-- KPI 2: Confirmed & Allotted -->
+  <div class="kpi-card">
+    <div class="kpi-icon-wrap kpi-emerald">
+      <i class="fas fa-check-double"></i>
+    </div>
+    <div class="kpi-content">
+      <span class="kpi-label">Confirmed & Allotted</span>
+      <h4 class="kpi-value text-emerald">{{ confirmedBookingsCount }}</h4>
+      <span class="kpi-subtext">Advance Collected: ₹{{ totalAdvanceVolume | number:'1.0-0' }}</span>
+    </div>
+  </div>
+
+  <!-- KPI 3: Pending Action -->
+  <div class="kpi-card">
+    <div class="kpi-icon-wrap kpi-amber">
+      <i class="fas fa-clock"></i>
+    </div>
+    <div class="kpi-content">
+      <span class="kpi-label">Pending Verification</span>
+      <h4 class="kpi-value text-amber">{{ pendingBookingsCount }}</h4>
+      <span class="kpi-subtext">Awaiting Admin Action</span>
+    </div>
+  </div>
+
+  <!-- KPI 4: Offline Payments -->
+  <div class="kpi-card">
+    <div class="kpi-icon-wrap kpi-purple">
+      <i class="fas fa-money-check-alt"></i>
+    </div>
+    <div class="kpi-content">
+      <span class="kpi-label">Offline / Cheque Mode</span>
+      <h4 class="kpi-value text-purple">{{ offlineBookingsCount }}</h4>
+      <span class="kpi-subtext">Manual Receipt Verification</span>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Filter Tabs & Search Bar Card -->
+<div class="filter-section-card">
+  <!-- Row 1: Quick Filter Tabs -->
+  <div class="quick-filter-tabs">
+    <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'ALL'" (click)="setQuickFilter('ALL')">
+      <i class="fas fa-layer-group me-1.5"></i> All Bookings
+      <span class="tab-badge">{{ totalBookingsCount }}</span>
+    </button>
+    <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'PENDING'" (click)="setQuickFilter('PENDING')">
+      <i class="fas fa-hourglass-half me-1.5 text-amber"></i> Pending Action
+      <span class="tab-badge badge-amber">{{ pendingBookingsCount }}</span>
+    </button>
+    <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'CONFIRMED'" (click)="setQuickFilter('CONFIRMED')">
+      <i class="fas fa-check-circle me-1.5 text-emerald"></i> Confirmed & Allotted
+      <span class="tab-badge badge-emerald">{{ confirmedBookingsCount }}</span>
+    </button>
+    <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'OFFLINE'" (click)="setQuickFilter('OFFLINE')">
+      <i class="fas fa-money-bill-wave me-1.5 text-purple"></i> Offline Modes
+      <span class="tab-badge badge-purple">{{ offlineBookingsCount }}</span>
+    </button>
+    <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'CANCELLED'" (click)="setQuickFilter('CANCELLED')">
+      <i class="fas fa-times-circle me-1.5 text-danger"></i> Cancelled
+      <span class="tab-badge badge-danger">{{ cancelledBookingsCount }}</span>
+    </button>
+  </div>
+
+  <!-- Row 2: Search & Select Filter Form -->
+  <form class="filter-form-row" [formGroup]="filterForm">
+    <div class="filter-search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="f-input-search" formControlName="search" placeholder="Search by Booking ID, Customer Name, Mobile, Plot #, Site...">
+    </div>
+    
+    <div class="filter-select-box">
+      <select class="f-select-sm" formControlName="status">
+        <option value="">All Statuses</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Pending">Pending</option>
+        <option value="PaymentPending">Payment Pending</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <div class="filter-select-box">
+      <select class="f-select-sm" formControlName="paymentMethod">
+        <option value="">All Payment Types</option>
+        <option value="Online">Online Gateway</option>
+        <option value="Offline">Offline / Cash / Cheque</option>
+        <option value="Wallet">Wallet Balance</option>
+      </select>
+    </div>
+
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="filterForm.reset({ search: '', status: '', paymentMethod: '' })" title="Reset Filters">
+      <i class="fas fa-undo"></i>
+    </button>
+  </form>
+</div>
+
+<!-- Loading Spinner -->
+<div class="panel-loading" *ngIf="loading">
+  <div class="spinner-box">
+    <i class="fas fa-circle-notch fa-spin"></i>
+    <p>Loading booking records...</p>
+  </div>
+</div>
+
+<!-- Main Split Screen Grid -->
+<div class="booking-split-grid" *ngIf="!loading">
+  
+  <!-- LEFT COLUMN: Master Table -->
+  <section class="booking-table-column">
+    <app-admin-table-container [title]="'Booking Applications'" [count]="filteredBookings.length">
       <div class="table-responsive">
-        <table class="table booking-table">
+        <table class="table erp-table align-middle">
           <thead>
             <tr>
               <th class="th-sno">#</th>
-              <th>Booking</th>
+              <th>Booking Ref</th>
               <th>Customer</th>
-              <th>Plot</th>
-              <th>Amount</th>
-              <th>Payment</th>
-              <th>Status</th>
+              <th>Plot &amp; Site</th>
+              <th>Advance Paid</th>
+              <th>Payment Status</th>
+              <th>Booking Status</th>
               <th class="text-end">Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let booking of pagedBookings; let i = index" [class.selected]="selected?.booking_id === booking.booking_id">
+            <tr *ngFor="let b of pagedBookings; let i = index" 
+                [class.row-selected]="selected?.booking_id === b.booking_id"
+                (click)="selectBooking(b)"
+                class="clickable-row">
               <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-              <td><strong>{{ booking.booking_serial || ('#' + booking.booking_id) }}</strong><small>{{ booking.booking_date | date:'mediumDate' }}</small></td>
-              <td>{{ booking.customer_name || booking.full_name || '-' }}<small>{{ booking.mobile_no || '-' }}{{ booking.email ? ' · ' + booking.email : '' }}</small></td>
-              <td>Plot {{ booking.plot_number }}<small>{{ booking.site_name }}</small></td>
-              <td>{{ booking.advance_amount || booking.booking_amount || 0 | currency:'INR':'symbol':'1.0-0' }}</td>
-              <td><span class="status-pill">{{ booking.payment_status || (booking.booking_status === 'Confirmed' ? 'Paid' : 'Pending') }}</span></td>
-              <td><span class="status-pill">{{ booking.booking_status || '-' }}</span></td>
-              <td class="text-end"><button class="btn btn-green btn-sm" (click)="selectBooking(booking)">View</button></td>
+              
+              <!-- Booking Ref -->
+              <td>
+                <div class="booking-ref-box">
+                  <span class="booking-code">{{ b.booking_serial || ('#' + b.booking_id) }}</span>
+                  <span class="booking-date"><i class="far fa-calendar-alt me-1"></i>{{ b.booking_date ? (b.booking_date | date:'dd MMM yyyy') : (b.created_at | date:'dd MMM yyyy') }}</span>
+                  <span class="pay-method-badge" [ngClass]="b.payment_method === 'Offline' ? 'pay-offline' : 'pay-online'">
+                    <i class="fas" [ngClass]="b.payment_method === 'Offline' ? 'fa-building-columns' : 'fa-bolt'"></i>
+                    {{ b.payment_method || b.payment_type || 'Online' }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Customer Info -->
+              <td>
+                <div class="customer-info-cell">
+                  <div class="customer-avatar-sm">
+                    {{ getCustomerInitials(b.customer_name || b.full_name || (b.customer?.full_name) || 'User') }}
+                  </div>
+                  <div>
+                    <strong class="customer-name-text">{{ b.customer_name || b.full_name || (b.customer?.full_name) || 'Unnamed Customer' }}</strong>
+                    <div class="customer-meta-text">
+                      <i class="fas fa-phone-alt me-1"></i>{{ b.mobile_no || (b.customer?.mobile_no) || 'No Phone' }}
+                      <span *ngIf="b.email || b.customer?.email" class="text-muted d-none d-xl-inline"> · {{ b.email || b.customer?.email }}</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Plot & Site -->
+              <td>
+                <div class="plot-site-cell">
+                  <div class="site-tag">
+                    <i class="fas fa-map-marker-alt me-1 text-emerald"></i>
+                    {{ b.site_name || b.site?.site_name || 'Main Township' }}
+                  </div>
+                  <div class="plot-number-badge">
+                    Plot #{{ b.plot_number || b.plot?.plot_number || '-' }}
+                    <span class="plot-area-sub" *ngIf="b.plot_area || b.plot?.plot_area">({{ b.plot_area || b.plot?.plot_area }} sq.ft)</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Advance Amount -->
+              <td>
+                <div class="amount-cell">
+                  <strong class="amount-val">₹{{ (b.advance_amount || b.booking_amount || 0) | number:'1.0-0' }}</strong>
+                  <span class="amount-sub" *ngIf="b.base_price || b.plot?.base_price">Total: ₹{{ (b.base_price || b.plot?.base_price) | number:'1.0-0' }}</span>
+                </div>
+              </td>
+
+              <!-- Payment Status -->
+              <td>
+                <span class="erp-badge" [ngClass]="{
+                  'badge-emerald': (b.payment_status === 'Paid' || b.booking_status === 'Confirmed'),
+                  'badge-amber': (b.payment_status === 'Partial' || b.payment_status === 'Pending'),
+                  'badge-blue': (b.payment_status === 'Submitted'),
+                  'badge-danger': (b.payment_status === 'Failed' || b.payment_status === 'Bounced')
+                }">
+                  <i class="fas fa-circle-dot me-1 fs-10"></i>
+                  {{ b.payment_status || (b.booking_status === 'Confirmed' ? 'Paid' : 'Pending') }}
+                </span>
+              </td>
+
+              <!-- Booking Status -->
+              <td>
+                <span class="erp-badge" [ngClass]="{
+                  'badge-emerald': b.booking_status === 'Confirmed',
+                  'badge-amber': (b.booking_status === 'Pending' || b.booking_status === 'PaymentPending'),
+                  'badge-danger': (b.booking_status === 'Cancelled' || b.booking_status === 'Rejected'),
+                  'badge-secondary': !b.booking_status
+                }">
+                  {{ b.booking_status || 'Submitted' }}
+                </span>
+              </td>
+
+              <!-- Action -->
+              <td class="text-end" (click)="$event.stopPropagation()">
+                <button class="btn btn-view-inspect btn-sm" (click)="selectBooking(b)">
+                  <i class="fas fa-eye me-1"></i> View
+                </button>
+              </td>
             </tr>
+
+            <!-- Empty Row -->
             <tr *ngIf="!pagedBookings.length">
-              <td colspan="8" class="empty-row">No booking requests found.</td>
+              <td colspan="8" class="empty-table-state">
+                <div class="empty-state-wrap">
+                  <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                  <h5>No Booking Applications Found</h5>
+                  <p>Try clearing search filters or changing the active status tab.</p>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </app-admin-table-container>
+
+    <!-- Pagination & Export Footer -->
     <app-admin-pagination
       *ngIf="filteredBookings.length"
       [totalItems]="filteredBookings.length"
@@ -67,56 +278,472 @@
     </app-admin-pagination>
   </section>
 
-  <aside class="panel-card detail-panel" *ngIf="selected; else noSelection">
-    <div class="panel-card-title">
-      <span>{{ selected.booking_serial || ('Booking #' + selected.booking_id) }}</span>
-      <span class="status-pill">{{ selected.booking_status || '-' }}</span>
+  <!-- RIGHT COLUMN: Detail Inspector Drawer -->
+  <aside class="booking-detail-column" *ngIf="selected; else noSelectionTemplate">
+    <div class="detail-drawer-card">
+      
+      <!-- Drawer Header -->
+      <div class="drawer-header">
+        <div class="drawer-header-left">
+          <span class="drawer-booking-id">{{ selected.booking_serial || ('Booking #' + selected.booking_id) }}</span>
+          <span class="erp-badge badge-emerald ms-2" *ngIf="selected.booking_status === 'Confirmed'">Confirmed</span>
+          <span class="erp-badge badge-amber ms-2" *ngIf="selected.booking_status !== 'Confirmed' && selected.booking_status !== 'Cancelled'">{{ selected.booking_status || 'Pending' }}</span>
+          <span class="erp-badge badge-danger ms-2" *ngIf="selected.booking_status === 'Cancelled'">Cancelled</span>
+        </div>
+        <button type="button" class="drawer-close-btn" (click)="closeDetail()" title="Close details">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Drawer Loading -->
+      <div *ngIf="detailLoading" class="panel-loading detail-loading-box">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <span>Loading detailed profile...</span>
+      </div>
+
+      <!-- Drawer Content -->
+      <div class="drawer-body" *ngIf="!detailLoading">
+        
+        <!-- Drawer Nav Tabs -->
+        <div class="drawer-nav-tabs">
+          <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'overview'" (click)="activeDetailTab = 'overview'">
+            <i class="fas fa-id-card-alt me-1"></i> Overview
+          </button>
+          <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'proofs'" (click)="activeDetailTab = 'proofs'">
+            <i class="fas fa-file-invoice me-1"></i> Proofs &amp; Slips
+            <span class="drawer-tab-badge" *ngIf="proofsFor(selected).length">{{ proofsFor(selected).length }}</span>
+          </button>
+          <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'emi'" (click)="activeDetailTab = 'emi'">
+            <i class="fas fa-history me-1"></i> Schedule
+          </button>
+          <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'appointment'" (click)="activeDetailTab = 'appointment'" *ngIf="selected.appointment">
+            <i class="fas fa-calendar-check me-1"></i> Visit
+          </button>
+        </div>
+
+        <!-- TAB 1: OVERVIEW & DOSSIER -->
+        <div class="tab-pane-content" *ngIf="activeDetailTab === 'overview'">
+          
+          <!-- Customer Profile Card -->
+          <div class="detail-card-section customer-dossier-card">
+            <div class="d-flex align-items-center gap-3">
+              <div class="customer-avatar-lg">
+                {{ getCustomerInitials(selected.customer_name || selected.full_name || (selected.customer?.full_name) || 'User') }}
+              </div>
+              <div class="flex-grow-1">
+                <h5 class="customer-dossier-name">{{ selected.customer_name || selected.full_name || (selected.customer?.full_name) || 'Customer Profile' }}</h5>
+                <div class="customer-contact-links">
+                  <a *ngIf="selected.mobile_no || selected.customer?.mobile_no" [href]="'tel:' + (selected.mobile_no || selected.customer?.mobile_no)" class="contact-pill">
+                    <i class="fas fa-phone-alt"></i> {{ selected.mobile_no || selected.customer?.mobile_no }}
+                  </a>
+                  <a *ngIf="selected.mobile_no || selected.customer?.mobile_no" [href]="'https://wa.me/91' + (selected.mobile_no || selected.customer?.mobile_no)" target="_blank" class="contact-pill wa-pill">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                  </a>
+                </div>
+                <div class="customer-email-text" *ngIf="selected.email || selected.customer?.email">
+                  <i class="fas fa-envelope me-1 text-muted"></i> {{ selected.email || selected.customer?.email }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plot & Financials Grid -->
+          <div class="detail-info-grid">
+            <div class="info-cell">
+              <span class="info-cell-label">Site / Project</span>
+              <strong class="info-cell-val text-emerald">{{ selected.site_name || selected.site?.site_name || 'Township Project' }}</strong>
+            </div>
+            <div class="info-cell">
+              <span class="info-cell-label">Plot Number</span>
+              <strong class="info-cell-val">Plot #{{ selected.plot_number || selected.plot?.plot_number || '-' }}</strong>
+            </div>
+            <div class="info-cell">
+              <span class="info-cell-label">Plot Area</span>
+              <strong class="info-cell-val">{{ selected.plot_area || selected.plot?.plot_area || '-' }} sq.ft</strong>
+            </div>
+            <div class="info-cell">
+              <span class="info-cell-label">Plot Category</span>
+              <strong class="info-cell-val">{{ selected.plot?.plot_category || 'Residential' }}</strong>
+            </div>
+            <div class="info-cell">
+              <span class="info-cell-label">Total Base Price</span>
+              <strong class="info-cell-val">₹{{ (selected.base_price || selected.plot?.base_price || 0) | number:'1.0-0' }}</strong>
+            </div>
+            <div class="info-cell highlight-cell">
+              <span class="info-cell-label">Advance Paid</span>
+              <strong class="info-cell-val text-emerald">₹{{ (selected.advance_amount || selected.booking_amount || 0) | number:'1.0-0' }}</strong>
+            </div>
+            <div class="info-cell">
+              <span class="info-cell-label">Remaining Balance</span>
+              <strong class="info-cell-val text-danger">₹{{ (selected.remaining_balance || (selected.base_price - selected.advance_amount) || 0) | number:'1.0-0' }}</strong>
+            </div>
+            <div class="info-cell">
+              <span class="info-cell-label">Payment Method</span>
+              <strong class="info-cell-val">{{ selected.payment_method || selected.payment_type || 'Online' }}</strong>
+            </div>
+            <div class="info-cell">
+              <span class="info-cell-label">Booking Date</span>
+              <strong class="info-cell-val">{{ selected.booking_date ? (selected.booking_date | date:'dd MMM yyyy') : (selected.created_at | date:'dd MMM yyyy') }}</strong>
+            </div>
+            <div class="info-cell">
+              <span class="info-cell-label">Plot Current Status</span>
+              <strong class="info-cell-val badge-status-text">{{ selected.plot?.plot_status || 'Booked' }}</strong>
+            </div>
+          </div>
+
+          <!-- Plot Status Quick Changer -->
+          <div class="detail-card-section plot-status-changer">
+            <h6 class="section-title"><i class="fas fa-vector-square me-1.5 text-emerald"></i> Quick Update Plot Status</h6>
+            <div class="plot-status-btn-group">
+              <button *ngFor="let s of plotStatuses" 
+                      type="button" 
+                      class="btn btn-plot-status" 
+                      [class.btn-plot-active]="(selected.plot?.plot_status || selected.plot_status) === s"
+                      (click)="markPlot(s)" 
+                      [disabled]="actionLoading">
+                {{ s }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: PROOFS & PAYMENTS -->
+        <div class="tab-pane-content" *ngIf="activeDetailTab === 'proofs'">
+          <div class="detail-card-section">
+            <h6 class="section-title"><i class="fas fa-receipt me-1.5 text-gold"></i> Payment Slips &amp; Documents</h6>
+            
+            <div class="proofs-grid" *ngIf="proofsFor(selected).length; else noProofs">
+              <div class="proof-card" *ngFor="let proof of proofsFor(selected); let pIdx = index">
+                <div class="proof-thumbnail" (click)="openImagePreview(proof.file_path || proof.file_url || proof.url)">
+                  <img [src]="proof.file_path || proof.file_url || proof.url" alt="Payment Proof" onerror="this.src='assets/images/document-placeholder.png';">
+                  <div class="proof-overlay"><i class="fas fa-search-plus"></i> Preview</div>
+                </div>
+                <div class="proof-meta">
+                  <span class="proof-type">{{ proof.file_type || ('Proof #' + (pIdx + 1)) }}</span>
+                  <a [href]="proof.file_path || proof.file_url || proof.url" target="_blank" rel="noopener" class="btn-proof-download">
+                    <i class="fas fa-download"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #noProofs>
+              <div class="empty-substate">
+                <i class="fas fa-file-invoice"></i>
+                <p>No offline payment receipts uploaded for this booking.</p>
+              </div>
+            </ng-template>
+          </div>
+
+          <!-- Payment Transactions List (if any) -->
+          <div class="detail-card-section mt-3" *ngIf="selected.payments?.length">
+            <h6 class="section-title"><i class="fas fa-history me-1.5 text-emerald"></i> Payment Records</h6>
+            <div class="table-responsive">
+              <table class="table table-sm erp-mini-table">
+                <thead>
+                  <tr>
+                    <th>Ref / UTR</th>
+                    <th>Mode</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let pay of selected.payments">
+                    <td><code>{{ pay.transaction_ref || pay.payment_id }}</code></td>
+                    <td>{{ pay.payment_mode }}</td>
+                    <td class="fw-bold text-emerald">₹{{ pay.amount | number:'1.0-0' }}</td>
+                    <td>{{ pay.created_at | date:'dd MMM yyyy' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: EMI & AUDIT TRAIL -->
+        <div class="tab-pane-content" *ngIf="activeDetailTab === 'emi'">
+          <!-- EMI Schedule -->
+          <div class="detail-card-section" *ngIf="selected.emi_schedule?.length; else noEmi">
+            <h6 class="section-title"><i class="fas fa-calendar-alt me-1.5 text-emerald"></i> EMI Installments</h6>
+            <div class="table-responsive emi-table-wrap">
+              <table class="table table-sm erp-mini-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Due Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let emi of selected.emi_schedule">
+                    <td>{{ emi.installment_no }}</td>
+                    <td>{{ emi.due_date | date:'dd MMM yyyy' }}</td>
+                    <td class="fw-bold">₹{{ emi.emi_amount | number:'1.0-0' }}</td>
+                    <td>
+                      <span class="erp-badge" [ngClass]="emi.emi_status === 'Paid' ? 'badge-emerald' : 'badge-amber'">
+                        {{ emi.emi_status }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <ng-template #noEmi>
+            <div class="empty-substate">
+              <i class="fas fa-info-circle"></i>
+              <p>No EMI installment schedule linked to this booking.</p>
+            </div>
+          </ng-template>
+
+          <!-- History Timeline -->
+          <div class="detail-card-section mt-3" *ngIf="selected.history?.length">
+            <h6 class="section-title"><i class="fas fa-stream me-1.5 text-gold"></i> Activity Timeline</h6>
+            <div class="timeline-wrap">
+              <div class="timeline-item" *ngFor="let h of selected.history">
+                <div class="timeline-dot"></div>
+                <div class="timeline-body">
+                  <strong class="timeline-event">{{ h.event_type }}</strong>
+                  <p class="timeline-note">{{ h.event_note || 'Booking state updated' }}</p>
+                  <span class="timeline-time">{{ h.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: APPOINTMENT -->
+        <div class="tab-pane-content" *ngIf="activeDetailTab === 'appointment' && selected.appointment">
+          <div class="detail-card-section">
+            <h6 class="section-title"><i class="fas fa-calendar-check me-1.5 text-emerald"></i> Site Visit Schedule</h6>
+            <div class="appointment-card">
+              <div class="appt-date-box">
+                <span class="appt-month">{{ selected.appointment.appointment_date | date:'MMM' }}</span>
+                <span class="appt-day">{{ selected.appointment.appointment_date | date:'dd' }}</span>
+              </div>
+              <div class="appt-info">
+                <h5>Site Visit &amp; Verification</h5>
+                <p><i class="far fa-clock me-1"></i> {{ selected.appointment.start_time }} - {{ selected.appointment.end_time }}</p>
+                <span class="erp-badge badge-emerald">{{ selected.appointment.status || 'Scheduled' }}</span>
+              </div>
+            </div>
+            <button class="btn btn-outline-primary btn-sm w-100 mt-3" (click)="openRescheduleModal()">
+              <i class="fas fa-calendar-plus me-1.5"></i> Reschedule Appointment
+            </button>
+          </div>
+        </div>
+
+        <!-- MASTER ACTION TOOLBAR -->
+        <div class="drawer-action-toolbar">
+          <div class="toolbar-title">Administrative Actions</div>
+          <div class="toolbar-actions-grid">
+            
+            <!-- Approve Button -->
+            <button *ngIf="selected.booking_status !== 'Confirmed'" 
+                    type="button" 
+                    class="btn btn-success-action" 
+                    (click)="approveDirectly()" 
+                    [disabled]="actionLoading">
+              <i class="fas fa-check-circle me-1.5"></i>
+              {{ (selected.payment_method === 'Offline' || selected.payment_type === 'Offline') ? 'Verify & Approve Offline Payment' : 'Approve & Allot Plot' }}
+            </button>
+
+            <!-- Partial Payment Button -->
+            <button *ngIf="selected.booking_status === 'Confirmed'" 
+                    type="button" 
+                    class="btn btn-partial-action" 
+                    (click)="openPartialPaymentModal()" 
+                    [disabled]="actionLoading">
+              <i class="fas fa-hand-holding-usd me-1.5"></i>
+              Record Partial Payment
+            </button>
+
+            <!-- Reschedule Appointment (if exists) -->
+            <button *ngIf="selected.appointment" 
+                    type="button" 
+                    class="btn btn-reschedule-action" 
+                    (click)="openRescheduleModal()" 
+                    [disabled]="actionLoading">
+              <i class="fas fa-calendar-alt me-1.5"></i>
+              Reschedule Visit
+            </button>
+
+            <!-- Reject / Cancel Button -->
+            <button *ngIf="selected.booking_status !== 'Cancelled'" 
+                    type="button" 
+                    class="btn btn-cancel-action" 
+                    (click)="openRejectModal()" 
+                    [disabled]="actionLoading">
+              <i class="fas fa-ban me-1.5"></i>
+              Reject / Cancel Booking
+            </button>
+          </div>
+        </div>
+
+      </div>
     </div>
-    <div *ngIf="detailLoading" class="panel-loading detail-loading"><i class="fas fa-spinner"></i></div>
-    <ng-container *ngIf="!detailLoading">
-      <div class="detail-grid">
-        <div><span>Customer</span><strong>{{ selected.customer_name || selected.full_name || '-' }}</strong></div>
-        <div><span>Mobile</span><strong>{{ selected.mobile_no || '-' }}</strong></div>
-        <div><span>Email</span><strong>{{ selected.email || '-' }}</strong></div>
-        <div><span>Site</span><strong>{{ selected.site_name || '-' }}</strong></div>
-        <div><span>Plot</span><strong>{{ selected.plot_number || '-' }}</strong></div>
-        <div><span>Booking Date</span><strong>{{ selected.booking_date ? (selected.booking_date | date:'mediumDate') : '-' }}</strong></div>
-        <div><span>Price</span><strong>{{ selected.base_price ? (selected.base_price | currency:'INR':'symbol':'1.0-0') : '-' }}</strong></div>
-        <div><span>Booking Amount</span><strong>{{ selected.advance_amount || selected.booking_amount ? ((selected.advance_amount || selected.booking_amount) | currency:'INR':'symbol':'1.0-0') : '-' }}</strong></div>
-        <div><span>Payment Status</span><strong>{{ selected.payment_status || (selected.booking_status === 'Confirmed' ? 'Paid' : 'Pending') }}</strong></div>
-        <div><span>Payment Method</span><strong>{{ selected.payment_method || selected.payment_type || '-' }}</strong></div>
-        <div><span>Booking Status</span><strong>{{ selected.workflow_status || selected.booking_status || '-' }}</strong></div>
-        <div *ngIf="selected.appointment"><span>Appointment</span><strong>{{ selected.appointment.appointment_date | date:'mediumDate' }} {{ selected.appointment.start_time }} · {{ selected.appointment.status }}</strong></div>
-      </div>
-
-      <div class="proofs" *ngIf="proofsFor(selected).length">
-        <h6>Payment Proof</h6>
-        <a *ngFor="let proof of proofsFor(selected)" [href]="proof.file_path || proof.file_url || proof.url" target="_blank" rel="noopener">
-          <i class="fas fa-receipt"></i> View proof
-        </a>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-green btn-sm" (click)="approve()" [disabled]="actionLoading">{{ selected.payment_method === 'Offline' ? 'Approve Offline Payment' : 'Approve Booking' }}</button>
-        <button *ngIf="selected.booking_status === 'Confirmed'" class="btn btn-outline-green btn-sm" (click)="approvePartialPayment()" [disabled]="actionLoading">Approve Partial Payment</button>
-        <button *ngIf="selected.appointment" class="btn btn-outline-green btn-sm" (click)="rescheduleAppointment()" [disabled]="actionLoading">Reschedule Appointment</button>
-        <form [formGroup]="reasonForm" class="reason-form">
-          <textarea class="f-input" rows="2" formControlName="reason" placeholder="Reason for reject/cancel"></textarea>
-          <button type="button" class="btn btn-outline-danger btn-sm" (click)="reject()" [disabled]="actionLoading">Reject / Cancel</button>
-        </form>
-      </div>
-
-      <div class="status-actions">
-        <h6>Mark Plot</h6>
-        <button class="btn btn-outline-green btn-sm" *ngFor="let status of plotStatuses" (click)="markPlot(status)" [disabled]="actionLoading">{{ status }}</button>
-      </div>
-    </ng-container>
   </aside>
 
-  <ng-template #noSelection>
-    <aside class="panel-card detail-panel empty">
-      <i class="fas fa-mouse-pointer"></i>
-      <p>Select a booking request to view details.</p>
+  <!-- Empty State when No Selection -->
+  <ng-template #noSelectionTemplate>
+    <aside class="booking-detail-column empty-placeholder-column">
+      <div class="empty-inspector-card">
+        <div class="inspector-icon-wrap">
+          <i class="fas fa-mouse-pointer"></i>
+        </div>
+        <h4>No Booking Selected</h4>
+        <p>Click on any row in the table to view the full dossier, payment slips, customer details, and approve allotments.</p>
+      </div>
     </aside>
   </ng-template>
+
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 1: OFFLINE PAYMENT APPROVAL MODAL -->
+<!-- ========================================================================= -->
+<div class="erp-modal-backdrop" *ngIf="showOfflineApproveModal">
+  <div class="erp-modal-box">
+    <div class="erp-modal-header">
+      <h5 class="modal-title"><i class="fas fa-check-circle text-emerald me-2"></i> Approve Offline Booking</h5>
+      <button type="button" class="btn-close-modal" (click)="showOfflineApproveModal = false">&times;</button>
+    </div>
+    <form [formGroup]="offlineApproveForm" (ngSubmit)="submitOfflineApprove()">
+      <div class="erp-modal-body">
+        <div class="alert alert-info py-2 fs-12 mb-3">
+          <i class="fas fa-info-circle me-1"></i> You are approving offline booking for <strong>Plot #{{ selected?.plot_number || selected?.plot?.plot_number }}</strong>.
+        </div>
+        <div class="mb-3">
+          <label class="erp-label">Payment / Cheque / UTR Reference Number <span class="text-danger">*</span></label>
+          <input type="text" class="erp-input" formControlName="reference_no" placeholder="e.g. CHQ-998241 or UTR998271625">
+        </div>
+        <div class="mb-3">
+          <label class="erp-label">Admin Approval Remarks</label>
+          <textarea class="erp-input" rows="2" formControlName="remarks" placeholder="Optional notes for audit logs..."></textarea>
+        </div>
+      </div>
+      <div class="erp-modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="showOfflineApproveModal = false">Cancel</button>
+        <button type="submit" class="btn btn-emerald-action btn-sm" [disabled]="offlineApproveForm.invalid || actionLoading">
+          <i class="fas fa-check me-1"></i> Confirm &amp; Allot Plot
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 2: PARTIAL PAYMENT APPROVAL MODAL -->
+<!-- ========================================================================= -->
+<div class="erp-modal-backdrop" *ngIf="showPartialPaymentModal">
+  <div class="erp-modal-box">
+    <div class="erp-modal-header">
+      <h5 class="modal-title"><i class="fas fa-hand-holding-usd text-gold me-2"></i> Record Partial Payment</h5>
+      <button type="button" class="btn-close-modal" (click)="showPartialPaymentModal = false">&times;</button>
+    </div>
+    <form [formGroup]="partialPaymentForm" (ngSubmit)="submitPartialPayment()">
+      <div class="erp-modal-body">
+        <div class="mb-3">
+          <label class="erp-label">Received Partial Amount (₹) <span class="text-danger">*</span></label>
+          <input type="number" class="erp-input" formControlName="received_amount" placeholder="e.g. 50000">
+        </div>
+        <div class="mb-3">
+          <label class="erp-label">Payment Reference / UTR Number <span class="text-danger">*</span></label>
+          <input type="text" class="erp-input" formControlName="payment_reference" placeholder="e.g. UTR-2026-887192">
+        </div>
+      </div>
+      <div class="erp-modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="showPartialPaymentModal = false">Cancel</button>
+        <button type="submit" class="btn btn-emerald-action btn-sm" [disabled]="partialPaymentForm.invalid || actionLoading">
+          <i class="fas fa-check me-1"></i> Process Payment &amp; Commission
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 3: RESCHEDULE APPOINTMENT MODAL -->
+<!-- ========================================================================= -->
+<div class="erp-modal-backdrop" *ngIf="showRescheduleModal">
+  <div class="erp-modal-box">
+    <div class="erp-modal-header">
+      <h5 class="modal-title"><i class="fas fa-calendar-alt text-primary me-2"></i> Reschedule Site Visit</h5>
+      <button type="button" class="btn-close-modal" (click)="showRescheduleModal = false">&times;</button>
+    </div>
+    <form [formGroup]="rescheduleForm" (ngSubmit)="submitReschedule()">
+      <div class="erp-modal-body">
+        <div class="mb-3">
+          <label class="erp-label">New Appointment Date <span class="text-danger">*</span></label>
+          <input type="date" class="erp-input" formControlName="date">
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="erp-label">Start Time <span class="text-danger">*</span></label>
+            <input type="time" class="erp-input" formControlName="start_time">
+          </div>
+          <div class="col-6">
+            <label class="erp-label">End Time <span class="text-danger">*</span></label>
+            <input type="time" class="erp-input" formControlName="end_time">
+          </div>
+        </div>
+      </div>
+      <div class="erp-modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="showRescheduleModal = false">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="rescheduleForm.invalid || actionLoading">
+          <i class="fas fa-save me-1"></i> Save Rescheduled Visit
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 4: REJECT / CANCEL BOOKING MODAL -->
+<!-- ========================================================================= -->
+<div class="erp-modal-backdrop" *ngIf="showRejectModal">
+  <div class="erp-modal-box">
+    <div class="erp-modal-header">
+      <h5 class="modal-title text-danger"><i class="fas fa-ban me-2"></i> Reject / Cancel Booking</h5>
+      <button type="button" class="btn-close-modal" (click)="showRejectModal = false">&times;</button>
+    </div>
+    <form [formGroup]="rejectForm" (ngSubmit)="submitReject()">
+      <div class="erp-modal-body">
+        <div class="alert alert-danger py-2 fs-12 mb-3">
+          <i class="fas fa-exclamation-triangle me-1"></i> This will cancel the booking application and release the plot back to <strong>Vacant</strong> status.
+        </div>
+        <div class="mb-3">
+          <label class="erp-label">Reason for Cancellation / Rejection <span class="text-danger">*</span></label>
+          <textarea class="erp-input" rows="3" formControlName="reason" placeholder="State reason (e.g. Payment cheque bounced, customer requested cancellation, invalid KYC)..."></textarea>
+        </div>
+      </div>
+      <div class="erp-modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="showRejectModal = false">Keep Booking</button>
+        <button type="submit" class="btn btn-danger btn-sm" [disabled]="rejectForm.invalid || actionLoading">
+          <i class="fas fa-trash-alt me-1"></i> Confirm Cancellation
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 5: ZOOMABLE IMAGE PREVIEW MODAL -->
+<!-- ========================================================================= -->
+<div class="erp-modal-backdrop image-preview-backdrop" *ngIf="previewImageUrl" (click)="closeImagePreview()">
+  <div class="image-preview-dialog" (click)="$event.stopPropagation()">
+    <div class="image-preview-header">
+      <span>Payment Slip Preview</span>
+      <div class="d-flex gap-2">
+        <a [href]="previewImageUrl" target="_blank" download class="btn btn-sm btn-light py-1"><i class="fas fa-download"></i> Download</a>
+        <button type="button" class="btn-close btn-close-white" (click)="closeImagePreview()"></button>
+      </div>
+    </div>
+    <div class="image-preview-body">
+      <img [src]="previewImageUrl" alt="Enlarged Receipt" class="img-fluid rounded">
+    </div>
+  </div>
 </div>
