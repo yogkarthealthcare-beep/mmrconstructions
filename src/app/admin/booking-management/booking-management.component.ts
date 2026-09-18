@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ApiService } from '../../services/api.service';
+import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
+import { ApiService, BASE_URL } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
@@ -20,6 +21,11 @@ import { AdminExportService, ExportColumn } from '../../services/admin-export.se
   styleUrls: ['./booking-management.component.css'],
 })
 export class BookingManagementComponent implements OnInit {
+  baseUrl = BASE_URL;
+
+  // Master Section Switcher: 'bookings' (Bookings & Allocations) vs 'inquiries' (Plot Booking Leads)
+  mainSection: 'bookings' | 'inquiries' = 'bookings';
+
   loading = true;
   detailLoading = false;
   actionLoading = false;
@@ -30,27 +36,89 @@ export class BookingManagementComponent implements OnInit {
   toast = '';
   toastType: 'success' | 'error' = 'success';
 
-  // Quick Filter Tab
+  // Quick Filter Tab for Bookings
   activeQuickFilter: 'ALL' | 'PENDING' | 'CONFIRMED' | 'OFFLINE' | 'CANCELLED' = 'ALL';
 
   // Detail Drawer Active Tab
   activeDetailTab: 'overview' | 'proofs' | 'emi' | 'appointment' = 'overview';
 
-  // Filter Form
+  // Booking Filter Form
   filterForm = this.fb.group({
     search: [''],
     status: [''],
     paymentMethod: [''],
   });
 
-  // Modal Dialog States
+  // Dynamic Sites List
+  sites: any[] = [];
+
+  // ==========================================
+  // PLOT ALLOCATION MODAL STATE
+  // ==========================================
+  showAllocateModal = false;
+  allocateSubmitting = false;
+  linkedInquiryId: number | null = null;
+
+  // Customer Search within Allocation Modal
+  customerSearchInput$ = new Subject<string>();
+  customerSearchQuery = '';
+  customerSearchResults: any[] = [];
+  customerSearching = false;
+  selectedCustomer: any = null;
+
+  // Selected Site & Manual Plot Text
+  allocateSiteId: number | null = null;
+  allocatePlotNumber = '';
+  plotValidation = {
+    checked: false,
+    loading: false,
+    exists: false,
+    is_available: false,
+    plot: null as any,
+    message: ''
+  };
+
+  // Allocation Form
+  allocateForm = this.fb.group({
+    total_price: [null as number | null, [Validators.required, Validators.min(1)]],
+    initial_payment_amount: [0 as number | null, [Validators.required, Validators.min(0)]],
+    payment_mode: ['Cash', Validators.required],
+    payment_reference: [''],
+    remarks: [''],
+  });
+
+  // ==========================================
+  // PLOT BOOKING INQUIRIES STATE
+  // ==========================================
+  inquiries: any[] = [];
+  inquiryLoading = false;
+  inquiryPage = 1;
+  inquiryPageSize = 10;
+  inquiryTotal = 0;
+  inquirySearch = '';
+  inquiryStatusFilter = '';
+  inquirySiteFilter = '';
+
+  // ==========================================
+  // RECORD MILESTONE PAYMENT MODAL STATE
+  // ==========================================
+  showRecordPaymentModal = false;
+  recordPaymentSubmitting = false;
+  recordPaymentForm = this.fb.group({
+    received_amount: [null as number | null, [Validators.required, Validators.min(1)]],
+    payment_mode: ['Cash', Validators.required],
+    payment_reference: [''],
+    payment_date: [new Date().toISOString().slice(0, 10), Validators.required],
+    remarks: [''],
+  });
+
+  // Legacy Action Modals
   previewImageUrl: string | null = null;
   showOfflineApproveModal = false;
   showPartialPaymentModal = false;
   showRescheduleModal = false;
   showRejectModal = false;
 
-  // Modal Forms
   offlineApproveForm = this.fb.group({
     reference_no: ['', Validators.required],
     remarks: [''],
@@ -80,8 +148,48 @@ export class BookingManagementComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadSites();
     this.loadBookings();
     this.filterForm.valueChanges.subscribe(() => (this.page = 1));
+
+    // Debounced Customer Search
+    this.customerSearchInput$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((term) => {
+        if (!term || term.trim().length < 2) {
+          this.customerSearching = false;
+          return of({ data: [] });
+        }
+        this.customerSearching = true;
+        return this.api.adminSearchUsers({ search: term.trim(), user_type: 'Customer', limit: 8 });
+      })
+    ).subscribe({
+      next: (res: any) => {
+        this.customerSearching = false;
+        const list = Array.isArray(res) ? res : (res?.data || res?.users || res?.rows || []);
+        this.customerSearchResults = list;
+      },
+      error: () => {
+        this.customerSearching = false;
+        this.customerSearchResults = [];
+      }
+    });
+  }
+
+  // --- Sites Fetch ---
+  loadSites() {
+    this.api.getSites().subscribe({
+      next: (res: any) => {
+        const raw = Array.isArray(res) ? res : (res?.data || []);
+        this.sites = raw.map((s: any) => ({
+          site_id: Number(s.site_id || s.id),
+          site_name: s.site_name || s.name || 'Site',
+          city: s.city || 'UP'
+        }));
+      },
+      error: () => {}
+    });
   }
 
   // --- KPI Computed Metrics ---
@@ -98,15 +206,17 @@ export class BookingManagementComponent implements OnInit {
   }
 
   get confirmedBookingsCount(): number {
-    return this.bookings.filter(b => b.booking_status === 'Confirmed').length;
+    return this.bookings.filter(b => b.booking_status === 'Confirmed' || b.booking_status === 'Fully Paid').length;
   }
 
   get pendingBookingsCount(): number {
     return this.bookings.filter(b =>
       b.booking_status === 'Pending' ||
       b.booking_status === 'PaymentPending' ||
+      b.booking_status === 'Allocated' ||
       b.workflow_status === 'Submitted' ||
-      b.workflow_status === 'Under Review'
+      b.workflow_status === 'Under Review' ||
+      b.workflow_status === 'Plot Allocated by Admin'
     ).length;
   }
 
@@ -121,28 +231,36 @@ export class BookingManagementComponent implements OnInit {
     return this.bookings.filter(b => b.booking_status === 'Cancelled' || b.booking_status === 'Rejected').length;
   }
 
+  setMainSection(sec: 'bookings' | 'inquiries') {
+    this.mainSection = sec;
+    if (sec === 'inquiries' && !this.inquiries.length) {
+      this.loadInquiries();
+    }
+  }
+
   // Quick Filter Switcher
   setQuickFilter(filter: 'ALL' | 'PENDING' | 'CONFIRMED' | 'OFFLINE' | 'CANCELLED') {
     this.activeQuickFilter = filter;
     this.page = 1;
   }
 
-  // Filtered List
+  // Filtered Bookings List
   get filteredBookings(): any[] {
     const q = String(this.filterForm.value.search || '').trim().toLowerCase();
     const status = this.filterForm.value.status || '';
     const paymentMethod = this.filterForm.value.paymentMethod || '';
 
     return this.bookings.filter(b => {
-      // 1. Quick Tab Filtering
       if (this.activeQuickFilter === 'PENDING') {
         const isPending = b.booking_status === 'Pending' ||
                           b.booking_status === 'PaymentPending' ||
+                          b.booking_status === 'Allocated' ||
                           b.workflow_status === 'Submitted' ||
-                          b.workflow_status === 'Under Review';
+                          b.workflow_status === 'Under Review' ||
+                          b.workflow_status === 'Plot Allocated by Admin';
         if (!isPending) return false;
       } else if (this.activeQuickFilter === 'CONFIRMED') {
-        if (b.booking_status !== 'Confirmed') return false;
+        if (b.booking_status !== 'Confirmed' && b.booking_status !== 'Fully Paid') return false;
       } else if (this.activeQuickFilter === 'OFFLINE') {
         const pm = String(b.payment_method || b.payment_type || '').toLowerCase();
         if (pm !== 'offline' && pm !== 'cheque' && pm !== 'cash' && pm !== 'bank transfer') return false;
@@ -150,7 +268,6 @@ export class BookingManagementComponent implements OnInit {
         if (b.booking_status !== 'Cancelled' && b.booking_status !== 'Rejected') return false;
       }
 
-      // 2. Search Text
       const haystack = [
         b.booking_serial,
         `#${b.booking_id}`,
@@ -167,11 +284,7 @@ export class BookingManagementComponent implements OnInit {
       ].map(v => String(v || '').toLowerCase()).join(' ');
 
       if (q && !haystack.includes(q)) return false;
-
-      // 3. Dropdown Status
       if (status && b.booking_status !== status) return false;
-
-      // 4. Dropdown Payment Method
       if (paymentMethod) {
         const pm = String(b.payment_method || b.payment_type || '').toLowerCase();
         if (!pm.includes(paymentMethod.toLowerCase())) return false;
@@ -190,14 +303,8 @@ export class BookingManagementComponent implements OnInit {
     return Math.max(1, Math.ceil(this.filteredBookings.length / this.pageSize));
   }
 
-  onPageChange(p: number) {
-    this.page = p;
-  }
-
-  onPageSizeChange(size: number) {
-    this.pageSize = size;
-    this.page = 1;
-  }
+  onPageChange(p: number) { this.page = p; }
+  onPageSizeChange(size: number) { this.pageSize = size; this.page = 1; }
 
   loadBookings() {
     this.loading = true;
@@ -205,12 +312,9 @@ export class BookingManagementComponent implements OnInit {
       next: (res: any) => {
         this.bookings = res?.data || [];
         this.loading = false;
-        // Keep selected updated if already selected
         if (this.selected?.booking_id) {
           const fresh = this.bookings.find(b => b.booking_id === this.selected.booking_id);
-          if (fresh) {
-            this.selected = { ...this.selected, ...fresh };
-          }
+          if (fresh) this.selected = { ...this.selected, ...fresh };
         }
       },
       error: (e: any) => {
@@ -239,7 +343,272 @@ export class BookingManagementComponent implements OnInit {
     this.selected = null;
   }
 
-  // --- Modal Triggers & Actions ---
+  // ==========================================
+  // PLOT ALLOCATION MODAL LOGIC
+  // ==========================================
+  openAllocateModal(prefillCustomer: any = null, prefillInquiry: any = null) {
+    this.linkedInquiryId = prefillInquiry ? Number(prefillInquiry.inquiry_id) : null;
+    this.selectedCustomer = prefillCustomer || null;
+    this.customerSearchQuery = prefillCustomer ? `${prefillCustomer.full_name} (${prefillCustomer.mobile_no || prefillCustomer.member_id})` : '';
+    this.customerSearchResults = [];
+    this.allocateSiteId = prefillInquiry?.site_id ? Number(prefillInquiry.site_id) : (this.sites.length ? this.sites[0].site_id : null);
+    this.allocatePlotNumber = prefillInquiry?.plot_number ? String(prefillInquiry.plot_number).trim() : '';
+
+    this.plotValidation = {
+      checked: false,
+      loading: false,
+      exists: false,
+      is_available: false,
+      plot: null,
+      message: ''
+    };
+
+    this.allocateForm.reset({
+      total_price: null,
+      initial_payment_amount: 0,
+      payment_mode: 'Cash',
+      payment_reference: '',
+      remarks: prefillInquiry ? `Plot allocated from Inquiry #${prefillInquiry.inquiry_id}` : 'Admin manual plot allocation'
+    });
+
+    this.showAllocateModal = true;
+
+    if (this.allocateSiteId && this.allocatePlotNumber) {
+      this.validatePlot();
+    }
+  }
+
+  onCustomerSearchType(text: string) {
+    this.customerSearchQuery = text;
+    this.customerSearchInput$.next(text);
+  }
+
+  selectCustomer(cust: any) {
+    this.selectedCustomer = cust;
+    this.customerSearchQuery = `${cust.full_name} · ${cust.member_id || cust.mobile_no || 'Cust #' + cust.user_id}`;
+    this.customerSearchResults = [];
+  }
+
+  clearSelectedCustomer() {
+    this.selectedCustomer = null;
+    this.customerSearchQuery = '';
+    this.customerSearchResults = [];
+  }
+
+  onSiteOrPlotChange() {
+    this.plotValidation.checked = false;
+    this.plotValidation.exists = false;
+    this.plotValidation.is_available = false;
+    this.plotValidation.plot = null;
+    this.plotValidation.message = '';
+
+    if (this.allocateSiteId && this.allocatePlotNumber.trim().length >= 1) {
+      this.validatePlot();
+    }
+  }
+
+  validatePlot() {
+    if (!this.allocateSiteId || !this.allocatePlotNumber.trim()) return;
+
+    this.plotValidation.loading = true;
+    this.api.adminValidatePlotAvailability(this.allocateSiteId, this.allocatePlotNumber.trim()).subscribe({
+      next: (res: any) => {
+        this.plotValidation.loading = false;
+        this.plotValidation.checked = true;
+        const data = res?.data || res;
+        this.plotValidation.exists = Boolean(data?.exists);
+        this.plotValidation.is_available = Boolean(data?.is_available);
+        this.plotValidation.plot = data?.plot || null;
+        this.plotValidation.message = data?.message || '';
+
+        if (this.plotValidation.is_available && this.plotValidation.plot) {
+          const basePrice = Number(this.plotValidation.plot.base_price || 0);
+          if (basePrice > 0 && !this.allocateForm.value.total_price) {
+            this.allocateForm.patchValue({ total_price: basePrice });
+          }
+        }
+      },
+      error: (e: any) => {
+        this.plotValidation.loading = false;
+        this.plotValidation.checked = true;
+        this.plotValidation.exists = false;
+        this.plotValidation.is_available = false;
+        this.plotValidation.message = e?.error?.message || 'Error validating plot availability.';
+      }
+    });
+  }
+
+  get remainingBalancePreview(): number {
+    const total = Number(this.allocateForm.value.total_price || 0);
+    const init = Number(this.allocateForm.value.initial_payment_amount || 0);
+    return Math.max(0, total - init);
+  }
+
+  submitPlotAllocation() {
+    if (!this.selectedCustomer) {
+      this.showToast('Please search and select an active customer first.', 'error');
+      return;
+    }
+    if (!this.allocateSiteId) {
+      this.showToast('Please select a project site.', 'error');
+      return;
+    }
+    if (!this.allocatePlotNumber.trim()) {
+      this.showToast('Please enter a plot number.', 'error');
+      return;
+    }
+    if (!this.plotValidation.checked || !this.plotValidation.exists || !this.plotValidation.is_available) {
+      this.showToast(this.plotValidation.message || 'Plot is not available for allocation.', 'error');
+      return;
+    }
+    if (this.allocateForm.invalid) {
+      this.showToast('Please fill all required allocation and pricing fields.', 'error');
+      return;
+    }
+
+    const { total_price, initial_payment_amount, payment_mode, payment_reference, remarks } = this.allocateForm.value;
+
+    this.allocateSubmitting = true;
+    this.api.adminAllocatePlot({
+      user_id: this.selectedCustomer.user_id || this.selectedCustomer.id,
+      site_id: this.allocateSiteId,
+      plot_number: this.allocatePlotNumber.trim(),
+      total_price: Number(total_price),
+      initial_payment_amount: Number(initial_payment_amount || 0),
+      payment_mode: payment_mode || 'Cash',
+      payment_reference: payment_reference ? String(payment_reference).trim() : '',
+      inquiry_id: this.linkedInquiryId,
+      remarks: remarks || ''
+    }).subscribe({
+      next: (res: any) => {
+        this.allocateSubmitting = false;
+        this.showAllocateModal = false;
+        this.showToast(res?.message || 'Plot allocated successfully!');
+        this.loadBookings();
+        if (this.mainSection === 'inquiries') {
+          this.loadInquiries();
+        }
+      },
+      error: (e: any) => {
+        this.allocateSubmitting = false;
+        this.showToast(e?.error?.message || 'Plot allocation failed.', 'error');
+      }
+    });
+  }
+
+  // ==========================================
+  // INQUIRIES DESK LOGIC
+  // ==========================================
+  loadInquiries() {
+    this.inquiryLoading = true;
+    this.api.adminGetPlotInquiries({
+      search: this.inquirySearch.trim(),
+      status: this.inquiryStatusFilter,
+      site_id: this.inquirySiteFilter,
+      page: this.inquiryPage,
+      limit: this.inquiryPageSize
+    }).subscribe({
+      next: (res: any) => {
+        this.inquiryLoading = false;
+        this.inquiries = res?.data?.inquiries || res?.inquiries || [];
+        this.inquiryTotal = Number(res?.data?.total || res?.total || this.inquiries.length);
+      },
+      error: (e: any) => {
+        this.inquiryLoading = false;
+        this.showToast(e?.error?.message || 'Unable to load plot inquiries.', 'error');
+      }
+    });
+  }
+
+  onInquirySearch() {
+    this.inquiryPage = 1;
+    this.loadInquiries();
+  }
+
+  openAllocateFromInquiry(inq: any) {
+    let prefillCust = null;
+    if (inq.matched_user_id) {
+      prefillCust = {
+        user_id: inq.matched_user_id,
+        member_id: inq.matched_member_id,
+        full_name: inq.full_name,
+        mobile_no: inq.mobile_no,
+        email: inq.email,
+        user_type: inq.matched_user_type || 'Customer'
+      };
+    }
+    this.openAllocateModal(prefillCust, inq);
+  }
+
+  updateInquiryStatus(inq: any, status: string) {
+    this.api.adminUpdatePlotInquiryStatus(inq.inquiry_id, { status }).subscribe({
+      next: () => {
+        this.showToast(`Inquiry marked as "${status}".`);
+        inq.status = status;
+      },
+      error: (e: any) => {
+        this.showToast(e?.error?.message || 'Status update failed.', 'error');
+      }
+    });
+  }
+
+  // ==========================================
+  // MILESTONE / PARTIAL PAYMENT ENTRY
+  // ==========================================
+  openRecordPaymentModal() {
+    if (!this.selected) return;
+    this.recordPaymentForm.reset({
+      received_amount: null,
+      payment_mode: 'Cash',
+      payment_reference: '',
+      payment_date: new Date().toISOString().slice(0, 10),
+      remarks: 'Milestone installment payment'
+    });
+    this.showRecordPaymentModal = true;
+  }
+
+  submitRecordPayment() {
+    if (this.recordPaymentForm.invalid || !this.selected) return;
+    const { received_amount, payment_mode, payment_reference, payment_date, remarks } = this.recordPaymentForm.value;
+
+    this.recordPaymentSubmitting = true;
+    this.api.adminRecordPlotPayment(this.selected.booking_id, {
+      received_amount: Number(received_amount),
+      payment_mode: payment_mode || 'Cash',
+      payment_reference: String(payment_reference || '').trim(),
+      payment_date,
+      remarks: remarks || ''
+    }).subscribe({
+      next: (res: any) => {
+        this.recordPaymentSubmitting = false;
+        this.showRecordPaymentModal = false;
+        this.showToast(res?.message || 'Payment recorded under verification.');
+        this.refreshAfterAction();
+      },
+      error: (e: any) => {
+        this.recordPaymentSubmitting = false;
+        this.showToast(e?.error?.message || 'Recording payment failed.', 'error');
+      }
+    });
+  }
+
+  verifyPayment(paymentId: number) {
+    if (!paymentId) return;
+    this.actionLoading = true;
+    this.api.adminVerifyPlotPayment(paymentId).subscribe({
+      next: (res: any) => {
+        this.actionLoading = false;
+        this.showToast(res?.message || 'Payment verified and official receipt generated!');
+        this.refreshAfterAction();
+      },
+      error: (e: any) => {
+        this.actionLoading = false;
+        this.showToast(e?.error?.message || 'Payment verification failed.', 'error');
+      }
+    });
+  }
+
+  // Legacy Action Handlers
   openOfflineApproveModal() {
     this.offlineApproveForm.reset({
       reference_no: '',
@@ -381,7 +750,7 @@ export class BookingManagementComponent implements OnInit {
       next: (res: any) => {
         this.actionLoading = false;
         this.showRejectModal = false;
-        this.showToast(res?.message || 'Booking cancelled and plot released.');
+        this.showToast(res?.message || 'Booking cancelled and plot released back to Vacant.');
         this.refreshAfterAction();
       },
       error: (e: any) => {
@@ -412,7 +781,6 @@ export class BookingManagementComponent implements OnInit {
     });
   }
 
-  // --- Proof & Image Viewer ---
   openImagePreview(url: string) {
     if (!url) return;
     this.previewImageUrl = url;

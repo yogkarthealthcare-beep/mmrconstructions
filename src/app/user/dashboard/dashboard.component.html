@@ -105,6 +105,31 @@
 
   </div>
 
+  <!-- ACTIVE NOTIFICATIONS & PAYMENT REMINDERS BANNER -->
+  <div *ngIf="notifications && notifications.length > 0" class="mb-3">
+    <div *ngFor="let notif of notifications.slice(0, 2)" class="alert d-flex align-items-center justify-content-between flex-wrap gap-2 py-2.5 px-3 shadow-sm rounded-3 mb-2"
+         [ngClass]="{
+           'alert-success border-success bg-success-subtle': notif.title === 'Plot Payment Completed',
+           'alert-warning border-warning bg-warning-subtle': notif.title === 'Plot Payment Reminder',
+           'alert-primary border-primary bg-primary-subtle': notif.title !== 'Plot Payment Completed' && notif.title !== 'Plot Payment Reminder'
+         }">
+      <div class="d-flex align-items-center gap-2.5">
+        <i class="fas" [ngClass]="{
+          'fa-check-circle text-success fs-18': notif.title === 'Plot Payment Completed',
+          'fa-bell text-warning-emphasis fs-18': notif.title === 'Plot Payment Reminder',
+          'fa-info-circle text-primary fs-18': notif.title !== 'Plot Payment Completed' && notif.title !== 'Plot Payment Reminder'
+        }"></i>
+        <div>
+          <strong class="fs-12 text-dark">{{ notif.title }}</strong>
+          <p class="fs-12 text-dark mb-0 opacity-90">{{ notif.message }}</p>
+        </div>
+      </div>
+      <a [routerLink]="basePrefix + '/notifications'" class="btn btn-dark btn-sm fs-11 fw-semibold py-1 px-2.5">
+        View Alerts <i class="fas fa-arrow-right ms-1"></i>
+      </a>
+    </div>
+  </div>
+
   <!-- PORTFOLIO NAVIGATION TABS -->
   <div class="card shadow-sm border-0 mb-3 property-portfolio-card">
     <div class="card-header bg-white border-bottom py-2.5 px-3">

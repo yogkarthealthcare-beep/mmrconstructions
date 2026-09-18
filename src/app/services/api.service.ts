@@ -518,6 +518,14 @@ export class ApiService {
   adminUpdateKyc(id: number, statusOrData: any, note = '') { return this.put(`/api/admin/kyc/${id}`, typeof statusOrData === 'object' ? statusOrData : { status: statusOrData, note }, true); }
   adminGetBuybackTerms() { return this.get('/api/admin/buyback/terms', {}, true); }
   adminUpdateBuybackTerms(data: any) { return this.put('/api/admin/buyback/terms', data, true); }
+  adminValidatePlotAvailability(siteId: number, plotNumber: string) { return this.get('/api/admin/plots/validate-availability', { site_id: siteId, plot_number: plotNumber }, true); }
+  adminAllocatePlot(data: any) { return this.post('/api/admin/bookings/allocate-plot', data, true); }
+  adminRecordPlotPayment(bookingId: number, data: any) { return this.post(`/api/admin/bookings/${bookingId}/record-payment`, data, true); }
+  adminVerifyPlotPayment(paymentId: number) { return this.post(`/api/admin/bookings/payments/${paymentId}/verify`, {}, true); }
+  adminGetPlotInquiries(params: any = {}) { return this.get('/api/admin/plot-inquiries', params, true); }
+  adminUpdatePlotInquiryStatus(id: number, data: any) { return this.put(`/api/admin/plot-inquiries/${id}/status`, data, true); }
+  adminSearchUsers(params: any = {}) { return this.get('/api/admin/users', params, true); }
+
   adminGetWithdrawalRequestDetail(id: any) { return this.get(`/api/admin/withdrawal-requests/${id}`, {}, true); }
   adminFailWithdrawalRequest(id: number, reason: string) { return this.patch(`/api/admin/withdrawal-requests/${id}/failed`, { reason }, true); }
 
