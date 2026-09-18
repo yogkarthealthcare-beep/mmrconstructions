@@ -35,14 +35,16 @@ export class BuybackComponent implements OnInit {
     this.api.getBookings().subscribe({
       next: (res: any) => {
         if (res.success) {
-          this.bookings = (res.data || []).filter((b: any) => b.booking_status === 'Confirmed');
+          this.bookings = (res.data || []).filter((b: any) => b.booking_status === 'Confirmed' || b.booking_status === 'Allocated' || b.booking_status === 'Active');
         }
       }
     });
   }
 
   get basePrefix(): string {
-    return this.router.url.startsWith('/associate') ? '/associate' : '/user';
+    if (this.router.url.startsWith('/associate')) return '/associate';
+    if (this.router.url.startsWith('/customer')) return '/customer';
+    return '/user';
   }
 
   alreadyApplied(bookingId: number) {

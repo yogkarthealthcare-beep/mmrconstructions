@@ -90,8 +90,8 @@ export class MyPlotsComponent implements OnInit {
 
   processBookings(rawBookings: any[]) {
     this.bookings = rawBookings.map((b: any) => {
-      const totalPrice = Number(b.total_amount || 0);
-      const advancePaid = Number(b.advance_amount || 0);
+      const totalPrice = Number(b.total_amount || b.base_price || b.total_price || 0);
+      const advancePaid = Number(b.advance_amount || b.paid_amount || b.total_paid || 0);
       
       const plotEmis = this.emis.filter((e: any) => 
         e.booking_id === b.booking_id || 
@@ -101,7 +101,7 @@ export class MyPlotsComponent implements OnInit {
       const confirmedPaidEmis = plotEmis.filter((e: any) => e.emi_status === 'Paid');
       const emiPaidSum = confirmedPaidEmis.reduce((s: number, e: any) => s + Number(e.paid_amount || e.emi_amount || 0), 0);
       
-      const confirmedPaid = advancePaid + emiPaidSum;
+      const confirmedPaid = Math.max(advancePaid + emiPaidSum, Number(b.total_paid || 0), advancePaid);
       const unpaidAmount = Math.max(0, totalPrice - confirmedPaid);
       const progressPercent = totalPrice > 0 ? Math.min(100, Math.round((confirmedPaid / totalPrice) * 100)) : (confirmedPaid > 0 ? 100 : 0);
       
@@ -111,7 +111,7 @@ export class MyPlotsComponent implements OnInit {
       const isBuybackApproved = this.buybackApplications.some((a: any) => a.booking_id === b.booking_id && (a.buyback_status === 'Approved' || a.buyback_status === 'Completed'));
       const isBuybackPending = this.buybackApplications.some((a: any) => a.booking_id === b.booking_id && a.buyback_status === 'Pending');
 
-      let computedStatus = b.booking_status || 'Confirmed';
+      let computedStatus = b.booking_status || 'Allocated';
       if (isBuybackApproved || b.booking_status === 'Sold') {
         computedStatus = 'Sold';
       } else if (isBuybackPending) {
@@ -121,12 +121,17 @@ export class MyPlotsComponent implements OnInit {
       let financialStatus = 'Partial Paid';
       if (unpaidAmount === 0 && totalPrice > 0) {
         financialStatus = 'Fully Paid';
+      } else if (confirmedPaid === 0) {
+        financialStatus = 'Unpaid';
       } else if (nextEmi && nextEmi.overdue_days > 0) {
         financialStatus = 'Overdue';
       }
 
       return {
         ...b,
+        plot_number: b.plot_number || 'Plot',
+        site_name: b.site_name || 'MMR Green Valley',
+        location: b.location || b.city || 'Lucknow / Unnao Highway, UP',
         totalPrice,
         advancePaid,
         confirmedPaid,
@@ -145,7 +150,9 @@ export class MyPlotsComponent implements OnInit {
   }
 
   get basePrefix(): string {
-    return this.router.url.startsWith('/associate') ? '/associate' : '/user';
+    if (this.router.url.startsWith('/associate')) return '/associate';
+    if (this.router.url.startsWith('/customer')) return '/customer';
+    return '/user';
   }
 
   get totalPurchasedCount(): number {
@@ -174,18 +181,21 @@ export class MyPlotsComponent implements OnInit {
       const matchSearch = !q ||
         (b.plot_number || '').toLowerCase().includes(q) ||
         (b.site_name || '').toLowerCase().includes(q) ||
+        (b.location || '').toLowerCase().includes(q) ||
+        (b.city || '').toLowerCase().includes(q) ||
         (b.booking_serial || '').toLowerCase().includes(q) ||
         (b.booking_id || '').toString().includes(q);
 
       const matchStatus = this.statusFilter === 'all' ||
-        (this.statusFilter === 'active' && (b.computedStatus === 'Confirmed' || b.computedStatus === 'Active')) ||
-        (this.statusFilter === 'pending' && (b.computedStatus === 'PaymentPending' || b.computedStatus === 'InProcess')) ||
+        (this.statusFilter === 'active' && (b.computedStatus === 'Confirmed' || b.computedStatus === 'Active' || b.computedStatus === 'Allocated')) ||
+        (this.statusFilter === 'pending' && (b.computedStatus === 'PaymentPending' || b.computedStatus === 'InProcess' || b.computedStatus === 'Pending')) ||
         (this.statusFilter === 'sold' && b.computedStatus === 'Sold') ||
         (this.statusFilter === 'buyback' && b.isBuybackPending);
 
       const matchPayment = this.paymentFilter === 'all' ||
         (this.paymentFilter === 'fully_paid' && b.financialStatus === 'Fully Paid') ||
         (this.paymentFilter === 'partial' && b.financialStatus === 'Partial Paid') ||
+        (this.paymentFilter === 'unpaid' && b.financialStatus === 'Unpaid') ||
         (this.paymentFilter === 'overdue' && b.financialStatus === 'Overdue');
 
       return matchSearch && matchStatus && matchPayment;

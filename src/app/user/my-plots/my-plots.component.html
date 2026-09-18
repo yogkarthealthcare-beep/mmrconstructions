@@ -162,14 +162,15 @@
           <div class="d-flex flex-column align-items-end gap-1">
             <span class="sbadge" 
                   [class.sbadge-green]="b.computedStatus==='Confirmed'||b.computedStatus==='Active'"
-                  [class.sbadge-yellow]="b.computedStatus==='PaymentPending'||b.computedStatus==='InProcess'"
-                  [class.sbadge-blue]="b.computedStatus==='Buyback In Review'"
-                  [class.sbadge-red]="b.computedStatus==='Sold'">
+                  [class.sbadge-blue]="b.computedStatus==='Allocated'||b.computedStatus==='Buyback In Review'"
+                  [class.sbadge-yellow]="b.computedStatus==='PaymentPending'||b.computedStatus==='InProcess'||b.computedStatus==='Pending'"
+                  [class.sbadge-red]="b.computedStatus==='Sold'||b.computedStatus==='Cancelled'">
               {{ b.computedStatus }}
             </span>
             <span class="sbadge fs-10" 
                   [class.sbadge-green]="b.financialStatus==='Fully Paid'" 
                   [class.sbadge-yellow]="b.financialStatus==='Partial Paid'"
+                  [class.sbadge-gray]="b.financialStatus==='Unpaid'"
                   [class.sbadge-red]="b.financialStatus==='Overdue'">
               {{ b.financialStatus }}
             </span>
@@ -231,6 +232,18 @@
             <div class="progress" style="height: 6px;">
               <div class="progress-bar bg-success" role="progressbar" [style.width.%]="b.progressPercent"></div>
             </div>
+          </div>
+
+          <!-- Registry Details Banner (If Available) -->
+          <div *ngIf="b.registry_status || b.registry_date" class="p-2 px-3 rounded-3 mb-3 bg-light border border-info text-info fs-12 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-file-contract text-primary"></i>
+              <span class="text-dark">Registry Status: <strong>{{ b.registry_status || 'In Process' }}</strong></span>
+              <span *ngIf="b.registry_date" class="text-muted ms-1">(Date: {{ b.registry_date | date:'dd MMM yyyy' }})</span>
+            </div>
+            <a *ngIf="b.registry_document_url" [href]="b.registry_document_url" target="_blank" class="btn btn-xs btn-outline-primary">
+              <i class="fas fa-download me-1"></i> Registry Doc
+            </a>
           </div>
 
           <!-- Next EMI Alert Banner (If Applicable) -->

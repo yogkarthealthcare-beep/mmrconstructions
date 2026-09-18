@@ -189,13 +189,13 @@ export class UserDashboardComponent implements OnInit {
         String(e.plot_number || '').trim() === plotNo
       );
 
-      const totalPrice = Number(b.total_amount || b.base_price || 0);
-      const advancePaid = (b.booking_status === 'Confirmed' || b.booking_status === 'Active') ? Number(b.advance_amount || 0) : 0;
+      const totalPrice = Number(b.total_amount || b.base_price || b.total_price || 0);
+      const advancePaid = (b.booking_status === 'Confirmed' || b.booking_status === 'Active' || b.booking_status === 'Allocated') ? Number(b.advance_amount || b.paid_amount || b.total_paid || 0) : Number(b.advance_amount || 0);
       const emisPaid = plotEmis
         .filter(e => e.emi_status === 'Paid')
         .reduce((sum, e) => sum + Number(e.paid_amount || e.emi_amount || 0), 0);
 
-      const confirmedPaid = advancePaid + emisPaid;
+      const confirmedPaid = Math.max(advancePaid + emisPaid, Number(b.total_paid || 0), advancePaid);
       const unpaidBalance = Math.max(0, totalPrice - confirmedPaid);
       const paymentProgress = totalPrice > 0 ? Math.min(100, Math.round((confirmedPaid / totalPrice) * 100)) : 0;
 
