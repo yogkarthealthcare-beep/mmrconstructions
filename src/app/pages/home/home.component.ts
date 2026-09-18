@@ -32,7 +32,7 @@ export class HomeComponent implements OnInit {
     mobile: '',
     email: '',
     site_id: null as number | null,
-    interest: 'Plot Booking — 100 Gaj',
+    interest: 'Plot Booking',
     message: ''
   };
   submitting = false;
@@ -184,7 +184,7 @@ export class HomeComponent implements OnInit {
       next: () => {
         this.submitting = false;
         this.submitted = true;
-        this.form = { name: '', mobile: '', email: '', site_id: null, interest: 'Plot Booking — 100 Gaj', message: '' };
+        this.form = { name: '', mobile: '', email: '', site_id: null, interest: 'Plot Booking', message: '' };
         setTimeout(() => this.showEnquiryModal = false, 3000); // Close after 3s on success
       },
       error: (err: any) => {

@@ -39,7 +39,7 @@ export class SiteMapNewComponent implements OnInit {
     name: '',
     mobile: '',
     email: '',
-    interest: 'Plot Booking — 100 Gaj',
+    interest: 'Plot Booking',
     message: ''
   };
   inquirySubmitting = false;
@@ -183,7 +183,7 @@ export class SiteMapNewComponent implements OnInit {
       next: () => {
         this.inquirySubmitting = false;
         this.inquirySubmitted = true;
-        this.inquiryForm = { name: '', mobile: '', email: '', interest: 'Plot Booking — 100 Gaj', message: '' };
+        this.inquiryForm = { name: '', mobile: '', email: '', interest: 'Plot Booking', message: '' };
       },
       error: (err: any) => {
         this.inquirySubmitting = false;

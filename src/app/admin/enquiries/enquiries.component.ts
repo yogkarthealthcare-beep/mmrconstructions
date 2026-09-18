@@ -102,7 +102,7 @@ export class EnquiriesComponent implements OnInit {
     name: '',
     mobile: '',
     email: '',
-    interest: 'Plot Booking — 100 Gaj',
+    interest: 'Plot Booking',
     message: '',
     priority: 'high'
   };
@@ -204,7 +204,7 @@ export class EnquiriesComponent implements OnInit {
       name: '',
       mobile: '',
       email: '',
-      interest: 'Plot Booking — 100 Gaj',
+      interest: 'Plot Booking',
       message: '',
       priority: 'high'
     };
