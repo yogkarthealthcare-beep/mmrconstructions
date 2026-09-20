@@ -31,6 +31,7 @@ export class BookingManagementComponent implements OnInit {
   actionLoading = false;
   bookings: any[] = [];
   selected: any = null;
+  showDetailModal = false;
   page = 1;
   pageSize = 10;
   toast = '';
@@ -318,6 +319,7 @@ export class BookingManagementComponent implements OnInit {
 
   selectBooking(booking: any) {
     this.selected = booking;
+    this.showDetailModal = true;
     this.detailLoading = true;
     this.activeDetailTab = 'overview';
     this.api.adminGetBooking(booking.booking_id).subscribe({
@@ -332,6 +334,7 @@ export class BookingManagementComponent implements OnInit {
   }
 
   closeDetail() {
+    this.showDetailModal = false;
     this.selected = null;
   }
 
@@ -814,7 +817,14 @@ export class BookingManagementComponent implements OnInit {
   private refreshAfterAction() {
     const id = this.selected?.booking_id;
     this.loadBookings();
-    if (id) this.selectBooking({ booking_id: id });
+    if (id && this.showDetailModal) {
+      this.api.adminGetBooking(id).subscribe({
+        next: (res: any) => {
+          this.selected = res?.data || this.selected;
+        },
+        error: () => {}
+      });
+    }
   }
 
   private showToast(message: string, type: 'success' | 'error' = 'success') {

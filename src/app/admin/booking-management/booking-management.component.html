@@ -155,176 +155,190 @@
     </div>
   </div>
 
-  <!-- Split Screen Grid -->
-  <div class="booking-split-grid" *ngIf="!loading">
-    
-    <!-- LEFT COLUMN: Master Table -->
-    <section class="booking-table-column">
-      <app-admin-table-container [title]="'Allocated Plots & Bookings'" [count]="filteredBookings.length">
-        <div class="table-responsive">
-          <table class="table erp-table align-middle">
-            <thead>
-              <tr>
-                <th class="th-sno">#</th>
-                <th>Booking Ref</th>
-                <th>Customer</th>
-                <th>Plot &amp; Site</th>
-                <th>Advance Paid</th>
-                <th>Remaining</th>
-                <th>Status</th>
-                <th class="text-end">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let b of pagedBookings; let i = index" 
-                  [class.row-selected]="selected?.booking_id === b.booking_id"
-                  (click)="selectBooking(b)"
-                  class="clickable-row">
-                <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-                
-                <!-- Booking Ref -->
-                <td>
-                  <div class="booking-ref-box">
-                    <span class="booking-code">{{ b.booking_serial || ('#' + b.booking_id) }}</span>
-                    <span class="booking-date"><i class="far fa-calendar-alt me-1"></i>{{ b.booking_date ? (b.booking_date | date:'dd MMM yyyy') : (b.created_at | date:'dd MMM yyyy') }}</span>
-                    <span class="pay-method-badge" [ngClass]="b.payment_method === 'Offline' ? 'pay-offline' : 'pay-online'">
-                      <i class="fas" [ngClass]="b.payment_method === 'Offline' ? 'fa-building-columns' : 'fa-bolt'"></i>
-                      {{ b.payment_method || b.payment_type || 'Online' }}
-                    </span>
-                  </div>
-                </td>
-
-                <!-- Customer Info -->
-                <td>
-                  <div class="customer-info-cell">
-                    <div class="customer-avatar-sm">
-                      {{ getCustomerInitials(b.customer_name || b.full_name || (b.customer?.full_name) || 'User') }}
-                    </div>
-                    <div>
-                      <strong class="customer-name-text">{{ b.customer_name || b.full_name || (b.customer?.full_name) || 'Unnamed Customer' }}</strong>
-                      <div class="customer-meta-text">
-                        <i class="fas fa-phone-alt me-1"></i>{{ b.mobile_no || (b.customer?.mobile_no) || 'No Phone' }}
-                        <span *ngIf="b.member_id || b.customer?.member_id" class="text-muted d-none d-xl-inline"> · {{ b.member_id || b.customer?.member_id }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-
-                <!-- Plot & Site -->
-                <td>
-                  <div class="plot-site-cell">
-                    <div class="site-tag">
-                      <i class="fas fa-map-marker-alt me-1 text-emerald"></i>
-                      {{ b.site_name || b.site?.site_name || 'Main Township' }}
-                    </div>
-                    <div class="plot-number-badge">
-                      Plot #{{ b.plot_number || b.plot?.plot_number || '-' }}
-                      <span class="plot-area-sub" *ngIf="b.plot_area || b.plot?.plot_area">({{ b.plot_area || b.plot?.plot_area }} sq.ft)</span>
-                    </div>
-                  </div>
-                </td>
-
-                <!-- Advance Paid -->
-                <td>
-                  <div class="amount-cell">
-                    <strong class="amount-val">₹{{ (b.advance_amount || b.booking_amount || 0) | number:'1.0-0' }}</strong>
-                    <span class="amount-sub" *ngIf="b.base_price || b.plot?.base_price">Price: ₹{{ (b.base_price || b.plot?.base_price) | number:'1.0-0' }}</span>
-                  </div>
-                </td>
-
-                <!-- Remaining Balance -->
-                <td>
-                  <div class="amount-cell">
-                    <strong class="amount-val text-danger" *ngIf="(b.remaining_balance || 0) > 0">₹{{ (b.remaining_balance || 0) | number:'1.0-0' }}</strong>
-                    <span class="badge-paid-full" *ngIf="(b.remaining_balance || 0) <= 0">₹0 (Paid)</span>
-                  </div>
-                </td>
-
-                <!-- Status -->
-                <td>
-                  <span class="erp-badge" [ngClass]="{
-                    'badge-emerald': (b.booking_status === 'Confirmed' || b.booking_status === 'Fully Paid'),
-                    'badge-amber': (b.booking_status === 'Pending' || b.booking_status === 'PaymentPending' || b.booking_status === 'Allocated'),
-                    'badge-danger': (b.booking_status === 'Cancelled' || b.booking_status === 'Rejected'),
-                    'badge-secondary': !b.booking_status
-                  }">
-                    {{ b.booking_status || 'Allocated' }}
+  <!-- Master Allocations Table (Full Width) -->
+  <div class="booking-table-full-card card shadow-sm border-0 rounded-3" *ngIf="!loading">
+    <app-admin-table-container [title]="'Allocated Plots & Bookings'" [count]="filteredBookings.length">
+      <div class="table-responsive">
+        <table class="table erp-table align-middle">
+          <thead>
+            <tr>
+              <th class="th-sno">#</th>
+              <th>Booking Ref</th>
+              <th>Customer</th>
+              <th>Plot &amp; Site</th>
+              <th>Advance Paid</th>
+              <th>Remaining</th>
+              <th>Status</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of pagedBookings; let i = index" 
+                [class.row-selected]="showDetailModal && selected?.booking_id === b.booking_id"
+                (click)="selectBooking(b)"
+                class="clickable-row">
+              <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
+              
+              <!-- Booking Ref -->
+              <td>
+                <div class="booking-ref-box">
+                  <span class="booking-code">{{ b.booking_serial || ('#' + b.booking_id) }}</span>
+                  <span class="booking-date"><i class="far fa-calendar-alt me-1"></i>{{ b.booking_date ? (b.booking_date | date:'dd MMM yyyy') : (b.created_at | date:'dd MMM yyyy') }}</span>
+                  <span class="pay-method-badge" [ngClass]="b.payment_method === 'Offline' ? 'pay-offline' : 'pay-online'">
+                    <i class="fas" [ngClass]="b.payment_method === 'Offline' ? 'fa-building-columns' : 'fa-bolt'"></i>
+                    {{ b.payment_method || b.payment_type || 'Online' }}
                   </span>
-                </td>
+                </div>
+              </td>
 
-                <!-- Action -->
-                <td class="text-end" (click)="$event.stopPropagation()">
-                  <button class="btn btn-view-inspect btn-sm" (click)="selectBooking(b)">
-                    <i class="fas fa-eye me-1"></i> View
-                  </button>
-                </td>
-              </tr>
-
-              <tr *ngIf="!pagedBookings.length">
-                <td colspan="8" class="empty-table-state">
-                  <div class="empty-state-wrap">
-                    <div class="empty-icon"><i class="fas fa-inbox"></i></div>
-                    <h5>No Booking Applications Found</h5>
-                    <p>Try clearing search filters or allocating a new plot.</p>
+              <!-- Customer Info -->
+              <td>
+                <div class="customer-info-cell">
+                  <div class="customer-avatar-sm">
+                    {{ getCustomerInitials(b.customer_name || b.full_name || (b.customer?.full_name) || 'User') }}
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </app-admin-table-container>
+                  <div>
+                    <strong class="customer-name-text">{{ b.customer_name || b.full_name || (b.customer?.full_name) || 'Unnamed Customer' }}</strong>
+                    <div class="customer-meta-text">
+                      <i class="fas fa-phone-alt me-1"></i>{{ b.mobile_no || (b.customer?.mobile_no) || 'No Phone' }}
+                      <span *ngIf="b.member_id || b.customer?.member_id" class="text-muted d-none d-xl-inline"> · {{ b.member_id || b.customer?.member_id }}</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
 
-      <!-- Pagination & Export Footer -->
-      <app-admin-pagination
-        *ngIf="filteredBookings.length"
-        [totalItems]="filteredBookings.length"
-        [page]="page"
-        [pageSize]="pageSize"
-        (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)"
-        (export)="exportData($event.mode, $event.format)">
-      </app-admin-pagination>
-    </section>
+              <!-- Plot & Site -->
+              <td>
+                <div class="plot-site-cell">
+                  <div class="site-tag">
+                    <i class="fas fa-map-marker-alt me-1 text-emerald"></i>
+                    {{ b.site_name || b.site?.site_name || 'Main Township' }}
+                  </div>
+                  <div class="plot-number-badge">
+                    Plot #{{ b.plot_number || b.plot?.plot_number || '-' }}
+                    <span class="plot-area-sub" *ngIf="b.plot_area || b.plot?.plot_area">({{ b.plot_area || b.plot?.plot_area }} sq.ft)</span>
+                  </div>
+                </div>
+              </td>
 
-    <!-- RIGHT COLUMN: Detail Inspector Drawer -->
-    <aside class="booking-detail-column" *ngIf="selected; else noSelectionTemplate">
-      <div class="detail-drawer-card">
-        
-        <div class="drawer-header">
-          <div class="drawer-header-left">
-            <span class="drawer-booking-id">{{ selected.booking_serial || ('Booking #' + selected.booking_id) }}</span>
-            <span class="erp-badge badge-emerald ms-2" *ngIf="selected.booking_status === 'Confirmed' || selected.booking_status === 'Fully Paid'">Confirmed</span>
-            <span class="erp-badge badge-amber ms-2" *ngIf="selected.booking_status !== 'Confirmed' && selected.booking_status !== 'Cancelled' && selected.booking_status !== 'Fully Paid'">{{ selected.booking_status || 'Allocated' }}</span>
-            <span class="erp-badge badge-danger ms-2" *ngIf="selected.booking_status === 'Cancelled'">Cancelled</span>
+              <!-- Advance Paid -->
+              <td>
+                <div class="amount-cell">
+                  <strong class="amount-val">₹{{ (b.advance_amount || b.booking_amount || 0) | number:'1.0-0' }}</strong>
+                  <span class="amount-sub" *ngIf="b.base_price || b.plot?.base_price">Price: ₹{{ (b.base_price || b.plot?.base_price) | number:'1.0-0' }}</span>
+                </div>
+              </td>
+
+              <!-- Remaining Balance -->
+              <td>
+                <div class="amount-cell">
+                  <strong class="amount-val text-danger" *ngIf="(b.remaining_balance || 0) > 0">₹{{ (b.remaining_balance || 0) | number:'1.0-0' }}</strong>
+                  <span class="badge-paid-full" *ngIf="(b.remaining_balance || 0) <= 0">₹0 (Paid)</span>
+                </div>
+              </td>
+
+              <!-- Status -->
+              <td>
+                <span class="erp-badge" [ngClass]="{
+                  'badge-emerald': (b.booking_status === 'Confirmed' || b.booking_status === 'Fully Paid'),
+                  'badge-amber': (b.booking_status === 'Pending' || b.booking_status === 'PaymentPending' || b.booking_status === 'Allocated'),
+                  'badge-danger': (b.booking_status === 'Cancelled' || b.booking_status === 'Rejected'),
+                  'badge-secondary': !b.booking_status
+                }">
+                  {{ b.booking_status || 'Allocated' }}
+                </span>
+              </td>
+
+              <!-- Action -->
+              <td class="text-end" (click)="$event.stopPropagation()">
+                <button class="btn btn-view-inspect btn-sm" (click)="selectBooking(b)">
+                  <i class="fas fa-eye me-1"></i> View
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="!pagedBookings.length">
+              <td colspan="8" class="empty-table-state">
+                <div class="empty-state-wrap">
+                  <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                  <h5>No Booking Applications Found</h5>
+                  <p>Try clearing search filters or allocating a new plot.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </app-admin-table-container>
+
+    <!-- Pagination & Export Footer -->
+    <app-admin-pagination
+      *ngIf="filteredBookings.length"
+      [totalItems]="filteredBookings.length"
+      [page]="page"
+      [pageSize]="pageSize"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (export)="exportData($event.mode, $event.format)">
+    </app-admin-pagination>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: BOOKING DOSSIER & DETAIL POPUP (OPENED ON VIEW CLICK) -->
+  <!-- ========================================================================= -->
+  <div class="erp-modal-backdrop booking-dossier-backdrop" *ngIf="showDetailModal && selected" (click)="closeDetail()">
+    <div class="erp-modal-box booking-dossier-modal" (click)="$event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="erp-modal-header bg-dark-slate py-2.5 px-3.5">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="modal-icon-badge"><i class="fas fa-file-invoice-dollar text-gold"></i></div>
+          <div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <h6 class="modal-title text-white mb-0 fw-bold fs-14">
+                {{ selected.booking_serial || ('Booking #' + selected.booking_id) }}
+              </h6>
+              <span class="erp-badge badge-emerald" *ngIf="selected.booking_status === 'Confirmed' || selected.booking_status === 'Fully Paid'">Confirmed</span>
+              <span class="erp-badge badge-amber" *ngIf="selected.booking_status !== 'Confirmed' && selected.booking_status !== 'Cancelled' && selected.booking_status !== 'Fully Paid'">{{ selected.booking_status || 'Allocated' }}</span>
+              <span class="erp-badge badge-danger" *ngIf="selected.booking_status === 'Cancelled'">Cancelled</span>
+            </div>
+            <div class="text-white-50 fs-11 mt-0.5">
+              <span><i class="far fa-calendar-alt me-1"></i>{{ selected.booking_date ? (selected.booking_date | date:'dd MMM yyyy') : (selected.created_at | date:'dd MMM yyyy') }}</span>
+              <span class="mx-1.5">·</span>
+              <span><i class="fas fa-wallet me-1"></i>Mode: {{ selected.payment_method || selected.payment_type || 'Online' }}</span>
+            </div>
           </div>
-          <button type="button" class="drawer-close-btn" (click)="closeDetail()" title="Close details">
-            <i class="fas fa-times"></i>
+        </div>
+        <button type="button" class="btn-close-modal text-white fs-20" (click)="closeDetail()" title="Close details">&times;</button>
+      </div>
+
+      <!-- Loading Spinner inside Modal -->
+      <div *ngIf="detailLoading" class="panel-loading detail-loading-box py-5">
+        <i class="fas fa-circle-notch fa-spin fs-24 text-gold"></i>
+        <p class="mt-2 text-muted fs-12 mb-0">Loading booking dossier...</p>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="erp-modal-body p-0" *ngIf="!detailLoading">
+        
+        <!-- Navigation Tabs -->
+        <div class="drawer-nav-tabs px-3 pt-2">
+          <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'overview'" (click)="activeDetailTab = 'overview'">
+            <i class="fas fa-id-card-alt me-1"></i> Overview
+          </button>
+          <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'proofs'" (click)="activeDetailTab = 'proofs'">
+            <i class="fas fa-receipt me-1"></i> Ledger &amp; Payments
+            <span class="drawer-tab-badge" *ngIf="selected.payments?.length">{{ selected.payments.length }}</span>
+          </button>
+          <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'emi'" (click)="activeDetailTab = 'emi'">
+            <i class="fas fa-history me-1"></i> Audit Trail
+          </button>
+          <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'appointment'" (click)="activeDetailTab = 'appointment'" *ngIf="selected.appointment">
+            <i class="fas fa-calendar-check me-1"></i> Visit
           </button>
         </div>
 
-        <div *ngIf="detailLoading" class="panel-loading detail-loading-box">
-          <i class="fas fa-circle-notch fa-spin"></i>
-          <span>Loading dossier...</span>
-        </div>
-
-        <div class="drawer-body" *ngIf="!detailLoading">
-          
-          <div class="drawer-nav-tabs">
-            <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'overview'" (click)="activeDetailTab = 'overview'">
-              <i class="fas fa-id-card-alt me-1"></i> Overview
-            </button>
-            <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'proofs'" (click)="activeDetailTab = 'proofs'">
-              <i class="fas fa-receipt me-1"></i> Ledger &amp; Payments
-              <span class="drawer-tab-badge" *ngIf="selected.payments?.length">{{ selected.payments.length }}</span>
-            </button>
-            <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'emi'" (click)="activeDetailTab = 'emi'">
-              <i class="fas fa-history me-1"></i> Audit Trail
-            </button>
-            <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'appointment'" (click)="activeDetailTab = 'appointment'" *ngIf="selected.appointment">
-              <i class="fas fa-calendar-check me-1"></i> Visit
-            </button>
-          </div>
-
+        <div class="p-3 d-flex flex-column gap-3 modal-tab-content-wrap">
           <!-- TAB 1: OVERVIEW -->
           <div class="tab-pane-content" *ngIf="activeDetailTab === 'overview'">
             <div class="detail-card-section customer-dossier-card">
@@ -518,54 +532,43 @@
               </button>
             </div>
           </div>
-
-          <!-- MASTER ACTION TOOLBAR -->
-          <div class="drawer-action-toolbar">
-            <div class="toolbar-title">Administrative Actions</div>
-            <div class="toolbar-actions-grid">
-              
-              <button *ngIf="selected.booking_status !== 'Confirmed' && selected.booking_status !== 'Fully Paid'" 
-                      type="button" 
-                      class="btn btn-success-action" 
-                      (click)="approveDirectly()" 
-                      [disabled]="actionLoading">
-                <i class="fas fa-check-circle me-1.5"></i>
-                {{ (selected.payment_method === 'Offline' || selected.payment_type === 'Offline') ? 'Verify & Approve Offline Payment' : 'Approve & Confirm Allocation' }}
-              </button>
-
-              <button type="button" 
-                      class="btn btn-partial-action" 
-                      (click)="openRecordPaymentModal()" 
-                      [disabled]="actionLoading">
-                <i class="fas fa-hand-holding-usd me-1.5"></i>
-                Record Milestone / Part Payment
-              </button>
-
-              <button *ngIf="selected.booking_status !== 'Cancelled'" 
-                      type="button" 
-                      class="btn btn-cancel-action" 
-                      (click)="openRejectModal()" 
-                      [disabled]="actionLoading">
-                <i class="fas fa-ban me-1.5"></i>
-                Cancel / Release Allocation
-              </button>
-            </div>
-          </div>
-
         </div>
       </div>
-    </aside>
 
-    <ng-template #noSelectionTemplate>
-      <aside class="booking-detail-column empty-placeholder-column">
-        <div class="empty-inspector-card">
-          <div class="inspector-icon-wrap"><i class="fas fa-mouse-pointer"></i></div>
-          <h4>No Allocation Selected</h4>
-          <p>Click on any row in the table to view the full dossier, payment slips, customer details, and record milestone payments.</p>
+      <!-- Modal Footer Toolbar -->
+      <div class="erp-modal-footer py-2 px-3 bg-light border-top d-flex justify-content-between align-items-center flex-wrap gap-2" *ngIf="!detailLoading">
+        <div class="d-flex align-items-center gap-2">
+          <button *ngIf="selected.booking_status !== 'Cancelled'" 
+                  type="button" 
+                  class="btn btn-cancel-action btn-sm fs-12" 
+                  (click)="openRejectModal()" 
+                  [disabled]="actionLoading">
+            <i class="fas fa-ban me-1"></i> Cancel Allocation
+          </button>
         </div>
-      </aside>
-    </ng-template>
 
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <button type="button" 
+                  class="btn btn-partial-action btn-sm fs-12" 
+                  (click)="openRecordPaymentModal()" 
+                  [disabled]="actionLoading">
+            <i class="fas fa-hand-holding-usd me-1"></i> Record Milestone Payment
+          </button>
+
+          <button *ngIf="selected.booking_status !== 'Confirmed' && selected.booking_status !== 'Fully Paid'" 
+                  type="button" 
+                  class="btn btn-success-action btn-sm fs-12" 
+                  (click)="approveDirectly()" 
+                  [disabled]="actionLoading">
+            <i class="fas fa-check-circle me-1"></i>
+            {{ (selected.payment_method === 'Offline' || selected.payment_type === 'Offline') ? 'Verify & Approve Offline Payment' : 'Approve & Confirm Allocation' }}
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-sm fs-12 px-3" (click)="closeDetail()">Close</button>
+        </div>
+      </div>
+
+    </div>
   </div>
 
 </ng-container>

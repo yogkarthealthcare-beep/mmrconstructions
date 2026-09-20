@@ -386,16 +386,25 @@
   background-color: #ffffff;
 }
 
-/* --- Split Grid Layout --- */
+/* --- Master Table Card --- */
+.booking-table-full-card {
+  width: 100%;
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
 .booking-split-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 420px;
-  gap: 20px;
-  align-items: start;
+  display: block;
+  width: 100%;
 }
 
 .booking-table-column {
   min-width: 0;
+  width: 100%;
 }
 
 /* --- ERP Master Table --- */
@@ -1306,13 +1315,33 @@
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1100;
+  z-index: 1200;
   padding: 16px;
   animation: fadeIn 0.2s ease;
+}
+
+.booking-dossier-backdrop {
+  z-index: 1100;
+}
+
+.booking-dossier-modal {
+  max-width: 820px !important;
+  width: 95% !important;
+  max-height: 90vh;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-tab-content-wrap {
+  max-height: calc(90vh - 170px);
+  overflow-y: auto;
 }
 
 .erp-modal-box {
@@ -1492,24 +1521,6 @@
 }
 
 /* --- Responsive Breakpoints --- */
-@media (max-width: 1200px) {
-  .booking-split-grid {
-    grid-template-columns: minmax(0, 1fr) 360px;
-  }
-}
-
-@media (max-width: 991px) {
-  .booking-split-grid {
-    grid-template-columns: 1fr;
-  }
-  .booking-detail-column {
-    position: static;
-  }
-  .detail-drawer-card {
-    max-height: none;
-  }
-}
-
 @media (max-width: 768px) {
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
