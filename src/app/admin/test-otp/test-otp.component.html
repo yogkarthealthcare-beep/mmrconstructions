@@ -1,0 +1,405 @@
+<!-- Global Notification Banner -->
+<div *ngIf="alert" class="alert-toast-container" [class.alert-toast-danger]="alert.type === 'danger'" [class.alert-toast-success]="alert.type === 'success'" [class.alert-toast-info]="alert.type === 'info'">
+  <div class="d-flex align-items-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-2">
+      <i [class]="alert.type === 'success' ? 'fas fa-check-circle text-emerald fs-5' : (alert.type === 'danger' ? 'fas fa-exclamation-triangle text-danger fs-5' : 'fas fa-info-circle text-info fs-5')"></i>
+      <span class="fw-600 fs-13">{{ alert.message }}</span>
+    </div>
+    <button type="button" class="btn-close-toast" (click)="dismissAlert()">&times;</button>
+  </div>
+</div>
+
+<!-- EXECUTIVE HERO HEADER -->
+<div class="admin-hero-card mb-3">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+    <div>
+      <div class="admin-hero-badge"><i class="fas fa-sms me-1"></i>2FACTOR SMS OTP GATEWAY INTEGRATION</div>
+      <h2 class="admin-hero-title mb-1">Test OTP</h2>
+      <p class="admin-hero-sub mb-0">Securely configure the 2Factor API secret, test live SMS OTP delivery against approved templates, and verify authentication tokens.</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <button type="button" class="btn btn-outline-light btn-xs" (click)="loadConfig(); loadLogs()" [disabled]="loadingConfig || loadingLogs">
+        <i class="fas fa-sync-alt me-1" [class.fa-spin]="loadingConfig || loadingLogs"></i> Refresh
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS OVERVIEW TILES -->
+<div class="row g-3 mb-3">
+  <div class="col-12 col-md-4">
+    <div class="stat-mini-card box-status h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1">
+        <span class="stat-mini-lbl">Gateway Status</span>
+        <div class="icon-wrap" [class.bg-emerald-light]="config?.is_configured" [class.text-emerald]="config?.is_configured" [class.bg-danger-light]="!config?.is_configured" [class.text-danger]="!config?.is_configured">
+          <i [class]="config?.is_configured ? 'fas fa-shield-alt' : 'fas fa-shield-slash'"></i>
+        </div>
+      </div>
+      <div class="stat-mini-val" [class.text-emerald]="config?.is_configured" [class.text-danger]="!config?.is_configured">
+        {{ config?.is_configured ? 'Configured' : 'Not Configured' }}
+      </div>
+      <div class="fs-11 text-muted fw-600">
+        <i class="fas fa-database me-1"></i>Encrypted in PostgreSQL
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="stat-mini-card box-provider h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1">
+        <span class="stat-mini-lbl">SMS Provider</span>
+        <div class="icon-wrap bg-blue text-primary"><i class="fas fa-tower-broadcast"></i></div>
+      </div>
+      <div class="stat-mini-val">2Factor.in</div>
+      <div class="fs-11 text-muted fw-600">
+        <i class="fas fa-bolt text-primary me-1"></i>Official REST API v1
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="stat-mini-card box-templates h-100">
+      <div class="d-flex align-items-center justify-content-between mb-1">
+        <span class="stat-mini-lbl">Active Approved Templates</span>
+        <div class="icon-wrap bg-amber text-orange"><i class="fas fa-envelope-circle-check"></i></div>
+      </div>
+      <div class="stat-mini-val">{{ approvedTemplates.length }} Templates</div>
+      <div class="fs-11 text-muted fw-600">
+        <i class="fas fa-check text-emerald me-1"></i>Pre-registered &amp; Approved
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- LEFT COLUMN: SECTION 1 (CONFIG) & SECTION 2 (APPROVED TEMPLATES) -->
+  <div class="col-12 col-lg-5">
+    <!-- SECTION 1: 2FACTOR CONFIGURATION -->
+    <div class="card panel-card mb-3">
+      <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <div class="section-badge-icon bg-emerald-light text-emerald"><i class="fas fa-key"></i></div>
+          <div>
+            <h5 class="mb-0 fs-15 fw-700 text-dark">Section 1: 2Factor Configuration</h5>
+            <small class="text-muted fs-11">Encrypted server-side storage</small>
+          </div>
+        </div>
+        <div>
+          <span *ngIf="config?.is_configured" class="badge-status-pill success">
+            <i class="fas fa-check-circle me-1"></i>✓ Configured
+          </span>
+          <span *ngIf="!config?.is_configured" class="badge-status-pill danger">
+            <i class="fas fa-times-circle me-1"></i>✕ Not Configured
+          </span>
+        </div>
+      </div>
+
+      <div class="card-body p-3">
+        <!-- If configured and not in edit mode -->
+        <div *ngIf="config?.is_configured && !isEditingKey" class="configured-view">
+          <div class="status-box success-light mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-check-circle text-emerald fs-5"></i>
+              <div>
+                <strong class="text-emerald fs-13 d-block">✓ 2Factor API Key configured</strong>
+                <span class="fs-11 text-muted">The API secret is safely stored with AES-256 server-side encryption.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fs-12 fw-700 text-dark">2Factor API Key</label>
+            <div class="input-group">
+              <input type="password" class="form-control form-control-sm bg-light text-muted fw-600" value="**************" disabled readonly />
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="startEditingKey()">
+                <i class="fas fa-pen me-1"></i> Update Secret
+              </button>
+            </div>
+            <div class="form-text fs-11 text-muted mt-1">
+              <i class="fas fa-lock text-emerald me-1"></i>Secret key is never sent to the browser in plaintext.
+            </div>
+          </div>
+        </div>
+
+        <!-- If not configured or user clicked Edit -->
+        <div *ngIf="!config?.is_configured || isEditingKey" class="edit-view">
+          <div *ngIf="!config?.is_configured" class="status-box danger-light mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-exclamation-circle text-danger fs-5"></i>
+              <div>
+                <strong class="text-danger fs-13 d-block">✕ 2Factor API Key not configured</strong>
+                <span class="fs-11 text-muted">Enter your 2Factor.in API Key below to enable OTP features.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fs-12 fw-700 text-dark">
+              API Secret / API Key <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <input [type]="showApiKey ? 'text' : 'password'"
+                     [(ngModel)]="apiKeyInput"
+                     class="form-control form-control-sm"
+                     placeholder="Enter 2Factor API Key (e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)"
+                     autocomplete="off" />
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="showApiKey = !showApiKey" title="Toggle visibility">
+                <i [class]="showApiKey ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
+            <div class="form-text fs-11 text-muted mt-1">
+              <i class="fas fa-shield-alt text-primary me-1"></i>Key is encrypted with AES-256 before saving into PostgreSQL.
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <button type="button"
+                    class="btn btn-emerald btn-sm px-3"
+                    (click)="saveApiKey()"
+                    [disabled]="savingConfig || !apiKeyInput.trim()">
+              <i [class]="savingConfig ? 'fas fa-spinner fa-spin me-1' : 'fas fa-save me-1'"></i>
+              {{ savingConfig ? 'Encrypting & Saving...' : 'Save Secret' }}
+            </button>
+            <button *ngIf="config?.is_configured"
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm px-3"
+                    (click)="cancelEditingKey()"
+                    [disabled]="savingConfig">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: APPROVED OTP TEMPLATES -->
+    <div class="card panel-card mb-3">
+      <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <div class="section-badge-icon bg-blue text-primary"><i class="fas fa-file-shield"></i></div>
+          <div>
+            <h5 class="mb-0 fs-15 fw-700 text-dark">Section 2: Approved OTP Templates</h5>
+            <small class="text-muted fs-11">Registered DLT messaging templates</small>
+          </div>
+        </div>
+        <span class="badge bg-light text-dark border fs-11 fw-700">Pre-Approved</span>
+      </div>
+
+      <div class="card-body p-3">
+        <div class="template-item-card mb-2" *ngFor="let t of approvedTemplates; let i = index">
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-secondary-subtle text-dark fw-700 fs-11">Template {{ i + 1 }}</span>
+              <strong class="fs-13 text-dark">{{ t.name }}</strong>
+            </div>
+            <span class="badge-status-pill success"><i class="fas fa-check-circle me-1"></i>Approved</span>
+          </div>
+          <p class="fs-11 text-muted mb-0">{{ t.description }}</p>
+        </div>
+
+        <div class="mt-2 p-2 bg-light rounded border fs-11 text-muted">
+          <i class="fas fa-info-circle text-primary me-1"></i>
+          <strong>Note:</strong> Template contents are fixed &amp; approved by telecom operators. Test dispatch calls 2Factor's official <code>AUTOGEN</code> endpoint using the exact template identifier.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: SECTION 3 (SEND TEST OTP) & SECTION 4 (VERIFY OTP) -->
+  <div class="col-12 col-lg-7">
+    <!-- SECTION 3: SEND TEST OTP -->
+    <div class="card panel-card mb-3">
+      <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <div class="section-badge-icon bg-amber text-orange"><i class="fas fa-paper-plane"></i></div>
+          <div>
+            <h5 class="mb-0 fs-15 fw-700 text-dark">Section 3: Send Test OTP</h5>
+            <small class="text-muted fs-11">Dispatch a live SMS OTP to a test phone</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body p-3">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label fs-12 fw-700 text-dark">
+              Mobile Number <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-dark fw-700 fs-12">+91</span>
+              <input type="text"
+                     [(ngModel)]="mobileNumber"
+                     maxlength="10"
+                     class="form-control form-control-sm"
+                     placeholder="Enter 10-digit mobile"
+                     [class.is-valid]="isMobileValid()"
+                     [class.is-invalid]="mobileNumber.length >= 10 && !isMobileValid()" />
+            </div>
+            <div class="form-text fs-11 mt-1" [class.text-emerald]="isMobileValid()" [class.text-muted]="!isMobileValid()">
+              <i [class]="isMobileValid() ? 'fas fa-check-circle me-1' : 'fas fa-mobile-alt me-1'"></i>
+              {{ isMobileValid() ? 'Valid 10-digit Indian mobile number' : 'Accepts 10-digit number (e.g. 9876543210)' }}
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label fs-12 fw-700 text-dark">
+              OTP Template <span class="text-danger">*</span>
+            </label>
+            <select [(ngModel)]="selectedTemplate" class="form-select form-select-sm">
+              <option *ngFor="let t of approvedTemplates" [value]="t.id">{{ t.name }}</option>
+            </select>
+            <div class="form-text fs-11 text-muted mt-1">
+              <i class="fas fa-tags me-1"></i>Approved template to test
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div>
+            <span *ngIf="cooldownSeconds > 0" class="badge bg-warning-subtle text-dark border border-warning fs-12 px-2 py-1">
+              <i class="fas fa-clock text-warning me-1"></i> Please wait {{ cooldownSeconds }}s before resending
+            </span>
+          </div>
+
+          <button type="button"
+                  class="btn btn-gold btn-sm px-4 fw-700"
+                  (click)="sendTestOtp()"
+                  [disabled]="sendingOtp || !isMobileValid() || cooldownSeconds > 0 || !config?.is_configured">
+            <i [class]="sendingOtp ? 'fas fa-spinner fa-spin me-1' : 'fas fa-paper-plane me-1'"></i>
+            {{ sendingOtp ? 'SENDING TEST OTP...' : 'SEND TEST OTP' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: VERIFY OTP -->
+    <div *ngIf="activeSessionId" class="card panel-card mb-3 border-emerald">
+      <div class="card-header bg-emerald-light py-3 border-bottom d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <div class="section-badge-icon bg-emerald text-white"><i class="fas fa-check-double"></i></div>
+          <div>
+            <h5 class="mb-0 fs-15 fw-700 text-dark">Section 4: Verify Received OTP</h5>
+            <small class="text-muted fs-11">Validate delivery by verifying code with 2Factor</small>
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="resetSession()">
+          <i class="fas fa-times me-1"></i> Clear
+        </button>
+      </div>
+
+      <div class="card-body p-3">
+        <div class="session-info-pill mb-3 p-2 bg-light rounded border d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div>
+            <span class="fs-11 text-muted d-block">Target Mobile:</span>
+            <strong class="fs-12 text-dark"><i class="fas fa-mobile-alt text-emerald me-1"></i>{{ sentMobileMasked }}</strong>
+          </div>
+          <div>
+            <span class="fs-11 text-muted d-block">Template:</span>
+            <strong class="fs-12 text-dark">{{ sentTemplate }}</strong>
+          </div>
+          <div>
+            <span class="fs-11 text-muted d-block">Session Reference ID:</span>
+            <code class="fs-11 text-primary fw-700">{{ activeSessionId }}</code>
+          </div>
+        </div>
+
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-sm-7">
+            <label class="form-label fs-12 fw-700 text-dark">Enter OTP Code Received via SMS</label>
+            <input type="text"
+                   [(ngModel)]="otpInput"
+                   maxlength="8"
+                   class="form-control form-control-sm text-center fw-700 fs-14 letter-spacing-2"
+                   placeholder="Enter OTP (e.g. 123456)" />
+          </div>
+          <div class="col-12 col-sm-5">
+            <button type="button"
+                    class="btn btn-emerald btn-sm w-100 fw-700"
+                    (click)="verifyOtp()"
+                    [disabled]="verifyingOtp || !otpInput.trim()">
+              <i [class]="verifyingOtp ? 'fas fa-spinner fa-spin me-1' : 'fas fa-shield-check me-1'"></i>
+              {{ verifyingOtp ? 'Verifying...' : 'VERIFY OTP' }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="verificationResult" class="mt-3">
+          <div class="alert mb-0" [class.alert-success]="verificationResult.success" [class.alert-danger]="!verificationResult.success">
+            <i [class]="verificationResult.success ? 'fas fa-check-circle me-1' : 'fas fa-times-circle me-1'"></i>
+            {{ verificationResult.message }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: AUDIT LOGS / RECENT TEST ACTIVITY -->
+    <div class="card panel-card mb-3">
+      <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <div class="section-badge-icon bg-purple text-purple"><i class="fas fa-list-check"></i></div>
+          <div>
+            <h5 class="mb-0 fs-15 fw-700 text-dark">Recent Test OTP Activity</h5>
+            <small class="text-muted fs-11">Audit records with masked phone numbers</small>
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="loadLogs()" [disabled]="loadingLogs">
+          <i class="fas fa-sync-alt me-1" [class.fa-spin]="loadingLogs"></i> Refresh
+        </button>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 fs-12">
+            <thead class="bg-light text-muted">
+              <tr>
+                <th class="ps-3">Date / Time</th>
+                <th>Mobile (Masked)</th>
+                <th>Template</th>
+                <th>Status</th>
+                <th>Reference ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of logs">
+                <td class="ps-3 text-muted fs-11">
+                  {{ log.created_at | date:'dd MMM yyyy, hh:mm a' }}
+                </td>
+                <td class="fw-700 text-dark">{{ log.mobile_number }}</td>
+                <td>
+                  <span class="badge bg-light text-dark border fs-11">{{ log.template }}</span>
+                </td>
+                <td>
+                  <span *ngIf="log.status === 'Success'" class="badge bg-success-subtle text-success border border-success fs-11">
+                    <i class="fas fa-check me-1"></i>Sent
+                  </span>
+                  <span *ngIf="log.status === 'Verified'" class="badge bg-emerald-light text-emerald border border-emerald fs-11">
+                    <i class="fas fa-check-double me-1"></i>Verified
+                  </span>
+                  <span *ngIf="log.status === 'Failed' || log.status === 'Mismatch'" class="badge bg-danger-subtle text-danger border border-danger fs-11" [title]="log.error_message || ''">
+                    <i class="fas fa-times me-1"></i>{{ log.status }}
+                  </span>
+                </td>
+                <td>
+                  <code class="fs-10 text-muted">{{ log.provider_reference_id ? (log.provider_reference_id | slice:0:18) : '-' }}</code>
+                </td>
+              </tr>
+              <tr *ngIf="logs.length === 0 && !loadingLogs">
+                <td colspan="5" class="text-center py-4 text-muted fs-12">
+                  <i class="fas fa-inbox fs-3 d-block mb-2 text-secondary"></i>
+                  No test OTP dispatches recorded yet. Use the form above to send a test OTP.
+                </td>
+              </tr>
+              <tr *ngIf="loadingLogs">
+                <td colspan="5" class="text-center py-4 text-muted fs-12">
+                  <i class="fas fa-spinner fa-spin fs-4 text-primary d-block mb-2"></i>
+                  Loading test history...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

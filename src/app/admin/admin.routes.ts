@@ -202,4 +202,9 @@ export const ADMIN_ROUTES: Routes = [
     path: 'change-password', 
     loadComponent: () => import('./change-password/change-password.component').then(m => m.ChangePasswordComponent) 
   },
+  { 
+    path: 'test-otp', 
+    loadComponent: () => import('./test-otp/test-otp.component').then(m => m.TestOtpComponent),
+    title: 'Test OTP — MMR Admin'
+  },
 ];
