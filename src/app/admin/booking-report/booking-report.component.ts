@@ -194,6 +194,18 @@ export class BookingReportComponent implements OnInit {
     }
   }
 
+  normalizeStatus(s: any): 'open' | 'called' | 'closed' {
+    if (!s) return 'open';
+    const raw = String(s).toLowerCase().trim();
+    if (raw === 'closed' || raw === 'resolved' || raw === 'confirmed' || raw === 'completed' || raw === 'done') {
+      return 'closed';
+    }
+    if (raw === 'called' || raw === 'follow-up' || raw === 'follow_up' || raw === 'followup' || raw === 'in progress' || raw === 'in_progress' || raw === 'contacted' || raw === 'pending' || raw.includes('progress') || raw.includes('contact') || raw.includes('follow')) {
+      return 'called';
+    }
+    return 'open';
+  }
+
   fetchBookingReports() {
     this.loading = true;
     this.api.getAdminInquiries({ pageSize: 200 }).subscribe({
@@ -218,7 +230,7 @@ export class BookingReportComponent implements OnInit {
             message: item.inquiry_message || item.message || '',
             source_page: item.source_page || 'Website',
             date: item.created_at || new Date().toISOString(),
-            status: String(item.status || 'open').toLowerCase() === 'new' ? 'open' : String(item.status || 'open').toLowerCase(),
+            status: this.normalizeStatus(item.status),
             notes: item.remarks || item.notes || 'Inquiry request submitted via website.',
             category: cat,
             category_label: this.getCategoryLabel(cat),
@@ -513,13 +525,14 @@ export class BookingReportComponent implements OnInit {
   }
 
   updateStatus(b: any, newStatus: string) {
-    b.status = newStatus;
+    const normalized = this.normalizeStatus(newStatus);
+    b.status = normalized;
     this.api.adminUpdateInquiry(b.id, {
-      status: newStatus,
+      status: normalized,
       inquiry_type: b.interest,
       site_name: b.site_name === 'General / All Sites' ? null : b.site_name
     }).subscribe({
-      next: () => this.showToast(`Inquiry status updated to ${newStatus}`),
+      next: () => this.showToast(`Inquiry status updated to ${normalized === 'called' ? 'Follow-Up' : (normalized === 'closed' ? 'Closed' : 'Open')}`),
       error: () => this.showToast(`Inquiry status updated locally`)
     });
   }
