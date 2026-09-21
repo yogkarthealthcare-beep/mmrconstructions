@@ -56,7 +56,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       items: [
         { icon: 'fas fa-users', label: 'Customer Directory', route: '/admin/customers' },
         { icon: 'fas fa-id-card', label: 'Customer Enrollments', route: '/admin/enrollments', queryParams: { tab: 'customer' } },
-        { icon: 'fas fa-user-check', label: 'Registrations & KYC', route: '/admin/approvals', badge: '!', red: true },
         { icon: 'fas fa-calendar-check', label: 'Booking Management', route: '/admin/booking-management' },
         { icon: 'fas fa-tasks', label: 'Booking Workflow', route: '/admin/booking-workflow' },
         { icon: 'fas fa-rupee-sign', label: 'EMI & Installments', route: '/admin/emi-payments' },
@@ -72,6 +71,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       icon: 'fas fa-handshake',
       expanded: false,
       items: [
+        { icon: 'fas fa-user-check', label: 'Registrations & KYC', route: '/admin/approvals', badge: '!', red: true },
         { icon: 'fas fa-user-tie', label: 'Associate Directory', route: '/admin/associates' },
         { icon: 'fas fa-id-card', label: 'Associate Enrollments', route: '/admin/enrollments', queryParams: { tab: 'associate' } },
         { icon: 'fas fa-project-diagram', label: 'Network Tree', route: '/admin/network-tree', badge: 'NEW' },
