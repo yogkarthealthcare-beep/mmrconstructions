@@ -22,7 +22,7 @@ export class BookingReportComponent implements OnInit {
 
   loading = true;
   search = '';
-  categoryFilter: string = 'all'; // 'all' | 'customer' | 'associate' | 'investor' | 'site_visit' | 'general'
+  categoryFilter: string = 'all'; // 'all' | 'customer' | 'associate' | 'investor' | 'general_site_visit' | 'site_visit' | 'general'
   statusFilter = 'all';
   siteFilter = 'all';
   activeRowId: any = null;
@@ -46,7 +46,7 @@ export class BookingReportComponent implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       const type = params['type'] || 'all';
-      if (['all', 'customer', 'associate', 'investor', 'site_visit', 'general'].includes(type)) {
+      if (['all', 'customer', 'associate', 'investor', 'general_site_visit', 'site_visit', 'general'].includes(type)) {
         this.categoryFilter = type;
         this.page = 1;
       }
@@ -74,23 +74,28 @@ export class BookingReportComponent implements OnInit {
   }
 
   getInquiryCategory(item: any): 'customer' | 'associate' | 'investor' | 'site_visit' | 'general' {
-    const rawType = String(item.inquiry_type || item.interest || '').toLowerCase();
+    const rawType = String(item.inquiry_type || item.interest || '').toLowerCase().trim();
     const rawMsg = String(item.inquiry_message || item.message || '').toLowerCase();
     const rawPage = String(item.source_page || '').toLowerCase();
     const combined = `${rawType} ${rawMsg} ${rawPage}`;
 
-    if (combined.includes('associate') || combined.includes('commission') || combined.includes('downline') || combined.includes('network')) {
+    // 1. Associate Program
+    if (rawType.includes('associate') || combined.includes('associate') || combined.includes('commission') || combined.includes('downline') || combined.includes('network program')) {
       return 'associate';
     }
-    if (combined.includes('investor') || combined.includes('invest') || combined.includes('roi') || combined.includes('deposit') || combined.includes('capital')) {
+    // 2. Investor
+    if (rawType.includes('investor') || rawType.includes('investment') || combined.includes('investor') || combined.includes('deposit request') || combined.includes('high return')) {
       return 'investor';
     }
-    if (combined.includes('site visit') || combined.includes('visit request') || combined.includes('cab') || combined.includes('tour') || rawType.includes('site visit')) {
+    // 3. Site Visit Request
+    if (rawType.includes('site visit') || rawType.includes('visit') || combined.includes('site visit') || combined.includes('cab arrangement') || combined.includes('visit request')) {
       return 'site_visit';
     }
-    if (combined.includes('plot') || combined.includes('booking') || combined.includes('purchase') || combined.includes('gaj') || combined.includes('land') || combined.includes('residential') || combined.includes('commercial')) {
+    // 4. Customer / Plot Booking
+    if (rawType.includes('plot') || rawType.includes('booking') || rawType.includes('purchase') || combined.includes('plot booking') || combined.includes('plot purchase') || combined.includes('gaj') || combined.includes('residential plot') || combined.includes('commercial plot')) {
       return 'customer';
     }
+    // 5. General Enquiry
     return 'general';
   }
 
@@ -99,6 +104,7 @@ export class BookingReportComponent implements OnInit {
       case 'customer': return 'Plot Booking (Customer)';
       case 'associate': return 'Associate Program';
       case 'investor': return 'Investor Inquiry';
+      case 'general_site_visit': return 'Site Visits & General Enquiries';
       case 'site_visit': return 'Site Visit Request';
       case 'general': return 'General Enquiry';
       default: return 'General';
@@ -110,6 +116,7 @@ export class BookingReportComponent implements OnInit {
       case 'customer': return 'badge-category-customer';
       case 'associate': return 'badge-category-associate';
       case 'investor': return 'badge-category-investor';
+      case 'general_site_visit': return 'badge-category-sitevisit';
       case 'site_visit': return 'badge-category-sitevisit';
       case 'general': return 'badge-category-general';
       default: return 'bg-light text-dark';
@@ -210,6 +217,10 @@ export class BookingReportComponent implements OnInit {
     return this.bookings.filter(b => b.category === 'investor').length;
   }
 
+  get generalSiteVisitCount(): number {
+    return this.bookings.filter(b => b.category === 'site_visit' || b.category === 'general').length;
+  }
+
   get siteVisitCount(): number {
     return this.bookings.filter(b => b.category === 'site_visit').length;
   }
@@ -220,6 +231,9 @@ export class BookingReportComponent implements OnInit {
 
   get currentCategoryList(): any[] {
     if (this.categoryFilter === 'all') return this.bookings;
+    if (this.categoryFilter === 'general_site_visit') {
+      return this.bookings.filter(b => b.category === 'site_visit' || b.category === 'general');
+    }
     return this.bookings.filter(b => b.category === this.categoryFilter);
   }
 
@@ -240,8 +254,9 @@ export class BookingReportComponent implements OnInit {
       case 'customer': return 'Customer Enquiries & Plot Bookings';
       case 'associate': return 'Associate & Commission Enquiries';
       case 'investor': return 'Investor & Capital Inquiries';
+      case 'general_site_visit': return 'Site Visits & General Public Enquiries';
       case 'site_visit': return 'Site Visit Requests';
-      case 'general': return 'General Inquiries & Price Queries';
+      case 'general': return 'General Enquiries & Price Queries';
       default: return 'All Inquiries & Booking Reports';
     }
   }
@@ -251,6 +266,7 @@ export class BookingReportComponent implements OnInit {
       case 'customer': return 'Plot purchase, size preference, and property booking requests from customers.';
       case 'associate': return 'Prospective associate registrations and commission network inquiries.';
       case 'investor': return 'Investment plans, high-yield deposit and investor portal inquiries.';
+      case 'general_site_visit': return 'Public customer site visit appointments, transportation assistance, and general queries.';
       case 'site_visit': return 'Customer site visit appointments and transportation assistance requests.';
       case 'general': return 'General pricing, EMI details, brochures, and miscellaneous messages.';
       default: return 'Comprehensive CRM inquiry records across Customer, Associate, Investor, Site Visits, and General categories.';
@@ -262,6 +278,7 @@ export class BookingReportComponent implements OnInit {
       case 'customer': return 'fas fa-map-marked-alt text-emerald';
       case 'associate': return 'fas fa-user-friends text-amber';
       case 'investor': return 'fas fa-hand-holding-usd text-purple';
+      case 'general_site_visit': return 'fas fa-envelope-open-text text-primary';
       case 'site_visit': return 'fas fa-car text-primary';
       case 'general': return 'fas fa-comments text-secondary';
       default: return 'fas fa-file-signature text-emerald';
@@ -270,7 +287,13 @@ export class BookingReportComponent implements OnInit {
 
   get filtered(): any[] {
     return this.bookings.filter(b => {
-      const matchCategory = this.categoryFilter === 'all' ? true : b.category === this.categoryFilter;
+      let matchCategory = true;
+      if (this.categoryFilter === 'general_site_visit') {
+        matchCategory = b.category === 'site_visit' || b.category === 'general';
+      } else if (this.categoryFilter !== 'all') {
+        matchCategory = b.category === this.categoryFilter;
+      }
+
       const matchStatus = this.statusFilter === 'all' ? true : b.status === this.statusFilter;
       const matchSite = this.siteFilter === 'all' ? true : b.site_name === this.siteFilter;
       const q = this.search.trim().toLowerCase();
