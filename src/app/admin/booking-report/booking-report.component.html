@@ -172,33 +172,33 @@
         <table class="table align-middle custom-dash-table mb-0">
           <thead>
             <tr>
-              <th class="th-sno">#</th>
-              <th>Lead Contact</th>
-              <th>Inquiry & Project Details</th>
-              <th>Requirement Note</th>
-              <th>Date</th>
-              <th class="text-center">Status</th>
-              <th class="text-end">Actions</th>
+              <th class="th-sno" style="width: 32px;">#</th>
+              <th style="width: 21%;">Lead Contact</th>
+              <th style="width: 24%;">Inquiry &amp; Project Details</th>
+              <th style="width: 21%;">Requirement Note</th>
+              <th style="width: 11%;">Date</th>
+              <th class="text-center" style="width: 11%;">Status</th>
+              <th class="text-end pe-2" style="width: 12%;">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let b of pagedBookings; let i = index">
               <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
               <td>
-                <div class="d-flex align-items-center gap-2">
-                  <div class="avatar-sm bg-emerald-subtle text-emerald fw-700 rounded-circle d-flex align-items-center justify-content-center fs-11">
+                <div class="d-flex align-items-center gap-1.5 min-w-0">
+                  <div class="avatar-xs bg-emerald-subtle text-emerald fw-700 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
                     {{ getInitials(b.name) }}
                   </div>
-                  <div>
-                    <div class="fw-700 text-dark fs-12 text-nowrap">{{ b.name }}</div>
-                    <div class="fs-11 text-muted text-nowrap"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ b.mobile }}</div>
-                    <div class="fs-10 text-muted text-nowrap" *ngIf="b.email"><i class="fas fa-envelope me-1 text-secondary"></i>{{ b.email }}</div>
+                  <div class="lead-info-wrap overflow-hidden min-w-0 flex-grow-1">
+                    <div class="fw-700 text-dark fs-11 text-truncate" [title]="b.name">{{ b.name }}</div>
+                    <div class="fs-10 text-muted text-truncate"><i class="fas fa-phone-alt me-1 text-emerald fs-9"></i>{{ b.mobile }}</div>
+                    <div class="fs-9 text-muted text-truncate" *ngIf="b.email" [title]="b.email"><i class="fas fa-envelope me-1 text-secondary"></i>{{ b.email }}</div>
                   </div>
                 </div>
               </td>
               <td>
-                <div class="inquiry-single-dropdown-wrap">
-                  <select class="form-select form-select-xs row-details-select shadow-none"
+                <div class="inquiry-single-dropdown-wrap w-100 min-w-0">
+                  <select class="form-select form-select-xs row-details-select shadow-none w-100"
                     [ngClass]="b.category_badge_class"
                     title="Inquiry Category, Project Site, and Interest / Topic">
                     <option selected>Category: {{ b.category_label }}</option>
@@ -208,17 +208,16 @@
                 </div>
               </td>
               <td>
-                <div class="fs-11 text-dark text-truncate" style="max-width: 150px;" [title]="b.message">
-                  "{{ b.message || 'No specific requirement entered' }}"
+                <div class="fs-10 text-dark text-truncate requirement-note-cell w-100" [title]="b.message">
+                  "{{ b.message || 'No specific requirement' }}"
                 </div>
               </td>
               <td class="text-nowrap">
-                <div class="fs-11 text-dark fw-600">{{ b.date | date:'dd MMM yyyy' }}</div>
-                <div class="fs-10 text-muted">{{ b.source_page }}</div>
+                <div class="fs-10 text-dark fw-600">{{ b.date | date:'dd MMM yyyy' }}</div>
+                <div class="fs-9 text-muted text-truncate" [title]="b.source_page">{{ b.source_page }}</div>
               </td>
               <td class="text-center">
                 <select class="form-select form-select-xs status-select d-inline-block shadow-none"
-                  style="min-width: 95px; cursor: pointer;"
                   [ngModel]="b.status"
                   (change)="updateStatus(b, $any($event.target).value)"
                   [class.bg-amber-subtle]="b.status==='open'"
@@ -229,10 +228,10 @@
                   <option value="closed">Closed</option>
                 </select>
               </td>
-              <td class="text-end">
+              <td class="text-end pe-2">
                 <div class="dropdown d-inline-block position-relative">
-                  <button type="button" class="btn btn-light border btn-sm py-1 px-2 rounded-8 shadow-sm" (click)="$event.stopPropagation(); activeRowId = (activeRowId === b.id ? null : b.id)">
-                    <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-11 fw-700">Actions</span>
+                  <button type="button" class="btn btn-light border btn-action-xs py-1 px-2 rounded-6 shadow-xs" (click)="$event.stopPropagation(); activeRowId = (activeRowId === b.id ? null : b.id)">
+                    <i class="fas fa-ellipsis-v text-muted fs-10 me-1"></i> <span class="fs-10 fw-700">Actions</span>
                   </button>
 
                   <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 165px; border-radius: 10px;" *ngIf="activeRowId === b.id" (click)="$event.stopPropagation()">

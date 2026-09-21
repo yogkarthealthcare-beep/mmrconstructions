@@ -1,6 +1,16 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .booking-report-page {
   background: #f8fafc;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .panel-card {
@@ -8,6 +18,9 @@
   border-radius: 14px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .text-emerald { color: #16a34a !important; }
@@ -110,37 +123,62 @@
 .pill-count-sitevisit { background: #dbeafe; color: #1d4ed8; }
 .pill-count-general { background: #e2e8f0; color: #475569; }
 
-/* ── TABLE STYLES (MATCHING IMAGE 1 & ADMIN PANELS) ── */
-.custom-dash-table {
+/* ── TABLE STYLES (MATCHING 90% COMPACT DENSITY AT 100% ZOOM) ── */
+.table-responsive {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.custom-dash-table {
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed !important;
   border-collapse: collapse;
+  box-sizing: border-box;
 }
 
 .custom-dash-table th {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   text-transform: uppercase;
   color: #475569;
   border-bottom: 1.5px solid #e2e8f0;
-  padding: 8px 10px;
-  height: 40px;
+  padding: 6px 6px;
+  height: 36px;
   background: #f8fafc;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .custom-dash-table td {
-  padding: 8px 10px;
-  font-size: 12px;
+  padding: 5px 6px;
+  font-size: 11px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
+  box-sizing: border-box;
 }
 
 .th-sno, .td-sno {
-  width: 38px;
+  width: 32px !important;
+  max-width: 32px !important;
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   color: #94a3b8;
   font-weight: 600;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+}
+
+.avatar-xs {
+  width: 26px;
+  height: 26px;
+  font-size: 9.5px;
+  flex-shrink: 0;
+}
+
+.fs-9 {
+  font-size: 9px !important;
 }
 
 /* ── CATEGORY TABLE BADGES ── */
@@ -188,26 +226,27 @@
 }
 
 .icon-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-}
-
-.avatar-sm {
-  width: 34px;
-  height: 34px;
+  font-size: 16px;
 }
 
 .status-select {
-  border-radius: 20px;
-  font-size: 11px;
+  border-radius: 12px;
+  font-size: 10px !important;
   font-weight: 700;
-  padding-top: 3px;
-  padding-bottom: 3px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 6px;
+  padding-right: 18px;
+  min-width: 80px;
+  height: 24px;
+  background-size: 8px 6px;
+  cursor: pointer;
 }
 
 .width-16 {
@@ -219,10 +258,18 @@
   padding-left: 2.2rem !important;
 }
 
+.rounded-6 { border-radius: 6px !important; }
 .rounded-8 { border-radius: 8px !important; }
 .rounded-10 { border-radius: 10px !important; }
 .rounded-12 { border-radius: 12px !important; }
 .rounded-14 { border-radius: 14px !important; }
+
+.btn-action-xs {
+  font-size: 10.5px !important;
+  padding: 2px 8px !important;
+  border-radius: 6px !important;
+  font-weight: 600;
+}
 
 .btn-xs {
   font-size: 11px;
@@ -259,16 +306,16 @@
 
 /* ── SINGLE INQUIRY DETAILS DROPDOWN (3 VALUES ONLY) ── */
 .inquiry-single-dropdown-wrap {
-  min-width: 170px;
-  max-width: 235px;
+  min-width: 145px;
+  max-width: 195px;
 }
 
 .row-details-select {
-  font-size: 11.5px !important;
+  font-size: 10.5px !important;
   font-weight: 600;
-  height: 28px;
-  border-radius: 6px;
-  padding: 3px 22px 3px 8px !important;
+  height: 25px;
+  border-radius: 5px;
+  padding: 2px 18px 2px 6px !important;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
   cursor: pointer;
@@ -276,6 +323,8 @@
   white-space: nowrap;
   transition: all 0.2s ease;
   line-height: 1.2;
+  background-position: right 4px center;
+  background-size: 8px 6px;
 }
 
 .row-details-select option {
@@ -283,7 +332,7 @@
   font-size: 11px;
   color: #1e293b;
   background: #ffffff;
-  padding: 4px 8px;
+  padding: 3px 6px;
 }
 
 .row-details-select.badge-category-customer {
@@ -325,6 +374,14 @@
   box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.18) !important;
   outline: none;
 }
+
+/* Ensure desktop tables never overflow container */
+@media (min-width: 992px) {
+  .table-responsive {
+    overflow-x: visible;
+  }
+}
+
 
 
 
