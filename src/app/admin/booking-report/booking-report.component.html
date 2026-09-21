@@ -153,77 +153,79 @@
     </div>
   </div>
 
-  <!-- DATA TABLE PANEL -->
-  <div class="bg-white rounded-12 border shadow-xs p-3">
-    <div *ngIf="loading" class="text-center py-5 text-muted">
-      <i class="fas fa-spinner fa-spin fs-2 mb-2 text-emerald"></i>
-      <p class="fs-12 mb-0">Loading inquiry and booking records...</p>
-    </div>
+  <!-- LOADING SPINNER -->
+  <div *ngIf="loading" class="panel-card p-5 text-center text-muted">
+    <i class="fas fa-spinner fa-spin fs-2 mb-2 text-emerald"></i>
+    <p class="fs-12 mb-0">Loading inquiry and booking records...</p>
+  </div>
 
-    <div *ngIf="!loading && filtered.length === 0" class="text-center py-5 text-muted">
+  <!-- DATA TABLE PANEL -->
+  <div class="panel-card p-3 mb-2" *ngIf="!loading">
+    <div *ngIf="filtered.length === 0" class="text-center py-5 text-muted">
       <i class="fas fa-clipboard-list fs-1 mb-2 text-gold opacity-50"></i>
       <h6 class="fw-700 text-dark mb-1">No Inquiries Found</h6>
       <p class="fs-12 mb-0">No records match the current "{{ categoryFilter === 'all' ? 'All' : getCategoryLabel(categoryFilter) }}" category and filter parameters.</p>
     </div>
 
-    <app-admin-table-container [title]="pageTitle" [count]="filtered.length" *ngIf="!loading && filtered.length > 0">
-      <div class="table-responsive" style="overflow-y: visible;">
-        <table class="table align-middle table-hover mb-0">
-          <thead class="bg-light">
+    <app-admin-table-container [title]="pageTitle" [count]="filtered.length" *ngIf="filtered.length > 0">
+      <div class="table-responsive">
+        <table class="table align-middle custom-dash-table mb-0">
+          <thead>
             <tr>
               <th class="th-sno">#</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Lead Contact</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Inquiry Category</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Selected Project Site</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Interest / Topic</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Requirement Note</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3 text-nowrap">Date</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3 text-center">Status</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3 text-end">Actions</th>
+              <th>Lead Contact</th>
+              <th>Inquiry Category</th>
+              <th>Selected Project Site</th>
+              <th>Interest / Topic</th>
+              <th>Requirement Note</th>
+              <th>Date</th>
+              <th class="text-center">Status</th>
+              <th class="text-end">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let b of pagedBookings; let i = index">
               <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-              <td class="px-3 py-3">
+              <td>
                 <div class="d-flex align-items-center gap-2">
                   <div class="avatar-sm bg-emerald-subtle text-emerald fw-700 rounded-circle d-flex align-items-center justify-content-center fs-11">
                     {{ getInitials(b.name) }}
                   </div>
                   <div>
                     <div class="fw-700 text-dark fs-12 text-nowrap">{{ b.name }}</div>
-                    <div class="fs-11 text-muted text-nowrap"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ b.mobile }}</div>
+                    <div class="fs-11 text-muted text-nowrap"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ b.mobile }}</div>
                     <div class="fs-10 text-muted text-nowrap" *ngIf="b.email"><i class="fas fa-envelope me-1 text-secondary"></i>{{ b.email }}</div>
                   </div>
                 </div>
               </td>
-              <td class="px-3 py-3">
+              <td>
                 <span class="badge rounded-pill fw-700 fs-10 text-nowrap" [ngClass]="b.category_badge_class">
                   {{ b.category_label }}
                 </span>
               </td>
-              <td class="px-3 py-3">
-                <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fw-700 fs-11 text-nowrap">
+              <td>
+                <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fw-700 fs-11 text-nowrap" *ngIf="b.site_name && b.site_name !== 'General / All Sites'">
                   <i class="fas fa-building text-gold me-1"></i>{{ b.site_name }}
                 </span>
+                <span class="fs-11 text-muted" *ngIf="!b.site_name || b.site_name === 'General / All Sites'">—</span>
               </td>
-              <td class="px-3 py-3">
+              <td>
                 <span class="badge bg-light text-dark border fw-600 fs-11 text-nowrap">
                   <i class="fas fa-tag text-gold me-1"></i>{{ b.interest }}
                 </span>
               </td>
-              <td class="px-3 py-3">
-                <div class="fs-11 text-dark text-truncate" style="max-width: 180px;" [title]="b.message">
-                  "{{ b.message || 'No specific requirement message entered' }}"
+              <td>
+                <div class="fs-11 text-dark text-truncate" style="max-width: 140px;" [title]="b.message">
+                  "{{ b.message || 'No specific requirement entered' }}"
                 </div>
               </td>
-              <td class="px-3 py-3 text-nowrap">
+              <td class="text-nowrap">
                 <div class="fs-11 text-dark fw-600">{{ b.date | date:'dd MMM yyyy' }}</div>
                 <div class="fs-10 text-muted">{{ b.source_page }}</div>
               </td>
-              <td class="px-3 py-3 text-center">
+              <td class="text-center">
                 <select class="form-select form-select-xs status-select d-inline-block shadow-none"
-                  style="min-width: 110px; cursor: pointer;"
+                  style="min-width: 95px; cursor: pointer;"
                   [ngModel]="b.status"
                   (change)="updateStatus(b, $any($event.target).value)"
                   [class.bg-amber-subtle]="b.status==='open'"
@@ -234,7 +236,7 @@
                   <option value="closed">Closed</option>
                 </select>
               </td>
-              <td class="text-end px-3 py-3">
+              <td class="text-end">
                 <div class="dropdown d-inline-block position-relative">
                   <button type="button" class="btn btn-light border btn-sm py-1 px-2 rounded-8 shadow-sm" (click)="$event.stopPropagation(); activeRowId = (activeRowId === b.id ? null : b.id)">
                     <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-11 fw-700">Actions</span>
@@ -260,8 +262,9 @@
       </div>
     </app-admin-table-container>
     
+    <!-- Pagination & 2-Mode Export -->
     <app-admin-pagination
-      *ngIf="!loading && filtered.length > 0"
+      *ngIf="filtered.length > 0"
       [totalItems]="filtered.length"
       [currentPage]="page"
       [pageSize]="pageSize"
