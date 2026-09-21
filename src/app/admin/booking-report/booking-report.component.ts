@@ -266,12 +266,75 @@ export class BookingReportComponent implements OnInit {
     });
   }
 
+  getCombinedKey(b: any): string {
+    const cat = b.category || 'general';
+    const site = b.site_name || 'General / All Sites';
+    const interest = b.interest || this.getCategoryLabel(cat);
+    return `${cat}||${site}||${interest}`;
+  }
+
+  getCombinedLabel(b: any): string {
+    const catLabel = this.getCategoryLabel(b.category);
+    const hasSite = b.site_name && b.site_name !== 'General / All Sites';
+    const hasInterest = b.interest && b.interest !== catLabel && b.interest !== 'General Enquiry' && b.interest !== 'Inquiry';
+
+    if (hasSite && hasInterest) {
+      return `${catLabel} — ${b.site_name} (${b.interest})`;
+    } else if (hasSite) {
+      return `${catLabel} — ${b.site_name}`;
+    } else if (hasInterest) {
+      return `${catLabel} — ${b.interest}`;
+    }
+    return catLabel;
+  }
+
+  isStandardCombinedKey(key: string): boolean {
+    if (!key) return true;
+    const parts = key.split('||');
+    const cat = parts[0];
+    const site = parts[1];
+    const interest = parts[2];
+
+    if (cat === 'investor' || cat === 'associate' || cat === 'general') {
+      return true;
+    }
+    if (cat === 'site_visit') {
+      return site === 'General / All Sites' || this.availableSites.includes(site);
+    }
+    if (cat === 'customer') {
+      return site === 'General / All Sites' || this.availableSites.includes(site);
+    }
+    return false;
+  }
+
+  onCombinedInquiryChange(b: any, combinedValue: string) {
+    if (!combinedValue) return;
+    const parts = combinedValue.split('||');
+    const cat = parts[0] || 'general';
+    const site = parts[1] || 'General / All Sites';
+    const interest = parts[2] || this.getCategoryLabel(cat);
+
+    b.category = cat;
+    b.category_label = this.getCategoryLabel(cat);
+    b.category_badge_class = this.getCategoryBadgeClass(cat);
+    b.site_name = site;
+    b.interest = interest;
+
+    this.api.adminUpdateInquiry(b.id, {
+      inquiry_type: b.interest,
+      site_name: b.site_name === 'General / All Sites' ? null : b.site_name,
+      status: b.status
+    }).subscribe({
+      next: () => this.showToast(`Updated to ${this.getCombinedLabel(b)}`),
+      error: () => this.showToast(`Updated locally`)
+    });
+  }
+
   updateInquiryCategory(b: any, newCat: string) {
     b.category = newCat;
     b.category_label = this.getCategoryLabel(newCat);
     b.category_badge_class = this.getCategoryBadgeClass(newCat);
 
-    // If interest was generic, sync interest topic with chosen category
     if (newCat === 'customer' && (!b.interest || b.interest === 'General Enquiry' || b.interest === 'Inquiry')) {
       b.interest = 'Plot Booking';
     } else if (newCat === 'investor' && (!b.interest || b.interest === 'General Enquiry' || b.interest === 'Inquiry')) {

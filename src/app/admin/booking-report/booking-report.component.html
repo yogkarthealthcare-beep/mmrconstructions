@@ -197,45 +197,63 @@
                 </div>
               </td>
               <td>
-                <div class="inquiry-merged-box d-flex flex-column gap-1">
-                  <!-- 1. Inquiry Category Dropdown -->
-                  <div class="d-flex align-items-center">
-                    <select class="form-select form-select-xs row-cat-select w-100 shadow-none"
-                      [ngModel]="b.category"
-                      (change)="updateInquiryCategory(b, $any($event.target).value)"
-                      [ngClass]="b.category_badge_class"
-                      title="Inquiry Category">
-                      <option value="customer">Plot Booking</option>
-                      <option value="investor">Investor</option>
-                      <option value="associate">Associate / Commission</option>
-                      <option value="site_visit">Site Visit Request</option>
-                      <option value="general">General Enquiry</option>
-                    </select>
-                  </div>
+                <div class="inquiry-single-dropdown-wrap">
+                  <select class="form-select form-select-xs row-combined-select shadow-none"
+                    [ngModel]="getCombinedKey(b)"
+                    (change)="onCombinedInquiryChange(b, $any($event.target).value)"
+                    [ngClass]="b.category_badge_class"
+                    title="Inquiry Category, Project Site & Topic">
+                    
+                    <!-- Plot Booking Group -->
+                    <optgroup label="── Plot Booking (Customer) ──">
+                      <option [value]="'customer||General / All Sites||Plot Booking'">Plot Booking — All / General Sites</option>
+                      <option *ngFor="let site of availableSites" [value]="'customer||' + site + '||Plot Booking'">
+                        Plot Booking — {{ site }}
+                      </option>
+                      <option *ngFor="let site of availableSites" [value]="'customer||' + site + '||Plot Booking — 50 Gaj'">
+                        Plot Booking — {{ site }} (50 Gaj)
+                      </option>
+                      <option *ngFor="let site of availableSites" [value]="'customer||' + site + '||Plot Booking — 100 Gaj'">
+                        Plot Booking — {{ site }} (100 Gaj)
+                      </option>
+                      <option [value]="'customer||General / All Sites||Plot Booking — 50 Gaj'">Plot Booking — 50 Gaj (General)</option>
+                      <option [value]="'customer||General / All Sites||Plot Booking — 100 Gaj'">Plot Booking — 100 Gaj (General)</option>
+                    </optgroup>
 
-                  <!-- 2. Selected Project Site Dropdown -->
-                  <div class="d-flex align-items-center gap-1">
-                    <span class="icon-site-prefix text-danger" title="Project Site"><i class="fas fa-map-marker-alt"></i></span>
-                    <select class="form-select form-select-xs row-site-select flex-grow-1 shadow-none"
-                      [ngModel]="b.site_name"
-                      (change)="updateInquirySite(b, $any($event.target).value)"
-                      title="Selected Project Site">
-                      <option value="General / All Sites">-- All Sites / General --</option>
-                      <option *ngFor="let site of availableSites" [value]="site">{{ site }}</option>
-                    </select>
-                  </div>
+                    <!-- Investor Group -->
+                    <optgroup label="── Investor ──">
+                      <option [value]="'investor||General / All Sites||Investor'">Investor — General Investment</option>
+                      <option [value]="'investor||General / All Sites||High Return Investment'">Investor — High Return Deposit</option>
+                      <option [value]="'investor||General / All Sites||Monthly Return Plan'">Investor — Monthly Return Plan</option>
+                    </optgroup>
 
-                  <!-- 3. Interest / Topic Dropdown -->
-                  <div class="d-flex align-items-center gap-1">
-                    <span class="icon-site-prefix text-emerald" title="Interest / Topic"><i class="fas fa-tag"></i></span>
-                    <select class="form-select form-select-xs row-topic-select flex-grow-1 shadow-none"
-                      [ngModel]="b.interest"
-                      (change)="updateInquiryInterest(b, $any($event.target).value)"
-                      title="Interest / Topic">
-                      <option *ngFor="let topic of standardTopics" [value]="topic">{{ topic }}</option>
-                      <option *ngIf="!isStandardTopic(b.interest)" [value]="b.interest">{{ b.interest }}</option>
-                    </select>
-                  </div>
+                    <!-- Associate Group -->
+                    <optgroup label="── Associate / Commission ──">
+                      <option [value]="'associate||General / All Sites||Associate / Commission Program'">Associate — Commission Program</option>
+                      <option [value]="'associate||General / All Sites||Associate Registration'">Associate — Partner Registration</option>
+                    </optgroup>
+
+                    <!-- Site Visit Request Group -->
+                    <optgroup label="── Site Visit Request ──">
+                      <option [value]="'site_visit||General / All Sites||Site Visit Request'">Site Visit — General / Cab Request</option>
+                      <option *ngFor="let site of availableSites" [value]="'site_visit||' + site + '||Site Visit Request'">
+                        Site Visit — {{ site }}
+                      </option>
+                    </optgroup>
+
+                    <!-- General Enquiry Group -->
+                    <optgroup label="── General Enquiry ──">
+                      <option [value]="'general||General / All Sites||General Enquiry'">General Enquiry — General</option>
+                      <option [value]="'general||General / All Sites||Price Query'">General Enquiry — Price Query</option>
+                      <option [value]="'general||General / All Sites||EMI Query'">General Enquiry — EMI Details</option>
+                      <option [value]="'general||General / All Sites||Commercial Land'">General Enquiry — Commercial Land</option>
+                    </optgroup>
+
+                    <!-- Custom Fallback if specific custom topic exists -->
+                    <option *ngIf="!isStandardCombinedKey(getCombinedKey(b))" [value]="getCombinedKey(b)">
+                      {{ getCombinedLabel(b) }}
+                    </option>
+                  </select>
                 </div>
               </td>
               <td>
