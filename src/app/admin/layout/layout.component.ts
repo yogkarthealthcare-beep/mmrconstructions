@@ -60,7 +60,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-tasks', label: 'Booking Workflow', route: '/admin/booking-workflow' },
         { icon: 'fas fa-rupee-sign', label: 'EMI & Installments', route: '/admin/emi-payments' },
         { icon: 'fas fa-university', label: 'Payment & Collections Ledger', route: '/admin/payment-management', badge: 'ERP' },
-        { icon: 'fas fa-clipboard-list', label: 'Booking Reports', route: '/admin/booking-report', badge: 'NEW' },
+        { icon: 'fas fa-clipboard-list', label: 'Booking & Customer Enquiries', route: '/admin/booking-report', queryParams: { type: 'customer' }, badge: 'NEW' },
         { icon: 'fas fa-shopping-cart', label: 'Orders Management', route: '/admin/orders-mgmt' },
         { icon: 'fas fa-file-contract', label: 'Buyback Terms', route: '/admin/buyback-terms' },
         { icon: 'fas fa-envelope-open-text', label: 'Enquiries & Leads', route: '/admin/enquiries' },
@@ -80,6 +80,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-percent', label: 'Commission Settings', route: '/admin/commission-settings' },
         { icon: 'fas fa-exchange-alt', label: 'Wallet Transactions', route: '/admin/wallet-transactions' },
         { icon: 'fas fa-money-bill-wave', label: 'Withdrawal Requests', route: '/admin/withdrawal-requests', badge: 'REQ' },
+        { icon: 'fas fa-envelope-open-text', label: 'Associate Enquiries', route: '/admin/booking-report', queryParams: { type: 'associate' } },
       ]
     },
     {
@@ -89,6 +90,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       items: [
         { icon: 'fas fa-users-cog', label: 'Investor Accounts', route: '/admin/investor-portal', queryParams: { tab: 'investors' } },
         { icon: 'fas fa-file-invoice', label: 'Investor Enrollments', route: '/admin/investor-enrollments' },
+        { icon: 'fas fa-envelope-open-text', label: 'Investor Enquiries', route: '/admin/booking-report', queryParams: { type: 'investor' } },
         { icon: 'fas fa-arrow-down-long', label: 'Deposit Requests', route: '/admin/investor-portal', queryParams: { tab: 'deposits' } },
         { icon: 'fas fa-arrow-up-long', label: 'Withdrawal Requests', route: '/admin/investor-portal', queryParams: { tab: 'withdrawals' } },
         { icon: 'fas fa-receipt', label: 'All Transactions', route: '/admin/investor-portal', queryParams: { tab: 'transactions' } },

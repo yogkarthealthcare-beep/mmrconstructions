@@ -1,15 +1,59 @@
 <div class="booking-report-page p-3">
   <!-- PAGE TOP BAR CARD -->
   <div class="booking-report-header mb-3">
-    <div>
-      <h4 class="fw-800 text-dark mb-0.5 d-flex align-items-center">
-        <i class="fas fa-file-signature text-emerald me-2"></i>Booking Report
-      </h4>
-      <p class="text-muted fs-12 mb-0">All plot booking requests submitted from website site maps &amp; property cards</p>
+    <div class="d-flex align-items-center gap-3">
+      <div class="header-icon-box shadow-sm">
+        <i [class]="pageIcon"></i>
+      </div>
+      <div>
+        <h4 class="fw-800 text-dark mb-0.5 d-flex align-items-center gap-2 flex-wrap">
+          <span>{{ pageTitle }}</span>
+          <span class="badge rounded-pill fs-10 px-2.5 py-1" [ngClass]="getCategoryBadgeClass(categoryFilter)">
+            {{ categoryFilter === 'all' ? 'All Leads' : getCategoryLabel(categoryFilter) }}
+          </span>
+        </h4>
+        <p class="text-muted fs-12 mb-0">{{ pageSubtitle }}</p>
+      </div>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="fetchBookingReports()">
-        <i class="fas fa-rotate me-1"></i> Refresh List
+    <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
+      <button type="button" class="btn btn-outline-secondary btn-sm rounded-8" (click)="fetchBookingReports()">
+        <i class="fas fa-rotate me-1"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- CATEGORY SWITCHER QUICK TABS -->
+  <div class="category-tabs-wrap mb-3 p-1.5 bg-white rounded-12 border shadow-xs">
+    <div class="d-flex align-items-center gap-1 overflow-x-auto py-0.5 no-scrollbar">
+      <button type="button" class="category-pill-btn" [class.active]="categoryFilter === 'all'" (click)="setCategory('all')">
+        <i class="fas fa-layer-group me-1.5 text-muted"></i>
+        <span>All Inquiries</span>
+        <span class="pill-count-badge">{{ allCount }}</span>
+      </button>
+      <button type="button" class="category-pill-btn" [class.active]="categoryFilter === 'customer'" (click)="setCategory('customer')">
+        <i class="fas fa-home me-1.5 text-emerald"></i>
+        <span>Customer &amp; Plots</span>
+        <span class="pill-count-badge pill-count-customer">{{ customerCount }}</span>
+      </button>
+      <button type="button" class="category-pill-btn" [class.active]="categoryFilter === 'associate'" (click)="setCategory('associate')">
+        <i class="fas fa-user-friends me-1.5 text-amber"></i>
+        <span>Associate Program</span>
+        <span class="pill-count-badge pill-count-associate">{{ associateCount }}</span>
+      </button>
+      <button type="button" class="category-pill-btn" [class.active]="categoryFilter === 'investor'" (click)="setCategory('investor')">
+        <i class="fas fa-hand-holding-usd me-1.5 text-purple"></i>
+        <span>Investor Inquiries</span>
+        <span class="pill-count-badge pill-count-investor">{{ investorCount }}</span>
+      </button>
+      <button type="button" class="category-pill-btn" [class.active]="categoryFilter === 'site_visit'" (click)="setCategory('site_visit')">
+        <i class="fas fa-car me-1.5 text-primary"></i>
+        <span>Site Visit Requests</span>
+        <span class="pill-count-badge pill-count-sitevisit">{{ siteVisitCount }}</span>
+      </button>
+      <button type="button" class="category-pill-btn" [class.active]="categoryFilter === 'general'" (click)="setCategory('general')">
+        <i class="fas fa-comments me-1.5 text-secondary"></i>
+        <span>General &amp; Price Queries</span>
+        <span class="pill-count-badge pill-count-general">{{ generalCount }}</span>
       </button>
     </div>
   </div>
@@ -20,8 +64,8 @@
       <div class="stat-box stat-box-leads p-3 rounded-12 border shadow-xs">
         <div class="d-flex align-items-center justify-content-between">
           <div>
-            <span class="fs-11 fw-700 text-muted uppercase">Total Booking Leads</span>
-            <h3 class="fw-800 text-dark mb-0 mt-1">{{ bookings.length }}</h3>
+            <span class="fs-11 fw-700 text-muted uppercase">Total in View</span>
+            <h3 class="fw-800 text-dark mb-0 mt-1">{{ currentCategoryList.length }}</h3>
           </div>
           <div class="icon-circle bg-emerald-subtle text-emerald"><i class="fas fa-bookmark"></i></div>
         </div>
@@ -63,26 +107,36 @@
   </div>
 
   <!-- TOAST NOTIFICATION -->
-  <div *ngIf="toast" class="alert alert-success py-2 px-3 fs-12 mb-3 shadow-sm border-0 d-flex align-items-center">
+  <div *ngIf="toast" class="alert alert-success py-2 px-3 fs-12 mb-3 shadow-sm border-0 d-flex align-items-center rounded-10">
     <i class="fas fa-check-circle me-2"></i>{{ toast }}
   </div>
 
   <!-- SEARCH & FILTER CONTROLS -->
   <div class="bg-white p-3 rounded-12 border shadow-xs mb-3">
     <div class="row g-2 align-items-center">
-      <div class="col-md-5">
+      <div class="col-lg-4 col-md-12">
         <div class="position-relative">
           <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted fs-12"></i>
-          <input type="text" class="form-control form-control-sm ps-4.5" [(ngModel)]="search" (ngModelChange)="onFilterChange()" placeholder="Search customer name, phone, site name...">
+          <input type="text" class="form-control form-control-sm ps-4.5" [(ngModel)]="search" (ngModelChange)="onFilterChange()" placeholder="Search lead name, phone, message, site...">
         </div>
       </div>
-      <div class="col-sm-6 col-md-3">
+      <div class="col-sm-6 col-lg-3 col-md-4">
+        <select class="form-select form-select-sm" [ngModel]="categoryFilter" (ngModelChange)="setCategory($event)">
+          <option value="all">📁 All Inquiry Categories ({{ allCount }})</option>
+          <option value="customer">🏡 Customer / Plot Bookings ({{ customerCount }})</option>
+          <option value="associate">🤝 Associate Program ({{ associateCount }})</option>
+          <option value="investor">💰 Investor Inquiries ({{ investorCount }})</option>
+          <option value="site_visit">🚗 Site Visit Requests ({{ siteVisitCount }})</option>
+          <option value="general">💬 General &amp; Price Queries ({{ generalCount }})</option>
+        </select>
+      </div>
+      <div class="col-sm-6 col-lg-3 col-md-4">
         <select class="form-select form-select-sm" [(ngModel)]="siteFilter" (ngModelChange)="onFilterChange()">
-          <option value="all">All Sites</option>
+          <option value="all">All Sites / Projects</option>
           <option *ngFor="let site of availableSites" [value]="site">{{ site }}</option>
         </select>
       </div>
-      <div class="col-sm-6 col-md-3">
+      <div class="col-sm-6 col-lg-2 col-md-4">
         <select class="form-select form-select-sm" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
           <option value="all">All Status</option>
           <option value="open">Open Requests</option>
@@ -96,27 +150,28 @@
   <!-- DATA TABLE PANEL -->
   <div class="bg-white rounded-12 border shadow-xs p-3">
     <div *ngIf="loading" class="text-center py-5 text-muted">
-      <i class="fas fa-spinner fa-spin fs-2 mb-2"></i>
-      <p class="fs-12 mb-0">Loading booking report records...</p>
+      <i class="fas fa-spinner fa-spin fs-2 mb-2 text-emerald"></i>
+      <p class="fs-12 mb-0">Loading inquiry and booking records...</p>
     </div>
 
     <div *ngIf="!loading && filtered.length === 0" class="text-center py-5 text-muted">
       <i class="fas fa-clipboard-list fs-1 mb-2 text-gold opacity-50"></i>
-      <h6 class="fw-700 text-dark mb-1">No Plot Booking Records Found</h6>
-      <p class="fs-12 mb-0">No booking requests match your current search/filter parameters.</p>
+      <h6 class="fw-700 text-dark mb-1">No Inquiries Found</h6>
+      <p class="fs-12 mb-0">No records match the current "{{ categoryFilter === 'all' ? 'All' : getCategoryLabel(categoryFilter) }}" category and filter parameters.</p>
     </div>
 
-    <app-admin-table-container [title]="'Booking Report'" [count]="filtered.length" *ngIf="!loading && filtered.length > 0">
+    <app-admin-table-container [title]="pageTitle" [count]="filtered.length" *ngIf="!loading && filtered.length > 0">
       <div class="table-responsive" style="overflow-y: visible;">
         <table class="table align-middle table-hover mb-0">
           <thead class="bg-light">
             <tr>
               <th class="th-sno">#</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Customer Profile</th>
+              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Lead Contact</th>
+              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Inquiry Category</th>
               <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Selected Project Site</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Plot Preference</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Message / Notes</th>
-              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3 text-nowrap">Booking Date</th>
+              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Interest / Topic</th>
+              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3">Requirement Note</th>
+              <th class="fs-11 fw-700 text-muted uppercase py-3 px-3 text-nowrap">Date</th>
               <th class="fs-11 fw-700 text-muted uppercase py-3 px-3 text-center">Status</th>
               <th class="fs-11 fw-700 text-muted uppercase py-3 px-3 text-end">Actions</th>
             </tr>
@@ -132,8 +187,14 @@
                   <div>
                     <div class="fw-700 text-dark fs-12 text-nowrap">{{ b.name }}</div>
                     <div class="fs-11 text-muted text-nowrap"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ b.mobile }}</div>
+                    <div class="fs-10 text-muted text-nowrap" *ngIf="b.email"><i class="fas fa-envelope me-1 text-secondary"></i>{{ b.email }}</div>
                   </div>
                 </div>
+              </td>
+              <td class="px-3 py-3">
+                <span class="badge rounded-pill fw-700 fs-10 text-nowrap" [ngClass]="b.category_badge_class">
+                  {{ b.category_label }}
+                </span>
               </td>
               <td class="px-3 py-3">
                 <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fw-700 fs-11 text-nowrap">
@@ -147,11 +208,11 @@
               </td>
               <td class="px-3 py-3">
                 <div class="fs-11 text-dark text-truncate" style="max-width: 180px;" [title]="b.message">
-                  "{{ b.message || 'Plot booking requested' }}"
+                  "{{ b.message || 'No specific requirement message entered' }}"
                 </div>
               </td>
               <td class="px-3 py-3 text-nowrap">
-                <div class="fs-11 text-dark fw-600">{{ b.date | date:'mediumDate' }}</div>
+                <div class="fs-11 text-dark fw-600">{{ b.date | date:'dd MMM yyyy' }}</div>
                 <div class="fs-10 text-muted">{{ b.source_page }}</div>
               </td>
               <td class="px-3 py-3 text-center">
@@ -175,7 +236,7 @@
 
                   <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 165px; border-radius: 10px;" *ngIf="activeRowId === b.id" (click)="$event.stopPropagation()">
                     <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + b.mobile">
-                      <i class="fas fa-phone text-primary me-2 width-16"></i> Call Customer
+                      <i class="fas fa-phone text-primary me-2 width-16"></i> Call Lead
                     </a>
                     <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + b.mobile" target="_blank">
                       <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
@@ -196,22 +257,27 @@
     <app-admin-pagination
       *ngIf="!loading && filtered.length > 0"
       [totalItems]="filtered.length"
-      [page]="page"
+      [currentPage]="page"
       [pageSize]="pageSize"
       (pageChange)="onPageChange($event)"
       (pageSizeChange)="onPageSizeChange($event)"
-      (export)="exportData($event.mode, $event.format)">
+      (exportCurrentExcel)="exportData('current', 'excel')"
+      (exportAllExcel)="exportData('all', 'excel')"
+      (exportCurrentPdf)="exportData('current', 'pdf')"
+      (exportAllPdf)="exportData('all', 'pdf')">
     </app-admin-pagination>
   </div>
 </div>
 
-<!-- BOOKING FOLLOW-UP NOTES MODAL -->
+<!-- BOOKING / INQUIRY FOLLOW-UP NOTES MODAL -->
 <div class="modal-backdrop fade show" *ngIf="showDetailModal"></div>
 <div class="modal d-block fade show" tabIndex="-1" *ngIf="showDetailModal" (click)="closeModals()">
   <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-content border-0 rounded-14 shadow-lg">
       <div class="modal-header bg-dark text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-file-signature text-emerald me-2"></i>Booking Lead Details &amp; Follow-up</h5>
+        <h5 class="modal-title fs-15 fw-700">
+          <i class="fas fa-file-signature text-emerald me-2"></i>Inquiry Lead Details &amp; Follow-up
+        </h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
       </div>
 
@@ -219,22 +285,24 @@
         <div class="p-3 bg-light rounded-10 border mb-3">
           <div class="row g-2">
             <div class="col-md-6">
-              <div class="fs-12 mb-1"><strong>Customer Name:</strong> {{ selectedBooking.name }}</div>
+              <div class="fs-12 mb-1"><strong>Lead Name:</strong> {{ selectedBooking.name }}</div>
               <div class="fs-12 mb-1"><strong>Mobile:</strong> {{ selectedBooking.mobile }}</div>
-              <div class="fs-12"><strong>Email:</strong> {{ selectedBooking.email || '—' }}</div>
+              <div class="fs-12 mb-1"><strong>Email:</strong> {{ selectedBooking.email || '—' }}</div>
+              <div class="fs-12"><strong>Category:</strong> <span class="badge rounded-pill ms-1" [ngClass]="selectedBooking.category_badge_class">{{ selectedBooking.category_label }}</span></div>
             </div>
             <div class="col-md-6">
-              <div class="fs-12 mb-1"><strong>Selected Project Site:</strong> <span class="badge bg-emerald-subtle text-emerald border ms-1"><i class="fas fa-building text-gold me-1"></i>{{ selectedBooking.site_name }}</span></div>
-              <div class="fs-12 mb-1"><strong>Plot Preference:</strong> {{ selectedBooking.interest }}</div>
-              <div class="fs-12"><strong>Status:</strong> <span class="badge bg-emerald-subtle text-emerald">{{ selectedBooking.status | uppercase }}</span></div>
+              <div class="fs-12 mb-1"><strong>Selected Site:</strong> <span class="badge bg-emerald-subtle text-emerald border ms-1"><i class="fas fa-building text-gold me-1"></i>{{ selectedBooking.site_name }}</span></div>
+              <div class="fs-12 mb-1"><strong>Topic / Interest:</strong> {{ selectedBooking.interest }}</div>
+              <div class="fs-12 mb-1"><strong>Source Page:</strong> {{ selectedBooking.source_page }}</div>
+              <div class="fs-12"><strong>Status:</strong> <span class="badge bg-emerald-subtle text-emerald ms-1">{{ selectedBooking.status | uppercase }}</span></div>
             </div>
           </div>
         </div>
 
         <div class="mb-3">
-          <h6 class="fw-700 text-dark fs-12 mb-1"><i class="fas fa-comment-alt text-emerald me-1.5"></i>Original Customer Requirement</h6>
+          <h6 class="fw-700 text-dark fs-12 mb-1"><i class="fas fa-comment-alt text-emerald me-1.5"></i>Customer / Lead Message</h6>
           <div class="p-2.5 bg-white rounded border fs-12 text-muted italic">
-            "{{ selectedBooking.message || 'Plot booking requested via site map' }}"
+            "{{ selectedBooking.message || 'No specific requirement message entered' }}"
           </div>
         </div>
 
@@ -244,9 +312,9 @@
         </div>
 
         <div>
-          <label class="form-label fs-11 fw-700 text-dark">Add Call / Site Visit Note</label>
+          <label class="form-label fs-11 fw-700 text-dark">Add Call / Follow-up Note</label>
           <div class="d-flex gap-2">
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="newNoteText" placeholder="e.g. Spoke to customer. Site visit fixed for Saturday...">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="newNoteText" placeholder="e.g. Spoke to lead. Site visit fixed for Saturday...">
             <button class="btn btn-emerald btn-xs px-3" (click)="addNoteToBooking()">
               <i class="fas fa-paper-plane me-1"></i> Save Note
             </button>
