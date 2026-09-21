@@ -174,9 +174,7 @@
             <tr>
               <th class="th-sno">#</th>
               <th>Lead Contact</th>
-              <th>Inquiry Category</th>
-              <th>Selected Project Site</th>
-              <th>Interest / Topic</th>
+              <th>Inquiry & Project Details</th>
               <th>Requirement Note</th>
               <th>Date</th>
               <th class="text-center">Status</th>
@@ -199,35 +197,49 @@
                 </div>
               </td>
               <td>
-                <select class="form-select form-select-xs row-cat-select shadow-none"
-                  [ngModel]="b.category"
-                  (change)="updateInquiryCategory(b, $any($event.target).value)"
-                  [ngClass]="b.category_badge_class">
-                  <option value="customer">Plot Booking</option>
-                  <option value="investor">Investor</option>
-                  <option value="associate">Associate / Commission Program</option>
-                  <option value="site_visit">Site Visit Request</option>
-                  <option value="general">General Enquiry</option>
-                </select>
+                <div class="inquiry-merged-box d-flex flex-column gap-1">
+                  <!-- 1. Inquiry Category Dropdown -->
+                  <div class="d-flex align-items-center">
+                    <select class="form-select form-select-xs row-cat-select w-100 shadow-none"
+                      [ngModel]="b.category"
+                      (change)="updateInquiryCategory(b, $any($event.target).value)"
+                      [ngClass]="b.category_badge_class"
+                      title="Inquiry Category">
+                      <option value="customer">Plot Booking</option>
+                      <option value="investor">Investor</option>
+                      <option value="associate">Associate / Commission</option>
+                      <option value="site_visit">Site Visit Request</option>
+                      <option value="general">General Enquiry</option>
+                    </select>
+                  </div>
+
+                  <!-- 2. Selected Project Site Dropdown -->
+                  <div class="d-flex align-items-center gap-1">
+                    <span class="icon-site-prefix text-danger" title="Project Site"><i class="fas fa-map-marker-alt"></i></span>
+                    <select class="form-select form-select-xs row-site-select flex-grow-1 shadow-none"
+                      [ngModel]="b.site_name"
+                      (change)="updateInquirySite(b, $any($event.target).value)"
+                      title="Selected Project Site">
+                      <option value="General / All Sites">-- All Sites / General --</option>
+                      <option *ngFor="let site of availableSites" [value]="site">{{ site }}</option>
+                    </select>
+                  </div>
+
+                  <!-- 3. Interest / Topic Dropdown -->
+                  <div class="d-flex align-items-center gap-1">
+                    <span class="icon-site-prefix text-emerald" title="Interest / Topic"><i class="fas fa-tag"></i></span>
+                    <select class="form-select form-select-xs row-topic-select flex-grow-1 shadow-none"
+                      [ngModel]="b.interest"
+                      (change)="updateInquiryInterest(b, $any($event.target).value)"
+                      title="Interest / Topic">
+                      <option *ngFor="let topic of standardTopics" [value]="topic">{{ topic }}</option>
+                      <option *ngIf="!isStandardTopic(b.interest)" [value]="b.interest">{{ b.interest }}</option>
+                    </select>
+                  </div>
+                </div>
               </td>
               <td>
-                <select class="form-select form-select-xs row-site-select shadow-none"
-                  [ngModel]="b.site_name"
-                  (change)="updateInquirySite(b, $any($event.target).value)">
-                  <option value="General / All Sites">-- General / All Sites --</option>
-                  <option *ngFor="let site of availableSites" [value]="site">{{ site }}</option>
-                </select>
-              </td>
-              <td>
-                <select class="form-select form-select-xs row-topic-select shadow-none"
-                  [ngModel]="b.interest"
-                  (change)="updateInquiryInterest(b, $any($event.target).value)">
-                  <option *ngFor="let topic of standardTopics" [value]="topic">{{ topic }}</option>
-                  <option *ngIf="!isStandardTopic(b.interest)" [value]="b.interest">{{ b.interest }}</option>
-                </select>
-              </td>
-              <td>
-                <div class="fs-11 text-dark text-truncate" style="max-width: 140px;" [title]="b.message">
+                <div class="fs-11 text-dark text-truncate" style="max-width: 150px;" [title]="b.message">
                   "{{ b.message || 'No specific requirement entered' }}"
                 </div>
               </td>
