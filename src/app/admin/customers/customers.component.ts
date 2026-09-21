@@ -143,10 +143,7 @@ export class CustomersComponent implements OnInit {
   }
 
   isFreeOrDisabled(c: any): boolean {
-    if (!c) return false;
-    const status = String(c.account_status || c.status || '').toLowerCase();
-    const isFree = c.is_free === true || c.isFree === true || c.user_type === 'Free' || c.rank_name === 'Free';
-    return isFree || status === 'free' || status === 'inactive' || status === 'pending' || status === 'suspended' || status === 'blacklisted' || status === 'disabled';
+    return false;
   }
 
   onRowMouseEnter(c: any, event: MouseEvent) {
@@ -165,11 +162,7 @@ export class CustomersComponent implements OnInit {
   }
 
   onRowClick(c: any, event: MouseEvent) {
-    if (this.isFreeOrDisabled(c)) {
-      event.stopPropagation();
-      event.preventDefault();
-      return;
-    }
+    // Row click without blocking
   }
 
   onRowDblClick(c: any, event: MouseEvent) {

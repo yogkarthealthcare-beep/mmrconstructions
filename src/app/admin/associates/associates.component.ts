@@ -144,10 +144,7 @@ export class AssociatesComponent implements OnInit {
   }
 
   isFreeOrDisabled(a: any): boolean {
-    if (!a) return false;
-    const status = String(a.account_status || a.status || '').toLowerCase();
-    const isFree = a.is_free === true || a.isFree === true || a.user_type === 'Free' || a.rank_name === 'Free';
-    return isFree || status === 'free' || status === 'inactive' || status === 'pending' || status === 'suspended' || status === 'blacklisted' || status === 'disabled';
+    return false;
   }
 
   onRowMouseEnter(a: any, event: MouseEvent) {
@@ -166,11 +163,7 @@ export class AssociatesComponent implements OnInit {
   }
 
   onRowClick(a: any, event: MouseEvent) {
-    if (this.isFreeOrDisabled(a)) {
-      event.stopPropagation();
-      event.preventDefault();
-      return;
-    }
+    // Row click without blocking
   }
 
   onRowDblClick(a: any, event: MouseEvent) {
