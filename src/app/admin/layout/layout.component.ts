@@ -47,7 +47,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       items: [
         { icon: 'fas fa-chart-pie', label: 'Dashboard Overview', route: '/admin/dashboard' },
         { icon: 'fas fa-chart-line', label: 'Analytics', route: '/admin/analytics', badge: 'LIVE' },
-        { icon: 'fas fa-envelope-open-text', label: 'Site Visits & General Enquiries', route: '/admin/booking-report', queryParams: { type: 'general_site_visit' }, badge: 'LEADS' },
+        { icon: 'fas fa-envelope-open-text', label: 'General Enquiry', route: '/admin/booking-report', queryParams: { type: 'general_site_visit' }, badge: 'LEADS' },
       ]
     },
     {
