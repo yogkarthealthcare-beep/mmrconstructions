@@ -453,6 +453,8 @@ export class ApiService {
   submitInquiry(data: any) { return this.post('/api/inquiries', data); }
   getCaptchaChallenge() { return this.get('/api/captcha/enquiry'); }
   getAdminInquiries(params: any = {}) { return this.get('/api/admin/inquiries', params, true); }
+  adminUpdateInquiry(id: number | string, data: any) { return this.put(`/api/admin/inquiries/${id}`, data, true); }
+  adminDeleteInquiry(id: number | string) { return this.delete(`/api/admin/inquiries/${id}`, true); }
 
   // Wallet & Withdrawals (Admin)
   adminGetWalletTransactions(params: any = {}) { return this.get('/api/admin/wallet/transactions', params, true); }

@@ -34,6 +34,19 @@ export class BookingReportComponent implements OnInit {
   availableSites: string[] = [];
   toast = '';
 
+  standardTopics: string[] = [
+    'Plot Booking',
+    'Plot Booking — 50 Gaj',
+    'Plot Booking — 100 Gaj',
+    'Investor',
+    'Associate / Commission Program',
+    'Site Visit Request',
+    'Price Query',
+    'EMI Query',
+    'Commercial Land',
+    'General Enquiry'
+  ];
+
   selectedBooking: any = null;
   newNoteText = '';
   showDetailModal = false;
@@ -123,6 +136,11 @@ export class BookingReportComponent implements OnInit {
     }
   }
 
+  isStandardTopic(topic: string): boolean {
+    if (!topic) return true;
+    return this.standardTopics.includes(topic);
+  }
+
   private isInvalidSiteName(name: string): boolean {
     if (!name) return true;
     const lower = name.toLowerCase().trim();
@@ -130,6 +148,7 @@ export class BookingReportComponent implements OnInit {
            lower === 'website' ||
            lower === 'site-map-new page' ||
            lower === 'home page popup' ||
+           lower === 'general / all sites' ||
            lower.startsWith('plot booking') ||
            lower.startsWith('associate') ||
            lower.startsWith('investor') ||
@@ -244,6 +263,61 @@ export class BookingReportComponent implements OnInit {
         });
         this.availableSites = Array.from(siteSet);
       }
+    });
+  }
+
+  updateInquiryCategory(b: any, newCat: string) {
+    b.category = newCat;
+    b.category_label = this.getCategoryLabel(newCat);
+    b.category_badge_class = this.getCategoryBadgeClass(newCat);
+
+    // If interest was generic, sync interest topic with chosen category
+    if (newCat === 'customer' && (!b.interest || b.interest === 'General Enquiry' || b.interest === 'Inquiry')) {
+      b.interest = 'Plot Booking';
+    } else if (newCat === 'investor' && (!b.interest || b.interest === 'General Enquiry' || b.interest === 'Inquiry')) {
+      b.interest = 'Investor';
+    } else if (newCat === 'associate' && (!b.interest || b.interest === 'General Enquiry' || b.interest === 'Inquiry')) {
+      b.interest = 'Associate / Commission Program';
+    } else if (newCat === 'site_visit' && (!b.interest || b.interest === 'General Enquiry' || b.interest === 'Inquiry')) {
+      b.interest = 'Site Visit Request';
+    }
+
+    this.api.adminUpdateInquiry(b.id, {
+      inquiry_type: b.interest,
+      site_name: b.site_name === 'General / All Sites' ? null : b.site_name,
+      status: b.status
+    }).subscribe({
+      next: () => this.showToast(`Category updated to ${b.category_label}`),
+      error: () => this.showToast(`Category updated locally`)
+    });
+  }
+
+  updateInquirySite(b: any, newSite: string) {
+    b.site_name = newSite;
+    this.api.adminUpdateInquiry(b.id, {
+      site_name: newSite === 'General / All Sites' ? null : newSite,
+      inquiry_type: b.interest,
+      status: b.status
+    }).subscribe({
+      next: () => this.showToast(`Site updated to ${newSite}`),
+      error: () => this.showToast(`Site updated locally`)
+    });
+  }
+
+  updateInquiryInterest(b: any, newInterest: string) {
+    b.interest = newInterest;
+    const cat = this.getInquiryCategory({ inquiry_type: newInterest });
+    b.category = cat;
+    b.category_label = this.getCategoryLabel(cat);
+    b.category_badge_class = this.getCategoryBadgeClass(cat);
+
+    this.api.adminUpdateInquiry(b.id, {
+      inquiry_type: newInterest,
+      site_name: b.site_name === 'General / All Sites' ? null : b.site_name,
+      status: b.status
+    }).subscribe({
+      next: () => this.showToast(`Topic updated to ${newInterest}`),
+      error: () => this.showToast(`Topic updated locally`)
     });
   }
 
@@ -377,7 +451,14 @@ export class BookingReportComponent implements OnInit {
 
   updateStatus(b: any, newStatus: string) {
     b.status = newStatus;
-    this.showToast(`Inquiry status updated to ${newStatus}`);
+    this.api.adminUpdateInquiry(b.id, {
+      status: newStatus,
+      inquiry_type: b.interest,
+      site_name: b.site_name === 'General / All Sites' ? null : b.site_name
+    }).subscribe({
+      next: () => this.showToast(`Inquiry status updated to ${newStatus}`),
+      error: () => this.showToast(`Inquiry status updated locally`)
+    });
   }
 
   openDetailModal(b: any) {
@@ -391,8 +472,15 @@ export class BookingReportComponent implements OnInit {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const noteLine = `\n[${time}] ${this.newNoteText.trim()}`;
     this.selectedBooking.notes = (this.selectedBooking.notes || '') + noteLine;
-    this.showToast('Follow-up note added!');
     this.newNoteText = '';
+
+    this.api.adminUpdateInquiry(this.selectedBooking.id, {
+      remarks: this.selectedBooking.notes,
+      status: this.selectedBooking.status
+    }).subscribe({
+      next: () => this.showToast('Follow-up note saved successfully!'),
+      error: () => this.showToast('Follow-up note added locally.')
+    });
   }
 
   closeModals() {
