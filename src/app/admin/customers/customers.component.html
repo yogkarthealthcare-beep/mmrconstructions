@@ -452,10 +452,10 @@
             <div class="col-md-6">
               <div class="p-3 bg-light rounded-10 border">
                 <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-map-marker-alt text-emerald me-2"></i>Address Info</h6>
-                <div class="fs-12 mb-1"><strong>Line 1:</strong> {{ selectedCustomer.address?.address_line1 || selectedCustomer.address_line1 || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>City:</strong> {{ selectedCustomer.city || selectedCustomer.address?.city || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>State:</strong> {{ selectedCustomer.state || selectedCustomer.address?.state || '—' }}</div>
-                <div class="fs-12"><strong>Pincode:</strong> {{ selectedCustomer.pin_code || selectedCustomer.address?.pin_code || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>Line 1:</strong> {{ selectedCustomer.address?.address_line1 || selectedCustomer.address_line1 || selectedCustomer.address || selectedCustomer.permanent_address || selectedCustomer.present_address || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>City:</strong> {{ selectedCustomer.city || selectedCustomer.address?.city || selectedCustomer.permanent_city || selectedCustomer.present_city || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>State:</strong> {{ selectedCustomer.state || selectedCustomer.address?.state || selectedCustomer.permanent_state_pin || selectedCustomer.present_state_pin || '—' }}</div>
+                <div class="fs-12"><strong>Pincode:</strong> {{ selectedCustomer.pin_code || selectedCustomer.address?.pin_code || selectedCustomer.pincode || selectedCustomer.permanent_state_pin || '—' }}</div>
               </div>
             </div>
           </div>
@@ -464,19 +464,19 @@
             <div class="col-md-6">
               <div class="p-3 bg-light rounded-10 border">
                 <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-university text-warning me-2"></i>Bank Account</h6>
-                <div class="fs-12 mb-1"><strong>Holder:</strong> {{ selectedCustomer.bank?.account_holder_name || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Bank:</strong> {{ selectedCustomer.bank?.bank_name || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Account #:</strong> {{ selectedCustomer.bank?.account_number || '—' }}</div>
-                <div class="fs-12"><strong>IFSC:</strong> {{ selectedCustomer.bank?.ifsc_code || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>Holder:</strong> {{ selectedCustomer.bank?.account_holder_name || selectedCustomer.bank?.acc_holder_name || selectedCustomer.acc_holder_name || selectedCustomer.full_name || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>Bank:</strong> {{ selectedCustomer.bank?.bank_name || selectedCustomer.bank?.branch_name || selectedCustomer.bank?.acc_bank_branch || selectedCustomer.acc_bank_branch || selectedCustomer.drawn_bank_branch || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>Account #:</strong> {{ selectedCustomer.bank?.account_number || selectedCustomer.bank?.acc_number || selectedCustomer.acc_number || '—' }}</div>
+                <div class="fs-12"><strong>IFSC:</strong> {{ selectedCustomer.bank?.ifsc_code || selectedCustomer.ifsc_code || '—' }}</div>
               </div>
             </div>
 
             <div class="col-md-6">
               <div class="p-3 bg-light rounded-10 border">
-                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-user-heart text-purple me-2"></i>Nominee Details</h6>
-                <div class="fs-12 mb-1"><strong>Name:</strong> {{ selectedCustomer.nominee?.nominee_name || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Relation:</strong> {{ selectedCustomer.nominee?.relationship || '—' }}</div>
-                <div class="fs-12"><strong>Mobile:</strong> {{ selectedCustomer.nominee?.nominee_mobile || '—' }}</div>
+                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-user-shield text-purple me-2"></i>Nominee Details</h6>
+                <div class="fs-12 mb-1"><strong>Name:</strong> {{ selectedCustomer.nominee?.nominee_name || selectedCustomer.nominee_name || selectedCustomer.co_applicant_name || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>Relation:</strong> {{ selectedCustomer.nominee?.relationship || selectedCustomer.nominee?.relation || selectedCustomer.nominee_relationship || selectedCustomer.co_relation || '—' }}</div>
+                <div class="fs-12"><strong>Mobile:</strong> {{ selectedCustomer.nominee?.nominee_mobile || selectedCustomer.nominee?.mobile || selectedCustomer.co_mobile || selectedCustomer.nominee_mobile || '—' }}</div>
               </div>
             </div>
           </div>
