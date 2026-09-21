@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 export interface ApprovedTemplate {
   name: string;
+  identifier?: string;
   status: string;
 }
 
@@ -13,6 +14,7 @@ export interface TwoFactorConfig {
   provider: string;
   is_active: boolean;
   updated_at?: string | null;
+  template_identifiers?: Record<string, string>;
   approved_templates: ApprovedTemplate[];
 }
 
@@ -43,10 +45,10 @@ export class TwoFactorService {
   }
 
   /**
-   * Save and encrypt new 2Factor API Key in backend database.
+   * Save and encrypt 2Factor API Key and template configuration in backend database.
    */
-  saveConfig(apiKey: string): Observable<{ success: boolean; data: any; message: string }> {
-    return this.api.post('/api/admin/test-otp/config', { api_key: apiKey }, true);
+  saveConfig(apiKey?: string, templateIdentifiers?: Record<string, string>): Observable<{ success: boolean; data: any; message: string }> {
+    return this.api.post('/api/admin/test-otp/config', { api_key: apiKey, template_identifiers: templateIdentifiers }, true);
   }
 
   /**

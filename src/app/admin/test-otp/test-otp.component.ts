@@ -19,6 +19,14 @@ export class TestOtpComponent implements OnInit, OnDestroy {
   isEditingKey = false;
   savingConfig = false;
 
+  // Template identifier mappings (optional overrides if registered differently in 2Factor account)
+  templateIdentifiers: Record<string, string> = {
+    'MMR OTP Verification': 'MMR OTP Verification',
+    'MMR Forgot Password OTP': 'MMR Forgot Password OTP',
+  };
+  editingTemplates = false;
+  savingTemplates = false;
+
   // Send OTP state
   mobileNumber = '';
   selectedTemplate = 'MMR OTP Verification';
@@ -92,6 +100,12 @@ export class TestOtpComponent implements OnInit, OnDestroy {
         if (res.success && res.data) {
           this.config = res.data;
           this.isEditingKey = !this.config.is_configured;
+          if (res.data.template_identifiers) {
+            this.templateIdentifiers = {
+              'MMR OTP Verification': res.data.template_identifiers['MMR OTP Verification'] || 'MMR OTP Verification',
+              'MMR Forgot Password OTP': res.data.template_identifiers['MMR Forgot Password OTP'] || 'MMR Forgot Password OTP',
+            };
+          }
         }
       },
       error: (err) => {
@@ -140,7 +154,7 @@ export class TestOtpComponent implements OnInit, OnDestroy {
     }
 
     this.savingConfig = true;
-    this.twoFactorService.saveConfig(this.apiKeyInput.trim()).subscribe({
+    this.twoFactorService.saveConfig(this.apiKeyInput.trim(), this.templateIdentifiers).subscribe({
       next: (res) => {
         this.savingConfig = false;
         this.apiKeyInput = '';
@@ -152,6 +166,22 @@ export class TestOtpComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.savingConfig = false;
         this.showAlert('danger', err?.error?.message || 'Failed to save 2Factor API Key.');
+      }
+    });
+  }
+
+  saveTemplateConfig() {
+    this.savingTemplates = true;
+    this.twoFactorService.saveConfig(undefined, this.templateIdentifiers).subscribe({
+      next: (res) => {
+        this.savingTemplates = false;
+        this.editingTemplates = false;
+        this.showAlert('success', '✓ Template configuration updated successfully.');
+        this.loadConfig();
+      },
+      error: (err) => {
+        this.savingTemplates = false;
+        this.showAlert('danger', err?.error?.message || 'Failed to update template configuration.');
       }
     });
   }
@@ -189,14 +219,14 @@ export class TestOtpComponent implements OnInit, OnDestroy {
           this.activeSessionId = res.data.session_id;
           this.sentMobileMasked = res.data.mobile_masked;
           this.sentTemplate = res.data.template;
-          this.showAlert('success', '✓ Test OTP sent successfully! Check the mobile device for the SMS code.');
+          this.showAlert('success', '✓ Test OTP sent successfully via SMS! Check the mobile handset for the SMS text message.');
           this.startCooldown(30);
           this.loadLogs();
         }
       },
       error: (err) => {
         this.sendingOtp = false;
-        this.showAlert('danger', err?.error?.message || 'Failed to send test OTP. Verify your API credentials and balance.');
+        this.showAlert('danger', err?.error?.message || 'Failed to send test OTP via SMS. Verify your API credentials and balance.');
         this.loadLogs();
       }
     });
@@ -234,7 +264,7 @@ export class TestOtpComponent implements OnInit, OnDestroy {
         this.verifyingOtp = false;
         this.verificationResult = {
           success: true,
-          message: '✓ OTP verification successful! 2Factor validated the OTP code correctly.'
+          message: '✓ OTP verification successful! 2Factor validated the SMS OTP code correctly.'
         };
         this.showAlert('success', '✓ OTP verification successful.');
         this.loadLogs();
