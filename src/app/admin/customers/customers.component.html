@@ -232,8 +232,11 @@
     <div class="fs-11 text-slate-300 mb-0.5"><strong>Email:</strong> {{ hoveredCustomer.email || '—' }}</div>
     <div class="fs-11 text-slate-300 mb-0.5" *ngIf="hoveredCustomer.city || hoveredCustomer.address?.city"><strong>City:</strong> {{ hoveredCustomer.city || hoveredCustomer.address?.city }}, {{ hoveredCustomer.state || hoveredCustomer.address?.state }}</div>
     <div class="fs-11 text-slate-300 mb-1"><strong>Registered:</strong> {{ hoveredCustomer.registered_at | date:'dd MMM yyyy' }}</div>
-    <div class="badge mt-1" [class.bg-success]="!isFreeOrDisabled(hoveredCustomer) && hoveredCustomer.account_status==='Active'" [class.bg-danger]="isFreeOrDisabled(hoveredCustomer)">
-      {{ isFreeOrDisabled(hoveredCustomer) ? 'Disabled / Free Record (Hover only)' : (hoveredCustomer.account_status || 'Active') }}
+    <div class="badge mt-1" 
+      [class.bg-success]="hoveredCustomer.account_status==='Active'" 
+      [class.bg-warning]="hoveredCustomer.account_status==='Pending'"
+      [class.bg-danger]="hoveredCustomer.account_status!=='Active' && hoveredCustomer.account_status!=='Pending'">
+      Status: {{ hoveredCustomer.account_status || 'Active' }}
     </div>
   </div>
 </div>

@@ -278,7 +278,24 @@ export class ReferralComponent implements OnInit {
 
   showListTooltip(m: any, event: MouseEvent): void {
     this.hoveredMember = m;
-    this.tooltipPos = { x: event.clientX + 12, y: event.clientY + 12 };
+    const tooltipWidth = 270;
+    const tooltipHeight = 185;
+    const offset = 15;
+
+    let x = event.clientX + offset;
+    let y = event.clientY + offset;
+
+    if (x + tooltipWidth > window.innerWidth - 12) {
+      x = event.clientX - tooltipWidth - offset;
+    }
+    if (y + tooltipHeight > window.innerHeight - 12) {
+      y = event.clientY - tooltipHeight - offset;
+    }
+
+    x = Math.max(12, Math.min(x, window.innerWidth - tooltipWidth - 12));
+    y = Math.max(12, Math.min(y, window.innerHeight - tooltipHeight - 12));
+
+    this.tooltipPos = { x, y };
   }
 
   hideListTooltip(): void {

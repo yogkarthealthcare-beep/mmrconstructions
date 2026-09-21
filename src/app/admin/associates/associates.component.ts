@@ -149,17 +149,42 @@ export class AssociatesComponent implements OnInit {
 
   onRowMouseEnter(a: any, event: MouseEvent) {
     this.hoveredAssociate = a;
-    this.tooltipPos = { x: event.clientX + 15, y: event.clientY + 15 };
+    this.updateTooltipPos(event);
   }
 
   onRowMouseMove(event: MouseEvent) {
     if (this.hoveredAssociate) {
-      this.tooltipPos = { x: event.clientX + 15, y: event.clientY + 15 };
+      this.updateTooltipPos(event);
     }
   }
 
   onRowMouseLeave() {
     this.hoveredAssociate = null;
+  }
+
+  private updateTooltipPos(event: MouseEvent) {
+    const tooltipWidth = 270;
+    const tooltipHeight = 185;
+    const offset = 15;
+
+    let x = event.clientX + offset;
+    let y = event.clientY + offset;
+
+    // Flip to left if overflowing right window edge
+    if (x + tooltipWidth > window.innerWidth - 12) {
+      x = event.clientX - tooltipWidth - offset;
+    }
+
+    // Flip to top if overflowing bottom window edge
+    if (y + tooltipHeight > window.innerHeight - 12) {
+      y = event.clientY - tooltipHeight - offset;
+    }
+
+    // Clamp inside visible viewport
+    x = Math.max(12, Math.min(x, window.innerWidth - tooltipWidth - 12));
+    y = Math.max(12, Math.min(y, window.innerHeight - tooltipHeight - 12));
+
+    this.tooltipPos = { x, y };
   }
 
   onRowClick(a: any, event: MouseEvent) {

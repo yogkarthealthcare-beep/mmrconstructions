@@ -235,10 +235,13 @@
     <div class="fs-11 text-slate-300 mb-0.5"><strong>Email:</strong> {{ hoveredAssociate.email || '—' }}</div>
     <div class="fs-11 text-slate-300 mb-0.5"><strong>Rank:</strong> {{ hoveredAssociate.rank_name || 'Associate' }}</div>
     <div class="fs-11 text-slate-300 mb-1"><strong>Joined:</strong> {{ hoveredAssociate.registered_at | date:'dd MMM yyyy' }}</div>
-    <div class="badge mt-1" [class.bg-success]="!isFreeOrDisabled(hoveredAssociate) && hoveredAssociate.account_status==='Active'" [class.bg-danger]="isFreeOrDisabled(hoveredAssociate)">
-      {{ isFreeOrDisabled(hoveredAssociate) ? 'Disabled / Free Record (Hover only)' : (hoveredAssociate.account_status || 'Active') }}
+    <div class="badge mt-1" 
+      [class.bg-success]="hoveredAssociate.account_status==='Active'" 
+      [class.bg-warning]="hoveredAssociate.account_status==='Pending'"
+      [class.bg-danger]="hoveredAssociate.account_status!=='Active' && hoveredAssociate.account_status!=='Pending'">
+      Status: {{ hoveredAssociate.account_status || 'Active' }}
+    </div>
   </div>
-</div>
 
 <!-- ADD NEW ASSOCIATE MODAL -->
 <div class="modal-backdrop fade show" *ngIf="showAddModal"></div>
