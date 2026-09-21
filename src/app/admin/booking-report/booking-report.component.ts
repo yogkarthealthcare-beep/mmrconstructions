@@ -79,7 +79,7 @@ export class BookingReportComponent implements OnInit {
     const rawPage = String(item.source_page || '').toLowerCase();
     const combined = `${rawType} ${rawMsg} ${rawPage}`;
 
-    // 1. Associate Program
+    // 1. Associate / Commission Program
     if (rawType.includes('associate') || combined.includes('associate') || combined.includes('commission') || combined.includes('downline') || combined.includes('network program')) {
       return 'associate';
     }
@@ -91,7 +91,7 @@ export class BookingReportComponent implements OnInit {
     if (rawType.includes('site visit') || rawType.includes('visit') || combined.includes('site visit') || combined.includes('cab arrangement') || combined.includes('visit request')) {
       return 'site_visit';
     }
-    // 4. Customer / Plot Booking
+    // 4. Plot Booking (Customer)
     if (rawType.includes('plot') || rawType.includes('booking') || rawType.includes('purchase') || combined.includes('plot booking') || combined.includes('plot purchase') || combined.includes('gaj') || combined.includes('residential plot') || combined.includes('commercial plot')) {
       return 'customer';
     }
@@ -101,13 +101,13 @@ export class BookingReportComponent implements OnInit {
 
   getCategoryLabel(category: string): string {
     switch (category) {
-      case 'customer': return 'Plot Booking (Customer)';
-      case 'associate': return 'Associate Program';
-      case 'investor': return 'Investor Inquiry';
-      case 'general_site_visit': return 'Site Visits & General Enquiries';
+      case 'customer': return 'Plot Booking';
+      case 'investor': return 'Investor';
+      case 'associate': return 'Associate / Commission Program';
+      case 'general_site_visit': return 'Site Visit & General';
       case 'site_visit': return 'Site Visit Request';
       case 'general': return 'General Enquiry';
-      default: return 'General';
+      default: return 'General Enquiry';
     }
   }
 
@@ -123,18 +123,34 @@ export class BookingReportComponent implements OnInit {
     }
   }
 
+  private isInvalidSiteName(name: string): boolean {
+    if (!name) return true;
+    const lower = name.toLowerCase().trim();
+    return lower === 'general plot inquiry' ||
+           lower === 'website' ||
+           lower === 'site-map-new page' ||
+           lower === 'home page popup' ||
+           lower.startsWith('plot booking') ||
+           lower.startsWith('associate') ||
+           lower.startsWith('investor') ||
+           lower.startsWith('site visit') ||
+           lower.startsWith('general') ||
+           lower.includes('commission') ||
+           lower.includes('gaj');
+  }
+
   exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
     const list = mode === 'current' ? this.pagedBookings : this.filtered;
     const baseIndex = mode === 'current' ? (this.page - 1) * this.pageSize : 0;
 
     const columns: ExportColumn[] = [
       { header: '#', key: '_sno', width: 6 },
-      { header: 'Inquiry Category', key: 'category_label', width: 20 },
+      { header: 'Interested In / Category', key: 'category_label', width: 22 },
       { header: 'Lead Name', key: 'name', width: 20 },
       { header: 'Mobile Number', key: 'mobile', width: 16 },
       { header: 'Email Address', key: 'email_display', width: 22 },
-      { header: 'Selected Site', key: 'site_name', width: 20 },
-      { header: 'Interest / Topic', key: 'interest', width: 20 },
+      { header: 'Selected Site / Project', key: 'site_name', width: 20 },
+      { header: 'Requirement / Topic', key: 'interest', width: 20 },
       { header: 'Inquiry Date', key: 'date_display', width: 14 },
       { header: 'Status', key: 'status_display', width: 12 }
     ];
@@ -167,14 +183,19 @@ export class BookingReportComponent implements OnInit {
         const raw = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
         this.bookings = raw.map((item: any) => {
           const cat = this.getInquiryCategory(item);
+          let cleanSiteName = item.site_name || item.property_name || '';
+          if (this.isInvalidSiteName(cleanSiteName)) {
+            cleanSiteName = 'General / All Sites';
+          }
+
           return {
             id: item.inquiry_id || item.id,
             name: item.full_name || item.name || 'Customer',
             mobile: item.mobile_no || item.mobile || '',
             email: item.email || '',
             site_id: item.site_id || null,
-            site_name: item.site_name || item.property_name || 'General Plot Inquiry',
-            interest: item.inquiry_type || item.interest || (cat === 'customer' ? 'Plot Booking' : 'Inquiry'),
+            site_name: cleanSiteName,
+            interest: item.inquiry_type || item.interest || this.getCategoryLabel(cat),
             message: item.inquiry_message || item.message || '',
             source_page: item.source_page || 'Website',
             date: item.created_at || new Date().toISOString(),
@@ -186,17 +207,42 @@ export class BookingReportComponent implements OnInit {
           };
         });
 
-        // Extract unique site names for filtering
+        this.loadProjectSites();
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+  }
+
+  loadProjectSites() {
+    this.api.getSiteGallery('Plot').subscribe({
+      next: (res: any) => {
+        const raw = Array.isArray(res) ? res : (res?.data || []);
         const siteSet = new Set<string>();
+        if (Array.isArray(raw) && raw.length > 0) {
+          raw.forEach((s: any) => {
+            if (s.site_name && !this.isInvalidSiteName(s.site_name)) {
+              siteSet.add(s.site_name.trim());
+            }
+          });
+        }
+        // Add valid project names from inquiries
         this.bookings.forEach(b => {
-          if (b.site_name && b.site_name !== 'General Plot Inquiry') {
-            siteSet.add(b.site_name);
+          if (b.site_name && b.site_name !== 'General / All Sites' && !this.isInvalidSiteName(b.site_name)) {
+            siteSet.add(b.site_name.trim());
           }
         });
         this.availableSites = Array.from(siteSet);
       },
       error: () => {
-        this.loading = false;
+        const siteSet = new Set<string>();
+        this.bookings.forEach(b => {
+          if (b.site_name && b.site_name !== 'General / All Sites' && !this.isInvalidSiteName(b.site_name)) {
+            siteSet.add(b.site_name.trim());
+          }
+        });
+        this.availableSites = Array.from(siteSet);
       }
     });
   }
@@ -251,12 +297,12 @@ export class BookingReportComponent implements OnInit {
 
   get pageTitle(): string {
     switch (this.categoryFilter) {
-      case 'customer': return 'Customer Enquiries & Plot Bookings';
-      case 'associate': return 'Associate & Commission Enquiries';
-      case 'investor': return 'Investor & Capital Inquiries';
-      case 'general_site_visit': return 'Site Visits & General Public Enquiries';
+      case 'customer': return 'Plot Booking Inquiries';
+      case 'investor': return 'Investor Inquiries';
+      case 'associate': return 'Associate / Commission Program Inquiries';
+      case 'general_site_visit': return 'Site Visit & General Enquiries';
       case 'site_visit': return 'Site Visit Requests';
-      case 'general': return 'General Enquiries & Price Queries';
+      case 'general': return 'General Enquiries';
       default: return 'All Inquiries & Booking Reports';
     }
   }
@@ -264,20 +310,20 @@ export class BookingReportComponent implements OnInit {
   get pageSubtitle(): string {
     switch (this.categoryFilter) {
       case 'customer': return 'Plot purchase, size preference, and property booking requests from customers.';
-      case 'associate': return 'Prospective associate registrations and commission network inquiries.';
       case 'investor': return 'Investment plans, high-yield deposit and investor portal inquiries.';
+      case 'associate': return 'Prospective associate registrations and commission network inquiries.';
       case 'general_site_visit': return 'Public customer site visit appointments, transportation assistance, and general queries.';
       case 'site_visit': return 'Customer site visit appointments and transportation assistance requests.';
       case 'general': return 'General pricing, EMI details, brochures, and miscellaneous messages.';
-      default: return 'Comprehensive CRM inquiry records across Customer, Associate, Investor, Site Visits, and General categories.';
+      default: return 'Comprehensive CRM inquiry records across Plot Booking, Investor, Associate, Site Visits, and General categories.';
     }
   }
 
   get pageIcon(): string {
     switch (this.categoryFilter) {
       case 'customer': return 'fas fa-map-marked-alt text-emerald';
-      case 'associate': return 'fas fa-user-friends text-amber';
       case 'investor': return 'fas fa-hand-holding-usd text-purple';
+      case 'associate': return 'fas fa-user-friends text-amber';
       case 'general_site_visit': return 'fas fa-envelope-open-text text-primary';
       case 'site_visit': return 'fas fa-car text-primary';
       case 'general': return 'fas fa-comments text-secondary';
