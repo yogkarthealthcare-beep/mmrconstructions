@@ -17,7 +17,7 @@
         <i class="fas fa-city me-1"></i> My Properties
       </a>
       <a routerLink="/user/emi-history" class="btn btn-gold btn-xs px-3">
-        <i class="fas fa-calculator me-1"></i> EMI Schedule
+        <i class="fas fa-calculator me-1"></i> EMI Schedules
       </a>
     </div>
   </div>
@@ -29,7 +29,7 @@
     <div class="stat-mini-card h-100">
       <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-check-double"></i></div>
       <div>
-        <div class="stat-mini-val text-success">{{ emis.length }}</div>
+        <div class="stat-mini-val text-success">{{ payments.length }}</div>
         <div class="stat-mini-lbl">Confirmed Payments</div>
       </div>
     </div>
@@ -50,7 +50,7 @@
       <div class="icon-wrap bg-blue-light text-blue"><i class="fas fa-calendar-check"></i></div>
       <div>
         <div class="stat-mini-val text-primary">
-          {{ emis[0]?.paid_date ? (emis[0].paid_date | date:'dd MMM yyyy') : '—' }}
+          {{ payments[0]?.paid_date ? (payments[0].paid_date | date:'dd MMM yyyy') : '—' }}
         </div>
         <div class="stat-mini-lbl">Last Payment Date</div>
       </div>
@@ -64,7 +64,7 @@
     <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-width: 750px;">
       <div class="search-input-wrap flex-fill" style="min-width: 200px;">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" class="form-control form-control-sm search-field" placeholder="Search Plot #, Site, UTR, Inst #..." [(ngModel)]="searchTerm" />
+        <input type="text" class="form-control form-control-sm search-field" placeholder="Search Plot #, Site, UTR, Ref, Type..." [(ngModel)]="searchTerm" />
       </div>
 
       <select class="form-select form-select-sm status-select" [(ngModel)]="selectedPlot" style="width: 170px;" *ngIf="plots.length > 1">
@@ -75,9 +75,10 @@
       <select class="form-select form-select-sm status-select" [(ngModel)]="paymentModeFilter" style="width: 140px;">
         <option value="all">All Modes</option>
         <option value="upi">UPI</option>
-        <option value="banktransfer">Bank Transfer</option>
-        <option value="cheque">Cheque</option>
+        <option value="bank">Bank / Transfer</option>
         <option value="cash">Cash</option>
+        <option value="wallet">Wallet</option>
+        <option value="online">Online</option>
       </select>
     </div>
 
@@ -94,13 +95,13 @@
 </div>
 
 <!-- EMPTY STATE -->
-<div *ngIf="!loading && emis.length === 0" class="panel-card py-5 text-center my-3">
+<div *ngIf="!loading && payments.length === 0" class="panel-card py-5 text-center my-3">
   <div class="empty-icon-box mx-auto mb-3">
     <i class="fas fa-receipt text-gold fs-1"></i>
   </div>
   <h4 class="fw-700 text-dark mb-2">No Confirmed Receipts Recorded Yet</h4>
   <p class="text-muted max-w-500 mx-auto fs-13 mb-3">
-    Once your installment payments are verified and approved by accounts, your official receipts and downloadable PDFs will appear here.
+    Once your property down payment or installment payments are verified, your official receipts and downloadable PDFs will appear here.
   </p>
   <a routerLink="/user/my-plots" class="btn btn-green btn-md">
     <i class="fas fa-city me-1"></i> View My Properties
@@ -108,19 +109,18 @@
 </div>
 
 <!-- CONFIRMED RECEIPTS LEDGER TABLE -->
-<div class="panel-card p-0 overflow-hidden mb-3" *ngIf="!loading && emis.length > 0">
+<div class="panel-card p-0 overflow-hidden mb-3" *ngIf="!loading && payments.length > 0">
   <div class="p-3 bg-white border-bottom d-flex justify-content-between align-items-center">
-    <h6 class="fw-700 text-dark mb-0"><i class="fas fa-receipt text-gold me-2"></i>Confirmed Payment Receipts ({{ filteredEmis.length }})</h6>
+    <h6 class="fw-700 text-dark mb-0"><i class="fas fa-receipt text-gold me-2"></i>Confirmed Payment Receipts ({{ filteredPayments.length }})</h6>
   </div>
 
   <div class="table-responsive">
     <table class="table align-middle custom-payments-table mb-0">
       <thead>
         <tr>
-          <th class="ps-3">Inst #</th>
+          <th class="ps-3">Payment Type</th>
           <th>Plot &amp; Project</th>
-          <th>Due Date</th>
-          <th>Paid Date</th>
+          <th>Payment Date</th>
           <th>Mode &amp; Ref / UTR</th>
           <th>Amount Paid</th>
           <th>Status</th>
@@ -128,39 +128,46 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngIf="filteredEmis.length === 0">
-          <td colspan="8" class="text-center py-5 text-muted">
+        <tr *ngIf="filteredPayments.length === 0">
+          <td colspan="7" class="text-center py-5 text-muted">
             <i class="fas fa-search fs-2 text-gold mb-2 d-block"></i>
             No payment receipts matched your search query.
           </td>
         </tr>
-        <tr *ngFor="let e of filteredEmis">
+        <tr *ngFor="let p of filteredPayments">
           <td class="ps-3">
-            <span class="inst-num-badge">#{{ e.installment_no }}</span>
+            <div class="d-flex align-items-center gap-2">
+              <span class="inst-num-badge" [class.bg-gold-subtle]="p.installment_no==='DP'">
+                {{ p.installment_no === 'DP' ? 'Down Payment' : '#' + p.installment_no }}
+              </span>
+              <span class="fs-12 fw-700 text-dark">{{ p.payment_type }}</span>
+            </div>
           </td>
           <td>
-            <div class="fw-700 text-dark">Plot {{ e.plot_number }}</div>
-            <div class="fs-11 text-muted" *ngIf="e.site_name"><i class="fas fa-map-marker-alt me-1 text-gold"></i>{{ e.site_name }}</div>
-          </td>
-          <td><span class="fs-12 text-muted">{{ e.due_date | date:'dd MMM yyyy' }}</span></td>
-          <td>
-            <span class="fs-12 fw-700 text-dark"><i class="fas fa-calendar-check text-success me-1"></i>{{ e.paid_date | date:'dd MMM yyyy' }}</span>
+            <div class="fw-700 text-dark">Plot {{ p.plot_number }}</div>
+            <div class="fs-11 text-muted" *ngIf="p.site_name"><i class="fas fa-map-marker-alt me-1 text-gold"></i>{{ p.site_name }}</div>
           </td>
           <td>
-            <div class="fs-12 fw-600 text-dark">{{ e.payment_mode || 'Online / Bank' }}</div>
-            <div class="fs-10 text-muted" *ngIf="e.transaction_reference">{{ e.transaction_reference }}</div>
+            <span class="fs-12 fw-700 text-dark"><i class="fas fa-calendar-check text-success me-1"></i>{{ p.paid_date | date:'dd MMM yyyy' }}</span>
           </td>
-          <td><span class="fw-700 text-success fs-13">₹{{ (e.paid_amount || e.emi_amount) | number }}</span></td>
+          <td>
+            <div class="fs-12 fw-600 text-dark">{{ p.payment_mode || 'Cash / Bank' }}</div>
+            <div class="fs-10 text-muted" *ngIf="p.transaction_reference">{{ p.transaction_reference }}</div>
+          </td>
+          <td><span class="fw-800 text-success fs-14">₹{{ (p.paid_amount || p.amount) | number }}</span></td>
           <td>
             <span class="sbadge sbadge-green"><i class="fas fa-check-circle me-1"></i>Approved &amp; Confirmed</span>
           </td>
           <td class="pe-3 text-end">
             <div class="d-inline-flex gap-1">
-              <button class="btn btn-xs btn-outline-success" (click)="downloadOfficialPdf(e)" [disabled]="downloadingPdfId === e.emi_id" title="Download Official PDF Receipt">
-                <i [class]="downloadingPdfId === e.emi_id ? 'fas fa-spinner fa-spin me-1' : 'fas fa-file-pdf me-1'"></i> PDF
+              <button class="btn btn-xs btn-outline-green" (click)="viewInvoice(p)" title="View Official Tax Invoice">
+                <i class="fas fa-file-invoice me-1"></i> Invoice
               </button>
-              <button class="btn btn-xs btn-outline-secondary" (click)="viewReceipt(e)" title="View Receipt Voucher">
-                <i class="fas fa-eye me-1"></i> Voucher
+              <button class="btn btn-xs btn-outline-success" (click)="downloadOfficialPdf(p)" [disabled]="downloadingPdfId === (p.id || p.emi_id)" title="Download Official PDF">
+                <i [class]="downloadingPdfId === (p.id || p.emi_id) ? 'fas fa-spinner fa-spin' : 'fas fa-download'"></i> PDF
+              </button>
+              <button class="btn btn-xs btn-outline-secondary" (click)="viewReceipt(p)" title="View Receipt Voucher">
+                <i class="fas fa-eye"></i>
               </button>
             </div>
           </td>
@@ -177,8 +184,8 @@
     <!-- Receipt Header -->
     <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-3">
       <div>
-        <div class="fw-800 fs-15 text-dark font-display">M.M.R. CONSTRUCTION</div>
-        <div class="fs-10 text-muted">&amp; Developers Pvt. Ltd. (CIN: U68200UP2025PTC229203)</div>
+        <div class="fw-800 fs-15 text-dark font-display">M.M.R. CONSTRUCTION &amp; DEVELOPERS</div>
+        <div class="fs-10 text-muted">CIN: U68200UP2025PTC229203 &bull; Lucknow / Unnao</div>
         <div class="fs-11 text-gold-dark fw-700 mt-0.5">OFFICIAL PAYMENT RECEIPT VOUCHER</div>
       </div>
       <button type="button" class="btn-close no-print" (click)="selectedReceipt = null"></button>
@@ -186,13 +193,13 @@
 
     <!-- Receipt Details -->
     <div class="bg-light p-3 rounded-3 mb-3 fs-12">
-      <div class="d-flex justify-content-between mb-1.5">
-        <span class="text-muted">Voucher No:</span>
-        <strong class="text-dark">#MMR-RC-{{ selectedReceipt.emi_id }}</strong>
+      <div class="d-flex justify-content-between mb-1.5" *ngIf="selectedReceipt.invoice_number">
+        <span class="text-muted">Tax Invoice No:</span>
+        <strong class="text-success font-mono">{{ selectedReceipt.invoice_number }}</strong>
       </div>
       <div class="d-flex justify-content-between mb-1.5">
-        <span class="text-muted">Installment No:</span>
-        <strong class="text-primary">Installment #{{ selectedReceipt.installment_no }}</strong>
+        <span class="text-muted">Payment Type:</span>
+        <strong class="text-primary">{{ selectedReceipt.payment_type }}</strong>
       </div>
       <div class="d-flex justify-content-between mb-1.5">
         <span class="text-muted">Plot &amp; Project:</span>
@@ -207,30 +214,32 @@
         <strong class="text-dark">{{ selectedReceipt.payment_mode }}</strong>
       </div>
       <div class="d-flex justify-content-between mb-1.5" *ngIf="selectedReceipt.transaction_reference">
-        <span class="text-muted">Transaction Ref:</span>
+        <span class="text-muted">Reference / Ref:</span>
         <strong class="text-dark">{{ selectedReceipt.transaction_reference }}</strong>
       </div>
       <div class="d-flex justify-content-between border-top pt-2 mt-1.5">
         <span class="fw-700 text-dark">Confirmed Amount Paid:</span>
-        <strong class="text-success fs-15">₹{{ (selectedReceipt.paid_amount || selectedReceipt.emi_amount) | number }}</strong>
+        <strong class="text-success fs-15">₹{{ (selectedReceipt.paid_amount || selectedReceipt.amount) | number }}</strong>
       </div>
     </div>
 
     <!-- Verified Watermark Banner -->
     <div class="text-center p-2 rounded-3 bg-emerald-light border border-success mb-3 text-success fs-11 fw-700">
-      <i class="fas fa-shield-alt me-1"></i> VERIFIED &amp; APPROVED PAYMENT RECEIPT
+      <i class="fas fa-shield-alt me-1"></i> VERIFIED &amp; APPROVED PAYMENT RECORD
     </div>
 
     <!-- Actions -->
-    <div class="d-flex gap-2 no-print">
-      <button class="btn btn-green flex-fill" (click)="downloadOfficialPdf(selectedReceipt)">
-        <i class="fas fa-file-pdf me-1"></i> Download Official PDF
+    <div class="d-flex gap-2 no-print flex-wrap">
+      <button class="btn btn-green flex-fill" (click)="viewInvoice(selectedReceipt)">
+        <i class="fas fa-file-invoice me-1"></i> View Full Invoice
       </button>
-      <button class="btn btn-outline-secondary flex-fill" (click)="printReceipt()">
-        <i class="fas fa-print me-1"></i> Print Voucher
+      <button class="btn btn-outline-success flex-fill" (click)="downloadOfficialPdf(selectedReceipt)">
+        <i class="fas fa-file-pdf me-1"></i> PDF
+      </button>
+      <button class="btn btn-outline-secondary" (click)="printReceipt()">
+        <i class="fas fa-print"></i>
       </button>
       <button class="btn btn-outline-secondary" (click)="selectedReceipt = null">Close</button>
     </div>
   </div>
 </div>
-
