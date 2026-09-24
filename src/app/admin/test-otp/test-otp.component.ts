@@ -29,7 +29,7 @@ export class TestOtpComponent implements OnInit, OnDestroy {
 
   // Send OTP state
   mobileNumber = '';
-  selectedTemplate = 'MMR OTP Verification';
+  selectedTemplate = 'DEFAULT';
   sendingOtp = false;
   cooldownSeconds = 0;
   private cooldownInterval: any = null;
@@ -48,6 +48,13 @@ export class TestOtpComponent implements OnInit, OnDestroy {
   alert: { type: 'success' | 'danger' | 'info'; message: string } | null = null;
 
   readonly approvedTemplates = [
+    {
+      id: 'DEFAULT',
+      name: 'Default 2Factor SMS Template (Recommended - Direct SMS)',
+      category: 'AUTHENTICATION',
+      status: 'Approved',
+      description: 'Standard 2Factor SMS route. Delivers SMS text message directly to mobile without DLT template mismatch.'
+    },
     {
       id: 'MMR OTP Verification',
       name: 'MMR OTP Verification',
