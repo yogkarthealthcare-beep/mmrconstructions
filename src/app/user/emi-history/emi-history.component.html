@@ -4,33 +4,124 @@
 </div>
 
 <!-- PAGE HERO HEADER BANNER -->
-<div class="emi-hero-card mb-2">
+<div class="emi-hero-card mb-3">
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
     <div>
-      <div class="emi-hero-badge"><i class="fas fa-calculator me-1"></i>INSTALLMENT LEDGER &amp; REPAYMENT</div>
-      <h2 class="emi-hero-title mb-1">EMI Schedules &amp; Payment History</h2>
-      <p class="emi-hero-sub mb-0">Track all property installment schedules, upload payment proofs &amp; download official dual-copy PDF receipts.</p>
+      <div class="emi-hero-badge"><i class="fas fa-calculator me-1"></i>CUSTOMER FINANCIAL PORTAL</div>
+      <h2 class="emi-hero-title mb-1">Plot EMI Schedules &amp; Payment History</h2>
+      <p class="emi-hero-sub mb-0">Track monthly installments, pay EMIs securely online, and download official tax invoices &amp; PDF receipts.</p>
     </div>
 
     <div class="d-flex align-items-center gap-2 ms-auto">
       <a routerLink="/user/my-plots" class="btn btn-outline-light btn-xs px-3">
         <i class="fas fa-city me-1"></i> My Properties
       </a>
-      <a routerLink="/user/payment-history" class="btn btn-gold btn-xs px-3">
-        <i class="fas fa-receipt me-1"></i> Payment Receipts
+      <a routerLink="/user/payments" class="btn btn-gold btn-xs px-3">
+        <i class="fas fa-receipt me-1"></i> Transaction History
       </a>
     </div>
   </div>
 </div>
 
-<!-- METRIC STAT SUMMARY CARDS -->
-<div class="row g-2 mb-2">
+<!-- PLOT & PROPERTY FINANCIAL SUMMARY CARDS -->
+<div class="mb-3" *ngIf="!loading && bookings && bookings.length > 0">
+  <div *ngFor="let bk of bookings" class="property-summary-card mb-3 shadow-sm border rounded-4 bg-white p-3 p-md-4">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 border-bottom pb-3 mb-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="property-icon-box bg-emerald-light text-emerald rounded-3 p-3 text-center">
+          <i class="fas fa-map-marker-alt fs-3 text-success"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <h4 class="fw-800 text-dark mb-0">Plot {{ bk.plot_number }}</h4>
+            <span class="badge bg-success-subtle text-success fs-11 fw-700 px-2 py-1 rounded-pill">
+              <i class="fas fa-shield-alt me-1"></i>{{ bk.booking_status || 'Allocated' }}
+            </span>
+            <span class="badge bg-light text-muted fs-11 font-mono" *ngIf="bk.booking_serial">
+              Ref: {{ bk.booking_serial }}
+            </span>
+          </div>
+          <div class="fs-13 text-muted mt-1">
+            <i class="fas fa-building text-gold me-1"></i><strong>Project:</strong> {{ bk.site_name }} &bull; 
+            <i class="fas fa-calendar-alt text-gold ms-2 me-1"></i><strong>Frequency:</strong> {{ bk.emi_frequency || 'Monthly' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="text-md-end">
+        <div class="fs-12 text-muted fw-600">Total Plot Value</div>
+        <div class="fs-20 fw-900 text-dark">₹{{ bk.total_plot_amount | number }}</div>
+      </div>
+    </div>
+
+    <!-- 4-Box Key Financial Metrics -->
+    <div class="row g-2 mb-3">
+      <div class="col-6 col-md-3">
+        <div class="summary-metric-box p-2.5 rounded-3 bg-light border">
+          <div class="fs-11 text-muted fw-600 mb-1"><i class="fas fa-hand-holding-usd text-gold me-1"></i>Down Payment</div>
+          <div class="fs-15 fw-800 text-dark">₹{{ bk.down_payment | number }}</div>
+          <div class="fs-10 text-success fw-600 mt-0.5"><i class="fas fa-check-circle me-1"></i>Paid at Booking</div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="summary-metric-box p-2.5 rounded-3 bg-emerald-light border border-success-subtle">
+          <div class="fs-11 text-success fw-700 mb-1"><i class="fas fa-wallet text-success me-1"></i>Total Paid Amount</div>
+          <div class="fs-15 fw-900 text-success">₹{{ bk.total_paid_amount | number }}</div>
+          <div class="fs-10 text-muted mt-0.5">DP (₹{{ bk.down_payment | number }}) + EMIs (₹{{ bk.paid_emis_amount | number }})</div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="summary-metric-box p-2.5 rounded-3 bg-gold-light border border-warning-subtle">
+          <div class="fs-11 text-gold-dark fw-700 mb-1"><i class="fas fa-hourglass-half text-warning me-1"></i>Remaining Balance</div>
+          <div class="fs-15 fw-900 text-gold-dark">₹{{ bk.remaining_amount | number }}</div>
+          <div class="fs-10 text-muted mt-0.5">Payable across EMIs</div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="summary-metric-box p-2.5 rounded-3 bg-light border">
+          <div class="fs-11 text-muted fw-600 mb-1"><i class="fas fa-calendar-check text-primary me-1"></i>EMI Installments</div>
+          <div class="fs-15 fw-800 text-dark">
+            <span class="text-success">{{ bk.paid_emis_count }} Paid</span> / <span class="text-muted">{{ bk.total_emis }} Total</span>
+          </div>
+          <div class="fs-10 text-muted mt-0.5">{{ bk.pending_emis_count }} installments remaining</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Bar & Next EMI Info -->
+    <div class="bg-light p-3 rounded-3 border">
+      <div class="d-flex justify-content-between align-items-center mb-1.5 fs-12">
+        <div>
+          <span class="fw-700 text-dark">Payment Progress:</span>
+          <span class="fw-800 text-success ms-1">{{ bk.progress_percent }}% Complete</span>
+        </div>
+        <div *ngIf="bk.next_due_date">
+          <span class="text-muted">Next Installment Due:</span>
+          <strong class="text-danger ms-1">{{ bk.next_due_date | date:'dd MMM yyyy' }}</strong>
+          <span class="fw-700 text-dark ms-1">(₹{{ (bk.next_due_amount || bk.monthly_emi) | number }})</span>
+        </div>
+        <div *ngIf="!bk.next_due_date && bk.remaining_amount === 0">
+          <span class="badge bg-success text-white fw-700"><i class="fas fa-trophy me-1"></i>All EMIs Fully Paid</span>
+        </div>
+      </div>
+      <div class="progress progress-bar-custom" style="height: 10px;">
+        <div class="progress-bar bg-success" role="progressbar" [style.width.%]="bk.progress_percent" [attr.aria-valuenow]="bk.progress_percent" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- METRIC STAT SUMMARY OVERVIEW CARDS (When multiple or single plot) -->
+<div class="row g-2 mb-3" *ngIf="!loading">
   <div class="col-6 col-md-3">
     <div class="stat-mini-card h-100">
       <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-check-circle"></i></div>
       <div>
         <div class="stat-mini-val text-success">{{ paidCount }}</div>
-        <div class="stat-mini-lbl">EMIs Paid</div>
+        <div class="stat-mini-lbl">EMIs Paid &amp; Verified</div>
       </div>
     </div>
   </div>
@@ -40,17 +131,17 @@
       <div class="icon-wrap bg-gold-light text-gold-dark"><i class="fas fa-wallet"></i></div>
       <div>
         <div class="stat-mini-val text-gold-dark">₹{{ totalPaid | number }}</div>
-        <div class="stat-mini-lbl">Total Amount Paid</div>
+        <div class="stat-mini-lbl">Total Paid (DP + EMIs)</div>
       </div>
     </div>
   </div>
 
   <div class="col-6 col-md-3">
     <div class="stat-mini-card h-100">
-      <div class="icon-wrap bg-blue-light text-blue"><i class="fas fa-hourglass-half"></i></div>
+      <div class="icon-wrap bg-blue-light text-blue"><i class="fas fa-calendar-day"></i></div>
       <div>
         <div class="stat-mini-val text-primary">{{ nextDue ? ('₹' + (nextDue.emi_amount | number)) : '—' }}</div>
-        <div class="stat-mini-lbl">Next EMI Amount</div>
+        <div class="stat-mini-lbl">Next Pending EMI</div>
       </div>
     </div>
   </div>
@@ -67,39 +158,44 @@
 </div>
 
 <!-- UPCOMING DUE ALERT BANNER -->
-<div *ngIf="nextDue" class="panel-alert-banner mb-2">
+<div *ngIf="nextDue" class="panel-alert-banner mb-3 shadow-sm">
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
     <div class="d-flex align-items-center gap-3">
-      <div class="alert-icon-wrap"><i class="fas fa-bell text-gold"></i></div>
+      <div class="alert-icon-wrap"><i class="fas fa-bell text-gold fs-4"></i></div>
       <div>
-        <div class="fw-700 text-dark fs-13">Upcoming EMI Due: {{ nextDue.due_date | date:'dd MMM yyyy' }}</div>
+        <div class="fw-700 text-dark fs-14">Next EMI Installment Due: {{ nextDue.due_date | date:'dd MMM yyyy' }}</div>
         <div class="fs-12 text-muted">
-          Amount: <strong class="text-success">₹{{ nextDue.emi_amount | number }}</strong> &bull; Plot <strong>#{{ nextDue.plot_number }}</strong> ({{ nextDue.site_name }})
+          Installment <strong>#{{ nextDue.installment_no }}</strong> &bull; Amount: <strong class="text-success fs-13">₹{{ nextDue.emi_amount | number }}</strong> &bull; Plot <strong>#{{ nextDue.plot_number }}</strong> ({{ nextDue.site_name }})
         </div>
       </div>
     </div>
 
-    <button class="btn btn-gold btn-xs px-3 shadow-sm" (click)="openUploadModal(nextDue)">
-      <i class="fas fa-upload me-1"></i> Submit Payment Proof
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-green btn-xs px-3 shadow-sm" (click)="openPayModal(nextDue, 'online')">
+        <i class="fas fa-credit-card me-1"></i> Pay EMI Now
+      </button>
+      <button class="btn btn-outline-secondary btn-xs px-2.5" (click)="openPayModal(nextDue, 'offline')">
+        <i class="fas fa-upload me-1"></i> Upload Proof
+      </button>
+    </div>
   </div>
 </div>
 
 <!-- SEARCH & TOOLBAR CONTROLS -->
-<div class="toolbar-card mb-2" *ngIf="!loading">
+<div class="toolbar-card mb-3" *ngIf="!loading">
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-w-750">
+    <div class="d-flex align-items-center gap-2 flex-wrap flex-fill">
       <div class="search-input-wrap flex-fill" style="min-width: 200px;">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" class="form-control form-control-sm search-field" placeholder="Search by Plot #, Site, Installment #..." [(ngModel)]="searchTerm" />
+        <input type="text" class="form-control form-control-sm search-field" placeholder="Search by Plot, Project, Installment #, Invoice..." [(ngModel)]="searchTerm" />
       </div>
 
-      <select class="form-select form-select-sm status-select" [(ngModel)]="selectedPlot" style="width: 170px;" *ngIf="plots.length > 1">
+      <select class="form-select form-select-sm status-select" [(ngModel)]="selectedPlot" style="width: 180px;" *ngIf="plots.length > 1">
         <option value="all">All Properties ({{ plots.length }})</option>
         <option *ngFor="let p of plots" [value]="p">{{ p }}</option>
       </select>
 
-      <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 140px;">
+      <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 150px;">
         <option value="all">All Status</option>
         <option value="paid">Paid &amp; Verified</option>
         <option value="pending">Pending / Due</option>
@@ -116,22 +212,22 @@
 <!-- LOADING STATE -->
 <div class="panel-card text-center py-5 mb-3" *ngIf="loading">
   <div class="spinner-border text-gold me-2" role="status"></div>
-  <span class="text-muted fs-13">Loading installment ledger records...</span>
+  <span class="text-muted fs-13">Loading property installment schedules &amp; invoices...</span>
 </div>
 
 <!-- INSTALLMENTS LEDGER TABLE -->
-<div class="panel-card p-0 overflow-hidden mb-3" *ngIf="!loading">
+<div class="panel-card p-0 overflow-hidden mb-4" *ngIf="!loading">
   <div class="table-responsive">
     <table class="table align-middle custom-emi-table mb-0">
       <thead>
         <tr>
-          <th class="ps-3">Inst #</th>
+          <th class="ps-3">EMI #</th>
           <th>Plot &amp; Project</th>
           <th>Due Date</th>
           <th>EMI Amount</th>
           <th>Paid Date / Mode</th>
-          <th>Overdue</th>
-          <th>Verification Status</th>
+          <th>Status</th>
+          <th>Invoice / Ref</th>
           <th class="pe-3 text-end">Action</th>
         </tr>
       </thead>
@@ -142,7 +238,7 @@
             No matching EMI installment records found.
           </td>
         </tr>
-        <tr *ngFor="let e of filteredEmis">
+        <tr *ngFor="let e of filteredEmis" [class.bg-emerald-subtle]="e.emi_status==='Paid'" [class.bg-warning-subtle]="e.emi_status==='Overdue'">
           <td class="ps-3">
             <span class="inst-num-badge">#{{ e.installment_no }}</span>
           </td>
@@ -150,41 +246,63 @@
             <div class="fw-700 text-dark">Plot {{ e.plot_number }}</div>
             <div class="fs-11 text-muted" *ngIf="e.site_name"><i class="fas fa-map-marker-alt me-1 text-gold"></i>{{ e.site_name }}</div>
           </td>
-          <td><span class="fs-12 text-muted fw-600">{{ e.due_date | date:'dd MMM yyyy' }}</span></td>
-          <td><span class="fw-700 text-dark fs-13">₹{{ e.emi_amount | number }}</span></td>
+          <td>
+            <span class="fs-12 text-muted fw-600">{{ e.due_date | date:'dd MMM yyyy' }}</span>
+          </td>
+          <td>
+            <span class="fw-700 text-dark fs-13">₹{{ e.emi_amount | number }}</span>
+          </td>
           <td>
             <div *ngIf="e.paid_date">
-              <span class="fs-12 fw-600 text-success"><i class="fas fa-check text-success me-1"></i>{{ e.paid_date | date:'dd MMM yyyy' }}</span>
-              <div class="fs-10 text-muted" *ngIf="e.payment_mode">{{ e.payment_mode }} &bull; {{ e.transaction_reference || 'Confirmed' }}</div>
+              <span class="fs-12 fw-600 text-success"><i class="fas fa-check-circle text-success me-1"></i>{{ e.paid_date | date:'dd MMM yyyy' }}</span>
+              <div class="fs-10 text-muted" *ngIf="e.payment_mode">{{ e.payment_mode }} &bull; {{ e.transaction_reference || 'Paid' }}</div>
             </div>
             <span class="fs-12 text-muted" *ngIf="!e.paid_date">&mdash;</span>
           </td>
           <td>
-            <span *ngIf="e.overdue_days > 0 && e.emi_status !== 'Paid'" class="sbadge sbadge-red"><i class="fas fa-clock me-1"></i>{{ e.overdue_days }}d</span>
-            <span *ngIf="!(e.overdue_days > 0 && e.emi_status !== 'Paid')" class="text-muted fs-12">&mdash;</span>
+            <span class="sbadge" 
+                  [class.sbadge-green]="e.emi_status==='Paid'" 
+                  [class.sbadge-yellow]="e.emi_status==='Pending'||e.emi_status==='ProofSubmitted'" 
+                  [class.sbadge-red]="e.emi_status==='Overdue' || (e.overdue_days > 0 && e.emi_status !== 'Paid')">
+              <i *ngIf="e.emi_status==='Paid'" class="fas fa-check me-1"></i>
+              <i *ngIf="e.emi_status==='ProofSubmitted'" class="fas fa-clock me-1"></i>
+              {{ e.emi_status === 'ProofSubmitted' ? 'Under Verification' : (e.overdue_days > 0 && e.emi_status !== 'Paid' ? 'Overdue (' + e.overdue_days + 'd)' : e.emi_status) }}
+            </span>
           </td>
           <td>
-            <span class="sbadge" [class.sbadge-green]="e.emi_status==='Paid'" [class.sbadge-yellow]="e.emi_status==='Pending'||e.emi_status==='ProofSubmitted'" [class.sbadge-red]="e.emi_status==='Overdue'">
-              {{ e.emi_status === 'ProofSubmitted' ? 'Under Verification' : e.emi_status }}
-            </span>
+            <div *ngIf="e.invoice_number">
+              <span class="fs-11 font-mono fw-700 text-success"><i class="fas fa-file-invoice text-success me-1"></i>{{ e.invoice_number }}</span>
+            </div>
+            <div *ngIf="!e.invoice_number && e.emi_status==='Paid'">
+              <span class="fs-11 text-muted font-mono"><i class="fas fa-receipt me-1"></i>#MMR-RC-{{ e.emi_id }}</span>
+            </div>
+            <span *ngIf="e.emi_status!=='Paid'" class="text-muted fs-11">&mdash;</span>
           </td>
           <td class="pe-3 text-end">
-            <button *ngIf="e.emi_status==='Pending'||e.emi_status==='Overdue'" 
-                    class="btn btn-xs btn-outline-green" 
-                    (click)="openUploadModal(e)" 
-                    title="Upload Payment Receipt">
-              <i class="fas fa-upload me-1"></i> Upload Proof
-            </button>
+            <!-- PENDING / OVERDUE ACTIONS -->
+            <div *ngIf="e.emi_status==='Pending'||e.emi_status==='Overdue'" class="d-inline-flex gap-1">
+              <button class="btn btn-xs btn-green shadow-sm" (click)="openPayModal(e, 'online')" title="Pay EMI Online">
+                <i class="fas fa-credit-card me-1"></i> Pay EMI
+              </button>
+              <button class="btn btn-xs btn-outline-secondary" (click)="openPayModal(e, 'offline')" title="Upload Offline Payment Proof">
+                <i class="fas fa-upload"></i>
+              </button>
+            </div>
 
-            <span *ngIf="e.emi_status==='ProofSubmitted'" class="badge bg-gold-subtle text-dark fs-10 fw-700">
-              <i class="fas fa-clock me-1"></i> Pending Verification
+            <!-- UNDER VERIFICATION BADGE -->
+            <span *ngIf="e.emi_status==='ProofSubmitted'" class="badge bg-gold-subtle text-dark fs-10 fw-700 p-1.5">
+              <i class="fas fa-clock me-1 text-warning"></i> Under Verification
             </span>
 
+            <!-- PAID EMI ACTIONS: INVOICE & PDF RECEIPT -->
             <div *ngIf="e.emi_status==='Paid'" class="d-inline-flex gap-1">
-              <button class="btn btn-xs btn-outline-success" (click)="downloadOfficialPdf(e)" [disabled]="downloadingPdfId === e.emi_id" title="Download Official PDF Receipt">
-                <i [class]="downloadingPdfId === e.emi_id ? 'fas fa-spinner fa-spin me-1' : 'fas fa-file-pdf me-1'"></i> PDF
+              <button class="btn btn-xs btn-outline-green" (click)="viewInvoice(e)" title="View Tax Invoice">
+                <i class="fas fa-file-invoice me-1"></i> Invoice
               </button>
-              <button class="btn btn-xs btn-outline-secondary" (click)="viewReceiptModal(e)" title="View Receipt Voucher">
+              <button class="btn btn-xs btn-outline-success" (click)="downloadOfficialPdf(e)" [disabled]="downloadingPdfId === e.emi_id" title="Download Official PDF">
+                <i [class]="downloadingPdfId === e.emi_id ? 'fas fa-spinner fa-spin' : 'fas fa-download'"></i>
+              </button>
+              <button class="btn btn-xs btn-outline-secondary" (click)="viewReceiptModal(e)" title="Quick Voucher View">
                 <i class="fas fa-eye"></i>
               </button>
             </div>
@@ -195,60 +313,149 @@
   </div>
 </div>
 
-<!-- PAYMENT PROOF UPLOAD MODAL -->
-<div *ngIf="activeUploadEmi" class="modal-backdrop-custom">
-  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border max-w-500">
-    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+<!-- ==========================================
+     PAY EMI MODAL (Online / Wallet / Offline)
+     ========================================== -->
+<div *ngIf="activePayEmi" class="modal-backdrop-custom">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-2xl border max-w-550">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
       <div>
-        <h5 class="fw-700 text-dark mb-0"><i class="fas fa-upload text-gold me-2"></i>Upload Installment Proof</h5>
-        <div class="fs-12 text-muted">Installment #{{ activeUploadEmi.installment_no }} &bull; Plot <strong>{{ activeUploadEmi.plot_number }}</strong> ({{ activeUploadEmi.site_name }})</div>
+        <div class="badge bg-success-subtle text-success fs-11 fw-700 mb-1">
+          <i class="fas fa-shield-alt me-1"></i> SECURE PAYMENT CHECKOUT
+        </div>
+        <h5 class="fw-800 text-dark mb-0">Pay Installment #{{ activePayEmi.installment_no }}</h5>
+        <div class="fs-12 text-muted mt-0.5">
+          Plot <strong>#{{ activePayEmi.plot_number }}</strong> &bull; {{ activePayEmi.site_name }} &bull; Due: {{ activePayEmi.due_date | date:'dd MMM yyyy' }}
+        </div>
       </div>
-      <button type="button" class="btn-close" (click)="activeUploadEmi = null"></button>
+      <button type="button" class="btn-close" (click)="closePayModal()"></button>
     </div>
 
-    <form (ngSubmit)="submitProof()">
-      <div class="mb-2">
-        <label class="form-label fs-11 fw-700 text-dark mb-1">Amount (₹) *</label>
-        <input type="number" class="form-control form-control-sm" [(ngModel)]="proofForm.amount" name="amount" required />
+    <!-- Amount Display Box -->
+    <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 border mb-3">
+      <div>
+        <span class="fs-12 text-muted fw-600 d-block">Payable Installment Amount</span>
+        <span class="fs-22 fw-900 text-success">₹{{ (activePayEmi.total_due || activePayEmi.emi_amount) | number }}</span>
       </div>
-
-      <div class="mb-2">
-        <label class="form-label fs-11 fw-700 text-dark mb-1">Payment Mode *</label>
-        <select class="form-select form-select-sm" [(ngModel)]="proofForm.payment_mode" name="payment_mode">
-          <option value="UPI">UPI / GooglePay / PhonePe / Paytm</option>
-          <option value="BankTransfer">Bank Transfer / NEFT / RTGS / IMPS</option>
-          <option value="Cheque">Cheque / Demand Draft</option>
-          <option value="Cash">Cash Deposit at Office</option>
-        </select>
+      <div class="text-end">
+        <span class="badge bg-white text-dark border fs-11 fw-700">Installment {{ activePayEmi.installment_no }}</span>
       </div>
+    </div>
 
-      <div class="mb-2">
-        <label class="form-label fs-11 fw-700 text-dark mb-1">Transaction Ref / UTR #</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="proofForm.reference_number" name="reference_number" placeholder="e.g. UPI Ref / UTR number" />
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label fs-11 fw-700 text-dark mb-1">Attach Receipt / Screenshot *</label>
-        <input type="file" class="form-control form-control-sm" accept="image/*,.pdf" (change)="onFileChange($event)" required />
-      </div>
-
-      <div class="alert alert-warning p-2 fs-11 rounded-3 mb-3 d-flex align-items-center gap-2">
-        <i class="fas fa-shield-alt text-warning fs-5"></i>
-        <span>Proof is reviewed by MMR Accounts before marking as Confirmed Paid.</span>
-      </div>
-
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-green flex-fill" [disabled]="proofSubmitting">
-          <i [class]="proofSubmitting ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check me-1'"></i>
-          {{ proofSubmitting ? 'Submitting...' : 'Submit Payment Proof' }}
+    <!-- Payment Tabs -->
+    <ul class="nav nav-pills nav-fill mb-3 gap-1 bg-light p-1 rounded-3">
+      <li class="nav-item">
+        <button class="nav-link fs-12 fw-700 py-2 rounded-2" [class.active]="payTab==='online'" (click)="payTab='online'">
+          <i class="fas fa-bolt me-1 text-gold"></i> Instant Online
         </button>
-        <button type="button" class="btn btn-outline-secondary flex-fill" (click)="activeUploadEmi = null">Cancel</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link fs-12 fw-700 py-2 rounded-2" [class.active]="payTab==='wallet'" (click)="payTab='wallet'">
+          <i class="fas fa-wallet me-1"></i> MMR Wallet
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link fs-12 fw-700 py-2 rounded-2" [class.active]="payTab==='offline'" (click)="payTab='offline'">
+          <i class="fas fa-university me-1"></i> Bank Proof
+        </button>
+      </li>
+    </ul>
+
+    <!-- TAB 1: INSTANT ONLINE PAYMENT (Razorpay / UPI / NetBanking / Cards) -->
+    <div *ngIf="payTab==='online'">
+      <div class="p-3 bg-emerald-light rounded-3 border border-success-subtle mb-3">
+        <div class="d-flex align-items-center gap-2 text-success fw-700 fs-13 mb-1">
+          <i class="fas fa-lock"></i> 100% Secure Instant Settlement
+        </div>
+        <p class="fs-12 text-muted mb-0">
+          Pay via UPI (GPay, PhonePe, Paytm), Credit/Debit Card, or NetBanking. Your EMI will be marked <strong>Paid instantly</strong> and invoice will be generated immediately.
+        </p>
       </div>
-    </form>
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-green btn-lg py-2.5 fs-14 fw-700 shadow" (click)="payWithRazorpay()" [disabled]="isProcessingPayment">
+          <i [class]="isProcessingPayment ? 'fas fa-spinner fa-spin me-2' : 'fas fa-lock me-2'"></i>
+          {{ isProcessingPayment ? 'Connecting Gateway...' : 'Pay ₹' + ((activePayEmi.total_due || activePayEmi.emi_amount) | number) + ' Securely' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 2: MMR WALLET BALANCE -->
+    <div *ngIf="payTab==='wallet'">
+      <div class="p-3 rounded-3 border mb-3" [class.bg-emerald-light]="walletBalance >= (activePayEmi.total_due || activePayEmi.emi_amount)" [class.bg-light]="walletBalance < (activePayEmi.total_due || activePayEmi.emi_amount)">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fs-12 text-muted fw-600">Your Wallet Balance:</span>
+          <strong class="fs-16 fw-900" [class.text-success]="walletBalance >= (activePayEmi.total_due || activePayEmi.emi_amount)" [class.text-danger]="walletBalance < (activePayEmi.total_due || activePayEmi.emi_amount)">
+            ₹{{ walletBalance | number }}
+          </strong>
+        </div>
+        <div *ngIf="walletBalance < (activePayEmi.total_due || activePayEmi.emi_amount)" class="fs-11 text-danger fw-600 mt-1">
+          <i class="fas fa-exclamation-circle me-1"></i> Insufficient balance. Please use Instant Online payment or add funds to your wallet.
+        </div>
+        <div *ngIf="walletBalance >= (activePayEmi.total_due || activePayEmi.emi_amount)" class="fs-11 text-success fw-600 mt-1">
+          <i class="fas fa-check-circle me-1"></i> Sufficient balance available. Payment will settle instantly.
+        </div>
+      </div>
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-gold btn-lg py-2.5 fs-14 fw-700 shadow" 
+                (click)="payWithWallet()" 
+                [disabled]="isProcessingPayment || walletBalance < (activePayEmi.total_due || activePayEmi.emi_amount)">
+          <i [class]="isProcessingPayment ? 'fas fa-spinner fa-spin me-2' : 'fas fa-wallet me-2'"></i>
+          {{ isProcessingPayment ? 'Processing...' : 'Pay with Wallet Balance' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 3: OFFLINE BANK PROOF UPLOAD -->
+    <div *ngIf="payTab==='offline'">
+      <form (ngSubmit)="submitProof()">
+        <div class="mb-2">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Amount (₹) *</label>
+          <input type="number" class="form-control form-control-sm" [(ngModel)]="proofForm.amount" name="amount" required />
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Payment Mode *</label>
+          <select class="form-select form-select-sm" [(ngModel)]="proofForm.payment_mode" name="payment_mode">
+            <option value="UPI">UPI / GooglePay / PhonePe / Paytm</option>
+            <option value="BankTransfer">Bank Transfer / NEFT / RTGS / IMPS</option>
+            <option value="Cheque">Cheque / Demand Draft</option>
+            <option value="Cash">Cash Deposit at MMR Office</option>
+          </select>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Transaction Ref / UTR #</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="proofForm.reference_number" name="reference_number" placeholder="e.g. UTR / UPI Ref Number" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Attach Receipt / Payment Screenshot *</label>
+          <input type="file" class="form-control form-control-sm" accept="image/*,.pdf" (change)="onFileChange($event)" required />
+        </div>
+
+        <div class="alert alert-warning p-2 fs-11 rounded-3 mb-3 d-flex align-items-center gap-2">
+          <i class="fas fa-shield-alt text-warning fs-5"></i>
+          <span>Offline proofs are reviewed and verified by MMR Accounts within 24 hours.</span>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-green flex-fill py-2" [disabled]="isProcessingPayment">
+            <i [class]="isProcessingPayment ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check me-1'"></i>
+            {{ isProcessingPayment ? 'Submitting...' : 'Submit Payment Proof' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary flex-fill" (click)="closePayModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
-<!-- RECEIPT VOUCHER PREVIEW MODAL -->
+<!-- ==========================================
+     RECEIPT VOUCHER PREVIEW MODAL
+     ========================================== -->
 <div *ngIf="selectedReceipt" class="modal-backdrop-custom">
   <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border max-w-500 printable-area">
     <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-3">
@@ -261,6 +468,10 @@
     </div>
 
     <div class="bg-light p-3 rounded-3 mb-3 fs-12">
+      <div class="d-flex justify-content-between mb-1.5" *ngIf="selectedReceipt.invoice_number">
+        <span class="text-muted">Tax Invoice No:</span>
+        <strong class="text-success font-mono">{{ selectedReceipt.invoice_number }}</strong>
+      </div>
       <div class="d-flex justify-content-between mb-1.5">
         <span class="text-muted">Voucher Ref:</span>
         <strong class="text-dark">#MMR-RC-{{ selectedReceipt.emi_id }}</strong>
@@ -288,18 +499,20 @@
     </div>
 
     <div class="text-center p-2 rounded-3 bg-emerald-light border border-success mb-3 text-success fs-11 fw-700">
-      <i class="fas fa-shield-alt me-1"></i> VERIFIED &amp; APPROVED PAYMENT RECEIPT
+      <i class="fas fa-shield-alt me-1"></i> VERIFIED &amp; APPROVED PAYMENT RECORD
     </div>
 
-    <div class="d-flex gap-2 no-print">
-      <button class="btn btn-green flex-fill" (click)="downloadOfficialPdf(selectedReceipt)">
-        <i class="fas fa-file-pdf me-1"></i> Download Official PDF
+    <div class="d-flex gap-2 no-print flex-wrap">
+      <button class="btn btn-green flex-fill" (click)="viewInvoice(selectedReceipt)">
+        <i class="fas fa-file-invoice me-1"></i> View Full Invoice
       </button>
-      <button class="btn btn-outline-secondary flex-fill" (click)="printReceipt()">
-        <i class="fas fa-print me-1"></i> Print Voucher
+      <button class="btn btn-outline-success flex-fill" (click)="downloadOfficialPdf(selectedReceipt)">
+        <i class="fas fa-file-pdf me-1"></i> PDF
+      </button>
+      <button class="btn btn-outline-secondary" (click)="printReceipt()">
+        <i class="fas fa-print"></i>
       </button>
       <button class="btn btn-outline-secondary" (click)="selectedReceipt = null">Close</button>
     </div>
   </div>
 </div>
-

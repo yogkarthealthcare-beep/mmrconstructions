@@ -81,4 +81,9 @@ export const USER_ROUTES: Routes = [
     path: 'enrollment', 
     loadComponent: () => import('./customer-enrollment/customer-enrollment.component').then(m => m.CustomerEnrollmentComponent) 
   },
+  { 
+    path: 'invoice/:id', 
+    loadComponent: () => import('../pages/booking-invoice/booking-invoice.component').then(m => m.BookingInvoiceComponent),
+    title: 'Invoice — MMR Construction'
+  },
 ];

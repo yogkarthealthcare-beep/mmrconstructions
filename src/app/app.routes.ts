@@ -134,6 +134,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/all-sites/all-sites.component').then(m => m.AllSitesComponent),
     title: 'All Property Sites & Plots — MMR Construction'
   },
+  { 
+    path: 'invoice/:id', 
+    loadComponent: () => import('./pages/booking-invoice/booking-invoice.component').then(m => m.BookingInvoiceComponent),
+    title: 'Invoice — MMR Construction'
+  },
 
   // Feature Tree: Admin (Lazy Loaded Layout & Routes)
   {

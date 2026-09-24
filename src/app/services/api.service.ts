@@ -200,6 +200,12 @@ export class ApiService {
   getEmiCalculatorPlans()           { return this.get('/api/emi-calculator/plans'); }
   getEmis()                         { return this.get('/api/emi'); }
   getEmiSchedule(bookingId: number) { return this.get(`/api/emi/${bookingId}`); }
+  payEmiOnline(emiId: number, data: any = {}) {
+    return this.post(`/api/emi/${emiId}/pay-online`, data);
+  }
+  verifyEmiPayment(emiId: number, data: any) {
+    return this.post(`/api/emi/${emiId}/verify-payment`, data);
+  }
   uploadEmiProof(emiId: number, form: FormData) {
     return this.postForm(`/api/emi/${emiId}/upload-proof`, form);
   }
