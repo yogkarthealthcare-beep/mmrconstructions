@@ -3,9 +3,21 @@ import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
 
 export interface ApprovedTemplate {
+  id: string;
   name: string;
-  identifier?: string;
+  aliasName?: string;
+  displayName?: string;
+  dltTemplateId?: string;
+  header: string;
+  communicationType?: string;
+  messageText: string;
+  twoFactorMessageText?: string;
+  placeholder?: string;
+  purpose?: string;
+  category?: string;
   status: string;
+  description?: string;
+  identifier?: string;
 }
 
 export interface TwoFactorConfig {
@@ -52,7 +64,7 @@ export class TwoFactorService {
   }
 
   /**
-   * Send a test OTP to an Indian mobile number.
+   * Send a test OTP to an Indian mobile number using dynamically selected DLT template.
    */
   sendTestOtp(mobile: string, template: string): Observable<{
     success: boolean;
@@ -60,9 +72,15 @@ export class TwoFactorService {
       success: boolean;
       message: string;
       provider: string;
+      delivery_channel: string;
       session_id: string;
       mobile_masked: string;
       template: string;
+      template_id?: string;
+      dlt_template_id?: string;
+      header?: string;
+      message_content?: string;
+      placeholder?: string;
     };
     message: string;
   }> {
