@@ -13,9 +13,9 @@
 <div class="admin-hero-card mb-3">
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
     <div>
-      <div class="admin-hero-badge"><i class="fas fa-sms me-1"></i>2FACTOR DLT OTP TEMPLATE TESTING &amp; VERIFICATION (SMS ONLY)</div>
-      <h2 class="admin-hero-title mb-1">Test OTP Templates</h2>
-      <p class="admin-hero-sub mb-0">Select and test live DLT-approved OTP templates synchronized with 2Factor via direct SMS text messaging. No Voice calls or OBD fallbacks.</p>
+      <div class="admin-hero-badge"><i class="fas fa-sms me-1"></i>2FACTOR DLT SMS TEMPLATES (PE ID: 1001269604652842094)</div>
+      <h2 class="admin-hero-title mb-1">Test OTP &amp; SMS Templates</h2>
+      <p class="admin-hero-sub mb-0">Select and test live DLT-approved SMS templates synchronized with 2Factor via direct SMS text messaging. Business: MMR CONSTRUCTION &amp; DEVELOPERS. (No Voice calls / No OBD).</p>
     </div>
 
     <div class="d-flex align-items-center gap-2 ms-auto">
@@ -40,7 +40,7 @@
         {{ config?.is_configured ? 'Configured' : 'Not Configured' }}
       </div>
       <div class="fs-11 text-muted fw-600">
-        <i class="fas fa-database me-1"></i>Encrypted in PostgreSQL
+        <i class="fas fa-database me-1"></i>Encrypted in PostgreSQL (PE ID: 1001269604652842094)
       </div>
     </div>
   </div>
@@ -53,7 +53,7 @@
       </div>
       <div class="stat-mini-val text-primary">SMS Text Message</div>
       <div class="fs-11 text-muted fw-600">
-        <i class="fas fa-ban text-danger me-1"></i>No Voice Calls / No OBD Fallback
+        <i class="fas fa-ban text-danger me-1"></i>Strictly SMS (No Voice / No OBD)
       </div>
     </div>
   </div>
@@ -61,12 +61,12 @@
   <div class="col-12 col-md-4">
     <div class="stat-mini-card box-templates h-100">
       <div class="d-flex align-items-center justify-content-between mb-1">
-        <span class="stat-mini-lbl">Connected DLT Templates</span>
+        <span class="stat-mini-lbl">Approved DLT Templates</span>
         <div class="icon-wrap bg-amber text-orange"><i class="fas fa-envelope-circle-check"></i></div>
       </div>
       <div class="stat-mini-val">{{ approvedTemplates.length }} Templates</div>
       <div class="fs-11 text-muted fw-600">
-        <i class="fas fa-check text-emerald me-1"></i>Synchronized with 2Factor
+        <i class="fas fa-check text-emerald me-1"></i>Approved DLT Templates Only
       </div>
     </div>
   </div>
@@ -173,14 +173,14 @@
       </div>
     </div>
 
-    <!-- SECTION 2: APPROVED DLT OTP TEMPLATES CATALOG -->
+    <!-- SECTION 2: APPROVED DLT SMS TEMPLATES CATALOG -->
     <div class="card panel-card mb-3">
       <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
           <div class="section-badge-icon bg-blue text-primary"><i class="fas fa-file-shield"></i></div>
           <div>
-            <h5 class="mb-0 fs-15 fw-700 text-dark">Section 2: DLT Templates Catalog</h5>
-            <small class="text-muted fs-11">Synchronized templates from Excel &amp; 2Factor</small>
+            <h5 class="mb-0 fs-15 fw-700 text-dark">Section 2: Approved DLT Templates</h5>
+            <small class="text-muted fs-11">Source of truth (PE ID: 1001269604652842094)</small>
           </div>
         </div>
         <button *ngIf="!editingTemplates" type="button" class="btn btn-outline-secondary btn-xs" (click)="editingTemplates=true">
@@ -198,8 +198,8 @@
                   <strong class="fs-12 text-dark">{{ t.name }}</strong>
                 </div>
                 <div class="d-flex align-items-center gap-2 flex-wrap fs-11 text-muted">
-                  <span><strong>Header:</strong> <code class="text-dark fw-700">{{ t.header }}</code></span>
-                  <span *ngIf="t.dltTemplateId">| <strong>DLT ID:</strong> <code class="text-muted">{{ t.dltTemplateId }}</code></span>
+                  <span><strong>Sender ID:</strong> <code class="text-dark fw-700">{{ t.senderId || (t.header + ' Service') }}</code></span>
+                  <span>| <strong>CT ID:</strong> <code class="text-muted">{{ t.ctId || t.dltTemplateId }}</code></span>
                 </div>
               </div>
               <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2" (click)="selectedTemplate = t.id" title="Select this template for testing">
@@ -212,8 +212,8 @@
             </div>
 
             <div class="d-flex align-items-center justify-content-between mt-2 fs-10 text-muted">
-              <span><strong>Placeholder:</strong> <span class="highlight-placeholder fs-10">{{ t.placeholder || 'XXXX' }}</span></span>
-              <span class="badge bg-light text-muted border fs-10">{{ t.category || 'DLT' }}</span>
+              <span><strong>Placeholder:</strong> <span class="highlight-placeholder fs-10">{{ t.placeholder || '{#var#}' }}</span></span>
+              <span class="badge bg-light text-muted border fs-10">{{ t.contentType || 'Implicit' }}</span>
             </div>
 
             <div *ngIf="editingTemplates" class="mt-2 pt-2 border-top">
@@ -238,7 +238,7 @@
 
         <div class="mt-3 p-2 bg-light rounded border fs-11 text-muted">
           <i class="fas fa-info-circle text-primary me-1"></i>
-          <strong>Strictly SMS Delivery:</strong> Test requests call the official 2Factor SMS <code>AUTOGEN</code> route (<code>https://2factor.in/API/V1/&#123;API_KEY&#125;/SMS/91...</code>). Voice API and OBD fallbacks are completely excluded.
+          <strong>DLT Entity / PE ID:</strong> <code>1001269604652842094</code> | <strong>Business:</strong> MMR CONSTRUCTION &amp; DEVELOPERS. Pure SMS delivery via 2Factor <code>/SMS/</code> route.
         </div>
       </div>
     </div>
@@ -252,12 +252,12 @@
         <div class="d-flex align-items-center gap-2">
           <div class="section-badge-icon bg-amber text-orange"><i class="fas fa-paper-plane"></i></div>
           <div>
-            <h5 class="mb-0 fs-15 fw-700 text-dark">Section 3: Send Test OTP (SMS Route)</h5>
-            <small class="text-muted fs-11">Dispatch live SMS OTP using the selected DLT template</small>
+            <h5 class="mb-0 fs-15 fw-700 text-dark">Section 3: Send Test SMS / OTP</h5>
+            <small class="text-muted fs-11">Dispatch live SMS using the selected approved DLT template</small>
           </div>
         </div>
         <span class="badge bg-success-subtle text-success border border-success fs-11">
-          <i class="fas fa-signal me-1"></i>SMS Only
+          <i class="fas fa-signal me-1"></i>SMS Route Only
         </span>
       </div>
 
@@ -265,7 +265,7 @@
         <!-- TEMPLATE SELECTION DROPDOWN -->
         <div class="mb-3">
           <label class="form-label fs-12 fw-700 text-dark">
-            Select DLT OTP Template <span class="text-danger">*</span>
+            Select Approved DLT Template <span class="text-danger">*</span>
           </label>
           <select [(ngModel)]="selectedTemplate" class="form-select form-select-sm fw-600">
             <option *ngFor="let t of approvedTemplates" [value]="t.id">
@@ -273,7 +273,7 @@
             </option>
           </select>
           <div class="form-text fs-11 text-muted mt-1">
-            <i class="fas fa-check-circle text-emerald me-1"></i>The backend will dynamically route the SMS request with this exact approved template.
+            <i class="fas fa-check-circle text-emerald me-1"></i>The backend routes the SMS request using this exact approved DLT template.
           </div>
         </div>
 
@@ -291,24 +291,24 @@
             </div>
             <div class="col-6 col-sm-3">
               <span class="text-muted d-block">Sender ID / Header:</span>
-              <code class="text-dark fw-700 fs-12">{{ selectedTemplateObj.header }}</code>
+              <code class="text-dark fw-700 fs-12">{{ selectedTemplateObj.header }} ({{ selectedTemplateObj.senderId || (selectedTemplateObj.header + ' Service') }})</code>
             </div>
             <div class="col-6 col-sm-3">
-              <span class="text-muted d-block">DLT Template ID:</span>
-              <code class="text-muted">{{ selectedTemplateObj.dltTemplateId || 'DIRECT' }}</code>
+              <span class="text-muted d-block">CT ID / DLT ID:</span>
+              <code class="text-muted">{{ selectedTemplateObj.ctId || selectedTemplateObj.dltTemplateId }}</code>
             </div>
           </div>
 
           <div class="mb-2">
-            <span class="text-muted fs-11 d-block mb-1">Approved SMS Message Content:</span>
+            <span class="text-muted fs-11 d-block mb-1">Approved DLT Message Content:</span>
             <div class="template-msg-box fs-11 text-dark">
               {{ selectedTemplateObj.messageText }}
             </div>
           </div>
 
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 fs-11 text-muted pt-1">
-            <span><strong>OTP Placeholder:</strong> <span class="highlight-placeholder">{{ selectedTemplateObj.placeholder || 'XXXX' }}</span></span>
-            <span><i class="fas fa-shield-alt text-emerald me-1"></i>Type: <strong>{{ selectedTemplateObj.communicationType || 'Service Implicit' }}</strong></span>
+            <span><strong>Placeholder / Variable Mapping:</strong> <span class="highlight-placeholder">{{ selectedTemplateObj.placeholder || '{#var#}' }}</span></span>
+            <span><i class="fas fa-shield-alt text-emerald me-1"></i>Type: <strong>{{ selectedTemplateObj.contentType || selectedTemplateObj.communicationType || 'Implicit' }}</strong></span>
           </div>
         </div>
 
@@ -346,14 +346,14 @@
                   (click)="sendTestOtp()"
                   [disabled]="sendingOtp || !isMobileValid() || cooldownSeconds > 0 || !config?.is_configured">
             <i [class]="sendingOtp ? 'fas fa-spinner fa-spin me-1' : 'fas fa-paper-plane me-1'"></i>
-            {{ sendingOtp ? 'SENDING TEST SMS OTP...' : 'SEND TEST OTP (SMS)' }}
+            {{ sendingOtp ? 'SENDING TEST SMS...' : 'SEND TEST SMS' }}
           </button>
         </div>
 
         <!-- SEND RESULT SUMMARY CARD -->
         <div *ngIf="lastSendResult" class="result-card success mt-3">
           <div class="d-flex align-items-center justify-content-between mb-2">
-            <strong class="text-emerald fs-13"><i class="fas fa-check-circle me-1"></i>Test OTP Dispatched Successfully via SMS</strong>
+            <strong class="text-emerald fs-13"><i class="fas fa-check-circle me-1"></i>Test SMS Dispatched Successfully via 2Factor</strong>
             <span class="fs-11 text-muted">{{ lastSendResult.timestamp }}</span>
           </div>
           <div class="row g-2 fs-11 text-dark">
@@ -363,11 +363,11 @@
             </div>
             <div class="col-6 col-md-3">
               <span class="text-muted d-block">Header / Sender ID:</span>
-              <code>{{ lastSendResult.header || 'MMRCTN' }}</code>
+              <code>{{ lastSendResult.header || 'MMRCTN' }} ({{ lastSendResult.sender_id || (lastSendResult.header + ' Service') }})</code>
             </div>
             <div class="col-6 col-md-3">
-              <span class="text-muted d-block">DLT Template ID:</span>
-              <code>{{ lastSendResult.dlt_template_id || 'DEFAULT' }}</code>
+              <span class="text-muted d-block">CT ID / DLT ID:</span>
+              <code>{{ lastSendResult.ct_id || lastSendResult.dlt_template_id }}</code>
             </div>
             <div class="col-6 col-md-3">
               <span class="text-muted d-block">Recipient Mobile:</span>
@@ -375,8 +375,8 @@
             </div>
           </div>
           <div class="mt-2 pt-2 border-top border-emerald-subtle d-flex align-items-center justify-content-between flex-wrap gap-2 fs-11">
-            <span><strong>2Factor Delivery Channel:</strong> <span class="badge bg-emerald-light text-emerald fw-700">SMS Text Message</span></span>
-            <span><strong>Session ID:</strong> <code class="text-primary fw-700">{{ lastSendResult.session_id }}</code></span>
+            <span><strong>Delivery Channel:</strong> <span class="badge bg-emerald-light text-emerald fw-700">SMS Text Message</span></span>
+            <span><strong>Session / Ref ID:</strong> <code class="text-primary fw-700">{{ lastSendResult.session_id }}</code></span>
           </div>
         </div>
 
@@ -397,7 +397,7 @@
               <span>Header: <code>{{ sendErrorDetails.header }}</code></span>
             </div>
             <div class="col-6 col-md-4">
-              <span>DLT ID: <code>{{ sendErrorDetails.dltId }}</code></span>
+              <span>CT ID: <code>{{ sendErrorDetails.dltId }}</code></span>
             </div>
           </div>
         </div>
@@ -405,7 +405,7 @@
     </div>
 
     <!-- SECTION 4: VERIFY OTP -->
-    <div *ngIf="activeSessionId" class="card panel-card mb-3 border-emerald">
+    <div *ngIf="isOtpVerifiable && activeSessionId" class="card panel-card mb-3 border-emerald">
       <div class="card-header bg-emerald-light py-3 border-bottom d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
           <div class="section-badge-icon bg-emerald text-white"><i class="fas fa-check-double"></i></div>
@@ -475,7 +475,7 @@
         <div class="d-flex align-items-center gap-2">
           <div class="section-badge-icon bg-purple text-purple"><i class="fas fa-list-check"></i></div>
           <div>
-            <h5 class="mb-0 fs-15 fw-700 text-dark">Recent Test OTP Activity</h5>
+            <h5 class="mb-0 fs-15 fw-700 text-dark">Recent Test SMS / OTP Activity</h5>
             <small class="text-muted fs-11">Audit records with masked phone numbers</small>
           </div>
         </div>
@@ -523,7 +523,7 @@
               <tr *ngIf="logs.length === 0 && !loadingLogs">
                 <td colspan="5" class="text-center py-4 text-muted fs-12">
                   <i class="fas fa-inbox fs-3 d-block mb-2 text-secondary"></i>
-                  No test OTP dispatches recorded yet. Use the form above to send a test OTP.
+                  No test SMS dispatches recorded yet. Use the form above to send a test SMS.
                 </td>
               </tr>
               <tr *ngIf="loadingLogs">

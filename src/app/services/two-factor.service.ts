@@ -5,14 +5,17 @@ import { Observable } from 'rxjs';
 export interface ApprovedTemplate {
   id: string;
   name: string;
-  aliasName?: string;
   displayName?: string;
-  dltTemplateId?: string;
+  senderId?: string;
   header: string;
+  contentType?: string;
   communicationType?: string;
   messageText: string;
-  twoFactorMessageText?: string;
+  peId?: string;
+  ctId?: string;
+  dltTemplateId?: string;
   placeholder?: string;
+  variables?: string[];
   purpose?: string;
   category?: string;
   status: string;
@@ -24,6 +27,7 @@ export interface TwoFactorConfig {
   is_configured: boolean;
   masked_api_key?: string | null;
   provider: string;
+  pe_id?: string;
   is_active: boolean;
   updated_at?: string | null;
   template_identifiers?: Record<string, string>;
@@ -41,6 +45,26 @@ export interface TwoFactorLog {
   error_code?: string | null;
   error_message?: string | null;
   created_at: string;
+}
+
+export interface SendTestOtpResult {
+  success: boolean;
+  message: string;
+  provider: string;
+  delivery_channel: string;
+  session_id: string;
+  is_otp_route?: boolean;
+  mobile_masked: string;
+  template: string;
+  template_id?: string;
+  pe_id?: string;
+  ct_id?: string;
+  dlt_template_id?: string;
+  header?: string;
+  sender_id?: string;
+  content_type?: string;
+  message_content?: string;
+  placeholder?: string;
 }
 
 @Injectable({
@@ -64,27 +88,14 @@ export class TwoFactorService {
   }
 
   /**
-   * Send a test OTP to an Indian mobile number using dynamically selected DLT template.
+   * Send a test SMS to an Indian mobile number using dynamically selected approved DLT template.
    */
-  sendTestOtp(mobile: string, template: string): Observable<{
+  sendTestOtp(mobile: string, template: string, customVars?: string[]): Observable<{
     success: boolean;
-    data: {
-      success: boolean;
-      message: string;
-      provider: string;
-      delivery_channel: string;
-      session_id: string;
-      mobile_masked: string;
-      template: string;
-      template_id?: string;
-      dlt_template_id?: string;
-      header?: string;
-      message_content?: string;
-      placeholder?: string;
-    };
+    data: SendTestOtpResult;
     message: string;
   }> {
-    return this.api.post('/api/admin/test-otp/send', { mobile, template }, true);
+    return this.api.post('/api/admin/test-otp/send', { mobile, template, customVars }, true);
   }
 
   /**
