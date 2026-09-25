@@ -12,14 +12,14 @@
       <div>
         <div class="admin-hero-badge"><i class="fas fa-shield-alt me-1"></i>SYSTEM EXECUTIVE CONTROL PANEL</div>
         <h2 class="admin-hero-title mb-1">Admin Dashboard Overview</h2>
-        <p class="admin-hero-sub mb-0">Monitor live plot bookings, site occupancy, customer KYC approvals & financial revenue.</p>
+        <p class="admin-hero-sub mb-0">Monitor live plot bookings, site occupancy, customer KYC approvals &amp; financial revenue.</p>
       </div>
 
       <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-        <button class="btn btn-outline-light btn-xs" (click)="loadDashboard()">
+        <button type="button" class="btn btn-outline-light btn-xs" (click)="loadDashboard()" aria-label="Refresh Dashboard Data">
           <i class="fas fa-sync me-1"></i> Refresh Data
         </button>
-        <a routerLink="/admin/approvals" class="btn btn-gold btn-xs position-relative">
+        <a routerLink="/admin/approvals" class="btn btn-gold btn-xs position-relative" aria-label="View Pending Approvals">
           <i class="fas fa-user-check me-1"></i> Pending Approvals
           <span class="badge bg-danger text-white rounded-pill ms-1 fs-10 px-1.5">{{ stats.pending_approvals || 0 }}</span>
         </a>
@@ -27,22 +27,33 @@
     </div>
   </div>
 
-  <!-- 8 METRIC STAT CARDS GRID -->
+  <!-- 8 METRIC STAT CARDS GRID (ALL PROPERLY ACTIONABLE & CONNECTED TO REPORTS) -->
   <div class="row g-2 mb-2">
     <div class="col-6 col-xl-3" *ngFor="let s of statCards">
-      <div class="stat-mini-card h-100" [class]="s.boxClass">
-        <div class="d-flex align-items-center justify-content-between mb-1.5 w-100">
-          <span class="stat-mini-lbl text-truncate">{{ s.lbl }}</span>
-          <div class="icon-wrap" [style.background]="s.bg" [style.color]="s.color">
-            <i [class]="s.icon"></i>
+      <a [routerLink]="s.route"
+         class="stat-card-link text-decoration-none d-block h-100"
+         [attr.aria-label]="s.lbl + ': ' + getStatVal(s.key) + ' (' + s.delta + '). Click to view report.'">
+        <div class="stat-mini-card h-100" [class]="s.boxClass">
+          <div class="d-flex align-items-center justify-content-between mb-1.5 w-100">
+            <span class="stat-mini-lbl text-truncate">{{ s.lbl }}</span>
+            <div class="icon-wrap" [style.background]="s.bg" [style.color]="s.color">
+              <i [class]="s.icon"></i>
+            </div>
+          </div>
+          <div class="stat-mini-val mb-1">{{ getStatVal(s.key) }}</div>
+          <div class="d-flex align-items-center justify-content-between fs-11 mt-auto pt-1">
+            <div class="d-flex align-items-center gap-1.5 min-w-0">
+              <span [style.color]="s.color" class="fw-700 fs-10">
+                <i [class]="s.up ? 'fas fa-arrow-up' : 'fas fa-exclamation-circle'"></i>
+              </span>
+              <span class="text-muted fw-600 fs-11 text-truncate">{{ s.delta }}</span>
+            </div>
+            <span class="kpi-nav-indicator" [style.color]="s.color" title="View details">
+              <i class="fas fa-chevron-right fs-10"></i>
+            </span>
           </div>
         </div>
-        <div class="stat-mini-val mb-1">{{ getStatVal(s.key) }}</div>
-        <div class="d-flex align-items-center gap-1.5 fs-11">
-          <span [style.color]="s.color" class="fw-700 fs-10"><i [class]="s.up ? 'fas fa-arrow-up' : 'fas fa-exclamation-circle'"></i></span>
-          <span class="text-muted fw-600 fs-11 text-truncate">{{ s.delta }}</span>
-        </div>
-      </div>
+      </a>
     </div>
   </div>
 
@@ -54,7 +65,7 @@
       <div class="panel-card p-3 h-100">
         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
           <h6 class="fw-700 text-dark mb-0"><i class="fas fa-map-marked-alt text-emerald me-2"></i>Live Site Occupancy</h6>
-          <a routerLink="/admin/sites" class="btn btn-link btn-xs text-gold-dark text-decoration-none p-0 fw-700">Manage Sites →</a>
+          <a routerLink="/admin/sites" class="btn btn-link btn-xs text-gold-dark text-decoration-none p-0 fw-700" aria-label="Manage Sites">Manage Sites →</a>
         </div>
 
         <div *ngIf="sites.length === 0" class="text-center py-4">
@@ -83,7 +94,7 @@
       <div class="panel-card p-3 h-100">
         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
           <h6 class="fw-700 text-dark mb-0"><i class="fas fa-calendar-alt text-gold me-2"></i>Recent Plot Bookings</h6>
-          <a routerLink="/admin/emi-payments" class="btn btn-link btn-xs text-gold-dark text-decoration-none p-0 fw-700">View All Receipts →</a>
+          <a routerLink="/admin/booking-report" class="btn btn-link btn-xs text-gold-dark text-decoration-none p-0 fw-700" aria-label="View All Bookings">View All Bookings →</a>
         </div>
 
         <div *ngIf="recentBookings.length === 0" class="text-center py-4">
@@ -130,23 +141,21 @@
 
   </div>
 
-  <!-- ROW 3: QUICK MANAGEMENT TILES -->
+  <!-- ROW 3: BOTTOM QUICK-ACTION CARDS (ERP ALIGNED, COMPACT, 100% ACTIONABLE) -->
   <div class="row g-2 mb-2">
-    <div class="col-6 col-md-3" *ngFor="let qa of [
-      {icon:'fas fa-user-check', label:'Approve Registrations', sub:'KYC & Accounts',  route:'/admin/approvals',   boxClass:'tile-approvals', bg:'#dbeafe', clr:'#1e40af'},
-      {icon:'fas fa-users',      label:'Customer Directory',   sub:'Buyers & Profiles', route:'/admin/customers',   boxClass:'tile-customers', bg:'#bbf7d0', clr:'#166534'},
-      {icon:'fas fa-map',        label:'Manage Sites & Maps',  sub:'Plots & Layouts',  route:'/admin/sites',       boxClass:'tile-sites',     bg:'#fef08a', clr:'#854d0e'},
-      {icon:'fas fa-hand-holding-usd', label:'Commission Payouts', sub:'Rewards & Ledger', route:'/admin/commissions', boxClass:'tile-commissions', bg:'#e9d5ff', clr:'#6b21a8'}]">
-      <a [routerLink]="qa.route" class="quick-tile-link text-decoration-none">
-        <div class="quick-action-tile" [class]="qa.boxClass">
-          <div class="icon-wrap" [style.background]="qa.bg" [style.color]="qa.clr">
+    <div class="col-12 col-sm-6 col-lg-3" *ngFor="let qa of quickActions">
+      <a [routerLink]="qa.route"
+         class="quick-tile-link text-decoration-none d-block h-100"
+         [attr.aria-label]="qa.label + ' (' + qa.sub + ') - Open Admin module'">
+        <div class="quick-action-tile h-100" [class]="qa.boxClass">
+          <div class="quick-tile-icon-wrap" [style.background]="qa.bg" [style.color]="qa.clr">
             <i [class]="qa.icon"></i>
           </div>
-          <div class="flex-fill min-w-0 ms-1">
+          <div class="quick-tile-content min-w-0 flex-fill">
             <div class="tile-title text-truncate">{{ qa.label }}</div>
             <div class="tile-sub text-truncate">{{ qa.sub }}</div>
           </div>
-          <div class="action-arrow-circle">
+          <div class="quick-tile-arrow" [style.color]="qa.clr">
             <i class="fas fa-arrow-right"></i>
           </div>
         </div>

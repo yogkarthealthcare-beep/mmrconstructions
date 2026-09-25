@@ -69,7 +69,19 @@
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
-/* ── 8 STAT MINI CARDS ───────────────────────────────────── */
+/* ── 8 STAT MINI CARDS (ACTIONABLE & INTERACTIVE) ──────────── */
+.stat-card-link {
+  color: inherit;
+  outline: none;
+  cursor: pointer;
+}
+
+.stat-card-link:focus-visible .stat-mini-card,
+.quick-tile-link:focus-visible .quick-action-tile {
+  outline: 2px solid #c9a84c;
+  outline-offset: 2px;
+}
+
 .stat-mini-card {
   background: #ffffff;
   border-radius: 9px;
@@ -79,14 +91,31 @@
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   height: 100% !important;
   min-height: 76px;
+  position: relative;
+  cursor: pointer;
 }
 
-.stat-mini-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(6, 43, 24, 0.08);
+.stat-card-link:hover .stat-mini-card {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(6, 43, 24, 0.09);
+  border-color: rgba(6, 43, 24, 0.22);
+}
+
+.kpi-nav-indicator {
+  font-size: 10px;
+  opacity: 0.55;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-card-link:hover .kpi-nav-indicator {
+  transform: translateX(3px);
+  opacity: 1;
 }
 
 /* ── 8 DISTINCT BOX COLOR THEMES ────────────────────────── */
@@ -147,6 +176,7 @@
   justify-content: center;
   font-size: 13px;
   flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .stat-mini-val {
@@ -232,3 +262,103 @@
 .sbadge-yellow { background: #fef9c3; color: #a16207; }
 .sbadge-red    { background: #fee2e2; color: #b91c1c; }
 .sbadge-blue   { background: #eff6ff; color: #1d4ed8; }
+
+/* ── BOTTOM QUICK-ACTION CARDS (ERP ALIGNED & COMPACT) ───── */
+.quick-tile-link {
+  color: inherit;
+  outline: none;
+  cursor: pointer;
+}
+
+.quick-action-tile {
+  background: #ffffff;
+  border-radius: 9px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  min-height: 64px;
+  cursor: pointer;
+}
+
+.quick-tile-link:hover .quick-action-tile {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(6, 43, 24, 0.09);
+  border-color: rgba(6, 43, 24, 0.22);
+}
+
+.quick-tile-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.tile-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
+  margin-bottom: 1px;
+}
+
+.tile-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.quick-tile-arrow {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.quick-tile-link:hover .quick-tile-arrow {
+  transform: translateX(3px);
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Quick Action Tiles Box Color Accents */
+.tile-approvals {
+  background: linear-gradient(180deg, #f8fafc 0%, #edf4ff 100%) !important;
+  border: 1px solid #bfdbfe !important;
+  border-left: 4px solid #2563eb !important;
+}
+
+.tile-customers {
+  background: linear-gradient(180deg, #f0fdf4 0%, #e6f7ec 100%) !important;
+  border: 1px solid #bbf7d0 !important;
+  border-left: 4px solid #16a34a !important;
+}
+
+.tile-sites {
+  background: linear-gradient(180deg, #fffdf0 0%, #fef9c3 100%) !important;
+  border: 1px solid #fef08a !important;
+  border-left: 4px solid #ca8a04 !important;
+}
+
+.tile-commissions {
+  background: linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%) !important;
+  border: 1px solid #e9d5ff !important;
+  border-left: 4px solid #7c3aed !important;
+}
