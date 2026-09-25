@@ -113,6 +113,8 @@
   border-radius: 14px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: visible;
 }
 
 .filter-tabs {
@@ -154,53 +156,253 @@
   font-size: 11px;
 }
 
-/* ── USER AVATAR & TABLE ─────────────────────────────────── */
+/* ── TABLE RESPONSIVE & FIXED LAYOUT ───────────────────────── */
+.table-responsive {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important; /* Table left-right scroll strictly disabled */
+  overflow-y: visible !important;
+  margin-bottom: 0;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+}
+
+.custom-dash-table {
+  width: 100% !important;
+  table-layout: fixed !important; /* Critical: strict percentage widths prevent overflow at 100% zoom */
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.custom-dash-table th {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #475569;
+  border-bottom: 1.5px solid #e2e8f0;
+  padding: 9px 8px;
+  height: 38px;
+  background: #f8fafc;
+  white-space: nowrap;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-dash-table td {
+  padding: 8px 8px;
+  height: 46px;
+  font-size: 11.5px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  background: #ffffff;
+  transition: background-color 0.15s ease;
+  overflow: hidden;
+}
+
+.custom-dash-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+/* Precise Proportional Column Widths (Total = 100%) */
+.th-sno, .td-sno {
+  width: 4.5% !important;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+}
+
+.th-profile, .td-profile {
+  width: 21% !important;
+}
+
+.th-contact, .td-contact {
+  width: 19% !important;
+}
+
+.th-location, .td-location {
+  width: 23% !important;
+}
+
+.th-registered, .td-registered {
+  width: 12% !important;
+}
+
+.th-status, .td-status {
+  width: 10.5% !important;
+  text-align: center;
+}
+
+.th-actions, .td-actions {
+  width: 10% !important;
+  text-align: right;
+  overflow: visible !important; /* Allows dropdown menu to float */
+}
+
+/* ── USER AVATAR & PROFILE ───────────────────────────────── */
 .user-avatar-circle {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', -apple-system, sans-serif;
   font-weight: 700;
-  font-size: 12px;
-  color: #1e40af;
+  font-size: 11px;
   flex-shrink: 0;
 }
 
-.custom-dash-table th {
+.bg-blue {
+  background: #dbeafe !important;
+  color: #2563eb !important;
+}
+
+.user-name {
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.member-id-text {
+  font-size: 10px;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+/* ── CONTACT & MOBILE ────────────────────────────────────── */
+.phone-text {
   font-size: 11.5px;
   font-weight: 700;
-  text-transform: uppercase;
-  color: #475569;
-  border-bottom: 1.5px solid #e2e8f0;
-  padding: 6px 12px;
-  height: 42px;
-  background: #f8fafc;
+  color: #0f172a;
+  line-height: 1.25;
   white-space: nowrap;
 }
 
-.custom-dash-table td {
-  padding: 6px 12px;
-  height: 46px;
-  font-size: 12.5px;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
+.email-text {
+  font-size: 10.5px;
+  color: #64748b;
+  line-height: 1.2;
 }
 
-.sbadge {
+/* ── LOCATION ────────────────────────────────────────────── */
+.location-text {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.location-empty {
+  font-size: 10.5px;
+  color: #94a3b8;
+}
+
+/* ── REGISTERED ──────────────────────────────────────────── */
+.reg-date {
   font-size: 11px;
-  font-weight: 700;
-  padding: 2.5px 7px;
-  border-radius: 5px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.25;
+  white-space: nowrap;
 }
 
-.sbadge-green  { background: #dcfce7; color: #15803d; }
-.sbadge-yellow { background: #fef9c3; color: #a16207; }
-.sbadge-red    { background: #fee2e2; color: #b91c1c; }
+.reg-time {
+  font-size: 10px;
+  color: #64748b;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* ── STATUS BADGE (Pills matching image) ───────────────────── */
+.sbadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 2.5px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.sbadge-green  { background: #dcfce7 !important; color: #16a34a !important; }
+.sbadge-yellow { background: #fef3c7 !important; color: #d97706 !important; }
+.sbadge-red    { background: #fee2e2 !important; color: #ef4444 !important; }
+
+/* ── ACTION TRIGGER BUTTON ───────────────────────────────── */
+.btn-action-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.btn-action-trigger:hover,
+.btn-action-trigger.active {
+  background: #062b18;
+  border-color: #062b18;
+  color: #ffffff;
+}
+
+.btn-action-trigger:hover i,
+.btn-action-trigger.active i {
+  color: #c9a84c !important;
+}
+
+/* ── FLOATING ACTIONS OVERLAY (Renders outside card/table context) ── */
+.floating-actions-overlay {
+  position: fixed !important;
+  z-index: 1060 !important; /* Floats completely above table and card borders */
+  pointer-events: auto;
+}
+
+.floating-actions-overlay.placement-top {
+  transform: translateY(-100%);
+}
+
+.floating-menu-box {
+  position: static !important;
+  display: block !important;
+  min-width: 210px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  animation: dropdownFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
 /* ── BUTTONS ─────────────────────────────────────────────── */
 .btn-xs {
@@ -251,27 +453,7 @@
   color: #0f172a;
 }
 
-/* ── DISABLED / FREE ROW & HOVER TOOLTIP ─────────────────────── */
-.row-disabled-free {
-  background-color: #fafbfc;
-  opacity: 0.8;
-  cursor: default !important;
-}
-
-.admin-hover-tooltip {
-  position: fixed;
-  background: #0f172a;
-  color: #ffffff;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-  z-index: 99999;
-  pointer-events: none;
-  width: 270px;
-  max-width: calc(100vw - 30px);
-  backdrop-filter: blur(8px);
-}
+/* ── UTILITIES ─────────────────────────────────────────── */
 
 .text-slate-300 {
   color: #cbd5e1 !important;
@@ -281,17 +463,7 @@
   font-size: 9px !important;
 }
 
-/* Fix dropdown clipping in responsive tables (desktop only) */
-@media (min-width: 768px) {
-  .table-responsive {
-    overflow: visible;
-  }
-}
-
-/* Ensure mobile view remains horizontally scrollable */
-@media (max-width: 767px) {
-  .table-responsive {
-    /* overflow-x: auto !important; */
-    -webkit-overflow-scrolling: touch;
-  }
+.width-16 {
+  width: 16px;
+  text-align: center;
 }

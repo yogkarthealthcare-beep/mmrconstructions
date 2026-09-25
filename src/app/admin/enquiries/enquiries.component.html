@@ -113,8 +113,7 @@
           <tr>
             <th class="th-sno">#</th>
             <th>Lead Customer Profile</th>
-            <th>Selected Site</th>
-            <th>Topic &amp; Interest</th>
+            <th>Site &amp; Interest</th>
             <th>Message Note</th>
             <th>Priority</th>
             <th>Date</th>
@@ -137,14 +136,35 @@
               </div>
             </td>
             <td>
-              <span class="badge bg-emerald-subtle text-dark border border-emerald-subtle fw-600 fs-11">
-                <i class="fas fa-building text-gold me-1"></i>{{ e.site_name || 'General Inquiry' }}
-              </span>
-            </td>
-            <td>
-              <span class="badge bg-light text-dark border fw-600">
-                <i class="fas fa-tag text-gold me-1"></i>{{ e.interest }}
-              </span>
+              <div class="dropdown d-inline-block position-relative">
+                <button type="button" 
+                  class="btn btn-light btn-xs border text-dark fw-600 d-inline-flex align-items-center gap-1.5 py-1 px-2.5 rounded-6 bg-white shadow-none"
+                  (click)="toggleInterestDropdown(e, $event)">
+                  <i class="fas fa-building text-gold fs-10"></i>
+                  <span class="text-truncate" style="max-width: 140px;">{{ e.site_name || 'General Inquiry' }}</span>
+                  <i class="fas fa-chevron-down text-muted fs-9 ms-1"></i>
+                </button>
+
+                <div class="dropdown-menu show shadow border p-2.5 position-absolute" 
+                  style="top: 100%; left: 0; z-index: 1050; min-width: 220px; border-radius: 8px; font-size: 11px; background: #ffffff;" 
+                  *ngIf="activeInterestId === e.id" 
+                  (click)="$event.stopPropagation()">
+                  <div class="mb-2">
+                    <div class="text-muted fs-9 fw-700 text-uppercase" style="letter-spacing: 0.04em;">Selected Site</div>
+                    <div class="text-dark fw-700 d-flex align-items-center gap-1.5 mt-0.5">
+                      <i class="fas fa-map-marker-alt text-emerald fs-10"></i>
+                      <span>{{ e.site_name || 'General Inquiry' }}</span>
+                    </div>
+                  </div>
+                  <div class="border-top pt-2">
+                    <div class="text-muted fs-9 fw-700 text-uppercase" style="letter-spacing: 0.04em;">Topic &amp; Interest</div>
+                    <div class="text-dark fw-600 d-flex align-items-center gap-1.5 mt-0.5">
+                      <i class="fas fa-tag text-gold fs-10"></i>
+                      <span>{{ e.interest || 'General Plot Inquiry' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </td>
             <td>
               <div class="fs-11 text-dark text-truncate" style="max-width: 180px;" [title]="e.message">
@@ -176,7 +196,7 @@
             </td>
             <td class="text-end">
               <div class="dropdown d-inline-block position-relative">
-                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === e.id ? null : e.id)">
+                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="toggleActionDropdown(e, $event)">
                   <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
                 </button>
 

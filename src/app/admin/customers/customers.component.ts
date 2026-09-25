@@ -21,13 +21,71 @@ export class CustomersComponent implements OnInit {
   loading = true;
   search = '';
   statusFilter = 'all';
-  customers: any[] = [];
-  activeRowId: any = null;
+  // Floating Actions Dropdown Overlay State
+  activeDropdownCustomer: any = null;
+  activeDropdownPos = { top: 0, left: 0, placement: 'bottom' as 'bottom' | 'top' };
+  activeDropdownButton: HTMLElement | null = null;
 
   @HostListener('document:click')
   closeDropdowns() {
-    this.activeRowId = null;
+    this.closeActionsMenu();
   }
+
+  @HostListener('window:scroll')
+  @HostListener('window:resize')
+  @HostListener('document:scroll')
+  onWindowScrollOrResize() {
+    if (this.activeDropdownCustomer && this.activeDropdownButton) {
+      const rect = this.activeDropdownButton.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top > window.innerHeight) {
+        this.closeActionsMenu();
+      } else {
+        this.calculateDropdownPosition(this.activeDropdownButton);
+      }
+    }
+  }
+
+  toggleActionsMenu(c: any, event: MouseEvent) {
+    event.stopPropagation();
+    if (this.activeDropdownCustomer?.user_id === c.user_id) {
+      this.closeActionsMenu();
+      return;
+    }
+    const button = (event.currentTarget || event.target) as HTMLElement;
+    this.activeDropdownCustomer = c;
+    this.activeDropdownButton = button;
+    this.calculateDropdownPosition(button);
+  }
+
+  calculateDropdownPosition(button: HTMLElement) {
+    const rect = button.getBoundingClientRect();
+    const menuWidth = 210;
+    const menuHeight = 280;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    let placement: 'bottom' | 'top' = 'bottom';
+    let top = rect.bottom + 4;
+
+    if (spaceBelow < menuHeight && spaceAbove >= spaceBelow) {
+      placement = 'top';
+      top = Math.max(10, rect.top - 4);
+    }
+
+    let left = rect.right - menuWidth;
+    if (left < 10) left = 10;
+    if (left + menuWidth > window.innerWidth - 10) {
+      left = window.innerWidth - menuWidth - 10;
+    }
+
+    this.activeDropdownPos = { top, left, placement };
+  }
+
+  closeActionsMenu() {
+    this.activeDropdownCustomer = null;
+    this.activeDropdownButton = null;
+  }
+  customers: any[] = [];
   total = 0;
   page = 1;
   pageSize = 20;
@@ -57,10 +115,6 @@ export class CustomersComponent implements OnInit {
 
   actionLoading = false;
   toast = '';
-
-  // Hover Tooltip State for Free/Disabled and Row Records
-  hoveredCustomer: any = null;
-  tooltipPos = { x: 0, y: 0 };
 
   constructor(
     private api: ApiService,
@@ -144,46 +198,6 @@ export class CustomersComponent implements OnInit {
 
   isFreeOrDisabled(c: any): boolean {
     return false;
-  }
-
-  onRowMouseEnter(c: any, event: MouseEvent) {
-    this.hoveredCustomer = c;
-    this.updateTooltipPos(event);
-  }
-
-  onRowMouseMove(event: MouseEvent) {
-    if (this.hoveredCustomer) {
-      this.updateTooltipPos(event);
-    }
-  }
-
-  onRowMouseLeave() {
-    this.hoveredCustomer = null;
-  }
-
-  private updateTooltipPos(event: MouseEvent) {
-    const tooltipWidth = 270;
-    const tooltipHeight = 185;
-    const offset = 15;
-
-    let x = event.clientX + offset;
-    let y = event.clientY + offset;
-
-    // Flip to left if overflowing right window edge
-    if (x + tooltipWidth > window.innerWidth - 12) {
-      x = event.clientX - tooltipWidth - offset;
-    }
-
-    // Flip to top if overflowing bottom window edge
-    if (y + tooltipHeight > window.innerHeight - 12) {
-      y = event.clientY - tooltipHeight - offset;
-    }
-
-    // Clamp inside visible viewport
-    x = Math.max(12, Math.min(x, window.innerWidth - tooltipWidth - 12));
-    y = Math.max(12, Math.min(y, window.innerHeight - tooltipHeight - 12));
-
-    this.tooltipPos = { x, y };
   }
 
   onRowClick(c: any, event: MouseEvent) {
@@ -271,6 +285,39 @@ export class CustomersComponent implements OnInit {
   getInitials(name: string): string {
     if (!name) return 'C';
     return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  }
+
+  getLocation(c: any): string {
+    if (!c) return 'Not specified';
+    const city = c.city || c.address?.city || c.permanent_city || c.present_city || '';
+    const state = c.state || c.address?.state || c.permanent_state_pin || c.present_state_pin || '';
+    const pin = c.pin_code || c.pincode || c.address?.pin_code || '';
+    const addr = c.address?.address_line1 || c.address_line1 || (typeof c.address === 'string' ? c.address : '');
+
+    const parts: string[] = [];
+    if (addr && (!city || addr !== city)) {
+      parts.push(addr);
+    } else if (city) {
+      parts.push(city);
+    }
+
+    if (state) {
+      if (pin) {
+        parts.push(`${state} & ${pin}`);
+      } else {
+        parts.push(state);
+      }
+    } else if (pin) {
+      parts.push(pin);
+    }
+
+    return parts.length > 0 ? parts.join(', ') : 'Not specified';
+  }
+
+  getShortLocation(c: any): string {
+    const loc = this.getLocation(c);
+    if (!loc || loc === 'Not specified') return 'Not specified';
+    return loc.length > 25 ? loc.slice(0, 25) + '...' : loc;
   }
 
   // --- MODAL & CRUD ACTIONS ---

@@ -6,9 +6,9 @@
 
 <div class="receipt-management-shell">
   <!-- 1. TOP HEADER -->
-  <div class="rm-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3.5">
-    <div class="d-flex align-items-center gap-3">
-      <a routerLink="/admin/receipts" class="btn btn-outline-secondary btn-sm rm-back-btn" title="Back to Receipt Directory">
+  <div class="rm-header d-flex align-items-center justify-content-between flex-wrap gap-2.5 mb-2.5">
+    <div class="d-flex align-items-center gap-2.5">
+      <a routerLink="/admin/receipts" class="btn btn-outline-secondary rm-back-btn" title="Back to Receipt Directory">
         <i class="fas fa-arrow-left"></i>
       </a>
       <div class="rm-header-icon">
@@ -21,7 +21,7 @@
     </div>
 
     <div class="d-flex align-items-center gap-2">
-      <a routerLink="/admin/receipts" class="btn btn-outline-secondary btn-sm rm-nav-btn">
+      <a routerLink="/admin/receipts" class="btn btn-outline-secondary rm-nav-btn">
         <i class="fas fa-list me-1.5"></i> Receipt List
       </a>
       <button type="button" class="btn rm-btn-gold" (click)="openPreview()">
@@ -33,27 +33,27 @@
   <!-- Form Sections Wrapper -->
   <div class="form-wrapper">
     <!-- SECTION 1: RECEIPT DETAILS -->
-    <div class="rm-panel-card p-4 mb-3.5">
-      <div class="rm-section-header d-flex align-items-center gap-2.5 pb-3 mb-3.5 border-bottom">
+    <div class="rm-panel-card mb-2.5">
+      <div class="rm-section-header d-flex align-items-center gap-2 pb-2 mb-2.5 border-bottom">
         <div class="rm-stat-icon-wrap bg-green-subtle">
           <i class="fas fa-hashtag text-green"></i>
         </div>
         <div>
-          <h6 class="fw-700 text-dark mb-0 fs-14">1. Receipt Identification &amp; Property Details</h6>
-          <span class="fs-11 text-muted">Auto-generated receipt number and plot assignment details</span>
+          <h6 class="fw-700 text-dark mb-0 fs-12.5">1. Receipt Identification &amp; Property Details</h6>
+          <span class="fs-10 text-muted">Auto-generated receipt number and plot assignment details</span>
         </div>
       </div>
 
-      <div class="row g-3.5">
-        <div class="col-12 col-sm-6 col-lg-4">
+      <div class="row g-2.5">
+        <div class="col-12 col-sm-6 col-lg-3">
           <label class="rm-field-label">Receipt Number *</label>
           <input type="text" class="form-control rm-input font-monospace" [(ngModel)]="form.receipt_no" placeholder="Auto generated..." />
         </div>
-        <div class="col-6 col-sm-6 col-lg-2">
+        <div class="col-12 col-sm-6 col-lg-3">
           <label class="rm-field-label">Serial No. *</label>
           <input type="number" class="form-control rm-input" [(ngModel)]="form.serial_no" min="1" />
         </div>
-        <div class="col-6 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-lg-3">
           <label class="rm-field-label">Receipt Date *</label>
           <input type="date" class="form-control rm-input" [(ngModel)]="form.receipt_date" />
         </div>
@@ -73,37 +73,37 @@
     </div>
 
     <!-- SECTION 2: CUSTOMER INFORMATION -->
-    <div class="rm-panel-card p-4 mb-3.5">
-      <div class="rm-section-header d-flex align-items-center gap-2.5 pb-3 mb-3.5 border-bottom">
+    <div class="rm-panel-card mb-2.5">
+      <div class="rm-section-header d-flex align-items-center gap-2 pb-2 mb-2.5 border-bottom">
         <div class="rm-stat-icon-wrap bg-blue-subtle">
           <i class="fas fa-user-check text-blue"></i>
         </div>
         <div>
-          <h6 class="fw-700 text-dark mb-0 fs-14">2. Customer Particulars</h6>
-          <span class="fs-11 text-muted">Customer profile, contact details and relationship</span>
+          <h6 class="fw-700 text-dark mb-0 fs-12.5">2. Customer Particulars</h6>
+          <span class="fs-10 text-muted">Customer profile, contact details and relationship</span>
         </div>
       </div>
 
       <!-- Quick Search / Auto-fill Box -->
-      <div class="rm-customer-search-box p-3 bg-light-subtle rounded-10 border mb-3.5 position-relative">
-        <label class="rm-field-label text-emerald mb-1.5">
+      <div class="rm-customer-search-box p-2 bg-light-subtle rounded-6 border mb-2.5 position-relative">
+        <label class="rm-field-label text-emerald mb-1">
           <i class="fas fa-search me-1"></i> Quick Search &amp; Auto-fill Registered Customer (Optional)
         </label>
         <div class="position-relative">
-          <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted fs-12"></i>
-          <input type="text" class="form-control rm-input rm-input-search ps-5" [(ngModel)]="customerSearchQuery"
+          <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-2.5 text-muted fs-11"></i>
+          <input type="text" class="form-control rm-input rm-input-search ps-4.5" [(ngModel)]="customerSearchQuery"
                  (input)="onCustomerSearch()"
                  placeholder="Type name, phone number, email, or member ID to auto-fill..." />
-          <button *ngIf="customerSearchQuery" class="btn btn-link btn-xs text-secondary position-absolute top-50 end-0 translate-middle-y me-2.5 p-0" (click)="clearCustomerSelection()">
-            <i class="fas fa-times-circle fs-14"></i>
+          <button *ngIf="customerSearchQuery" class="btn btn-link btn-xs text-secondary position-absolute top-50 end-0 translate-middle-y me-2 p-0" (click)="clearCustomerSelection()">
+            <i class="fas fa-times-circle fs-13"></i>
           </button>
         </div>
 
         <!-- Dropdown Suggestions -->
-        <div class="customer-dropdown-menu shadow-lg" *ngIf="showCustomerDropdown">
-          <div *ngFor="let c of customerSearchResults" class="customer-dropdown-item py-2 px-3" (click)="selectCustomer(c)">
-            <div class="fw-700 text-dark fs-12.5">{{ c.full_name }}</div>
-            <div class="fs-11 text-muted d-flex align-items-center gap-2 mt-0.5">
+        <div class="customer-dropdown-menu shadow-sm" *ngIf="showCustomerDropdown">
+          <div *ngFor="let c of customerSearchResults" class="customer-dropdown-item py-1.5 px-2.5" (click)="selectCustomer(c)">
+            <div class="fw-700 text-dark fs-11.5">{{ c.full_name }}</div>
+            <div class="fs-10 text-muted d-flex align-items-center gap-2 mt-0.5">
               <span><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ c.mobile_no }}</span>
               <span *ngIf="c.member_id"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ c.member_id }}</span>
               <span *ngIf="c.user_type" class="badge bg-secondary fs-9 py-0.5 px-1.5">{{ c.user_type }}</span>
@@ -112,16 +112,16 @@
         </div>
       </div>
 
-      <div class="row g-3.5">
-        <div class="col-12 col-md-6">
+      <div class="row g-2.5">
+        <div class="col-12 col-md-5">
           <label class="rm-field-label">Customer Full Name *</label>
           <input type="text" class="form-control rm-input" [(ngModel)]="form.customer_name" placeholder="Full legal name" />
         </div>
-        <div class="col-12 col-sm-6 col-md-3">
+        <div class="col-12 col-sm-6 col-md-3.5">
           <label class="rm-field-label">Mobile Number *</label>
           <input type="text" class="form-control rm-input" [(ngModel)]="form.mobile_no" placeholder="10-digit mobile" />
         </div>
-        <div class="col-12 col-sm-6 col-md-3">
+        <div class="col-12 col-sm-6 col-md-3.5">
           <label class="rm-field-label">R.O.P. (S/o, D/o, W/o)</label>
           <input type="text" class="form-control rm-input" [(ngModel)]="form.r_o_p" placeholder="Relation / Care of" />
         </div>
@@ -129,19 +129,19 @@
     </div>
 
     <!-- SECTION 3: PAYMENT PARTICULARS -->
-    <div class="rm-panel-card p-4 mb-3.5">
-      <div class="rm-section-header d-flex align-items-center gap-2.5 pb-3 mb-3.5 border-bottom">
+    <div class="rm-panel-card mb-2.5">
+      <div class="rm-section-header d-flex align-items-center gap-2 pb-2 mb-2.5 border-bottom">
         <div class="rm-stat-icon-wrap bg-amber-subtle">
           <i class="fas fa-money-bill-wave text-amber"></i>
         </div>
         <div>
-          <h6 class="fw-700 text-dark mb-0 fs-14">3. Payment &amp; Financial Figures</h6>
-          <span class="fs-11 text-muted">Amount deposited, payment method and banking instruments</span>
+          <h6 class="fw-700 text-dark mb-0 fs-12.5">3. Payment &amp; Financial Figures</h6>
+          <span class="fs-10 text-muted">Amount deposited, payment method and banking instruments</span>
         </div>
       </div>
 
-      <div class="row g-3.5">
-        <div class="col-12 col-sm-6 col-lg-3">
+      <div class="row g-2.5">
+        <div class="col-12 col-sm-6 col-md-3 col-xl-2">
           <label class="rm-field-label">Payment Type *</label>
           <select class="form-select rm-input" [(ngModel)]="form.payment_type">
             <option value="Cash">Cash</option>
@@ -152,7 +152,7 @@
           </select>
         </div>
 
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-md-3 col-xl-2">
           <label class="rm-field-label">Payment Mode *</label>
           <select class="form-select rm-input" [(ngModel)]="form.payment_mode">
             <option value="Full Payment">Full Payment</option>
@@ -164,26 +164,26 @@
           </select>
         </div>
 
-        <div class="col-12 col-sm-4 col-lg-2">
+        <div class="col-12 col-sm-6 col-md-2 col-xl-3">
           <label class="rm-field-label text-emerald fw-700">Paid Amount (₹) *</label>
-          <input type="number" class="form-control rm-input fw-800 text-emerald fs-13" [(ngModel)]="form.paid_amount" (input)="onPaidAmountChange()" min="0" />
+          <input type="number" class="form-control rm-input fw-800 text-emerald fs-12" [(ngModel)]="form.paid_amount" (input)="onPaidAmountChange()" min="0" />
         </div>
 
-        <div class="col-6 col-sm-4 col-lg-2">
+        <div class="col-6 col-sm-3 col-md-2 col-xl-2.5">
           <label class="rm-field-label">Receipt Amount (₹)</label>
           <input type="number" class="form-control rm-input" [(ngModel)]="form.receipt_amount" min="0" />
         </div>
 
-        <div class="col-6 col-sm-4 col-lg-2">
+        <div class="col-6 col-sm-3 col-md-2 col-xl-2.5">
           <label class="rm-field-label">Inward Amount (₹)</label>
           <input type="number" class="form-control rm-input" [(ngModel)]="form.inward_amount" min="0" />
         </div>
 
         <!-- Conditional Cheque Particulars -->
         <div *ngIf="form.payment_type === 'Cheque'" class="col-12">
-          <div class="p-3.5 bg-light rounded-10 border mt-1">
-            <div class="fw-700 text-primary fs-12.5 mb-2.5"><i class="fas fa-money-check me-1.5"></i>Cheque Particulars</div>
-            <div class="row g-3">
+          <div class="p-2.5 bg-light-subtle rounded-6 border mt-0.5">
+            <div class="fw-700 text-primary fs-11 mb-2"><i class="fas fa-money-check me-1.5"></i>Cheque Particulars</div>
+            <div class="row g-2.5">
               <div class="col-12 col-md-4">
                 <label class="rm-field-label">Cheque Number *</label>
                 <input type="text" class="form-control rm-input" [(ngModel)]="form.cheque_no" placeholder="6-digit cheque number" />
@@ -201,9 +201,9 @@
         </div>
 
         <!-- Amount In Words preview -->
-        <div class="col-12 mt-2">
-          <div class="p-3 bg-green-subtle rounded-10 border border-green-subtle fs-12.5 d-flex align-items-center gap-2">
-            <span class="fw-700 text-green"><i class="fas fa-spell-check me-1.5"></i>Amount in Words:</span>
+        <div class="col-12">
+          <div class="p-2 px-2.5 bg-emerald-subtle rounded-6 border border-emerald-subtle fs-11 d-flex align-items-center gap-1.5">
+            <span class="fw-700 text-emerald"><i class="fas fa-spell-check me-1"></i>Amount in Words:</span>
             <span class="text-dark fw-600 fst-italic">{{ getAmountInWords(form.paid_amount) }}</span>
           </div>
         </div>
@@ -211,18 +211,18 @@
     </div>
 
     <!-- SECTION 4: DEPOSITOR & ADVISOR DETAILS -->
-    <div class="rm-panel-card p-4 mb-3.5">
-      <div class="rm-section-header d-flex align-items-center gap-2.5 pb-3 mb-3.5 border-bottom">
+    <div class="rm-panel-card mb-2.5">
+      <div class="rm-section-header d-flex align-items-center gap-2 pb-2 mb-2.5 border-bottom">
         <div class="rm-stat-icon-wrap bg-purple-subtle">
           <i class="fas fa-user-tie text-purple"></i>
         </div>
         <div>
-          <h6 class="fw-700 text-dark mb-0 fs-14">4. Depositor &amp; Associate Particulars</h6>
-          <span class="fs-11 text-muted">Person submitting payment and referring advisor</span>
+          <h6 class="fw-700 text-dark mb-0 fs-12.5">4. Depositor &amp; Associate Particulars</h6>
+          <span class="fs-10 text-muted">Person submitting payment and referring advisor</span>
         </div>
       </div>
 
-      <div class="row g-3.5">
+      <div class="row g-2.5">
         <div class="col-12 col-md-4">
           <label class="rm-field-label">Amount Depositor Name</label>
           <input type="text" class="form-control rm-input" [(ngModel)]="form.amount_depositor_name" placeholder="Name of person handing over amount" />
@@ -243,35 +243,35 @@
     </div>
 
     <!-- SECTION 5: NOTES -->
-    <div class="rm-panel-card p-4 mb-3.5">
-      <div class="rm-section-header d-flex align-items-center gap-2.5 pb-3 mb-3.5 border-bottom">
-        <div class="rm-stat-icon-wrap bg-light border">
+    <div class="rm-panel-card mb-2.5">
+      <div class="rm-section-header d-flex align-items-center gap-2 pb-2 mb-2.5 border-bottom">
+        <div class="rm-stat-icon-wrap bg-gray-subtle">
           <i class="fas fa-file-alt text-muted"></i>
         </div>
         <div>
-          <h6 class="fw-700 text-dark mb-0 fs-14">5. Notes &amp; Special Conditions</h6>
-          <span class="fs-11 text-muted">Optional remarks printed on receipt document</span>
+          <h6 class="fw-700 text-dark mb-0 fs-12.5">5. Notes &amp; Special Conditions</h6>
+          <span class="fs-10 text-muted">Optional remarks printed on receipt document</span>
         </div>
       </div>
 
       <div class="row g-2">
         <div class="col-12">
           <label class="rm-field-label">Notes / Terms / Special Remarks</label>
-          <textarea class="form-control rm-input rm-textarea" rows="3" [(ngModel)]="form.notes" placeholder="Optional notes for this payment..."></textarea>
+          <textarea class="form-control rm-input rm-textarea" rows="2" [(ngModel)]="form.notes" placeholder="Optional notes for this payment..."></textarea>
         </div>
       </div>
     </div>
 
     <!-- ACTION FOOTER CARD -->
-    <div class="rm-panel-card p-3.5 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2.5">
-      <a routerLink="/admin/receipts" class="btn btn-outline-secondary btn-sm rm-action-btn">
+    <div class="rm-panel-card p-2.5 px-3 mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <a routerLink="/admin/receipts" class="btn btn-outline-secondary btn-xs rm-action-btn">
         <i class="fas fa-times me-1"></i> Cancel &amp; Back
       </a>
-      <div class="d-flex align-items-center gap-2.5">
-        <button type="button" class="btn btn-outline-secondary btn-sm rm-action-btn" (click)="openPreview()">
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-xs rm-action-btn" (click)="openPreview()">
           <i class="fas fa-eye me-1.5"></i> Preview Receipt
         </button>
-        <button type="button" class="btn rm-btn-apply" (click)="openPreview()">
+        <button type="button" class="btn rm-btn-apply btn-xs" (click)="openPreview()">
           <i class="fas fa-check-circle me-1.5"></i> Preview &amp; Save Receipt
         </button>
       </div>
@@ -284,22 +284,22 @@
   <div class="modal-backdrop fade show" *ngIf="showPreview"></div>
   <div class="modal d-block fade show" tabIndex="-1" *ngIf="showPreview" (click)="closePreview()">
     <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
-      <div class="modal-content border-0 rounded-14 shadow-lg overflow-hidden">
+      <div class="modal-content border-0 rounded-10 shadow-lg overflow-hidden">
         <!-- Modal Header -->
-        <div class="modal-header rm-modal-head text-white py-2.5 px-3.5 d-flex justify-content-between align-items-center">
+        <div class="modal-header rm-modal-head text-white py-2 px-3 d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-check-double text-warning fs-14"></i>
+            <i class="fas fa-check-double text-warning fs-13"></i>
             <div>
-              <h6 class="modal-title fs-13 fw-700 text-white mb-0">Verify &amp; Confirm Receipt</h6>
-              <div class="fs-10 text-white-50">Once saved, this financial record cannot be modified.</div>
+              <h6 class="modal-title fs-12.5 fw-700 text-white mb-0">Verify &amp; Confirm Receipt</h6>
+              <div class="fs-9.5 text-white-50">Once saved, this financial record cannot be modified.</div>
             </div>
           </div>
           <button type="button" class="btn-close btn-close-white" (click)="closePreview()"></button>
         </div>
 
         <!-- Warning Alert -->
-        <div class="p-2.5 bg-amber-subtle text-amber border-bottom fs-11 d-flex align-items-center gap-2">
-          <i class="fas fa-info-circle fs-13"></i>
+        <div class="p-2 bg-amber-subtle text-amber border-bottom fs-10.5 d-flex align-items-center gap-2">
+          <i class="fas fa-info-circle fs-12"></i>
           <span><strong>Important:</strong> Please verify all amounts, customer details, and plot numbers. Once saved, this receipt is locked permanently.</span>
         </div>
 
@@ -315,7 +315,7 @@
             </div>
 
             <!-- Meta -->
-            <div class="receipt-meta-grid fs-11">
+            <div class="receipt-meta-grid fs-10.5">
               <div><strong>Receipt No:</strong> {{ form.receipt_no }}</div>
               <div><strong>Date:</strong> {{ form.receipt_date }}</div>
               <div><strong>Serial No:</strong> {{ form.serial_no }}</div>
@@ -369,22 +369,22 @@
             </div>
 
             <!-- Financial Figures -->
-            <div class="receipt-amount-box p-2.5 rounded mb-2">
+            <div class="receipt-amount-box p-2 rounded mb-2">
               <div class="row text-center mb-1">
                 <div class="col-4">
-                  <div class="text-muted fs-10">Receipt Amount</div>
-                  <div class="amount-val text-secondary fs-12">₹{{ form.receipt_amount | number:'1.2-2' }}</div>
+                  <div class="text-muted fs-9.5">Receipt Amount</div>
+                  <div class="amount-val text-secondary fs-11">₹{{ form.receipt_amount | number:'1.2-2' }}</div>
                 </div>
                 <div class="col-4">
-                  <div class="text-muted fs-10">Paid Amount</div>
-                  <div class="amount-val text-success fw-bold fs-14">₹{{ form.paid_amount | number:'1.2-2' }}</div>
+                  <div class="text-muted fs-9.5">Paid Amount</div>
+                  <div class="amount-val text-success fw-bold fs-13">₹{{ form.paid_amount | number:'1.2-2' }}</div>
                 </div>
                 <div class="col-4">
-                  <div class="text-muted fs-10">Inward Amount</div>
-                  <div class="amount-val text-info fs-12">₹{{ form.inward_amount | number:'1.2-2' }}</div>
+                  <div class="text-muted fs-9.5">Inward Amount</div>
+                  <div class="amount-val text-info fs-11">₹{{ form.inward_amount | number:'1.2-2' }}</div>
                 </div>
               </div>
-              <div class="amount-words-line border-top pt-1 mt-1 fs-11">
+              <div class="amount-words-line border-top pt-1 mt-1 fs-10.5">
                 <strong>Amount in Words: </strong>
                 <span class="text-success fst-italic">{{ getAmountInWords(form.paid_amount) }}</span>
               </div>
@@ -395,7 +395,7 @@
             </div>
 
             <!-- Signatures -->
-            <div class="receipt-signatures mt-3 pt-2 d-flex justify-content-between">
+            <div class="receipt-signatures mt-2.5 pt-2 d-flex justify-content-between">
               <div class="signature-box text-center">
                 <div class="sig-line"></div>
                 <div class="sig-label">Depositor's Signature</div>
@@ -410,11 +410,11 @@
         </div>
 
         <!-- Modal Footer Actions -->
-        <div class="modal-footer bg-light p-2.5 d-flex justify-content-between align-items-center">
+        <div class="modal-footer bg-light p-2 px-3 d-flex justify-content-between align-items-center">
           <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closePreview()" [disabled]="submitting">
             <i class="fas fa-edit me-1"></i> Edit / Go Back
           </button>
-          <button type="button" class="btn rm-btn-apply btn-xs px-4" (click)="confirmAndSave()" [disabled]="submitting">
+          <button type="button" class="btn rm-btn-apply btn-xs px-3.5" (click)="confirmAndSave()" [disabled]="submitting">
             <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
             <i *ngIf="!submitting" class="fas fa-check-circle me-1"></i>
             Confirm &amp; Save Permanently

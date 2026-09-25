@@ -127,9 +127,6 @@
         </thead>
         <tbody>
           <tr *ngFor="let a of filtered; let i = index"
-              (mouseenter)="onRowMouseEnter(a, $event)"
-              (mousemove)="onRowMouseMove($event)"
-              (mouseleave)="onRowMouseLeave()"
               (click)="onRowClick(a, $event)">
             <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
             <td>
@@ -226,22 +223,7 @@
     (exportAllPdf)="exportAssociates('all', 'pdf')">
   </app-admin-pagination>
 
-  <!-- Floating Hover Tooltip for Associate Records -->
-  <div class="admin-hover-tooltip" *ngIf="hoveredAssociate" [style.left.px]="tooltipPos.x" [style.top.px]="tooltipPos.y">
-    <div class="fw-700 text-white fs-13 mb-1">{{ hoveredAssociate.full_name }}</div>
-    <div class="fs-11 text-slate-300 mb-0.5"><strong>Member ID:</strong> {{ hoveredAssociate.member_id || '—' }}</div>
-    <div class="fs-11 text-slate-300 mb-0.5"><strong>Invite Code:</strong> {{ hoveredAssociate.invitation_code || '—' }}</div>
-    <div class="fs-11 text-slate-300 mb-0.5"><strong>Mobile:</strong> {{ hoveredAssociate.mobile_no }}</div>
-    <div class="fs-11 text-slate-300 mb-0.5"><strong>Email:</strong> {{ hoveredAssociate.email || '—' }}</div>
-    <div class="fs-11 text-slate-300 mb-0.5"><strong>Rank:</strong> {{ hoveredAssociate.rank_name || 'Associate' }}</div>
-    <div class="fs-11 text-slate-300 mb-1"><strong>Joined:</strong> {{ hoveredAssociate.registered_at | date:'dd MMM yyyy' }}</div>
-    <div class="badge mt-1" 
-      [class.bg-success]="hoveredAssociate.account_status==='Active'" 
-      [class.bg-warning]="hoveredAssociate.account_status==='Pending'"
-      [class.bg-danger]="hoveredAssociate.account_status!=='Active' && hoveredAssociate.account_status!=='Pending'">
-      Status: {{ hoveredAssociate.account_status || 'Active' }}
-    </div>
-  </div>
+</div>
 
 <!-- ADD NEW ASSOCIATE MODAL -->
 <div class="modal-backdrop fade show" *ngIf="showAddModal"></div>

@@ -22,6 +22,7 @@ export class EnquiriesComponent implements OnInit {
   statusFilter = 'all';
   priorityFilter = 'all';
   activeRowId: any = null;
+  activeInterestId: any = null;
 
   page = 1;
   pageSize = 10;
@@ -29,6 +30,19 @@ export class EnquiriesComponent implements OnInit {
   @HostListener('document:click')
   closeDropdowns() {
     this.activeRowId = null;
+    this.activeInterestId = null;
+  }
+
+  toggleInterestDropdown(e: any, event: Event) {
+    event.stopPropagation();
+    this.activeRowId = null;
+    this.activeInterestId = this.activeInterestId === e.id ? null : e.id;
+  }
+
+  toggleActionDropdown(e: any, event: Event) {
+    event.stopPropagation();
+    this.activeInterestId = null;
+    this.activeRowId = this.activeRowId === e.id ? null : e.id;
   }
 
   onPageChange(p: number) {

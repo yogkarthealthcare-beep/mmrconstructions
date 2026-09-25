@@ -1,58 +1,61 @@
-<div class="p-3 p-md-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0" style="color:var(--clr-primary-dk); font-weight:700;">Control</h1>
+<div class="control-page-shell">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="pg-header">
+      <h4 class="mb-0 fw-700 text-dark" style="font-size: 1.15rem;">Control Settings</h4>
+      <p class="text-muted fs-11 mb-0">System security & authentication switches</p>
+    </div>
   </div>
 
-  <div *ngIf="message" class="alert alert-success alert-dismissible fade show" role="alert">
+  <div *ngIf="message" class="alert alert-success alert-dismissible fade show py-2 px-3 fs-12 mb-2" role="alert">
     <i class="fas fa-check-circle me-2"></i> {{ message }}
-    <button type="button" class="btn-close" (click)="message = ''"></button>
+    <button type="button" class="btn-close py-2" (click)="message = ''"></button>
   </div>
   
-  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show py-2 px-3 fs-12 mb-2" role="alert">
     <i class="fas fa-exclamation-triangle me-2"></i> {{ error }}
-    <button type="button" class="btn-close" (click)="error = ''"></button>
+    <button type="button" class="btn-close py-2" (click)="error = ''"></button>
   </div>
 
-  <div class="card shadow-sm border-0" style="border-radius:12px; overflow:hidden;">
-    <div class="card-header bg-white py-3 border-bottom" style="border-color: #edf2f7 !important;">
-      <h5 class="mb-0 text-muted" style="font-weight: 600;">Authentication Settings</h5>
+  <div class="panel-card">
+    <div class="card-header bg-white py-2 px-3 border-bottom">
+      <h6 class="mb-0 text-dark fw-700 fs-12">Authentication Settings</h6>
     </div>
     
     <div class="card-body p-0">
-      <div *ngIf="loading" class="text-center p-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <div class="mt-2 text-muted">Loading settings...</div>
+      <div *ngIf="loading" class="text-center p-4">
+        <div class="spinner-border text-success spinner-border-sm" role="status"></div>
+        <div class="mt-2 text-muted fs-11">Loading settings...</div>
       </div>
 
       <div class="table-responsive" *ngIf="!loading">
-        <table class="table table-hover align-middle mb-0">
-          <thead style="background: #f8fafc;">
+        <table class="table align-middle mb-0 custom-dash-table">
+          <thead>
             <tr>
-              <th class="py-3 px-4 border-bottom-0 text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Setting</th>
-              <th class="py-3 px-4 border-bottom-0 text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Status</th>
-              <th class="py-3 px-4 border-bottom-0 text-uppercase text-secondary text-xs font-weight-bolder opacity-7 text-end">Action</th>
+              <th class="py-2 px-3">Setting</th>
+              <th class="py-2 px-3">Status</th>
+              <th class="py-2 px-3 text-end">Action</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td class="py-3 px-4">
+              <td class="py-2 px-3">
                 <div class="d-flex align-items-center">
-                  <div class="icon-box bg-light-primary text-primary rounded-circle p-2 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #e0f2fe; color: #0284c7;">
+                  <div class="icon-box rounded-circle me-2.5" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: #e0f2fe; color: #0284c7; font-size: 12px;">
                     <i class="fas fa-envelope"></i>
                   </div>
                   <div>
-                    <h6 class="mb-0 text-sm fw-bold">Email OTP Verification</h6>
-                    <p class="text-xs text-secondary mb-0">Require OTP for Signup & Login</p>
+                    <div class="fw-700 text-dark fs-12">Email OTP Verification</div>
+                    <div class="fs-10 text-muted">Require OTP for Signup & Login</div>
                   </div>
                 </div>
               </td>
-              <td class="py-3 px-4">
-                <span class="badge" [ngClass]="settings.email_otp_enabled ? 'bg-success' : 'bg-secondary'" style="padding: 6px 12px; border-radius: 6px;">
+              <td class="py-2 px-3">
+                <span class="sbadge" [ngClass]="settings.email_otp_enabled ? 'sbadge-green' : 'sbadge-yellow'">
                   {{ settings.email_otp_enabled ? 'Enabled' : 'Disabled' }}
                 </span>
               </td>
-              <td class="py-3 px-4 text-end">
-                <div class="form-check form-switch d-inline-block m-0" style="font-size: 1.25rem;">
+              <td class="py-2 px-3 text-end">
+                <div class="form-check form-switch d-inline-block m-0">
                   <input class="form-check-input" type="checkbox" role="switch" style="cursor: pointer;"
                     [checked]="settings.email_otp_enabled"
                     (change)="toggleEmailOtp()"
@@ -62,24 +65,24 @@
             </tr>
             
             <tr>
-              <td class="py-3 px-4">
+              <td class="py-2 px-3">
                 <div class="d-flex align-items-center">
-                  <div class="icon-box rounded-circle p-2 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #dcfce7; color: #16a34a;">
+                  <div class="icon-box rounded-circle me-2.5" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: #dcfce7; color: #16a34a; font-size: 12px;">
                     <i class="fab fa-whatsapp"></i>
                   </div>
                   <div>
-                    <h6 class="mb-0 text-sm fw-bold">WhatsApp OTP Verification</h6>
-                    <p class="text-xs text-secondary mb-0">Coming Soon / Future</p>
+                    <div class="fw-700 text-dark fs-12">WhatsApp OTP Verification</div>
+                    <div class="fs-10 text-muted">Coming Soon / Future</div>
                   </div>
                 </div>
               </td>
-              <td class="py-3 px-4">
-                <span class="badge bg-secondary" style="padding: 6px 12px; border-radius: 6px;">
+              <td class="py-2 px-3">
+                <span class="sbadge" style="background: #f1f5f9; color: #64748b;">
                   Coming Soon
                 </span>
               </td>
-              <td class="py-3 px-4 text-end">
-                <div class="form-check form-switch d-inline-block m-0" style="font-size: 1.25rem;">
+              <td class="py-2 px-3 text-end">
+                <div class="form-check form-switch d-inline-block m-0">
                   <input class="form-check-input" type="checkbox" role="switch" disabled>
                 </div>
               </td>

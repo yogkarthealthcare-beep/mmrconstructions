@@ -161,9 +161,7 @@
             <th class="th-contact">Contact &amp; Email</th>
             <th class="th-project">Project &amp; Property</th>
             <th class="th-amount">Total Value</th>
-            <th class="th-sponsor">Sponsor / Associate</th>
             <th class="th-status">Enrollment Status</th>
-            <th class="th-date">Submitted At</th>
             <th class="th-actions text-end">Actions</th>
           </tr>
         </thead>
@@ -191,18 +189,11 @@
             <td class="td-amount">
               <span class="amount-val">₹{{ (item.basic_sale_price || 0) + (item.plc_dev_charges || 0) | number }}</span>
             </td>
-            <td class="td-sponsor">
-              <span *ngIf="item.associate_id" class="sponsor-tag">{{ item.associate_name }} ({{ item.associate_id }})</span>
-              <span *ngIf="!item.associate_id" class="text-muted">—</span>
-            </td>
             <td class="td-status">
               <span class="status-badge" [class.completed]="item.enrollment_status === 'Completed'" [class.pending]="item.enrollment_status === 'Pending'">
                 <i class="fas" [class.fa-check-circle]="item.enrollment_status === 'Completed'" [class.fa-clock]="item.enrollment_status === 'Pending'"></i>
                 {{ item.enrollment_status }}
               </span>
-            </td>
-            <td class="td-date">
-              <small class="date-text">{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
             </td>
             <td class="td-actions text-end">
               <div class="action-btn-group">
