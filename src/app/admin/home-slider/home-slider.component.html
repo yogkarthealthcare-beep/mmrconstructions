@@ -1,129 +1,214 @@
+<!-- Toast Notification -->
 <div class="slider-toast" *ngIf="toast" [class.error]="toastType === 'error'">
-  <i [class]="toastType === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle'"></i>
-  {{ toast }}
+  <i [class]="toastType === 'error' ? 'fas fa-exclamation-circle me-1.5' : 'fas fa-check-circle me-1.5'"></i>
+  <span>{{ toast }}</span>
 </div>
 
-<div class="pg-header slider-head mb-4">
-  <div class="d-flex align-items-center gap-3">
-    <div class="header-icon-badge">
-      <i class="fas fa-sliders-h"></i>
+<div class="home-slider-shell">
+  <!-- 1. TOP HEADER -->
+  <div class="pg-header slider-head d-flex align-items-center justify-content-between flex-wrap gap-2.5 mb-2.5">
+    <div class="d-flex align-items-center gap-2.5">
+      <div class="header-icon-badge">
+        <i class="fas fa-sliders-h"></i>
+      </div>
+      <div>
+        <h4 class="mb-0">Home Slider</h4>
+        <p class="mb-0">Manage Home Page slider images, content, links, order and status.</p>
+      </div>
     </div>
-    <div>
-      <h4 class="mb-0">Home Slider</h4>
-      <p class="mb-0">Manage Home Page slider images, content, links, order and status.</p>
-    </div>
+    <button type="button" class="btn rm-btn-gold add-slider-btn" (click)="openAdd()">
+      <i class="fas fa-plus me-1.5"></i>Add Slider
+    </button>
   </div>
-  <button type="button" class="btn btn-green add-slider-btn" (click)="openAdd()">
-    <i class="fas fa-plus me-1"></i>Add Slider
-  </button>
-</div>
 
-<section class="panel-card section-visibility-card">
-  <div class="section-visibility-head">
-    <div><strong>Home Page Sections</strong><p>Menu bar, topbar and footer हमेशा visible रहेंगे। बाकी sections यहाँ से show/hide करें।</p></div>
-    <span *ngIf="sectionToggleSaving"><i class="fas fa-spinner fa-spin"></i> Saving...</span>
-  </div>
-  <div class="section-toggle-grid">
-    <label class="section-toggle" *ngFor="let section of sectionToggles" [class.off]="!section.enabled">
-      <i [class]="section.icon"></i>
-      <span><strong>{{ section.label }}</strong><small>{{ section.description }}</small></span>
-      <span class="mini-switch">
-        <input type="checkbox" [(ngModel)]="section.enabled" (change)="saveSectionToggles()" [disabled]="sectionToggleSaving">
-        <i></i>
-      </span>
-      <b class="state-badge" [class.show]="section.enabled" [class.hide]="!section.enabled">{{ section.enabled ? 'SHOW' : 'HIDE' }}</b>
-    </label>
-  </div>
-</section>
-
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner fa-spin"></i></div>
-
-<section class="panel-card" *ngIf="!loading">
-  <div class="slider-card-grid" *ngIf="sliders.length; else emptyState">
-    <article class="slider-card" *ngFor="let slider of sliders" [class.inactive]="!slider.is_active">
-      <img [src]="slider.image_url" [alt]="slider.title">
-      <div class="slider-card-body">
-        <div class="slider-card-title">
-          <strong>{{ slider.title }}</strong>
-          <span class="status-pill" [class.inactive]="!slider.is_active">{{ slider.is_active ? 'Active' : 'Inactive' }}</span>
+  <!-- 2. HOME PAGE SECTIONS VISIBILITY CARD -->
+  <section class="panel-card section-visibility-card mb-2.5">
+    <div class="section-visibility-head d-flex align-items-center justify-content-between flex-wrap gap-2 pb-2 mb-2.5 border-bottom">
+      <div class="d-flex align-items-center gap-2">
+        <div class="section-head-icon">
+          <i class="fas fa-layer-group text-emerald"></i>
         </div>
-        <p>{{ slider.subtitle || slider.description || 'No text added' }}</p>
-        <div class="slider-card-meta">
-          <span>Order {{ slider.display_order }}</span>
-          <span>{{ slider.show_image !== false ? 'Image shown' : 'Image hidden' }}</span>
-        </div>
-        <div class="slider-card-actions">
-          <button type="button" class="btn btn-outline-green btn-sm" (click)="openEdit(slider)"><i class="fas fa-edit me-1"></i>Edit / Replace Image</button>
-          <button type="button" class="icon-btn danger" title="Deactivate slider" (click)="deactivate(slider)" [disabled]="!slider.is_active"><i class="fas fa-ban"></i></button>
+        <div>
+          <h6 class="fw-700 text-dark mb-0 fs-12.5">Home Page Sections Visibility</h6>
+          <p class="text-muted fs-10 mb-0">Menu bar, topbar and footer are always visible. Toggle optional sections on/off.</p>
         </div>
       </div>
-    </article>
-  </div>
-  <ng-template #emptyState>
-    <div class="slider-empty">
-      <i class="fas fa-images"></i><h5>No managed sliders yet</h5>
-      <p>The existing static slider remains visible until an active slider is added.</p>
-      <button type="button" class="btn btn-green btn-sm" (click)="openAdd()">Add First Slider</button>
+      <div *ngIf="sectionToggleSaving" class="badge bg-amber-subtle text-amber fs-9.5 px-2 py-1 border border-amber-subtle rounded-4">
+        <i class="fas fa-spinner fa-spin me-1"></i> Saving changes...
+      </div>
     </div>
-  </ng-template>
-</section>
 
-<div class="slider-modal-backdrop" *ngIf="showForm" (click)="closeForm()">
-  <section class="slider-modal" (click)="$event.stopPropagation()">
-    <div class="modal-head">
-      <div><h5>{{ editingSlider ? 'Edit Slider' : 'Add Slider' }}</h5><p>Changes appear on the public Home Page.</p></div>
-      <button type="button" class="modal-close" aria-label="Close" (click)="closeForm()"><i class="fas fa-times"></i></button>
-    </div>
-    <form (ngSubmit)="save()">
-      <div class="slider-form-grid">
-        <div class="full visibility-box">
-          <strong>Show / Hide Slider Parts</strong>
-          <div class="visibility-grid">
-            <label><input type="checkbox" name="show_image" [(ngModel)]="form.show_image"> Image</label>
-            <label><input type="checkbox" name="show_tag" [(ngModel)]="form.show_tag"> Top Tag</label>
-            <label><input type="checkbox" name="show_title" [(ngModel)]="form.show_title"> Title</label>
-            <label><input type="checkbox" name="show_subtitle" [(ngModel)]="form.show_subtitle"> Subtitle</label>
-            <label><input type="checkbox" name="show_description" [(ngModel)]="form.show_description"> Description</label>
-            <label><input type="checkbox" name="show_button1" [(ngModel)]="form.show_button1"> Button 1</label>
-            <label><input type="checkbox" name="show_button2" [(ngModel)]="form.show_button2"> Button 2</label>
-            <label><input type="checkbox" name="show_stats" [(ngModel)]="form.show_stats"> Statistics</label>
-            <label><input type="checkbox" name="show_thumbnail" [(ngModel)]="form.show_thumbnail"> Thumbnail</label>
+    <!-- Toggle Cards Grid -->
+    <div class="section-toggle-grid">
+      <div class="section-toggle-item" *ngFor="let section of sectionToggles" [class.is-active]="section.enabled" [class.is-inactive]="!section.enabled">
+        <div class="toggle-item-left">
+          <div class="toggle-icon-wrap" [class.icon-active]="section.enabled">
+            <i [class]="section.icon"></i>
+          </div>
+          <div class="toggle-text-wrap">
+            <div class="toggle-label text-dark fw-700 fs-11.5">{{ section.label }}</div>
+            <div class="toggle-desc text-muted fs-9.5 text-truncate" [title]="section.description">{{ section.description }}</div>
           </div>
         </div>
-        <div><label class="f-label">Top Tag Text</label><input class="f-input" name="tag_text" maxlength="120" [(ngModel)]="form.tag_text"></div>
-        <div><label class="f-label">Top Tag Icon</label><input class="f-input" name="tag_icon" placeholder="fas fa-star" maxlength="100" [(ngModel)]="form.tag_icon"></div>
-        <div><label class="f-label">Title *</label><input class="f-input" name="title" maxlength="180" [(ngModel)]="form.title" required></div>
-        <div><label class="f-label">Subtitle / Highlight</label><input class="f-input" name="subtitle" maxlength="180" [(ngModel)]="form.subtitle"></div>
-        <div class="full"><label class="f-label">Description</label><textarea class="f-input" name="description" rows="3" maxlength="1000" [(ngModel)]="form.description"></textarea></div>
-        <div><label class="f-label">Button 1 Text</label><input class="f-input" name="button_text" maxlength="80" [(ngModel)]="form.button_text"></div>
-        <div><label class="f-label">Button 1 Link</label><input class="f-input" name="button_link" placeholder="#sites or /buyback" maxlength="500" [(ngModel)]="form.button_link"></div>
-        <div><label class="f-label">Button 1 Icon</label><input class="f-input" name="button_icon" placeholder="fas fa-arrow-right" maxlength="100" [(ngModel)]="form.button_icon"></div>
-        <div><label class="f-label">Button 2 Text</label><input class="f-input" name="button2_text" maxlength="80" [(ngModel)]="form.button2_text"></div>
-        <div><label class="f-label">Button 2 Link</label><input class="f-input" name="button2_link" placeholder="/signup?type=Associate" maxlength="500" [(ngModel)]="form.button2_link"></div>
-        <div><label class="f-label">Button 2 Icon</label><input class="f-input" name="button2_icon" placeholder="fas fa-user-plus" maxlength="100" [(ngModel)]="form.button2_icon"></div>
-        <div class="full stats-editor">
-          <label class="f-label">Slider Statistics</label>
-          <div class="stat-edit-row" *ngFor="let stat of form.stats; let i=index">
-            <input class="f-input" [name]="'stat_num_' + i" placeholder="Value e.g. 5+" [(ngModel)]="stat.num">
-            <input class="f-input" [name]="'stat_lbl_' + i" placeholder="Label e.g. Active Sites" [(ngModel)]="stat.lbl">
-          </div>
+        
+        <div class="toggle-item-right">
+          <label class="erp-switch">
+            <input type="checkbox" [(ngModel)]="section.enabled" (change)="saveSectionToggles()" [disabled]="sectionToggleSaving">
+            <span class="erp-slider"></span>
+          </label>
+          <span class="state-badge" [class.state-show]="section.enabled" [class.state-hide]="!section.enabled">
+            {{ section.enabled ? 'SHOW' : 'HIDE' }}
+          </span>
         </div>
-        <div><label class="f-label">Thumbnail URL</label><input class="f-input" name="thumbnail_url" maxlength="1000" [(ngModel)]="form.thumbnail_url"></div>
-        <div><label class="f-label">Thumbnail Title</label><input class="f-input" name="thumbnail_title" maxlength="120" [(ngModel)]="form.thumbnail_title"></div>
-        <div><label class="f-label">Thumbnail Subtitle</label><input class="f-input" name="thumbnail_subtitle" maxlength="120" [(ngModel)]="form.thumbnail_subtitle"></div>
-        <div><label class="f-label">Display Order</label><input class="f-input" name="display_order" type="number" min="0" [(ngModel)]="form.display_order"></div>
-        <label class="active-check"><input type="checkbox" name="is_active" [(ngModel)]="form.is_active"><span>Active on website</span></label>
-        <div class="full"><label class="f-label">Slider Image</label><input class="f-input" type="file" accept=".jpg,.jpeg,.png" (change)="onImageSelected($event)"><small>JPG/PNG up to 5 MB.</small></div>
-        <div class="full"><label class="f-label">Image URL</label><input class="f-input" name="image_url" placeholder="https://..." maxlength="1000" [(ngModel)]="form.image_url"></div>
       </div>
-      <div class="slider-preview" *ngIf="previewUrl || form.image_url">
-        <img [src]="previewUrl || form.image_url" alt="Slider preview">
-        <div><span *ngIf="form.show_tag">{{ form.tag_text || 'Preview' }}</span><h3 *ngIf="form.show_title">{{ form.title || 'Slider title' }}</h3><h4 *ngIf="form.show_subtitle">{{ form.subtitle }}</h4><p *ngIf="form.show_description">{{ form.description }}</p></div>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline-green" (click)="closeForm()">Cancel</button>
-        <button type="submit" class="btn btn-green" [disabled]="saving"><i [class]="saving ? 'fas fa-spinner fa-spin me-2' : 'fas fa-save me-2'"></i>{{ saving ? 'Saving...' : 'Save Slider' }}</button>
-      </div>
-    </form>
+    </div>
   </section>
+
+  <!-- Loading State -->
+  <div class="panel-loading text-center py-4" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fs-3 text-emerald mb-2"></i>
+    <div class="text-muted fs-11">Loading sliders...</div>
+  </div>
+
+  <!-- 3. SLIDERS LIST CARD -->
+  <section class="panel-card p-3 mb-3" *ngIf="!loading">
+    <div class="d-flex align-items-center justify-content-between mb-2.5 pb-2 border-bottom">
+      <div class="d-flex align-items-center gap-2">
+        <h6 class="fw-700 text-dark mb-0 fs-12.5"><i class="fas fa-images text-gold me-1.5"></i>Active Home Sliders</h6>
+        <span class="badge bg-light text-dark border fs-9.5 fw-700 px-2 py-0.5 rounded-4">{{ sliders.length }} Sliders</span>
+      </div>
+    </div>
+
+    <div class="slider-card-grid" *ngIf="sliders.length; else emptyState">
+      <article class="slider-card" *ngFor="let slider of sliders" [class.inactive]="!slider.is_active">
+        <div class="slider-img-wrap position-relative">
+          <img [src]="slider.image_url" [alt]="slider.title" class="slider-card-img" />
+          <span class="status-pill position-absolute top-0 end-0 m-2" [class.inactive]="!slider.is_active">
+            {{ slider.is_active ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <div class="slider-card-body p-2.5">
+          <div class="slider-card-title mb-1">
+            <strong class="text-dark fw-700 fs-12 d-block text-truncate" [title]="slider.title">{{ slider.title }}</strong>
+          </div>
+          <p class="text-muted fs-10.5 mb-2 text-truncate-2">{{ slider.subtitle || slider.description || 'No subtitle added' }}</p>
+          
+          <div class="slider-card-meta mb-2 d-flex align-items-center gap-1.5 flex-wrap">
+            <span class="meta-pill"><i class="fas fa-sort me-1 text-muted"></i>Order {{ slider.display_order }}</span>
+            <span class="meta-pill"><i class="fas fa-image me-1 text-emerald"></i>{{ slider.show_image !== false ? 'Image shown' : 'Image hidden' }}</span>
+          </div>
+
+          <div class="slider-card-actions d-flex align-items-center justify-content-between pt-2 border-top">
+            <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-6 fw-600 d-inline-flex align-items-center gap-1" (click)="openEdit(slider)">
+              <i class="fas fa-edit text-emerald"></i> <span>Edit / Replace Image</span>
+            </button>
+            <button type="button" class="btn btn-xs rounded-6 px-2 py-1" [class.btn-outline-danger]="slider.is_active" [class.btn-outline-success]="!slider.is_active" [title]="slider.is_active ? 'Deactivate slider' : 'Activate slider'" (click)="deactivate(slider)">
+              <i [class]="slider.is_active ? 'fas fa-ban' : 'fas fa-check-circle'"></i>
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="slider-empty py-4 text-center">
+        <i class="fas fa-images text-muted fs-1 mb-2"></i>
+        <h6 class="fw-700 text-dark mb-1">No managed sliders yet</h6>
+        <p class="text-muted fs-11 mb-3">The existing static slider remains visible until an active slider is added.</p>
+        <button type="button" class="btn rm-btn-gold btn-xs" (click)="openAdd()">
+          <i class="fas fa-plus me-1"></i> Add First Slider
+        </button>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- 4. ADD / EDIT SLIDER MODAL -->
+  <div class="slider-modal-backdrop" *ngIf="showForm" (click)="closeForm()">
+    <section class="slider-modal" (click)="$event.stopPropagation()">
+      <div class="modal-head d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-0 fs-13 fw-700 text-dark">{{ editingSlider ? 'Edit Slider' : 'Add Slider' }}</h5>
+          <p class="mb-0 fs-10 text-muted">Changes appear directly on the public Home Page.</p>
+        </div>
+        <button type="button" class="modal-close btn btn-link text-secondary p-0" aria-label="Close" (click)="closeForm()">
+          <i class="fas fa-times fs-13"></i>
+        </button>
+      </div>
+
+      <form (ngSubmit)="save()" class="mt-2.5">
+        <div class="slider-form-grid">
+          <!-- Visibility Toggles in Modal -->
+          <div class="full visibility-box p-2 rounded-6 border mb-1">
+            <strong class="fs-11 text-dark d-block mb-1.5"><i class="fas fa-eye text-emerald me-1"></i> Show / Hide Slider Elements</strong>
+            <div class="visibility-grid">
+              <label class="form-check-label fs-10.5 d-flex align-items-center gap-1.5"><input type="checkbox" name="show_image" [(ngModel)]="form.show_image"> Image</label>
+              <label class="form-check-label fs-10.5 d-flex align-items-center gap-1.5"><input type="checkbox" name="show_tag" [(ngModel)]="form.show_tag"> Top Tag</label>
+              <label class="form-check-label fs-10.5 d-flex align-items-center gap-1.5"><input type="checkbox" name="show_title" [(ngModel)]="form.show_title"> Title</label>
+              <label class="form-check-label fs-10.5 d-flex align-items-center gap-1.5"><input type="checkbox" name="show_subtitle" [(ngModel)]="form.show_subtitle"> Subtitle</label>
+              <label class="form-check-label fs-10.5 d-flex align-items-center gap-1.5"><input type="checkbox" name="show_description" [(ngModel)]="form.show_description"> Description</label>
+              <label class="form-check-label fs-10.5 d-flex align-items-center gap-1.5"><input type="checkbox" name="show_button1" [(ngModel)]="form.show_button1"> Button 1</label>
+              <label class="form-check-label fs-10.5 d-flex align-items-center gap-1.5"><input type="checkbox" name="show_button2" [(ngModel)]="form.show_button2"> Button 2</label>
+              <label class="form-check-label fs-10.5 d-flex align-items-center gap-1.5"><input type="checkbox" name="show_stats" [(ngModel)]="form.show_stats"> Statistics</label>
+              <label class="form-check-label fs-10.5 d-flex align-items-center gap-1.5"><input type="checkbox" name="show_thumbnail" [(ngModel)]="form.show_thumbnail"> Thumbnail</label>
+            </div>
+          </div>
+
+          <div><label class="f-label">Top Tag Text</label><input class="form-control f-input" name="tag_text" maxlength="120" [(ngModel)]="form.tag_text"></div>
+          <div><label class="f-label">Top Tag Icon</label><input class="form-control f-input" name="tag_icon" placeholder="fas fa-star" maxlength="100" [(ngModel)]="form.tag_icon"></div>
+          <div><label class="f-label">Title *</label><input class="form-control f-input" name="title" maxlength="180" [(ngModel)]="form.title" required></div>
+          <div><label class="f-label">Subtitle / Highlight</label><input class="form-control f-input" name="subtitle" maxlength="180" [(ngModel)]="form.subtitle"></div>
+          <div class="full"><label class="f-label">Description</label><textarea class="form-control f-input" name="description" rows="2" maxlength="1000" [(ngModel)]="form.description"></textarea></div>
+          <div><label class="f-label">Button 1 Text</label><input class="form-control f-input" name="button_text" maxlength="80" [(ngModel)]="form.button_text"></div>
+          <div><label class="f-label">Button 1 Link</label><input class="form-control f-input" name="button_link" placeholder="#sites or /buyback" maxlength="500" [(ngModel)]="form.button_link"></div>
+          <div><label class="f-label">Button 1 Icon</label><input class="form-control f-input" name="button_icon" placeholder="fas fa-arrow-right" maxlength="100" [(ngModel)]="form.button_icon"></div>
+          <div><label class="f-label">Button 2 Text</label><input class="form-control f-input" name="button2_text" maxlength="80" [(ngModel)]="form.button2_text"></div>
+          <div><label class="f-label">Button 2 Link</label><input class="form-control f-input" name="button2_link" placeholder="/signup?type=Associate" maxlength="500" [(ngModel)]="form.button2_link"></div>
+          <div><label class="f-label">Button 2 Icon</label><input class="form-control f-input" name="button2_icon" placeholder="fas fa-user-plus" maxlength="100" [(ngModel)]="form.button2_icon"></div>
+          
+          <div class="full stats-editor p-2 rounded-6 border">
+            <label class="f-label mb-1">Slider Statistics</label>
+            <div class="stat-edit-row" *ngFor="let stat of form.stats; let i=index">
+              <input class="form-control f-input" [name]="'stat_num_' + i" placeholder="Value e.g. 5+" [(ngModel)]="stat.num">
+              <input class="form-control f-input" [name]="'stat_lbl_' + i" placeholder="Label e.g. Active Sites" [(ngModel)]="stat.lbl">
+            </div>
+          </div>
+
+          <div><label class="f-label">Thumbnail URL</label><input class="form-control f-input" name="thumbnail_url" maxlength="1000" [(ngModel)]="form.thumbnail_url"></div>
+          <div><label class="f-label">Thumbnail Title</label><input class="form-control f-input" name="thumbnail_title" maxlength="120" [(ngModel)]="form.thumbnail_title"></div>
+          <div><label class="f-label">Thumbnail Subtitle</label><input class="form-control f-input" name="thumbnail_subtitle" maxlength="120" [(ngModel)]="form.thumbnail_subtitle"></div>
+          <div><label class="f-label">Display Order</label><input class="form-control f-input" name="display_order" type="number" min="0" [(ngModel)]="form.display_order"></div>
+          <div class="d-flex align-items-center pt-3">
+            <label class="form-check-label fs-11.5 fw-600 text-dark d-flex align-items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" name="is_active" [(ngModel)]="form.is_active" class="form-check-input mt-0">
+              <span>Active on website</span>
+            </label>
+          </div>
+          
+          <div class="full">
+            <label class="f-label">Slider Image</label>
+            <input class="form-control f-input" type="file" accept=".jpg,.jpeg,.png" (change)="onImageSelected($event)">
+            <small class="text-muted fs-9.5">JPG/PNG up to 5 MB.</small>
+          </div>
+          <div class="full"><label class="f-label">Image URL (Optional)</label><input class="form-control f-input" name="image_url" placeholder="https://..." maxlength="1000" [(ngModel)]="form.image_url"></div>
+        </div>
+
+        <div class="slider-preview rounded-8 mt-2.5" *ngIf="previewUrl || form.image_url">
+          <img [src]="previewUrl || form.image_url" alt="Slider preview">
+          <div class="preview-overlay">
+            <span *ngIf="form.show_tag" class="preview-tag">{{ form.tag_text || 'Preview' }}</span>
+            <h3 *ngIf="form.show_title" class="preview-title">{{ form.title || 'Slider title' }}</h3>
+            <h4 *ngIf="form.show_subtitle" class="preview-subtitle">{{ form.subtitle }}</h4>
+            <p *ngIf="form.show_description" class="preview-desc">{{ form.description }}</p>
+          </div>
+        </div>
+
+        <div class="modal-actions d-flex justify-content-end gap-2 mt-3 pt-2 border-top">
+          <button type="button" class="btn btn-outline-secondary btn-xs px-3" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn rm-btn-emerald btn-xs px-3" [disabled]="saving">
+            <i [class]="saving ? 'fas fa-spinner fa-spin me-1.5' : 'fas fa-save me-1.5'"></i>{{ saving ? 'Saving...' : 'Save Slider' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
 </div>
