@@ -273,6 +273,67 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     this.nomineePhotoFile = file;
   }
 
+  private getFirstInvalidControlName(group: FormGroup): { name: string; label: string } | null {
+    const fieldLabels: Record<string, string> = {
+      fullName: 'Full Name',
+      dob: 'Date of Birth',
+      gender: 'Gender',
+      fatherName: "Father's Name",
+      motherName: "Mother's Name",
+      spouseName: "Spouse's Name",
+      contact1: 'Contact No. (i)',
+      contact2: 'Contact No. (ii)',
+      nationality: 'Nationality',
+      residentialStatus: 'Residential Status',
+      panNo: 'PAN No.',
+      aadharNo: 'Aadhar No.',
+      email: 'E-mail Id',
+      occupation: 'Occupation',
+      annualIncome: 'Annual Income',
+      education: 'Education',
+      category: 'Category',
+      religion: 'Religion',
+      permAddress: 'Permanent Address',
+      permCity: 'Permanent City',
+      permState: 'Permanent State',
+      permCountry: 'Permanent Country',
+      permPin: 'Permanent Pin Code',
+      localAddress: 'Local Address',
+      localCity: 'Local City',
+      localState: 'Local State',
+      localCountry: 'Local Country',
+      localPin: 'Local Pin Code',
+      bankName: 'Bank Name',
+      accHolder: 'Account Holder Name',
+      accNo: 'Account Number',
+      ifsc: 'IFSC Code',
+      branchName: 'Branch Name',
+      branchCountry: 'Branch Country',
+      nomineeName: 'Nominee Name',
+      nomineeDob: 'Nominee Date of Birth',
+      nomineeGender: 'Nominee Gender',
+      nomineeNationality: 'Nominee Nationality',
+      nomineeResStatus: 'Nominee Residential Status',
+      nomineeRelationship: 'Nominee Relationship',
+      nomineeAddress: 'Nominee Address',
+      sponsorName: "Sponsor's Name",
+      sponsorCode: 'Sponsor Code',
+      sponsorContact: 'Sponsor Contact No.',
+      signDate: 'Signature Date'
+    };
+
+    for (const key of Object.keys(group.controls)) {
+      const control = group.get(key);
+      if (control instanceof FormGroup) {
+        const nested = this.getFirstInvalidControlName(control);
+        if (nested) return nested;
+      } else if (control && control.invalid) {
+        return { name: key, label: fieldLabels[key] || key };
+      }
+    }
+    return null;
+  }
+
   private focusFirstInvalidControl() {
     setTimeout(() => {
       // 1. Check if applicant photo is missing
@@ -281,39 +342,96 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         if (photoEl) {
           photoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           photoEl.focus();
+          photoEl.classList.add('pulse-error-highlight');
+          setTimeout(() => photoEl.classList.remove('pulse-error-highlight'), 3000);
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please upload Applicant Photo *',
+            showConfirmButton: false,
+            timer: 3500
+          });
           return;
         }
       }
 
-      // 2. Check first invalid form input / select / textarea
+      // 2. Find first invalid FormControl in the FormGroup tree
+      const invalidInfo = this.getFirstInvalidControlName(this.enrollmentForm);
+      if (invalidInfo) {
+        const targetEl = document.querySelector(
+          `[formControlName="${invalidInfo.name}"], input[name="${invalidInfo.name}"], #${invalidInfo.name}`
+        ) as HTMLElement;
+
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetEl.focus();
+          targetEl.classList.add('pulse-error-highlight');
+          setTimeout(() => targetEl.classList.remove('pulse-error-highlight'), 3000);
+          
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: `Please fill required field: ${invalidInfo.label} *`,
+            showConfirmButton: false,
+            timer: 3500
+          });
+          return;
+        }
+      }
+
+      // 3. Fallback: Check any DOM element with .ng-invalid
       const invalidControl = document.querySelector(
-        'input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName], input.ng-invalid, select.ng-invalid, textarea.ng-invalid'
+        'input.ng-invalid, select.ng-invalid, textarea.ng-invalid'
       ) as HTMLElement;
       if (invalidControl) {
         invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         if (typeof invalidControl.focus === 'function') {
           invalidControl.focus();
+          invalidControl.classList.add('pulse-error-highlight');
+          setTimeout(() => invalidControl.classList.remove('pulse-error-highlight'), 3000);
         }
         return;
       }
 
-      // 3. Check nominee photo
+      // 4. Check nominee photo
       if (!this.nomineePhotoFile && !this.existingNomineePhoto) {
         const nomPhotoEls = document.querySelectorAll('app-photo-upload');
         if (nomPhotoEls.length > 1) {
           const nomEl = nomPhotoEls[1] as HTMLElement;
           nomEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           nomEl.focus();
+          nomEl.classList.add('pulse-error-highlight');
+          setTimeout(() => nomEl.classList.remove('pulse-error-highlight'), 3000);
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please upload Nominee Photo *',
+            showConfirmButton: false,
+            timer: 3500
+          });
           return;
         }
       }
 
-      // 4. Check terms acceptance checkbox
+      // 5. Check terms acceptance checkboxes
       if (!this.allTermsAccepted()) {
         const termsEl = document.querySelector('.consent input[type="checkbox"]:not(:checked)') as HTMLElement;
         if (termsEl) {
           termsEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           termsEl.focus();
+          termsEl.classList.add('pulse-error-highlight');
+          setTimeout(() => termsEl.classList.remove('pulse-error-highlight'), 3000);
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please accept all Terms & Conditions checkboxes *',
+            showConfirmButton: false,
+            timer: 3500
+          });
         }
       }
     }, 100);
