@@ -18,6 +18,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   enrollmentForm!: FormGroup;
   submitting = false;
   isSubmitted = false;
+  enrollmentStatus: string = 'Pending';
   showToast = false;
   toastMsg = '';
   submissionId: string | null = null;
@@ -385,12 +386,23 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
         this.submitting = false;
         this.isSubmitted = true;
         this.submissionId = res.data?.id || null;
+        this.enrollmentStatus = 'Pending';
         this.auth.setEnrollmentCompleted();
         this.enrollmentForm.disable(); // Disable form after successful submission
         Swal.fire({
           icon: 'success',
           title: 'Enrollment Submitted Successfully!',
-          text: 'Your customer enrollment form has been submitted.',
+          html: `
+            <p style="font-size:14px; color:#475569; margin-bottom:12px;">
+              Your customer enrollment form has been submitted and is currently <strong>Pending Admin Verification</strong>.
+            </p>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:left; font-size:13px; color:#1e293b;">
+              <div style="font-weight:700; margin-bottom:6px; color:#062b18;"><i class="fas fa-headset me-1 text-gold"></i> For Quick Approval Assistance:</div>
+              <div>📧 Email: <strong>mmrconstructionsbuilder@gmail.com</strong></div>
+              <div>📞 Helpline: <strong>+91 7071951011 / +91 7071951012</strong></div>
+              <div>💬 WhatsApp: <strong>+91 7071951011</strong></div>
+            </div>
+          `,
           confirmButtonColor: '#1a5c3a',
           confirmButtonText: 'Go to Dashboard'
         }).then(() => {
@@ -412,6 +424,97 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   goToDashboard() {
     const role = this.auth.getUserRolePrefix();
     this.router.navigate([`/${role}/dashboard`]);
+  }
+
+  patchSubmittedData(enroll: any) {
+    this.isSubmitted = true;
+    this.submissionId = enroll.id || enroll.submission_id;
+    this.enrollmentStatus = enroll.status || enroll.app_status || 'Pending';
+    this.photo1DataUrl = enroll.photo_first_applicant_url || enroll.photo_applicant_1 || '';
+    this.photo2DataUrl = enroll.photo_co_applicant_url || '';
+    this.sigSoleImage = enroll.signature_sole_first_applicant_url || '';
+    this.sigCoImage = enroll.signature_co_applicant_url || '';
+    
+    this.enrollmentForm.patchValue({
+      formDate: enroll.form_date ? enroll.form_date.split('T')[0] : '',
+      applicationNo: enroll.application_no || '',
+      projectName: enroll.project_name || '',
+      propertyType: enroll.property_type || '',
+      propertyTypeOther: enroll.property_type_other || '',
+      plotFlatNo: enroll.plot_flat_no || '',
+      blockTower: enroll.block_tower || '',
+      sizeArea: enroll.size_area || '',
+      rate: enroll.rate_per_unit || '',
+      bsp: enroll.basic_sale_price || '',
+      plcDev: enroll.plc_dev_charges || '',
+      applicantName: enroll.applicant_name || '',
+      fhName: enroll.fh_name || '',
+      dob: enroll.date_of_birth ? enroll.date_of_birth.split('T')[0] : '',
+      age: enroll.age || '',
+      gender: enroll.gender || '',
+      maritalStatus: enroll.marital_status || '',
+      nationality: enroll.nationality || 'Indian',
+      nationalityOther: enroll.nationality_other || '',
+      pan: enroll.pan_no || '',
+      aadhar: enroll.aadhar_no || '',
+      occupation: enroll.occupation || '',
+      presentAddress: enroll.present_address || '',
+      presentCity: enroll.present_city || '',
+      presentStatePin: enroll.present_state_pin || '',
+      permanentAddress: enroll.permanent_address || '',
+      permanentCity: enroll.permanent_city || '',
+      permanentStatePin: enroll.permanent_state_pin || '',
+      mobile1: enroll.mobile_1 || '',
+      mobile2: enroll.mobile_2 || '',
+      email1: enroll.email_1 || '',
+      coApplicantName: enroll.co_applicant_name || '',
+      coFhName: enroll.co_fh_name || '',
+      coRelation: enroll.co_relation || '',
+      coDob: enroll.co_date_of_birth ? enroll.co_date_of_birth.split('T')[0] : '',
+      coAge: enroll.co_age || '',
+      coGender: enroll.co_gender || '',
+      coPan: enroll.co_pan_no || '',
+      coAadhar: enroll.co_aadhar_no || '',
+      coPresentAddress: enroll.co_present_address || '',
+      coMobile: enroll.co_mobile || '',
+      coEmail: enroll.co_email || '',
+      bookingAmount: enroll.booking_amount || '',
+      bookingAmountWords: enroll.booking_amount_words || '',
+      paymentMode: enroll.payment_mode || '',
+      txnNo: enroll.txn_cheque_no || '',
+      txnDate: enroll.txn_date ? enroll.txn_date.split('T')[0] : '',
+      drawnBankBranch: enroll.drawn_bank_branch || '',
+      accHolderName: enroll.acc_holder_name || '',
+      accBankBranch: enroll.acc_bank_branch || '',
+      accNumber: enroll.acc_number || '',
+      ifscCode: enroll.ifsc_code || '',
+      associateName: enroll.associate_name || '',
+      associateId: enroll.associate_id || '',
+      associateMobile: enroll.associate_mobile || '',
+      associateSignatureName: enroll.associate_signature_name || '',
+      appStatus: enroll.status || enroll.app_status || 'Hold/Pending KYC',
+      verifiedBy: enroll.verified_by || '',
+      paymentStatus: enroll.payment_realization_status || '',
+      paymentStatusDate: enroll.payment_realization_date ? enroll.payment_realization_date.split('T')[0] : '',
+      authorizedSignatory: enroll.authorized_signatory || '',
+      declarationCheck: true
+    });
+
+    if (enroll.nominees && Array.isArray(enroll.nominees) && enroll.nominees.length > 0) {
+      const nomArray = this.enrollmentForm.get('nominees') as FormArray;
+      nomArray.clear();
+      enroll.nominees.forEach((n: any) => {
+        nomArray.push(this.fb.group({
+          nomineeName: [n.nominee_name || ''],
+          nomineeRelation: [n.relation || ''],
+          nomineeAgeDob: [n.age_dob || ''],
+          nomineeAadhar: [n.aadhar_no || '']
+        }));
+      });
+    }
+
+    this.enrollmentForm.disable();
+    this.auth.setEnrollmentCompleted();
   }
 
   prefillProfile() {
@@ -532,12 +635,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     this.api.getMyCustomerEnrollments().subscribe({
       next: (res: any) => {
         if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
-          const enroll = res.data[0];
-          this.isSubmitted = true;
-          this.submissionId = enroll.id;
-          this.auth.setEnrollmentCompleted();
-          this.goToDashboard();
-          return;
+          this.patchSubmittedData(res.data[0]);
         } else {
           this.prefillProfile();
         }

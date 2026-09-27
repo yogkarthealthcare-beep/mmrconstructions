@@ -1,6 +1,7 @@
 import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
@@ -9,7 +10,7 @@ import { AdminExportService, ExportColumn } from '../../services/admin-export.se
 @Component({
   selector: 'app-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
+  imports: [CommonModule, FormsModule, RouterModule, AdminPaginationComponent, AdminTableContainerComponent],
   templateUrl: './approvals.component.html',
   styleUrls: ['./approvals.component.css']
 })
@@ -18,9 +19,12 @@ export class ApprovalsComponent implements OnInit {
   private exportService = inject(AdminExportService);
 
   loading = true;
+  viewMode: 'pending' | 'all' = 'pending';
   filter = 'all';
   search = '';
   users: any[] = [];
+  allUsersList: any[] = [];
+  pendingUsersList: any[] = [];
   activeRowId: any = null;
 
   // Pagination
@@ -65,6 +69,13 @@ export class ApprovalsComponent implements OnInit {
     this.page = 1;
   }
 
+  setMode(mode: 'pending' | 'all') {
+    this.viewMode = mode;
+    this.filter = 'all';
+    this.page = 1;
+    this.loadData();
+  }
+
   exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
     const list = mode === 'current' ? this.pagedUsers : this.filtered;
     const baseIndex = mode === 'current' ? (this.page - 1) * this.pageSize : 0;
@@ -78,6 +89,7 @@ export class ApprovalsComponent implements OnInit {
       { header: 'Member ID', key: 'member_id_display', width: 14 },
       { header: 'Sponsor Details', key: 'sponsor_display', width: 20 },
       { header: 'Status', key: 'status_display', width: 14 },
+      { header: 'KYC Status', key: 'enrollment_display', width: 14 },
       { header: 'Registered Date', key: 'date_display', width: 16 }
     ];
 
@@ -88,10 +100,11 @@ export class ApprovalsComponent implements OnInit {
       member_id_display: u.member_id || 'N/A',
       sponsor_display: u.sponsor_name ? `${u.sponsor_name} (${u.sponsor_code || ''})` : 'Direct / None',
       status_display: u.account_status || 'Pending',
+      enrollment_display: u.enrollment_status || 'Pending',
       date_display: u.registered_at ? new Date(u.registered_at).toLocaleString() : 'N/A'
     }));
 
-    const title = mode === 'current' ? `User Approvals (Page ${this.page})` : 'All Pending User Approvals';
+    const title = mode === 'current' ? `User Approvals (Page ${this.page})` : `${this.viewMode === 'pending' ? 'Pending' : 'All'} User Registrations`;
     const filename = `user_approvals_${mode}_${new Date().toISOString().slice(0, 10)}`;
 
     if (format === 'excel') {
@@ -102,38 +115,90 @@ export class ApprovalsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadUsers();
+    this.loadData();
+    this.loadAllStats();
   }
 
-  loadUsers() {
+  loadData() {
     this.loading = true;
+    if (this.viewMode === 'pending') {
+      this.api.adminGetPendingUsers().subscribe({
+        next: (res: any) => {
+          if (res.success && res.data) {
+            this.pendingUsersList = Array.isArray(res.data) ? res.data : (res.data.rows || []);
+            this.users = this.pendingUsersList;
+          } else {
+            this.users = [];
+          }
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        }
+      });
+    } else {
+      this.api.adminGetUsers({ limit: 100 }).subscribe({
+        next: (res: any) => {
+          if (res.success && (res.data || res.users)) {
+            this.allUsersList = Array.isArray(res.data) ? res.data : (res.users || res.data?.rows || []);
+            this.users = this.allUsersList;
+          } else {
+            this.users = [];
+          }
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        }
+      });
+    }
+  }
+
+  loadAllStats() {
+    // Background fetch to keep counter badges updated
     this.api.adminGetPendingUsers().subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
-          this.users = Array.isArray(res.data) ? res.data : (res.data.rows || []);
+          this.pendingUsersList = Array.isArray(res.data) ? res.data : (res.data.rows || []);
         }
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
+      }
+    });
+
+    this.api.adminGetUsers({ limit: 100 }).subscribe({
+      next: (res: any) => {
+        if (res.success && (res.data || res.users)) {
+          this.allUsersList = Array.isArray(res.data) ? res.data : (res.users || res.data?.rows || []);
+        }
       }
     });
   }
 
+  loadUsers() {
+    this.loadData();
+    this.loadAllStats();
+  }
+
   get pendingCount(): number {
-    return this.users.filter(u => u.account_status === 'Pending').length;
+    return this.pendingUsersList.filter(u => u.account_status === 'Pending').length;
+  }
+
+  get totalUsersCount(): number {
+    return this.allUsersList.length;
   }
 
   get investorCount(): number {
-    return this.users.filter(u => u.user_type === 'Investor').length;
+    const list = this.viewMode === 'pending' ? this.pendingUsersList : this.users;
+    return list.filter(u => u.user_type === 'Investor').length;
   }
 
   get customerCount(): number {
-    return this.users.filter(u => u.user_type === 'Customer').length;
+    const list = this.viewMode === 'pending' ? this.pendingUsersList : this.users;
+    return list.filter(u => u.user_type === 'Customer').length;
   }
 
   get associateCount(): number {
-    return this.users.filter(u => u.user_type === 'Associate').length;
+    const list = this.viewMode === 'pending' ? this.pendingUsersList : this.users;
+    return list.filter(u => u.user_type === 'Associate').length;
   }
 
   get filtered(): any[] {
@@ -143,6 +208,8 @@ export class ApprovalsComponent implements OnInit {
         this.filter === 'customer' ? u.user_type?.toLowerCase() === 'customer' :
         this.filter === 'associate' ? u.user_type?.toLowerCase() === 'associate' :
         this.filter === 'investor' ? u.user_type?.toLowerCase() === 'investor' :
+        this.filter === 'active' ? u.account_status?.toLowerCase() === 'active' :
+        this.filter === 'pending' ? u.account_status?.toLowerCase() === 'pending' :
         this.filter === 'inforequested' ? u.account_status?.toLowerCase() === 'inforequested' :
         u.account_status?.toLowerCase() === this.filter;
 
@@ -174,6 +241,7 @@ export class ApprovalsComponent implements OnInit {
           if (res.data?.member_id) u.member_id = res.data.member_id;
           this.showToast(`User ${u.full_name} approved successfully!`);
           this.closeModals();
+          this.loadAllStats();
         }
         this.actionLoading = false;
       },
@@ -200,6 +268,7 @@ export class ApprovalsComponent implements OnInit {
           this.selectedUser.account_status = 'Rejected';
           this.showToast(`Registration for ${this.selectedUser.full_name} rejected.`);
           this.closeModals();
+          this.loadAllStats();
         }
         this.actionLoading = false;
       },
@@ -225,6 +294,7 @@ export class ApprovalsComponent implements OnInit {
           this.selectedUser.account_status = 'InfoRequested';
           this.showToast(`Requested additional info from ${this.selectedUser.full_name}`);
           this.closeModals();
+          this.loadAllStats();
         }
         this.actionLoading = false;
       },

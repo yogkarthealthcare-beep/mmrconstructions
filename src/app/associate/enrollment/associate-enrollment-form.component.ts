@@ -37,6 +37,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   submissionAssociateId: string | null = null;
   existingApplicantPhoto = '';
   existingNomineePhoto = '';
+  enrollmentStatus: string = 'pending';
 
   ifscLoading = false;
   ifscSuccess = false;
@@ -98,11 +99,22 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         if (success) {
           this.auth.setEnrollmentCompleted();
           this.isSubmitted = true;
+          this.enrollmentStatus = 'pending';
           this.enrollmentForm.disable();
           Swal.fire({
             icon: 'success',
             title: 'Enrollment Submitted Successfully!',
-            text: 'Your associate enrollment form has been submitted.',
+            html: `
+              <p style="font-size:14px; color:#475569; margin-bottom:12px;">
+                Your associate enrollment form has been submitted and is currently <strong>Pending Admin Verification</strong>.
+              </p>
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:left; font-size:13px; color:#1e293b;">
+                <div style="font-weight:700; margin-bottom:6px; color:#062b18;"><i class="fas fa-headset me-1 text-gold"></i> For Quick Approval Assistance:</div>
+                <div>📧 Email: <strong>mmrconstructionsbuilder@gmail.com</strong></div>
+                <div>📞 Helpline: <strong>+91 7071951011 / +91 7071951012</strong></div>
+                <div>💬 WhatsApp: <strong>+91 7071951011</strong></div>
+              </div>
+            `,
             confirmButtonColor: '#1a5c3a',
             confirmButtonText: 'Go to Dashboard'
           }).then(() => {
@@ -113,16 +125,106 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     );
   }
 
+  patchSubmittedData(d: any) {
+    this.isSubmitted = true;
+    this.submissionAssociateId = d.associate_id || d.associateId || d.id || null;
+    this.existingApplicantPhoto = d.applicant_photo_url || d.applicant_photo_path || '';
+    this.existingNomineePhoto = d.nominee_photo_url || d.nominee_photo_path || '';
+    this.enrollmentStatus = (d.status || d.app_status || 'pending').toLowerCase();
+
+    this.enrollmentForm.patchValue({
+      personalDetails: {
+        fullName: d.full_name || '',
+        dob: d.dob ? d.dob.split('T')[0] : '',
+        gender: d.gender || '',
+        fatherName: d.father_name || '',
+        motherName: d.mother_name || '',
+        spouseName: d.spouse_name || '',
+        contact1: d.contact_primary || d.contact_1 || d.contact1 || d.mobile_no || '',
+        contact2: d.contact_secondary || d.contact_2 || d.contact2 || '',
+        nationality: d.nationality || 'Indian',
+        residentialStatus: d.residential_status || 'Resident',
+        panNo: d.pan_number || d.pan_no || d.panNo || '',
+        aadharNo: d.aadhar_number || d.aadhar_no || d.aadharNo || '',
+        email: d.email || '',
+        occupation: d.occupation || '',
+        annualIncome: d.annual_income || d.annualIncome || '',
+        education: d.education || '',
+        category: d.category || '',
+        religion: d.religion || ''
+      },
+      addressDetails: {
+        permAddress: d.perm_address_line1 || d.permAddress || d.address || '',
+        permCity: d.perm_city || d.permCity || d.city || '',
+        permState: d.perm_state || d.permState || d.state || '',
+        permCountry: d.perm_country || d.permCountry || 'India',
+        permPin: d.perm_pincode || d.permPin || d.pincode || '',
+        localAddress: d.local_address_line1 || d.localAddress || d.perm_address_line1 || d.address || '',
+        localCity: d.local_city || d.localCity || d.perm_city || d.city || '',
+        localState: d.local_state || d.localState || d.perm_state || d.state || '',
+        localCountry: d.local_country || d.localCountry || 'India',
+        localPin: d.local_pincode || d.localPin || d.perm_pincode || d.pincode || ''
+      },
+      bankDetails: {
+        bankName: d.bank_name || d.bankName || '',
+        accHolder: d.account_holder_name || d.accHolder || d.full_name || '',
+        accNo: d.account_number || d.accNo || '',
+        ifsc: d.ifsc_code || d.ifsc || '',
+        micr: d.micr_code || d.micr || '',
+        branchName: d.branch_name || d.branchName || '',
+        branchCode: d.branch_code || d.branchCode || '',
+        swift: d.swift_code || d.swift || '',
+        branchCountry: d.branch_country || d.branchCountry || 'India'
+      },
+      nomineeDetails: {
+        nomineeName: d.nominee_name || d.nomineeName || '',
+        nomineeDob: d.nominee_dob ? d.nominee_dob.split('T')[0] : (d.nomineeDob || ''),
+        nomineeGender: d.nominee_gender || d.nomineeGender || 'Male',
+        nomineeNationality: d.nominee_nationality || 'Indian',
+        nomineeResStatus: d.nominee_res_status || 'Resident',
+        nomineeRelationship: d.nominee_relationship || d.nomineeRelationship || '',
+        nomineePanName: d.nominee_pan_name || '',
+        nomineePanNo: d.nominee_pan_no || '',
+        nomineeAadharName: d.nominee_aadhar_name || '',
+        nomineeAadharNo: d.nominee_aadhar_no || '',
+        nomineeAddress: d.nominee_address || d.nomineeAddress || ''
+      },
+      sponsorDetails: {
+        sponsorName: d.sponsor_name || d.sponsorName || '',
+        sponsorCode: d.sponsor_code || d.sponsorCode || '',
+        sponsorContact: d.sponsor_contact || d.sponsorContact || ''
+      },
+      termsAndConditions: {
+        tc1: true,
+        tc2: true,
+        tc3: true,
+        tc4: true,
+        tc5: true,
+        tc6: true
+      },
+      signature: {
+        signDate: d.sign_date ? d.sign_date.split('T')[0] : new Date().toISOString().split('T')[0]
+      }
+    });
+
+    this.termsState.set({
+      tc1: true,
+      tc2: true,
+      tc3: true,
+      tc4: true,
+      tc5: true,
+      tc6: true
+    });
+
+    this.enrollmentForm.disable();
+    this.auth.setEnrollmentCompleted();
+  }
+
   checkSubmissionStatus() {
     this.api.getMyAssociateEnrollment().subscribe({
       next: (res: any) => {
         if (res && res.success && res.data) {
-          const d = res.data;
-          this.isSubmitted = true;
-          this.submissionAssociateId = d.associate_id || d.associateId || null;
-          this.auth.setEnrollmentCompleted();
-          this.router.navigate(['/associate/dashboard']);
-          return;
+          this.patchSubmittedData(res.data);
         } else {
           this.prefillProfile();
         }

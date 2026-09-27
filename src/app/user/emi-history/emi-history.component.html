@@ -57,36 +57,36 @@
     <!-- 4-Box Key Financial Metrics -->
     <div class="row g-2 mb-3">
       <div class="col-6 col-md-3">
-        <div class="summary-metric-box p-2.5 rounded-3 bg-light border">
+        <div class="summary-metric-box rounded-3 bg-light border">
           <div class="fs-11 text-muted fw-600 mb-1"><i class="fas fa-hand-holding-usd text-gold me-1"></i>Down Payment</div>
-          <div class="fs-15 fw-800 text-dark">₹{{ bk.down_payment | number }}</div>
-          <div class="fs-10 text-success fw-600 mt-0.5"><i class="fas fa-check-circle me-1"></i>Paid at Booking</div>
+          <div class="fs-16 fw-800 text-dark">₹{{ bk.down_payment | number }}</div>
+          <div class="fs-11 text-success fw-600 mt-1"><i class="fas fa-check-circle me-1"></i>Paid at Booking</div>
         </div>
       </div>
 
       <div class="col-6 col-md-3">
-        <div class="summary-metric-box p-2.5 rounded-3 bg-emerald-light border border-success-subtle">
+        <div class="summary-metric-box rounded-3 bg-emerald-light border border-success-subtle">
           <div class="fs-11 text-success fw-700 mb-1"><i class="fas fa-wallet text-success me-1"></i>Total Paid Amount</div>
-          <div class="fs-15 fw-900 text-success">₹{{ bk.total_paid_amount | number }}</div>
-          <div class="fs-10 text-muted mt-0.5">DP (₹{{ bk.down_payment | number }}) + EMIs (₹{{ bk.paid_emis_amount | number }})</div>
+          <div class="fs-16 fw-900 text-success">₹{{ bk.total_paid_amount | number }}</div>
+          <div class="fs-11 text-muted mt-1">DP (₹{{ bk.down_payment | number }}) + EMIs (₹{{ bk.paid_emis_amount | number }})</div>
         </div>
       </div>
 
       <div class="col-6 col-md-3">
-        <div class="summary-metric-box p-2.5 rounded-3 bg-gold-light border border-warning-subtle">
+        <div class="summary-metric-box rounded-3 bg-gold-light border border-warning-subtle">
           <div class="fs-11 text-gold-dark fw-700 mb-1"><i class="fas fa-hourglass-half text-warning me-1"></i>Remaining Balance</div>
-          <div class="fs-15 fw-900 text-gold-dark">₹{{ bk.remaining_amount | number }}</div>
-          <div class="fs-10 text-muted mt-0.5">Payable across EMIs</div>
+          <div class="fs-16 fw-900 text-gold-dark">₹{{ bk.remaining_amount | number }}</div>
+          <div class="fs-11 text-muted mt-1">Payable across EMIs</div>
         </div>
       </div>
 
       <div class="col-6 col-md-3">
-        <div class="summary-metric-box p-2.5 rounded-3 bg-light border">
+        <div class="summary-metric-box rounded-3 bg-light border">
           <div class="fs-11 text-muted fw-600 mb-1"><i class="fas fa-calendar-check text-primary me-1"></i>EMI Installments</div>
-          <div class="fs-15 fw-800 text-dark">
+          <div class="fs-16 fw-800 text-dark">
             <span class="text-success">{{ bk.paid_emis_count }} Paid</span> / <span class="text-muted">{{ bk.total_emis }} Total</span>
           </div>
-          <div class="fs-10 text-muted mt-0.5">{{ bk.pending_emis_count }} installments remaining</div>
+          <div class="fs-11 text-muted mt-1">{{ bk.pending_emis_count }} installments remaining</div>
         </div>
       </div>
     </div>
@@ -114,44 +114,64 @@
   </div>
 </div>
 
-<!-- METRIC STAT SUMMARY OVERVIEW CARDS (When multiple or single plot) -->
+<!-- METRIC STAT SUMMARY OVERVIEW CARDS -->
 <div class="row g-2 mb-3" *ngIf="!loading">
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card h-100">
-      <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-check-circle"></i></div>
-      <div>
-        <div class="stat-mini-val text-success">{{ paidCount }}</div>
-        <div class="stat-mini-lbl">EMIs Paid &amp; Verified</div>
+  <!-- Box 1: EMIs Paid & Verified -->
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card card-emerald h-100">
+      <div class="stat-top">
+        <div class="stat-icon-wrap icon-emerald"><i class="fas fa-check-circle"></i></div>
+        <span class="stat-badge-tag tag-emerald">Paid</span>
+      </div>
+      <div class="stat-value text-success">{{ paidCount }}</div>
+      <div class="stat-label">EMIs Paid &amp; Verified</div>
+      <div class="stat-footer text-success d-flex align-items-center gap-1">
+        <i class="fas fa-shield-alt me-1"></i>Approved Installments
       </div>
     </div>
   </div>
 
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card h-100">
-      <div class="icon-wrap bg-gold-light text-gold-dark"><i class="fas fa-wallet"></i></div>
-      <div>
-        <div class="stat-mini-val text-gold-dark">₹{{ totalPaid | number }}</div>
-        <div class="stat-mini-lbl">Total Paid (DP + EMIs)</div>
+  <!-- Box 2: Total Paid (DP + EMIs) -->
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card card-gold h-100">
+      <div class="stat-top">
+        <div class="stat-icon-wrap icon-gold"><i class="fas fa-wallet"></i></div>
+        <span class="stat-badge-tag tag-gold">Total Paid</span>
+      </div>
+      <div class="stat-value text-gold-dark">₹{{ totalPaid | number }}</div>
+      <div class="stat-label">Total Paid (DP + EMIs)</div>
+      <div class="stat-footer text-warning d-flex align-items-center gap-1">
+        <i class="fas fa-coins me-1"></i>Confirmed Collections
       </div>
     </div>
   </div>
 
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card h-100">
-      <div class="icon-wrap bg-blue-light text-blue"><i class="fas fa-calendar-day"></i></div>
-      <div>
-        <div class="stat-mini-val text-primary">{{ nextDue ? ('₹' + (nextDue.emi_amount | number)) : '—' }}</div>
-        <div class="stat-mini-lbl">Next Pending EMI</div>
+  <!-- Box 3: Next Pending EMI -->
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card card-blue h-100">
+      <div class="stat-top">
+        <div class="stat-icon-wrap icon-blue"><i class="fas fa-calendar-day"></i></div>
+        <span class="stat-badge-tag tag-blue">Next Due</span>
+      </div>
+      <div class="stat-value text-primary">{{ nextDue ? ('₹' + (nextDue.emi_amount | number)) : '—' }}</div>
+      <div class="stat-label">Next Pending EMI</div>
+      <div class="stat-footer text-primary d-flex align-items-center gap-1">
+        <i class="fas fa-clock me-1"></i>{{ nextDue ? (nextDue.due_date | date:'dd MMM yyyy') : 'No Pending Due' }}
       </div>
     </div>
   </div>
 
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card h-100">
-      <div class="icon-wrap bg-crimson-light text-danger"><i class="fas fa-exclamation-triangle"></i></div>
-      <div>
-        <div class="stat-mini-val text-danger">{{ overdueCount }}</div>
-        <div class="stat-mini-lbl">Overdue Installments</div>
+  <!-- Box 4: Overdue Installments -->
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card card-crimson h-100">
+      <div class="stat-top">
+        <div class="stat-icon-wrap icon-crimson"><i class="fas fa-exclamation-triangle"></i></div>
+        <span class="stat-badge-tag tag-crimson">Overdue</span>
+      </div>
+      <div class="stat-value text-danger">{{ overdueCount }}</div>
+      <div class="stat-label">Overdue Installments</div>
+      <div class="stat-footer text-danger d-flex align-items-center gap-1">
+        <i class="fas fa-exclamation-circle me-1"></i>{{ overdueCount > 0 ? 'Requires Immediate Attention' : 'All Dues On Track' }}
       </div>
     </div>
   </div>

@@ -20,29 +20,55 @@
 
     <div class="form-title">Associate Enrollment Form</div>
 
-    <!-- Red Locked Banner when already submitted -->
-    <div *ngIf="isSubmitted" class="locked-banner" style="background: #fef2f2; border: 1px solid #f87171; border-left: 5px solid #dc2626; color: #991b1b; padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <i class="fas fa-lock" style="font-size: 24px; color: #dc2626;"></i>
-        <div>
-          <div style="font-weight: 700; font-size: 15px; color: #7f1d1d;">
-            Enrollment Form Submitted (Read-Only Mode) <span *ngIf="submissionAssociateId">— Associate ID: <strong>{{ submissionAssociateId }}</strong></span>
+    <!-- Prominent Locked / Pending Approval Banner when already submitted -->
+    <div *ngIf="isSubmitted" class="locked-banner" style="background: #fffdf0; border: 1px solid #fef08a; border-left: 5px solid #ca8a04; color: #854d0e; padding: 16px 20px; border-radius: 10px; margin-bottom: 22px; box-shadow: 0 4px 14px rgba(202, 138, 4, 0.08);">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div style="display: flex; align-items: flex-start; gap: 14px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: #fef9c3; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #a16207; flex-shrink: 0;">
+            <i class="fas" [class.fa-hourglass-half]="enrollmentStatus!=='completed' && enrollmentStatus!=='approved'" [class.fa-check-circle]="enrollmentStatus==='completed' || enrollmentStatus==='approved'"></i>
           </div>
-          <div style="font-size: 13px; color: #991b1b; margin-top: 3px;">
-            This form has already been submitted and cannot be edited. If you need to make any changes or updates, please contact MMR Support: 
-            <a href="tel:9511119879" style="color: #7f1d1d; font-weight: bold; text-decoration: underline;">9511119879</a> | 
-            <a href="tel:8429823067" style="color: #7f1d1d; font-weight: bold; text-decoration: underline;">8429823067</a> &nbsp;|&nbsp; 
-            Email: <a href="mailto:mmrconstructions&#64;hotmail.com" style="color: #7f1d1d; font-weight: bold; text-decoration: underline;">mmrconstructions&#64;hotmail.com</a>
+          <div>
+            <div style="font-weight: 800; font-size: 15px; color: #713f12; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span>Associate Enrollment Form Submitted (Read-Only)</span>
+              <span class="badge" style="background: #fef08a; color: #854d0e; font-size: 11px; padding: 4px 8px; border-radius: 6px;" *ngIf="enrollmentStatus!=='completed' && enrollmentStatus!=='approved'">
+                <i class="fas fa-clock me-1"></i> Awaiting Admin Approval
+              </span>
+              <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 11px; padding: 4px 8px; border-radius: 6px;" *ngIf="enrollmentStatus==='completed' || enrollmentStatus==='approved'">
+                <i class="fas fa-check-circle me-1"></i> Approved &amp; Verified
+              </span>
+              <span *ngIf="submissionAssociateId" style="color: #062b18; font-size: 12px;">ID: <strong>{{ submissionAssociateId }}</strong></span>
+            </div>
+            
+            <p style="font-size: 12.5px; color: #854d0e; margin: 4px 0 10px; line-height: 1.4;">
+              Your enrollment details and KYC records have been submitted and locked. You cannot fill or submit this form multiple times.
+            </p>
+
+            <!-- Support Contact Info Strip -->
+            <div style="background: #ffffff; border: 1px solid #fde047; border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 14px; font-size: 12px; font-weight: 600;">
+              <span style="color: #713f12; font-weight: 700;"><i class="fas fa-headset text-gold me-1"></i> For Approval Assistance:</span>
+              <a href="mailto:mmrconstructionsbuilder@gmail.com" style="color: #0f172a; text-decoration: none;">
+                <i class="fas fa-envelope text-gold me-1"></i> mmrconstructionsbuilder&#64;gmail.com
+              </a>
+              <span style="color: #cbd5e1;">|</span>
+              <a href="tel:+917071951011" style="color: #0f172a; text-decoration: none;">
+                <i class="fas fa-phone-alt text-emerald me-1"></i> +91 7071951011 / +91 7071951012
+              </a>
+              <span style="color: #cbd5e1;">|</span>
+              <a href="https://wa.me/917071951011?text=Hello%20MMR%20Support,%20please%20verify%20my%20Associate%20Enrollment%20application" target="_blank" style="color: #15803d; text-decoration: none; font-weight: 700;">
+                <i class="fab fa-whatsapp me-1 text-success"></i> WhatsApp Support
+              </a>
+            </div>
           </div>
         </div>
-      </div>
-      <div style="display: flex; gap: 10px;" class="no-print">
-        <button type="button" routerLink="/associate/dashboard" style="background: #1e3a8a; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600;">
-          <i class="fas fa-th-large"></i> Go to Dashboard
-        </button>
-        <button *ngIf="submissionAssociateId" type="button" (click)="downloadPdf(submissionAssociateId)" [disabled]="printing" style="background: #14532d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600;">
-          <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i> Download PDF
-        </button>
+
+        <div style="display: flex; gap: 8px;" class="no-print ms-auto">
+          <button type="button" routerLink="/associate/dashboard" style="background: #062b18; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px;">
+            <i class="fas fa-th-large"></i> Go to Dashboard
+          </button>
+          <button *ngIf="submissionAssociateId" type="button" (click)="downloadPdf(submissionAssociateId)" [disabled]="printing" style="background: #14532d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px;">
+            <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i> Download PDF
+          </button>
+        </div>
       </div>
     </div>
 

@@ -49,6 +49,15 @@ export class UserDashboardComponent implements OnInit {
   notifications: any[] = [];
   sites: any[] = [];
 
+  // Enrollment Status & Support State
+  isEnrollmentPending: boolean = false;
+  hasSubmittedEnrollment: boolean = false;
+  enrollmentData: any = null;
+
+  get isAssociate(): boolean {
+    return this.userData?.user_type === 'Associate' || this.router.url.startsWith('/associate');
+  }
+
   // Active Portfolio Tab: 'active' (Purchased/Booked) or 'sold' (Sold/Buyback)
   portfolioTab: 'active' | 'sold' = 'active';
 
@@ -147,10 +156,36 @@ export class UserDashboardComponent implements OnInit {
   loadAllData() {
     this.loading = true;
 
+    const checkEnrollmentPromise = this.isAssociate
+      ? this.api.getMyAssociateEnrollment().toPromise().then((r: any) => {
+          if (r?.success && r.data) {
+            this.hasSubmittedEnrollment = true;
+            this.enrollmentData = r.data;
+            const st = String(r.data.status || r.data.app_status || 'pending').toLowerCase();
+            this.isEnrollmentPending = (st === 'pending' || st === 'inforequested');
+          } else {
+            this.hasSubmittedEnrollment = false;
+            this.isEnrollmentPending = false;
+          }
+        }).catch(() => {})
+      : this.api.getMyCustomerEnrollments().toPromise().then((r: any) => {
+          if (r?.success && Array.isArray(r.data) && r.data.length > 0) {
+            this.hasSubmittedEnrollment = true;
+            this.enrollmentData = r.data[0];
+            const st = String(r.data[0].status || r.data[0].app_status || 'pending').toLowerCase();
+            this.isEnrollmentPending = (st === 'pending' || st.includes('hold') || st === 'inforequested');
+          } else {
+            this.hasSubmittedEnrollment = false;
+            this.isEnrollmentPending = false;
+          }
+        }).catch(() => {});
+
     Promise.all([
       this.api.getProfile().toPromise().then((r: any) => {
         if (r?.success) this.profile = r.data || {};
       }).catch(err => console.warn('Profile fetch warning:', err)),
+
+      checkEnrollmentPromise,
 
       this.api.getBookings().toPromise().then((r: any) => {
         if (r?.success) this.bookings = r.data || [];
@@ -237,6 +272,25 @@ export class UserDashboardComponent implements OnInit {
     });
   }
 
+  getPlotTitle(prop: any): string {
+    if (!prop) return 'Plot';
+    let plot = String(prop.plot_number || '').trim();
+    let block = String(prop.block_name || '').trim();
+
+    if (block && block !== '—' && plot.toLowerCase().includes(block.toLowerCase())) {
+      const cleanedPlot = plot.replace(new RegExp(`\\s*·?\\s*${block}`, 'i'), '').trim();
+      if (cleanedPlot) {
+        return `${cleanedPlot.startsWith('Plot') ? cleanedPlot : 'Plot ' + cleanedPlot} · ${block}`;
+      }
+      return plot.startsWith('Plot') ? plot : `Plot ${plot}`;
+    }
+
+    if (plot && block && block !== '—') {
+      return `${plot.startsWith('Plot') ? plot : 'Plot ' + plot} · ${block}`;
+    }
+    return plot.startsWith('Plot') ? plot : `Plot ${plot || 'Plot'}`;
+  }
+
   // ── Top Summary KPI Numbers ─────────────────────────────────────────
   get purchasedPlotsCount(): number {
     return this.propertyDossiers.filter(p => p.booking_status !== 'Sold' && p.booking_status !== 'Cancelled').length;
@@ -289,22 +343,101 @@ export class UserDashboardComponent implements OnInit {
   }
 
   // ── 8-Tab Comprehensive Plot Dossier Modal ──────────────────────────
+  buildFallbackDossier(prop: PropertyDossier): any {
+    if (!prop) return null;
+    const allEmis = prop.all_emis || [];
+    const paidEmis = allEmis.filter((e: any) => e.emi_status === 'Paid');
+    const partiallyPaidEmis = allEmis.filter((e: any) => e.emi_status === 'PartiallyPaid');
+    const pendingEmis = allEmis.filter((e: any) => ['Pending', 'ProofSubmitted', 'Overdue'].includes(e.emi_status));
+    const paidEmisTotal = paidEmis.reduce((s: number, e: any) => s + Number(e.paid_amount || e.emi_amount || 0), 0);
+    const advanceAmount = Math.max(0, prop.confirmed_paid - paidEmisTotal);
+
+    const paymentHistory: any[] = [];
+    if (advanceAmount > 0) {
+      paymentHistory.push({
+        payment_serial: `MMR-ADV-${prop.booking_id}`,
+        payment_date: prop.booking_date,
+        payment_mode: 'Bank / Cash',
+        payment_purpose: 'Plot Booking Advance Payment',
+        gross_amount: advanceAmount,
+        payment_status: 'Approved',
+        receipt_id: null,
+        voucher_id: null
+      });
+    }
+
+    paidEmis.forEach((e: any) => {
+      paymentHistory.push({
+        payment_serial: `MMR-EMI-${e.emi_id || e.installment_no}`,
+        payment_date: e.paid_date || e.updated_at || e.due_date,
+        payment_mode: e.payment_mode || 'Online / Bank',
+        payment_purpose: `Installment #${e.installment_no} Payment`,
+        gross_amount: Number(e.paid_amount || e.emi_amount || 0),
+        payment_status: 'Approved',
+        receipt_id: e.receipt_id || null,
+        voucher_id: e.voucher_id || e.emi_id || null
+      });
+    });
+
+    const vouchers = paidEmis.map((e: any) => ({
+      voucher_id: e.emi_id,
+      voucher_serial: `VOUCH-${e.installment_no}`,
+      amount: Number(e.paid_amount || e.emi_amount || 0),
+      installment_no: e.installment_no,
+      due_date: e.due_date
+    }));
+
+    return {
+      booking: {
+        booking_id: prop.booking_id,
+        booking_serial: prop.booking_serial,
+        plot_number: prop.plot_number,
+        site_name: prop.site_name,
+        advance_amount: advanceAmount,
+        unallocated_advance_balance: 0
+      },
+      summary: {
+        total_price: prop.total_price,
+        approved_paid: prop.confirmed_paid,
+        pending_verification: 0,
+        rejected_amount: 0,
+        bounced_amount: 0,
+        unpaid_balance: prop.unpaid_balance,
+        progress_percentage: prop.payment_progress,
+        overdue_amount: prop.overdue_amount || 0,
+        unallocated_advance_balance: 0,
+        next_emi_amount: prop.next_emi ? (Number(prop.next_emi.emi_amount) - Number(prop.next_emi.partially_paid_amount || 0)) : 0,
+        next_emi_due_date: prop.next_emi?.due_date || null,
+        total_emis: allEmis.length,
+        paid_emis: paidEmis.length,
+        partially_paid_emis: partiallyPaidEmis.length,
+        pending_emis: pendingEmis.length
+      },
+      payment_history: paymentHistory,
+      emi_schedule: allEmis,
+      receipts: [],
+      vouchers: vouchers,
+      pending_verifications: allEmis.filter((e: any) => e.emi_status === 'ProofSubmitted'),
+      excess_advances: [],
+      missing_complaints: []
+    };
+  }
+
   openDossierModal(prop: PropertyDossier, tab: 'summary' | 'history' | 'emis' | 'receipts' | 'vouchers' | 'pending' | 'excess' | 'disputes' = 'summary') {
     this.selectedPlotForDossier = prop;
     this.dossierActiveTab = tab;
+    this.dossierData = this.buildFallbackDossier(prop);
     this.dossierModalOpen = true;
-    this.dossierLoading = true;
+    this.dossierLoading = false;
 
-    this.api.getPlotPaymentDossier(prop.plot_id).subscribe({
+    this.api.getPlotPaymentDossier(prop.plot_id || prop.booking_id).subscribe({
       next: (res: any) => {
-        this.dossierLoading = false;
-        if (res.success) {
+        if (res?.success && res.data) {
           this.dossierData = res.data;
         }
       },
       error: (err: any) => {
-        this.dossierLoading = false;
-        console.error('Failed to load plot dossier:', err);
+        console.warn('Using client-side ledger dossier for plot:', err);
       }
     });
   }
@@ -329,6 +462,8 @@ export class UserDashboardComponent implements OnInit {
       bank_name: '',
       cheque_number: '',
       cheque_date: new Date().toISOString().split('T')[0],
+      collector_name: '',
+      cash_receipt_no: '',
       customer_notes: '',
       proof_file: null
     };
@@ -370,6 +505,9 @@ export class UserDashboardComponent implements OnInit {
     // If proof file is present, upload via FormData or submit payload
     const payload = {
       booking_id: this.selectedPropertyForPayment.booking_id,
+      booking_serial: this.selectedPropertyForPayment.booking_serial,
+      plot_id: this.selectedPropertyForPayment.plot_id,
+      plot_number: this.selectedPropertyForPayment.plot_number,
       payment_mode: this.paymentForm.payment_mode,
       payment_purpose: this.paymentForm.payment_purpose,
       amount: amount,
@@ -378,6 +516,8 @@ export class UserDashboardComponent implements OnInit {
       cheque_number: this.paymentForm.cheque_number,
       bank_name: this.paymentForm.bank_name,
       cheque_date: this.paymentForm.cheque_date,
+      collector_name: this.paymentForm.collector_name,
+      cash_receipt_no: this.paymentForm.cash_receipt_no,
       customer_notes: this.paymentForm.customer_notes,
       proof_document_url: null
     };

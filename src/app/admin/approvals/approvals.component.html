@@ -9,12 +9,19 @@
     <div>
       <div class="admin-hero-badge"><i class="fas fa-user-shield me-1"></i>KYC VERIFICATION &amp; APPROVALS</div>
       <h2 class="admin-hero-title mb-1">Registration Approvals</h2>
-      <p class="admin-hero-sub mb-0">Review pending Customer and Associate registrations, verify KYC documents &amp; activate accounts.</p>
+      <p class="admin-hero-sub mb-0">Review pending Customer, Associate &amp; Investor account registrations, verify KYC profiles &amp; activate accounts.</p>
     </div>
 
-    <div class="d-flex align-items-center gap-2 ms-auto">
+    <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+      <!-- Direct Links to Enrollment consoles -->
+      <a routerLink="/admin/enrollments" [queryParams]="{tab: 'associate'}" class="btn btn-gold-outline btn-xs text-white">
+        <i class="fas fa-id-card me-1 text-gold"></i> Associate Enrollments
+      </a>
+      <a routerLink="/admin/enrollments" [queryParams]="{tab: 'customer'}" class="btn btn-gold-outline btn-xs text-white">
+        <i class="fas fa-users me-1 text-gold"></i> Customer Enrollments
+      </a>
       <button class="btn btn-outline-light btn-xs" (click)="loadUsers()">
-        <i class="fas fa-sync me-1"></i> Refresh Data
+        <i class="fas fa-sync me-1" [class.fa-spin]="loading"></i> Refresh
       </button>
     </div>
   </div>
@@ -23,9 +30,9 @@
 <!-- 4 STAT SUMMARY MINI CARDS -->
 <div class="row g-2 mb-2">
   <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-approvals h-100">
+    <div class="stat-mini-card box-approvals h-100 cursor-pointer" (click)="setMode('pending')">
       <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Total Pending</span>
+        <span class="stat-mini-lbl text-truncate">Pending Signups</span>
         <div class="icon-wrap bg-amber text-orange">
           <i class="fas fa-user-clock"></i>
         </div>
@@ -36,9 +43,9 @@
   </div>
 
   <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-customers h-100">
+    <div class="stat-mini-card box-customers h-100 cursor-pointer" (click)="viewMode==='all' ? filter='customer' : filter='customer'">
       <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Pending Customers</span>
+        <span class="stat-mini-lbl text-truncate">{{ viewMode === 'pending' ? 'Pending Customers' : 'Total Customers' }}</span>
         <div class="icon-wrap bg-blue text-primary">
           <i class="fas fa-users"></i>
         </div>
@@ -49,9 +56,9 @@
   </div>
 
   <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-associates h-100">
+    <div class="stat-mini-card box-associates h-100 cursor-pointer" (click)="viewMode==='all' ? filter='associate' : filter='associate'">
       <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Pending Associates</span>
+        <span class="stat-mini-lbl text-truncate">{{ viewMode === 'pending' ? 'Pending Associates' : 'Total Associates' }}</span>
         <div class="icon-wrap bg-gold-light text-gold-dark">
           <i class="fas fa-user-tie"></i>
         </div>
@@ -62,31 +69,55 @@
   </div>
 
   <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-investors h-100" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+    <div class="stat-mini-card box-investors h-100 cursor-pointer" style="background: #f0fdf4; border: 1px solid #bbf7d0;" (click)="setMode('all')">
       <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate" style="color: #166534;">Pending Investors</span>
+        <span class="stat-mini-lbl text-truncate" style="color: #166534;">Total Registered Users</span>
         <div class="icon-wrap" style="background: #dcfce7; color: #15803d;">
-          <i class="fas fa-hand-holding-usd"></i>
+          <i class="fas fa-user-check"></i>
         </div>
       </div>
-      <div class="stat-mini-val" style="color: #14532d;">{{ investorCount }}</div>
-      <div class="fs-11 fw-600" style="color: #166534;"><i class="fas fa-chart-line me-1"></i>Fund Providers</div>
+      <div class="stat-mini-val" style="color: #14532d;">{{ totalUsersCount }}</div>
+      <div class="fs-11 fw-600" style="color: #166534;"><i class="fas fa-shield-alt me-1"></i>All Active Profiles</div>
     </div>
   </div>
 </div>
 
-<!-- TOOLBAR CARD -->
+<!-- VIEW MODE & TOOLBAR CARD -->
 <div class="panel-card p-3 mb-2">
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div class="filter-tabs">
-      <button class="filter-tab" [class.active]="filter==='all'"           (click)="filter='all'">All Pending ({{ users.length }})</button>
+    
+    <!-- Mode Switcher (Pending vs All Users) -->
+    <div class="d-flex align-items-center gap-2">
+      <div class="btn-group btn-group-sm" role="group">
+        <button type="button" class="btn" [class.btn-emerald]="viewMode==='pending'" [class.btn-outline-secondary]="viewMode!=='pending'" (click)="setMode('pending')">
+          <i class="fas fa-clock me-1"></i> Pending Registrations ({{ pendingCount }})
+        </button>
+        <button type="button" class="btn" [class.btn-emerald]="viewMode==='all'" [class.btn-outline-secondary]="viewMode!=='all'" (click)="setMode('all')">
+          <i class="fas fa-users me-1"></i> All Users &amp; KYC ({{ totalUsersCount }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs" *ngIf="viewMode === 'pending'">
+      <button class="filter-tab" [class.active]="filter==='all'"           (click)="filter='all'">All Pending ({{ pendingCount }})</button>
       <button class="filter-tab" [class.active]="filter==='customer'"      (click)="filter='customer'">Customers ({{ customerCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='investor'"      (click)="filter='investor'">Investors ({{ investorCount }})</button>
       <button class="filter-tab" [class.active]="filter==='associate'"     (click)="filter='associate'">Associates ({{ associateCount }})</button>
+      <button class="filter-tab" [class.active]="filter==='investor'"      (click)="filter='investor'">Investors ({{ investorCount }})</button>
       <button class="filter-tab" [class.active]="filter==='inforequested'" (click)="filter='inforequested'">Info Requested</button>
     </div>
 
-    <div class="search-box position-relative ms-auto" style="min-width: 240px;">
+    <div class="filter-tabs" *ngIf="viewMode === 'all'">
+      <button class="filter-tab" [class.active]="filter==='all'"           (click)="filter='all'">All Users ({{ totalUsersCount }})</button>
+      <button class="filter-tab" [class.active]="filter==='customer'"      (click)="filter='customer'">Customers</button>
+      <button class="filter-tab" [class.active]="filter==='associate'"     (click)="filter='associate'">Associates</button>
+      <button class="filter-tab" [class.active]="filter==='investor'"      (click)="filter='investor'">Investors</button>
+      <button class="filter-tab" [class.active]="filter==='active'"        (click)="filter='active'">Active</button>
+      <button class="filter-tab" [class.active]="filter==='pending'"       (click)="filter='pending'">Pending</button>
+    </div>
+
+    <!-- Search Box -->
+    <div class="search-box position-relative ms-auto" style="min-width: 220px;">
       <i class="fas fa-search search-icon"></i>
       <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" placeholder="Search name, phone, email...">
     </div>
@@ -96,21 +127,45 @@
 <!-- LOADING STATE -->
 <div class="panel-card text-center py-5 mb-2" *ngIf="loading">
   <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
-  <p class="text-muted fs-12 mt-2 mb-0">Loading pending user registrations...</p>
+  <p class="text-muted fs-12 mt-2 mb-0">Loading user registrations &amp; KYC data...</p>
 </div>
 
 <!-- MAIN DATA TABLE CARD -->
 <div class="panel-card p-3 mb-2" *ngIf="!loading">
   
-  <div *ngIf="filtered.length === 0" class="text-center py-5">
-    <i class="fas fa-user-check text-muted fs-1 mb-2"></i>
-    <h6 class="fw-700 text-dark mb-1">No Pending Registrations</h6>
-    <p class="text-muted fs-12 mb-0">All user registrations have been verified and approved.</p>
+  <!-- SMART EMPTY STATE FOR PENDING MODE -->
+  <div *ngIf="filtered.length === 0 && viewMode === 'pending'" class="text-center py-5">
+    <div class="d-inline-flex align-items-center justify-content-center bg-emerald-subtle rounded-circle p-3 mb-3" style="width: 64px; height: 64px; background: #dcfce7;">
+      <i class="fas fa-user-check text-emerald fs-2"></i>
+    </div>
+    <h5 class="fw-700 text-dark mb-1">No Pending Registration Approvals</h5>
+    <p class="text-muted fs-12 mb-3 max-w-500 mx-auto">
+      All user account registrations are currently active and verified. New online signups awaiting initial activation will appear here.
+    </p>
+    <div class="d-flex align-items-center justify-content-center flex-wrap gap-2">
+      <button class="btn btn-emerald btn-xs px-3" (click)="setMode('all')">
+        <i class="fas fa-users me-1"></i> View All Registered Users ({{ totalUsersCount }})
+      </button>
+      <a routerLink="/admin/enrollments" [queryParams]="{tab: 'associate'}" class="btn btn-outline-secondary btn-xs px-3">
+        <i class="fas fa-id-card text-gold me-1"></i> View Associate Enrollments
+      </a>
+      <a routerLink="/admin/enrollments" [queryParams]="{tab: 'customer'}" class="btn btn-outline-secondary btn-xs px-3">
+        <i class="fas fa-users text-primary me-1"></i> View Customer Enrollments
+      </a>
+    </div>
   </div>
 
+  <!-- EMPTY STATE FOR ALL USERS MODE -->
+  <div *ngIf="filtered.length === 0 && viewMode === 'all'" class="text-center py-5">
+    <i class="fas fa-search text-muted fs-1 mb-2"></i>
+    <h6 class="fw-700 text-dark mb-1">No Users Found</h6>
+    <p class="text-muted fs-12 mb-0">No user matching the selected filter or search criteria.</p>
+  </div>
+
+  <!-- TABLE -->
   <app-admin-table-container
     *ngIf="filtered.length > 0"
-    title="Registration Approvals"
+    [title]="viewMode === 'pending' ? 'Pending Approvals' : 'Registered Users & KYC Directory'"
     [count]="filtered.length"
     (export)="exportData('all', 'excel')">
     <div class="table-responsive">
@@ -123,7 +178,8 @@
             <th>Type</th>
             <th>Sponsor</th>
             <th>Registered</th>
-            <th>Status</th>
+            <th>Account Status</th>
+            <th>Enrollment / KYC</th>
             <th class="text-end">Actions</th>
           </tr>
         </thead>
@@ -132,7 +188,7 @@
             <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
             <td>
               <div class="d-flex align-items-center gap-2.5">
-                <div class="user-avatar-circle" [class.bg-blue]="u.user_type==='Customer'" [class.bg-gold]="u.user_type==='Associate'">
+                <div class="user-avatar-circle" [class.bg-blue]="u.user_type==='Customer'" [class.bg-gold]="u.user_type==='Associate'" [class.bg-emerald]="u.user_type==='Investor'">
                   {{ getInitials(u.full_name) }}
                 </div>
                 <div>
@@ -143,11 +199,17 @@
             </td>
             <td>
               <div class="fw-700 text-dark fs-12"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ u.mobile_no }}</div>
-              <div class="fs-10 text-muted" *ngIf="u.member_id">ID: {{ u.member_id }}</div>
+              <div class="fs-10 text-muted" *ngIf="u.member_id"><span class="badge bg-light text-dark border">ID: {{ u.member_id }}</span></div>
             </td>
             <td>
-              <span class="badge" [class.bg-primary-subtle]="u.user_type==='Customer'" [class.text-primary]="u.user_type==='Customer'" [class.bg-warning-subtle]="u.user_type==='Associate'" [class.text-warning-emphasis]="u.user_type==='Associate'">
-                <i [class]="u.user_type==='Customer' ? 'fas fa-user me-1' : 'fas fa-user-tie me-1'"></i>{{ u.user_type }}
+              <span class="badge" 
+                [class.bg-primary-subtle]="u.user_type==='Customer'" 
+                [class.text-primary]="u.user_type==='Customer'" 
+                [class.bg-warning-subtle]="u.user_type==='Associate'" 
+                [class.text-warning-emphasis]="u.user_type==='Associate'"
+                [class.bg-success-subtle]="u.user_type==='Investor'" 
+                [class.text-success]="u.user_type==='Investor'">
+                <i [class]="u.user_type==='Customer' ? 'fas fa-user me-1' : (u.user_type==='Investor' ? 'fas fa-piggy-bank me-1' : 'fas fa-user-tie me-1')"></i>{{ u.user_type }}
               </span>
             </td>
             <td>
@@ -164,8 +226,15 @@
                 [class.sbadge-yellow]="u.account_status==='Pending'"
                 [class.sbadge-blue]="u.account_status==='InfoRequested'"
                 [class.sbadge-green]="u.account_status==='Active'"
-                [class.sbadge-red]="u.account_status==='Rejected'">
-                {{ u.account_status }}
+                [class.sbadge-red]="u.account_status==='Rejected' || u.account_status==='Suspended'">
+                {{ u.account_status || 'Pending' }}
+              </span>
+            </td>
+            <td>
+              <span class="sbadge"
+                [class.sbadge-green]="u.enrollment_status==='Completed' || u.enrollment_status==='Submitted'"
+                [class.sbadge-yellow]="u.enrollment_status==='Pending' || !u.enrollment_status">
+                <i class="fas fa-file-alt me-1"></i>{{ u.enrollment_status || 'Pending' }}
               </span>
             </td>
             <td class="text-end">
@@ -238,7 +307,7 @@
           <p class="text-muted fs-12 mt-2 mb-0">Loading complete user details &amp; documents...</p>
         </div>
 
-        <ng-container *ngIf="!detailLoading &amp;&amp; selectedUser">
+        <ng-container *ngIf="!detailLoading && selectedUser">
           
           <!-- SUMMARY ROW -->
           <div class="row g-3 mb-3">
@@ -246,20 +315,21 @@
               <div class="p-3 bg-light rounded-10 border">
                 <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-id-card text-primary me-2"></i>Personal Details</h6>
                 <div class="fs-12 mb-1"><strong>Name:</strong> {{ selectedUser.full_name }}</div>
+                <div class="fs-12 mb-1"><strong>Member ID:</strong> {{ selectedUser.member_id || '—' }}</div>
                 <div class="fs-12 mb-1"><strong>Mobile:</strong> {{ selectedUser.mobile_no }}</div>
                 <div class="fs-12 mb-1"><strong>Email:</strong> {{ selectedUser.email || '—' }}</div>
                 <div class="fs-12 mb-1"><strong>Role:</strong> {{ selectedUser.user_type }}</div>
-                <div class="fs-12"><strong>Status:</strong> <span class="badge bg-warning text-dark">{{ selectedUser.account_status }}</span></div>
+                <div class="fs-12"><strong>Status:</strong> <span class="badge" [class.bg-success]="selectedUser.account_status==='Active'" [class.bg-warning]="selectedUser.account_status==='Pending'">{{ selectedUser.account_status }}</span></div>
               </div>
             </div>
 
             <div class="col-md-6">
               <div class="p-3 bg-light rounded-10 border">
                 <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-map-marker-alt text-emerald me-2"></i>Address Info</h6>
-                <div class="fs-12 mb-1"><strong>Line 1:</strong> {{ selectedUser.address?.address_line1 || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>City:</strong> {{ selectedUser.address?.city || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>State:</strong> {{ selectedUser.address?.state || '—' }}</div>
-                <div class="fs-12"><strong>Pincode:</strong> {{ selectedUser.address?.pin_code || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>Line 1:</strong> {{ selectedUser.address?.address_line1 || selectedUser.address || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>City:</strong> {{ selectedUser.address?.city || selectedUser.city || '—' }}</div>
+                <div class="fs-12 mb-1"><strong>State:</strong> {{ selectedUser.address?.state || selectedUser.state || '—' }}</div>
+                <div class="fs-12"><strong>Pincode:</strong> {{ selectedUser.address?.pin_code || selectedUser.pin_code || '—' }}</div>
               </div>
             </div>
           </div>
@@ -290,9 +360,9 @@
           <div class="p-3 bg-light rounded-10 border">
             <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-file-alt text-primary me-2"></i>Uploaded KYC Documents</h6>
             <div *ngIf="!selectedUser.documents || selectedUser.documents.length === 0" class="text-muted fs-12">
-              No KYC document files attached yet.
+              No standalone KYC document files attached yet. Full submission forms available in Enrollment Management.
             </div>
-            <div class="d-flex flex-wrap gap-2" *ngIf="selectedUser.documents &amp;&amp; selectedUser.documents.length > 0">
+            <div class="d-flex flex-wrap gap-2" *ngIf="selectedUser.documents && selectedUser.documents.length > 0">
               <a *ngFor="let doc of selectedUser.documents" [href]="doc.document_path" target="_blank" class="btn btn-outline-primary btn-xs">
                 <i class="fas fa-file-pdf me-1"></i> {{ doc.document_type }}
               </a>
@@ -378,4 +448,3 @@
     </div>
   </div>
 </div>
-
