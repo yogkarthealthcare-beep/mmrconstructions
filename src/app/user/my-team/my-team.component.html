@@ -526,103 +526,189 @@
 <!-- MODAL 1: ADD NEW CUSTOMER (WITH LOCKED SPONSOR ID & SUCCESS STATE)        -->
 <!-- ═════════════════════════════════════════════════════════════════════════ -->
 <div class="modal-backdrop-custom" *ngIf="showAddCustomerModal" (click)="closeAddCustomerModal()">
-  <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+  <div class="add-customer-modal-dialog" (click)="$event.stopPropagation()">
     
-    <!-- MODAL HEADER -->
-    <div class="modal-header-custom d-flex align-items-center justify-content-between">
-      <div class="d-flex align-items-center gap-2">
-        <div class="modal-icon-badge bg-gold text-dark"><i class="fas fa-user-plus"></i></div>
+    <!-- FIXED HEADER -->
+    <div class="add-cust-header d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2.5">
+        <div class="add-cust-icon-badge">
+          <i class="fas fa-user-plus"></i>
+        </div>
         <div>
-          <h5 class="mb-0 fw-700 text-dark">Register New Customer</h5>
-          <span class="fs-12 text-muted">Create customer account directly linked to your Associate sponsorship</span>
+          <h5 class="add-cust-title mb-0.5">Add New Customer</h5>
+          <p class="add-cust-sub mb-0">Create a customer account directly under your Associate sponsorship.</p>
         </div>
       </div>
-      <button type="button" class="btn-close-modal" (click)="closeAddCustomerModal()" aria-label="Close">
+      <button type="button" class="add-cust-close-btn" (click)="closeAddCustomerModal()" aria-label="Close">
         <i class="fas fa-times"></i>
       </button>
     </div>
 
-    <!-- MODAL BODY: FORM STATE (BEFORE SUBMIT) -->
-    <div class="modal-body-custom" *ngIf="!addCustomerSuccess">
-      <div class="sponsor-auto-lock-alert mb-3">
-        <div class="d-flex align-items-center gap-2">
-          <i class="fas fa-lock text-warning fs-5"></i>
-          <div>
-            <div class="fw-700 fs-13 text-dark">Sponsor / Introducer: Automatically Assigned &amp; Locked</div>
-            <div class="fs-12 text-muted">This customer will be officially created under your direct team hierarchy.</div>
+    <!-- SCROLLABLE BODY (FORM STATE) -->
+    <div class="add-cust-body" *ngIf="!addCustomerSuccess">
+      
+      <!-- SPONSOR INFORMATION COMPACT CARD -->
+      <div class="sponsor-compact-card mb-3">
+        <div class="d-flex align-items-start gap-2.5">
+          <div class="sponsor-lock-icon">
+            <i class="fas fa-lock text-gold"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-1 mb-1">
+              <span class="sponsor-card-label">SPONSOR / INTRODUCER</span>
+              <span class="sponsor-auto-badge"><i class="fas fa-check-circle me-1"></i> Automatically Assigned</span>
+            </div>
+            <div class="sponsor-value-pill">
+              <i class="fas fa-id-badge text-gold me-1.5"></i>
+              <span>{{ (currentUser?.member_id || ('ASSOC' + currentUser?.user_id)) + ' — ' + (currentUser?.full_name || 'Logged-in Associate') }}</span>
+            </div>
+            <div class="sponsor-helper-row d-flex align-items-center justify-content-between flex-wrap gap-1 mt-1.5">
+              <span class="sponsor-note">This customer will be linked to your direct team hierarchy.</span>
+              <span class="sponsor-sec-text"><i class="fas fa-shield-alt text-success me-1"></i> Sponsor is cryptographically enforced on backend to prevent misallocation.</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="alert alert-danger py-2 px-3 fs-13 mb-3" *ngIf="addCustomerError">
-        <i class="fas fa-exclamation-circle me-1"></i> {{ addCustomerError }}
+      <!-- ERROR ALERT -->
+      <div class="alert alert-danger py-2 px-3 fs-13 mb-3 d-flex align-items-center justify-content-between" *ngIf="addCustomerError">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fas fa-exclamation-circle text-danger"></i>
+          <span>{{ addCustomerError }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="addCustomerError = ''" style="font-size: 10px;"></button>
       </div>
 
       <form (ngSubmit)="submitAddCustomer()">
-        <!-- Locked Sponsor Field -->
-        <div class="mb-3">
-          <label class="form-label fs-12 fw-700 text-uppercase text-muted">Introducer / Sponsor ID (Read-Only)</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light text-muted"><i class="fas fa-lock text-warning"></i></span>
-            <input type="text" class="form-control bg-light fw-700 text-dark" [value]="(currentUser?.member_id || ('ASSOC' + currentUser?.user_id)) + ' — ' + (currentUser?.full_name || 'Logged-in Associate')" readonly disabled />
+        
+        <!-- SECTION 1: CUSTOMER INFORMATION -->
+        <div class="form-section-block mb-3">
+          <div class="section-title-wrap mb-2.5">
+            <h6 class="form-section-heading mb-0.5"><i class="fas fa-user-circle text-emerald me-1.5"></i> CUSTOMER INFORMATION</h6>
+            <p class="form-section-sub mb-0">Enter the customer's basic profile details.</p>
           </div>
-          <div class="form-text fs-11 text-muted"><i class="fas fa-shield-alt text-success me-1"></i>Sponsor is cryptographically enforced on backend to prevent misallocation.</div>
-        </div>
 
-        <!-- Customer Full Name -->
-        <div class="mb-3">
-          <label class="form-label fs-12 fw-700 text-uppercase text-dark">Customer Full Name <span class="text-danger">*</span></label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="fas fa-user text-muted"></i></span>
-            <input type="text" class="form-control" placeholder="e.g. Rahul Kumar" [(ngModel)]="newCustomer.full_name" name="cust_name" required />
-          </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-          <!-- Mobile Number -->
-          <div class="col-12 col-md-6">
-            <label class="form-label fs-12 fw-700 text-uppercase text-dark">Mobile Number <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text">+91</span>
-              <input type="tel" class="form-control" placeholder="10-digit mobile" maxlength="10" [(ngModel)]="newCustomer.mobile_no" name="cust_mobile" required />
+          <!-- Customer Full Name -->
+          <div class="form-field-group mb-2.5">
+            <label for="cust_full_name" class="field-label">Customer Full Name <span class="text-danger">*</span></label>
+            <div class="modern-input-group">
+              <span class="ig-icon"><i class="fas fa-user"></i></span>
+              <input
+                type="text"
+                id="cust_full_name"
+                class="modern-input"
+                placeholder="e.g. Rahul Kumar"
+                [(ngModel)]="newCustomer.full_name"
+                name="cust_name"
+                required
+              />
             </div>
           </div>
 
-          <!-- Email Address -->
-          <div class="col-12 col-md-6">
-            <label class="form-label fs-12 fw-700 text-uppercase text-dark">Email Address <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="fas fa-envelope text-muted"></i></span>
-              <input type="email" class="form-control" placeholder="customer@example.com" [(ngModel)]="newCustomer.email" name="cust_email" required />
+          <!-- 2-Column: Mobile + Email -->
+          <div class="row g-2.5">
+            <!-- Mobile Number -->
+            <div class="col-12 col-md-6">
+              <div class="form-field-group">
+                <label for="cust_mobile_no" class="field-label">Mobile Number <span class="text-danger">*</span></label>
+                <div class="modern-input-group">
+                  <span class="ig-icon font-monospace fw-700 text-dark">+91</span>
+                  <input
+                    type="tel"
+                    id="cust_mobile_no"
+                    class="modern-input font-monospace"
+                    placeholder="10-digit mobile"
+                    maxlength="10"
+                    [(ngModel)]="newCustomer.mobile_no"
+                    name="cust_mobile"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Email Address -->
+            <div class="col-12 col-md-6">
+              <div class="form-field-group">
+                <label for="cust_email_addr" class="field-label">Email Address <span class="text-danger">*</span></label>
+                <div class="modern-input-group">
+                  <span class="ig-icon"><i class="fas fa-envelope"></i></span>
+                  <input
+                    type="email"
+                    id="cust_email_addr"
+                    class="modern-input"
+                    placeholder="customer@example.com"
+                    [(ngModel)]="newCustomer.email"
+                    name="cust_email"
+                    required
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Password -->
-        <div class="mb-4">
-          <label class="form-label fs-12 fw-700 text-uppercase text-dark">Account Password <span class="text-danger">*</span></label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="fas fa-key text-muted"></i></span>
-            <input type="password" class="form-control" placeholder="Create customer login password" [(ngModel)]="newCustomer.password" name="cust_pwd" required />
+        <!-- SECTION 2: ACCOUNT INFORMATION -->
+        <div class="form-section-block mb-3">
+          <div class="section-title-wrap mb-2.5">
+            <h6 class="form-section-heading mb-0.5"><i class="fas fa-shield-alt text-emerald me-1.5"></i> ACCOUNT INFORMATION</h6>
+            <p class="form-section-sub mb-0">Login credentials for the Customer Portal.</p>
           </div>
-          <div class="form-text fs-11 text-muted">The customer can use this password to log into their dedicated Customer Portal.</div>
+
+          <!-- Account Password with Toggle -->
+          <div class="form-field-group mb-1.5">
+            <label for="cust_account_pwd" class="field-label">Account Password <span class="text-danger">*</span></label>
+            <div class="modern-input-group">
+              <span class="ig-icon"><i class="fas fa-key"></i></span>
+              <input
+                [type]="showCustomerPassword ? 'text' : 'password'"
+                id="cust_account_pwd"
+                class="modern-input"
+                placeholder="Create customer login password"
+                [(ngModel)]="newCustomer.password"
+                name="cust_pwd"
+                required
+              />
+              <button
+                type="button"
+                class="ig-addon-btn"
+                (click)="showCustomerPassword = !showCustomerPassword"
+                [title]="showCustomerPassword ? 'Hide password' : 'Show password'"
+                tabindex="-1"
+              >
+                <i class="fas" [class.fa-eye]="!showCustomerPassword" [class.fa-eye-slash]="showCustomerPassword"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-text fs-11 text-muted">
+            <i class="fas fa-info-circle text-gold me-1"></i> Customer can use this password to log into their dedicated Customer Portal.
+          </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="d-flex align-items-center justify-content-end gap-2 pt-2 border-top">
-          <button type="button" class="btn btn-outline-secondary btn-sm px-3" (click)="closeAddCustomerModal()" [disabled]="addCustomerSubmitting">
-            Cancel
-          </button>
-          <button type="submit" class="btn btn-gold btn-sm fw-700 px-4" [disabled]="addCustomerSubmitting">
-            <span *ngIf="!addCustomerSubmitting"><i class="fas fa-check me-1.5"></i> Create Customer Account</span>
-            <span *ngIf="addCustomerSubmitting"><i class="fas fa-spinner fa-spin me-1.5"></i> Creating Account...</span>
-          </button>
-        </div>
+        <!-- HIDDEN SUBMIT BUTTON TO ALLOW ENTER KEY -->
+        <button type="submit" style="display: none;"></button>
       </form>
     </div>
 
-    <!-- MODAL BODY: SUCCESS STATE (DOES NOT CLOSE OR REDIRECT!) -->
-    <div class="modal-body-custom text-center py-4" *ngIf="addCustomerSuccess">
+    <!-- FIXED STICKY ACTION FOOTER (FORM STATE) -->
+    <div class="add-cust-footer d-flex align-items-center justify-content-between" *ngIf="!addCustomerSuccess">
+      <button type="button" class="btn-cancel-ghost" (click)="closeAddCustomerModal()" [disabled]="addCustomerSubmitting">
+        Cancel
+      </button>
+      <button type="button" class="btn-create-cust" (click)="submitAddCustomer()" [disabled]="addCustomerSubmitting">
+        <span class="d-flex align-items-center gap-2" *ngIf="!addCustomerSubmitting">
+          <i class="fas fa-check-circle"></i>
+          <span>Create Customer Account</span>
+        </span>
+        <span class="d-flex align-items-center gap-2" *ngIf="addCustomerSubmitting">
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>Creating Customer Account...</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- SCROLLABLE BODY (SUCCESS STATE) -->
+    <div class="add-cust-body text-center py-4" *ngIf="addCustomerSuccess">
       <div class="success-check-badge mx-auto mb-3">
         <i class="fas fa-check text-white fs-2"></i>
       </div>

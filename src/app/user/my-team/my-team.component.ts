@@ -64,6 +64,7 @@ export class MyTeamComponent implements OnInit {
 
   // ── Modal 1: Add New Customer State ──
   showAddCustomerModal = false;
+  showCustomerPassword = false;
   addCustomerSubmitting = false;
   addCustomerSuccess = false;
   addCustomerError = '';
@@ -474,6 +475,7 @@ export class MyTeamComponent implements OnInit {
     this.addCustomerError = '';
     this.addCustomerSuccess = false;
     this.createdCustomerData = null;
+    this.showCustomerPassword = false;
     this.showAddCustomerModal = true;
   }
 
