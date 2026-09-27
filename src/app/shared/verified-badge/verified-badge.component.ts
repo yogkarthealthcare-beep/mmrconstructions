@@ -87,24 +87,55 @@ export class VerifiedBadgeComponent {
     if (!this.user) return false;
     const u = this.user;
 
-    // 1. Direct verified flags
-    if (u.is_verified === true || u.isVerified === true || u.is_verified === 1 || u.isVerified === 1) {
+    // 1. Direct verified flags (boolean, number 1, or string 'true'/'1')
+    if (
+      u.is_verified === true ||
+      u.isVerified === true ||
+      u.is_verified === 1 ||
+      u.isVerified === 1 ||
+      String(u.is_verified).toLowerCase() === 'true' ||
+      String(u.isVerified).toLowerCase() === 'true'
+    ) {
       return true;
     }
 
     // 2. Enrollment Status checks (Customer, Associate, Investor)
-    const status = String(u.enrollment_status || u.enrollmentStatus || u.enrollment_form_status || u.app_status || u.appStatus || '').toLowerCase().trim();
+    const status = String(
+      u.enrollment_status ||
+      u.enrollmentStatus ||
+      u.enrollment_form_status ||
+      u.app_status ||
+      u.appStatus ||
+      ''
+    ).toLowerCase().trim();
     if (status === 'completed' || status === 'submitted' || status === 'approved') {
       return true;
     }
 
     // 3. Enrolled boolean flags
-    if (u.is_enrolled === true || u.isEnrolled === true || u.enrollment_completed === true || u.enrollment_form_submitted === true) {
+    if (
+      u.is_enrolled === true ||
+      u.isEnrolled === true ||
+      u.enrollment_completed === true ||
+      u.enrollment_form_submitted === true ||
+      String(u.is_enrolled).toLowerCase() === 'true'
+    ) {
       return true;
     }
 
     // 4. Presence of enrollment record ID
     if (u.customer_enrollment_id || u.associate_enrollment_id || u.investor_enrollment_id || u.enrollment_id) {
+      return true;
+    }
+
+    // 5. Account status check (Active accounts are verified members)
+    const accStatus = String(u.account_status || u.accountStatus || u.status || '').toLowerCase().trim();
+    if (accStatus === 'active' || accStatus === 'approved') {
+      return true;
+    }
+
+    // 6. Direct KYC / OTP / Email verification
+    if (u.is_active === true || u.is_otp_verified === true || u.email_verified === true) {
       return true;
     }
 
