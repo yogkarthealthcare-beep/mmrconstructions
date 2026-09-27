@@ -185,10 +185,13 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
               <!-- 2. BANK ACCOUNT INFORMATION -->
               <div class="form-section mb-4">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                  <h6 class="fw-800 text-dark fs-14 mb-0 d-flex align-items-center gap-2">
-                    <i class="fas fa-university text-emerald"></i> Bank Account Information
-                  </h6>
-                  <span class="fs-11 text-muted fw-600">IMPS / NEFT Settlement</span>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="section-icon-badge">
+                      <i class="fas fa-university"></i>
+                    </div>
+                    <h6 class="section-heading mb-0">Bank Account Information</h6>
+                  </div>
+                  <span class="badge bg-light text-muted border fs-11 px-2.5 py-1">IMPS / NEFT Settlement</span>
                 </div>
 
                 <!-- 2-Column Grid for Desktop -->
@@ -199,15 +202,14 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
                       <label for="bank_account_holder_name" class="custom-label">
                         Account Holder Name <span class="text-danger">*</span>
                       </label>
-                      <div class="input-with-icon">
-                        <i class="fas fa-user input-icon"></i>
+                      <div class="modern-input-group" [class.is-invalid]="submitted && withdrawForm.get('bank_account_holder_name')?.invalid">
+                        <span class="ig-icon"><i class="fas fa-user"></i></span>
                         <input
                           type="text"
                           id="bank_account_holder_name"
                           formControlName="bank_account_holder_name"
-                          class="form-control modern-input"
+                          class="modern-input"
                           placeholder="As in bank records"
-                          [class.is-invalid]="submitted && withdrawForm.get('bank_account_holder_name')?.invalid"
                         />
                       </div>
                       <div class="invalid-feedback d-block mt-1 fs-11" *ngIf="submitted && withdrawForm.get('bank_account_holder_name')?.invalid">
@@ -222,15 +224,14 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
                       <label for="bank_account_number" class="custom-label">
                         Bank Account Number <span class="text-danger">*</span>
                       </label>
-                      <div class="input-with-icon">
-                        <i class="fas fa-hashtag input-icon"></i>
+                      <div class="modern-input-group" [class.is-invalid]="submitted && withdrawForm.get('bank_account_number')?.invalid">
+                        <span class="ig-icon"><i class="fas fa-hashtag"></i></span>
                         <input
                           type="text"
                           id="bank_account_number"
                           formControlName="bank_account_number"
-                          class="form-control modern-input font-monospace"
+                          class="modern-input font-monospace"
                           placeholder="Enter bank account number"
-                          [class.is-invalid]="submitted && withdrawForm.get('bank_account_number')?.invalid"
                         />
                       </div>
                       <div class="invalid-feedback d-block mt-1 fs-11" *ngIf="submitted && withdrawForm.get('bank_account_number')?.invalid">
@@ -245,15 +246,14 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
                       <label for="bank_name" class="custom-label">
                         Bank Name <span class="text-danger">*</span>
                       </label>
-                      <div class="input-with-icon">
-                        <i class="fas fa-building-columns input-icon"></i>
+                      <div class="modern-input-group" [class.is-invalid]="submitted && withdrawForm.get('bank_name')?.invalid">
+                        <span class="ig-icon"><i class="fas fa-building"></i></span>
                         <input
                           type="text"
                           id="bank_name"
                           formControlName="bank_name"
-                          class="form-control modern-input"
+                          class="modern-input"
                           placeholder="e.g. State Bank of India, HDFC"
-                          [class.is-invalid]="submitted && withdrawForm.get('bank_name')?.invalid"
                         />
                       </div>
                       <div class="invalid-feedback d-block mt-1 fs-11" *ngIf="submitted && withdrawForm.get('bank_name')?.invalid">
@@ -268,16 +268,15 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
                       <label for="ifsc_code" class="custom-label">
                         IFSC Code <span class="text-danger">*</span>
                       </label>
-                      <div class="input-with-icon">
-                        <i class="fas fa-barcode input-icon"></i>
+                      <div class="modern-input-group" [class.is-invalid]="submitted && withdrawForm.get('ifsc_code')?.invalid">
+                        <span class="ig-icon"><i class="fas fa-barcode"></i></span>
                         <input
                           type="text"
                           id="ifsc_code"
                           formControlName="ifsc_code"
-                          class="form-control modern-input text-uppercase font-monospace"
+                          class="modern-input text-uppercase font-monospace"
                           placeholder="e.g. SBIN0001234"
                           maxlength="11"
-                          [class.is-invalid]="submitted && withdrawForm.get('ifsc_code')?.invalid"
                         />
                       </div>
                       <div class="invalid-feedback d-block mt-1 fs-11" *ngIf="submitted && withdrawForm.get('ifsc_code')?.invalid">
@@ -293,10 +292,13 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
               <!-- 3. OPTIONAL UPI & REMARKS -->
               <div class="form-section mb-4">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                  <h6 class="fw-800 text-dark fs-14 mb-0 d-flex align-items-center gap-2">
-                    <i class="fas fa-mobile-alt text-emerald"></i> Optional UPI &amp; Remarks
-                  </h6>
-                  <span class="badge bg-light text-muted border fs-11">Optional</span>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="section-icon-badge">
+                      <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h6 class="section-heading mb-0">Optional UPI &amp; Remarks</h6>
+                  </div>
+                  <span class="badge bg-light text-muted border fs-11 px-2.5 py-1">Optional</span>
                 </div>
 
                 <div class="row g-3">
@@ -304,15 +306,14 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
                   <div class="col-md-6">
                     <div class="form-group">
                       <label for="upi_id" class="custom-label">UPI ID (Optional)</label>
-                      <div class="input-with-icon">
-                        <i class="fas fa-at input-icon"></i>
+                      <div class="modern-input-group" [class.is-invalid]="submitted && withdrawForm.get('upi_id')?.invalid">
+                        <span class="ig-icon"><i class="fas fa-at"></i></span>
                         <input
                           type="text"
                           id="upi_id"
                           formControlName="upi_id"
-                          class="form-control modern-input"
+                          class="modern-input"
                           placeholder="e.g. mobile@upi / name@okhdfcbank"
-                          [class.is-invalid]="submitted && withdrawForm.get('upi_id')?.invalid"
                         />
                       </div>
                       <div class="invalid-feedback d-block mt-1 fs-11" *ngIf="submitted && withdrawForm.get('upi_id')?.invalid">
@@ -325,13 +326,13 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
                   <div class="col-md-6">
                     <div class="form-group">
                       <label for="remarks" class="custom-label">Remarks (Optional)</label>
-                      <div class="input-with-icon">
-                        <i class="fas fa-comment-dots input-icon"></i>
+                      <div class="modern-input-group">
+                        <span class="ig-icon"><i class="fas fa-comment-dots"></i></span>
                         <input
                           type="text"
                           id="remarks"
                           formControlName="remarks"
-                          class="form-control modern-input"
+                          class="modern-input"
                           placeholder="Notes or transaction reference"
                         />
                       </div>
@@ -792,7 +793,29 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
       color: #92400e;
     }
 
-    /* Form Fields */
+    /* Section Headings */
+    .section-heading {
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+    }
+
+    .section-icon-badge {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: #ecfdf5;
+      color: #047857;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    /* Form Fields & Modern Input Group (Zero Overlap) */
     .custom-label {
       font-size: 12.5px;
       font-weight: 700;
@@ -801,46 +824,70 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
       display: block;
     }
 
-    .input-with-icon {
+    .modern-input-group {
       position: relative;
       display: flex;
-      align-items: center;
-    }
-
-    .input-icon {
-      position: absolute;
-      left: 14px;
-      color: #94a3b8;
-      font-size: 13px;
-      pointer-events: none;
-      transition: color 0.2s ease;
-    }
-
-    .modern-input {
-      padding: 10px 14px 10px 38px;
-      height: 44px;
-      border: 1.5px solid #e2e8f0;
+      align-items: stretch;
+      width: 100%;
       border-radius: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .modern-input-group .ig-icon {
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-right: none;
+      border-top-left-radius: 10px;
+      border-bottom-left-radius: 10px;
+      color: #64748b;
+      font-size: 13px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .modern-input-group .modern-input {
+      border: 1.5px solid #e2e8f0;
+      border-left: none;
+      border-top-right-radius: 10px;
+      border-bottom-right-radius: 10px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      height: 44px;
       font-size: 13.5px;
       font-weight: 600;
       color: #0f172a;
       background: #ffffff;
-      transition: all 0.2s ease;
+      padding: 10px 14px !important;
       width: 100%;
+      outline: none;
+      box-shadow: none;
+      transition: all 0.2s ease;
     }
 
-    .modern-input:focus {
+    .modern-input-group:focus-within .ig-icon {
+      border-color: #047857;
+      color: #047857;
+      background: #ecfdf5;
+    }
+
+    .modern-input-group:focus-within .modern-input {
       border-color: #047857;
       box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.12);
-      outline: none;
       background: #ffffff;
     }
 
-    .input-with-icon:focus-within .input-icon {
-      color: #047857;
+    .modern-input-group.is-invalid .ig-icon {
+      border-color: #ef4444;
+      color: #ef4444;
+      background: #fef2f2;
     }
 
-    .modern-input.is-invalid {
+    .modern-input-group.is-invalid .modern-input {
       border-color: #ef4444;
       background-color: #fff5f5;
     }
