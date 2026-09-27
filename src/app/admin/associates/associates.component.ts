@@ -1,6 +1,8 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { AdminExportService } from '../../services/admin-export.service';
@@ -216,12 +218,56 @@ export class AssociatesComponent implements OnInit {
       queryParams.search = this.search.trim();
     }
 
-    this.api.adminGetAssociates(queryParams).subscribe({
-      next: (res: any) => {
-        if (res.success && res.data) {
-          const list = res.data.users || res.data.associates || res.data.items || (Array.isArray(res.data) ? res.data : []);
-          this.associates = list;
-          this.total = res.data.total || res.data.totalRecords || list.length;
+    forkJoin({
+      associatesRes: this.api.adminGetAssociates(queryParams).pipe(catchError(() => of({ success: false, data: [] }))),
+      enrollmentsRes: this.api.adminGetAssociateEnrollments().pipe(catchError(() => of({ success: false, data: [] })))
+    }).subscribe({
+      next: ({ associatesRes, enrollmentsRes }: any) => {
+        if (associatesRes?.success && associatesRes.data) {
+          const list = associatesRes.data.users || associatesRes.data.associates || associatesRes.data.items || (Array.isArray(associatesRes.data) ? associatesRes.data : []);
+          
+          const enrollmentsList = (enrollmentsRes?.data && Array.isArray(enrollmentsRes.data)) ? enrollmentsRes.data : [];
+          const enrollMap = new Map<string, any>();
+          
+          enrollmentsList.forEach((e: any) => {
+            const isCompleted = String(e.enrollment_status || e.app_status || '').toLowerCase() === 'completed' ||
+                                String(e.enrollment_status || e.app_status || '').toLowerCase() === 'submitted' ||
+                                String(e.enrollment_status || e.app_status || '').toLowerCase() === 'approved' ||
+                                (e.associate_id && String(e.associate_id).startsWith('MMR-ASC'));
+            
+            if (isCompleted) {
+              if (e.user_id) enrollMap.set(String(e.user_id), e);
+              if (e.member_id) enrollMap.set(String(e.member_id).toUpperCase().trim(), e);
+              if (e.mobile_no || e.contact_1) {
+                const mob = String(e.mobile_no || e.contact_1).replace(/\D/g, '').slice(-10);
+                if (mob) enrollMap.set(mob, e);
+              }
+              if (e.email) enrollMap.set(String(e.email).toLowerCase().trim(), e);
+            }
+          });
+
+          this.associates = list.map((a: any) => {
+            const mob = a.mobile_no ? String(a.mobile_no).replace(/\D/g, '').slice(-10) : '';
+            const email = a.email ? String(a.email).toLowerCase().trim() : '';
+            const memId = a.member_id ? String(a.member_id).toUpperCase().trim() : '';
+            const uId = a.user_id ? String(a.user_id) : '';
+
+            const matchedEnroll = enrollMap.get(uId) || (memId ? enrollMap.get(memId) : null) || (mob ? enrollMap.get(mob) : null) || (email ? enrollMap.get(email) : null);
+            
+            const isEnrolled = a.is_verified === true ||
+                               Boolean(a.associate_enrollment_id) ||
+                               ['completed', 'submitted', 'approved'].includes(String(a.enrollment_status || '').toLowerCase()) ||
+                               Boolean(matchedEnroll);
+
+            return {
+              ...a,
+              enrollment_status: isEnrolled ? 'Completed' : (a.enrollment_status || 'Pending'),
+              is_verified: isEnrolled,
+              associate_enrollment_id: a.associate_enrollment_id || matchedEnroll?.associate_id || matchedEnroll?.id
+            };
+          });
+
+          this.total = associatesRes.data.total || associatesRes.data.totalRecords || list.length;
         } else {
           this.associates = [];
           this.total = 0;
@@ -376,7 +422,13 @@ export class AssociatesComponent implements OnInit {
     this.api.adminGetUser(a.user_id).subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
-          this.selectedAssociate = { ...this.selectedAssociate, ...res.data };
+          this.selectedAssociate = {
+            ...this.selectedAssociate,
+            ...res.data,
+            is_verified: a.is_verified,
+            enrollment_status: a.enrollment_status || res.data.enrollment_status,
+            associate_enrollment_id: a.associate_enrollment_id || res.data.associate_enrollment_id
+          };
         }
         this.detailLoading = false;
       },
