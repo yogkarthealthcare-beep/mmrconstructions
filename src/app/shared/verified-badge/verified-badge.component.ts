@@ -77,7 +77,7 @@ export class VerifiedBadgeComponent {
   @Input() user?: any;
   @Input() isVerified?: boolean;
   @Input() size: 'xs' | 'sm' | 'md' | 'lg' = 'sm';
-  @Input() tooltip: string = 'Verified User';
+  @Input() tooltip: string = 'Verified - Enrollment Form Completed';
   @Input() showLabel: boolean = false;
 
   get isUserVerified(): boolean {
@@ -87,19 +87,17 @@ export class VerifiedBadgeComponent {
     if (!this.user) return false;
     const u = this.user;
 
-    // 1. Direct verified flags (boolean, number 1, or string 'true'/'1')
+    // 1. Presence of enrollment record ID (Associate, Customer, Investor)
     if (
-      u.is_verified === true ||
-      u.isVerified === true ||
-      u.is_verified === 1 ||
-      u.isVerified === 1 ||
-      String(u.is_verified).toLowerCase() === 'true' ||
-      String(u.isVerified).toLowerCase() === 'true'
+      u.customer_enrollment_id ||
+      u.associate_enrollment_id ||
+      u.investor_enrollment_id ||
+      u.enrollment_id
     ) {
       return true;
     }
 
-    // 2. Enrollment Status checks (Customer, Associate, Investor)
+    // 2. Enrollment Status checks (Completed, Submitted, Approved)
     const status = String(
       u.enrollment_status ||
       u.enrollmentStatus ||
@@ -118,24 +116,21 @@ export class VerifiedBadgeComponent {
       u.isEnrolled === true ||
       u.enrollment_completed === true ||
       u.enrollment_form_submitted === true ||
+      u.has_enrollment === true ||
       String(u.is_enrolled).toLowerCase() === 'true'
     ) {
       return true;
     }
 
-    // 4. Presence of enrollment record ID
-    if (u.customer_enrollment_id || u.associate_enrollment_id || u.investor_enrollment_id || u.enrollment_id) {
-      return true;
-    }
-
-    // 5. Account status check (Active accounts are verified members)
-    const accStatus = String(u.account_status || u.accountStatus || u.status || '').toLowerCase().trim();
-    if (accStatus === 'active' || accStatus === 'approved') {
-      return true;
-    }
-
-    // 6. Direct KYC / OTP / Email verification
-    if (u.is_active === true || u.is_otp_verified === true || u.email_verified === true) {
+    // 4. Direct is_verified boolean/string flags
+    if (
+      u.is_verified === true ||
+      u.isVerified === true ||
+      u.is_verified === 1 ||
+      u.isVerified === 1 ||
+      String(u.is_verified).toLowerCase() === 'true' ||
+      String(u.isVerified).toLowerCase() === 'true'
+    ) {
       return true;
     }
 
