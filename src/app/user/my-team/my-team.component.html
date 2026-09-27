@@ -1,13 +1,22 @@
+<!-- TOAST NOTIFICATION -->
+<div class="toast-floating-banner" *ngIf="toastMessage" [class.toast-success]="toastType==='success'" [class.toast-error]="toastType==='error'" [class.toast-info]="toastType==='info'">
+  <div class="d-flex align-items-center gap-2">
+    <i class="fas" [class.fa-check-circle]="toastType==='success'" [class.fa-exclamation-circle]="toastType==='error'" [class.fa-info-circle]="toastType==='info'"></i>
+    <span class="fs-13 fw-600">{{ toastMessage }}</span>
+    <button type="button" class="btn-close btn-close-white ms-auto fs-11" (click)="toastMessage=''"></button>
+  </div>
+</div>
+
 <!-- LOADING STATE -->
 <div class="panel-loading" *ngIf="loading">
   <div class="spinner-border text-gold me-2" role="status"></div>
-  <span>Building your team network hierarchy...</span>
+  <span>Loading team network and property records...</span>
 </div>
 
 <!-- ERROR STATE -->
 <div class="panel-card p-4 text-center border-danger-subtle" *ngIf="!loading && errorMsg">
   <i class="fas fa-exclamation-triangle text-danger fs-1 mb-3"></i>
-  <h5 class="fw-700 text-dark mb-2">Unable to Load Network Tree</h5>
+  <h5 class="fw-700 text-dark mb-2">Unable to Load Network Details</h5>
   <p class="text-muted fs-14 mb-3">{{ errorMsg }}</p>
   <button class="btn btn-outline-green btn-sm" (click)="loadTeamData()">
     <i class="fas fa-sync-alt me-1"></i> Retry Loading
@@ -17,35 +26,41 @@
 <ng-container *ngIf="!loading && !errorMsg">
 
   <!-- TOP HEADER HERO BANNER -->
-  <div class="team-hero-card mb-2">
+  <div class="team-hero-card mb-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
       <div>
-        <div class="team-hero-badge"><i class="fas fa-sitemap me-1"></i>ASSOCIATE HIERARCHICAL NETWORK</div>
-        <h2 class="team-hero-title mb-1">My Team Hierarchy</h2>
-        <p class="team-hero-sub mb-0">Visualize your multi-tier associate downline and sales network.</p>
+        <div class="team-hero-badge"><i class="fas fa-users-cog me-1.5"></i>ASSOCIATE PORTAL · TEAM &amp; BOOKING SUITE</div>
+        <h2 class="team-hero-title mb-1">Team Members, Plot Bookings &amp; Invoices</h2>
+        <p class="team-hero-sub mb-0">Manage customer enrollments, initiate plot bookings, track part-wise payments, and view official invoices.</p>
       </div>
 
       <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+        <button class="btn btn-gold btn-sm fw-700 shadow-sm px-3" (click)="openAddCustomerModal()">
+          <i class="fas fa-user-plus me-1.5"></i> + Add New Customer
+        </button>
+        <button class="btn btn-navy-action btn-sm fw-700 shadow-sm px-3" (click)="openBookingModal()" *ngIf="teamMembers.length > 0">
+          <i class="fas fa-map-marked-alt me-1.5"></i> Book Plot for Member
+        </button>
         <button class="btn btn-copy-link btn-sm" (click)="copyLink()">
           <i [class]="copiedLink ? 'fas fa-check text-success me-1' : 'fas fa-copy me-1'"></i>
           {{ copiedLink ? 'Copied!' : 'Copy Invite Link' }}
         </button>
         <button class="btn btn-whatsapp-share btn-sm" (click)="shareWhatsapp()">
-          <i class="fab fa-whatsapp me-1"></i> Invite Associate
+          <i class="fab fa-whatsapp me-1"></i> Invite on WhatsApp
         </button>
       </div>
     </div>
   </div>
 
   <!-- SPONSOR DETAILS BANNER (Visible for Logged-In User) -->
-  <div class="sponsor-hero-bar panel-card p-3 mb-2" *ngIf="sponsorInfo">
+  <div class="sponsor-hero-bar panel-card p-3 mb-3" *ngIf="sponsorInfo">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
       <div class="d-flex align-items-center gap-2.5">
         <div class="avatar-sponsor bg-gold text-dark fw-700 px-2.5 py-1 rounded-8 fs-11">
-          <i class="fas fa-user-shield me-1"></i> SPONSOR
+          <i class="fas fa-user-shield me-1"></i> INTRODUCER / SPONSOR
         </div>
         <div>
-          <span class="fs-11 text-muted text-uppercase fw-600">Your Introducer / Sponsor:</span>
+          <span class="fs-11 text-muted text-uppercase fw-600">Your Senior Introducer / Sponsor:</span>
           <div class="fw-700 text-dark fs-13">{{ sponsorInfo.name }} <span class="badge bg-light text-dark border ms-1">ID: {{ sponsorInfo.id }}</span></div>
         </div>
       </div>
@@ -58,7 +73,7 @@
 
   <!-- METRICS SUMMARY CARDS -->
   <div class="row g-2 mb-3">
-    <!-- Box 1: Total Downline Members -->
+    <!-- Box 1: Total Team Members -->
     <div class="col-6 col-lg-3">
       <div class="dash-stat-card card-blue h-100">
         <div class="stat-top">
@@ -66,44 +81,44 @@
           <span class="stat-badge-tag tag-blue">Network</span>
         </div>
         <div class="stat-value text-primary">{{ totalTeamCount }}</div>
-        <div class="stat-label">Total Downline Members</div>
+        <div class="stat-label">Total Team Members</div>
         <div class="stat-footer text-primary d-flex align-items-center gap-1">
-          <i class="fas fa-sitemap me-1"></i>Full Hierarchy
+          <i class="fas fa-sitemap me-1"></i>Full Downline Team
         </div>
       </div>
     </div>
 
-    <!-- Box 2: Direct Team (Level 1) -->
+    <!-- Box 2: Direct Team Members -->
     <div class="col-6 col-lg-3">
       <div class="dash-stat-card card-emerald h-100">
         <div class="stat-top">
-          <div class="stat-icon-wrap icon-emerald"><i class="fas fa-user-plus"></i></div>
+          <div class="stat-icon-wrap icon-emerald"><i class="fas fa-user-check"></i></div>
           <span class="stat-badge-tag tag-emerald">Direct</span>
         </div>
         <div class="stat-value text-success">{{ directCount }}</div>
-        <div class="stat-label">Direct Team (Level 1)</div>
+        <div class="stat-label">Direct Sponsored Customers</div>
         <div class="stat-footer text-success d-flex align-items-center gap-1">
-          <i class="fas fa-check-circle me-1"></i>Direct Sponsors
+          <i class="fas fa-shield-alt me-1"></i>Direct Level-1
         </div>
       </div>
     </div>
 
-    <!-- Box 3: Total Network Sales -->
+    <!-- Box 3: Total Plots Booked -->
     <div class="col-6 col-lg-3">
       <div class="dash-stat-card card-gold h-100">
         <div class="stat-top">
-          <div class="stat-icon-wrap icon-gold"><i class="fas fa-chart-area"></i></div>
-          <span class="stat-badge-tag tag-gold">Volume</span>
+          <div class="stat-icon-wrap icon-gold"><i class="fas fa-map-marked-alt"></i></div>
+          <span class="stat-badge-tag tag-gold">Properties</span>
         </div>
-        <div class="stat-value text-gold-dark">{{ totalNetworkGaj | number }} <small class="fs-12">Gaj</small></div>
-        <div class="stat-label">Total Network Sales</div>
+        <div class="stat-value text-gold-dark">{{ totalBookedCount }} <small class="fs-12">Plots</small></div>
+        <div class="stat-label">Total Plots Booked</div>
         <div class="stat-footer text-warning d-flex align-items-center gap-1">
-          <i class="fas fa-layer-group me-1"></i>Cumulative Plot Area
+          <i class="fas fa-layer-group me-1"></i>Active Customer Bookings
         </div>
       </div>
     </div>
 
-    <!-- Box 4: Network Earnings -->
+    <!-- Box 4: Network Commission Earnings -->
     <div class="col-6 col-lg-3">
       <div class="dash-stat-card card-purple h-100">
         <div class="stat-top">
@@ -111,36 +126,42 @@
           <span class="stat-badge-tag tag-purple">Earnings</span>
         </div>
         <div class="stat-value text-purple">₹{{ totalNetworkEarnings | number }}</div>
-        <div class="stat-label">Network Earnings</div>
+        <div class="stat-label">Network Commission</div>
         <div class="stat-footer text-purple d-flex align-items-center gap-1">
-          <i class="fas fa-coins me-1"></i>Total Commission
+          <i class="fas fa-coins me-1"></i>Total Earned
         </div>
       </div>
     </div>
   </div>
 
   <!-- TOOLBAR CARD & VIEW CONTROLS -->
-  <div class="toolbar-card mb-2">
+  <div class="toolbar-card mb-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
       
       <!-- Left: Search & Filter -->
-      <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-width: 520px;">
+      <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-width: 650px;">
         <div class="search-input-wrap flex-fill">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" class="form-control form-control-sm search-field" placeholder="Search by Name, ID, or Mobile..." [(ngModel)]="searchTerm" />
+          <input type="text" class="form-control form-control-sm search-field" placeholder="Search by Name, Member ID, Mobile, Plot #, or Site..." [(ngModel)]="searchTerm" />
           <button type="button" class="btn-clear-search" *ngIf="searchTerm" (click)="clearSearch()" title="Clear search">
             <i class="fas fa-times-circle"></i>
           </button>
         </div>
 
-        <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 130px;">
+        <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 125px;">
           <option value="all">All Status</option>
           <option value="active">Active Only</option>
-          <option value="inactive">Inactive / Free</option>
+          <option value="pending">Pending</option>
+        </select>
+
+        <select class="form-select form-select-sm status-select" [(ngModel)]="bookingFilter" style="width: 135px;" *ngIf="viewMode!=='tree'">
+          <option value="all">All Bookings</option>
+          <option value="booked">With Bookings</option>
+          <option value="unbooked">Without Bookings</option>
         </select>
       </div>
 
-      <!-- Right: Compact Expand/Collapse & Small View Switcher -->
+      <!-- Right: View Switcher -->
       <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
         <button class="btn btn-outline-secondary btn-xs" (click)="expandAll()" *ngIf="viewMode==='tree'">
           <i class="fas fa-expand-alt me-1"></i> Expand All
@@ -149,12 +170,15 @@
           <i class="fas fa-compress-alt me-1"></i> Collapse All
         </button>
 
-        <div class="btn-group btn-group-xs">
-          <button class="btn btn-xs" [class.btn-gold]="viewMode==='tree'" [class.btn-outline-secondary]="viewMode!=='tree'" (click)="viewMode='tree'">
-            <i class="fas fa-project-diagram me-1"></i> Tree View
+        <div class="btn-group btn-group-sm custom-view-tabs">
+          <button class="btn btn-sm" [class.btn-gold]="viewMode==='cards'" [class.btn-outline-secondary]="viewMode!=='cards'" (click)="viewMode='cards'">
+            <i class="fas fa-id-card me-1.5"></i> Cards View
           </button>
-          <button class="btn btn-xs" [class.btn-gold]="viewMode==='list'" [class.btn-outline-secondary]="viewMode!=='list'" (click)="viewMode='list'">
-            <i class="fas fa-th-list me-1"></i> List View
+          <button class="btn btn-sm" [class.btn-gold]="viewMode==='list'" [class.btn-outline-secondary]="viewMode!=='list'" (click)="viewMode='list'">
+            <i class="fas fa-table-list me-1.5"></i> Table List
+          </button>
+          <button class="btn btn-sm" [class.btn-gold]="viewMode==='tree'" [class.btn-outline-secondary]="viewMode!=='tree'" (click)="viewMode='tree'">
+            <i class="fas fa-project-diagram me-1.5"></i> Network Tree
           </button>
         </div>
       </div>
@@ -162,27 +186,253 @@
   </div>
 
   <!-- EMPTY STATE WHEN ASSOCIATE HAS NO TEAM MEMBERS -->
-  <div class="panel-card p-5 text-center my-4" *ngIf="treeRoot && (!treeRoot.children || treeRoot.children.length === 0)">
+  <div class="panel-card p-5 text-center my-4" *ngIf="teamMembers.length === 0">
     <div class="empty-icon-box mx-auto mb-3">
       <i class="fas fa-users-slash text-gold fs-1"></i>
     </div>
-    <h4 class="fw-700 text-dark mb-2">No Team Members Found</h4>
+    <h4 class="fw-700 text-dark mb-2">No Team Members or Customers Found</h4>
     <p class="text-muted max-w-500 mx-auto fs-14 mb-4">
-      You haven't built your downline associate team yet. Share your referral link with new associates to earn 12-year multi-level commission rewards!
+      You haven't added any customers or downline team members yet. Click the button below to register your first customer, or share your referral link to build your team network!
     </p>
 
     <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
-      <button class="btn btn-green btn-xs" (click)="copyLink()">
+      <button class="btn btn-gold btn-sm fw-700 px-3" (click)="openAddCustomerModal()">
+        <i class="fas fa-user-plus me-1.5"></i> + Add New Customer
+      </button>
+      <button class="btn btn-green btn-sm" (click)="copyLink()">
         <i class="fas fa-copy me-1"></i> Copy Referral Link
       </button>
-      <button class="btn btn-whatsapp-share btn-xs" (click)="shareWhatsapp()">
+      <button class="btn btn-whatsapp-share btn-sm" (click)="shareWhatsapp()">
         <i class="fab fa-whatsapp me-1"></i> Share on WhatsApp
       </button>
     </div>
   </div>
 
-  <!-- VIEW 1: INTERACTIVE HIERARCHICAL TREE VIEW -->
-  <div class="tree-viewport-container mb-2" *ngIf="viewMode==='tree' && treeRoot && treeRoot.children && treeRoot.children.length > 0">
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- VIEW 1: PREMIUM TEAM MEMBER CARDS (GRID VIEW)                          -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="team-cards-grid mb-4" *ngIf="viewMode==='cards' && teamMembers.length > 0">
+    <div class="row g-3">
+      <div class="col-12 col-md-6 col-xl-4" *ngFor="let m of filteredTeamMembers">
+        <div class="team-member-pro-card h-100">
+          
+          <!-- Card Header -->
+          <div class="member-card-header">
+            <div class="d-flex align-items-center gap-2.5">
+              <div class="member-avatar">
+                {{ getNodeInitials(m.full_name) }}
+                <span class="online-indicator" [class.bg-success]="m.account_status==='Active'" [class.bg-warning]="m.account_status!=='Active'"></span>
+              </div>
+              <div style="min-width: 0;" class="flex-fill">
+                <div class="member-name d-flex align-items-center gap-1">
+                  <span class="text-truncate">{{ m.full_name }}</span>
+                  <app-verified-badge [user]="m" size="xs"></app-verified-badge>
+                </div>
+                <div class="member-sub-info d-flex align-items-center gap-2">
+                  <span class="id-tag"><i class="fas fa-id-badge me-1"></i>{{ m.member_id }}</span>
+                  <span class="role-pill">{{ m.user_type || 'Customer' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <span class="status-badge" [class.status-active]="m.account_status==='Active'" [class.status-pending]="m.account_status!=='Active'">
+              {{ m.account_status || 'Active' }}
+            </span>
+          </div>
+
+          <!-- Card Body: Contact & Sponsor -->
+          <div class="member-card-body">
+            <div class="contact-strip">
+              <div class="cs-item" *ngIf="m.mobile_no">
+                <i class="fas fa-phone-alt text-success"></i>
+                <a [href]="'tel:' + m.mobile_no" class="text-dark fw-600">{{ m.mobile_no }}</a>
+              </div>
+              <div class="cs-item text-truncate" *ngIf="m.email">
+                <i class="fas fa-envelope text-gold"></i>
+                <span class="text-muted text-truncate">{{ m.email }}</span>
+              </div>
+            </div>
+
+            <!-- Plot Booking Information Box -->
+            <div class="property-ledger-box" [class.has-booking]="m.booking_id || m.plot_number">
+              <div class="d-flex align-items-center justify-content-between mb-1.5">
+                <span class="ledger-label">
+                  <i class="fas fa-home me-1"></i>Property Booking:
+                </span>
+                <span class="booking-status-tag" *ngIf="m.booking_id || m.plot_number" [class.tag-confirmed]="m.booking_status==='Confirmed'" [class.tag-pending]="m.booking_status!=='Confirmed'">
+                  {{ m.booking_status === 'Confirmed' ? 'Approved' : (m.booking_status || 'Pending Approval') }}
+                </span>
+                <span class="booking-status-tag tag-none" *ngIf="!m.booking_id && !m.plot_number">
+                  Not Booked
+                </span>
+              </div>
+
+              <div *ngIf="m.booking_id || m.plot_number" class="booking-details-content">
+                <div class="plot-title-row d-flex align-items-center justify-content-between">
+                  <div class="fw-700 text-dark fs-13">
+                    <i class="fas fa-map-pin text-danger me-1"></i>Plot: <strong>{{ m.plot_number }}</strong>
+                    <span class="text-muted fs-11 ms-1">({{ m.plot_area }} Sq.Yd.)</span>
+                  </div>
+                  <span class="site-chip text-truncate" [title]="m.site_name">{{ m.site_name || 'MMR City' }}</span>
+                </div>
+
+                <!-- Financial Ledger for Part-Wise Payment -->
+                <div class="financial-summary-grid mt-2">
+                  <div class="fin-item">
+                    <div class="fin-lbl">Total Value</div>
+                    <div class="fin-val text-dark">₹{{ (m.total_plot_amount || m.base_price || 0) | number }}</div>
+                  </div>
+                  <div class="fin-item">
+                    <div class="fin-lbl">Total Paid</div>
+                    <div class="fin-val text-success">₹{{ (m.total_paid_amount || m.advance_amount || 0) | number }}</div>
+                  </div>
+                  <div class="fin-item">
+                    <div class="fin-lbl">Unpaid (0% Int.)</div>
+                    <div class="fin-val text-danger">₹{{ (m.total_unpaid_amount || 0) | number }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="!m.booking_id && !m.plot_number" class="py-2 text-center text-muted fs-12">
+                <span>No plot has been booked for this customer yet.</span>
+              </div>
+            </div>
+
+            <!-- Enrollment Status Indicator -->
+            <div class="enrollment-status-pill d-flex align-items-center justify-content-between py-1 px-2 mt-2">
+              <span class="fs-11 text-muted">
+                <i class="fas fa-file-signature me-1"></i>Enrollment Form:
+              </span>
+              <span class="badge" [class.bg-success-subtle]="m.has_enrollment" [class.text-success]="m.has_enrollment" [class.bg-warning-subtle]="!m.has_enrollment" [class.text-warning]="!m.has_enrollment">
+                {{ m.has_enrollment ? 'Completed' : 'Pending' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Card Actions Footer -->
+          <div class="member-card-footer d-flex align-items-center gap-1.5 flex-wrap">
+            <button class="btn btn-navy-action btn-xs flex-fill" (click)="openBookingModal(m)">
+              <i class="fas fa-map-marked-alt me-1"></i> Book Plot
+            </button>
+            <button class="btn btn-outline-gold btn-xs flex-fill" (click)="openInvoicesModal(m)">
+              <i class="fas fa-receipt me-1"></i> Invoices
+            </button>
+            <button class="btn btn-outline-secondary btn-xs" (click)="openDetailModal(m)" title="View Full Details">
+              <i class="fas fa-info-circle"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- VIEW 2: COMPACT LIST / TABLE VIEW                                     -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="panel-card mb-4 overflow-hidden position-relative shadow-sm" *ngIf="viewMode==='list'">
+    <div class="table-responsive">
+      <table class="table align-middle custom-team-table mb-0">
+        <thead>
+          <tr>
+            <th>Member ID</th>
+            <th>Customer / Associate</th>
+            <th>Sponsor ID</th>
+            <th>Plot / Property</th>
+            <th>Total Plot Value</th>
+            <th>Paid Amount</th>
+            <th>Unpaid Balance</th>
+            <th>Booking Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredTeamMembers.length === 0">
+            <td colspan="9" class="text-center py-4 text-muted">
+              No matching team members found for search criteria.
+            </td>
+          </tr>
+          <tr *ngFor="let m of filteredTeamMembers"
+              (mouseenter)="showListTooltip(m, $event)"
+              (mousemove)="showListTooltip(m, $event)"
+              (mouseleave)="hideListTooltip()">
+            <td>
+              <span class="member-code-badge"><i class="fas fa-id-badge me-1"></i>{{ m.member_id }}</span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="mini-avatar">{{ getNodeInitials(m.full_name) }}</div>
+                <div>
+                  <div class="fw-700 text-dark d-flex align-items-center gap-1">
+                    <span>{{ m.full_name }}</span>
+                    <app-verified-badge [user]="m" size="xs"></app-verified-badge>
+                  </div>
+                  <div class="fs-11 text-muted" *ngIf="m.mobile_no"><i class="fas fa-phone me-1"></i>{{ m.mobile_no }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="fs-12 text-muted">#{{ m.sponsor_user_id || currentUser?.user_id || '—' }}</span>
+            </td>
+            <td>
+              <div *ngIf="m.plot_number">
+                <strong class="text-dark">{{ m.plot_number }}</strong>
+                <div class="fs-11 text-muted text-truncate" style="max-width: 130px;">{{ m.site_name || 'MMR City' }}</div>
+              </div>
+              <span class="text-muted fs-11" *ngIf="!m.plot_number">— None —</span>
+            </td>
+            <td>
+              <span class="fw-700 text-dark" *ngIf="m.total_plot_amount">₹{{ m.total_plot_amount | number }}</span>
+              <span class="text-muted" *ngIf="!m.total_plot_amount">—</span>
+            </td>
+            <td>
+              <span class="fw-700 text-success" *ngIf="m.total_paid_amount">₹{{ m.total_paid_amount | number }}</span>
+              <span class="text-muted" *ngIf="!m.total_paid_amount">₹0</span>
+            </td>
+            <td>
+              <span class="fw-700 text-danger" *ngIf="m.total_unpaid_amount">₹{{ m.total_unpaid_amount | number }}</span>
+              <span class="text-muted" *ngIf="!m.total_unpaid_amount">₹0</span>
+            </td>
+            <td>
+              <span class="sbadge" [class.sbadge-green]="m.booking_status==='Confirmed'" [class.sbadge-yellow]="m.booking_status && m.booking_status!=='Confirmed'" [class.sbadge-gray]="!m.booking_status">
+                {{ m.booking_status === 'Confirmed' ? 'Approved' : (m.booking_status || 'Not Booked') }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="d-inline-flex align-items-center gap-1">
+                <button class="btn btn-navy-action btn-xs" (click)="openBookingModal(m)" title="Book Plot">
+                  <i class="fas fa-map-marked-alt me-1"></i> Book
+                </button>
+                <button class="btn btn-outline-gold btn-xs" (click)="openInvoicesModal(m)" title="Invoices">
+                  <i class="fas fa-receipt me-1"></i> Invoices
+                </button>
+                <button class="btn btn-outline-secondary btn-xs" (click)="openDetailModal(m)" title="Details">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Floating List Tooltip on Row Hover -->
+    <div class="list-hover-tooltip" *ngIf="hoveredMember" [style.left.px]="tooltipPos.x" [style.top.px]="tooltipPos.y">
+      <div class="fw-700 text-dark fs-13 mb-1">{{ hoveredMember.full_name }}</div>
+      <div class="fs-11 text-muted mb-1"><strong>ID:</strong> {{ hoveredMember.member_id }} | <strong>Sponsor:</strong> #{{ hoveredMember.sponsor_user_id || '—' }}</div>
+      <div class="fs-11 text-muted mb-1" *ngIf="hoveredMember.mobile_no"><strong>Mobile:</strong> {{ hoveredMember.mobile_no }}</div>
+      <div class="fs-11 text-muted mb-1" *ngIf="hoveredMember.plot_number"><strong>Plot:</strong> {{ hoveredMember.plot_number }} ({{ hoveredMember.site_name || 'MMR City' }})</div>
+      <div class="fs-11 text-muted mb-1" *ngIf="hoveredMember.total_plot_amount"><strong>Value:</strong> ₹{{ hoveredMember.total_plot_amount | number }} | <strong>Paid:</strong> ₹{{ hoveredMember.total_paid_amount | number }}</div>
+      <div class="badge mt-1" [class.bg-success]="hoveredMember.account_status==='Active'" [class.bg-warning]="hoveredMember.account_status!=='Active'">
+        {{ hoveredMember.account_status || 'Active' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- VIEW 3: INTERACTIVE HIERARCHICAL TREE VIEW                             -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="tree-viewport-container mb-4" *ngIf="viewMode==='tree' && treeRoot && treeRoot.children && treeRoot.children.length > 0">
     <div class="tree-canvas">
 
       <!-- RECURSIVE TREE TEMPLATE -->
@@ -237,9 +487,6 @@
                 <div class="tt-divider"></div>
                 <div class="tt-row"><span>Sales:</span> <strong class="text-success">{{ node.total_gaj_sold || 0 }} Gaj</strong></div>
                 <div class="tt-row"><span>Earned:</span> <strong class="text-warning">₹{{ (node.commission_earned || 0) | number }}</strong></div>
-                <div class="tt-row text-danger fs-11 mt-1" *ngIf="isFreeOrDisabled(node)">
-                  <i class="fas fa-lock me-1"></i> Disabled account (Hover only)
-                </div>
               </div>
             </div>
 
@@ -272,90 +519,676 @@
     </div>
   </div>
 
-  <!-- VIEW 2: COMPACT LIST / TABLE VIEW -->
-  <div class="panel-card mb-4 overflow-hidden position-relative" *ngIf="viewMode==='list'">
-    <div class="table-responsive">
-      <table class="table align-middle custom-team-table mb-0">
-        <thead>
-          <tr>
-            <th>Member ID</th>
-            <th>Associate Name</th>
-            <th>Sponsor ID</th>
-            <th>Sales (Gaj)</th>
-            <th>Commission</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="filteredFlatList.length === 0">
-            <td colspan="7" class="text-center py-4 text-muted">
-              No matching team members found for search criteria.
-            </td>
-          </tr>
-          <tr *ngFor="let m of filteredFlatList"
-              [class.table-disabled-row]="isFreeOrDisabled(m)"
-              (mouseenter)="showListTooltip(m, $event)"
-              (mousemove)="showListTooltip(m, $event)"
-              (mouseleave)="hideListTooltip()">
-            <td>
-              <span class="member-code-badge"><i class="fas fa-id-badge me-1"></i>{{ m.member_id }}</span>
-            </td>
-            <td>
-              <div class="d-flex align-items-center gap-2">
-                <div class="mini-avatar">{{ getNodeInitials(m.full_name) }}</div>
-                <div>
-                  <div class="fw-700 text-dark d-flex align-items-center gap-1">
-                    <span>{{ m.full_name }}</span>
-                    <app-verified-badge [user]="m" size="xs"></app-verified-badge>
-                  </div>
-                  <div class="fs-11 text-muted" *ngIf="m.mobile_no"><i class="fas fa-phone me-1"></i>{{ m.mobile_no }}</div>
+</ng-container>
+
+
+<!-- ═════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 1: ADD NEW CUSTOMER (WITH LOCKED SPONSOR ID & SUCCESS STATE)        -->
+<!-- ═════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop-custom" *ngIf="showAddCustomerModal" (click)="closeAddCustomerModal()">
+  <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+    
+    <!-- MODAL HEADER -->
+    <div class="modal-header-custom d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <div class="modal-icon-badge bg-gold text-dark"><i class="fas fa-user-plus"></i></div>
+        <div>
+          <h5 class="mb-0 fw-700 text-dark">Register New Customer</h5>
+          <span class="fs-12 text-muted">Create customer account directly linked to your Associate sponsorship</span>
+        </div>
+      </div>
+      <button type="button" class="btn-close-modal" (click)="closeAddCustomerModal()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- MODAL BODY: FORM STATE (BEFORE SUBMIT) -->
+    <div class="modal-body-custom" *ngIf="!addCustomerSuccess">
+      <div class="sponsor-auto-lock-alert mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fas fa-lock text-warning fs-5"></i>
+          <div>
+            <div class="fw-700 fs-13 text-dark">Sponsor / Introducer: Automatically Assigned &amp; Locked</div>
+            <div class="fs-12 text-muted">This customer will be officially created under your direct team hierarchy.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-danger py-2 px-3 fs-13 mb-3" *ngIf="addCustomerError">
+        <i class="fas fa-exclamation-circle me-1"></i> {{ addCustomerError }}
+      </div>
+
+      <form (ngSubmit)="submitAddCustomer()">
+        <!-- Locked Sponsor Field -->
+        <div class="mb-3">
+          <label class="form-label fs-12 fw-700 text-uppercase text-muted">Introducer / Sponsor ID (Read-Only)</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted"><i class="fas fa-lock text-warning"></i></span>
+            <input type="text" class="form-control bg-light fw-700 text-dark" [value]="(currentUser?.member_id || ('ASSOC' + currentUser?.user_id)) + ' — ' + (currentUser?.full_name || 'Logged-in Associate')" readonly disabled />
+          </div>
+          <div class="form-text fs-11 text-muted"><i class="fas fa-shield-alt text-success me-1"></i>Sponsor is cryptographically enforced on backend to prevent misallocation.</div>
+        </div>
+
+        <!-- Customer Full Name -->
+        <div class="mb-3">
+          <label class="form-label fs-12 fw-700 text-uppercase text-dark">Customer Full Name <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-user text-muted"></i></span>
+            <input type="text" class="form-control" placeholder="e.g. Rahul Kumar" [(ngModel)]="newCustomer.full_name" name="cust_name" required />
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <!-- Mobile Number -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fs-12 fw-700 text-uppercase text-dark">Mobile Number <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text">+91</span>
+              <input type="tel" class="form-control" placeholder="10-digit mobile" maxlength="10" [(ngModel)]="newCustomer.mobile_no" name="cust_mobile" required />
+            </div>
+          </div>
+
+          <!-- Email Address -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fs-12 fw-700 text-uppercase text-dark">Email Address <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-envelope text-muted"></i></span>
+              <input type="email" class="form-control" placeholder="customer@example.com" [(ngModel)]="newCustomer.email" name="cust_email" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-4">
+          <label class="form-label fs-12 fw-700 text-uppercase text-dark">Account Password <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-key text-muted"></i></span>
+            <input type="password" class="form-control" placeholder="Create customer login password" [(ngModel)]="newCustomer.password" name="cust_pwd" required />
+          </div>
+          <div class="form-text fs-11 text-muted">The customer can use this password to log into their dedicated Customer Portal.</div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex align-items-center justify-content-end gap-2 pt-2 border-top">
+          <button type="button" class="btn btn-outline-secondary btn-sm px-3" (click)="closeAddCustomerModal()" [disabled]="addCustomerSubmitting">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-gold btn-sm fw-700 px-4" [disabled]="addCustomerSubmitting">
+            <span *ngIf="!addCustomerSubmitting"><i class="fas fa-check me-1.5"></i> Create Customer Account</span>
+            <span *ngIf="addCustomerSubmitting"><i class="fas fa-spinner fa-spin me-1.5"></i> Creating Account...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- MODAL BODY: SUCCESS STATE (DOES NOT CLOSE OR REDIRECT!) -->
+    <div class="modal-body-custom text-center py-4" *ngIf="addCustomerSuccess">
+      <div class="success-check-badge mx-auto mb-3">
+        <i class="fas fa-check text-white fs-2"></i>
+      </div>
+
+      <h4 class="fw-800 text-success mb-1">Customer Account Created Successfully!</h4>
+      <p class="text-muted fs-13 mb-4">The customer has been created and automatically linked to your downline team.</p>
+
+      <!-- Customer Details Card -->
+      <div class="created-account-summary-card text-start p-3 mb-4">
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="fs-11 text-muted text-uppercase fw-600">Customer Name</div>
+            <div class="fw-700 text-dark fs-14">{{ createdCustomerData?.full_name }}</div>
+          </div>
+          <div class="col-6">
+            <div class="fs-11 text-muted text-uppercase fw-600">Customer ID</div>
+            <div class="fw-800 text-primary fs-14">{{ createdCustomerData?.member_id }}</div>
+          </div>
+          <div class="col-6 mt-2">
+            <div class="fs-11 text-muted text-uppercase fw-600">Registered Mobile</div>
+            <div class="fw-600 text-dark fs-13">{{ createdCustomerData?.mobile_no }}</div>
+          </div>
+          <div class="col-6 mt-2">
+            <div class="fs-11 text-muted text-uppercase fw-600">Sponsor ID</div>
+            <div class="fw-700 text-dark fs-13">
+              <span class="badge bg-gold text-dark"><i class="fas fa-lock me-1"></i>{{ createdCustomerData?.sponsor_member_id }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEXT STEP BANNER -->
+      <div class="next-step-action-box p-3 mb-4 text-start">
+        <div class="d-flex align-items-start gap-2.5">
+          <div class="step-badge-icon"><i class="fas fa-file-contract"></i></div>
+          <div class="flex-fill">
+            <h6 class="fw-800 text-dark mb-1">Next Step: Complete Enrollment Form</h6>
+            <p class="fs-12 text-muted mb-2">
+              Please complete the official Customer Enrollment Form to verify address, KYC documents, and bank details.
+            </p>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <button type="button" class="btn btn-green btn-sm fw-700 px-3" (click)="fillEnrollmentForCreatedCustomer()">
+                <i class="fas fa-edit me-1.5"></i> Fill Enrollment Form Now
+              </button>
+              <button type="button" class="btn btn-navy-action btn-sm fw-700 px-3" (click)="bookPlotForCreatedCustomer()">
+                <i class="fas fa-map-marked-alt me-1.5"></i> Book Plot for Customer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info py-2 px-3 text-start fs-12 mb-3">
+        <i class="fas fa-info-circle me-1.5"></i> <strong>Note:</strong> Customer enrollment is currently pending. You can fill it on behalf of the customer now, or share the login credentials so the customer can complete it from their own portal.
+      </div>
+
+      <!-- Need Help & Support Section -->
+      <div class="support-footer-box p-2.5 rounded-8 bg-light border text-start d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+          <div class="fs-11 text-uppercase text-muted fw-700">Need Help? MMR Constructions Support</div>
+          <div class="fs-12 text-dark"><strong>Phone:</strong> +91 99999 99999 &nbsp;|&nbsp; <strong>Email:</strong> support&#64;mmrconstructions.in</div>
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-xs ms-auto" (click)="closeAddCustomerModal()">
+          Close &amp; View Team
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 2: PLOT BOOKING WORKFLOW (ONE-TIME / PART-WISE 0% INTEREST)         -->
+<!-- ═════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop-custom" *ngIf="showBookingModal" (click)="closeBookingModal()">
+  <div class="modal-dialog-custom modal-lg-custom" (click)="$event.stopPropagation()">
+    
+    <!-- MODAL HEADER -->
+    <div class="modal-header-custom d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <div class="modal-icon-badge bg-navy text-white"><i class="fas fa-map-marked-alt"></i></div>
+        <div>
+          <h5 class="mb-0 fw-700 text-dark">Plot Booking for Team Member</h5>
+          <span class="fs-12 text-muted">Initiate plot reservation with One-Time or Part-Wise Payment (0% Interest)</span>
+        </div>
+      </div>
+      <button type="button" class="btn-close-modal" (click)="closeBookingModal()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- MODAL BODY: FORM STATE -->
+    <div class="modal-body-custom" *ngIf="!bookingSuccessData">
+      <div class="alert alert-danger py-2 px-3 fs-13 mb-3" *ngIf="bookingError">
+        <i class="fas fa-exclamation-circle me-1"></i> {{ bookingError }}
+      </div>
+
+      <form (ngSubmit)="submitPlotBooking()">
+        
+        <!-- SECTION 1: SELECT TEAM MEMBER -->
+        <div class="form-section-card p-3 mb-3">
+          <div class="section-title-tag mb-2"><i class="fas fa-user-check me-1"></i> 1. Select Authorized Team Member</div>
+          
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-6">
+              <label class="form-label fs-11 fw-700 text-uppercase text-muted">Choose Customer from your downline</label>
+              <select class="form-select" [(ngModel)]="bookingForm.team_member_user_id" (change)="onTeamMemberSelectChange()" name="bm_cust_id" required>
+                <option [ngValue]="null" disabled>-- Select Team Member --</option>
+                <option *ngFor="let m of teamMembers" [ngValue]="m.user_id">
+                  {{ m.full_name }} ({{ m.member_id }})
+                </option>
+              </select>
+            </div>
+
+            <!-- Customer Summary Card -->
+            <div class="col-12 col-md-6" *ngIf="selectedTeamMember">
+              <div class="p-2.5 rounded-8 bg-light border">
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="fw-700 text-dark fs-13">{{ selectedTeamMember.full_name }}</span>
+                  <span class="badge bg-primary-subtle text-primary">{{ selectedTeamMember.member_id }}</span>
+                </div>
+                <div class="fs-11 text-muted mt-1">
+                  <span><i class="fas fa-phone me-1"></i>{{ selectedTeamMember.mobile_no || '—' }}</span>
+                  <span class="ms-2"><i class="fas fa-shield-alt text-success me-1"></i>Sponsor: #{{ currentUser?.user_id }} (You)</span>
                 </div>
               </div>
-            </td>
-            <td>
-              <span class="fs-12 text-muted">#{{ m.sponsor_user_id || '—' }}</span>
-            </td>
-            <td>
-              <span class="fw-700 text-success">{{ m.total_gaj_sold || 0 }} Gaj</span>
-            </td>
-            <td>
-              <span class="fw-700 text-gold-dark">₹{{ (m.total_commission_earned || 0) | number }}</span>
-            </td>
-            <td>
-              <span class="sbadge" [class.sbadge-green]="!isFreeOrDisabled(m) && m.account_status==='Active'" [class.sbadge-red]="isFreeOrDisabled(m)" [class.sbadge-yellow]="!isFreeOrDisabled(m) && m.account_status!=='Active'">
-                {{ isFreeOrDisabled(m) ? 'Disabled / Free' : (m.account_status || 'Active') }}
-              </span>
-            </td>
-            <td>
-              <ng-container *ngIf="!isFreeOrDisabled(m)">
-                <a href="tel:{{m.mobile_no}}" class="btn btn-outline-green btn-xs" *ngIf="m.mobile_no">
-                  <i class="fas fa-phone-alt me-1"></i> Call
-                </a>
-              </ng-container>
-              <ng-container *ngIf="isFreeOrDisabled(m)">
-                <span class="badge bg-light text-muted border fs-10 py-1 px-2" title="Disabled / Free Account">
-                  <i class="fas fa-lock me-1"></i> Disabled
-                </span>
-              </ng-container>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: PROPERTY & PLOT SELECTION -->
+        <div class="form-section-card p-3 mb-3">
+          <div class="section-title-tag mb-2"><i class="fas fa-building me-1"></i> 2. Property &amp; Plot Details</div>
+          
+          <div class="row g-2 mb-2">
+            <!-- Project / Site Dropdown -->
+            <div class="col-12 col-md-6">
+              <label class="form-label fs-11 fw-700 text-uppercase text-muted">Project / Site Name <span class="text-danger">*</span></label>
+              <select class="form-select" [ngModel]="bookingForm.site_id" (ngModelChange)="onSiteSelected($event)" name="bm_site_id" required>
+                <option [ngValue]="null" disabled>-- Select Project / Site --</option>
+                <option *ngFor="let s of sitesList" [ngValue]="s.site_id || s.id">
+                  {{ s.site_name }} ({{ s.city || 'Lucknow' }})
+                </option>
+              </select>
+            </div>
+
+            <!-- Plot Dropdown -->
+            <div class="col-12 col-md-6">
+              <label class="form-label fs-11 fw-700 text-uppercase text-muted">Available Vacant Plot <span class="text-danger">*</span></label>
+              <select class="form-select" [ngModel]="bookingForm.plot_id" (ngModelChange)="onPlotSelected($event)" name="bm_plot_id" [disabled]="!bookingForm.site_id || loadingPlots" required>
+                <option [ngValue]="null" disabled>{{ loadingPlots ? 'Loading vacant plots...' : '-- Select Plot --' }}</option>
+                <option *ngFor="let p of plotsList" [ngValue]="p.plot_id">
+                  Plot {{ p.plot_number }} · {{ p.plot_area }} Sq.Yd. · ₹{{ (p.base_price || 0) | number }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Plot Details Quick Strip -->
+          <div class="plot-details-highlight-strip p-2.5 rounded-8 mt-2" *ngIf="selectedPlot">
+            <div class="row g-2 text-center text-md-start">
+              <div class="col-6 col-md-3">
+                <span class="fs-11 text-muted text-uppercase">Plot Number</span>
+                <div class="fw-800 text-dark fs-13">{{ selectedPlot.plot_number }}</div>
+              </div>
+              <div class="col-6 col-md-3">
+                <span class="fs-11 text-muted text-uppercase">Plot Area</span>
+                <div class="fw-800 text-dark fs-13">{{ selectedPlot.plot_area }} Sq.Yd.</div>
+              </div>
+              <div class="col-6 col-md-3">
+                <span class="fs-11 text-muted text-uppercase">Category</span>
+                <div class="fw-700 text-primary fs-13">{{ selectedPlot.plot_category || 'Residential' }}</div>
+              </div>
+              <div class="col-6 col-md-3">
+                <span class="fs-11 text-muted text-uppercase">Total Plot Value</span>
+                <div class="fw-800 text-success fs-14">₹{{ totalPlotPrice | number }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: PAYMENT OPTION SELECTOR -->
+        <div class="form-section-card p-3 mb-3">
+          <div class="section-title-tag mb-2"><i class="fas fa-wallet me-1"></i> 3. Payment Option</div>
+          
+          <div class="row g-2 mb-3">
+            <!-- Option 1: One-Time Payment -->
+            <div class="col-12 col-md-4">
+              <div class="payment-option-card h-100" [class.selected]="bookingForm.payment_option==='OneTime'" (click)="setPaymentOption('OneTime')">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <span class="fw-800 fs-13 text-dark">One-Time Payment</span>
+                  <input type="radio" [checked]="bookingForm.payment_option==='OneTime'" name="pay_opt" />
+                </div>
+                <div class="fs-11 text-muted">Full payment in a single transaction. Immediate plot settlement.</div>
+                <div class="badge bg-success-subtle text-success fs-10 mt-2">100% Settle</div>
+              </div>
+            </div>
+
+            <!-- Option 2: Part-Wise Payment -->
+            <div class="col-12 col-md-4">
+              <div class="payment-option-card h-100" [class.selected]="bookingForm.payment_option==='PartWise'" (click)="setPaymentOption('PartWise')">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <span class="fw-800 fs-13 text-dark">Part-Wise Payment</span>
+                  <input type="radio" [checked]="bookingForm.payment_option==='PartWise'" name="pay_opt" />
+                </div>
+                <div class="fs-11 text-muted">Flexible payments according to customer convenience.</div>
+                <div class="badge bg-gold text-dark fs-10 mt-2 fw-700">0% Interest Charge</div>
+              </div>
+            </div>
+
+            <!-- Option 3: Installment (EMI) - CURRENTLY DISABLED -->
+            <div class="col-12 col-md-4">
+              <div class="payment-option-card payment-disabled h-100" title="Installment workflow is currently disabled">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <span class="fw-700 fs-13 text-muted">Installment (EMI)</span>
+                  <i class="fas fa-lock text-muted fs-12"></i>
+                </div>
+                <div class="fs-11 text-muted">Fixed monthly installment schedule calculation.</div>
+                <div class="badge bg-secondary text-white fs-10 mt-2">Currently Unavailable</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Amount & Method Inputs -->
+          <div class="row g-2 mb-2">
+            <div class="col-12 col-md-6">
+              <label class="form-label fs-11 fw-700 text-uppercase text-dark">
+                {{ bookingForm.payment_option === 'OneTime' ? 'Total Payment Amount (₹)' : 'Initial / Booking Amount (₹)' }} <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <span class="input-group-text">₹</span>
+                <input type="number" class="form-control fw-700 text-dark" [(ngModel)]="bookingForm.booking_amount" name="bm_amount" min="1000" [max]="totalPlotPrice" required />
+              </div>
+              <div class="form-text fs-11 text-muted" *ngIf="bookingForm.payment_option==='PartWise'">
+                Enter the advance / down-payment amount.
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label fs-11 fw-700 text-uppercase text-dark">Payment Method <span class="text-danger">*</span></label>
+              <select class="form-select" [(ngModel)]="bookingForm.payment_method" name="bm_method">
+                <option value="Bank Transfer / UPI">Bank Transfer / NEFT / UPI</option>
+                <option value="Cheque / DD">Cheque / Demand Draft</option>
+                <option value="Cash">Cash Deposit</option>
+                <option value="Online Payment Gateway">Online Payment Gateway</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="mb-2">
+            <label class="form-label fs-11 fw-700 text-uppercase text-muted">Booking Remarks / Notes</label>
+            <input type="text" class="form-control form-control-sm" placeholder="e.g. Booking token received via UPI ref #12345" [(ngModel)]="bookingForm.notes" name="bm_notes" />
+          </div>
+
+          <!-- LIVE DYNAMIC PAYMENT SUMMARY BOX -->
+          <div class="live-payment-summary-box p-3 rounded-8 mt-3" *ngIf="selectedPlot">
+            <div class="fs-11 text-uppercase fw-700 text-gold-dark mb-2"><i class="fas fa-calculator me-1"></i> Live Payment Calculation Summary</div>
+            <div class="row g-2 text-center text-md-start">
+              <div class="col-4">
+                <span class="fs-11 text-muted text-uppercase">Total Plot Value</span>
+                <div class="fw-800 text-dark fs-14">₹{{ totalPlotPrice | number }}</div>
+              </div>
+              <div class="col-4">
+                <span class="fs-11 text-muted text-uppercase">Paid / Advance</span>
+                <div class="fw-800 text-success fs-14">₹{{ (bookingForm.booking_amount || 0) | number }}</div>
+              </div>
+              <div class="col-4">
+                <span class="fs-11 text-muted text-uppercase">Remaining Balance</span>
+                <div class="fw-800 text-danger fs-14">₹{{ remainingUnpaidAmount | number }}</div>
+              </div>
+            </div>
+            <div class="fs-11 text-success fw-600 mt-2 text-center text-md-start">
+              <i class="fas fa-check-circle me-1"></i> <strong>Formula:</strong> Unpaid Balance = Total Plot Value (₹{{ totalPlotPrice | number }}) − Total Paid (₹{{ (bookingForm.booking_amount || 0) | number }}) | Interest = <strong>₹0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workflow Notice -->
+        <div class="alert alert-warning py-2 px-3 fs-12 mb-3">
+          <i class="fas fa-hourglass-half me-1.5"></i> <strong>Admin Approval Workflow:</strong> Once submitted, this booking request will be saved with status <strong>Pending</strong> for Admin review and confirmation.
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex align-items-center justify-content-end gap-2 pt-2 border-top">
+          <button type="button" class="btn btn-outline-secondary btn-sm px-3" (click)="closeBookingModal()" [disabled]="bookingSubmitting">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-navy-action btn-sm fw-700 px-4" [disabled]="bookingSubmitting || !selectedPlot">
+            <span *ngIf="!bookingSubmitting"><i class="fas fa-paper-plane me-1.5"></i> Submit Plot Booking Request</span>
+            <span *ngIf="bookingSubmitting"><i class="fas fa-spinner fa-spin me-1.5"></i> Submitting Request...</span>
+          </button>
+        </div>
+      </form>
     </div>
 
-    <!-- Floating List Tooltip on Row Hover -->
-    <div class="list-hover-tooltip" *ngIf="hoveredMember" [style.left.px]="tooltipPos.x" [style.top.px]="tooltipPos.y">
-      <div class="fw-700 text-dark fs-13 mb-1">{{ hoveredMember.full_name }}</div>
-      <div class="fs-11 text-muted mb-1"><strong>ID:</strong> {{ hoveredMember.member_id }} | <strong>Sponsor:</strong> #{{ hoveredMember.sponsor_user_id || '—' }}</div>
-      <div class="fs-11 text-muted mb-1" *ngIf="hoveredMember.mobile_no"><strong>Mobile:</strong> {{ hoveredMember.mobile_no }}</div>
-      <div class="fs-11 text-muted mb-1" *ngIf="hoveredMember.email"><strong>Email:</strong> {{ hoveredMember.email }}</div>
-      <div class="fs-11 text-muted mb-1"><strong>Sales:</strong> {{ hoveredMember.total_gaj_sold || 0 }} Gaj</div>
-      <div class="fs-11 text-muted mb-1"><strong>Earnings:</strong> ₹{{ (hoveredMember.total_commission_earned || 0) | number }}</div>
-      <div class="badge mt-1" [class.bg-success]="!isFreeOrDisabled(hoveredMember) && hoveredMember.account_status==='Active'" [class.bg-danger]="isFreeOrDisabled(hoveredMember)">
-        {{ isFreeOrDisabled(hoveredMember) ? 'Disabled / Free Record' : (hoveredMember.account_status || 'Active') }}
+    <!-- MODAL BODY: BOOKING SUCCESS STATE -->
+    <div class="modal-body-custom text-center py-4" *ngIf="bookingSuccessData">
+      <div class="success-check-badge mx-auto mb-3">
+        <i class="fas fa-check text-white fs-2"></i>
+      </div>
+
+      <h4 class="fw-800 text-success mb-1">Plot Booking Request Submitted!</h4>
+      <p class="text-muted fs-13 mb-4">The plot reservation request has been submitted and is awaiting Admin review and approval.</p>
+
+      <div class="created-account-summary-card text-start p-3 mb-4">
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="fs-11 text-muted text-uppercase fw-600">Booking Serial</div>
+            <div class="fw-800 text-primary fs-14">{{ bookingSuccessData?.booking_serial }}</div>
+          </div>
+          <div class="col-6">
+            <div class="fs-11 text-muted text-uppercase fw-600">Invoice Number</div>
+            <div class="fw-800 text-dark fs-14">{{ bookingSuccessData?.invoice_number }}</div>
+          </div>
+          <div class="col-6 mt-2">
+            <div class="fs-11 text-muted text-uppercase fw-600">Customer</div>
+            <div class="fw-700 text-dark fs-13">{{ bookingSuccessData?.customer_name }}</div>
+          </div>
+          <div class="col-6 mt-2">
+            <div class="fs-11 text-muted text-uppercase fw-600">Property</div>
+            <div class="fw-700 text-dark fs-13">Plot {{ bookingSuccessData?.plot_number }} · {{ bookingSuccessData?.site_name }}</div>
+          </div>
+          <div class="col-4 mt-2">
+            <div class="fs-11 text-muted text-uppercase fw-600">Total Value</div>
+            <div class="fw-800 text-dark fs-13">₹{{ (bookingSuccessData?.total_plot_price || 0) | number }}</div>
+          </div>
+          <div class="col-4 mt-2">
+            <div class="fs-11 text-muted text-uppercase fw-600">Paid</div>
+            <div class="fw-800 text-success fs-13">₹{{ (bookingSuccessData?.paid_amount || 0) | number }}</div>
+          </div>
+          <div class="col-4 mt-2">
+            <div class="fs-11 text-muted text-uppercase fw-600">Remaining (0% Int)</div>
+            <div class="fw-800 text-danger fs-13">₹{{ (bookingSuccessData?.balance_amount || 0) | number }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-center gap-2">
+        <button type="button" class="btn btn-gold btn-sm fw-700 px-3" (click)="viewInvoiceOnline(bookingSuccessData?.invoice_number)">
+          <i class="fas fa-external-link-alt me-1.5"></i> View Generated Invoice
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm px-3" (click)="closeBookingModal()">
+          Close &amp; View in Team
+        </button>
       </div>
     </div>
-  </div>
 
-</ng-container>
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 3: TEAM MEMBER INVOICES & PAYMENTS HISTORY                         -->
+<!-- ═════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop-custom" *ngIf="showInvoicesModal" (click)="closeInvoicesModal()">
+  <div class="modal-dialog-custom modal-lg-custom" (click)="$event.stopPropagation()">
+    
+    <!-- MODAL HEADER -->
+    <div class="modal-header-custom d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <div class="modal-icon-badge bg-gold text-dark"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div>
+          <h5 class="mb-0 fw-700 text-dark">Invoice &amp; Payment Ledger</h5>
+          <span class="fs-12 text-muted">Payment records for {{ selectedInvoiceCustomer?.full_name }} ({{ selectedInvoiceCustomer?.member_id }})</span>
+        </div>
+      </div>
+      <button type="button" class="btn-close-modal" (click)="closeInvoicesModal()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- MODAL BODY -->
+    <div class="modal-body-custom">
+      
+      <!-- Loading State -->
+      <div class="py-4 text-center" *ngIf="loadingInvoices">
+        <div class="spinner-border text-gold me-2" role="status"></div>
+        <span class="fs-13 text-muted">Retrieving official invoice records...</span>
+      </div>
+
+      <!-- Error State -->
+      <div class="alert alert-danger py-2 px-3 fs-13" *ngIf="!loadingInvoices && invoiceError">
+        <i class="fas fa-exclamation-circle me-1"></i> {{ invoiceError }}
+      </div>
+
+      <!-- Invoices Content -->
+      <ng-container *ngIf="!loadingInvoices && !invoiceError">
+        
+        <!-- Cumulative Financial Box -->
+        <div class="financial-cumulative-box p-3 rounded-8 mb-3">
+          <div class="row g-2 text-center text-md-start align-items-center">
+            <div class="col-12 col-md-4">
+              <span class="fs-11 text-muted text-uppercase fw-600">Total Plot Value</span>
+              <div class="fw-800 text-dark fs-16">₹{{ (invoiceSummary.total_amount || 0) | number }}</div>
+            </div>
+            <div class="col-6 col-md-4">
+              <span class="fs-11 text-muted text-uppercase fw-600">Total Amount Paid</span>
+              <div class="fw-800 text-success fs-16">₹{{ (invoiceSummary.total_paid || 0) | number }}</div>
+            </div>
+            <div class="col-6 col-md-4">
+              <span class="fs-11 text-muted text-uppercase fw-600">Remaining Balance (0% Int)</span>
+              <div class="fw-800 text-danger fs-16">₹{{ (invoiceSummary.total_unpaid || 0) | number }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Invoices Table -->
+        <div class="table-responsive" *ngIf="invoiceList.length > 0">
+          <table class="table align-middle custom-team-table mb-0">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Date</th>
+                <th>Payment Amount</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Balance</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let inv of invoiceList">
+                <td>
+                  <span class="member-code-badge"><i class="fas fa-receipt me-1"></i>{{ inv.invoice_number }}</span>
+                </td>
+                <td class="fs-12 text-muted">
+                  {{ inv.created_at ? (inv.created_at | date:'dd MMM yyyy') : '—' }}
+                </td>
+                <td>
+                  <strong class="text-success fs-13">₹{{ (inv.paid_amount || inv.grand_total || 0) | number }}</strong>
+                </td>
+                <td>
+                  <span class="fs-11 text-muted">{{ inv.invoice_data?.invoice_type || 'Part-Wise Payment' }}</span>
+                </td>
+                <td>
+                  <span class="sbadge" [class.sbadge-green]="inv.payment_status==='Paid'" [class.sbadge-yellow]="inv.payment_status!=='Paid'">
+                    {{ inv.payment_status || 'Paid' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="text-danger fw-700 fs-12">₹{{ (inv.balance_amount || 0) | number }}</span>
+                </td>
+                <td class="text-end">
+                  <div class="d-inline-flex align-items-center gap-1">
+                    <button class="btn btn-outline-gold btn-xs" (click)="viewInvoiceOnline(inv.invoice_number)" title="View Invoice">
+                      <i class="fas fa-eye me-1"></i> View
+                    </button>
+                    <button class="btn btn-outline-secondary btn-xs" (click)="downloadInvoicePdf(inv.invoice_number)" title="Download PDF">
+                      <i class="fas fa-download"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State for Invoices -->
+        <div class="p-4 text-center text-muted" *ngIf="invoiceList.length === 0">
+          <i class="fas fa-receipt fs-2 mb-2 text-gold"></i>
+          <h6 class="fw-700 text-dark mb-1">No Invoices Found</h6>
+          <p class="fs-12 mb-3">No payment or booking invoices have been issued for this customer yet.</p>
+          <button type="button" class="btn btn-navy-action btn-sm" (click)="closeInvoicesModal(); openBookingModal(selectedInvoiceCustomer)">
+            <i class="fas fa-map-marked-alt me-1"></i> Book a Plot for this Member
+          </button>
+        </div>
+
+      </ng-container>
+
+      <div class="d-flex justify-content-end pt-3 mt-3 border-top">
+        <button type="button" class="btn btn-outline-secondary btn-sm px-3" (click)="closeInvoicesModal()">
+          Close
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 4: CUSTOMER DETAILS QUICK VIEW                                      -->
+<!-- ═════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop-custom" *ngIf="showDetailModal" (click)="closeDetailModal()">
+  <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header-custom d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <div class="modal-icon-badge bg-gold text-dark"><i class="fas fa-user-circle"></i></div>
+        <div>
+          <h5 class="mb-0 fw-700 text-dark">{{ detailMember?.full_name }}</h5>
+          <span class="fs-12 text-muted">Member Profile &amp; Property Portfolio</span>
+        </div>
+      </div>
+      <button type="button" class="btn-close-modal" (click)="closeDetailModal()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body-custom" *ngIf="detailMember">
+      <div class="created-account-summary-card p-3 mb-3">
+        <div class="row g-2">
+          <div class="col-6">
+            <span class="fs-11 text-muted text-uppercase fw-600">Member ID</span>
+            <div class="fw-800 text-primary fs-14">{{ detailMember.member_id }}</div>
+          </div>
+          <div class="col-6">
+            <span class="fs-11 text-muted text-uppercase fw-600">Account Type</span>
+            <div class="fw-700 text-dark fs-13">{{ detailMember.user_type || 'Customer' }}</div>
+          </div>
+          <div class="col-6 mt-2">
+            <span class="fs-11 text-muted text-uppercase fw-600">Mobile Number</span>
+            <div class="fw-600 text-dark fs-13">{{ detailMember.mobile_no || '—' }}</div>
+          </div>
+          <div class="col-6 mt-2">
+            <span class="fs-11 text-muted text-uppercase fw-600">Email Address</span>
+            <div class="fw-600 text-dark fs-13 text-truncate">{{ detailMember.email || '—' }}</div>
+          </div>
+          <div class="col-6 mt-2">
+            <span class="fs-11 text-muted text-uppercase fw-600">Sponsor ID</span>
+            <div class="fw-600 text-dark fs-13">#{{ detailMember.sponsor_user_id || currentUser?.user_id }}</div>
+          </div>
+          <div class="col-6 mt-2">
+            <span class="fs-11 text-muted text-uppercase fw-600">Account Status</span>
+            <div>
+              <span class="badge" [class.bg-success]="detailMember.account_status==='Active'" [class.bg-warning]="detailMember.account_status!=='Active'">
+                {{ detailMember.account_status || 'Active' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Property Info -->
+      <div class="form-section-card p-3 mb-3">
+        <div class="section-title-tag mb-2"><i class="fas fa-home me-1"></i> Booked Property Details</div>
+        <div *ngIf="detailMember.plot_number">
+          <div class="fw-700 text-dark fs-14">Plot: {{ detailMember.plot_number }} · {{ detailMember.plot_area }} Sq.Yd.</div>
+          <div class="text-muted fs-12">{{ detailMember.site_name || 'MMR City' }}</div>
+          <div class="d-flex align-items-center gap-3 mt-2 fs-12">
+            <span><strong>Total:</strong> ₹{{ (detailMember.total_plot_amount || 0) | number }}</span>
+            <span class="text-success"><strong>Paid:</strong> ₹{{ (detailMember.total_paid_amount || 0) | number }}</span>
+            <span class="text-danger"><strong>Unpaid:</strong> ₹{{ (detailMember.total_unpaid_amount || 0) | number }}</span>
+          </div>
+        </div>
+        <div *ngIf="!detailMember.plot_number" class="text-muted fs-12 py-1">
+          No property booked yet for this member.
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-end gap-2 pt-2 border-top">
+        <button type="button" class="btn btn-navy-action btn-sm" (click)="closeDetailModal(); openBookingModal(detailMember)">
+          <i class="fas fa-map-marked-alt me-1"></i> Book Plot
+        </button>
+        <button type="button" class="btn btn-gold btn-sm" (click)="closeDetailModal(); openInvoicesModal(detailMember)">
+          <i class="fas fa-receipt me-1"></i> Invoices
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeDetailModal()">
+          Close
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -47,20 +47,34 @@
   <div class="dash-welcome-hero mb-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3" style="position:relative; z-index:2;">
       <div>
-        <p class="dash-hero-tag">MMR CONSTRUCTIONS &amp; DEVELOPERS · CUSTOMER PORTAL</p>
+        <p class="dash-hero-tag">MMR CONSTRUCTIONS &amp; DEVELOPERS · {{ isAssociate ? 'ASSOCIATE PORTAL' : 'CUSTOMER PORTAL' }}</p>
         <h2 class="dash-hero-title d-flex align-items-center gap-2 flex-wrap">
-          <span>{{ profile.full_name || userData?.full_name || 'Valued Customer' }}</span>
+          <span>{{ profile.full_name || userData?.full_name || (isAssociate ? 'Associate Partner' : 'Valued Customer') }}</span>
           <app-verified-badge [user]="profile.user_id ? profile : userData" size="md"></app-verified-badge>
         </h2>
         <div class="d-flex align-items-center gap-2 flex-wrap">
-          <span class="dash-meta-badge"><i class="fas fa-id-badge me-1"></i>Customer ID: {{ profile.member_id || userData?.member_id || 'MMR-CUST' }}</span>
-          <span class="dash-role-badge">Verified Customer</span>
+          <span class="dash-meta-badge"><i class="fas fa-id-badge me-1"></i>{{ isAssociate ? 'Associate ID:' : 'Customer ID:' }} {{ profile.member_id || userData?.member_id || (isAssociate ? 'MMR-ASSOC' : 'MMR-CUST') }}</span>
+          <span class="dash-role-badge">{{ isAssociate ? 'Verified Associate Partner' : 'Verified Customer' }}</span>
           <span class="dash-status-dot"></span>
-          <span class="fs-12 text-white opacity-75">Active Property Owner</span>
+          <span class="fs-12 text-white opacity-75">{{ isAssociate ? 'Active Sales Network' : 'Active Property Owner' }}</span>
         </div>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap">
+      <!-- Associate Action Buttons -->
+      <div class="d-flex gap-2 flex-wrap" *ngIf="isAssociate">
+        <a [routerLink]="'/associate/my-team'" class="btn btn-hero-gold btn-sm">
+          <i class="fas fa-user-plus me-1.5"></i>+ Add New Customer
+        </a>
+        <a [routerLink]="'/associate/my-team'" class="btn btn-hero-outline btn-sm">
+          <i class="fas fa-map-marked-alt me-1.5"></i>Book Plot for Member
+        </a>
+        <a [routerLink]="'/associate/commission'" class="btn btn-hero-outline btn-sm">
+          <i class="fas fa-hand-holding-usd me-1.5"></i>Commission Tracker
+        </a>
+      </div>
+
+      <!-- Customer Action Buttons -->
+      <div class="d-flex gap-2 flex-wrap" *ngIf="!isAssociate">
         <button type="button" class="btn btn-hero-gold btn-sm" (click)="openInquiryModal()">
           <i class="fas fa-plus-circle me-1.5"></i>Buy a New Plot / Inquiry
         </button>
