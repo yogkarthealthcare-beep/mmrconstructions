@@ -110,15 +110,19 @@ export class AssociatesComponent implements OnInit {
       const queryParams: any = {
         user_type: 'Associate',
         page: 1,
-        pageSize: 10000
+        pageSize: 10000,
+        limit: 10000
       };
-      if (this.statusFilter !== 'all') queryParams.account_status = this.statusFilter;
+      if (this.statusFilter !== 'all') {
+        queryParams.account_status = this.statusFilter;
+        queryParams.status = this.statusFilter;
+      }
       if (this.search.trim()) queryParams.search = this.search.trim();
 
       this.api.adminGetAssociates(queryParams).subscribe({
         next: (res: any) => {
           this.actionLoading = false;
-          const list = res.data?.users || res.data?.associates || (Array.isArray(res.data) ? res.data : []);
+          const list = res.data?.items || res.data?.users || res.data?.associates || (Array.isArray(res.data) ? res.data : []);
           const rows = list.map((a: any, i: number) => [
             i + 1,
             a.member_id || '—',
@@ -208,11 +212,13 @@ export class AssociatesComponent implements OnInit {
     const queryParams: any = {
       user_type: 'Associate',
       page: this.page,
-      pageSize: this.pageSize
+      pageSize: this.pageSize,
+      limit: this.pageSize
     };
 
     if (this.statusFilter !== 'all') {
       queryParams.account_status = this.statusFilter;
+      queryParams.status = this.statusFilter;
     }
     if (this.search.trim()) {
       queryParams.search = this.search.trim();
@@ -223,58 +229,89 @@ export class AssociatesComponent implements OnInit {
       enrollmentsRes: this.api.adminGetAssociateEnrollments().pipe(catchError(() => of({ success: false, data: [] })))
     }).subscribe({
       next: ({ associatesRes, enrollmentsRes }: any) => {
+        let list: any[] = [];
+        let totalCount = 0;
+
         if (associatesRes?.success && associatesRes.data) {
-          const list = associatesRes.data.users || associatesRes.data.associates || associatesRes.data.items || (Array.isArray(associatesRes.data) ? associatesRes.data : []);
-          
-          const enrollmentsList = (enrollmentsRes?.data && Array.isArray(enrollmentsRes.data)) ? enrollmentsRes.data : [];
-          const enrollMap = new Map<string, any>();
-          
-          enrollmentsList.forEach((e: any) => {
-            const isCompleted = String(e.enrollment_status || e.app_status || '').toLowerCase() === 'completed' ||
-                                String(e.enrollment_status || e.app_status || '').toLowerCase() === 'submitted' ||
-                                String(e.enrollment_status || e.app_status || '').toLowerCase() === 'approved' ||
-                                (e.associate_id && String(e.associate_id).startsWith('MMR-ASC'));
-            
-            if (isCompleted) {
-              if (e.user_id) enrollMap.set(String(e.user_id), e);
-              if (e.member_id) enrollMap.set(String(e.member_id).toUpperCase().trim(), e);
-              if (e.mobile_no || e.contact_1) {
-                const mob = String(e.mobile_no || e.contact_1).replace(/\D/g, '').slice(-10);
-                if (mob) enrollMap.set(mob, e);
-              }
-              if (e.email) enrollMap.set(String(e.email).toLowerCase().trim(), e);
-            }
-          });
-
-          this.associates = list.map((a: any) => {
-            const mob = a.mobile_no ? String(a.mobile_no).replace(/\D/g, '').slice(-10) : '';
-            const email = a.email ? String(a.email).toLowerCase().trim() : '';
-            const memId = a.member_id ? String(a.member_id).toUpperCase().trim() : '';
-            const uId = a.user_id ? String(a.user_id) : '';
-
-            const matchedEnroll = enrollMap.get(uId) || (memId ? enrollMap.get(memId) : null) || (mob ? enrollMap.get(mob) : null) || (email ? enrollMap.get(email) : null);
-            
-            const isEnrolled = a.is_verified === true ||
-                               Boolean(a.associate_enrollment_id) ||
-                               ['completed', 'submitted', 'approved'].includes(String(a.enrollment_status || '').toLowerCase()) ||
-                               Boolean(matchedEnroll);
-
-            return {
-              ...a,
-              enrollment_status: isEnrolled ? 'Completed' : (a.enrollment_status || 'Pending'),
-              is_verified: isEnrolled,
-              associate_enrollment_id: a.associate_enrollment_id || matchedEnroll?.associate_id || matchedEnroll?.id
-            };
-          });
-
-          this.total = associatesRes.data.total || associatesRes.data.totalRecords || list.length;
-        } else {
-          this.associates = [];
-          this.total = 0;
+          list = associatesRes.data.items || associatesRes.data.users || associatesRes.data.associates || (Array.isArray(associatesRes.data) ? associatesRes.data : []);
+          totalCount = Number(associatesRes.data.total || associatesRes.data.totalRecords || list.length);
+        } else if (Array.isArray(associatesRes?.data)) {
+          list = associatesRes.data;
+          totalCount = list.length;
+        } else if (Array.isArray(associatesRes?.items)) {
+          list = associatesRes.items;
+          totalCount = Number(associatesRes.total || list.length);
         }
+
+        const enrollmentsList = (enrollmentsRes?.data && Array.isArray(enrollmentsRes.data)) 
+          ? enrollmentsRes.data 
+          : (Array.isArray(enrollmentsRes) ? enrollmentsRes : []);
+        const enrollMap = new Map<string, any>();
+        
+        enrollmentsList.forEach((e: any) => {
+          const isCompleted = String(e.enrollment_status || e.app_status || '').toLowerCase() === 'completed' ||
+                              String(e.enrollment_status || e.app_status || '').toLowerCase() === 'submitted' ||
+                              String(e.enrollment_status || e.app_status || '').toLowerCase() === 'approved' ||
+                              (e.associate_id && String(e.associate_id).startsWith('MMR-ASC'));
+          
+          if (isCompleted) {
+            if (e.user_id) enrollMap.set(String(e.user_id), e);
+            if (e.member_id) enrollMap.set(String(e.member_id).toUpperCase().trim(), e);
+            if (e.mobile_no || e.contact_1 || e.contact_no_1) {
+              const mob = String(e.mobile_no || e.contact_1 || e.contact_no_1).replace(/\D/g, '').slice(-10);
+              if (mob) enrollMap.set(mob, e);
+            }
+            if (e.email) enrollMap.set(String(e.email).toLowerCase().trim(), e);
+          }
+        });
+
+        // Fallback: If primary associates list is empty, but associate enrollments exist, display them seamlessly
+        if (list.length === 0 && enrollmentsList.length > 0 && !this.search.trim() && this.statusFilter === 'all') {
+          list = enrollmentsList.map((e: any) => ({
+            user_id: e.user_id || e.id,
+            member_id: e.member_id || e.associate_id || e.id,
+            full_name: e.full_name || 'Associate',
+            email: e.email || '',
+            mobile_no: e.mobile_no || e.contact_1 || e.contact_no_1 || '',
+            invitation_code: e.sponsor_code || e.invitation_code || '',
+            registered_at: e.created_at || e.sign_date || new Date().toISOString(),
+            account_status: 'Active',
+            enrollment_status: 'Completed',
+            is_verified: true,
+            associate_enrollment_id: e.id,
+            rank_name: 'Associate'
+          }));
+          totalCount = list.length;
+        }
+
+        this.associates = list.map((a: any) => {
+          const mob = a.mobile_no ? String(a.mobile_no).replace(/\D/g, '').slice(-10) : '';
+          const email = a.email ? String(a.email).toLowerCase().trim() : '';
+          const memId = a.member_id ? String(a.member_id).toUpperCase().trim() : '';
+          const uId = a.user_id ? String(a.user_id) : '';
+
+          const matchedEnroll = enrollMap.get(uId) || (memId ? enrollMap.get(memId) : null) || (mob ? enrollMap.get(mob) : null) || (email ? enrollMap.get(email) : null);
+          
+          const isEnrolled = a.is_verified === true ||
+                             Boolean(a.associate_enrollment_id) ||
+                             ['completed', 'submitted', 'approved'].includes(String(a.enrollment_status || '').toLowerCase()) ||
+                             Boolean(matchedEnroll);
+
+          return {
+            ...a,
+            account_status: a.account_status || 'Active',
+            enrollment_status: isEnrolled ? 'Completed' : (a.enrollment_status || 'Pending'),
+            is_verified: isEnrolled,
+            associate_enrollment_id: a.associate_enrollment_id || matchedEnroll?.associate_id || matchedEnroll?.id
+          };
+        });
+
+        this.total = totalCount;
         this.loading = false;
       },
       error: () => {
+        this.associates = [];
+        this.total = 0;
         this.loading = false;
       }
     });
@@ -286,31 +323,33 @@ export class AssociatesComponent implements OnInit {
   }
 
   get activeCount(): number {
-    return this.associates.filter(a => a.account_status === 'Active').length;
+    return this.associates.filter(a => (a.account_status || 'Active').toLowerCase() === 'active').length;
   }
 
   get pendingCount(): number {
-    return this.associates.filter(a => a.account_status === 'Pending').length;
+    return this.associates.filter(a => (a.account_status || '').toLowerCase() === 'pending').length;
   }
 
   get suspendedCount(): number {
-    return this.associates.filter(a => a.account_status === 'Suspended' || a.account_status === 'Blacklisted').length;
+    return this.associates.filter(a => ['suspended', 'blacklisted', 'inactive'].includes((a.account_status || '').toLowerCase())).length;
   }
 
   get filtered(): any[] {
     return this.associates.filter(a => {
+      const status = (a.account_status || 'Active').toLowerCase();
       const matchStatus =
         this.statusFilter === 'all' ? true :
-        a.account_status?.toLowerCase() === this.statusFilter.toLowerCase();
+        status === this.statusFilter.toLowerCase();
 
       const q = this.search.trim().toLowerCase();
       const matchSearch = !q ||
-        a.full_name?.toLowerCase().includes(q) ||
-        a.mobile_no?.includes(q) ||
-        a.email?.toLowerCase().includes(q) ||
-        a.member_id?.toLowerCase().includes(q) ||
-        a.invitation_code?.toLowerCase().includes(q) ||
-        a.rank_name?.toLowerCase().includes(q);
+        (a.full_name && a.full_name.toLowerCase().includes(q)) ||
+        (a.mobile_no && String(a.mobile_no).includes(q)) ||
+        (a.email && a.email.toLowerCase().includes(q)) ||
+        (a.member_id && a.member_id.toLowerCase().includes(q)) ||
+        (a.invitation_code && a.invitation_code.toLowerCase().includes(q)) ||
+        (a.sponsor_code && a.sponsor_code.toLowerCase().includes(q)) ||
+        (a.rank_name && a.rank_name.toLowerCase().includes(q));
 
       return matchStatus && matchSearch;
     });
