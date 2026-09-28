@@ -170,23 +170,23 @@
             </td>
             <td class="text-end">
               <div class="dropdown d-inline-block position-relative">
-                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === a.user_id ? null : a.user_id)">
+                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="toggleDropdown(i, $event)">
                   <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
                 </button>
 
-                <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 185px; border-radius: 10px;" *ngIf="activeRowId === a.user_id" (click)="$event.stopPropagation()">
-                  <button type="button" class="dropdown-item py-1.5 px-3 fw-600 d-flex align-items-center" [class.text-danger]="a.account_status==='Active'" [class.text-success]="a.account_status!=='Active'" (click)="toggleAssociateStatus(a); activeRowId = null">
+                <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 185px; border-radius: 10px;" *ngIf="activeRowIndex === i" (click)="$event.stopPropagation()">
+                  <button type="button" class="dropdown-item py-1.5 px-3 fw-600 d-flex align-items-center" [class.text-danger]="a.account_status==='Active'" [class.text-success]="a.account_status!=='Active'" (click)="toggleAssociateStatus(a); activeRowIndex = null">
                     <i [class]="a.account_status==='Active' ? 'fas fa-ban text-danger me-2 width-16' : 'fas fa-check-circle text-success me-2 width-16'"></i>
                     {{ a.account_status==='Active' ? 'Suspend Associate' : 'Activate / Enable Associate' }}
                   </button>
                   <div class="dropdown-divider my-1"></div>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openEditModal(a); activeRowId = null">
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openEditModal(a); activeRowIndex = null">
                     <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Rank &amp; Status
                   </button>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openDetailModal(a); activeRowId = null">
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openDetailModal(a); activeRowIndex = null">
                     <i class="fas fa-sitemap text-info me-2 width-16"></i> KYC &amp; Network
                   </button>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="impersonateAssociate(a); activeRowId = null">
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="impersonateAssociate(a); activeRowIndex = null">
                     <i class="fas fa-sign-in-alt text-primary me-2 width-16"></i> Login as User
                   </button>
                   <div class="dropdown-divider my-1"></div>
@@ -197,7 +197,7 @@
                     <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
                   </a>
                   <div class="dropdown-divider my-1"></div>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="deleteAssociate(a); activeRowId = null">
+                  <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="deleteAssociate(a); activeRowIndex = null">
                     <i class="fas fa-trash-alt text-danger me-2 width-16"></i> Delete Associate
                   </button>
                 </div>

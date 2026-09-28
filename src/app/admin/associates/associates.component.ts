@@ -23,11 +23,16 @@ export class AssociatesComponent implements OnInit {
   search = '';
   statusFilter = 'all';
   associates: any[] = [];
-  activeRowId: any = null;
+  activeRowIndex: number | null = null;
 
   @HostListener('document:click')
   closeDropdowns() {
-    this.activeRowId = null;
+    this.activeRowIndex = null;
+  }
+
+  toggleDropdown(index: number, event: MouseEvent) {
+    event.stopPropagation();
+    this.activeRowIndex = this.activeRowIndex === index ? null : index;
   }
   total = 0;
   page = 1;
