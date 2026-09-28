@@ -295,19 +295,24 @@ export class AssociatesComponent implements OnInit {
           const memId = a.member_id ? String(a.member_id).toUpperCase().trim() : '';
           const uId = a.user_id ? String(a.user_id) : '';
 
-          const matchedEnroll = enrollMap.get(uId) || (memId ? enrollMap.get(memId) : null) || (mob ? enrollMap.get(mob) : null) || (email ? enrollMap.get(email) : null);
+          const matchedEnroll = (uId ? enrollMap.get(uId) : null) || 
+                                (memId ? enrollMap.get(memId) : null) || 
+                                (mob ? enrollMap.get(mob) : null) || 
+                                (email ? enrollMap.get(email) : null);
           
-          const isEnrolled = a.is_verified === true ||
-                             Boolean(a.associate_enrollment_id) ||
-                             ['completed', 'submitted', 'approved'].includes(String(a.enrollment_status || '').toLowerCase()) ||
-                             Boolean(matchedEnroll);
+          const hasCompletedEnrollment = Boolean(matchedEnroll) || 
+                                         Boolean(a.associate_enrollment_id) || 
+                                         ['completed', 'submitted', 'approved'].includes(String(a.enrollment_status || '').toLowerCase());
 
           return {
             ...a,
             account_status: a.account_status || 'Active',
-            enrollment_status: isEnrolled ? 'Completed' : (a.enrollment_status || 'Pending'),
-            is_verified: isEnrolled,
-            associate_enrollment_id: a.associate_enrollment_id || matchedEnroll?.associate_id || matchedEnroll?.id
+            enrollment_status: hasCompletedEnrollment ? 'Completed' : 'Pending',
+            is_verified: hasCompletedEnrollment,
+            isVerified: hasCompletedEnrollment,
+            is_enrolled: hasCompletedEnrollment,
+            isEnrolled: hasCompletedEnrollment,
+            associate_enrollment_id: hasCompletedEnrollment ? (a.associate_enrollment_id || matchedEnroll?.associate_id || matchedEnroll?.id) : null
           };
         });
 

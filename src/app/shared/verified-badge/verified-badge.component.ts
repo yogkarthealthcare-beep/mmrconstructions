@@ -81,21 +81,19 @@ export class VerifiedBadgeComponent {
   @Input() showLabel: boolean = false;
 
   get isUserVerified(): boolean {
-    if (this.isVerified !== undefined) {
+    if (this.isVerified !== undefined && this.isVerified !== null) {
       return Boolean(this.isVerified);
     }
     if (!this.user) return false;
     const u = this.user;
 
     // 1. Presence of enrollment record ID (Associate, Customer, Investor)
-    if (
+    const hasEnrollmentId = Boolean(
       u.customer_enrollment_id ||
       u.associate_enrollment_id ||
       u.investor_enrollment_id ||
       u.enrollment_id
-    ) {
-      return true;
-    }
+    );
 
     // 2. Enrollment Status checks (Completed, Submitted, Approved)
     const status = String(
@@ -106,34 +104,25 @@ export class VerifiedBadgeComponent {
       u.appStatus ||
       ''
     ).toLowerCase().trim();
-    if (status === 'completed' || status === 'submitted' || status === 'approved') {
-      return true;
-    }
+    const hasCompletedStatus = status === 'completed' || status === 'submitted' || status === 'approved';
 
     // 3. Enrolled boolean flags
-    if (
+    const hasEnrolledFlag = (
       u.is_enrolled === true ||
       u.isEnrolled === true ||
       u.enrollment_completed === true ||
       u.enrollment_form_submitted === true ||
-      u.has_enrollment === true ||
-      String(u.is_enrolled).toLowerCase() === 'true'
-    ) {
-      return true;
+      u.has_enrollment === true
+    );
+
+    // If explicit is_verified or isVerified boolean is provided in user object
+    if (u.is_verified !== undefined && typeof u.is_verified === 'boolean') {
+      return u.is_verified && (hasEnrollmentId || hasCompletedStatus || hasEnrolledFlag);
+    }
+    if (u.isVerified !== undefined && typeof u.isVerified === 'boolean') {
+      return u.isVerified && (hasEnrollmentId || hasCompletedStatus || hasEnrolledFlag);
     }
 
-    // 4. Direct is_verified boolean/string flags
-    if (
-      u.is_verified === true ||
-      u.isVerified === true ||
-      u.is_verified === 1 ||
-      u.isVerified === 1 ||
-      String(u.is_verified).toLowerCase() === 'true' ||
-      String(u.isVerified).toLowerCase() === 'true'
-    ) {
-      return true;
-    }
-
-    return false;
+    return hasEnrollmentId || hasCompletedStatus || hasEnrolledFlag;
   }
 }
