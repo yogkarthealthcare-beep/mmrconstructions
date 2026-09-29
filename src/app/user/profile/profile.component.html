@@ -28,14 +28,14 @@
       </div>
       <div>
         <h4 class="fw-700 text-white mb-1 d-flex align-items-center gap-1.5">
-          <span>{{ profile.full_name }}</span>
+          <span>{{ profile.full_name || 'Member' }}</span>
           <app-verified-badge [user]="profile" size="md"></app-verified-badge>
         </h4>
         <div class="d-flex align-items-center gap-2 flex-wrap">
-          <span class="badge bg-white-15 text-white"><i class="fas fa-id-badge me-1"></i>ID: {{ profile.member_id || '—' }}</span>
-          <span class="badge bg-gold text-dark fw-800">{{ profile.user_type || 'Associate' }}</span>
+          <span class="badge bg-white-15 text-white"><i class="fas fa-id-badge me-1"></i>ID: {{ profile.member_id || profile.application_no || profile.invitation_code || '—' }}</span>
+          <span class="badge bg-gold text-dark fw-800">{{ profile.user_type || (profile.is_associate ? 'Associate' : 'Customer') }}</span>
           <span class="sbadge" [class.sbadge-green]="profile.account_status==='Active'" [class.sbadge-yellow]="profile.account_status==='Pending'">
-            {{ profile.account_status }} Account
+            {{ profile.account_status || 'Active' }} Account
           </span>
         </div>
       </div>
@@ -81,15 +81,15 @@
         <div class="row g-2">
           <div class="col-sm-6">
             <label class="form-label-custom mb-1">Email Address</label>
-            <input type="email" class="form-control custom-input" [(ngModel)]="editable.email" [disabled]="!editMode"/>
+            <input type="email" class="form-control custom-input" [(ngModel)]="editable.email" [disabled]="!editMode" placeholder="e.g. name@example.com"/>
           </div>
           <div class="col-sm-6">
             <label class="form-label-custom mb-1">Alternate Phone</label>
-            <input type="tel" class="form-control custom-input" [(ngModel)]="editable.alternate_mobile" [disabled]="!editMode"/>
+            <input type="tel" class="form-control custom-input" [(ngModel)]="editable.alternate_mobile" [disabled]="!editMode" placeholder="10-digit mobile"/>
           </div>
           <div class="col-sm-6">
             <label class="form-label-custom mb-1">Spouse Name</label>
-            <input type="text" class="form-control custom-input" [(ngModel)]="editable.spouse_name" [disabled]="!editMode"/>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.spouse_name" [disabled]="!editMode" placeholder="Spouse name"/>
           </div>
         </div>
       </div>
@@ -100,19 +100,27 @@
         <div class="row g-2">
           <div class="col-sm-6">
             <label class="form-label-custom mb-1">Account Holder Name</label>
-            <input type="text" class="form-control custom-input" [(ngModel)]="editable.account_holder_name" [disabled]="!editMode"/>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.account_holder_name" [disabled]="!editMode" placeholder="Account holder name"/>
           </div>
           <div class="col-sm-6">
             <label class="form-label-custom mb-1">Bank Name</label>
-            <input type="text" class="form-control custom-input" [(ngModel)]="editable.bank_name" [disabled]="!editMode"/>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.bank_name" [disabled]="!editMode" placeholder="Bank name"/>
           </div>
           <div class="col-sm-6">
             <label class="form-label-custom mb-1">Branch Name</label>
-            <input type="text" class="form-control custom-input" [(ngModel)]="editable.branch_name" [disabled]="!editMode"/>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.branch_name" [disabled]="!editMode" placeholder="Branch name"/>
           </div>
-          <div class="col-12">
+          <div class="col-sm-6" *ngIf="editMode">
+            <label class="form-label-custom mb-1">IFSC Code</label>
+            <input type="text" class="form-control custom-input text-uppercase" [(ngModel)]="editable.ifsc_code" placeholder="e.g. SBIN0001234"/>
+          </div>
+          <div class="col-12" *ngIf="editMode">
+            <label class="form-label-custom mb-1">Account Number</label>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.account_number" placeholder="Enter bank account number"/>
+          </div>
+          <div class="col-12" *ngIf="!editMode">
             <div class="p-2 px-3 bg-white rounded-3 border fs-12 text-dark fw-600">
-              Account No: <strong>{{ profile.account_number || '—' }}</strong> &nbsp;·&nbsp; IFSC Code: <strong>{{ profile.ifsc_code || '—' }}</strong>
+              Account No: <strong>{{ profile.account_number || editable.account_number || '—' }}</strong> &nbsp;·&nbsp; IFSC Code: <strong>{{ profile.ifsc_code || editable.ifsc_code || '—' }}</strong>
             </div>
           </div>
         </div>
@@ -124,11 +132,11 @@
         <div class="row g-2">
           <div class="col-sm-6">
             <label class="form-label-custom mb-1">Nominee Name</label>
-            <input type="text" class="form-control custom-input" [(ngModel)]="editable.nominee_name" [disabled]="!editMode"/>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.nominee_name" [disabled]="!editMode" placeholder="Nominee full name"/>
           </div>
           <div class="col-sm-6">
             <label class="form-label-custom mb-1">Relationship</label>
-            <input type="text" class="form-control custom-input" [(ngModel)]="editable.nominee_relationship" [disabled]="!editMode"/>
+            <input type="text" class="form-control custom-input" [(ngModel)]="editable.nominee_relationship" [disabled]="!editMode" placeholder="e.g. Spouse / Son / Daughter"/>
           </div>
         </div>
       </div>

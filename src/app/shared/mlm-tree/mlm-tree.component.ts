@@ -196,14 +196,39 @@ export class MlmTreeComponent implements OnInit {
   private buildTree(profile: any, network: any[]) {
     const root = this.toNode(profile, 1, 0);
     const nodes = network.map((item, index) => this.toNode(item, Math.min(Number(item.level || item.depth || 2), this.maxDepthAllowed), index + 1));
-    const byId = new Map<string, MlmNode>([[root.id, root], ...nodes.map(node => [node.id, node] as [string, MlmNode])]);
+    
+    // Index all nodes by userId, memberCode, and id for versatile key matching
+    const byId = new Map<string, MlmNode>();
+
+    const indexNode = (node: MlmNode) => {
+      if (node.userId) byId.set(String(node.userId), node);
+      if (node.memberCode) byId.set(String(node.memberCode), node);
+      if (node.id) byId.set(String(node.id), node);
+    };
+
+    indexNode(root);
+    nodes.forEach(node => indexNode(node));
+
     let attached = 0;
 
-    for (const node of nodes) {
-      const parentKey = String((network.find(item => this.nodeId(item) === node.id) || {}).parent_member_id || (network.find(item => this.nodeId(item) === node.id) || {}).sponsor_user_id || (network.find(item => this.nodeId(item) === node.id) || {}).sponsor_member_id || '');
-      const parent = byId.get(parentKey);
-      if (parent && node.level > parent.level && node.level <= this.maxDepthAllowed) {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      const item = network[i] || {};
+      const sponsorKey = item.sponsor_user_id ? String(item.sponsor_user_id) : '';
+      const sponsorMemberKey = item.sponsor_member_id || item.sponsor_id || item.parent_member_id ? String(item.sponsor_member_id || item.sponsor_id || item.parent_member_id) : '';
+      
+      const parent = (sponsorKey ? byId.get(sponsorKey) : null) || 
+                     (sponsorMemberKey ? byId.get(sponsorMemberKey) : null) || 
+                     (node.sponsorId ? byId.get(String(node.sponsorId)) : null);
+
+      if (parent && parent !== node) {
         parent.children.push(node);
+        attached++;
+      } else if (sponsorKey && (sponsorKey === String(root.userId) || sponsorKey === String(profile?.user_id) || sponsorKey === String(profile?.id))) {
+        root.children.push(node);
+        attached++;
+      } else if (sponsorMemberKey && (sponsorMemberKey === String(root.memberCode) || sponsorMemberKey === String(profile?.member_id))) {
+        root.children.push(node);
         attached++;
       }
     }

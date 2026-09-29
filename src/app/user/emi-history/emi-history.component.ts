@@ -5,12 +5,14 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { RazorpayService } from '../../services/razorpay.service';
 
+import { BankDetailsComponent } from '../../shared/components/bank-details/bank-details.component';
+
 declare var Razorpay: any;
 
 @Component({
   selector: 'app-emi-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, BankDetailsComponent],
   templateUrl: './emi-history.component.html',
   styleUrls: ['./emi-history.component.css']
 })

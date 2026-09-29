@@ -1,0 +1,58 @@
+<div class="bank-details-wrapper" [class.compact-mode]="compact">
+  <!-- Card Header -->
+  <div class="bank-details-header">
+    <div class="header-left">
+      <div class="bank-icon-badge">
+        <i class="fas fa-university"></i>
+      </div>
+      <div>
+        <h6 class="bank-section-title">{{ title }}</h6>
+        <p class="bank-section-sub" *ngIf="subtitle">{{ subtitle }}</p>
+      </div>
+    </div>
+    <div class="header-badge" *ngIf="!compact">
+      <span class="badge-official"><i class="fas fa-shield-alt text-emerald me-1"></i>Official A/C</span>
+    </div>
+  </div>
+
+  <!-- Bank Details Grid -->
+  <div class="bank-details-grid">
+    <div
+      *ngFor="let item of details"
+      class="bank-field-card"
+      [class.field-highlight]="item.highlight"
+      [class.field-fullwidth]="item.isFullWidth"
+    >
+      <div class="field-content">
+        <span class="field-label">{{ item.label }}</span>
+        <span
+          class="field-value"
+          [class.font-mono]="item.isMonospace"
+          [class.value-highlight]="item.highlight"
+        >
+          {{ item.value }}
+        </span>
+        <span class="field-subtext" *ngIf="item.subtext">{{ item.subtext }}</span>
+      </div>
+
+      <button
+        *ngIf="item.copyable !== false"
+        type="button"
+        class="btn-copy-action"
+        [class.is-copied]="copiedKey === item.key"
+        (click)="copyToClipboard(item.value, item.key)"
+        [attr.aria-label]="'Copy ' + item.label"
+        title="Copy to clipboard"
+      >
+        <i [class]="copiedKey === item.key ? 'fas fa-check' : 'far fa-copy'"></i>
+        <span class="copy-text">{{ copiedKey === item.key ? 'Copied' : 'Copy' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Security note / footer notice -->
+  <div class="bank-details-footer" *ngIf="showFooterNote">
+    <i class="fas fa-info-circle text-gold me-1.5 flex-shrink-0"></i>
+    <span>Verify all account details carefully before transferring. Save the transaction UTR number to submit below.</span>
+  </div>
+</div>

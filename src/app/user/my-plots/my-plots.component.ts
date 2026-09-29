@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { BankDetailsComponent } from '../../shared/components/bank-details/bank-details.component';
 
 @Component({
   selector: 'app-my-plots',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, BankDetailsComponent],
   templateUrl: './my-plots.component.html',
   styleUrls: ['./my-plots.component.css']
 })

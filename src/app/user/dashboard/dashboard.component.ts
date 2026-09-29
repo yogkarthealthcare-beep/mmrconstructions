@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService, BASE_URL } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
+import { BankDetailsComponent } from '../../shared/components/bank-details/bank-details.component';
 
 export interface PropertyDossier {
   booking_id: number;
@@ -34,7 +35,7 @@ export interface PropertyDossier {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, VerifiedBadgeComponent],
+  imports: [CommonModule, RouterLink, FormsModule, VerifiedBadgeComponent, BankDetailsComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })

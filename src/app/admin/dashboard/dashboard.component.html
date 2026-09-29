@@ -34,21 +34,19 @@
          class="stat-card-link text-decoration-none d-block h-100"
          [attr.aria-label]="s.lbl + ': ' + getStatVal(s.key) + ' (' + s.delta + '). Click to view report.'">
         <div class="stat-mini-card h-100" [class]="s.boxClass">
-          <div class="d-flex align-items-center justify-content-between mb-1.5 w-100">
-            <span class="stat-mini-lbl text-truncate">{{ s.lbl }}</span>
+          <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+            <span class="stat-mini-lbl text-truncate pe-1">{{ s.lbl }}</span>
             <div class="icon-wrap" [style.background]="s.bg" [style.color]="s.color">
               <i [class]="s.icon"></i>
             </div>
           </div>
-          <div class="stat-mini-val mb-1">{{ getStatVal(s.key) }}</div>
+          <div class="stat-mini-val">{{ getStatVal(s.key) }}</div>
           <div class="d-flex align-items-center justify-content-between fs-11 mt-auto pt-1">
-            <div class="d-flex align-items-center gap-1.5 min-w-0">
-              <span [style.color]="s.color" class="fw-700 fs-10">
-                <i [class]="s.up ? 'fas fa-arrow-up' : 'fas fa-exclamation-circle'"></i>
-              </span>
-              <span class="text-muted fw-600 fs-11 text-truncate">{{ s.delta }}</span>
+            <div class="kpi-pill-badge" [style.color]="s.color">
+              <i [class]="s.up ? 'fas fa-arrow-up' : 'fas fa-exclamation-circle'"></i>
+              <span class="text-truncate fw-600">{{ s.delta }}</span>
             </div>
-            <span class="kpi-nav-indicator" [style.color]="s.color" title="View details">
+            <span class="kpi-nav-indicator" [style.color]="s.color" title="View report">
               <i class="fas fa-chevron-right fs-10"></i>
             </span>
           </div>
@@ -62,15 +60,18 @@
     
     <!-- LEFT: LIVE SITE OCCUPANCY -->
     <div class="col-lg-5">
-      <div class="panel-card h-100">
+      <div class="panel-card h-100 d-flex flex-column">
         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-          <h6 class="fw-700 text-dark mb-0"><i class="fas fa-map-marked-alt text-emerald me-2"></i>Live Site Occupancy</h6>
-          <a routerLink="/admin/sites" class="btn btn-link btn-xs text-gold-dark text-decoration-none p-0 fw-700" aria-label="Manage Sites">Manage Sites →</a>
+          <h6 class="section-card-title mb-0"><i class="fas fa-map-marked-alt text-emerald me-2"></i>Live Site Occupancy</h6>
+          <a routerLink="/admin/sites" class="section-link-btn" aria-label="Manage Sites">Manage Sites →</a>
         </div>
 
-        <div *ngIf="sites.length === 0" class="text-center py-4">
-          <i class="fas fa-map-marked-alt text-muted fs-2 mb-2"></i>
-          <p class="text-muted fs-12 mb-0">No active site data available</p>
+        <div *ngIf="sites.length === 0" class="empty-state-box text-center py-4 my-auto">
+          <div class="empty-icon-circle mb-2">
+            <i class="fas fa-map-marked-alt"></i>
+          </div>
+          <p class="empty-title mb-1">No active site data available</p>
+          <span class="empty-sub">Sites and layout plots will appear here once added.</span>
         </div>
 
         <div *ngFor="let s of sites" class="site-occ-item mb-2.5">
@@ -91,15 +92,18 @@
 
     <!-- RIGHT: RECENT PLOT BOOKINGS -->
     <div class="col-lg-7">
-      <div class="panel-card h-100">
+      <div class="panel-card h-100 d-flex flex-column">
         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-          <h6 class="fw-700 text-dark mb-0"><i class="fas fa-calendar-alt text-gold me-2"></i>Recent Plot Bookings</h6>
-          <a routerLink="/admin/booking-report" class="btn btn-link btn-xs text-gold-dark text-decoration-none p-0 fw-700" aria-label="View All Bookings">View All Bookings →</a>
+          <h6 class="section-card-title mb-0"><i class="fas fa-calendar-alt text-gold me-2"></i>Recent Plot Bookings</h6>
+          <a routerLink="/admin/booking-report" class="section-link-btn" aria-label="View All Bookings">View All Bookings →</a>
         </div>
 
-        <div *ngIf="recentBookings.length === 0" class="text-center py-4">
-          <i class="fas fa-calendar-times text-muted fs-2 mb-2"></i>
-          <p class="text-muted fs-12 mb-0">No recent plot bookings recorded</p>
+        <div *ngIf="recentBookings.length === 0" class="empty-state-box text-center py-4 my-auto">
+          <div class="empty-icon-circle mb-2">
+            <i class="fas fa-calendar-times"></i>
+          </div>
+          <p class="empty-title mb-1">No recent plot bookings recorded</p>
+          <span class="empty-sub">Latest customer and associate bookings will show here.</span>
         </div>
 
         <div class="table-responsive" *ngIf="recentBookings.length > 0">

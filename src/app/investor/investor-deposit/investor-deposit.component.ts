@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { BankDetailsComponent } from '../../shared/components/bank-details/bank-details.component';
 
 @Component({
   selector: 'app-investor-deposit',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BankDetailsComponent],
   templateUrl: './investor-deposit.component.html',
   styleUrls: ['./investor-deposit.component.css']
 })

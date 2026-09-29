@@ -26,6 +26,8 @@ export class ProfileComponent implements OnInit {
     bank_name: '',
     account_holder_name: '',
     branch_name: '',
+    account_number: '',
+    ifsc_code: '',
     nominee_name: '',
     nominee_relationship: ''
   };
@@ -44,6 +46,8 @@ export class ProfileComponent implements OnInit {
             bank_name: this.profile.bank_name || '',
             account_holder_name: this.profile.account_holder_name || '',
             branch_name: this.profile.branch_name || '',
+            account_number: this.profile.account_number || '',
+            ifsc_code: this.profile.ifsc_code || '',
             nominee_name: this.profile.nominee_name || '',
             nominee_relationship: this.profile.nominee_relationship || '',
           };
