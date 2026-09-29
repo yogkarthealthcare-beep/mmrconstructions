@@ -414,8 +414,8 @@
             <h5 class="modal-title mb-0 fw-bold text-white font-sans">
               {{ getPlotTitle(selectedPlotForDossier) }} · {{ selectedPlotForDossier?.site_name }}
             </h5>
-            <small class="text-light opacity-75 fs-11">
-              Booking Serial: {{ selectedPlotForDossier?.booking_serial }} <span *ngIf="selectedPlotForDossier?.area_gaj">· Area: {{ selectedPlotForDossier?.area_gaj }} Gaj ({{ selectedPlotForDossier?.area_sqft }} sq.ft)</span>
+            <small class="text-light opacity-75 fs-11" *ngIf="selectedPlotForDossier as plot">
+              Booking Serial: {{ plot.booking_serial }} <span *ngIf="plot.area_gaj">· Area: {{ plot.area_gaj }} Gaj ({{ plot.area_sqft }} sq.ft)</span>
             </small>
           </div>
         </div>
@@ -884,7 +884,7 @@
             </div>
             <div class="d-flex justify-content-between align-items-center mt-1">
               <small class="text-muted fs-10">Minimum payment: ₹100</small>
-              <small class="text-muted fs-10" *ngIf="selectedPropertyForPayment?.next_emi">EMI Amount: <strong>₹{{ selectedPropertyForPayment?.next_emi?.emi_amount | number }}</strong></small>
+              <small class="text-muted fs-10" *ngIf="selectedPropertyForPayment?.next_emi as nextEmi">EMI Amount: <strong>₹{{ nextEmi.emi_amount | number }}</strong></small>
             </div>
           </div>
 
