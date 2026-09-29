@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { RouterLink, RouterOutlet, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { RouterLink, RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { SiteToggleService } from '../../services/site-toggle.service';
@@ -26,7 +26,7 @@ interface NavGroup {
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, RouterLinkActive, CommonModule],
+  imports: [RouterLink, RouterOutlet, CommonModule],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css']
 })
