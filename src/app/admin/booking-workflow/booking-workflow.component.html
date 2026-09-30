@@ -35,7 +35,7 @@
     <tbody><tr *ngFor="let row of filteredKyc">
       <td><strong>{{ row.full_name }}</strong><div class="fs-12 text-muted">{{ row.email }} · {{ row.mobile_no }}</div></td>
       <td><span class="sbadge" [class.sbadge-green]="row.status==='Approved'" [class.sbadge-red]="row.status==='Rejected'" [class.sbadge-yellow]="row.status!=='Approved'&&row.status!=='Rejected'">{{ row.status }}</span></td>
-      <td><div *ngFor="let doc of row.documents"><a [href]="doc.file_path" target="_blank">{{ doc.document_type }}</a></div></td>
+      <td><div *ngFor="let doc of row.documents"><a [href]="getDocUrl(doc)" target="_blank" rel="noopener noreferrer">{{ doc.document_type }}</a></div></td>
       <td class="fs-12">{{ row.admin_remarks || '—' }}</td>
       <td><div class="d-flex gap-1"><button class="action-btn" title="Under Review" (click)="setKyc(row,'Under Review')"><i class="fas fa-search"></i></button><button class="action-btn success" title="Approve" (click)="setKyc(row,'Approved')"><i class="fas fa-check"></i></button><button class="action-btn danger" title="Reject / Re-upload" (click)="setKyc(row,'Rejected')"><i class="fas fa-times"></i></button></div></td>
     </tr></tbody>

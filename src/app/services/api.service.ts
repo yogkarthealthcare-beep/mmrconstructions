@@ -63,6 +63,18 @@ export class ApiService {
   del(path: string, admin = false): Observable<any> {
     return this.delete(path, admin);
   }
+
+  getFileUrl(path: string | null | undefined): string {
+    if (!path) return '';
+    const clean = String(path).trim();
+    if (!clean) return '';
+    if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('data:')) {
+      return clean;
+    }
+    const base = (BASE_URL || 'https://api.mmrconstructions.in').replace(/\/$/, '');
+    const normalized = clean.startsWith('/') ? clean : `/${clean}`;
+    return `${base}${normalized}`;
+  }
   postForm(path: string, form: FormData, admin = false): Observable<any> {
     return this.http.post(`${BASE_URL}${path}`, form, { headers: this.headers(admin, path) });
   }

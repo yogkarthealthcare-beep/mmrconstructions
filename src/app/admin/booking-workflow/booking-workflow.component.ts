@@ -61,6 +61,12 @@ export class BookingWorkflowComponent implements OnInit {
     return this.statusFilter ? this.kycRows.filter(row => row.status === this.statusFilter) : this.kycRows;
   }
 
+  getDocUrl(doc: any): string {
+    if (!doc) return '#';
+    const path = doc.document_path || doc.file_path || doc.url || doc.file_url || '';
+    return this.api.getFileUrl(path) || '#';
+  }
+
   showToast(message: string) {
     this.toast = message;
     setTimeout(() => this.toast = '', 3000);

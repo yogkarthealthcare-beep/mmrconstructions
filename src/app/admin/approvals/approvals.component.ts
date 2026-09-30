@@ -323,6 +323,25 @@ export class ApprovalsComponent implements OnInit {
     });
   }
 
+  getDocUrl(doc: any): string {
+    if (!doc) return '#';
+    const path = doc.document_path || doc.file_path || doc.url || doc.file_url || '';
+    return this.api.getFileUrl(path) || '#';
+  }
+
+  openDoc(doc: any, event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    const url = this.getDocUrl(doc);
+    if (url && url !== '#') {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      this.showToast('Document file URL is not available.');
+    }
+  }
+
   closeModals() {
     this.showDetailModal = false;
     this.showRejectModal = false;
