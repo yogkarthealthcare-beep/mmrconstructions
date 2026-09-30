@@ -232,21 +232,41 @@ export class ApprovalsComponent implements OnInit {
   // --- ACTIONS ---
 
   approve(u: any) {
-    if (this.actionLoading) return;
+    if (this.actionLoading || !u) return;
     this.actionLoading = true;
     this.api.adminApproveUser(u.user_id, 'Approved via Admin Panel').subscribe({
       next: (res: any) => {
         if (res.success) {
           u.account_status = 'Active';
+          u.is_verified = true;
+          u.enrollment_status = 'Completed';
           if (res.data?.member_id) u.member_id = res.data.member_id;
-          this.showToast(`User ${u.full_name} approved successfully!`);
+          if (u.documents && Array.isArray(u.documents)) {
+            u.documents.forEach((d: any) => {
+              d.is_verified = true;
+              d.review_status = 'Approved';
+            });
+          }
+          if (this.selectedUser) {
+            this.selectedUser.account_status = 'Active';
+            this.selectedUser.is_verified = true;
+            this.selectedUser.enrollment_status = 'Completed';
+            if (this.selectedUser.documents && Array.isArray(this.selectedUser.documents)) {
+              this.selectedUser.documents.forEach((d: any) => {
+                d.is_verified = true;
+                d.review_status = 'Approved';
+              });
+            }
+          }
+          this.showToast(`User ${u.full_name} & KYC documents approved successfully!`);
           this.closeModals();
           this.loadAllStats();
+          this.loadData();
         }
         this.actionLoading = false;
       },
       error: (e: any) => {
-        this.showToast(e?.error?.message || 'Failed to approve user');
+        this.showToast(e?.error?.message || 'Failed to approve user / KYC documents');
         this.actionLoading = false;
       }
     });
@@ -346,6 +366,14 @@ export class ApprovalsComponent implements OnInit {
     this.showDetailModal = false;
     this.showRejectModal = false;
     this.showInfoModal = false;
+  }
+
+  get isKycFullyVerified(): boolean {
+    const docs = this.selectedUser?.documents || [];
+    if (docs.length === 0) {
+      return this.selectedUser?.account_status === 'Active' && Boolean(this.selectedUser?.is_verified);
+    }
+    return docs.every((d: any) => d.is_verified || d.review_status === 'Approved');
   }
 
   showToast(msg: string) {

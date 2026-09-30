@@ -73,13 +73,16 @@ export class DocumentsComponent implements OnInit {
   }
 
   previewDoc(doc: any) {
-    if (!doc?.document_url) return;
-    this.selectedDoc = doc;
+    if (!doc) return;
+    const path = doc.document_url || doc.file_path || doc.url || '';
+    if (!path) return;
+    this.selectedDoc = {
+      ...doc,
+      document_url: this.api.getFileUrl(path)
+    };
   }
 
   getImageUrl(url: string | undefined): string {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
-    return this.api.url(url);
+    return this.api.getFileUrl(url);
   }
 }

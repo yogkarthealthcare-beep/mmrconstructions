@@ -358,7 +358,12 @@
 
           <!-- DOCUMENTS LIST -->
           <div class="p-3 bg-light rounded-10 border">
-            <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-file-alt text-primary me-2"></i>Uploaded KYC Documents</h6>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="fw-700 text-dark fs-12 mb-0"><i class="fas fa-file-alt text-primary me-2"></i>Uploaded KYC Documents</h6>
+              <span class="badge fs-11" [ngClass]="isKycFullyVerified ? 'bg-success text-white' : 'bg-warning text-dark'">
+                {{ isKycFullyVerified ? 'All Documents Verified' : 'KYC Verification Pending' }}
+              </span>
+            </div>
             <div *ngIf="!selectedUser.documents || selectedUser.documents.length === 0" class="text-muted fs-12">
               No standalone KYC document files attached yet. Full submission forms available in Enrollment Management.
             </div>
@@ -368,9 +373,12 @@
                  (click)="openDoc(doc, $event)"
                  target="_blank" 
                  rel="noopener noreferrer" 
-                 class="btn btn-outline-primary btn-xs">
-                <i class="fas me-1" [ngClass]="doc.document_type?.toLowerCase()?.includes('photo') ? 'fa-image' : 'fa-file-pdf'"></i>
-                {{ doc.document_type || doc.file_name || 'Document' }}
+                 class="btn btn-outline-primary btn-xs d-inline-flex align-items-center gap-1">
+                <i class="fas" [ngClass]="doc.document_type?.toLowerCase()?.includes('photo') ? 'fa-image text-info' : 'fa-file-pdf text-danger'"></i>
+                <span>{{ doc.document_type || doc.file_name || 'Document' }}</span>
+                <span class="badge ms-1 px-1 py-0.5 fs-10" [ngClass]="doc.is_verified || doc.review_status === 'Approved' ? 'bg-success text-white' : 'bg-warning text-dark'">
+                  {{ doc.is_verified || doc.review_status === 'Approved' ? 'Verified' : 'Under Review' }}
+                </span>
               </a>
             </div>
           </div>
@@ -381,8 +389,12 @@
 
       <div class="modal-footer bg-light rounded-bottom-14 p-3">
         <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Close</button>
-        <button type="button" class="btn btn-emerald btn-xs" (click)="approve(selectedUser)" [disabled]="actionLoading || selectedUser?.account_status==='Active'">
-          <i class="fas fa-check me-1"></i> Approve Account
+        <button type="button" 
+                class="btn btn-emerald btn-xs" 
+                (click)="approve(selectedUser)" 
+                [disabled]="actionLoading || (selectedUser?.account_status==='Active' && isKycFullyVerified)">
+          <i class="fas fa-check me-1"></i>
+          {{ selectedUser?.account_status === 'Active' ? (isKycFullyVerified ? 'Account & KYC Approved' : 'Approve KYC Documents') : 'Approve Account & KYC' }}
         </button>
       </div>
 
