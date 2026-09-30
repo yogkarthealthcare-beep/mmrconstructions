@@ -733,10 +733,10 @@
 
     <div class="erp-modal-body p-3">
       
-      <!-- SECTION 1: Customer Search & Selection -->
+      <!-- SECTION 1: User / Customer Search & Selection -->
       <div class="modal-section-box mb-2.5">
         <label class="section-label-sm">
-          <i class="fas fa-user-check text-emerald me-1"></i> Customer Selection <span class="text-danger">*</span>
+          <i class="fas fa-user-check text-emerald me-1"></i> User Details / Allocation Account <span class="text-danger">*</span>
         </label>
         
         <!-- Search Input Bar (when no customer selected) -->
@@ -747,10 +747,10 @@
                    class="erp-input customer-search-field fs-12" 
                    [ngModel]="customerSearchQuery" 
                    (ngModelChange)="onCustomerSearchType($event)" 
-                   placeholder="Search by Name, User ID, Member ID (MMR-CUST-...), Mobile, or Email...">
+                   placeholder="Search by Name, MMR ID (e.g. MMR00001), User ID, Mobile, or Email...">
           </div>
           <div *ngIf="customerSearching" class="search-indicator fs-11 text-muted py-1">
-            <i class="fas fa-circle-notch fa-spin me-1 text-gold"></i> Searching customer directory...
+            <i class="fas fa-circle-notch fa-spin me-1 text-gold"></i> Searching directory...
           </div>
           
           <!-- Compact Autocomplete Results Dropdown -->
@@ -759,14 +759,14 @@
               <div class="d-flex justify-content-between align-items-center mb-0.5">
                 <strong class="cust-result-name">{{ c.full_name }}</strong>
                 <div class="d-flex gap-1 align-items-center">
-                  <span class="badge cust-badge-role">{{ c.user_type || 'Customer' }}</span>
+                  <span class="badge cust-badge-role" [ngClass]="c.user_type === 'Admin' || c.user_type === 'SuperAdmin' ? 'bg-primary' : ''">{{ c.user_type || 'User' }}</span>
                   <span class="badge cust-badge-kyc" [ngClass]="c.is_verified || c.account_status === 'Active' ? 'bg-success' : 'bg-warning text-dark'">
-                    {{ c.is_verified || c.account_status === 'Active' ? 'KYC Verified' : 'Pending KYC' }}
+                    {{ c.is_verified || c.account_status === 'Active' ? 'Active' : 'Pending' }}
                   </span>
                 </div>
               </div>
               <div class="cust-result-meta">
-                <span><i class="fas fa-id-card"></i>ID: {{ c.member_id || ('Cust #' + c.user_id) }}</span>
+                <span><i class="fas fa-id-card"></i>ID: {{ c.member_id || (c.user_id === 1 ? 'MMR00001' : ('ID #' + c.user_id)) }}</span>
                 <span><i class="fas fa-phone-alt"></i>{{ c.mobile_no }}</span>
                 <span *ngIf="c.email"><i class="fas fa-envelope"></i>{{ c.email }}</span>
                 <span *ngIf="c.sponsor_name" class="text-primary"><i class="fas fa-user-friends"></i>Ref: {{ c.sponsor_name }}</span>
@@ -784,9 +784,9 @@
                 <div class="d-flex align-items-center gap-1.5 flex-wrap">
                   <strong class="selected-cust-name">{{ selectedCustomer.full_name }}</strong>
                   <span class="selected-cust-badge-id">
-                    {{ selectedCustomer.member_id || ('Cust #' + (selectedCustomer.user_id || selectedCustomer.id)) }}
+                    {{ selectedCustomer.member_id || (selectedCustomer.user_id === 1 ? 'MMR00001' : ('ID #' + (selectedCustomer.user_id || selectedCustomer.id))) }}
                   </span>
-                  <span class="selected-cust-badge-role">{{ selectedCustomer.user_type || 'Customer' }}</span>
+                  <span class="selected-cust-badge-role">{{ selectedCustomer.user_type || 'User' }}</span>
                 </div>
                 <div class="selected-cust-meta">
                   <span><i class="fas fa-phone-alt me-1 text-muted"></i>{{ selectedCustomer.mobile_no }}</span>
@@ -795,7 +795,7 @@
                 </div>
               </div>
             </div>
-            <button type="button" class="btn btn-outline-secondary selected-cust-change-btn" (click)="clearSelectedCustomer()" title="Select another customer">
+            <button type="button" class="btn btn-outline-secondary selected-cust-change-btn" (click)="clearSelectedCustomer()" title="Select another user">
               <i class="fas fa-times me-1 text-danger"></i> Change
             </button>
           </div>

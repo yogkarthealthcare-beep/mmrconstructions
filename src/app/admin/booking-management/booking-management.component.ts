@@ -145,17 +145,17 @@ export class BookingManagementComponent implements OnInit {
     this.loadBookings();
     this.filterForm.valueChanges.subscribe(() => (this.page = 1));
 
-    // Debounced Customer Search
+    // Debounced User Search for Plot Allocation
     this.customerSearchInput$.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       switchMap((term) => {
-        if (!term || term.trim().length < 2) {
+        if (!term || term.trim().length < 1) {
           this.customerSearching = false;
-          return of({ data: [] });
+          return this.api.adminSearchUsers({ limit: 15 });
         }
         this.customerSearching = true;
-        return this.api.adminSearchUsers({ search: term.trim(), user_type: 'Customer', limit: 8 });
+        return this.api.adminSearchUsers({ search: term.trim(), limit: 20 });
       })
     ).subscribe({
       next: (res: any) => {
@@ -343,10 +343,22 @@ export class BookingManagementComponent implements OnInit {
   // ==========================================
   openAllocateModal(prefillCustomer: any = null, prefillInquiry: any = null) {
     this.selectedCustomer = prefillCustomer || null;
-    this.customerSearchQuery = prefillCustomer ? `${prefillCustomer.full_name} (${prefillCustomer.member_id || prefillCustomer.mobile_no || 'Cust #' + prefillCustomer.user_id})` : '';
+    this.customerSearchQuery = prefillCustomer ? `${prefillCustomer.full_name} — ${prefillCustomer.member_id || (prefillCustomer.user_id === 1 ? 'MMR00001' : 'ID #' + prefillCustomer.user_id)}` : '';
     this.customerSearchResults = [];
     this.customerSearching = false;
     this.linkedInquiryId = prefillInquiry?.inquiry_id || null;
+
+    if (!prefillCustomer) {
+      this.api.adminSearchUsers({ limit: 15 }).subscribe({
+        next: (res: any) => {
+          const list = Array.isArray(res) ? res : (res?.data || res?.users || res?.rows || []);
+          if (!this.selectedCustomer) {
+            this.customerSearchResults = list;
+          }
+        },
+        error: () => {}
+      });
+    }
 
     this.allocateSiteId = prefillInquiry?.site_id ? Number(prefillInquiry.site_id) : (this.sites.length > 0 ? this.sites[0].site_id : null);
     this.allocatePlotNumber = prefillInquiry?.plot_number ? String(prefillInquiry.plot_number).trim() : '';
@@ -369,7 +381,8 @@ export class BookingManagementComponent implements OnInit {
 
   selectCustomer(cust: any) {
     this.selectedCustomer = cust;
-    this.customerSearchQuery = `${cust.full_name} · ${cust.member_id || cust.mobile_no || 'Cust #' + cust.user_id}`;
+    const memberId = cust.member_id || (cust.user_id === 1 ? 'MMR00001' : ('ID #' + (cust.user_id || cust.id)));
+    this.customerSearchQuery = `${cust.full_name} — ${memberId}`;
     this.customerSearchResults = [];
   }
 
@@ -377,6 +390,15 @@ export class BookingManagementComponent implements OnInit {
     this.selectedCustomer = null;
     this.customerSearchQuery = '';
     this.customerSearchResults = [];
+    this.api.adminSearchUsers({ limit: 15 }).subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res?.data || res?.users || res?.rows || []);
+        if (!this.selectedCustomer) {
+          this.customerSearchResults = list;
+        }
+      },
+      error: () => {}
+    });
   }
 
   get totalPriceInput(): number {
@@ -410,7 +432,7 @@ export class BookingManagementComponent implements OnInit {
 
   submitPlotAllocation() {
     if (!this.selectedCustomer) {
-      this.showToast('Please search and select an active customer first.', 'error');
+      this.showToast('Please search and select an eligible user first.', 'error');
       return;
     }
     if (!this.allocateSiteId) {
