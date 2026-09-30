@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BankDetailsComponent } from '../../shared/components/bank-details/bank-details.component';
@@ -30,8 +31,10 @@ export class MyPlotsComponent implements OnInit {
   inquirySubmitting = false;
   inquiryForm: any = {
     project_name: '',
+    full_name: '',
     customer_name: '',
     phone: '',
+    mobile_no: '',
     email: '',
     preferred_plot_size: '',
     preferred_location: '',
@@ -49,7 +52,11 @@ export class MyPlotsComponent implements OnInit {
     proof_file: null as File | null
   };
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.loadAllData();
@@ -217,29 +224,75 @@ export class MyPlotsComponent implements OnInit {
 
   // Inquiry Modal Controls
   openInquiryModal(defaultSite?: string) {
+    const user = this.auth.getUser() || {};
+    const userName = user.full_name || user.name || '';
+    const userPhone = user.mobile_no || user.mobile || user.phone || '';
+    const userEmail = user.email || '';
+
     this.inquiryForm = {
       project_name: defaultSite || '',
-      customer_name: '',
-      phone: '',
-      email: '',
-      preferred_plot_size: '100 Gaj',
+      full_name: userName,
+      customer_name: userName,
+      phone: userPhone,
+      mobile_no: userPhone,
+      email: userEmail,
+      preferred_plot_size: '100 Gaj (900 Sq.Ft)',
       preferred_location: '',
-      budget_range: '',
+      budget_range: '₹5 Lakhs - ₹10 Lakhs',
       message: ''
     };
     this.showInquiryModal = true;
   }
 
   submitInquiry() {
-    if (!this.inquiryForm.customer_name || !this.inquiryForm.phone) {
-      this.showToast('Please provide your name and contact phone number.', 'error');
+    const rawName = String(this.inquiryForm.full_name || this.inquiryForm.customer_name || '').trim();
+    const rawPhone = String(this.inquiryForm.phone || this.inquiryForm.mobile_no || '').trim();
+
+    if (!rawName) {
+      this.showToast('Please enter your full name.', 'error');
       return;
     }
 
+    if (!rawPhone) {
+      this.showToast('Please enter your 10-digit mobile number.', 'error');
+      return;
+    }
+
+    let cleanMobile = rawPhone.replace(/\D/g, '');
+    if (cleanMobile.length === 11 && cleanMobile.startsWith('0')) {
+      cleanMobile = cleanMobile.slice(1);
+    } else if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
+      cleanMobile = cleanMobile.slice(2);
+    } else if (cleanMobile.length > 10) {
+      cleanMobile = cleanMobile.slice(-10);
+    }
+
+    if (!/^[6-9]\d{9}$/.test(cleanMobile)) {
+      this.showToast('Please enter a valid 10-digit Indian mobile number.', 'error');
+      return;
+    }
+
+    const extraDetails = [
+      this.inquiryForm.preferred_plot_size ? `Plot Size: ${this.inquiryForm.preferred_plot_size}` : '',
+      this.inquiryForm.budget_range ? `Budget: ${this.inquiryForm.budget_range}` : '',
+      this.inquiryForm.message ? `Remarks: ${this.inquiryForm.message}` : ''
+    ].filter(Boolean).join(' | ');
+
     this.inquirySubmitting = true;
     const payload = {
-      ...this.inquiryForm,
-      source_page: 'Customer Portal - My Plots'
+      full_name: rawName,
+      customer_name: rawName,
+      name: rawName,
+      mobile_no: cleanMobile,
+      phone: cleanMobile,
+      email: (this.inquiryForm.email || '').trim() || null,
+      site_name: this.inquiryForm.project_name || null,
+      project_name: this.inquiryForm.project_name || null,
+      inquiry_type: this.inquiryForm.preferred_plot_size ? `Plot Purchase (${this.inquiryForm.preferred_plot_size})` : 'Plot Purchase',
+      inquiry_message: extraDetails || 'Property inquiry submitted from My Plots portal',
+      preferred_plot_size: this.inquiryForm.preferred_plot_size || null,
+      budget_range: this.inquiryForm.budget_range || null,
+      source_page: this.router.url.includes('/associate') ? 'Associate Portal - My Plots' : 'Customer Portal - My Plots'
     };
 
     this.api.submitInquiry(payload).subscribe({
