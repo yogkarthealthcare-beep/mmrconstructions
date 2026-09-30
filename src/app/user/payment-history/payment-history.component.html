@@ -4,58 +4,80 @@
 </div>
 
 <!-- PAGE HERO HEADER BANNER -->
-<div class="payments-hero-card mb-2">
+<div class="payments-hero-card mb-3">
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
     <div>
-      <div class="payments-hero-badge"><i class="fas fa-file-invoice-dollar me-1"></i>FINANCIAL RECEIPTS LEDGER</div>
-      <h2 class="payments-hero-title mb-1">Official Payment Receipts &amp; Vouchers</h2>
-      <p class="payments-hero-sub mb-0">Browse confirmed property deposit records, print vouchers &amp; download dual-copy PDF receipts.</p>
+      <div class="payments-hero-badge">
+        <i class="fas fa-file-invoice-dollar me-1"></i>
+        {{ isAssociateUser ? 'ASSOCIATE FINANCIAL LEDGER & PAYMENTS' : 'FINANCIAL RECEIPTS LEDGER' }}
+      </div>
+      <h2 class="payments-hero-title mb-1">
+        {{ isAssociateUser ? 'Payment Records & Transaction History' : 'Official Payment Receipts & Vouchers' }}
+      </h2>
+      <p class="payments-hero-sub mb-0">
+        {{ isAssociateUser 
+          ? 'Complete ledger of all wallet transactions, commission payouts, client plot sales & confirmed receipts.' 
+          : 'Browse confirmed property deposit records, print vouchers & download dual-copy PDF receipts.' }}
+      </p>
     </div>
 
-    <div class="d-flex align-items-center gap-2 ms-auto">
-      <a routerLink="/user/my-plots" class="btn btn-outline-light btn-xs px-3">
-        <i class="fas fa-city me-1"></i> My Properties
-      </a>
-      <a routerLink="/user/emi-history" class="btn btn-gold btn-xs px-3">
-        <i class="fas fa-calculator me-1"></i> EMI Schedules
-      </a>
+    <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+      <ng-container *ngIf="isAssociateUser">
+        <a routerLink="/associate/wallet/add-fund" class="btn btn-gold btn-xs px-3">
+          <i class="fas fa-plus-circle me-1"></i> Add Fund
+        </a>
+        <a routerLink="/associate/wallet/transactions" class="btn btn-outline-light btn-xs px-3">
+          <i class="fas fa-wallet me-1"></i> Wallet Logs
+        </a>
+        <a routerLink="/associate/commission" class="btn btn-outline-light btn-xs px-3">
+          <i class="fas fa-hand-holding-usd me-1"></i> Commissions
+        </a>
+      </ng-container>
+      <ng-container *ngIf="!isAssociateUser">
+        <a routerLink="/user/my-plots" class="btn btn-outline-light btn-xs px-3">
+          <i class="fas fa-city me-1"></i> My Properties
+        </a>
+        <a routerLink="/user/emi-history" class="btn btn-gold btn-xs px-3">
+          <i class="fas fa-calculator me-1"></i> EMI Schedules
+        </a>
+      </ng-container>
     </div>
   </div>
 </div>
 
 <!-- METRIC STAT SUMMARY CARDS -->
 <div class="row g-2 mb-3" *ngIf="!loading">
-  <!-- Box 1: Confirmed Payments -->
+  <!-- Box 1: Total Transactions -->
   <div class="col-6 col-lg-4">
     <div class="dash-stat-card card-emerald h-100">
       <div class="stat-top">
         <div class="stat-icon-wrap icon-emerald"><i class="fas fa-check-double"></i></div>
-        <span class="stat-badge-tag tag-emerald">Verified</span>
+        <span class="stat-badge-tag tag-emerald">Total Records</span>
       </div>
       <div class="stat-value text-success">{{ payments.length }}</div>
       <div class="stat-label">Confirmed Transactions</div>
       <div class="stat-footer text-success d-flex align-items-center gap-1">
-        <i class="fas fa-shield-alt me-1"></i>Approved Receipts
+        <i class="fas fa-shield-alt me-1"></i>Verified Ledger Entries
       </div>
     </div>
   </div>
 
-  <!-- Box 2: Total Confirmed Paid -->
+  <!-- Box 2: Total Value -->
   <div class="col-6 col-lg-4">
     <div class="dash-stat-card card-gold h-100">
       <div class="stat-top">
-        <div class="stat-icon-wrap icon-gold"><i class="fas fa-wallet"></i></div>
-        <span class="stat-badge-tag tag-gold">Total Value</span>
+        <div class="stat-icon-wrap icon-gold"><i class="fas fa-coins"></i></div>
+        <span class="stat-badge-tag tag-gold">Volume</span>
       </div>
-      <div class="stat-value text-gold-dark">₹{{ totalPaid | number }}</div>
-      <div class="stat-label">Total Confirmed Paid</div>
+      <div class="stat-value text-gold-dark">₹{{ totalPaid | number:'1.0-0' }}</div>
+      <div class="stat-label">Total Transaction Value</div>
       <div class="stat-footer text-warning d-flex align-items-center gap-1">
-        <i class="fas fa-coins me-1"></i>Total Settled Amount
+        <i class="fas fa-receipt me-1"></i>Combined Financial Activity
       </div>
     </div>
   </div>
 
-  <!-- Box 3: Last Payment Date -->
+  <!-- Box 3: Last Transaction Date -->
   <div class="col-12 col-lg-4">
     <div class="dash-stat-card card-blue h-100">
       <div class="stat-top">
@@ -63,42 +85,119 @@
         <span class="stat-badge-tag tag-blue">Latest</span>
       </div>
       <div class="stat-value text-primary fs-18">
-        {{ payments[0]?.paid_date ? (payments[0].paid_date | date:'dd MMM yyyy') : '—' }}
+        {{ payments[0] && payments[0].paid_date ? (payments[0].paid_date | date:'dd MMM yyyy') : '—' }}
       </div>
-      <div class="stat-label">Last Payment Date</div>
+      <div class="stat-label">Latest Transaction Date</div>
       <div class="stat-footer text-primary d-flex align-items-center gap-1">
-        <i class="fas fa-clock me-1"></i>Most Recent Transaction
+        <i class="fas fa-clock me-1"></i>Most Recent Activity
       </div>
     </div>
   </div>
 </div>
 
+<!-- CATEGORY FILTER TABS FOR ASSOCIATES / USERS -->
+<div class="payment-tabs-bar mb-2" *ngIf="!loading && (isAssociateUser || countWallet > 0 || countCommission > 0)">
+  <div class="d-flex align-items-center gap-1.5 overflow-x-auto py-1">
+    <button
+      type="button"
+      class="payment-tab-btn"
+      [class.active]="activeCategory === 'all'"
+      (click)="setCategory('all')"
+    >
+      <i class="fas fa-list-check me-1.5"></i> All Records
+      <span class="tab-count">{{ countAll }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="payment-tab-btn"
+      [class.active]="activeCategory === 'wallet'"
+      (click)="setCategory('wallet')"
+      *ngIf="countWallet > 0 || isAssociateUser"
+    >
+      <i class="fas fa-wallet me-1.5"></i> Wallet &amp; Payouts
+      <span class="tab-count">{{ countWallet }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="payment-tab-btn"
+      [class.active]="activeCategory === 'commission'"
+      (click)="setCategory('commission')"
+      *ngIf="countCommission > 0 || isAssociateUser"
+    >
+      <i class="fas fa-hand-holding-usd me-1.5"></i> Commissions
+      <span class="tab-count">{{ countCommission }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="payment-tab-btn"
+      [class.active]="activeCategory === 'team_plot'"
+      (click)="setCategory('team_plot')"
+      *ngIf="countTeamPlot > 0 || isAssociateUser"
+    >
+      <i class="fas fa-users me-1.5"></i> Customer Plot Sales
+      <span class="tab-count">{{ countTeamPlot }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="payment-tab-btn"
+      [class.active]="activeCategory === 'personal_plot'"
+      (click)="setCategory('personal_plot')"
+      *ngIf="countPersonalPlot > 0 || !isAssociateUser"
+    >
+      <i class="fas fa-city me-1.5"></i> My Property Receipts
+      <span class="tab-count">{{ countPersonalPlot }}</span>
+    </button>
+  </div>
+</div>
+
 <!-- SEARCH & TOOLBAR CONTROLS -->
-<div class="toolbar-card mb-2" *ngIf="!loading">
+<div class="toolbar-card mb-3" *ngIf="!loading">
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-width: 750px;">
+    <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-width: 820px;">
+      
+      <!-- Search Input -->
       <div class="search-input-wrap flex-fill" style="min-width: 200px;">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" class="form-control form-control-sm search-field" placeholder="Search Plot #, Site, UTR, Ref, Type..." [(ngModel)]="searchTerm" />
+        <input
+          type="text"
+          class="form-control form-control-sm search-field"
+          placeholder="Search Ref / UTR, Order ID, Plot #, Site, Customer, Type..."
+          [(ngModel)]="searchTerm"
+        />
       </div>
 
+      <!-- Plot / Property Filter -->
       <select class="form-select form-select-sm status-select" [(ngModel)]="selectedPlot" style="width: 170px;" *ngIf="plots.length > 1">
         <option value="all">All Properties ({{ plots.length }})</option>
         <option *ngFor="let p of plots" [value]="p">{{ p }}</option>
       </select>
 
+      <!-- Payment Mode Filter -->
       <select class="form-select form-select-sm status-select" [(ngModel)]="paymentModeFilter" style="width: 140px;">
         <option value="all">All Modes</option>
         <option value="upi">UPI</option>
-        <option value="bank">Bank / Transfer</option>
+        <option value="bank">Bank Transfer</option>
         <option value="cash">Cash</option>
         <option value="wallet">Wallet</option>
-        <option value="online">Online</option>
+        <option value="online">Online Gateway</option>
+      </select>
+
+      <!-- Status Filter -->
+      <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 130px;">
+        <option value="all">All Status</option>
+        <option value="approved">Approved</option>
+        <option value="success">Success</option>
+        <option value="pending">Pending</option>
+        <option value="failed">Failed</option>
       </select>
     </div>
 
     <button class="btn btn-outline-secondary btn-xs ms-auto" (click)="loadData()">
-      <i class="fas fa-sync-alt me-1"></i> Refresh Ledger
+      <i class="fas fa-sync-alt me-1"></i> Refresh
     </button>
   </div>
 </div>
@@ -106,7 +205,7 @@
 <!-- LOADING STATE -->
 <div class="panel-card text-center py-5 mb-3" *ngIf="loading">
   <div class="spinner-border text-gold me-2" role="status"></div>
-  <span class="text-muted fs-13">Loading verified financial receipts...</span>
+  <span class="text-muted fs-13">Loading verified financial and transaction records...</span>
 </div>
 
 <!-- EMPTY STATE -->
@@ -114,75 +213,172 @@
   <div class="empty-icon-box mx-auto mb-3">
     <i class="fas fa-receipt text-gold fs-1"></i>
   </div>
-  <h4 class="fw-700 text-dark mb-2">No Confirmed Receipts Recorded Yet</h4>
+  <h4 class="fw-700 text-dark mb-2">No Transactions Recorded Yet</h4>
   <p class="text-muted max-w-500 mx-auto fs-13 mb-3">
-    Once your property down payment or installment payments are verified, your official receipts and downloadable PDFs will appear here.
+    {{ isAssociateUser 
+      ? 'No wallet credits, commission earnings, or plot payments have been recorded for your account yet. Add funds to your wallet or book client plots to see transaction history here.' 
+      : 'Once your property down payment or installment payments are verified, your official receipts and downloadable PDFs will appear here.' }}
   </p>
-  <a routerLink="/user/my-plots" class="btn btn-green btn-md">
-    <i class="fas fa-city me-1"></i> View My Properties
-  </a>
+  
+  <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+    <ng-container *ngIf="isAssociateUser">
+      <a routerLink="/associate/wallet/add-fund" class="btn btn-gold btn-md">
+        <i class="fas fa-plus-circle me-1"></i> Add Fund to Wallet
+      </a>
+      <a routerLink="/associate/my-team" class="btn btn-outline-green btn-md">
+        <i class="fas fa-users me-1"></i> Manage Team &amp; Sales
+      </a>
+    </ng-container>
+    <ng-container *ngIf="!isAssociateUser">
+      <a routerLink="/user/my-plots" class="btn btn-green btn-md">
+        <i class="fas fa-city me-1"></i> View My Properties
+      </a>
+    </ng-container>
+  </div>
 </div>
 
-<!-- CONFIRMED RECEIPTS LEDGER TABLE -->
+<!-- TRANSACTIONS LEDGER TABLE -->
 <div class="panel-card p-0 overflow-hidden mb-3" *ngIf="!loading && payments.length > 0">
-  <div class="p-3 bg-white border-bottom d-flex justify-content-between align-items-center">
-    <h6 class="fw-700 text-dark mb-0"><i class="fas fa-receipt text-gold me-2"></i>Confirmed Payment Receipts ({{ filteredPayments.length }})</h6>
+  <div class="p-3 bg-white border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h6 class="fw-700 text-dark mb-0">
+      <i class="fas fa-receipt text-gold me-2"></i>
+      {{ isAssociateUser ? 'Associate Financial Transactions & Payment Records' : 'Confirmed Payment Receipts' }} 
+      ({{ filteredPayments.length }})
+    </h6>
+    <span class="fs-12 text-muted fw-600" *ngIf="filteredPayments.length !== payments.length">
+      Filtered from {{ payments.length }} total records
+    </span>
   </div>
 
   <div class="table-responsive">
     <table class="table align-middle custom-payments-table mb-0">
       <thead>
         <tr>
-          <th class="ps-3">Payment Type</th>
-          <th>Plot &amp; Project</th>
-          <th>Payment Date</th>
-          <th>Mode &amp; Ref / UTR</th>
-          <th>Amount Paid</th>
-          <th>Status</th>
-          <th class="pe-3 text-end">Official Actions</th>
+          <th class="ps-3" style="min-width: 220px;">Category &amp; Description</th>
+          <th style="min-width: 170px;">Target / Customer / Plot</th>
+          <th style="min-width: 130px;">Date</th>
+          <th style="min-width: 160px;">Mode &amp; Ref / UTR</th>
+          <th class="text-end" style="min-width: 120px;">Amount</th>
+          <th style="min-width: 110px;">Status</th>
+          <th class="pe-3 text-end" style="min-width: 140px;">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngIf="filteredPayments.length === 0">
           <td colspan="7" class="text-center py-5 text-muted">
             <i class="fas fa-search fs-2 text-gold mb-2 d-block"></i>
-            No payment receipts matched your search query.
+            No records matched your search / filter criteria in this category.
           </td>
         </tr>
+
         <tr *ngFor="let p of filteredPayments">
+          <!-- Category & Description -->
           <td class="ps-3">
             <div class="d-flex align-items-center gap-2">
-              <span class="inst-num-badge" [class.bg-gold-subtle]="p.installment_no==='DP'">
-                {{ p.installment_no === 'DP' ? 'Down Payment' : '#' + p.installment_no }}
+              <span class="tx-badge-pill" [ngClass]="p.categoryBadgeClass">
+                {{ p.installment_no || (p.isCredit ? 'CR' : 'DR') }}
               </span>
-              <span class="fs-12 fw-700 text-dark">{{ p.payment_type }}</span>
+              <div>
+                <div class="fs-12 fw-700 text-dark line-clamp-1">{{ p.payment_type }}</div>
+                <div class="fs-10 text-muted">{{ p.categoryLabel }}</div>
+              </div>
             </div>
           </td>
+
+          <!-- Target / Customer / Plot -->
           <td>
-            <div class="fw-700 text-dark">Plot {{ p.plot_number }}</div>
-            <div class="fs-11 text-muted" *ngIf="p.site_name"><i class="fas fa-map-marker-alt me-1 text-gold"></i>{{ p.site_name }}</div>
+            <ng-container *ngIf="p.plot_number">
+              <div class="fw-700 text-dark fs-12">Plot {{ p.plot_number }}</div>
+              <div class="fs-11 text-muted" *ngIf="p.site_name">
+                <i class="fas fa-map-marker-alt me-1 text-gold"></i>{{ p.site_name }}
+              </div>
+            </ng-container>
+            <ng-container *ngIf="p.customer_name">
+              <div class="fw-700 text-primary fs-12"><i class="fas fa-user me-1 text-muted"></i>{{ p.customer_name }}</div>
+              <div class="fs-10 text-muted" *ngIf="p.customer_member_id">{{ p.customer_member_id }}</div>
+            </ng-container>
+            <ng-container *ngIf="!p.plot_number && !p.customer_name">
+              <span class="fs-11 text-muted">
+                <i class="fas fa-wallet me-1 text-secondary"></i>Associate Account
+              </span>
+            </ng-container>
           </td>
+
+          <!-- Date -->
           <td>
-            <span class="fs-12 fw-700 text-dark"><i class="fas fa-calendar-check text-success me-1"></i>{{ p.paid_date | date:'dd MMM yyyy' }}</span>
+            <span class="fs-12 fw-700 text-dark text-nowrap">
+              <i class="fas fa-calendar-check text-success me-1"></i>
+              {{ p.paid_date ? (p.paid_date | date:'dd MMM yyyy') : '—' }}
+            </span>
           </td>
+
+          <!-- Mode & Ref -->
           <td>
-            <div class="fs-12 fw-600 text-dark">{{ p.payment_mode || 'Cash / Bank' }}</div>
-            <div class="fs-10 text-muted" *ngIf="p.transaction_reference">{{ p.transaction_reference }}</div>
+            <div class="fs-12 fw-600 text-dark line-clamp-1">{{ p.payment_mode || 'Online / Bank' }}</div>
+            <div class="fs-10 text-muted font-monospace line-clamp-1" *ngIf="p.transaction_reference">
+              {{ p.transaction_reference }}
+            </div>
           </td>
-          <td><span class="fw-800 text-success fs-14">₹{{ (p.paid_amount || p.amount) | number }}</span></td>
+
+          <!-- Amount -->
+          <td class="text-end text-nowrap">
+            <span
+              class="fw-800 fs-13 font-monospace"
+              [class.text-success]="p.isCredit !== false"
+              [class.text-danger]="p.isCredit === false"
+            >
+              {{ p.isCredit === false ? '−' : '+' }} ₹{{ (p.paid_amount || p.amount) | number:'1.0-2' }}
+            </span>
+          </td>
+
+          <!-- Status -->
           <td>
-            <span class="sbadge sbadge-green"><i class="fas fa-check-circle me-1"></i>Approved &amp; Confirmed</span>
+            <span
+              class="sbadge text-nowrap"
+              [ngClass]="{
+                'sbadge-green': p.status === 'Approved' || p.status === 'Success' || p.status === 'success',
+                'sbadge-yellow': p.status === 'Pending' || p.status === 'pending' || p.status === 'Processing',
+                'sbadge-red': p.status === 'Failed' || p.status === 'failed' || p.status === 'Cancelled' || p.status === 'Rejected'
+              }"
+            >
+              <i
+                [class]="p.status === 'Approved' || p.status === 'Success' ? 'fas fa-check-circle me-1' : (p.status === 'Pending' ? 'fas fa-clock me-1' : 'fas fa-times-circle me-1')"
+              ></i>
+              {{ (p.status || 'Approved') | titlecase }}
+            </span>
           </td>
-          <td class="pe-3 text-end">
+
+          <!-- Actions -->
+          <td class="pe-3 text-end text-nowrap">
             <div class="d-inline-flex gap-1">
-              <button class="btn btn-xs btn-outline-green" (click)="viewInvoice(p)" title="View Official Tax Invoice">
+              <!-- Invoice button if invoice exists -->
+              <button
+                *ngIf="p.invoice_number || p.category === 'personal_plot' || p.category === 'team_plot'"
+                class="btn btn-xs btn-outline-green"
+                (click)="viewInvoice(p)"
+                title="View Official Tax Invoice"
+              >
                 <i class="fas fa-file-invoice me-1"></i> Invoice
               </button>
-              <button class="btn btn-xs btn-outline-success" (click)="downloadOfficialPdf(p)" [disabled]="downloadingPdfId === (p.id || p.emi_id)" title="Download Official PDF">
-                <i [class]="downloadingPdfId === (p.id || p.emi_id) ? 'fas fa-spinner fa-spin' : 'fas fa-download'"></i> PDF
+
+              <!-- PDF Download -->
+              <button
+                *ngIf="p.category === 'personal_plot' || p.invoice_number"
+                class="btn btn-xs btn-outline-success"
+                (click)="downloadOfficialPdf(p)"
+                [disabled]="downloadingPdfId === p.id"
+                title="Download PDF Receipt"
+              >
+                <i [class]="downloadingPdfId === p.id ? 'fas fa-spinner fa-spin' : 'fas fa-download'"></i> PDF
               </button>
-              <button class="btn btn-xs btn-outline-secondary" (click)="viewReceipt(p)" title="View Receipt Voucher">
-                <i class="fas fa-eye"></i>
+
+              <!-- View Details / Voucher -->
+              <button
+                class="btn btn-xs btn-outline-secondary"
+                (click)="viewReceipt(p)"
+                title="View Full Transaction Details"
+              >
+                <i class="fas fa-eye"></i> Details
               </button>
             </div>
           </td>
@@ -192,68 +388,115 @@
   </div>
 </div>
 
-<!-- RECEIPT VOUCHER PREVIEW MODAL -->
+<!-- TRANSACTION & RECEIPT MODAL PREVIEW -->
 <div *ngIf="selectedReceipt" class="modal-backdrop-custom">
   <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border printable-area max-w-500">
     
-    <!-- Receipt Header -->
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-3">
       <div>
         <div class="fw-800 fs-15 text-dark font-display">M.M.R. CONSTRUCTION &amp; DEVELOPERS</div>
         <div class="fs-10 text-muted">CIN: U68200UP2025PTC229203 &bull; Lucknow / Unnao</div>
-        <div class="fs-11 text-gold-dark fw-700 mt-0.5">OFFICIAL PAYMENT RECEIPT VOUCHER</div>
+        <div class="fs-11 text-gold-dark fw-700 mt-0.5">
+          {{ selectedReceipt.category === 'personal_plot' ? 'OFFICIAL PAYMENT RECEIPT VOUCHER' : 'FINANCIAL TRANSACTION RECEIPT' }}
+        </div>
       </div>
       <button type="button" class="btn-close no-print" (click)="selectedReceipt = null"></button>
     </div>
 
-    <!-- Receipt Details -->
+    <!-- Details Card -->
     <div class="bg-light p-3 rounded-3 mb-3 fs-12">
       <div class="d-flex justify-content-between mb-1.5" *ngIf="selectedReceipt.invoice_number">
         <span class="text-muted">Tax Invoice No:</span>
         <strong class="text-success font-mono">{{ selectedReceipt.invoice_number }}</strong>
       </div>
+
       <div class="d-flex justify-content-between mb-1.5">
-        <span class="text-muted">Payment Type:</span>
-        <strong class="text-primary">{{ selectedReceipt.payment_type }}</strong>
+        <span class="text-muted">Category:</span>
+        <span class="badge bg-white text-dark border">{{ selectedReceipt.categoryLabel }}</span>
       </div>
+
       <div class="d-flex justify-content-between mb-1.5">
+        <span class="text-muted">Description / Type:</span>
+        <strong class="text-primary text-end ms-2">{{ selectedReceipt.payment_type }}</strong>
+      </div>
+
+      <div class="d-flex justify-content-between mb-1.5" *ngIf="selectedReceipt.customer_name">
+        <span class="text-muted">Customer Name:</span>
+        <strong class="text-dark">{{ selectedReceipt.customer_name }} ({{ selectedReceipt.customer_member_id || 'Member' }})</strong>
+      </div>
+
+      <div class="d-flex justify-content-between mb-1.5" *ngIf="selectedReceipt.plot_number">
         <span class="text-muted">Plot &amp; Project:</span>
-        <strong class="text-dark">Plot {{ selectedReceipt.plot_number }} ({{ selectedReceipt.site_name }})</strong>
+        <strong class="text-dark">Plot {{ selectedReceipt.plot_number }} ({{ selectedReceipt.site_name || 'Project Site' }})</strong>
       </div>
+
       <div class="d-flex justify-content-between mb-1.5">
-        <span class="text-muted">Payment Date:</span>
-        <strong class="text-dark">{{ selectedReceipt.paid_date | date:'dd MMMM yyyy' }}</strong>
+        <span class="text-muted">Transaction Date:</span>
+        <strong class="text-dark">{{ selectedReceipt.paid_date ? (selectedReceipt.paid_date | date:'dd MMMM yyyy') : '—' }}</strong>
       </div>
+
       <div class="d-flex justify-content-between mb-1.5" *ngIf="selectedReceipt.payment_mode">
         <span class="text-muted">Payment Mode:</span>
         <strong class="text-dark">{{ selectedReceipt.payment_mode }}</strong>
       </div>
+
       <div class="d-flex justify-content-between mb-1.5" *ngIf="selectedReceipt.transaction_reference">
-        <span class="text-muted">Reference / Ref:</span>
-        <strong class="text-dark">{{ selectedReceipt.transaction_reference }}</strong>
+        <span class="text-muted">Reference / Ref ID:</span>
+        <strong class="text-dark font-monospace fs-11">{{ selectedReceipt.transaction_reference }}</strong>
       </div>
+
+      <div class="d-flex justify-content-between mb-1.5" *ngIf="selectedReceipt.remarks">
+        <span class="text-muted">Remarks:</span>
+        <span class="text-secondary text-end ms-2">{{ selectedReceipt.remarks }}</span>
+      </div>
+
       <div class="d-flex justify-content-between border-top pt-2 mt-1.5">
-        <span class="fw-700 text-dark">Confirmed Amount Paid:</span>
-        <strong class="text-success fs-15">₹{{ (selectedReceipt.paid_amount || selectedReceipt.amount) | number }}</strong>
+        <span class="fw-700 text-dark">Total Confirmed Amount:</span>
+        <strong
+          class="fs-15 font-monospace"
+          [class.text-success]="selectedReceipt.isCredit !== false"
+          [class.text-danger]="selectedReceipt.isCredit === false"
+        >
+          {{ selectedReceipt.isCredit === false ? '−' : '+' }} ₹{{ (selectedReceipt.paid_amount || selectedReceipt.amount) | number:'1.2-2' }}
+        </strong>
       </div>
     </div>
 
     <!-- Verified Watermark Banner -->
-    <div class="text-center p-2 rounded-3 bg-emerald-light border border-success mb-3 text-success fs-11 fw-700">
-      <i class="fas fa-shield-alt me-1"></i> VERIFIED &amp; APPROVED PAYMENT RECORD
+    <div
+      class="text-center p-2 rounded-3 mb-3 fs-11 fw-700 border"
+      [ngClass]="{
+        'bg-emerald-light border-success text-success': selectedReceipt.status === 'Approved' || selectedReceipt.status === 'Success',
+        'bg-gold-light border-warning text-warning': selectedReceipt.status === 'Pending',
+        'bg-danger-light border-danger text-danger': selectedReceipt.status === 'Failed'
+      }"
+    >
+      <i class="fas fa-shield-alt me-1"></i> {{ (selectedReceipt.status || 'VERIFIED & APPROVED') | uppercase }} RECORD
     </div>
 
     <!-- Actions -->
     <div class="d-flex gap-2 no-print flex-wrap">
-      <button class="btn btn-green flex-fill" (click)="viewInvoice(selectedReceipt)">
-        <i class="fas fa-file-invoice me-1"></i> View Full Invoice
+      <button
+        *ngIf="selectedReceipt.invoice_number || selectedReceipt.category === 'personal_plot' || selectedReceipt.category === 'team_plot'"
+        class="btn btn-green flex-fill"
+        (click)="viewInvoice(selectedReceipt)"
+      >
+        <i class="fas fa-file-invoice me-1"></i> View Invoice
       </button>
-      <button class="btn btn-outline-success flex-fill" (click)="downloadOfficialPdf(selectedReceipt)">
+      
+      <button
+        *ngIf="selectedReceipt.category === 'personal_plot' || selectedReceipt.invoice_number"
+        class="btn btn-outline-success flex-fill"
+        (click)="downloadOfficialPdf(selectedReceipt)"
+      >
         <i class="fas fa-file-pdf me-1"></i> PDF
       </button>
+
       <button class="btn btn-outline-secondary" (click)="printReceipt()">
         <i class="fas fa-print"></i>
       </button>
+
       <button class="btn btn-outline-secondary" (click)="selectedReceipt = null">Close</button>
     </div>
   </div>
