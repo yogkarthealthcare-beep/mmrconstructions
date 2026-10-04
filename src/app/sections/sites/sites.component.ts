@@ -79,6 +79,10 @@ export class SitesComponent implements OnInit {
     return this.sites && this.sites.length > 1 ? this.sites.slice(1, 5) : [];
   }
 
+  get totalSitesCount(): number {
+    return this.summaryById.size || this.sites.length || 6;
+  }
+
   ngOnInit(): void {
     this.fetchSiteGallery();
     this.fetchAvailabilitySummary();

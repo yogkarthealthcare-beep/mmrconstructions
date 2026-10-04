@@ -13,11 +13,16 @@
       <li class="nav-item">
         <a class="nav-link" (click)="scrollTo('sites')">Sites <i class="fas fa-chevron-down"></i></a>
         <div class="dd-menu">
-          <a class="dd-item" (click)="scrollTo('sites')"><i class="fas fa-map-marker-alt text-gold"></i>AIMA Site, Kanpur</a>
-          <a class="dd-item" (click)="scrollTo('sites')"><i class="fas fa-map-marker-alt text-gold"></i>Tribhuwan Khera, Unnao</a>
-          <a class="dd-item" (click)="scrollTo('sites')"><i class="fas fa-map-marker-alt text-gold"></i>Gadan Khera, Unnao</a>
-          <a class="dd-item" (click)="scrollTo('sites')"><i class="fas fa-map-marker-alt text-gold"></i>Ajgain Site</a>
-          <a class="dd-item" (click)="scrollTo('sites')"><i class="fas fa-map-marker-alt text-gold"></i>NEW MMR Site Kanpur</a>
+          <a *ngFor="let s of navSites" class="dd-item cursor-pointer" [routerLink]="['/sites', s.site_id, 'plot-map']">
+            <i class="fas fa-map-marker-alt text-gold me-2"></i>
+            <span>{{ s.site_name }}</span>
+            <small *ngIf="s.city" class="text-muted ms-auto fs-10">({{ s.city }})</small>
+          </a>
+          <div class="dropdown-divider my-1 border-top" style="border-color: rgba(201, 168, 76, 0.2);"></div>
+          <a routerLink="/all-sites" class="dd-item fw-800 text-gold d-flex align-items-center justify-content-between" (click)="closeDrawer()">
+            <span><i class="fas fa-layer-group me-2"></i>View All Sites ({{ navSites.length }})</span>
+            <i class="fas fa-arrow-right fs-11"></i>
+          </a>
         </div>
       </li>
       <li class="nav-item"><a class="nav-link" (click)="scrollTo('emi')">Pricing &amp; EMI</a></li>
@@ -147,7 +152,18 @@
     </div>
 
     <a class="drawer-link" (click)="scrollTo('home')">Home <i class="fas fa-chevron-right"></i></a>
-    <a class="drawer-link" (click)="scrollTo('sites')">Sites <i class="fas fa-chevron-right"></i></a>
+    <a class="drawer-link" (click)="sitesDrawerOpen = !sitesDrawerOpen" style="cursor: pointer;">
+      Sites
+      <i [class]="sitesDrawerOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
+    </a>
+    <div *ngIf="sitesDrawerOpen" class="drawer-subgroup ps-4 py-2" style="background: rgba(0,0,0,0.03); border-bottom: 1px solid var(--bdr-lt);">
+      <a *ngFor="let s of navSites" [routerLink]="['/sites', s.site_id, 'plot-map']" (click)="closeDrawer()" class="d-block py-2 fs-13 text-decoration-none" style="color: var(--txt-body);">
+        <i class="fas fa-map-marker-alt me-2 text-gold"></i>{{ s.site_name }} <span *ngIf="s.city" class="text-muted fs-11">({{ s.city }})</span>
+      </a>
+      <a routerLink="/all-sites" (click)="closeDrawer()" class="d-block py-2 fs-13 text-decoration-none fw-800 text-gold">
+        <i class="fas fa-layer-group me-2"></i>View All Sites ({{ navSites.length }}) &rarr;
+      </a>
+    </div>
     <a class="drawer-link" (click)="scrollTo('emi')">Pricing &amp; EMI <i class="fas fa-chevron-right"></i></a>
     <a class="drawer-link" (click)="scrollTo('facilities')">Our Services <i class="fas fa-chevron-right"></i></a>
     <a class="drawer-link" (click)="scrollTo('earn')">Earn With Us <i class="fas fa-chevron-right"></i></a>

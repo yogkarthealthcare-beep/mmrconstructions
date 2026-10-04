@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { SiteToggleService } from '../../services/site-toggle.service';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
+import { TopbarComponent } from '../../shared/topbar/topbar.component';
+import { FooterComponent } from '../../shared/footer/footer.component';
 
 interface SiteCardItem {
   site_id?: number;
@@ -19,7 +21,7 @@ interface SiteCardItem {
 @Component({
   selector: 'app-all-sites',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavbarComponent],
+  imports: [CommonModule, RouterLink, TopbarComponent, NavbarComponent, FooterComponent],
   templateUrl: './all-sites.component.html',
   styleUrls: ['../../sections/sites/sites.component.css', './all-sites.component.css']
 })

@@ -2,6 +2,7 @@ import { Component, HostListener, OnInit, ElementRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { ApiService } from '../../services/api.service';
 import { VerifiedBadgeComponent } from '../verified-badge/verified-badge.component';
 
 @Component({
@@ -15,13 +16,24 @@ export class NavbarComponent implements OnInit {
   isScrolled = false;
   drawerOpen = false;
   docOpen = false;
+  sitesDrawerOpen = false;
   userDropdownOpen = false;
   currentUser: any = null;
   investorUser: any = null;
 
+  navSites: Array<{ site_id: number; site_name: string; city?: string; location?: string }> = [
+    { site_id: 1, site_name: 'AIMA Site', city: 'Kanpur' },
+    { site_id: 2, site_name: 'Tribhuwan Khera', city: 'Unnao' },
+    { site_id: 3, site_name: 'Gadan Khera', city: 'Unnao' },
+    { site_id: 4, site_name: 'Ajgain Site', city: 'Unnao' },
+    { site_id: 5, site_name: 'Lucknow Site', city: 'Lucknow' },
+    { site_id: 6, site_name: 'NEW MMR Site Kanpur', city: 'Kanpur' }
+  ];
+
   constructor(
     public router: Router,
     public auth: AuthService,
+    private api: ApiService,
     private eRef: ElementRef
   ) {}
 
@@ -31,6 +43,29 @@ export class NavbarComponent implements OnInit {
     });
     this.auth.investorUser$.subscribe(i => {
       this.investorUser = i || this.auth.getInvestorUser();
+    });
+    this.fetchNavSites();
+  }
+
+  fetchNavSites(): void {
+    this.api.getPublicSitesSummary().subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        if (Array.isArray(list) && list.length > 0) {
+          this.navSites = list.map((item: any) => {
+            const loc = String(item.location || '').trim();
+            const parts = loc.split(',');
+            const city = parts.length > 1 ? parts[parts.length - 1].trim() : (loc || 'UP');
+            return {
+              site_id: Number(item.site_id),
+              site_name: item.site_name,
+              city: city,
+              location: loc
+            };
+          });
+        }
+      },
+      error: () => {}
     });
   }
 
