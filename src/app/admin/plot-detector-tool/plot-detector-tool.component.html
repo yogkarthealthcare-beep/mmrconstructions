@@ -1,561 +1,778 @@
-<div class="detector-head">
-  <div class="pg-header">
-    <h4>Plot Detector &amp; CAD Unit Tool</h4>
-    <p>Upload a CAD (.dxf) file or layout image/SVG to auto-extract plots, malls, restaurants, hospitals, schools, and manage unit boundaries.</p>
+<div class="detector-wrapper">
+  <!-- TOP BREADCRUMB & HEADER -->
+  <div class="detector-header-bar mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge bg-emerald px-2 py-1"><i class="fas fa-drafting-compass me-1"></i> Admin CAD Suite</span>
+          <h4 class="mb-0 fw-800 text-dark">CAD Plot Detector &amp; Unit Management</h4>
+        </div>
+        <p class="fs-12 text-muted mb-0">
+          Auto-extract CAD (.dxf) units, add commercial plots (Mall, Restaurant, Hospital, School), reshape polygon boundaries, and sync with the public interactive map.
+        </p>
+      </div>
+
+      <!-- Quick External Navigation Links -->
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <button type="button" class="btn btn-outline-success btn-sm fw-600" (click)="openLiveCustomerMap()" [disabled]="!selectedSiteId" title="Preview public interactive booking map for customers">
+          <i class="fas fa-globe me-1"></i> View Live Customer Map <i class="fas fa-external-link-alt ms-1 fs-10"></i>
+        </button>
+        <button type="button" class="btn btn-outline-primary btn-sm fw-600" (click)="openPlotMapEditor()" title="Open interactive plot map polygon coordinator">
+          <i class="fas fa-draw-polygon me-1"></i> Interactive Map Editor <i class="fas fa-arrow-right ms-1 fs-10"></i>
+        </button>
+        <a routerLink="/admin/sites" class="btn btn-outline-secondary btn-sm fw-600" title="Manage all site locations">
+          <i class="fas fa-city me-1"></i> Sites Management
+        </a>
+      </div>
+    </div>
   </div>
-  <div class="detector-actions">
-    <!-- Site Selector -->
-    <select class="f-input compact-select" [(ngModel)]="selectedSiteId" (change)="onSiteChange()" style="width: auto; max-width: 190px; display: inline-block;">
-      <option [ngValue]="null">-- Select Project / Site --</option>
-      <option *ngFor="let s of sites" [value]="s.site_id">{{ s.site_name }}</option>
-    </select>
 
-    <!-- CAD Guideline Button -->
-    <button type="button" class="btn btn-outline-primary btn-sm" (click)="openGuidelineDialog()" title="View &amp; Copy CAD Layer Specifications">
-      <i class="fas fa-book-open me-1"></i> CAD Guideline
-    </button>
+  <!-- STEP-BY-STEP WORKFLOW GUIDE STRIP -->
+  <div class="workflow-stepper-card card border-0 shadow-sm mb-3">
+    <div class="card-body p-3">
+      <div class="row g-3 align-items-center">
+        <!-- STEP 1: Select or Add Site -->
+        <div class="col-lg-3 col-md-6 border-end-lg">
+          <div class="step-box">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="step-badge step-1">STEP 1</span>
+              <button type="button" class="btn btn-link btn-xs text-primary p-0 fw-700 text-decoration-none" (click)="openNewSiteArea()" title="Add a completely new project location">
+                <i class="fas fa-plus-circle me-1"></i>+ Add New Site
+              </button>
+            </div>
+            <label class="fs-11 fw-700 text-muted d-block mb-1">Select Project Site:</label>
+            <select class="form-select form-select-sm fw-600" [(ngModel)]="selectedSiteId" (change)="onSiteChange()">
+              <option [ngValue]="null">-- Select Project / Site --</option>
+              <option *ngFor="let s of sites" [value]="s.site_id">{{ s.site_name }} (ID: {{ s.site_id }})</option>
+            </select>
+            <div *ngIf="getSelectedSite()" class="fs-10 text-success mt-1 d-flex align-items-center gap-1">
+              <i class="fas fa-check-circle"></i>
+              <span>Active: <strong>{{ getSelectedSite()?.site_name }}</strong></span>
+            </div>
+          </div>
+        </div>
 
-    <!-- View Mode Toggle -->
-    <div class="btn-group btn-group-sm" role="group" style="display: inline-flex;">
-      <button type="button" class="btn btn-sm" [ngClass]="viewMode === 'detection' ? 'btn-green' : 'btn-outline-green'" (click)="toggleViewMode('detection')">Detection View</button>
-      <button type="button" class="btn btn-sm" [ngClass]="viewMode === 'sales' ? 'btn-green' : 'btn-outline-green'" (click)="toggleViewMode('sales')">Sales Status</button>
+        <!-- STEP 2: Upload CAD / Map File -->
+        <div class="col-lg-3 col-md-6 border-end-lg">
+          <div class="step-box">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="step-badge step-2">STEP 2</span>
+              <button type="button" class="btn btn-link btn-xs text-primary p-0 fw-700 text-decoration-none" (click)="openGuidelineDialog()" title="View and copy CAD layer specification standards">
+                <i class="fas fa-book-open me-1"></i>CAD Guidelines
+              </button>
+            </div>
+            <label class="fs-11 fw-700 text-muted d-block mb-1">Upload CAD (.dxf) or Layout:</label>
+            <div class="d-flex align-items-center gap-1.5">
+              <input #fileInput type="file" accept=".png,.jpg,.jpeg,.webp,.svg,.dxf,image/png,image/jpeg,image/webp,image/svg+xml,application/dxf,image/vnd.dxf" (change)="onFileSelected($event)" hidden>
+              <button type="button" class="btn btn-emerald btn-sm w-100 fw-700" (click)="fileInput.click()" [disabled]="!selectedSiteId">
+                <i class="fas fa-upload me-1"></i> Upload CAD / Map
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="detectAgain()" [disabled]="(!imageUrl && mode !== 'dxf') || loading" title="Re-extract CAD units">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+            <div class="fs-10 text-muted mt-1" *ngIf="mode === 'dxf' && dxfStats">
+              <i class="fas fa-file-code text-primary me-1"></i>DXF: <strong>{{ (dxfStats.matched || 0) + (dxfStats.unnumbered || 0) }} units detected</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Add & Modify Plots -->
+        <div class="col-lg-3 col-md-6 border-end-lg">
+          <div class="step-box">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="step-badge step-3">STEP 3</span>
+              <span class="fs-10 text-muted fw-600">Modify &amp; Reshape</span>
+            </div>
+            <label class="fs-11 fw-700 text-muted d-block mb-1">Add New Unit / Modify:</label>
+            <div class="d-flex align-items-center gap-1.5">
+              <!-- Add Unit Dropdown -->
+              <div class="dropdown flex-fill">
+                <button class="btn btn-dark btn-sm w-100 dropdown-toggle fw-700" type="button" id="stepAddUnitDropdown" data-bs-toggle="dropdown" aria-expanded="false" [disabled]="!selectedSiteId">
+                  <i class="fas fa-plus me-1 text-gold"></i> Add Unit
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="stepAddUnitDropdown">
+                  <ng-container *ngFor="let u of unitTypes; let last = last">
+                    <li>
+                      <h6 class="dropdown-header fs-11 text-uppercase text-muted fw-700 d-flex align-items-center gap-1.5">
+                        <span class="color-swatch" [style.backgroundColor]="u.fillRgb" style="width: 8px; height: 8px;"></span>
+                        <span>Add {{ u.label }}</span>
+                      </h6>
+                    </li>
+                    <li>
+                      <a class="dropdown-item cursor-pointer fs-12" (click)="startDraw(u.key, 'polygon')">
+                        <i class="fas fa-draw-polygon me-2 text-success"></i>Draw {{ u.label }} (Polygon)
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item cursor-pointer fs-12" (click)="startDraw(u.key, 'rectangle')">
+                        <i class="fas fa-vector-square me-2 text-success"></i>Draw {{ u.label }} (Rectangle)
+                      </a>
+                    </li>
+                    <li *ngIf="!last"><hr class="dropdown-divider"></li>
+                  </ng-container>
+                </ul>
+              </div>
+
+              <!-- Undo / Redo -->
+              <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-secondary btn-sm" (click)="undo()" [disabled]="!canUndo" title="Undo (Ctrl+Z)"><i class="fas fa-undo"></i></button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" (click)="redo()" [disabled]="!canRedo" title="Redo (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+              </div>
+            </div>
+            <div class="fs-10 text-muted mt-1 d-flex align-items-center justify-content-between">
+              <label class="cursor-pointer d-flex align-items-center gap-1 mb-0" title="Snap vertices to nearby corners">
+                <input type="checkbox" [(ngModel)]="snapEnabled"> <span>Snapping</span>
+              </label>
+              <span *ngIf="selected" class="text-primary fw-700">Selected: #{{ selected.plot_no }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Save & Sync -->
+        <div class="col-lg-3 col-md-6">
+          <div class="step-box">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="step-badge step-4">STEP 4</span>
+              <button *ngIf="diffSummary" type="button" class="btn btn-link btn-xs text-warning p-0 fw-700 text-decoration-none" (click)="openDiffModal()">
+                <i class="fas fa-code-compare me-1"></i>Review Diff
+              </button>
+            </div>
+            <label class="fs-11 fw-700 text-muted d-block mb-1">Publish to Database:</label>
+            <button type="button" class="btn btn-green btn-sm w-100 fw-800 shadow-sm" (click)="saveDetectionsToSite()" [disabled]="!selectedSiteId || !detections.length || savingDetections || hasInvalidPlots">
+              <i class="fas fa-save me-1"></i>{{ savingDetections ? 'Saving...' : 'Save Plots to Site (' + detections.length + ')' }}
+            </button>
+            <div class="fs-10 text-muted mt-1 d-flex align-items-center justify-content-between">
+              <span>Valid: <strong class="text-success">{{ validPlotCount }}</strong></span>
+              <span *ngIf="duplicateNumbers.length" class="text-danger fw-700">Duplicates: {{ duplicateNumbers.length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Undo / Redo Buttons -->
-    <div class="btn-group btn-group-sm" role="group" style="display: inline-flex;">
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="undo()" [disabled]="!canUndo" title="Undo (Ctrl+Z)"><i class="fas fa-undo"></i></button>
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="redo()" [disabled]="!canRedo" title="Redo (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+  <!-- WORKSPACE TABS STRIP -->
+  <div class="workspace-tabs-container mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <!-- Tab Pills -->
+    <ul class="nav nav-pills workspace-nav-pills gap-1">
+      <li class="nav-item">
+        <button type="button" class="nav-link" [class.active]="activeWorkflowTab === 'canvas'" (click)="activeWorkflowTab = 'canvas'">
+          <i class="fas fa-drafting-compass me-1.5"></i> 1. Visual Map &amp; CAD Canvas
+          <span class="badge bg-white text-dark ms-1.5">{{ detections.length }}</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button type="button" class="nav-link" [class.active]="activeWorkflowTab === 'table'" (click)="activeWorkflowTab = 'table'">
+          <i class="fas fa-table-list me-1.5"></i> 2. Unit Inventory &amp; Modify Table
+          <span class="badge bg-white text-dark ms-1.5">{{ detections.length }}</span>
+        </button>
+      </li>
+      <li class="nav-item" *ngIf="diffSummary">
+        <button type="button" class="nav-link text-warning" [class.active]="activeWorkflowTab === 'diff'" (click)="openDiffModal()">
+          <i class="fas fa-code-compare me-1.5"></i> 3. CAD Diff Report
+          <span class="badge bg-warning text-dark ms-1.5">Review</span>
+        </button>
+      </li>
+    </ul>
+
+    <!-- Quick Tool Controls (Zoom & View Mode) -->
+    <div class="d-flex align-items-center gap-1.5 flex-wrap">
+      <!-- View Mode Toggle -->
+      <div class="btn-group btn-group-sm" role="group">
+        <button type="button" class="btn btn-xs fw-600" [ngClass]="viewMode === 'detection' ? 'btn-green' : 'btn-outline-secondary'" (click)="toggleViewMode('detection')">Detection View</button>
+        <button type="button" class="btn btn-xs fw-600" [ngClass]="viewMode === 'sales' ? 'btn-green' : 'btn-outline-secondary'" (click)="toggleViewMode('sales')">Sales Status</button>
+      </div>
+
+      <!-- Zoom Controls -->
+      <div class="btn-group btn-group-sm" *ngIf="activeWorkflowTab === 'canvas'">
+        <button type="button" class="btn btn-outline-secondary btn-xs" title="Zoom out" (click)="zoomOut()" [disabled]="!imageUrl && mode !== 'dxf'"><i class="fas fa-search-minus"></i></button>
+        <button type="button" class="btn btn-outline-secondary btn-xs" title="Fit to screen" (click)="fitToScreen()" [disabled]="!imageUrl && mode !== 'dxf'"><i class="fas fa-compress-arrows-alt"></i></button>
+        <button type="button" class="btn btn-outline-secondary btn-xs" title="Zoom in" (click)="zoomIn()" [disabled]="!imageUrl && mode !== 'dxf'"><i class="fas fa-search-plus"></i></button>
+      </div>
+
+      <!-- Export Buttons -->
+      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="exportJson()" [disabled]="!detections.length" title="Export JSON"><i class="fas fa-file-code me-1"></i>JSON</button>
+      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="exportCsv()" [disabled]="!detections.length" title="Export CSV"><i class="fas fa-file-csv me-1"></i>CSV</button>
     </div>
+  </div>
 
-    <!-- Add Unit Menu (Dynamic from UNIT_TYPES) -->
-    <div class="dropdown d-inline-block">
-      <button class="btn btn-emerald btn-sm dropdown-toggle" type="button" id="addUnitDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="fas fa-plus me-1"></i> Add Unit
+  <!-- Alerts -->
+  <div *ngIf="error" class="panel-alert panel-alert-error mb-3"><i class="fas fa-exclamation-circle me-1.5"></i>{{ error }}</div>
+  <div *ngIf="warning" class="panel-alert panel-alert-info mb-3"><i class="fas fa-info-circle me-1.5"></i>{{ warning }}</div>
+
+  <!-- Drawing Active Banner -->
+  <div *ngIf="drawMode !== 'none'" class="draw-active-banner mb-3 p-2.5 rounded-8 d-flex align-items-center justify-content-between bg-emerald-light border border-emerald">
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-emerald"><i class="fas fa-pencil-alt me-1"></i>Drawing Mode</span>
+      <span class="fs-12 fw-700 text-dark">Drawing {{ getUnitTypeLabel(drawUnitType) }} ({{ drawMode === 'polygon' ? 'Click points on canvas, press Enter to finish' : 'Click & drag rectangle' }})</span>
+      <span *ngIf="drawMode === 'polygon'" class="fs-12 text-muted">({{ drawPoints.length }} points added)</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button *ngIf="drawMode === 'polygon' && drawPoints.length >= 3" type="button" class="btn btn-emerald btn-xs px-2.5" (click)="finishDrawPolygon()">
+        <i class="fas fa-check me-1"></i>Finish Polygon
       </button>
-      <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="addUnitDropdown">
-        <ng-container *ngFor="let u of unitTypes; let last = last">
-          <li>
-            <h6 class="dropdown-header fs-11 text-uppercase text-muted fw-700 d-flex align-items-center gap-1.5">
-              <span class="color-swatch" [style.backgroundColor]="u.fillRgb" style="width: 8px; height: 8px;"></span>
-              <span>Add {{ u.label }}</span>
-            </h6>
-          </li>
-          <li>
-            <a class="dropdown-item cursor-pointer fs-12" (click)="startDraw(u.key, 'polygon')">
-              <i class="fas fa-draw-polygon me-2 text-success"></i>Draw {{ u.label }} (Polygon)
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item cursor-pointer fs-12" (click)="startDraw(u.key, 'rectangle')">
-              <i class="fas fa-vector-square me-2 text-success"></i>Draw {{ u.label }} (Rectangle)
-            </a>
-          </li>
-          <li *ngIf="!last"><hr class="dropdown-divider"></li>
-        </ng-container>
+      <button type="button" class="btn btn-outline-secondary btn-xs px-2" (click)="cancelDraw()">
+        <i class="fas fa-times me-1"></i>Cancel (Esc)
+      </button>
+    </div>
+  </div>
+
+  <!-- DXF CAD MULTI-LAYER CONTROL PANEL (Config Driven) -->
+  <div class="dxf-control-panel mb-3" *ngIf="mode === 'dxf'">
+    <div class="dxf-header-row mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary px-2.5 py-1.5"><i class="fas fa-drafting-compass me-1"></i> CAD (DXF) Mode</span>
+        <span class="fs-12 text-dark fw-700">{{ imageName }}</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-link btn-xs p-0 text-primary fw-600 text-decoration-none" (click)="openGuidelineDialog()">
+          <i class="fas fa-book-open me-1"></i>View CAD Guideline
+        </button>
+        <span class="text-muted">|</span>
+        <label class="d-inline-flex align-items-center gap-1.5 fs-12 text-muted cursor-pointer" title="Auto-upload generated SVG layout as site background image when saving">
+          <input type="checkbox" [(ngModel)]="uploadSvgBackgroundOnSave">
+          <span>Upload SVG Map Background on Save</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Dynamic Unit Layers Grid -->
+    <div class="dxf-layer-grid p-2.5 bg-light rounded-8 border mb-2">
+      <div class="row g-2 align-items-center">
+        <!-- Unit Type Layers (from UNIT_TYPES) -->
+        <div *ngFor="let u of unitTypes" class="col-md-4 col-sm-6">
+          <div class="d-flex align-items-center justify-content-between mb-0.5">
+            <label class="fs-11 text-muted fw-700 mb-0 d-flex align-items-center gap-1">
+              <span class="color-swatch" [style.backgroundColor]="u.fillRgb" style="width: 10px; height: 10px;"></span>
+              <span>{{ u.label }} Layer:</span>
+            </label>
+            <span class="fs-10 text-muted font-monospace">Default: {{ u.cadLayer }}</span>
+          </div>
+          <select class="form-select form-select-sm" [(ngModel)]="selectedUnitLayers[u.key]" (change)="runDxfExtraction()">
+            <option *ngIf="u.key !== 'PLOT'" value="none">-- None (Not present in CAD) --</option>
+            <option *ngFor="let l of dxfLayers" [value]="l.name">
+              {{ l.name }} ({{ layerCount(l, 'LWPOLYLINE', 'POLYLINE') }} polylines)
+            </option>
+          </select>
+        </div>
+
+        <!-- Numbers Layer & Unit -->
+        <div class="col-md-4 col-sm-6">
+          <div class="row g-1">
+            <div class="col-7">
+              <label class="fs-11 text-muted fw-700 mb-0.5 d-block">Numbers Layer:</label>
+              <select class="form-select form-select-sm" [(ngModel)]="selectedNumberLayer" (change)="runDxfExtraction()">
+                <option *ngFor="let l of dxfLayers" [value]="l.name">{{ l.name }} ({{ layerCount(l, 'TEXT', 'MTEXT') }})</option>
+              </select>
+            </div>
+            <div class="col-5">
+              <label class="fs-11 text-muted fw-700 mb-0.5 d-block">Unit:</label>
+              <select class="form-select form-select-sm" [(ngModel)]="selectedUnit" (change)="runDxfExtraction()">
+                <option value="ft">ft</option>
+                <option value="m">m</option>
+                <option value="mm">mm</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic Stats Strip -->
+    <div class="dxf-stats-strip mb-2" *ngIf="dxfStats">
+      <div *ngFor="let u of unitTypes">
+        <span>{{ u.label }}s:</span> <strong>{{ dxfStats.typeCounts[u.key] || 0 }}</strong>
+      </div>
+      <div><span>Numbers Found:</span> <strong>{{ dxfStats.numbersFound }}</strong></div>
+      <div><span>Matched:</span> <strong class="text-success">{{ dxfStats.matched }}</strong></div>
+      <div><span>Unnumbered:</span> <strong [class.text-danger]="dxfStats.unnumbered > 0">{{ dxfStats.unnumbered }}</strong></div>
+      <div><span>Duplicates:</span> <strong [class.text-danger]="dxfStats.duplicates > 0">{{ dxfStats.duplicates }}</strong></div>
+    </div>
+
+    <!-- Collapsible Warnings -->
+    <div *ngIf="dxfWarnings.length > 0">
+      <div class="dxf-warnings-toggle" (click)="showWarningsList = !showWarningsList">
+        <span>
+          <i class="fas fa-exclamation-triangle text-warning me-1.5"></i>{{ dxfWarnings.length }} CAD Warning(s) detected
+          <button type="button" class="btn btn-link btn-xs text-primary ms-2 p-0 text-decoration-none" (click)="$event.stopPropagation(); openGuidelineDialog()">
+            <i class="fas fa-external-link-alt me-1"></i>Open CAD Guideline
+          </button>
+        </span>
+        <i class="fas" [ngClass]="showWarningsList ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      </div>
+      <ul class="dxf-warnings-list" *ngIf="showWarningsList">
+        <li *ngFor="let w of dxfWarnings">{{ w }}</li>
       </ul>
     </div>
-
-    <!-- Snapping Toggle -->
-    <label class="d-inline-flex align-items-center gap-1 fs-12 text-muted ms-1 cursor-pointer" title="Snap vertices to nearby corners">
-      <input type="checkbox" [(ngModel)]="snapEnabled">
-      <span>Snap</span>
-    </label>
-
-    <!-- Save to Site Button -->
-    <button type="button" class="btn btn-green btn-sm" (click)="saveDetectionsToSite()" [disabled]="!selectedSiteId || !detections.length || savingDetections || hasInvalidPlots">
-      <i class="fas fa-save me-1"></i>{{ savingDetections ? 'Saving...' : 'Save to Site' }}
-    </button>
-
-    <!-- Review CAD Diff Button (if diff available) -->
-    <button *ngIf="diffSummary" type="button" class="btn btn-outline-primary btn-sm" (click)="openDiffModal()">
-      <i class="fas fa-code-compare me-1"></i> Review CAD Diff
-    </button>
-
-    <!-- File Upload -->
-    <input #fileInput type="file" accept=".png,.jpg,.jpeg,.webp,.svg,.dxf,image/png,image/jpeg,image/webp,image/svg+xml,application/dxf,image/vnd.dxf" (change)="onFileSelected($event)" hidden>
-    <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">📁 Upload (CAD / Image)</button>
-    <button type="button" class="btn btn-outline-green btn-sm" (click)="detectAgain()" [disabled]="(!imageUrl && mode !== 'dxf') || loading"><i class="fas fa-magic me-1"></i>{{ mode === 'dxf' ? 'Re-extract' : 'Detect Again' }}</button>
-    
-    <!-- Zoom Controls -->
-    <button type="button" class="tool-btn" title="Zoom out" aria-label="Zoom out" (click)="zoomOut()" [disabled]="!imageUrl && mode !== 'dxf'"><i class="fas fa-search-minus"></i></button>
-    <button type="button" class="tool-btn" title="Fit to screen" aria-label="Fit to screen" (click)="fitToScreen()" [disabled]="!imageUrl && mode !== 'dxf'"><i class="fas fa-compress-arrows-alt"></i></button>
-    <button type="button" class="tool-btn" title="Zoom in" aria-label="Zoom in" (click)="zoomIn()" [disabled]="!imageUrl && mode !== 'dxf'"><i class="fas fa-search-plus"></i></button>
-    
-    <button type="button" class="btn btn-outline-green btn-sm" (click)="exportJson()" [disabled]="!detections.length">Export JSON</button>
-    <button type="button" class="btn btn-outline-green btn-sm" (click)="exportCsv()" [disabled]="!detections.length">Export CSV</button>
-  </div>
-</div>
-
-<!-- Alerts -->
-<div *ngIf="error" class="panel-alert panel-alert-error mb-3"><i class="fas fa-exclamation-circle me-1.5"></i>{{ error }}</div>
-<div *ngIf="warning" class="panel-alert panel-alert-info mb-3"><i class="fas fa-info-circle me-1.5"></i>{{ warning }}</div>
-
-<!-- Drawing Active Banner -->
-<div *ngIf="drawMode !== 'none'" class="draw-active-banner mb-3 p-2.5 rounded-8 d-flex align-items-center justify-content-between bg-emerald-light border border-emerald">
-  <div class="d-flex align-items-center gap-2">
-    <span class="badge bg-emerald"><i class="fas fa-pencil-alt me-1"></i>Drawing Mode</span>
-    <span class="fs-12 fw-700 text-dark">Drawing {{ getUnitTypeLabel(drawUnitType) }} ({{ drawMode === 'polygon' ? 'Click points, Enter to finish' : 'Drag rectangle' }})</span>
-    <span *ngIf="drawMode === 'polygon'" class="fs-12 text-muted">({{ drawPoints.length }} points added)</span>
-  </div>
-  <div class="d-flex align-items-center gap-2">
-    <button *ngIf="drawMode === 'polygon' && drawPoints.length >= 3" type="button" class="btn btn-emerald btn-xs px-2.5" (click)="finishDrawPolygon()">
-      <i class="fas fa-check me-1"></i>Finish Polygon
-    </button>
-    <button type="button" class="btn btn-outline-secondary btn-xs px-2" (click)="cancelDraw()">
-      <i class="fas fa-times me-1"></i>Cancel (Esc)
-    </button>
-  </div>
-</div>
-
-<!-- DXF CAD MULTI-LAYER CONTROL PANEL (Config Driven) -->
-<div class="dxf-control-panel mb-3" *ngIf="mode === 'dxf'">
-  <div class="dxf-header-row mb-2">
-    <div class="d-flex align-items-center gap-2">
-      <span class="badge bg-primary px-2.5 py-1.5"><i class="fas fa-drafting-compass me-1"></i> CAD (DXF) Mode</span>
-      <span class="fs-12 text-dark fw-700">{{ imageName }}</span>
-    </div>
-    <div class="d-flex align-items-center gap-2">
-      <button type="button" class="btn btn-link btn-xs p-0 text-primary fw-600 text-decoration-none" (click)="openGuidelineDialog()">
-        <i class="fas fa-book-open me-1"></i>View CAD Guideline
-      </button>
-      <span class="text-muted">|</span>
-      <label class="d-inline-flex align-items-center gap-1.5 fs-12 text-muted cursor-pointer" title="Auto-upload generated SVG layout as site background image when saving">
-        <input type="checkbox" [(ngModel)]="uploadSvgBackgroundOnSave">
-        <span>Upload SVG Map Background on Save</span>
-      </label>
-    </div>
   </div>
 
-  <!-- Dynamic Unit Layers Grid -->
-  <div class="dxf-layer-grid p-2.5 bg-light rounded-8 border mb-2">
-    <div class="row g-2 align-items-center">
-      <!-- Unit Type Layers (from UNIT_TYPES) -->
-      <div *ngFor="let u of unitTypes" class="col-md-4 col-sm-6">
-        <div class="d-flex align-items-center justify-content-between mb-0.5">
-          <label class="fs-11 text-muted fw-700 mb-0 d-flex align-items-center gap-1">
-            <span class="color-swatch" [style.backgroundColor]="u.fillRgb" style="width: 10px; height: 10px;"></span>
-            <span>{{ u.label }} Layer:</span>
-          </label>
-          <span class="fs-10 text-muted font-monospace">Default: {{ u.cadLayer }}</span>
-        </div>
-        <select class="form-select form-select-sm" [(ngModel)]="selectedUnitLayers[u.key]" (change)="runDxfExtraction()">
-          <option *ngIf="u.key !== 'PLOT'" value="none">-- None (Not present in CAD) --</option>
-          <option *ngFor="let l of dxfLayers" [value]="l.name">
-            {{ l.name }} ({{ layerCount(l, 'LWPOLYLINE', 'POLYLINE') }} polylines)
-          </option>
-        </select>
-      </div>
-
-      <!-- Numbers Layer & Unit -->
-      <div class="col-md-4 col-sm-6">
-        <div class="row g-1">
-          <div class="col-7">
-            <label class="fs-11 text-muted fw-700 mb-0.5 d-block">Numbers Layer:</label>
-            <select class="form-select form-select-sm" [(ngModel)]="selectedNumberLayer" (change)="runDxfExtraction()">
-              <option *ngFor="let l of dxfLayers" [value]="l.name">{{ l.name }} ({{ layerCount(l, 'TEXT', 'MTEXT') }})</option>
-            </select>
-          </div>
-          <div class="col-5">
-            <label class="fs-11 text-muted fw-700 mb-0.5 d-block">Unit:</label>
-            <select class="form-select form-select-sm" [(ngModel)]="selectedUnit" (change)="runDxfExtraction()">
-              <option value="ft">ft</option>
-              <option value="m">m</option>
-              <option value="mm">mm</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Dynamic Stats Strip -->
-  <div class="dxf-stats-strip mb-2" *ngIf="dxfStats">
-    <div *ngFor="let u of unitTypes">
-      <span>{{ u.label }}s:</span> <strong>{{ dxfStats.typeCounts[u.key] || 0 }}</strong>
-    </div>
-    <div><span>Numbers Found:</span> <strong>{{ dxfStats.numbersFound }}</strong></div>
-    <div><span>Matched:</span> <strong class="text-success">{{ dxfStats.matched }}</strong></div>
-    <div><span>Unnumbered:</span> <strong [class.text-danger]="dxfStats.unnumbered > 0">{{ dxfStats.unnumbered }}</strong></div>
-    <div><span>Duplicates:</span> <strong [class.text-danger]="dxfStats.duplicates > 0">{{ dxfStats.duplicates }}</strong></div>
-  </div>
-
-  <!-- Collapsible Warnings -->
-  <div *ngIf="dxfWarnings.length > 0">
-    <div class="dxf-warnings-toggle" (click)="showWarningsList = !showWarningsList">
-      <span>
-        <i class="fas fa-exclamation-triangle text-warning me-1.5"></i>{{ dxfWarnings.length }} CAD Warning(s) detected
-        <button type="button" class="btn btn-link btn-xs text-primary ms-2 p-0 text-decoration-none" (click)="$event.stopPropagation(); openGuidelineDialog()">
-          <i class="fas fa-external-link-alt me-1"></i>Open CAD Guideline
+  <!-- TAB 1: VISUAL CANVAS WORKSPACE -->
+  <div *ngIf="activeWorkflowTab === 'canvas'">
+    <!-- UNIT TYPE FILTER CHIPS -->
+    <div class="unit-filter-strip mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="filter-chips d-flex align-items-center gap-1.5 flex-wrap">
+        <button type="button" class="filter-chip" [class.active]="selectedTypeFilter === 'ALL'" (click)="selectedTypeFilter = 'ALL'">
+          All Units ({{ detections.length }})
         </button>
-      </span>
-      <i class="fas" [ngClass]="showWarningsList ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-    </div>
-    <ul class="dxf-warnings-list" *ngIf="showWarningsList">
-      <li *ngFor="let w of dxfWarnings">{{ w }}</li>
-    </ul>
-  </div>
-</div>
-
-<!-- UNIT TYPE FILTER CHIPS (Dynamic from UNIT_TYPES) -->
-<div class="unit-filter-strip mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-  <div class="filter-chips d-flex align-items-center gap-1.5 flex-wrap">
-    <button type="button" class="filter-chip" [class.active]="selectedTypeFilter === 'ALL'" (click)="selectedTypeFilter = 'ALL'">
-      All Units ({{ detections.length }})
-    </button>
-    <button *ngFor="let u of unitTypes" type="button" class="filter-chip" [class.active]="selectedTypeFilter === u.key" (click)="selectedTypeFilter = u.key">
-      <span class="color-swatch me-1" [style.backgroundColor]="u.fillRgb" style="width: 8px; height: 8px;"></span>
-      <span>{{ u.label }}s ({{ getPlotCountByType(u.key) }})</span>
-    </button>
-  </div>
-
-  <div class="canvas-hints fs-11 text-muted">
-    <i class="fas fa-info-circle text-gold me-1"></i> Drag polygon body to move | Drag corners to reshape | Click edges to add points | Right-click/Delete to remove vertex
-  </div>
-</div>
-
-<!-- MAIN LAYOUT -->
-<div class="detector-layout">
-  <!-- LEFT: CANVAS PREVIEW -->
-  <div class="card preview-card">
-    <div class="preview-meta">
-      <div>
-        <strong *ngIf="imageName">{{ imageName }}</strong>
-        <span *ngIf="imageWidth && imageHeight" class="ms-2 text-muted">({{ imageWidth }} &times; {{ imageHeight }} px &bull; {{ zoom.toFixed(1) }}x)</span>
-      </div>
-      <div>
-        <span class="badge bg-success-lt me-1">Valid: {{ validPlotCount }}</span>
-        <span *ngIf="duplicateNumbers.length" class="badge bg-danger-lt">Duplicates: {{ duplicateNumbers.length }}</span>
-      </div>
-    </div>
-
-    <!-- Empty State -->
-    <div class="detector-empty" *ngIf="!imageUrl && mode !== 'dxf' && !detections.length">
-      <i class="fas fa-drafting-compass"></i>
-      <h6>No Layout File Loaded</h6>
-      <p>Select a Project from the dropdown or upload a CAD (.dxf) file / image blueprint to begin.</p>
-      <div class="d-flex align-items-center gap-2">
-        <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">Upload CAD (.dxf) File</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="openGuidelineDialog()">
-          <i class="fas fa-book-open me-1"></i> CAD Guidelines
+        <button *ngFor="let u of unitTypes" type="button" class="filter-chip" [class.active]="selectedTypeFilter === u.key" (click)="selectedTypeFilter = u.key">
+          <span class="color-swatch me-1" [style.backgroundColor]="u.fillRgb" style="width: 8px; height: 8px;"></span>
+          <span>{{ u.label }}s ({{ getPlotCountByType(u.key) }})</span>
         </button>
       </div>
+
+      <div class="canvas-hints fs-11 text-muted">
+        <i class="fas fa-info-circle text-gold me-1"></i> Drag polygon body to move | Drag corners to reshape | Click edges to add points | Right-click corner to delete vertex
+      </div>
     </div>
 
-    <!-- Interactive Stage -->
-    <div class="detector-stage" *ngIf="imageUrl || mode === 'dxf' || detections.length"
-         (mousedown)="onStageMouseDown($event)"
-         (mousemove)="onStageMouseMove($event)"
-         (mouseup)="onStageMouseUp($event)"
-         (mouseleave)="onStageMouseUp($event)">
-      
-      <svg [attr.viewBox]="'0 0 ' + (imageWidth || 2000) + ' ' + (imageHeight || 1600)" xmlns="http://www.w3.org/2000/svg">
-        <g [attr.transform]="transform">
+    <!-- MAIN CANVAS & SIDEBAR LAYOUT -->
+    <div class="detector-layout">
+      <!-- LEFT: CANVAS PREVIEW -->
+      <div class="card preview-card">
+        <div class="preview-meta">
+          <div>
+            <strong *ngIf="imageName">{{ imageName }}</strong>
+            <span *ngIf="imageWidth && imageHeight" class="ms-2 text-muted">({{ imageWidth }} &times; {{ imageHeight }} px &bull; {{ zoom.toFixed(1) }}x)</span>
+          </div>
+          <div>
+            <span class="badge bg-success-lt me-1">Valid: {{ validPlotCount }}</span>
+            <span *ngIf="duplicateNumbers.length" class="badge bg-danger-lt">Duplicates: {{ duplicateNumbers.length }}</span>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="detector-empty" *ngIf="!imageUrl && mode !== 'dxf' && !detections.length">
+          <i class="fas fa-drafting-compass"></i>
+          <h6>No Layout Map Loaded</h6>
+          <p>Select a Project Site from Step 1 above or upload a CAD (.dxf) blueprint to begin detecting and editing plots.</p>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">Upload CAD (.dxf) File</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="openGuidelineDialog()">
+              <i class="fas fa-book-open me-1"></i> CAD Guidelines
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Stage -->
+        <div class="detector-stage" *ngIf="imageUrl || mode === 'dxf' || detections.length"
+             (mousedown)="onStageMouseDown($event)"
+             (mousemove)="onStageMouseMove($event)"
+             (mouseup)="onStageMouseUp($event)"
+             (mouseleave)="onStageMouseUp($event)">
           
-          <!-- CAD Background Vectors (Excludes Plot / Mall / Restaurant / Hospital / School unit layers) -->
-          <g class="dxf-background" *ngIf="mode === 'dxf' && dxfBackground.length > 0">
-            <ng-container *ngFor="let shape of dxfBackground">
-              <!-- Path (Polylines, Lines, Arcs, Polygons) -->
-              <path *ngIf="shape.kind === 'path' && shape.d"
-                    [attr.d]="shape.d"
-                    [attr.fill]="shape.fill || 'none'"
-                    [attr.stroke]="shape.stroke || '#94a3b8'"
-                    [attr.stroke-width]="shape.strokeWidth || 1"
-                    [attr.stroke-dasharray]="shape.dash || null"
-                    vector-effect="non-scaling-stroke"
-                    opacity="0.85"></path>
-
-              <!-- Circle -->
-              <circle *ngIf="shape.kind === 'circle' && shape.cx !== undefined && shape.cy !== undefined"
-                      [attr.cx]="shape.cx"
-                      [attr.cy]="shape.cy"
-                      [attr.r]="shape.r || 4"
-                      [attr.fill]="shape.fill || '#2e7d32'"
-                      [attr.stroke]="shape.stroke || '#1b5e20'"
-                      [attr.stroke-width]="shape.strokeWidth || 1"
-                      opacity="0.85"></circle>
-
-              <!-- Text Annotation -->
-              <text *ngIf="shape.kind === 'text' && shape.text && shape.x !== undefined && shape.y !== undefined"
-                    [attr.x]="shape.x"
-                    [attr.y]="shape.y"
-                    [attr.font-size]="shape.fontSize || 12"
-                    [attr.fill]="shape.fill || '#1e293b'"
-                    font-family="Arial, sans-serif"
-                    font-weight="600"
-                    opacity="0.75">{{ shape.text }}</text>
-            </ng-container>
-          </g>
-
-          <!-- Standard Image Backdrop -->
-          <image *ngIf="imageUrl && mode !== 'dxf'"
-                 [attr.href]="imageUrl"
-                 x="0" y="0"
-                 [attr.width]="imageWidth"
-                 [attr.height]="imageHeight"
-                 preserveAspectRatio="xMidYMid meet"></image>
-
-          <!-- Master Units (Plots, Malls, Restaurants, Hospitals, Schools) -->
-          <g class="plots-layer">
-            <g *ngFor="let plot of filteredDetections"
-               class="plot-group"
-               [class.selected]="selected?.id === plot.id"
-               [class.invalid]="plot.status === 'invalid'"
-               [class.low-confidence]="plot.status === 'low confidence'"
-               (click)="selectPlot(plot, $event)"
-               (mousedown)="startPolygonDrag(plot, $event)"
-               (mouseenter)="onHover(plot, $event)"
-               (mouseleave)="onHover(null)">
+          <svg [attr.viewBox]="'0 0 ' + (imageWidth || 2000) + ' ' + (imageHeight || 1600)" xmlns="http://www.w3.org/2000/svg">
+            <g [attr.transform]="transform">
               
-              <!-- Boundary Polygon -->
-              <polygon [attr.points]="polygonPoints(plot)"
-                       class="plot-polygon"
-                       [ngStyle]="getPlotStatusStyle(plot)"
-                       [attr.stroke-width]="selected?.id === plot.id ? 2.5 : 1.5"></polygon>
+              <!-- CAD Background Vectors (Excludes Unit Layers) -->
+              <g class="dxf-background" *ngIf="mode === 'dxf' && dxfBackground.length > 0">
+                <ng-container *ngFor="let shape of dxfBackground">
+                  <path *ngIf="shape.kind === 'path' && shape.d"
+                        [attr.d]="shape.d"
+                        [attr.fill]="shape.fill || 'none'"
+                        [attr.stroke]="shape.stroke || '#94a3b8'"
+                        [attr.stroke-width]="shape.strokeWidth || 1"
+                        [attr.stroke-dasharray]="shape.dash || null"
+                        vector-effect="non-scaling-stroke"
+                        opacity="0.85"></path>
 
-              <!-- Center Number Label -->
-              <text [attr.x]="center(plot).x"
-                    [attr.y]="shouldShowSoldOut(plot) ? center(plot).y - (getSoldOutFontSize(plot) * 0.6) : center(plot).y"
-                    class="plot-label"
-                    text-anchor="middle"
-                    dominant-baseline="central">
-                {{ plot.plot_no }}
-              </text>
+                  <circle *ngIf="shape.kind === 'circle' && shape.cx !== undefined && shape.cy !== undefined"
+                          [attr.cx]="shape.cx"
+                          [attr.cy]="shape.cy"
+                          [attr.r]="shape.r || 4"
+                          [attr.fill]="shape.fill || '#2e7d32'"
+                          [attr.stroke]="shape.stroke || '#1b5e20'"
+                          [attr.stroke-width]="shape.strokeWidth || 1"
+                          opacity="0.85"></circle>
 
-              <!-- Dynamic SOLD OUT Badge in Sales View -->
-              <text *ngIf="shouldShowSoldOut(plot)"
-                    [attr.x]="center(plot).x"
-                    [attr.y]="center(plot).y + (getSoldOutFontSize(plot) * 0.6)"
-                    class="sold-out-badge-text"
-                    [attr.font-size]="getSoldOutFontSize(plot)"
-                    text-anchor="middle"
-                    dominant-baseline="central">
-                SOLD OUT
-              </text>
+                  <text *ngIf="shape.kind === 'text' && shape.text && shape.x !== undefined && shape.y !== undefined"
+                        [attr.x]="shape.x"
+                        [attr.y]="shape.y"
+                        [attr.font-size]="shape.fontSize || 12"
+                        [attr.fill]="shape.fill || '#1e293b'"
+                        font-family="Arial, sans-serif"
+                        font-weight="600"
+                        opacity="0.75">{{ shape.text }}</text>
+                </ng-container>
+              </g>
 
-              <!-- Vertex Drag Handles & Edge Insert Buttons (when selected) -->
-              <ng-container *ngIf="selected?.id === plot.id">
-                <!-- Edge Midpoint Insert Handles -->
-                <circle *ngFor="let p of plot.points; let i = index"
-                        [attr.cx]="(p.x + plot.points[(i + 1) % plot.points.length].x) / 2"
-                        [attr.cy]="(p.y + plot.points[(i + 1) % plot.points.length].y) / 2"
-                        r="3.5"
-                        class="edge-insert-handle"
-                        title="Click to insert vertex"
-                        (click)="insertVertexOnEdge(plot, i, $event)">
-                </circle>
+              <!-- Standard Image Backdrop -->
+              <image *ngIf="imageUrl && mode !== 'dxf'"
+                     [attr.href]="imageUrl"
+                     x="0" y="0"
+                     [attr.width]="imageWidth"
+                     [attr.height]="imageHeight"
+                     preserveAspectRatio="xMidYMid meet"></image>
 
-                <!-- Vertices -->
-                <circle *ngFor="let p of plot.points; let i = index"
+              <!-- Master Units (Plots, Malls, Restaurants, Hospitals, Schools) -->
+              <g class="plots-layer">
+                <g *ngFor="let plot of filteredDetections"
+                   class="plot-group"
+                   [class.selected]="selected?.id === plot.id"
+                   [class.invalid]="plot.status === 'invalid'"
+                   [class.low-confidence]="plot.status === 'low confidence'"
+                   (click)="selectPlot(plot, $event)"
+                   (mousedown)="startPolygonDrag(plot, $event)"
+                   (mouseenter)="onHover(plot, $event)"
+                   (mouseleave)="onHover(null)">
+                  
+                  <!-- Boundary Polygon -->
+                  <polygon [attr.points]="polygonPoints(plot)"
+                           class="plot-polygon"
+                           [ngStyle]="getPlotStatusStyle(plot)"
+                           [attr.stroke-width]="selected?.id === plot.id ? 2.5 : 1.5"></polygon>
+
+                  <!-- Center Number Label -->
+                  <text [attr.x]="center(plot).x"
+                        [attr.y]="shouldShowSoldOut(plot) ? center(plot).y - (getSoldOutFontSize(plot) * 0.6) : center(plot).y"
+                        class="plot-label"
+                        text-anchor="middle"
+                        dominant-baseline="central">
+                    {{ plot.plot_no }}
+                  </text>
+
+                  <!-- Dynamic SOLD OUT Badge in Sales View -->
+                  <text *ngIf="shouldShowSoldOut(plot)"
+                        [attr.x]="center(plot).x"
+                        [attr.y]="center(plot).y + (getSoldOutFontSize(plot) * 0.6)"
+                        class="sold-out-badge-text"
+                        [attr.font-size]="getSoldOutFontSize(plot)"
+                        text-anchor="middle"
+                        dominant-baseline="central">
+                    SOLD OUT
+                  </text>
+
+                  <!-- Vertex Drag Handles & Edge Insert Buttons (when selected) -->
+                  <ng-container *ngIf="selected?.id === plot.id">
+                    <circle *ngFor="let p of plot.points; let i = index"
+                            [attr.cx]="(p.x + plot.points[(i + 1) % plot.points.length].x) / 2"
+                            [attr.cy]="(p.y + plot.points[(i + 1) % plot.points.length].y) / 2"
+                            r="3.5"
+                            class="edge-insert-handle"
+                            title="Click to insert vertex"
+                            (click)="insertVertexOnEdge(plot, i, $event)">
+                    </circle>
+
+                    <circle *ngFor="let p of plot.points; let i = index"
+                            [attr.cx]="p.x"
+                            [attr.cy]="p.y"
+                            [attr.r]="selectedVertexIndex === i ? 6.5 : 5"
+                            [class.active-vertex]="selectedVertexIndex === i"
+                            class="vertex-handle"
+                            (pointerdown)="startVertexDrag(plot, i, $event)"
+                            (contextmenu)="$event.preventDefault(); deleteVertex(plot, i)">
+                    </circle>
+                  </ng-container>
+                </g>
+              </g>
+
+              <!-- Drawing Preview (Polygon) -->
+              <g class="drawing-preview" *ngIf="drawMode === 'polygon' && drawPoints.length > 0">
+                <polyline [attr.points]="drawPolylinePoints"
+                          fill="none"
+                          stroke="#059669"
+                          stroke-width="2.5"
+                          stroke-dasharray="4,4"></polyline>
+                <circle *ngFor="let p of drawPoints; let i = index"
                         [attr.cx]="p.x"
                         [attr.cy]="p.y"
-                        [attr.r]="selectedVertexIndex === i ? 6.5 : 5"
-                        [class.active-vertex]="selectedVertexIndex === i"
-                        class="vertex-handle"
-                        (pointerdown)="startVertexDrag(plot, i, $event)"
-                        (contextmenu)="$event.preventDefault(); deleteVertex(plot, i)">
-                </circle>
-              </ng-container>
-            </g>
-          </g>
+                        r="5"
+                        [attr.fill]="i === 0 ? '#dc2626' : '#059669'"
+                        stroke="#ffffff"
+                        stroke-width="2"></circle>
+              </g>
 
-          <!-- Drawing Preview (Polygon) -->
-          <g class="drawing-preview" *ngIf="drawMode === 'polygon' && drawPoints.length > 0">
-            <polyline [attr.points]="drawPolylinePoints"
-                      fill="none"
+              <!-- Drawing Preview (Rectangle) -->
+              <g class="drawing-preview" *ngIf="drawMode === 'rectangle' && drawRectBox">
+                <rect [attr.x]="drawRectBox.x"
+                      [attr.y]="drawRectBox.y"
+                      [attr.width]="drawRectBox.width"
+                      [attr.height]="drawRectBox.height"
+                      fill="rgba(5, 150, 105, 0.15)"
                       stroke="#059669"
+                      stroke-width="2"
+                      stroke-dasharray="4,4"></rect>
+              </g>
+
+              <!-- Snapping Hover Indicator -->
+              <circle *ngIf="hoveredSnapPoint"
+                      [attr.cx]="hoveredSnapPoint.x"
+                      [attr.cy]="hoveredSnapPoint.y"
+                      r="7"
+                      fill="none"
+                      stroke="#eab308"
                       stroke-width="2.5"
-                      stroke-dasharray="4,4"></polyline>
-            <circle *ngFor="let p of drawPoints; let i = index"
-                    [attr.cx]="p.x"
-                    [attr.cy]="p.y"
-                    r="5"
-                    [attr.fill]="i === 0 ? '#dc2626' : '#059669'"
-                    stroke="#ffffff"
-                    stroke-width="2"></circle>
-          </g>
+                      pointer-events="none"></circle>
+            </g>
+          </svg>
 
-          <!-- Drawing Preview (Rectangle) -->
-          <g class="drawing-preview" *ngIf="drawMode === 'rectangle' && drawRectBox">
-            <rect [attr.x]="drawRectBox.x"
-                  [attr.y]="drawRectBox.y"
-                  [attr.width]="drawRectBox.width"
-                  [attr.height]="drawRectBox.height"
-                  fill="rgba(5, 150, 105, 0.15)"
-                  stroke="#059669"
-                  stroke-width="2"
-                  stroke-dasharray="4,4"></rect>
-          </g>
-
-          <!-- Snapping Hover Indicator -->
-          <circle *ngIf="hoveredSnapPoint"
-                  [attr.cx]="hoveredSnapPoint.x"
-                  [attr.cy]="hoveredSnapPoint.y"
-                  r="7"
-                  fill="none"
-                  stroke="#eab308"
-                  stroke-width="2.5"
-                  pointer-events="none"></circle>
-        </g>
-      </svg>
-
-      <!-- Hover Tooltip -->
-      <div class="hover-tooltip" *ngIf="hovered" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
-        <div class="fw-700 fs-12 mb-0.5 d-flex align-items-center gap-1.5">
-          <span>{{ hovered.plot_no }}</span>
-          <span class="badge" [ngClass]="getUnitTypeBadgeClass(hovered.unit_type)">{{ getUnitTypeLabel(hovered.unit_type) }}</span>
-        </div>
-        <div class="fs-11 text-muted">Type: {{ hovered.boundary_type }} &bull; Source: {{ hovered.detection_source }}</div>
-        <div *ngIf="hovered.area_units" class="fs-11 text-muted">Area: {{ hovered.area_units }} sq.{{ selectedUnit }}</div>
-        <div *ngIf="hovered.warning" class="fs-11 text-danger mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ hovered.warning }}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RIGHT: SIDEBAR DETAILS -->
-  <div class="card detector-side">
-    <!-- Selected Unit Details Card -->
-    <div class="side-card" *ngIf="selected">
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <div class="d-flex align-items-center gap-1.5">
-          <h5 class="mb-0 fw-700">Unit #{{ selected.plot_no }}</h5>
-          <span class="badge" [ngClass]="getUnitTypeBadgeClass(selected.unit_type)">{{ getUnitTypeLabel(selected.unit_type) }}</span>
-        </div>
-        <button type="button" class="btn btn-outline-danger btn-xs" (click)="confirmDeletePlot(selected)" title="Delete unit">
-          <i class="fas fa-trash-alt me-1"></i>Delete
-        </button>
-      </div>
-
-      <div class="f-row mb-2">
-        <label class="form-label fs-11 fw-700 text-dark mb-0.5">Unit Number / ID</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="selected.plot_no" (ngModelChange)="refreshSelectedPlotNo()">
-      </div>
-
-      <div class="f-row mb-2">
-        <label class="form-label fs-11 fw-700 text-dark mb-0.5">Unit Type</label>
-        <select class="form-select form-select-sm" [(ngModel)]="selected.unit_type" (ngModelChange)="pushUndoState(); refreshValidation()">
-          <option *ngFor="let u of unitTypes" [value]="u.key">{{ u.label }} ({{ u.cadLayer }})</option>
-        </select>
-      </div>
-
-      <div class="f-row mb-2">
-        <label class="form-label fs-11 fw-700 text-dark mb-0.5">Status &amp; Verification</label>
-        <div class="btn-group btn-group-sm w-100">
-          <button type="button" class="btn btn-xs" [ngClass]="selected.status === 'detected' ? 'btn-green' : 'btn-outline-secondary'" (click)="markStatus(selected, 'detected')">Valid</button>
-          <button type="button" class="btn btn-xs" [ngClass]="selected.status === 'low confidence' ? 'btn-warning' : 'btn-outline-secondary'" (click)="markStatus(selected, 'low confidence')">Low Conf</button>
-          <button type="button" class="btn btn-xs" [ngClass]="selected.status === 'invalid' ? 'btn-danger' : 'btn-outline-secondary'" (click)="markStatus(selected, 'invalid')">Invalid</button>
+          <!-- Hover Tooltip -->
+          <div class="hover-tooltip" *ngIf="hovered" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
+            <div class="fw-700 fs-12 mb-0.5 d-flex align-items-center gap-1.5">
+              <span>{{ hovered.plot_no }}</span>
+              <span class="badge" [ngClass]="getUnitTypeBadgeClass(hovered.unit_type)">{{ getUnitTypeLabel(hovered.unit_type) }}</span>
+            </div>
+            <div class="fs-11 text-muted">Type: {{ hovered.boundary_type }} &bull; Source: {{ hovered.detection_source }}</div>
+            <div *ngIf="hovered.area_units" class="fs-11 text-muted">Area: {{ hovered.area_units }} sq.{{ selectedUnit }}</div>
+            <div *ngIf="hovered.warning" class="fs-11 text-danger mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ hovered.warning }}</div>
+          </div>
         </div>
       </div>
 
-      <!-- Geometry Info -->
-      <div class="geometry-info p-2 bg-light rounded-8 fs-11 text-muted mb-3 border">
-        <div><strong>Vertices:</strong> {{ selected.points.length }} points</div>
-        <div *ngIf="selected.area_units"><strong>Area:</strong> {{ selected.area_units }} sq.{{ selectedUnit }}</div>
-        <div><strong>Bounding Box:</strong> {{ selected.bounding_box.width }} &times; {{ selected.bounding_box.height }} px</div>
-        <div *ngIf="selected.warning" class="text-danger mt-1"><i class="fas fa-exclamation-triangle me-1"></i>{{ selected.warning }}</div>
-      </div>
+      <!-- RIGHT: SELECTED UNIT INSPECTOR & VALIDATION -->
+      <div class="card detector-side">
+        <!-- Selected Unit Details Card -->
+        <div class="side-card" *ngIf="selected">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center gap-1.5">
+              <h5 class="mb-0 fw-700">Unit #{{ selected.plot_no }}</h5>
+              <span class="badge" [ngClass]="getUnitTypeBadgeClass(selected.unit_type)">{{ getUnitTypeLabel(selected.unit_type) }}</span>
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-xs" (click)="confirmDeletePlot(selected)" title="Delete unit">
+              <i class="fas fa-trash-alt me-1"></i>Delete
+            </button>
+          </div>
 
-      <!-- Arrow Nudge Buttons -->
-      <div class="nudge-controls text-center mb-2">
-        <span class="fs-11 text-muted d-block mb-1">Nudge Unit Position</span>
-        <div class="btn-group btn-group-sm">
-          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="nudgeSelected(-2, 0)" title="Left"><i class="fas fa-arrow-left"></i></button>
-          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="nudgeSelected(0, -2)" title="Up"><i class="fas fa-arrow-up"></i></button>
-          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="nudgeSelected(0, 2)" title="Down"><i class="fas fa-arrow-down"></i></button>
-          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="nudgeSelected(2, 0)" title="Right"><i class="fas fa-arrow-right"></i></button>
+          <div class="f-row mb-2">
+            <label class="form-label fs-11 fw-700 text-dark mb-0.5">Unit Number / ID</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="selected.plot_no" (ngModelChange)="refreshSelectedPlotNo()">
+          </div>
+
+          <div class="f-row mb-2">
+            <label class="form-label fs-11 fw-700 text-dark mb-0.5">Unit Type</label>
+            <select class="form-select form-select-sm" [(ngModel)]="selected.unit_type" (ngModelChange)="pushUndoState(); refreshValidation()">
+              <option *ngFor="let u of unitTypes" [value]="u.key">{{ u.label }} ({{ u.cadLayer }})</option>
+            </select>
+          </div>
+
+          <div class="f-row mb-2">
+            <label class="form-label fs-11 fw-700 text-dark mb-0.5">Status &amp; Verification</label>
+            <div class="btn-group btn-group-sm w-100">
+              <button type="button" class="btn btn-xs" [ngClass]="selected.status === 'detected' ? 'btn-green' : 'btn-outline-secondary'" (click)="markStatus(selected, 'detected')">Valid</button>
+              <button type="button" class="btn btn-xs" [ngClass]="selected.status === 'low confidence' ? 'btn-warning' : 'btn-outline-secondary'" (click)="markStatus(selected, 'low confidence')">Low Conf</button>
+              <button type="button" class="btn btn-xs" [ngClass]="selected.status === 'invalid' ? 'btn-danger' : 'btn-outline-secondary'" (click)="markStatus(selected, 'invalid')">Invalid</button>
+            </div>
+          </div>
+
+          <!-- Geometry Info -->
+          <div class="geometry-info p-2 bg-light rounded-8 fs-11 text-muted mb-3 border">
+            <div><strong>Vertices:</strong> {{ selected.points.length }} points</div>
+            <div *ngIf="selected.area_units"><strong>Area:</strong> {{ selected.area_units }} sq.{{ selectedUnit }}</div>
+            <div><strong>Bounding Box:</strong> {{ selected.bounding_box.width }} &times; {{ selected.bounding_box.height }} px</div>
+            <div *ngIf="selected.warning" class="text-danger mt-1"><i class="fas fa-exclamation-triangle me-1"></i>{{ selected.warning }}</div>
+          </div>
+
+          <!-- Arrow Nudge Buttons -->
+          <div class="nudge-controls text-center mb-2">
+            <span class="fs-11 text-muted d-block mb-1">Nudge Unit Position</span>
+            <div class="btn-group btn-group-sm">
+              <button type="button" class="btn btn-outline-secondary btn-xs" (click)="nudgeSelected(-2, 0)" title="Left"><i class="fas fa-arrow-left"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-xs" (click)="nudgeSelected(0, -2)" title="Up"><i class="fas fa-arrow-up"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-xs" (click)="nudgeSelected(0, 2)" title="Down"><i class="fas fa-arrow-down"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-xs" (click)="nudgeSelected(2, 0)" title="Right"><i class="fas fa-arrow-right"></i></button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Empty Selection State -->
-    <div class="side-card text-center py-4" *ngIf="!selected">
-      <i class="fas fa-mouse-pointer fs-3 text-muted mb-2"></i>
-      <h6 class="fs-13 fw-700 text-dark">No Unit Selected</h6>
-      <p class="fs-11 text-muted mb-0">Click any plot or commercial unit on the canvas to inspect and edit its boundary.</p>
-    </div>
+        <!-- Empty Selection State -->
+        <div class="side-card text-center py-4" *ngIf="!selected">
+          <i class="fas fa-mouse-pointer fs-3 text-muted mb-2"></i>
+          <h6 class="fs-13 fw-700 text-dark">No Unit Selected</h6>
+          <p class="fs-11 text-muted mb-0">Click any plot or commercial unit on the canvas to inspect and edit its boundary.</p>
+        </div>
 
-    <!-- Validation Report -->
-    <div class="side-card">
-      <h6 class="fw-700 fs-13 mb-2">Quality &amp; Validation Report</h6>
-      <div class="validation-list">
-        <div class="validation-item d-flex align-items-center justify-content-between p-1.5 border-bottom fs-11" *ngFor="let item of validationReport">
-          <span>{{ item.label }}</span>
-          <span class="badge" [ngClass]="item.status === 'pass' ? 'bg-success' : item.status === 'warn' ? 'bg-warning' : 'bg-danger'">
-            {{ item.status === 'pass' ? 'PASS' : item.count }}
-          </span>
+        <!-- Validation Report -->
+        <div class="side-card">
+          <h6 class="fw-700 fs-13 mb-2">Quality &amp; Validation Report</h6>
+          <div class="validation-list">
+            <div class="validation-item d-flex align-items-center justify-content-between p-1.5 border-bottom fs-11" *ngFor="let item of validationReport">
+              <span>{{ item.label }}</span>
+              <span class="badge" [ngClass]="item.status === 'pass' ? 'bg-success' : item.status === 'warn' ? 'bg-warning' : 'bg-danger'">
+                {{ item.status === 'pass' ? 'PASS' : item.count }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- CAD DIFF REVIEW MODAL -->
-<div class="modal fade show d-block" *ngIf="showDiffModal" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 9999;">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-dark text-white py-2.5">
-        <h5 class="modal-title fs-14 fw-700"><i class="fas fa-code-compare text-gold me-2"></i>CAD vs Database Re-Upload Diff Report</h5>
-        <button type="button" class="btn-close btn-close-white" (click)="closeDiffModal()"></button>
-      </div>
-      <div class="modal-body p-3">
-        <!-- Summary Badges -->
-        <div class="diff-summary-badges d-flex align-items-center gap-2 mb-3 flex-wrap" *ngIf="diffSummary">
-          <button type="button" class="btn btn-xs" [ngClass]="diffFilter === 'ALL' ? 'btn-dark' : 'btn-outline-dark'" (click)="diffFilter = 'ALL'">
-            All ({{ diffSummary.newPlots.length + diffSummary.updatedPlots.length + diffSummary.unchangedPlots.length + diffSummary.missingPlots.length }})
-          </button>
-          <button type="button" class="btn btn-xs" [ngClass]="diffFilter === 'NEW' ? 'btn-success' : 'btn-outline-success'" (click)="diffFilter = 'NEW'">
-            New in CAD ({{ diffSummary.newPlots.length }})
-          </button>
-          <button type="button" class="btn btn-xs" [ngClass]="diffFilter === 'UPDATED' ? 'btn-warning' : 'btn-outline-warning'" (click)="diffFilter = 'UPDATED'">
-            Updated Geometry ({{ diffSummary.updatedPlots.length }})
-          </button>
-          <button type="button" class="btn btn-xs" [ngClass]="diffFilter === 'UNCHANGED' ? 'btn-secondary' : 'btn-outline-secondary'" (click)="diffFilter = 'UNCHANGED'">
-            Unchanged ({{ diffSummary.unchangedPlots.length }})
-          </button>
-          <button type="button" class="btn btn-xs" [ngClass]="diffFilter === 'MISSING' ? 'btn-danger' : 'btn-outline-danger'" (click)="diffFilter = 'MISSING'">
-            Missing in CAD ({{ diffSummary.missingPlots.length }})
-          </button>
+  <!-- TAB 2: UNIT INVENTORY & MODIFY TABLE -->
+  <div *ngIf="activeWorkflowTab === 'table'">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white py-3 border-bottom">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <!-- Search & Filter Controls -->
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="input-group input-group-sm" style="width: 240px;">
+              <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+              <input type="text" class="form-control" placeholder="Search plot / unit #..." [(ngModel)]="tableSearchQuery">
+            </div>
+
+            <!-- Unit Type Filter -->
+            <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="tableTypeFilter">
+              <option value="ALL">All Unit Types ({{ detections.length }})</option>
+              <option *ngFor="let u of unitTypes" [value]="u.key">{{ u.label }} ({{ getPlotCountByType(u.key) }})</option>
+            </select>
+
+            <!-- Status Filter -->
+            <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="tableStatusFilter">
+              <option value="ALL">All Statuses</option>
+              <option value="VALID">Valid Units</option>
+              <option value="INVALID">Invalid / Overlapping</option>
+              <option value="VACANT">Vacant</option>
+              <option value="INPROCESS">In Process</option>
+              <option value="BOOKED">Booked</option>
+              <option value="SOLD">Sold Out</option>
+            </select>
+          </div>
+
+          <!-- Table Actions -->
+          <div class="d-flex align-items-center gap-2">
+            <span class="fs-12 text-muted">Showing <strong>{{ tableFilteredDetections.length }}</strong> of <strong>{{ detections.length }}</strong> units</span>
+            <button type="button" class="btn btn-emerald btn-sm fw-700" (click)="saveDetectionsToSite()" [disabled]="!selectedSiteId || !detections.length || savingDetections || hasInvalidPlots">
+              <i class="fas fa-save me-1"></i> Save to Site
+            </button>
+          </div>
         </div>
+      </div>
 
-        <div class="table-responsive" style="max-height: 380px;">
-          <table class="table table-sm table-bordered fs-11 mb-0">
-            <thead class="table-light">
+      <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 600px;">
+          <table class="table table-hover table-striped align-middle mb-0 fs-12">
+            <thead class="table-light sticky-top">
               <tr>
-                <th>Unit #</th>
-                <th>Type</th>
-                <th>Diff Status</th>
-                <th>Details</th>
+                <th style="width: 50px;">#</th>
+                <th style="width: 130px;">Unit Number</th>
+                <th style="width: 140px;">Unit Type</th>
+                <th style="width: 110px;">Area</th>
+                <th style="width: 130px;">Status</th>
+                <th style="width: 120px;">Geometry</th>
+                <th>Detection Source</th>
+                <th class="text-end" style="width: 180px;">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of filteredDiffItems">
-                <td class="fw-700">{{ item.plot_no }}</td>
-                <td><span class="badge" [ngClass]="getUnitTypeBadgeClass(item.unit_type)">{{ item.unit_type }}</span></td>
+              <tr *ngFor="let plot of tableFilteredDetections; let idx = index" [class.table-warning]="selected?.id === plot.id">
+                <td class="text-muted fw-600">{{ idx + 1 }}</td>
+                <td>
+                  <input type="text" class="form-control form-control-sm fw-700" [(ngModel)]="plot.plot_no" (ngModelChange)="pushUndoState(); refreshValidation()" style="max-width: 110px;">
+                </td>
+                <td>
+                  <select class="form-select form-select-sm" [(ngModel)]="plot.unit_type" (ngModelChange)="pushUndoState(); refreshValidation()" style="max-width: 130px;">
+                    <option *ngFor="let u of unitTypes" [value]="u.key">{{ u.label }}</option>
+                  </select>
+                </td>
+                <td>
+                  <span *ngIf="plot.area_units" class="fw-600">{{ plot.area_units }} sq.{{ selectedUnit }}</span>
+                  <span *ngIf="!plot.area_units" class="text-muted">-</span>
+                </td>
                 <td>
                   <span class="badge" [ngClass]="{
-                    'bg-success': item.status === 'NEW',
-                    'bg-warning text-dark': item.status === 'UPDATED GEOMETRY',
-                    'bg-secondary': item.status === 'UNCHANGED',
-                    'bg-danger': item.status === 'MISSING IN DXF'
-                  }">{{ item.status }}</span>
+                    'bg-success': plot.status === 'detected',
+                    'bg-warning text-dark': plot.status === 'low confidence',
+                    'bg-danger': plot.status === 'invalid' || plot.status === 'boundary not found'
+                  }">{{ plot.status }}</span>
                 </td>
-                <td class="text-muted">{{ item.details }}</td>
+                <td>
+                  <span class="badge bg-light text-dark border">{{ plot.points.length }} vertices</span>
+                </td>
+                <td class="text-muted font-monospace fs-11">
+                  {{ plot.detection_source }}
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-primary btn-xs" (click)="selectPlotAndSwitchToCanvas(plot)" title="Edit and reshape on interactive canvas">
+                      <i class="fas fa-edit me-1"></i> Reshape
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-xs" (click)="confirmDeletePlot(plot)" title="Delete unit">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
               </tr>
-              <tr *ngIf="filteredDiffItems.length === 0">
-                <td colspan="4" class="text-center text-muted py-3">No items in this category.</td>
+              <tr *ngIf="tableFilteredDetections.length === 0">
+                <td colspan="8" class="text-center text-muted py-5">
+                  <i class="fas fa-inbox fs-2 text-muted mb-2 d-block"></i>
+                  No units match your search or filter criteria.
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-      <div class="modal-footer py-2 bg-light">
-        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeDiffModal()">Close Review</button>
-        <button type="button" class="btn btn-emerald btn-sm" (click)="closeDiffModal(); saveDetectionsToSite()" [disabled]="hasInvalidPlots">
-          <i class="fas fa-save me-1"></i> Proceed &amp; Save Changes
-        </button>
+    </div>
+  </div>
+
+  <!-- CAD DIFF REVIEW MODAL -->
+  <div class="modal fade show d-block" *ngIf="showDiffModal" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 9999;">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-dark text-white py-2.5">
+          <h5 class="modal-title fs-14 fw-700"><i class="fas fa-code-compare text-gold me-2"></i>CAD vs Database Re-Upload Diff Report</h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeDiffModal()"></button>
+        </div>
+        <div class="modal-body p-3">
+          <!-- Summary Badges -->
+          <div class="diff-summary-badges d-flex align-items-center gap-2 mb-3 flex-wrap" *ngIf="diffSummary">
+            <button type="button" class="btn btn-xs" [ngClass]="diffFilter === 'ALL' ? 'btn-dark' : 'btn-outline-dark'" (click)="diffFilter = 'ALL'">
+              All ({{ diffSummary.newPlots.length + diffSummary.updatedPlots.length + diffSummary.unchangedPlots.length + diffSummary.missingPlots.length }})
+            </button>
+            <button type="button" class="btn btn-xs" [ngClass]="diffFilter === 'NEW' ? 'btn-success' : 'btn-outline-success'" (click)="diffFilter = 'NEW'">
+              New in CAD ({{ diffSummary.newPlots.length }})
+            </button>
+            <button type="button" class="btn btn-xs" [ngClass]="diffFilter === 'UPDATED' ? 'btn-warning' : 'btn-outline-warning'" (click)="diffFilter = 'UPDATED'">
+              Updated Geometry ({{ diffSummary.updatedPlots.length }})
+            </button>
+            <button type="button" class="btn btn-xs" [ngClass]="diffFilter === 'UNCHANGED' ? 'btn-secondary' : 'btn-outline-secondary'" (click)="diffFilter = 'UNCHANGED'">
+              Unchanged ({{ diffSummary.unchangedPlots.length }})
+            </button>
+            <button type="button" class="btn btn-xs" [ngClass]="diffFilter === 'MISSING' ? 'btn-danger' : 'btn-outline-danger'" (click)="diffFilter = 'MISSING'">
+              Missing in CAD ({{ diffSummary.missingPlots.length }})
+            </button>
+          </div>
+
+          <div class="table-responsive" style="max-height: 380px;">
+            <table class="table table-sm table-bordered fs-11 mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Unit #</th>
+                  <th>Type</th>
+                  <th>Diff Status</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of filteredDiffItems">
+                  <td class="fw-700">{{ item.plot_no }}</td>
+                  <td><span class="badge" [ngClass]="getUnitTypeBadgeClass(item.unit_type)">{{ item.unit_type }}</span></td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'bg-success': item.status === 'NEW',
+                      'bg-warning text-dark': item.status === 'UPDATED GEOMETRY',
+                      'bg-secondary': item.status === 'UNCHANGED',
+                      'bg-danger': item.status === 'MISSING IN DXF'
+                    }">{{ item.status }}</span>
+                  </td>
+                  <td class="text-muted">{{ item.details }}</td>
+                </tr>
+                <tr *ngIf="filteredDiffItems.length === 0">
+                  <td colspan="4" class="text-center text-muted py-3">No items in this category.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer py-2 bg-light">
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeDiffModal()">Close Review</button>
+          <button type="button" class="btn btn-emerald btn-sm" (click)="closeDiffModal(); saveDetectionsToSite()" [disabled]="hasInvalidPlots">
+            <i class="fas fa-save me-1"></i> Proceed &amp; Save Changes
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- CAD GUIDELINE DIALOG COMPONENT -->
-<app-cad-guideline-dialog [show]="showGuidelineDialog" (close)="closeGuidelineDialog()"></app-cad-guideline-dialog>
+  <!-- CAD GUIDELINE DIALOG COMPONENT -->
+  <app-cad-guideline-dialog [show]="showGuidelineDialog" (close)="closeGuidelineDialog()"></app-cad-guideline-dialog>
+</div>

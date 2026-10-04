@@ -113,8 +113,12 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       icon: 'fas fa-building',
       expanded: false,
       items: [
-        { icon: 'fas fa-layer-group', label: 'Site Gallery', route: '/admin/site-gallery' },
-        { icon: 'fas fa-calculator', label: 'EMI Calculator Mgmt', route: '/admin/emi-calculator-mgmt' },
+        { icon: 'fas fa-city', label: '1. Sites Management (Add/View Sites)', route: '/admin/sites', badge: 'SITES' },
+        { icon: 'fas fa-plus-circle', label: '2. Add New Site Area', route: '/admin/new-site-area' },
+        { icon: 'fas fa-drafting-compass', label: '3. CAD Plot Detector (DXF Upload)', route: '/admin/plot-detector-tool', badge: 'CAD' },
+        { icon: 'fas fa-draw-polygon', label: '4. Edit / Modify Plots (Map Editor)', route: '/admin/plot-map-editor', badge: 'EDIT' },
+        { icon: 'fas fa-layer-group', label: '5. Site Gallery', route: '/admin/site-gallery' },
+        { icon: 'fas fa-calculator', label: '6. EMI Calculator Mgmt', route: '/admin/emi-calculator-mgmt' },
       ]
     },
     {

@@ -92,10 +92,12 @@ export interface CadDiffItem {
 declare const Tesseract: any;
 declare const cv: any;
 
+import { Router, RouterLink } from '@angular/router';
+
 @Component({
   selector: 'app-plot-detector-tool',
   standalone: true,
-  imports: [CommonModule, FormsModule, CadGuidelineDialogComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CadGuidelineDialogComponent],
   templateUrl: './plot-detector-tool.component.html',
   styleUrls: ['./plot-detector-tool.component.css']
 })
@@ -225,15 +227,80 @@ export class PlotDetectorToolComponent implements OnInit {
     'image/vnd.dxf',
   ];
 
-  readonly cloudAiPrompt = `You are an advanced AI Plot Detection and SVG Master Map Generator.`;
+  // Active Workflow Tab
+  activeWorkflowTab: 'canvas' | 'table' | 'diff' = 'canvas';
+  tableSearchQuery = '';
+  tableStatusFilter = 'ALL';
+  tableTypeFilter = 'ALL';
 
   constructor(
     private api: ApiService,
-    private dxfExtractor: DxfPlotExtractorService
+    private dxfExtractor: DxfPlotExtractorService,
+    public router: Router
   ) {}
 
   ngOnInit() {
     this.loadSites();
+  }
+
+  getSelectedSite(): any {
+    return this.sites.find(s => s.site_id === Number(this.selectedSiteId)) || null;
+  }
+
+  get tableFilteredDetections(): DetectedPlot[] {
+    return this.detections.filter(p => {
+      if (this.tableTypeFilter !== 'ALL' && (p.unit_type || 'PLOT').toUpperCase() !== this.tableTypeFilter.toUpperCase()) {
+        return false;
+      }
+      if (this.tableStatusFilter !== 'ALL') {
+        const dbStat = (p.db_status || p.status || 'Vacant').toUpperCase();
+        if (this.tableStatusFilter === 'VALID' && !p.valid) return false;
+        if (this.tableStatusFilter === 'INVALID' && p.valid) return false;
+        if (['VACANT', 'INPROCESS', 'BOOKED', 'SOLD'].includes(this.tableStatusFilter) && dbStat !== this.tableStatusFilter) return false;
+      }
+      if (this.tableSearchQuery.trim()) {
+        const q = this.tableSearchQuery.trim().toLowerCase();
+        const plotNo = String(p.plot_no || '').toLowerCase();
+        const unitType = String(p.unit_type || 'PLOT').toLowerCase();
+        if (!plotNo.includes(q) && !unitType.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  openLiveCustomerMap(): void {
+    if (this.selectedSiteId) {
+      window.open(`/sites/${this.selectedSiteId}/plot-map`, '_blank');
+    } else {
+      Swal.fire({
+        icon: 'info',
+        title: 'Select a Site First',
+        text: 'Please select a project site to preview its live customer plot map.',
+        confirmButtonColor: '#0f3d2e'
+      });
+    }
+  }
+
+  openSitesManagement(): void {
+    this.router.navigate(['/admin/sites']);
+  }
+
+  openNewSiteArea(): void {
+    this.router.navigate(['/admin/new-site-area']);
+  }
+
+  openPlotMapEditor(): void {
+    this.router.navigate(['/admin/plot-map-editor'], { queryParams: { siteId: this.selectedSiteId || undefined } });
+  }
+
+  selectPlotAndSwitchToCanvas(plot: DetectedPlot): void {
+    this.selected = plot;
+    this.activeWorkflowTab = 'canvas';
+    if (plot && this.imageWidth && this.imageHeight) {
+      const c = this.center(plot);
+      this.pan.x = (this.imageWidth / 2) - c.x;
+      this.pan.y = (this.imageHeight / 2) - c.y;
+    }
   }
 
   get transform() {
