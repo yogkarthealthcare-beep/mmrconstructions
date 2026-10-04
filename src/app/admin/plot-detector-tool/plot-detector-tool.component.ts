@@ -89,15 +89,15 @@ export interface CadDiffItem {
   dbPlot?: any;
 }
 
+import { Router } from '@angular/router';
+
 declare const Tesseract: any;
 declare const cv: any;
-
-import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-plot-detector-tool',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CadGuidelineDialogComponent],
+  imports: [CommonModule, FormsModule, CadGuidelineDialogComponent],
   templateUrl: './plot-detector-tool.component.html',
   styleUrls: ['./plot-detector-tool.component.css']
 })
