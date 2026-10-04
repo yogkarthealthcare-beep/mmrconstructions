@@ -95,6 +95,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/blog-detail/blog-detail.component').then(m => m.BlogDetailComponent) 
   },
   { 
+    path: 'about-us', 
+    loadComponent: () => import('./pages/about-us/about-us.component').then(m => m.AboutUsComponent),
+    title: 'About Us — MMR Constructions and Developers Private Limited'
+  },
+  { 
+    path: 'about', 
+    loadComponent: () => import('./pages/about-us/about-us.component').then(m => m.AboutUsComponent),
+    title: 'About Us — MMR Constructions and Developers Private Limited'
+  },
+  { 
     path: 'company-documents', 
     loadComponent: () => import('./pages/company-documents/company-documents.component').then(m => m.CompanyDocumentsComponent),
     title: 'Company Legal Documents & Certificates — MMR Construction'

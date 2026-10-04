@@ -1,102 +1,266 @@
 <app-navbar></app-navbar>
 
 <main class="about-page">
-  <section class="about-hero" [style.background-image]="'linear-gradient(90deg, rgba(9,54,35,.93), rgba(9,54,35,.72), rgba(9,54,35,.34)), url(' + heroImage + ')'">
+  <!-- ── 1. Grand Hero Section (Centered & Premium) ────────────────────── -->
+  <section class="about-hero" [style.background-image]="'linear-gradient(180deg, rgba(7, 21, 14, 0.88) 0%, rgba(9, 32, 21, 0.94) 100%), url(' + heroImage + ')'">
     <div class="mmr-container">
-      <a routerLink="/" class="about-back"><i class="fas fa-arrow-left"></i> Back to Home</a>
-      <div class="about-kicker"><i class="fas fa-certificate"></i> Company Profile</div>
-      <h1>About Us</h1>
-      <p>
-        M.M.R. Construction & Developers Pvt. Ltd. helps customers explore residential plots,
-        investment properties, documentation guidance, easy payment options, and site visits across
-        Unnao, Kanpur, Lucknow and nearby developing corridors.
-      </p>
-    </div>
-  </section>
+      <div class="hero-center-content">
+        <!-- Navigation Breadcrumb -->
+        <a routerLink="/" class="about-back-btn">
+          <i class="fas fa-arrow-left me-2"></i> Back to Home
+        </a>
 
-  <section class="about-strip">
-    <div class="mmr-container">
-      <div class="highlight-grid">
-        <div class="highlight-item" *ngFor="let item of highlights">
-          <strong>{{ item.value }}</strong>
-          <span>{{ item.label }}</span>
+        <!-- Gold Ribbon Badge -->
+        <div class="hero-badge">
+          <i class="fas fa-certificate text-gold me-2"></i>
+          <span>ESTD. 15+ YEARS OF EXCELLENCE • GOVERNMENT COMPLIANT REAL ESTATE</span>
+        </div>
+
+        <!-- Main Title (Centered) -->
+        <h1 class="hero-title">{{ companyName }}</h1>
+
+        <!-- Subtitle -->
+        <p class="hero-lead">
+          Pioneering master-planned township development, bulk land acquisition from trusted owners, 
+          transparent residential &amp; commercial plot allotments, ready-to-move luxury homes, and custom construction of villas, malls &amp; restaurants on pre-order.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="hero-cta-group">
+          <a routerLink="/" fragment="sites" class="btn-hero-gold">
+            <i class="fas fa-map-location-dot me-2"></i> Explore Our Sites
+          </a>
+          <a href="tel:+919511119879" class="btn-hero-outline">
+            <i class="fas fa-phone-volume me-2"></i> Call Property Advisor
+          </a>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="about-content">
+  <!-- ── 2. Key Milestones & Trust Metrics Strip ───────────────────────── -->
+  <section class="metrics-strip">
     <div class="mmr-container">
-      <div class="about-grid">
-        <div class="about-copy">
-          <div class="sec-label">Who We Are</div>
-          <h2 class="sec-title">A local property company focused on trust, clarity, and practical support</h2>
-          <p class="sec-desc">
-            We work with buyers, investors, and families who want dependable property guidance.
-            Our team supports customers from the first enquiry to site selection, booking, payment
-            planning, documentation, and future assistance.
-          </p>
-          <p>
-            The company focuses on affordable and growth-oriented real estate opportunities while keeping
-            the process simple for customers. Whether someone is looking for a residential plot, a long-term
-            land investment, construction support, or property-related guidance, MMR provides a single point
-            of coordination.
-          </p>
+      <div class="metrics-grid">
+        <div class="metric-card" *ngFor="let m of milestones">
+          <div class="metric-value">{{ m.value }}</div>
+          <div class="metric-label">{{ m.label }}</div>
+          <div class="metric-sub">{{ m.sub }}</div>
         </div>
+      </div>
+    </div>
+  </section>
 
-        <aside class="company-card" aria-label="Company details">
-          <h3>Company Details</h3>
-          <div class="detail-row" *ngFor="let item of details">
-            <i [class]="item.icon"></i>
-            <div>
-              <span>{{ item.label }}</span>
-              <strong>{{ item.value }}</strong>
+  <!-- ── 3. Who We Are & The MMR Story ─────────────────────────────────── -->
+  <section class="about-story-section">
+    <div class="mmr-container">
+      <div class="story-grid">
+        <!-- Story Copy -->
+        <div class="story-copy">
+          <div class="section-tag"><i class="fas fa-landmark me-1.5 text-gold"></i> About Our Company</div>
+          <h2 class="section-heading">Transforming Prime Land into Vibrant, Secure &amp; Thriving Living Communities</h2>
+          
+          <p class="story-paragraph highlight-p">
+            <strong>MMR Constructions and Developers Private Limited</strong> is a premier land development and construction conglomerate with over <strong>15 years of distinguished experience</strong>. We specialize in acquiring large contiguous land parcels directly from trusted field owners and transforming them into master-planned, high-value residential societies and commercial zones.
+          </p>
+
+          <p class="story-paragraph">
+            Whether a customer is looking to purchase an affordable residential plot, invest in high-growth commercial property, buy ready-to-move luxury villas, or require custom turn-key construction of commercial complexes, malls, and restaurants — MMR provides complete single-window execution with 100% legal clarity.
+          </p>
+
+          <div class="story-highlights-box">
+            <div class="highlight-item">
+              <i class="fas fa-check-double text-gold"></i>
+              <div>
+                <strong>10,000+ Satisfied Families</strong>
+                <span>Over 10,000 clients have purchased land and built dream homes through MMR with zero disputes.</span>
+              </div>
+            </div>
+            <div class="highlight-item">
+              <i class="fas fa-file-shield text-gold"></i>
+              <div>
+                <strong>100% Legally Verified &amp; Clear Titles</strong>
+                <span>Direct bulk purchase from verified owners with on-spot registry and mutation assistance.</span>
+              </div>
+            </div>
+            <div class="highlight-item">
+              <i class="fas fa-hand-holding-dollar text-gold"></i>
+              <div>
+                <strong>Easy EMI &amp; Transparent Pricing</strong>
+                <span>Flexible down payments, easy monthly installments, and fair, transparent market rates.</span>
+              </div>
             </div>
           </div>
-          <a href="tel:+919511119879" class="btn btn-green w-100"><i class="fas fa-phone me-2"></i>Call Now</a>
-        </aside>
-      </div>
-    </div>
-  </section>
+        </div>
 
-  <section class="about-services">
-    <div class="mmr-container">
-      <div class="section-head">
-        <div class="sec-label">What We Support</div>
-        <h2 class="sec-title">Property services built around customer confidence</h2>
-      </div>
-      <div class="support-grid">
-        <div class="support-card" *ngFor="let item of services">
-          <i class="fas fa-check"></i>
-          <span>{{ item }}</span>
+        <!-- Company Credentials Quick Card -->
+        <div class="story-card-col">
+          <div class="company-credentials-card">
+            <div class="credentials-header">
+              <div class="corp-emblem"><i class="fas fa-building-shield"></i></div>
+              <div>
+                <h3 class="corp-title">Corporate Profile</h3>
+                <span class="corp-sub">Official Registration &amp; Headquarters</span>
+              </div>
+            </div>
+
+            <div class="credentials-list">
+              <div class="cred-row">
+                <span class="cred-lbl"><i class="fas fa-building text-gold me-2"></i> Legal Entity:</span>
+                <strong class="cred-val">{{ companyName }}</strong>
+              </div>
+              <div class="cred-row">
+                <span class="cred-lbl"><i class="fas fa-certificate text-gold me-2"></i> Corporate CIN:</span>
+                <strong class="cred-val">{{ cinNumber }}</strong>
+              </div>
+              <div class="cred-row">
+                <span class="cred-lbl"><i class="fas fa-file-invoice text-gold me-2"></i> GSTIN:</span>
+                <strong class="cred-val">{{ gstNumber }}</strong>
+              </div>
+              <div class="cred-row">
+                <span class="cred-lbl"><i class="fas fa-map-pin text-gold me-2"></i> Reg. Office:</span>
+                <span class="cred-val">{{ address }}</span>
+              </div>
+              <div class="cred-row">
+                <span class="cred-lbl"><i class="fas fa-phone-alt text-gold me-2"></i> Official Phone:</span>
+                <a [href]="'tel:' + phone" class="cred-link">{{ phone }}</a>
+              </div>
+              <div class="cred-row">
+                <span class="cred-lbl"><i class="fas fa-envelope text-gold me-2"></i> Official Email:</span>
+                <a [href]="'mailto:' + email" class="cred-link">{{ email }}</a>
+              </div>
+            </div>
+
+            <div class="credentials-footer">
+              <a [href]="'tel:' + phone" class="btn-corp-call">
+                <i class="fas fa-phone me-2"></i> Contact Head Office
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="about-values">
+  <!-- ── 4. Core Business Operations & Capabilities ────────────────────── -->
+  <section class="services-overview-section">
     <div class="mmr-container">
-      <div class="value-grid">
-        <article class="value-card" *ngFor="let item of values">
-          <i [class]="item.icon"></i>
-          <h3>{{ item.title }}</h3>
-          <p>{{ item.text }}</p>
-        </article>
+      <div class="section-header-center">
+        <div class="section-tag"><i class="fas fa-cubes-stacked me-1.5 text-gold"></i> What We Do</div>
+        <h2 class="section-heading">Comprehensive Land Development &amp; Architectural Construction</h2>
+        <p class="section-subtext">
+          From raw agricultural land acquisition to modern gated townships and turnkey commercial construction on pre-order, explore our full spectrum of real estate solutions.
+        </p>
+      </div>
+
+      <div class="services-cards-grid">
+        <div class="service-card" *ngFor="let s of services">
+          <div class="service-card-top">
+            <div class="service-icon-wrap">
+              <i [class]="s.icon"></i>
+            </div>
+            <span class="service-subtitle-badge">{{ s.subtitle }}</span>
+          </div>
+          <h3 class="service-title">{{ s.title }}</h3>
+          <p class="service-description">{{ s.description }}</p>
+          <ul class="service-points-list">
+            <li *ngFor="let pt of s.points">
+              <i class="fas fa-circle-check text-gold me-2"></i>
+              <span>{{ pt }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="about-cta">
+  <!-- ── 5. The 15-Year Trust Advantage ────────────────────────────────── -->
+  <section class="trust-advantage-section">
     <div class="mmr-container">
-      <div class="cta-panel">
-        <div>
-          <div class="sec-label">Need Property Guidance?</div>
-          <h2>Talk to MMR Construction before your next property decision.</h2>
-          <p>Call us for current plot availability, site visit scheduling, payment guidance, and project details.</p>
+      <div class="trust-banner-card">
+        <div class="trust-banner-content">
+          <div class="section-tag tag-light"><i class="fas fa-shield-heart me-1.5"></i> The MMR Trust Advantage</div>
+          <h2 class="trust-heading">Why Over 10,000+ Customers &amp; Investors Place Their Unwavering Trust in MMR</h2>
+          <p class="trust-desc">
+            In real estate, trust is earned through transparency, legal certainty, and consistent delivery. In our 15+ years of active development, MMR has maintained a flawless reputation with zero disputes, prompt registry, and superior infrastructure value.
+          </p>
+
+          <div class="trust-pillars-grid">
+            <div class="pillar-card" *ngFor="let p of trustPillars">
+              <div class="pillar-icon"><i [class]="p.icon"></i></div>
+              <h4 class="pillar-title">{{ p.title }}</h4>
+              <p class="pillar-text">{{ p.text }}</p>
+            </div>
+          </div>
         </div>
-        <div class="cta-actions">
-          <a href="tel:+919511119879" class="btn btn-gold"><i class="fas fa-phone"></i> +91 95111 19879</a>
-          <a routerLink="/" fragment="contact" class="btn btn-outline-white"><i class="fas fa-envelope"></i> Send Enquiry</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 6. Board of Directors & Leadership Team ───────────────────────── -->
+  <section class="leadership-section">
+    <div class="mmr-container">
+      <div class="section-header-center">
+        <div class="section-tag"><i class="fas fa-users-gear me-1.5 text-gold"></i> Executive Leadership</div>
+        <h2 class="section-heading">Guided by Visionary Leaders with 15+ Years of Industry Mastery</h2>
+        <p class="section-subtext">
+          Meet the executive leadership guiding MMR Constructions and Developers Private Limited towards sustainable urbanization, legal integrity, and customer satisfaction.
+        </p>
+      </div>
+
+      <div class="leadership-grid">
+        <div class="leader-card" *ngFor="let leader of leadership">
+          <div class="leader-card-header">
+            <div class="leader-avatar-wrap">
+              <i [class]="leader.icon"></i>
+            </div>
+            <div class="leader-meta">
+              <span class="leader-badge">{{ leader.badge }}</span>
+              <h3 class="leader-name">{{ leader.name }}</h3>
+              <div class="leader-role-tag">{{ leader.role }}</div>
+            </div>
+          </div>
+
+          <div class="leader-body">
+            <div class="leader-designation">{{ leader.designation }}</div>
+            <p class="leader-bio">{{ leader.bio }}</p>
+          </div>
+
+          <div class="leader-footer">
+            <div class="leader-stat">
+              <i class="fas fa-check-circle text-gold me-1.5"></i>
+              <span>15+ Years Real Estate Leadership</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 7. Call To Action & Site Visit Scheduling ─────────────────────── -->
+  <section class="about-cta-section">
+    <div class="mmr-container">
+      <div class="cta-luxury-card">
+        <div class="cta-inner-grid">
+          <div class="cta-text-col">
+            <div class="cta-badge"><i class="fas fa-calendar-check me-2"></i> Free Site Visit &amp; Property Consultation</div>
+            <h2 class="cta-title">Ready to Own Your Dream Plot or Custom-Built Property?</h2>
+            <p class="cta-desc">
+              Connect directly with MMR Constructions. Schedule a complimentary chauffeur-driven site visit to our prime project locations in Kanpur, Unnao, and Lucknow, or consult regarding custom villa/mall pre-orders.
+            </p>
+          </div>
+
+          <div class="cta-actions-col">
+            <a href="tel:+919511119879" class="btn-cta-gold">
+              <i class="fas fa-phone-volume me-2"></i> Call: +91 95111 19879
+            </a>
+            <a href="https://wa.me/919511119879?text=Hello%20MMR%20Constructions,%20I%20want%20to%20know%20more%20about%20your%20plots%20and%20construction%20services." target="_blank" rel="noopener noreferrer" class="btn-cta-whatsapp">
+              <i class="fab fa-whatsapp me-2"></i> WhatsApp Enquiry
+            </a>
+            <a routerLink="/" fragment="sites" class="btn-cta-outline">
+              <i class="fas fa-layer-group me-2"></i> View Available Sites
+            </a>
+          </div>
         </div>
       </div>
     </div>
