@@ -79,11 +79,11 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
   };
 
   // Map Dimensions & Transform
-  imageWidth = 1000;
-  imageHeight = 1000;
+  imageWidth = 2000;
+  imageHeight = 1637;
   zoom = 1;
   pan = { x: 0, y: 0 };
-  minZoom = 0.4;
+  minZoom = 0.02;
   maxZoom = 8;
 
   // Pointer Pan/Drag Tracking
@@ -134,6 +134,13 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('window:resize')
+  onResize(): void {
+    if (!this.loading) {
+      this.fitToScreen();
+    }
+  }
+
   dismissGestureHint(): void {
     this.gestureHintVisible = false;
     try {
@@ -163,9 +170,14 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
           this.isPolling = false;
           this.lastUpdatedText = 'Live updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+          this.cdr.detectChanges();
+
           if (initial) {
-            this.fitToScreen();
-            this.handleQueryParamPlotSelection();
+            setTimeout(() => {
+              this.fitToScreen();
+              this.handleQueryParamPlotSelection();
+              this.cdr.markForCheck();
+            }, 60);
           } else if (this.selectedPlot) {
             const refreshed = this.plots.find(p => p.plot_id === this.selectedPlot?.plot_id);
             if (refreshed) {
@@ -202,13 +214,14 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
 
   private inspectImageDimensions(url: string, callback: () => void): void {
     if (!url) {
-      this.imageWidth = 1000;
-      this.imageHeight = 1000;
+      this.imageWidth = 2000;
+      this.imageHeight = 1637;
       callback();
       return;
     }
     const resolvedUrl = this.resolveImageUrl(url);
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.onload = () => {
       if (img.naturalWidth > 0 && img.naturalHeight > 0) {
         this.imageWidth = img.naturalWidth;
@@ -217,9 +230,31 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
       callback();
     };
     img.onerror = () => {
-      this.imageWidth = 1000;
-      this.imageHeight = 1000;
-      callback();
+      if (url.toLowerCase().includes('.svg')) {
+        fetch(resolvedUrl)
+          .then(r => r.text())
+          .then(svgText => {
+            const vbMatch = svgText.match(/viewBox=["']\s*([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s*["']/i);
+            if (vbMatch) {
+              const vbW = parseFloat(vbMatch[3]);
+              const vbH = parseFloat(vbMatch[4]);
+              if (vbW > 0 && vbH > 0) {
+                this.imageWidth = vbW;
+                this.imageHeight = vbH;
+              }
+            }
+            callback();
+          })
+          .catch(() => {
+            this.imageWidth = 2000;
+            this.imageHeight = 1637;
+            callback();
+          });
+      } else {
+        this.imageWidth = 2000;
+        this.imageHeight = 1637;
+        callback();
+      }
     };
     img.src = resolvedUrl;
   }
@@ -428,17 +463,22 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
   fitToScreen(): void {
     const viewport = this.mapViewportRef?.nativeElement;
     if (!viewport) return;
-    const vpW = viewport.clientWidth || 800;
-    const vpH = viewport.clientHeight || 600;
+    const vpW = viewport.clientWidth;
+    const vpH = viewport.clientHeight;
+    if (vpW <= 0 || vpH <= 0) return;
 
-    const scaleX = vpW / this.imageWidth;
-    const scaleY = vpH / this.imageHeight;
-    this.zoom = Math.min(scaleX, scaleY) * 0.95;
-    this.zoom = Math.max(this.minZoom, Math.min(this.zoom, 2));
+    const targetW = this.imageWidth || 2000;
+    const targetH = this.imageHeight || 1637;
+
+    // Leave comfortable 3% to 5% space around map
+    const scaleX = (vpW * 0.94) / targetW;
+    const scaleY = (vpH * 0.94) / targetH;
+    this.zoom = Math.min(scaleX, scaleY);
+    this.zoom = Math.max(this.minZoom, Math.min(this.zoom, 3));
 
     this.pan = {
-      x: (vpW - this.imageWidth * this.zoom) / 2,
-      y: (vpH - this.imageHeight * this.zoom) / 2
+      x: (vpW - targetW * this.zoom) / 2,
+      y: (vpH - targetH * this.zoom) / 2
     };
   }
 
@@ -464,7 +504,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
 
   private applyZoom(factor: number, clientCenterX: number, clientCenterY: number): void {
     const newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoom * factor));
-    if (newZoom === this.zoom) return;
+    if (Math.abs(newZoom - this.zoom) < 0.0001) return;
 
     // Zoom relative to point (clientCenterX, clientCenterY)
     const ratio = newZoom / this.zoom;
@@ -482,13 +522,25 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     const contentW = this.imageWidth * this.zoom;
     const contentH = this.imageHeight * this.zoom;
 
-    const minX = -contentW + 80;
-    const maxX = vpW - 80;
-    const minY = -contentH + 80;
-    const maxY = vpH - 80;
+    // If map width is smaller than or equal to viewport, keep strictly centered
+    if (contentW <= vpW) {
+      this.pan.x = (vpW - contentW) / 2;
+    } else {
+      const margin = 40;
+      const minX = vpW - contentW - margin;
+      const maxX = margin;
+      this.pan.x = Math.max(minX, Math.min(maxX, this.pan.x));
+    }
 
-    this.pan.x = Math.max(minX, Math.min(maxX, this.pan.x));
-    this.pan.y = Math.max(minY, Math.min(maxY, this.pan.y));
+    // If map height is smaller than or equal to viewport, keep strictly centered
+    if (contentH <= vpH) {
+      this.pan.y = (vpH - contentH) / 2;
+    } else {
+      const margin = 40;
+      const minY = vpH - contentH - margin;
+      const maxY = margin;
+      this.pan.y = Math.max(minY, Math.min(maxY, this.pan.y));
+    }
   }
 
   panToPlot(plot: PublicPlot): void {
