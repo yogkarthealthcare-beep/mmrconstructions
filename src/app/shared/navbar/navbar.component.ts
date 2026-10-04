@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit, ElementRef } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
@@ -8,7 +8,7 @@ import { VerifiedBadgeComponent } from '../verified-badge/verified-badge.compone
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule, VerifiedBadgeComponent],
+  imports: [RouterModule, CommonModule, VerifiedBadgeComponent],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
