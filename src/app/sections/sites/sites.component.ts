@@ -64,9 +64,9 @@ export class SitesComponent implements OnInit {
       site_image: 'https://images.unsplash.com/photo-1613082410785-22292e8426e0?w=800&q=80'
     },
     {
-      id: 5,
-      site_name: 'Lucknow Site',
-      site_address: 'Near Amousi Airport, Lucknow',
+      id: 6,
+      site_name: 'NEW MMR Site Kanpur',
+      site_address: 'New PAC Lines, Shyam Nagar, Kanpur',
       site_image: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80'
     }
   ];
