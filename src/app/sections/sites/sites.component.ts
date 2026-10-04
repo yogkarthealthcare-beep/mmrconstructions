@@ -133,9 +133,7 @@ export class SitesComponent implements OnInit {
   }
 
   hasMap(site?: SiteGalleryItem | null): boolean {
-    const summary = this.getSummary(site);
-    if (summary) return summary.has_map !== false;
-    return true; // default enabled
+    return true;
   }
 
   getEffectiveSiteId(site?: SiteGalleryItem | null): number {
