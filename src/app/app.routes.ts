@@ -112,6 +112,16 @@ export const routes: Routes = [
     title: 'Terms and Conditions — MMR Construction'
   },
   { 
+    path: 'sites/:siteId/plot-map', 
+    loadComponent: () => import('./pages/public-plot-map/public-plot-map.component').then(m => m.PublicPlotMapComponent),
+    title: 'Interactive Plot Map & Booking — MMR Construction'
+  },
+  { 
+    path: 'site-map/:id/plot-map', 
+    loadComponent: () => import('./pages/public-plot-map/public-plot-map.component').then(m => m.PublicPlotMapComponent),
+    title: 'Interactive Plot Map & Booking — MMR Construction'
+  },
+  { 
     path: 'site-map/:id', 
     loadComponent: () => import('./pages/site-map/site-map.component').then(m => m.SiteMapComponent),
     title: 'Interactive Site Map Viewer — MMR Construction'

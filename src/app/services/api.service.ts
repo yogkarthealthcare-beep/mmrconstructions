@@ -189,6 +189,8 @@ export class ApiService {
   // ── Sites & Plots ─────────────────────────────────
   getHomeSliders()              { return this.get('/api/home-sliders'); }
   getSites()                    { return this.get('/api/sites'); }
+  getPublicSitesSummary()       { return this.get('/api/public/sites/availability-summary'); }
+  getPublicPlotMap(siteId: number) { return this.get(`/api/public/sites/${siteId}/plot-map`); }
   getSite(id: number)           { return this.get(`/api/sites/${id}`); }
   getSitePlots(id: number, q: any = {}) { return this.get(`/api/sites/${id}/plots`, q); }
   getPlot(id: number)           { return this.get(`/api/plots/${id}`); }

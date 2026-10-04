@@ -1,0 +1,609 @@
+<div class="public-plot-map-wrapper">
+  <!-- Top Bar -->
+  <header class="map-topbar">
+    <div class="topbar-left">
+      <a routerLink="/" fragment="sites" class="btn-back" title="Back to All Sites">
+        <i class="fas fa-arrow-left"></i>
+        <span class="d-none d-md-inline ms-2">All Sites</span>
+      </a>
+      <div class="topbar-title-wrap">
+        <h1 class="topbar-title">{{ site?.site_name || 'Project Layout Map' }}</h1>
+        <div class="topbar-location">
+          <i class="fas fa-map-marker-alt text-gold"></i>
+          <span>{{ site?.location || 'Prime Location' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Horizontal Summary Pills -->
+    <div class="mobile-stats-row d-flex d-lg-none">
+      <span class="mobile-stat-pill pill-avail" title="Available">
+        <span class="dot dot-avail"></span>
+        <strong>{{ availableCount }}</strong> Avail
+      </span>
+      <span class="mobile-stat-pill pill-inproc" title="In Process">
+        <span class="dot dot-inproc"></span>
+        <strong>{{ inProcessCount }}</strong> Proc
+      </span>
+      <span class="mobile-stat-pill pill-sold" title="Sold Out">
+        <span class="dot dot-sold"></span>
+        <strong>{{ soldCount }}</strong> Sold
+      </span>
+    </div>
+
+    <div class="topbar-right">
+      <div class="live-sync-badge d-none d-xl-flex" [class.syncing]="isPolling">
+        <span class="pulse-dot"></span>
+        <span>{{ lastUpdatedText }}</span>
+      </div>
+
+      <ng-container *ngIf="auth.isUserLoggedIn(); else loginBtn">
+        <a routerLink="/customer/dashboard" class="btn-auth-user" title="My Account">
+          <i class="fas fa-user-circle me-1.5"></i>
+          <span class="d-none d-sm-inline">{{ auth.getUser()?.full_name || 'My Account' }}</span>
+        </a>
+      </ng-container>
+      <ng-template #loginBtn>
+        <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/sites/' + siteId + '/plot-map' }" class="btn-auth-login">
+          <i class="fas fa-sign-in-alt me-1.5"></i>
+          <span>Login / Register</span>
+        </a>
+      </ng-template>
+    </div>
+  </header>
+
+  <!-- Main Workspace (Sidebar + Map Canvas) -->
+  <div class="map-layout-body">
+    <!-- Desktop Left Sidebar (>= 992px) -->
+    <aside class="map-sidebar d-none d-lg-flex">
+      <!-- Site Info Header -->
+      <div class="sidebar-site-header">
+        <div class="site-badge"><i class="fas fa-city me-1"></i> MMR Project Master</div>
+        <h2 class="sidebar-site-name">{{ site?.site_name || 'Project Layout' }}</h2>
+        <p class="sidebar-site-address">
+          <i class="fas fa-location-arrow text-gold me-1"></i>
+          {{ site?.location || 'Uttar Pradesh' }}
+        </p>
+      </div>
+
+      <!-- Live Availability Legend & Counters -->
+      <div class="sidebar-section legend-section">
+        <div class="section-label">Live Availability</div>
+        <div class="legend-grid">
+          <div class="legend-item legend-avail" (click)="selectedUnitType = 'ALL'">
+            <div class="legend-indicator">
+              <span class="legend-swatch swatch-avail"></span>
+              <span class="legend-title">Available</span>
+            </div>
+            <span class="legend-count">{{ availableCount }}</span>
+          </div>
+
+          <div class="legend-item legend-inproc" (click)="selectedUnitType = 'ALL'">
+            <div class="legend-indicator">
+              <span class="legend-swatch swatch-inproc"></span>
+              <span class="legend-title">In Process</span>
+            </div>
+            <span class="legend-count">{{ inProcessCount }}</span>
+          </div>
+
+          <div class="legend-item legend-sold" (click)="selectedUnitType = 'ALL'">
+            <div class="legend-indicator">
+              <span class="legend-swatch swatch-sold"></span>
+              <span class="legend-title">Sold Out</span>
+            </div>
+            <span class="legend-count">{{ soldCount }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="sidebar-section filter-section">
+        <div class="section-label">Find Plot Unit</div>
+        <div class="search-input-wrap">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control plot-search-input"
+            placeholder="Search plot number (e.g. 101, M-1)..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+          />
+          <button *ngIf="searchTerm" class="btn-clear-search" (click)="searchTerm = ''; onSearchChange()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Unit Types Filter Chips (Hidden if only 1 type exists) -->
+        <div class="unit-type-chips-wrap" *ngIf="unitTypesPresent.length > 1">
+          <div class="filter-label">Filter Unit Type:</div>
+          <div class="type-chips">
+            <button
+              class="type-chip"
+              [class.active]="selectedUnitType === 'ALL'"
+              (click)="selectedUnitType = 'ALL'"
+            >
+              All ({{ plots.length }})
+            </button>
+            <button
+              *ngFor="let type of unitTypesPresent"
+              class="type-chip"
+              [class.active]="selectedUnitType === type"
+              (click)="selectedUnitType = type"
+            >
+              {{ getUnitTypeBadge(type).label }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Plot Floating Details Card (Desktop Sidebar) -->
+      <div class="sidebar-section plot-detail-card" *ngIf="selectedPlot">
+        <div class="detail-card-header">
+          <div class="detail-header-left">
+            <span class="badge unit-badge" [ngClass]="getUnitTypeBadge(selectedPlot.unit_type).badgeClass">
+              {{ getUnitTypeBadge(selectedPlot.unit_type).label }}
+            </span>
+            <h3 class="detail-plot-num">Unit #{{ selectedPlot.plot_number }}</h3>
+          </div>
+          <button class="btn-close-detail" (click)="closePlotDetail()" title="Close details">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Status Tag -->
+        <div class="detail-status-banner" [ngClass]="'status-' + selectedPlot.public_status.toLowerCase()">
+          <i class="fas" [ngClass]="{
+            'fa-check-circle': selectedPlot.public_status === 'AVAILABLE',
+            'fa-clock': selectedPlot.public_status === 'IN_PROCESS',
+            'fa-ban': selectedPlot.public_status === 'SOLD_OUT'
+          }"></i>
+          <span>{{ selectedPlot.public_status === 'AVAILABLE' ? 'Available for Booking' : (selectedPlot.public_status === 'IN_PROCESS' ? 'In Process / Advance Paid' : 'Sold Out') }}</span>
+        </div>
+
+        <!-- Attributes Matrix -->
+        <div class="detail-matrix">
+          <div class="matrix-row">
+            <span class="matrix-label"><i class="fas fa-ruler-combined text-gold me-1.5"></i> Plot Area:</span>
+            <span class="matrix-value">
+              <strong>{{ selectedPlot.area_gaj }}</strong> Gaj 
+              <small class="text-muted">({{ selectedPlot.area_sqft }} Sq.Ft.)</small>
+            </span>
+          </div>
+
+          <!-- If Available / In Process -->
+          <ng-container *ngIf="selectedPlot.public_status !== 'SOLD_OUT'">
+            <div class="matrix-row">
+              <span class="matrix-label"><i class="fas fa-tag text-gold me-1.5"></i> Base Price:</span>
+              <span class="matrix-value price-highlight">{{ formatInr(selectedPlot.price) }}</span>
+            </div>
+            <div class="matrix-row" *ngIf="selectedPlot.public_status === 'IN_PROCESS'">
+              <div class="advance-alert-box">
+                <i class="fas fa-info-circle text-amber me-1"></i>
+                Someone has paid an advance on this plot. You can still submit your booking queue.
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- If Sold Out: Privacy Protected Sold Details -->
+          <ng-container *ngIf="selectedPlot.public_status === 'SOLD_OUT'">
+            <div class="matrix-row">
+              <span class="matrix-label"><i class="fas fa-receipt text-gold me-1.5"></i> Sold Value:</span>
+              <span class="matrix-value text-sold-value">{{ formatInr(selectedPlot.sold_price || selectedPlot.price) }}</span>
+            </div>
+            <div class="matrix-row">
+              <span class="matrix-label"><i class="fas fa-calendar-check text-gold me-1.5"></i> Sold Date:</span>
+              <span class="matrix-value">{{ formatDate(selectedPlot.sold_at) }}</span>
+            </div>
+            <div class="privacy-note">
+              <i class="fas fa-shield-alt text-gold me-1"></i> Buyer & registry details are private.
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Action Button -->
+        <div class="detail-action-footer">
+          <button
+            *ngIf="canBook(selectedPlot)"
+            class="btn-book-action"
+            [class.btn-inproc-action]="selectedPlot.public_status === 'IN_PROCESS'"
+            (click)="onBookClick(selectedPlot)"
+          >
+            <i class="fas fa-bookmark me-1.5"></i>
+            <span>{{ selectedPlot.public_status === 'IN_PROCESS' ? 'Queue Booking for Unit' : 'Book This Plot Now' }}</span>
+          </button>
+
+          <button *ngIf="selectedPlot.public_status === 'SOLD_OUT'" class="btn-book-action btn-sold-disabled" disabled>
+            <i class="fas fa-lock me-1.5"></i>
+            <span>Sold Out — Booking Closed</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Helper Navigation Text -->
+      <div class="sidebar-help-text" *ngIf="!selectedPlot">
+        <div class="help-item"><i class="fas fa-mouse me-2 text-gold"></i> Scroll mouse wheel or pinch to zoom</div>
+        <div class="help-item"><i class="fas fa-hand-pointer me-2 text-gold"></i> Drag to pan around the site map</div>
+        <div class="help-item"><i class="fas fa-bullseye me-2 text-gold"></i> Click any plot unit to view details & book</div>
+      </div>
+    </aside>
+
+    <!-- Map Canvas Container (Center/Right) -->
+    <main
+      #mapViewport
+      class="map-viewport"
+      (pointerdown)="onPointerDown($event)"
+      (pointermove)="onPointerMove($event)"
+      (pointerup)="onPointerUp($event)"
+      (pointercancel)="onPointerUp($event)"
+      (wheel)="onWheel($event)"
+      (dblclick)="onDoubleClick($event)"
+    >
+      <!-- Loading Spinner Overlay -->
+      <div class="map-loading-overlay" *ngIf="loading">
+        <div class="spinner-border text-gold" role="status"></div>
+        <div class="loading-msg">Loading interactive layout blueprint...</div>
+      </div>
+
+      <!-- Error State -->
+      <div class="map-error-overlay" *ngIf="!loading && error">
+        <i class="fas fa-exclamation-triangle text-amber mb-3" style="font-size: 2.5rem;"></i>
+        <h3>Map Not Available</h3>
+        <p>{{ error }}</p>
+        <button class="btn btn-gold mt-2" (click)="loadPlotMap(true)">Retry Loading</button>
+      </div>
+
+      <!-- Floating Zoom Controls -->
+      <div class="map-zoom-controls">
+        <button class="zoom-btn" (click)="zoomIn()" title="Zoom In (+)" aria-label="Zoom In">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button class="zoom-btn" (click)="zoomOut()" title="Zoom Out (-)" aria-label="Zoom Out">
+          <i class="fas fa-minus"></i>
+        </button>
+        <button class="zoom-btn btn-reset" (click)="resetZoom()" title="Fit Map to Screen" aria-label="Fit to Screen">
+          <i class="fas fa-expand"></i>
+        </button>
+      </div>
+
+      <!-- Gesture Hint Toast (Mobile/Desktop on first visit) -->
+      <div class="gesture-hint-toast" *ngIf="gestureHintVisible" (click)="dismissGestureHint()">
+        <i class="fas fa-fingerprint me-2 text-gold"></i>
+        <span>Pinch to zoom, drag with one finger to move</span>
+        <button class="btn-dismiss-hint" aria-label="Dismiss">&times;</button>
+      </div>
+
+      <!-- Interactive SVG Canvas -->
+      <svg
+        #mapSvg
+        class="map-svg-root"
+        [attr.viewBox]="'0 0 ' + imageWidth + ' ' + imageHeight"
+        [style.transform]="transformStyle"
+      >
+        <!-- Background Master Blueprint Image -->
+        <image
+          *ngIf="siteMapUrl"
+          [attr.href]="siteMapUrl"
+          x="0"
+          y="0"
+          [attr.width]="imageWidth"
+          [attr.height]="imageHeight"
+          preserveAspectRatio="xMidYMid slice"
+        />
+
+        <!-- Unit Polygons -->
+        <g class="plots-layer">
+          <g
+            *ngFor="let plot of plots; trackBy: trackByPlotId"
+            class="plot-group"
+            [class.selected]="selectedPlot?.plot_id === plot.plot_id"
+            [class.dimmed]="isPlotDimmed(plot)"
+            (click)="onPlotClick(plot, $event)"
+            (mouseenter)="onPlotHover(plot, $event)"
+            (mouseleave)="onPlotLeave()"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="'Unit ' + plot.plot_number + ', ' + plot.public_status + ', ' + plot.area_gaj + ' Gaj'"
+            (keydown.enter)="selectPlot(plot)"
+            (keydown.space)="selectPlot(plot)"
+          >
+            <!-- Polygon Geometry -->
+            <polygon
+              *ngIf="plot.svgPoints"
+              [attr.points]="plot.svgPoints"
+              [attr.fill]="getPlotColor(plot).fill"
+              [attr.stroke]="getPlotColor(plot).stroke"
+              [attr.stroke-width]="selectedPlot?.plot_id === plot.plot_id ? 3.5 : getPlotColor(plot).strokeWidth"
+              stroke-linejoin="round"
+            />
+
+            <!-- Sold Text Label Overlay -->
+            <ng-container *ngIf="shouldShowSoldLabel(plot) && plot.centroid">
+              <text
+                [attr.x]="plot.centroid.x"
+                [attr.y]="plot.centroid.y + (shouldShowPlotNumber(plot) ? -6 : 4)"
+                class="sold-text-svg"
+                text-anchor="middle"
+                [attr.transform]="plot.isTall ? 'rotate(-90 ' + plot.centroid.x + ' ' + plot.centroid.y + ')' : null"
+              >
+                {{ getSoldLabel(plot) }}
+              </text>
+            </ng-container>
+
+            <!-- Plot Number Text -->
+            <ng-container *ngIf="shouldShowPlotNumber(plot) && plot.centroid">
+              <text
+                [attr.x]="plot.centroid.x"
+                [attr.y]="plot.centroid.y + (plot.public_status === 'SOLD_OUT' && shouldShowSoldLabel(plot) ? 10 : 4)"
+                class="plot-number-svg"
+                [class.plot-number-sold]="plot.public_status === 'SOLD_OUT'"
+                text-anchor="middle"
+              >
+                {{ plot.plot_number }}
+              </text>
+            </ng-container>
+          </g>
+        </g>
+      </svg>
+
+      <!-- Hover Tooltip (Desktop) -->
+      <div
+        class="map-tooltip"
+        *ngIf="tooltip.visible && tooltip.plot"
+        [style.left.px]="tooltip.x"
+        [style.top.px]="tooltip.y"
+      >
+        <div class="tooltip-header">
+          <strong>Unit #{{ tooltip.plot.plot_number }}</strong>
+          <span class="tooltip-badge" [ngClass]="'badge-' + tooltip.plot.public_status.toLowerCase()">
+            {{ tooltip.plot.public_status === 'AVAILABLE' ? 'Available' : (tooltip.plot.public_status === 'IN_PROCESS' ? 'In Process' : 'Sold Out') }}
+          </span>
+        </div>
+        <div class="tooltip-body">
+          <div><i class="fas fa-ruler me-1"></i> {{ tooltip.plot.area_gaj }} Gaj ({{ tooltip.plot.area_sqft }} Sq.Ft.)</div>
+          <div *ngIf="tooltip.plot.price && tooltip.plot.public_status !== 'SOLD_OUT'">
+            <i class="fas fa-tag me-1"></i> {{ formatInr(tooltip.plot.price) }}
+          </div>
+          <div *ngIf="tooltip.plot.public_status === 'SOLD_OUT'">
+            <i class="fas fa-receipt me-1"></i> Sold: {{ formatInr(tooltip.plot.sold_price || tooltip.plot.price) }}
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Sheet Details (Visible on < 992px when plot selected) -->
+  <div class="mobile-bottom-sheet d-lg-none" [class.open]="showMobileBottomSheet && selectedPlot">
+    <div class="sheet-drag-handle" (click)="closePlotDetail()">
+      <span class="handle-bar"></span>
+    </div>
+
+    <div class="sheet-content" *ngIf="selectedPlot">
+      <div class="sheet-header">
+        <div class="sheet-title-group">
+          <span class="badge unit-badge" [ngClass]="getUnitTypeBadge(selectedPlot.unit_type).badgeClass">
+            {{ getUnitTypeBadge(selectedPlot.unit_type).label }}
+          </span>
+          <h3 class="sheet-plot-num">Unit #{{ selectedPlot.plot_number }}</h3>
+        </div>
+        <button class="btn-sheet-close" (click)="closePlotDetail()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Status Banner -->
+      <div class="detail-status-banner mb-3" [ngClass]="'status-' + selectedPlot.public_status.toLowerCase()">
+        <i class="fas" [ngClass]="{
+          'fa-check-circle': selectedPlot.public_status === 'AVAILABLE',
+          'fa-clock': selectedPlot.public_status === 'IN_PROCESS',
+          'fa-ban': selectedPlot.public_status === 'SOLD_OUT'
+        }"></i>
+        <span>{{ selectedPlot.public_status === 'AVAILABLE' ? 'Available for Booking' : (selectedPlot.public_status === 'IN_PROCESS' ? 'In Process / Advance Paid' : 'Sold Out') }}</span>
+      </div>
+
+      <div class="sheet-matrix">
+        <div class="matrix-chip">
+          <span class="chip-label">Size (Gaj)</span>
+          <span class="chip-val">{{ selectedPlot.area_gaj }} Gaj</span>
+        </div>
+        <div class="matrix-chip">
+          <span class="chip-label">Size (Sq.Ft.)</span>
+          <span class="chip-val">{{ selectedPlot.area_sqft }} Sq.Ft.</span>
+        </div>
+        <div class="matrix-chip" *ngIf="selectedPlot.public_status !== 'SOLD_OUT'">
+          <span class="chip-label">Price</span>
+          <span class="chip-val price-highlight">{{ formatInr(selectedPlot.price) }}</span>
+        </div>
+        <div class="matrix-chip" *ngIf="selectedPlot.public_status === 'SOLD_OUT'">
+          <span class="chip-label">Sold Value</span>
+          <span class="chip-val text-sold-value">{{ formatInr(selectedPlot.sold_price || selectedPlot.price) }}</span>
+        </div>
+      </div>
+
+      <div class="sheet-note mt-2" *ngIf="selectedPlot.public_status === 'SOLD_OUT'">
+        <i class="fas fa-shield-alt text-gold me-1"></i> Sold on {{ formatDate(selectedPlot.sold_at) }}. Buyer details private.
+      </div>
+
+      <div class="sheet-action mt-3">
+        <button
+          *ngIf="canBook(selectedPlot)"
+          class="btn-book-action w-100"
+          [class.btn-inproc-action]="selectedPlot.public_status === 'IN_PROCESS'"
+          (click)="onBookClick(selectedPlot)"
+        >
+          <i class="fas fa-bookmark me-1.5"></i>
+          <span>{{ selectedPlot.public_status === 'IN_PROCESS' ? 'Queue Booking for Unit' : 'Book This Plot Now' }}</span>
+        </button>
+
+        <button *ngIf="selectedPlot.public_status === 'SOLD_OUT'" class="btn-book-action btn-sold-disabled w-100" disabled>
+          <i class="fas fa-lock me-1.5"></i>
+          <span>Sold Out — Booking Closed</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Modal / Panel -->
+  <div class="modal-backdrop-custom" *ngIf="showBookingModal && selectedPlot" (click)="closeBookingModal()">
+    <div class="booking-dialog-card" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <div>
+          <span class="dialog-kicker">Reserve Your Plot</span>
+          <h2 class="dialog-title">Book Unit #{{ selectedPlot.plot_number }}</h2>
+        </div>
+        <button class="btn-dialog-close" (click)="closeBookingModal()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="dialog-body">
+        <!-- Plot Summary Strip -->
+        <div class="booking-plot-summary">
+          <div class="summary-col">
+            <span class="lbl">Location</span>
+            <strong class="val">{{ site?.site_name }}</strong>
+          </div>
+          <div class="summary-col">
+            <span class="lbl">Unit Type</span>
+            <strong class="val">{{ selectedPlot.unit_type }}</strong>
+          </div>
+          <div class="summary-col">
+            <span class="lbl">Plot Area</span>
+            <strong class="val">{{ selectedPlot.area_gaj }} Gaj ({{ selectedPlot.area_sqft }} sqft)</strong>
+          </div>
+          <div class="summary-col">
+            <span class="lbl">Base Price</span>
+            <strong class="val price-highlight">{{ formatInr(selectedPlot.price) }}</strong>
+          </div>
+        </div>
+
+        <form (ngSubmit)="submitBooking()">
+          <!-- Customer Profile Summary -->
+          <div class="form-row mb-3">
+            <label class="form-label">Customer Name</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="bookingForm.customer_name"
+              name="customer_name"
+              readonly
+            />
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label">Mobile Number</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="bookingForm.mobile_no"
+                name="mobile_no"
+                readonly
+              />
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Email Address</label>
+              <input
+                type="email"
+                class="form-control"
+                [(ngModel)]="bookingForm.email"
+                name="email"
+                readonly
+              />
+            </div>
+          </div>
+
+          <!-- Payment Plan Options -->
+          <div class="mb-3">
+            <label class="form-label">Select Payment Preference</label>
+            <div class="payment-plan-grid">
+              <label class="payment-plan-card" [class.selected]="bookingForm.payment_type === 'EMI'">
+                <input
+                  type="radio"
+                  name="payment_type"
+                  value="EMI"
+                  [(ngModel)]="bookingForm.payment_type"
+                  class="d-none"
+                />
+                <div class="plan-header">
+                  <i class="fas fa-calendar-alt text-gold"></i>
+                  <strong>Easy EMI Plan</strong>
+                </div>
+                <div class="plan-desc">₹3,000 to ₹10,000 / month flexible tenure</div>
+              </label>
+
+              <label class="payment-plan-card" [class.selected]="bookingForm.payment_type === 'DownPayment'">
+                <input
+                  type="radio"
+                  name="payment_type"
+                  value="DownPayment"
+                  [(ngModel)]="bookingForm.payment_type"
+                  class="d-none"
+                />
+                <div class="plan-header">
+                  <i class="fas fa-percentage text-gold"></i>
+                  <strong>Down Payment</strong>
+                </div>
+                <div class="plan-desc">25% Advance + remaining in easy installments</div>
+              </label>
+
+              <label class="payment-plan-card" [class.selected]="bookingForm.payment_type === 'FullPayment'">
+                <input
+                  type="radio"
+                  name="payment_type"
+                  value="FullPayment"
+                  [(ngModel)]="bookingForm.payment_type"
+                  class="d-none"
+                />
+                <div class="plan-header">
+                  <i class="fas fa-money-check-alt text-gold"></i>
+                  <strong>One-Time Full</strong>
+                </div>
+                <div class="plan-desc">Direct registry & immediate possession discount</div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Advance Booking Token Amount -->
+          <div class="mb-3">
+            <label class="form-label">Advance Booking Amount (INR) <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-dark-green text-gold">₹</span>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="bookingForm.advance_amount"
+                name="advance_amount"
+                min="1000"
+                step="1000"
+                required
+              />
+            </div>
+            <small class="text-muted">Minimum token advance to reserve unit: ₹51,000</small>
+          </div>
+
+          <!-- Notes -->
+          <div class="mb-4">
+            <label class="form-label">Special Requests / Remarks (Optional)</label>
+            <textarea
+              class="form-control"
+              rows="2"
+              [(ngModel)]="bookingForm.notes"
+              name="notes"
+              placeholder="e.g. Preferred road facing, immediate registry appointment..."
+            ></textarea>
+          </div>
+
+          <div class="dialog-actions">
+            <button type="button" class="btn btn-outline-secondary" (click)="closeBookingModal()">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-gold btn-submit-booking" [disabled]="bookingSubmitting">
+              <span *ngIf="!bookingSubmitting"><i class="fas fa-check-circle me-1.5"></i> Confirm & Submit Booking</span>
+              <span *ngIf="bookingSubmitting"><span class="spinner-border spinner-border-sm me-1"></span> Processing...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

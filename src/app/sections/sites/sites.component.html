@@ -30,6 +30,35 @@
               <i class="fas fa-map-marker-alt text-gold-icon" aria-hidden="true"></i>
               <span>{{ featuredSite.site_address }}</span>
             </div>
+
+            <!-- Live Availability Chips -->
+            <div class="site-status-chips-wrap">
+              <ng-container *ngIf="!summariesLoading; else skeletonChips">
+                <span class="site-stat-chip chip-avail" title="Available Plots">
+                  <span class="chip-dot dot-avail"></span>
+                  <strong>{{ getSummary(featuredSite)?.available ?? 0 }}</strong> Available
+                </span>
+                <span class="site-stat-chip chip-inproc" title="Plots In Process">
+                  <span class="chip-dot dot-inproc"></span>
+                  <strong>{{ getSummary(featuredSite)?.in_process ?? 0 }}</strong> In Process
+                </span>
+                <span class="site-stat-chip chip-sold" title="Sold Plots">
+                  <span class="chip-dot dot-sold"></span>
+                  <strong>{{ getSummary(featuredSite)?.sold_out ?? 0 }}</strong> Sold
+                </span>
+              </ng-container>
+            </div>
+
+            <!-- Action Button -->
+            <div class="site-action-wrap">
+              <a *ngIf="hasMap(featuredSite)" [routerLink]="['/sites', getEffectiveSiteId(featuredSite), 'plot-map']" class="btn-view-plot-map">
+                <span>View Plot Map</span>
+                <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
+              </a>
+              <button *ngIf="!hasMap(featuredSite)" disabled class="btn-view-plot-map btn-disabled" type="button">
+                <i class="fas fa-map-marked-alt me-1.5" aria-hidden="true"></i> Map coming soon
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -49,10 +78,46 @@
                 <i class="fas fa-map-marker-alt text-gold-icon" aria-hidden="true"></i>
                 <span>{{ site.site_address }}</span>
               </div>
+
+              <!-- Live Availability Chips -->
+              <div class="site-status-chips-wrap sub-chips">
+                <ng-container *ngIf="!summariesLoading; else skeletonChips">
+                  <span class="site-stat-chip chip-avail" title="Available">
+                    <span class="chip-dot dot-avail"></span>
+                    <strong>{{ getSummary(site)?.available ?? 0 }}</strong> Avail
+                  </span>
+                  <span class="site-stat-chip chip-inproc" title="In Process">
+                    <span class="chip-dot dot-inproc"></span>
+                    <strong>{{ getSummary(site)?.in_process ?? 0 }}</strong> Proc
+                  </span>
+                  <span class="site-stat-chip chip-sold" title="Sold">
+                    <span class="chip-dot dot-sold"></span>
+                    <strong>{{ getSummary(site)?.sold_out ?? 0 }}</strong> Sold
+                  </span>
+                </ng-container>
+              </div>
+
+              <!-- Action Button -->
+              <div class="site-action-wrap sub-action">
+                <a *ngIf="hasMap(site)" [routerLink]="['/sites', getEffectiveSiteId(site), 'plot-map']" class="btn-view-plot-map btn-sub">
+                  <span>View Map</span>
+                  <i class="fas fa-arrow-right ms-1.5" aria-hidden="true"></i>
+                </a>
+                <button *ngIf="!hasMap(site)" disabled class="btn-view-plot-map btn-sub btn-disabled" type="button">
+                  Map coming soon
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Skeleton Template -->
+    <ng-template #skeletonChips>
+      <span class="site-stat-chip chip-skeleton"></span>
+      <span class="site-stat-chip chip-skeleton"></span>
+      <span class="site-stat-chip chip-skeleton"></span>
+    </ng-template>
   </div>
 </section>

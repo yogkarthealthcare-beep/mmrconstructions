@@ -1,0 +1,215 @@
+<div class="guideline-modal-backdrop" *ngIf="show" (click)="closeModal()">
+  <div class="guideline-modal-container" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="guideline-modal-header">
+      <div class="d-flex align-items-center gap-2">
+        <div class="guideline-icon-badge">
+          <i class="fas fa-book-open"></i>
+        </div>
+        <div>
+          <h5 class="mb-0 fw-700">CAD / DXF Master Site Plan Specification</h5>
+          <span class="fs-12 text-muted">Official Auto-Detection Rules for CAD Drafters &amp; Architects</span>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeModal()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body (Scrollable) -->
+    <div class="guideline-modal-body">
+      
+      <!-- Top Action Bar -->
+      <div class="guideline-action-bar p-3 bg-light rounded-3 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-2 border">
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-emerald btn-sm px-3" (click)="copyGuideline()">
+            <i class="fas" [ngClass]="copied ? 'fa-check' : 'fa-copy'"></i>
+            <span class="ms-1">{{ copied ? 'Copied to Clipboard!' : 'Copy Full Guideline (Text)' }}</span>
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="downloadTxt()">
+            <i class="fas fa-file-alt me-1"></i> Download .txt
+          </button>
+          <a href="assets/cad/Plot_CAD_Template.dxf" download="Plot_CAD_Template.dxf" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-download me-1"></i> Download Template DXF
+          </a>
+        </div>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" id="includeDevNotes" [(ngModel)]="includeDevNotes">
+          <label class="form-check-label fs-12 fw-600 cursor-pointer" for="includeDevNotes">Include Developer Notes</label>
+        </div>
+      </div>
+
+      <!-- Section 1: Golden Rule -->
+      <div class="guideline-card golden-card mb-4">
+        <div class="d-flex align-items-start gap-3">
+          <div class="gold-icon"><i class="fas fa-star"></i></div>
+          <div>
+            <h6 class="fw-700 text-gold mb-1">1. GOLDEN RULE OF AUTO-DETECTION</h6>
+            <p class="fs-13 mb-0 text-secondary">
+              The software recognizes allotable units <strong>strictly by LAYER NAME and CLOSED POLYLINE geometry</strong>, NOT by line colour.
+              If the layer is correct and the polyline is closed with a number inside, detection is <strong>100% automatic</strong>. Colours are recommended for drafting consistency.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Unit Layers Table -->
+      <div class="guideline-card mb-4">
+        <h6 class="fw-700 mb-2 text-dark"><i class="fas fa-layer-group text-primary me-2"></i>2. Allotable Unit Layers (Interactive Units with Sales Status)</h6>
+        <p class="fs-12 text-muted mb-2">Each polygon on these layers creates an interactive unit with its own live sales status (Available / In Progress / Sold Out).</p>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered align-middle fs-12 mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Unit Type</th>
+                <th>Required DXF Layer</th>
+                <th>Standard Color (ACI)</th>
+                <th>RGB Visual</th>
+                <th>Number Format</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of unitTypes">
+                <td>
+                  <span class="badge {{ u.badgeClass }} px-2 py-1">{{ u.label }}</span>
+                </td>
+                <td class="font-monospace fw-700 text-dark">{{ u.cadLayer }}</td>
+                <td>ACI {{ u.aciColor }} ({{ u.colorName }})</td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="color-swatch" [style.backgroundColor]="u.fillRgb"></span>
+                    <span class="fs-11 font-monospace text-muted">{{ u.fillRgb }}</span>
+                  </div>
+                </td>
+                <td class="font-monospace">{{ u.numberPrefix ? u.numberPrefix + 'n' : 'Numeric (1..n)' }}</td>
+                <td class="font-monospace fw-600 text-success">{{ u.numberExample }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 3: Support Layers Table -->
+      <div class="guideline-card mb-4">
+        <h6 class="fw-700 mb-2 text-dark"><i class="fas fa-road text-secondary me-2"></i>3. Support Layers (Non-Unit Infrastructure &amp; Background)</h6>
+        <p class="fs-12 text-muted mb-2">These layers are rendered as background map layout. <strong>NEVER</strong> draw allotable units on these layers.</p>
+        <div class="table-responsive" style="max-height: 240px;">
+          <table class="table table-sm table-bordered align-middle fs-12 mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Layer Name</th>
+                <th>CAD Color (ACI)</th>
+                <th>Purpose / Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of supportLayers">
+                <td class="font-monospace fw-600 text-dark">{{ s.layerName }}</td>
+                <td>ACI {{ s.aciColor }} ({{ s.colorName }})</td>
+                <td class="text-muted">{{ s.purpose }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 4: Geometry Rules -->
+      <div class="guideline-card mb-4">
+        <h6 class="fw-700 mb-2 text-dark"><i class="fas fa-draw-polygon text-info me-2"></i>4. Geometry &amp; Boundary Rules</h6>
+        <ul class="fs-12 text-secondary mb-0 ps-3">
+          <li class="mb-1"><strong>One Unit = ONE Closed LWPOLYLINE / POLYLINE:</strong> Open polylines will NOT be detected. Use AutoCAD command <code>PEDIT &gt; Multiple &gt; Join &gt; Close</code>.</li>
+          <li class="mb-1"><strong>No Separate LINEs or HATCH Only:</strong> Units must not be formed by loose LINE entities or pure solid HATCH without a boundary polyline.</li>
+          <li class="mb-1"><strong>Explode Blocks / XREFs:</strong> If units are grouped in blocks or external references, <code>EXPLODE</code> them before exporting.</li>
+          <li class="mb-1"><strong>Bulge Arcs are Supported:</strong> Curved boundary segments (arcs in polyline) are automatically converted into smooth polygons. Avoid SPLINE or ELLIPSE entities for unit boundaries.</li>
+          <li class="mb-1"><strong>No Overlaps or Self-Intersections:</strong> Units must not overlap each other, and boundary contours must not form "bow-tie" intersections.</li>
+          <li><strong>Clean Layer Separation:</strong> Roads, parking slots, green belts, legend boxes, and title blocks must stay on their respective support layers.</li>
+        </ul>
+      </div>
+
+      <!-- Section 5: Numbering Rules -->
+      <div class="guideline-card mb-4">
+        <h6 class="fw-700 mb-2 text-dark"><i class="fas fa-sort-numeric-down text-success me-2"></i>5. Unit Numbering &amp; Text Rules</h6>
+        <ul class="fs-12 text-secondary mb-0 ps-3">
+          <li class="mb-1"><strong>Layer PLOT_NUMBERS:</strong> Each unit MUST have exactly one <code>TEXT</code> or <code>MTEXT</code> element on the layer <code>PLOT_NUMBERS</code>.</li>
+          <li class="mb-1"><strong>Text Position Inside Boundary:</strong> The text insertion point must lie strictly <strong>inside</strong> the closed polyline (near the center).</li>
+          <li class="mb-1"><strong>Prefix Standards:</strong>
+            Plots: numbers only (e.g. <code>1</code>, <code>2</code>, <code>101</code>). Do not write "Plot 1".
+            Malls: <code>M-1</code>, <code>M-2</code>...
+            Restaurants: <code>R-1</code>, <code>R-2</code>...
+            Hospitals: <code>H-1</code>...
+            Schools: <code>S-1</code>...
+          </li>
+          <li class="mb-1"><strong>Global Uniqueness:</strong> Numbers must be unique across the entire site plan.</li>
+          <li><strong>Annotations on TEXT_LABELS:</strong> Road names, dimensions, and legend labels must be on <code>TEXT_LABELS</code> or <code>DIMENSIONS</code>.</li>
+        </ul>
+      </div>
+
+      <!-- Section 6: File & Pre-Submission Checklist -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="guideline-card h-100">
+            <h6 class="fw-700 mb-2 text-dark"><i class="fas fa-file-export text-warning me-2"></i>6. File Export Rules</h6>
+            <ul class="fs-12 text-secondary mb-0 ps-3">
+              <li class="mb-1"><strong>Format:</strong> ASCII DXF (AutoCAD 2010 / AC1024 or newer).</li>
+              <li class="mb-1"><strong>Units:</strong> Feet or Metres (1:1 real-world scale).</li>
+              <li class="mb-1"><strong>Model Space:</strong> All geometry in Model Space.</li>
+              <li><strong>Purge:</strong> Run <code>PURGE</code> command to remove unused layers and blocks.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="guideline-card h-100">
+            <h6 class="fw-700 mb-2 text-dark"><i class="fas fa-clipboard-check text-success me-2"></i>7. Pre-Submission Checklist</h6>
+            <ul class="fs-12 text-secondary mb-0 list-unstyled">
+              <li class="mb-1"><i class="fas fa-check-circle text-success me-1"></i> Closed polylines count = TEXT on PLOT_NUMBERS count.</li>
+              <li class="mb-1"><i class="fas fa-check-circle text-success me-1"></i> Zero open polylines on unit layers.</li>
+              <li class="mb-1"><i class="fas fa-check-circle text-success me-1"></i> No unnumbered unit or number outside a unit.</li>
+              <li class="mb-1"><i class="fas fa-check-circle text-success me-1"></i> Zero duplicate numbers across site.</li>
+              <li><i class="fas fa-check-circle text-success me-1"></i> Saved as clean ASCII DXF.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 8: For Developers (Collapsible) -->
+      <div class="guideline-card border-secondary-subtle">
+        <div class="d-flex align-items-center justify-content-between cursor-pointer" (click)="showDevAccordion = !showDevAccordion">
+          <h6 class="fw-700 mb-0 text-dark">
+            <i class="fas fa-code text-primary me-2"></i>8. For Developers: Adding New Unit Types
+          </h6>
+          <i class="fas" [ngClass]="showDevAccordion ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div *ngIf="showDevAccordion" class="mt-3 pt-3 border-top fs-12 text-secondary">
+          <p class="mb-2">To introduce any new allotable unit type in the future:</p>
+          <ol class="mb-2 ps-3">
+            <li>Open <code class="text-primary">src/app/shared/unit-types.config.ts</code></li>
+            <li>Add a new object to <code>UNIT_TYPES</code> (e.g. <code>CLUBHOUSE</code>, <code>HOTEL</code>, <code>OFFICE</code>).</li>
+            <li>Define its <code>cadLayer</code>, <code>numberPrefix</code>, <code>aciColor</code>, and <code>fillRgb</code>.</li>
+          </ol>
+          <p class="mb-0 text-muted">The extractor, layer mapping UI, filter chips, drawing toolbar, auto-numbering, and guideline texts update automatically from this single config.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="guideline-modal-footer">
+      <div class="d-flex align-items-center gap-2">
+        <span class="fs-12 text-muted">Ready to test? Load a CAD (.dxf) file in the Plot Detector Tool.</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-emerald btn-sm" (click)="copyGuideline()">
+          <i class="fas fa-copy me-1"></i> Copy Guideline
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeModal()">
+          Close
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
