@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { RazorpayService } from '../../services/razorpay.service';
 import { SiteToggleService } from '../../services/site-toggle.service';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
+import { getPlotStyle, shouldShowSoldText, getPlotStatusLabel } from '../../shared/plot-status.config';
 
 declare var Razorpay: any;
 
@@ -517,11 +518,31 @@ export class SiteMapComponent implements OnInit, OnDestroy {
   stopPan() { this.isPanning = false; }
 
   plotColor(plot: any) {
-    return this.statusItems.find(item => item.status === this.normalizedStatus(plot?.plot_status))?.color || '#16a34a';
+    return getPlotStyle(plot?.plot_status).stroke;
+  }
+
+  plotStyle(plot: any) {
+    return getPlotStyle(plot?.plot_status);
   }
 
   plotLabel(status: string) {
-    return this.statusItems.find(item => item.status === this.normalizedStatus(status))?.label || 'Vacant';
+    return getPlotStatusLabel(status);
+  }
+
+  shouldShowSoldOut(plot: any): boolean {
+    const isSold = shouldShowSoldText(plot?.plot_status);
+    const points = this.pointsForPlot(plot);
+    if (!points.length) return false;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const p of points) {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    }
+    const w = maxX - minX;
+    const h = maxY - minY;
+    return isSold && w > 1.8 && h > 1.2;
   }
 
   isBookable(plot: any) {

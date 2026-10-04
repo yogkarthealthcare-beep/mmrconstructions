@@ -207,4 +207,19 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./test-otp/test-otp.component').then(m => m.TestOtpComponent),
     title: 'Test OTP — MMR Admin'
   },
+  { 
+    path: 'plot-booking-process', 
+    loadComponent: () => import('./plot-booking-process/plot-booking-process.component').then(m => m.PlotBookingProcessComponent),
+    title: 'Plot Booking Process & Tools — MMR Admin'
+  },
+  { 
+    path: 'customer-applications', 
+    loadComponent: () => import('./customer-applications/customer-applications-list.component').then(m => m.CustomerApplicationsListComponent),
+    title: 'Customer Applications'
+  },
+  { 
+    path: 'customer-applications/:id', 
+    loadComponent: () => import('./customer-applications/customer-application-detail.component').then(m => m.CustomerApplicationDetailComponent),
+    title: 'Customer Application Detail'
+  },
 ];

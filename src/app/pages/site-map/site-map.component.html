@@ -134,7 +134,9 @@
               <polygon
                 *ngIf="polygonPoints(plot)"
                 [attr.points]="polygonPoints(plot)"
-                [attr.fill]="plotColor(plot)"
+                [attr.fill]="plotStyle(plot).fill"
+                [attr.stroke]="plotStyle(plot).stroke"
+                [attr.stroke-width]="plotStyle(plot).strokeWidth * 0.15"
                 [class.active]="selectedPlot?.plot_id === plot.plot_id"
                 (mouseenter)="onPlotHover(plot, $event)"
                 (mousemove)="onPlotHover(plot, $event)"
@@ -145,8 +147,21 @@
               <text
                 *ngIf="polygonPoints(plot)"
                 [attr.x]="labelPoint(plot).x"
-                [attr.y]="labelPoint(plot).y">
+                [attr.y]="shouldShowSoldOut(plot) ? (labelPoint(plot).y - 0.7) : labelPoint(plot).y">
                 {{ plot.plot_number }}
+              </text>
+              <text
+                *ngIf="polygonPoints(plot) && shouldShowSoldOut(plot)"
+                class="sold-out-tag"
+                [attr.x]="labelPoint(plot).x"
+                [attr.y]="labelPoint(plot).y + 0.9"
+                font-size="1.1"
+                fill="#e11d48"
+                font-weight="800"
+                text-anchor="middle"
+                dominant-baseline="middle"
+                style="pointer-events: none; text-shadow: 0 1px 2px rgba(255,255,255,0.95);">
+                SOLD OUT
               </text>
             </g>
           </g>

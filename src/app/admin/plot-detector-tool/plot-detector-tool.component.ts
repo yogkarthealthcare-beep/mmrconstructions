@@ -2,11 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { DxfPlotExtractorService, ExtractResult, ExtractStats, BgShape } from './dxf-plot-extractor.service';
+import { getPlotStyle, shouldShowSoldText, getPlotStatusLabel } from '../../shared/plot-status.config';
 
 type Point = { x: number; y: number };
 type Bounds = { x: number; y: number; width: number; height: number };
 type DetectionStatus = 'detected' | 'low confidence' | 'boundary not found' | 'invalid';
-type CandidateKind = 'contour' | 'line-cell' | 'colored-box' | 'outward-scan' | 'fallback' | 'master-svg';
+type CandidateKind = 'contour' | 'line-cell' | 'colored-box' | 'outward-scan' | 'fallback' | 'master-svg' | 'dxf';
 type BoundaryCandidate = Bounds & {
   kind: CandidateKind;
   confidence: number;
@@ -50,6 +52,7 @@ type DetectedPlot = {
   valid: boolean;
   detection_source: CandidateKind;
   warning?: string;
+  area_units?: number;
 };
 
 declare const Tesseract: any;
@@ -65,6 +68,10 @@ declare const cv: any;
 export class PlotDetectorToolComponent implements OnInit {
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
   @ViewChild('sourceCanvas') sourceCanvas?: ElementRef<HTMLCanvasElement>;
+
+  mode: 'image' | 'dxf' = 'image';
+  viewMode: 'detection' | 'sales' = 'detection';
+  uploadSvgBackgroundOnSave = true;
 
   imageUrl = '';
   imageName = '';
@@ -99,7 +106,23 @@ export class PlotDetectorToolComponent implements OnInit {
   selectedSiteId: number | null = null;
   savingDetections = false;
 
-  constructor(private api: ApiService) {}
+  // DXF specific state
+  dxfText = '';
+  dxfLayers: { name: string; entityCounts: Record<string, number> }[] = [];
+  selectedPlotLayer = 'PLOTS';
+  selectedNumberLayer = 'PLOT_NUMBERS';
+  selectedUnit: 'ft' | 'm' | 'mm' = 'ft';
+  dxfStats: ExtractStats | null = null;
+  dxfWarnings: string[] = [];
+  dxfBackground: BgShape[] = [];
+  dxfExtractResult: ExtractResult | null = null;
+  showWarningsList = false;
+  sitePlotsMap = new Map<string, any>();
+
+  constructor(
+    private api: ApiService,
+    private dxfExtractor: DxfPlotExtractorService
+  ) {}
 
   ngOnInit() {
     this.loadSites();
@@ -122,9 +145,12 @@ export class PlotDetectorToolComponent implements OnInit {
 
   onSiteChange() {
     if (!this.selectedSiteId) return;
+    if (this.viewMode === 'sales') {
+      this.loadSitePlotsForSalesStatus();
+    }
     const site = this.sites.find(s => Number(s.site_id) === Number(this.selectedSiteId));
     const mapUrl = site?.map_image_url || site?.layout_map_url;
-    if (mapUrl) {
+    if (mapUrl && this.mode === 'image') {
       const fullUrl = this.api.url(mapUrl);
       this.imageUrl = fullUrl;
       this.imageName = site.site_name;
@@ -190,35 +216,145 @@ export class PlotDetectorToolComponent implements OnInit {
       return;
     }
     this.savingDetections = true;
-    const w = this.imageWidth || 1;
-    const h = this.imageHeight || 1;
-    const plotsPayload = this.detections.map(d => ({
-      plot_id: d.id > 0 ? d.id : undefined,
-      plot_number: d.plot_no,
-      coordinates: d.points.map(p => ({
-        x: Number(((p.x / w) * 100).toFixed(2)),
-        y: Number(((p.y / h) * 100).toFixed(2)),
-      })),
-      label_x: Number((((d.ocr_box?.x || d.bounding_box?.x || 0) / w) * 100).toFixed(2)),
-      label_y: Number((((d.ocr_box?.y || d.bounding_box?.y || 0) / h) * 100).toFixed(2)),
-    }));
+    this.error = '';
 
-    this.api.adminSaveDetectedPlots(Number(this.selectedSiteId), { plots: plotsPayload }).subscribe({
-      next: () => {
-        this.savingDetections = false;
-        this.warning = 'Plot boundaries successfully saved to backend database!';
-      },
-      error: (e: any) => {
-        this.savingDetections = false;
-        this.error = e?.error?.message || 'Unable to save detected plot boundaries.';
+    const executeSavePolygons = () => {
+      const w = this.imageWidth || 1;
+      const h = this.imageHeight || 1;
+      const plotsPayload = this.detections.map(d => ({
+        plot_id: d.id > 0 && String(d.id).length < 8 ? d.id : undefined,
+        plot_number: d.plot_no,
+        coordinates: d.points.map(p => ({
+          x: Number(((p.x / w) * 100).toFixed(2)),
+          y: Number(((p.y / h) * 100).toFixed(2)),
+        })),
+        label_x: Number((((d.ocr_box?.x || d.bounding_box?.x || 0) / w) * 100).toFixed(2)),
+        label_y: Number((((d.ocr_box?.y || d.bounding_box?.y || 0) / h) * 100).toFixed(2)),
+      }));
+
+      this.api.adminSaveDetectedPlots(Number(this.selectedSiteId), { plots: plotsPayload }).subscribe({
+        next: () => {
+          this.savingDetections = false;
+          this.warning = 'Plot boundaries successfully saved to backend database!';
+          if (this.viewMode === 'sales') {
+            this.loadSitePlotsForSalesStatus();
+          }
+        },
+        error: (e: any) => {
+          this.savingDetections = false;
+          this.error = e?.error?.message || 'Unable to save detected plot boundaries.';
+        }
+      });
+    };
+
+    if (this.mode === 'dxf' && this.uploadSvgBackgroundOnSave && this.dxfExtractResult) {
+      try {
+        const svgString = this.dxfExtractor.buildBackgroundSvg(this.dxfExtractResult);
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+        const svgFile = new File([svgBlob], 'site-layout.svg', { type: 'image/svg+xml' });
+        const formData = new FormData();
+        formData.append('site_map', svgFile);
+        formData.append('site_id', String(this.selectedSiteId));
+
+        this.api.adminUploadSiteMap(Number(this.selectedSiteId), formData).subscribe({
+          next: () => {
+            executeSavePolygons();
+          },
+          error: () => {
+            executeSavePolygons();
+          }
+        });
+      } catch {
+        executeSavePolygons();
+      }
+    } else {
+      executeSavePolygons();
+    }
+  }
+
+  toggleViewMode(view: 'detection' | 'sales') {
+    this.viewMode = view;
+    if (view === 'sales') {
+      this.loadSitePlotsForSalesStatus();
+    }
+  }
+
+  loadSitePlotsForSalesStatus() {
+    if (!this.selectedSiteId) return;
+    this.api.getSitePlots(Number(this.selectedSiteId)).subscribe({
+      next: (res: any) => {
+        const plots = res?.data || (Array.isArray(res) ? res : []);
+        this.sitePlotsMap.clear();
+        for (const p of plots) {
+          if (p.plot_number) {
+            this.sitePlotsMap.set(String(p.plot_number).toUpperCase(), p);
+          }
+        }
       }
     });
+  }
+
+  getPlotStatusStyle(plot: DetectedPlot) {
+    if (this.viewMode === 'sales') {
+      const sitePlot = this.sitePlotsMap.get(String(plot.plot_no).toUpperCase());
+      return getPlotStyle(sitePlot?.plot_status || 'Vacant');
+    }
+    return null;
+  }
+
+  shouldShowSoldOut(plot: DetectedPlot): boolean {
+    if (this.viewMode !== 'sales') return false;
+    const sitePlot = this.sitePlotsMap.get(String(plot.plot_no).toUpperCase());
+    const isSold = shouldShowSoldText(sitePlot?.plot_status || 'Vacant');
+    const bbox = plot.bounding_box;
+    const isBigEnough = bbox.width > 28 && bbox.height > 18;
+    return isSold && isBigEnough;
+  }
+
+  layerCount(layer: { name: string; entityCounts: Record<string, number> }, ...types: string[]): number {
+    if (!types.length) {
+      return Object.values(layer.entityCounts).reduce((a, b) => a + b, 0);
+    }
+    return types.reduce((sum, t) => sum + (layer.entityCounts[t] || 0), 0);
+  }
+
+  async runDxfExtraction() {
+    if (!this.dxfText) return;
+    this.loading = true;
+    this.progress = 'Extracting CAD plots and background vectors...';
+    this.error = '';
+    try {
+      const result = await this.dxfExtractor.extract(this.dxfText, {
+        plotLayer: this.selectedPlotLayer,
+        numberLayer: this.selectedNumberLayer,
+        unit: this.selectedUnit,
+      });
+
+      this.dxfExtractResult = result;
+      this.imageWidth = result.imageWidth;
+      this.imageHeight = result.imageHeight;
+      this.detections = result.plots;
+      this.dxfBackground = result.background;
+      this.dxfStats = result.stats;
+      this.dxfWarnings = result.warnings;
+      this.selected = this.detections[0] || null;
+      this.refreshValidation();
+
+      if (this.viewMode === 'sales') {
+        this.loadSitePlotsForSalesStatus();
+      }
+    } catch (err: any) {
+      this.error = 'CAD extraction failed: ' + (err?.message || err);
+    } finally {
+      this.loading = false;
+      this.progress = '';
+    }
   }
 
   private vertexDrag: { plot: DetectedPlot; index: number } | null = null;
   private unknownCounter = 1;
   private readonly minOcrConfidence = 60;
-  private readonly supportedImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
+  private readonly supportedImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml', 'application/dxf', 'image/vnd.dxf'];
   private readonly unexpectedPlotNumbers = new Set(['85', '119', '126', '127', '1240']);
   readonly cloudAiPrompt = `You are an advanced AI Plot Detection and SVG Master Map Generator.
 
@@ -228,6 +364,7 @@ Convert uploaded site map images into an editable SVG master plot map with maxim
 OUTPUT UI REQUIREMENTS:
 Display the following at the top:
 [Upload Site Map]
+
 [Copy Prompt]
 [Open Cloud AI Detector]
 https://claude.ai
@@ -404,19 +541,57 @@ Produce a production-ready SVG plot map with manual correction tools so the user
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) {
-      this.error = 'No image selected.';
+      this.error = 'No file selected.';
       return;
     }
-    if (!this.supportedImageTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.svg')) {
-      this.error = 'Unsupported file type. Use PNG, JPG, JPEG, WEBP, or SVG.';
+    const fileNameLower = file.name.toLowerCase();
+    const isDxf = fileNameLower.endsWith('.dxf');
+    const isSvg = file.type === 'image/svg+xml' || fileNameLower.endsWith('.svg');
+    const isImage = this.supportedImageTypes.includes(file.type) || isSvg || isDxf;
+
+    if (!isImage) {
+      this.error = 'Unsupported file type. Use PNG, JPG, JPEG, WEBP, SVG, or DXF.';
       return;
     }
 
+    if (isDxf) {
+      this.resetState();
+      this.mode = 'dxf';
+      this.imageName = file.name;
+      this.imageUrl = '';
+      this.loading = true;
+      this.progress = 'Reading DXF file...';
+      try {
+        this.dxfText = await file.text();
+        this.dxfLayers = await this.dxfExtractor.listLayers(this.dxfText);
+
+        const hasPlotsLayer = this.dxfLayers.find(l => l.name.toUpperCase() === 'PLOTS');
+        const hasNumbersLayer = this.dxfLayers.find(l => l.name.toUpperCase() === 'PLOT_NUMBERS');
+
+        if (hasPlotsLayer) this.selectedPlotLayer = hasPlotsLayer.name;
+        else if (this.dxfLayers.length) this.selectedPlotLayer = this.dxfLayers[0].name;
+
+        if (hasNumbersLayer) this.selectedNumberLayer = hasNumbersLayer.name;
+        else if (this.dxfLayers.length) this.selectedNumberLayer = this.dxfLayers[0].name;
+
+        if (!hasPlotsLayer || !hasNumbersLayer) {
+          this.warning = 'Layers "PLOTS" or "PLOT_NUMBERS" not found automatically. Please verify plot boundary and number layers from dropdowns above.';
+        }
+
+        await this.runDxfExtraction();
+      } catch (err: any) {
+        this.error = 'Failed to parse DXF file: ' + (err?.message || err);
+      } finally {
+        this.loading = false;
+        this.progress = '';
+      }
+      return;
+    }
+
+    this.mode = 'image';
     this.resetState();
     this.imageName = file.name;
-    const svgText = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')
-      ? await file.text()
-      : '';
+    const svgText = isSvg ? await file.text() : '';
     this.imageUrl = URL.createObjectURL(file);
     await this.loadImage(this.imageUrl);
     if (svgText) {
@@ -435,6 +610,10 @@ Produce a production-ready SVG plot map with manual correction tools so the user
   }
 
   async detectAgain() {
+    if (this.mode === 'dxf') {
+      await this.runDxfExtraction();
+      return;
+    }
     if (!this.imageElement) {
       this.error = 'No image selected.';
       return;
@@ -681,6 +860,10 @@ Produce a production-ready SVG plot map with manual correction tools so the user
     this.adjustingPlot = false;
     this.nextId = 1;
     this.unknownCounter = 1;
+    this.dxfStats = null;
+    this.dxfWarnings = [];
+    this.dxfBackground = [];
+    this.dxfExtractResult = null;
     this.fitToScreen();
   }
 

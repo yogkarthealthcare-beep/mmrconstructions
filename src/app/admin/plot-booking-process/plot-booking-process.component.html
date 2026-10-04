@@ -1,0 +1,232 @@
+<div class="plot-process-wrapper">
+  
+  <!-- HERO BANNER -->
+  <div class="admin-hero-card mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
+      <div class="hero-text-content">
+        <div class="admin-hero-badge">
+          <i class="fas fa-layer-group me-1.5 text-gold"></i>
+          <span>ERP WORKFLOW &amp; UNLINKED PLOT MODULES</span>
+        </div>
+        <h1 class="admin-hero-title mb-1.5">Plot Booking Process &amp; Dedicated Tools</h1>
+        <p class="admin-hero-sub mb-0">
+          यहाँ MMR Constructions के वो सभी <strong>स्पेशलाइज्ड प्लॉट बुकिंग टूल्स, AI मैप डिटेक्टर्स, साइट मास्टर्स, एवं एप्लिकेशन फॉर्म्स</strong> उपलब्ध हैं जो मुख्य साइडबार मेन्यू में हिडन/अनलिंक थे।
+        </p>
+      </div>
+
+      <div class="hero-quick-stats d-flex align-items-center gap-2">
+        <div class="hero-stat-box">
+          <div class="stat-num">{{ tools.length }}</div>
+          <div class="stat-lbl">Active Tools</div>
+        </div>
+        <div class="hero-stat-box">
+          <div class="stat-num text-gold">4</div>
+          <div class="stat-lbl">Process Phases</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKFLOW TIMELINE BAR -->
+  <div class="workflow-flow-container mb-4">
+    <div class="workflow-flow-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-route text-emerald fs-14"></i>
+        <span class="fw-700 text-dark fs-13 text-uppercase tracking-wider">Complete Plot Booking Lifecycle (एंड-टू-एंड प्रोसेस)</span>
+      </div>
+      <span class="fs-11 text-muted">Click any step or launch tools directly below</span>
+    </div>
+
+    <div class="workflow-steps-grid">
+      <!-- Step 1 -->
+      <div class="flow-step-item" (click)="selectedCategory = 'sites'">
+        <div class="step-badge">Phase 1</div>
+        <div class="step-icon"><i class="fas fa-city"></i></div>
+        <div class="step-title">1. Site &amp; Sector Setup</div>
+        <div class="step-desc">Site Master &amp; Sector Boundaries</div>
+        <div class="step-tag">2 Tools</div>
+      </div>
+
+      <div class="flow-arrow"><i class="fas fa-chevron-right"></i></div>
+
+      <!-- Step 2 -->
+      <div class="flow-step-item" (click)="selectedCategory = 'ai_mapping'">
+        <div class="step-badge">Phase 2</div>
+        <div class="step-icon"><i class="fas fa-drafting-compass"></i></div>
+        <div class="step-title">2. AI Mapping &amp; Canvas</div>
+        <div class="step-desc">OCR Detectors &amp; SVG Map Editor</div>
+        <div class="step-tag highlight">3 Tools</div>
+      </div>
+
+      <div class="flow-arrow"><i class="fas fa-chevron-right"></i></div>
+
+      <!-- Step 3 -->
+      <div class="flow-step-item" (click)="selectedCategory = 'leads_media'">
+        <div class="step-badge">Phase 3</div>
+        <div class="step-icon"><i class="fas fa-bullhorn"></i></div>
+        <div class="step-title">3. Leads &amp; Plot Media</div>
+        <div class="step-desc">Book Plot Leads &amp; Gallery Showcase</div>
+        <div class="step-tag">2 Tools</div>
+      </div>
+
+      <div class="flow-arrow"><i class="fas fa-chevron-right"></i></div>
+
+      <!-- Step 4 -->
+      <div class="flow-step-item" (click)="selectedCategory = 'applications'">
+        <div class="step-badge">Phase 4</div>
+        <div class="step-icon"><i class="fas fa-file-signature"></i></div>
+        <div class="step-title">4. Customer Admissions</div>
+        <div class="step-desc">Admission Application Forms &amp; KYC</div>
+        <div class="step-tag">1 Tool</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS & FILTER BAR -->
+  <div class="controls-filter-bar mb-4">
+    <div class="row g-2 align-items-center">
+      <!-- Search Input -->
+      <div class="col-lg-4 col-md-5">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            class="form-control form-control-sm search-field" 
+            [(ngModel)]="searchTerm" 
+            placeholder="Search by tool name, route, or feature...">
+          <button 
+            *ngIf="searchTerm" 
+            class="btn-clear-search" 
+            (click)="searchTerm=''">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="col-lg-8 col-md-7">
+        <div class="category-pills-wrap d-flex align-items-center gap-1.5 flex-wrap justify-content-md-end">
+          <button 
+            type="button" 
+            class="cat-pill" 
+            [class.active]="selectedCategory === 'all'" 
+            (click)="selectedCategory = 'all'">
+            All Modules ({{ getCategoryCount('all') }})
+          </button>
+          <button 
+            type="button" 
+            class="cat-pill" 
+            [class.active]="selectedCategory === 'sites'" 
+            (click)="selectedCategory = 'sites'">
+            <i class="fas fa-city me-1"></i> Sites Master ({{ getCategoryCount('sites') }})
+          </button>
+          <button 
+            type="button" 
+            class="cat-pill" 
+            [class.active]="selectedCategory === 'ai_mapping'" 
+            (click)="selectedCategory = 'ai_mapping'">
+            <i class="fas fa-robot me-1"></i> AI &amp; Map Editors ({{ getCategoryCount('ai_mapping') }})
+          </button>
+          <button 
+            type="button" 
+            class="cat-pill" 
+            [class.active]="selectedCategory === 'leads_media'" 
+            (click)="selectedCategory = 'leads_media'">
+            <i class="fas fa-photo-video me-1"></i> Leads &amp; Media ({{ getCategoryCount('leads_media') }})
+          </button>
+          <button 
+            type="button" 
+            class="cat-pill" 
+            [class.active]="selectedCategory === 'applications'" 
+            (click)="selectedCategory = 'applications'">
+            <i class="fas fa-file-contract me-1"></i> Applications ({{ getCategoryCount('applications') }})
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLS GRID -->
+  <div class="tools-grid row g-3">
+    <div class="col-xl-6 col-lg-6 col-md-12" *ngFor="let tool of filteredTools">
+      <div class="tool-card h-100" [class.is-popular]="tool.isPopular">
+        
+        <!-- Header Part -->
+        <div class="tool-card-header d-flex align-items-start justify-content-between gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="tool-icon-box" [style.background]="tool.iconBg">
+              <i [class]="tool.icon"></i>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-0.5">
+                <span class="tool-category-badge" [ngClass]="tool.badgeClass">{{ tool.badge }}</span>
+                <span class="workflow-step-badge">{{ tool.workflowStep }}</span>
+              </div>
+              <h3 class="tool-title mb-0">{{ tool.title }}</h3>
+              <div class="tool-hindi-title">{{ tool.hindiTitle }}</div>
+            </div>
+          </div>
+
+          <div class="tool-route-badge" [title]="'Direct URL: ' + tool.route">
+            <code>{{ tool.route }}</code>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="tool-card-body">
+          <p class="tool-desc">{{ tool.description }}</p>
+
+          <!-- Feature Tags -->
+          <div class="tool-features-list">
+            <div class="feature-tag" *ngFor="let feat of tool.features">
+              <i class="fas fa-check-circle text-emerald me-1"></i>
+              <span>{{ feat }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Footer / Direct Launch Button -->
+        <div class="tool-card-footer d-flex align-items-center justify-content-between">
+          <div class="tool-status-info">
+            <span class="status-indicator"></span>
+            <span class="fs-11 text-muted">Ready to Launch</span>
+          </div>
+
+          <a [routerLink]="tool.route" [queryParams]="tool.queryParams || {}" class="btn-launch-tool">
+            <span>Open Tool</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- NO RESULTS EMPTY STATE -->
+  <div *ngIf="filteredTools.length === 0" class="empty-state-card text-center py-5">
+    <div class="empty-icon-wrap mb-3">
+      <i class="fas fa-search-minus"></i>
+    </div>
+    <h4 class="fw-700 text-dark fs-16 mb-1">No Plot Booking Tools Found</h4>
+    <p class="text-muted fs-12 mb-3">No tools match your current search query or category filter.</p>
+    <button class="btn btn-outline-emerald btn-sm px-3" (click)="searchTerm=''; selectedCategory='all'">
+      <i class="fas fa-undo me-1"></i> Reset Filters
+    </button>
+  </div>
+
+  <!-- BOTTOM NOTE ON UNLINKED HUBS -->
+  <div class="bottom-helper-card mt-4 p-3.5">
+    <div class="d-flex align-items-center gap-3">
+      <div class="helper-icon">
+        <i class="fas fa-info-circle"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="fw-700 text-dark fs-12 mb-0.5">Plot Booking Lifecycle Architecture</div>
+        <div class="fs-11 text-muted line-height-14">
+          यह हब मुख्य साइडबार में भीड़ कम रखने के लिए बनाया गया है। मुख्य साइडबार में मौजूद लिंक्स (जैसे बुकिंग मैनेजमेंट या रसीदें) यहाँ दोबारा रिपीट नहीं किए गए हैं ताकि आप बिना किसी कन्फ्यूजन के सभी 8 स्पेशलाइज्ड प्लॉट टूल्स को एक ही जगह से ऑपरेट कर सकें।
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

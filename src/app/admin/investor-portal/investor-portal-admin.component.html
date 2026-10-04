@@ -95,9 +95,6 @@
             <tbody>
               <tr *ngFor="let inv of pagedInvestors; let i = index"
                   [class.row-disabled-free]="isFreeOrDisabled(inv)"
-                  (mouseenter)="onRowMouseEnter(inv, $event)"
-                  (mousemove)="onRowMouseMove($event)"
-                  (mouseleave)="onRowMouseLeave()"
                   (click)="onRowClick(inv, $event)"
                   (dblclick)="onRowDblClick(inv, $event)">
                 <td class="ps-3 td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
@@ -140,7 +137,7 @@
                     <button *ngIf="inv.status === 'inactive' || inv.status === 'rejected'" class="action-btn-micro btn-approve-emerald" (click)="toggleInvestorStatus(inv, 'approved')"><i class="fas fa-check"></i> Activate</button>
                   </div>
                   <div *ngIf="isFreeOrDisabled(inv)">
-                    <span class="badge bg-light text-muted border fs-10 py-1 px-2" title="Disabled / Free Account (Hover to view details)">
+                    <span class="badge bg-light text-muted border fs-10 py-1 px-2" title="Disabled / Free Account">
                       <i class="fas fa-lock me-1"></i> Disabled
                     </span>
                   </div>
@@ -163,20 +160,6 @@
       <div *ngIf="!investors.length" class="text-center text-muted py-5">
         <i class="fas fa-users-slash fs-2 text-muted mb-2"></i>
         <p class="mb-0 fs-12">No investor accounts found.</p>
-      </div>
-    </div>
-
-    <!-- Floating Hover Tooltip for Investor Records -->
-    <div class="admin-hover-tooltip" *ngIf="hoveredInvestor" [style.left.px]="tooltipPos.x" [style.top.px]="tooltipPos.y">
-      <div class="fw-700 text-white fs-13 mb-1">{{ hoveredInvestor.full_name }}</div>
-      <div class="fs-11 text-slate-300 mb-0.5"><strong>ID:</strong> #{{ hoveredInvestor.id }} | <strong>Sponsor:</strong> {{ hoveredInvestor.sponsor_invite_code || 'MMR0001' }}</div>
-      <div class="fs-11 text-slate-300 mb-0.5"><strong>Mobile:</strong> {{ hoveredInvestor.mobile_number }}</div>
-      <div class="fs-11 text-slate-300 mb-0.5"><strong>Email:</strong> {{ hoveredInvestor.email }}</div>
-      <div class="fs-11 text-slate-300 mb-0.5" *ngIf="hoveredInvestor.city || hoveredInvestor.state"><strong>Location:</strong> {{ hoveredInvestor.city }}, {{ hoveredInvestor.state }}</div>
-      <div class="fs-11 text-slate-300 mb-0.5"><strong>Investment:</strong> ₹{{ (hoveredInvestor.total_investment || 0) | number:'1.2-2' }}</div>
-      <div class="fs-11 text-slate-300 mb-1"><strong>Balance:</strong> ₹{{ (hoveredInvestor.available_balance || 0) | number:'1.2-2' }}</div>
-      <div class="badge" [class.bg-success]="!isFreeOrDisabled(hoveredInvestor) && (hoveredInvestor.status==='approved' || hoveredInvestor.status==='active')" [class.bg-danger]="isFreeOrDisabled(hoveredInvestor)">
-        {{ isFreeOrDisabled(hoveredInvestor) ? 'Disabled / Free Record (Hover only)' : (hoveredInvestor.status || 'Active') }}
       </div>
     </div>
   </div>

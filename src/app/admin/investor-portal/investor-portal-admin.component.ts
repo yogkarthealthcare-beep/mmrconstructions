@@ -69,10 +69,6 @@ export class AdminInvestorPortalComponent implements OnInit {
   processingAction = false;
   previewImageUrl: string | null = null;
 
-  // Hover Tooltip for Free/Disabled and Row Records
-  hoveredInvestor: any = null;
-  tooltipPos = { x: 0, y: 0 };
-
   constructor(
     private api: ApiService,
     private route: ActivatedRoute,
@@ -84,46 +80,6 @@ export class AdminInvestorPortalComponent implements OnInit {
     const status = String(inv.status || inv.account_status || '').toLowerCase();
     const isFree = inv.is_free === true || inv.isFree === true || inv.user_type === 'Free';
     return isFree || status === 'free' || status === 'inactive' || status === 'pending' || status === 'rejected' || status === 'disabled' || status === 'suspended';
-  }
-
-  onRowMouseEnter(inv: any, event: MouseEvent) {
-    this.hoveredInvestor = inv;
-    this.updateTooltipPos(event);
-  }
-
-  onRowMouseMove(event: MouseEvent) {
-    if (this.hoveredInvestor) {
-      this.updateTooltipPos(event);
-    }
-  }
-
-  onRowMouseLeave() {
-    this.hoveredInvestor = null;
-  }
-
-  private updateTooltipPos(event: MouseEvent) {
-    const tooltipWidth = 270;
-    const tooltipHeight = 185;
-    const offset = 15;
-
-    let x = event.clientX + offset;
-    let y = event.clientY + offset;
-
-    // Flip to left if overflowing right window edge
-    if (x + tooltipWidth > window.innerWidth - 12) {
-      x = event.clientX - tooltipWidth - offset;
-    }
-
-    // Flip to top if overflowing bottom window edge
-    if (y + tooltipHeight > window.innerHeight - 12) {
-      y = event.clientY - tooltipHeight - offset;
-    }
-
-    // Clamp inside visible viewport
-    x = Math.max(12, Math.min(x, window.innerWidth - tooltipWidth - 12));
-    y = Math.max(12, Math.min(y, window.innerHeight - tooltipHeight - 12));
-
-    this.tooltipPos = { x, y };
   }
 
   onRowClick(inv: any, event: MouseEvent) {

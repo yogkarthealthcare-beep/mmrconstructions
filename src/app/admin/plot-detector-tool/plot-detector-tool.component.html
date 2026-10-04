@@ -1,23 +1,35 @@
 <div class="detector-head">
   <div class="pg-header">
     <h4>Plot Detector Tool</h4>
-    <p>Select a site, run detection API, adjust boundaries, and save plot coordinates directly to the site map.</p>
+    <p>Upload a CAD (.dxf) file or layout image/SVG to auto-extract plot boundaries and save coordinates to the site map.</p>
   </div>
   <div class="detector-actions">
-    <select class="f-input compact-select" [(ngModel)]="selectedSiteId" (change)="onSiteChange()" style="width: auto; max-width: 220px; display: inline-block;">
+    <select class="f-input compact-select" [(ngModel)]="selectedSiteId" (change)="onSiteChange()" style="width: auto; max-width: 200px; display: inline-block;">
       <option [ngValue]="null">-- Select Project / Site --</option>
       <option *ngFor="let s of sites" [value]="s.site_id">{{ s.site_name }}</option>
     </select>
+
+    <div class="btn-group btn-group-sm" role="group" style="display: inline-flex;">
+      <button type="button" class="btn btn-sm" [ngClass]="viewMode === 'detection' ? 'btn-green' : 'btn-outline-green'" (click)="toggleViewMode('detection')">Detection View</button>
+      <button type="button" class="btn btn-sm" [ngClass]="viewMode === 'sales' ? 'btn-green' : 'btn-outline-green'" (click)="toggleViewMode('sales')">Sales Status</button>
+    </div>
+
     <button type="button" class="btn btn-green btn-sm" (click)="saveDetectionsToSite()" [disabled]="!selectedSiteId || !detections.length || savingDetections">
       <i class="fas fa-save me-1"></i>{{ savingDetections ? 'Saving...' : 'Save to Site' }}
     </button>
-    <input #fileInput type="file" accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml" (change)="onFileSelected($event)" hidden>
-    <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">📷 Upload Custom Image</button>
-    <button type="button" class="btn btn-outline-green btn-sm" (click)="detectAgain()" [disabled]="!imageUrl || loading"><i class="fas fa-magic me-1"></i>Detect Again</button>
-    <button type="button" class="tool-btn" title="Zoom out" aria-label="Zoom out" (click)="zoomOut()" [disabled]="!imageUrl"><i class="fas fa-search-minus"></i></button>
-    <button type="button" class="tool-btn" title="Fit to screen" aria-label="Fit to screen" (click)="fitToScreen()" [disabled]="!imageUrl"><i class="fas fa-compress-arrows-alt"></i></button>
-    <button type="button" class="tool-btn" title="Zoom in" aria-label="Zoom in" (click)="zoomIn()" [disabled]="!imageUrl"><i class="fas fa-search-plus"></i></button>
-    <button type="button" class="btn btn-outline-green btn-sm" (click)="debugMode=!debugMode" [disabled]="!imageUrl">
+
+    <label *ngIf="mode === 'dxf'" class="d-inline-flex align-items-center gap-1.5 fs-12 text-muted ms-1 cursor-pointer" title="Auto-upload generated SVG layout as site background image when saving">
+      <input type="checkbox" [(ngModel)]="uploadSvgBackgroundOnSave">
+      <span>Upload SVG Map</span>
+    </label>
+
+    <input #fileInput type="file" accept=".png,.jpg,.jpeg,.webp,.svg,.dxf,image/png,image/jpeg,image/webp,image/svg+xml,application/dxf,image/vnd.dxf" (change)="onFileSelected($event)" hidden>
+    <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">📁 Upload (Image / SVG / CAD)</button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="detectAgain()" [disabled]="(!imageUrl && mode !== 'dxf') || loading"><i class="fas fa-magic me-1"></i>{{ mode === 'dxf' ? 'Re-extract' : 'Detect Again' }}</button>
+    <button type="button" class="tool-btn" title="Zoom out" aria-label="Zoom out" (click)="zoomOut()" [disabled]="!imageUrl && mode !== 'dxf'"><i class="fas fa-search-minus"></i></button>
+    <button type="button" class="tool-btn" title="Fit to screen" aria-label="Fit to screen" (click)="fitToScreen()" [disabled]="!imageUrl && mode !== 'dxf'"><i class="fas fa-compress-arrows-alt"></i></button>
+    <button type="button" class="tool-btn" title="Zoom in" aria-label="Zoom in" (click)="zoomIn()" [disabled]="!imageUrl && mode !== 'dxf'"><i class="fas fa-search-plus"></i></button>
+    <button type="button" class="btn btn-outline-green btn-sm" (click)="debugMode=!debugMode" [disabled]="!imageUrl && mode !== 'dxf'">
       <i class="fas fa-bug me-1"></i>{{ debugMode ? 'Hide Debug' : 'Debug Mode' }}
     </button>
     <button type="button" class="btn btn-outline-green btn-sm" (click)="exportJson()" [disabled]="!detections.length">Export JSON</button>
@@ -51,24 +63,82 @@
 <div *ngIf="error" class="panel-alert panel-alert-error mb-3"><i class="fas fa-exclamation-circle"></i>{{ error }}</div>
 <div *ngIf="warning" class="panel-alert panel-alert-info mb-3"><i class="fas fa-info-circle"></i>{{ warning }}</div>
 
+<!-- DXF CAD CONTROL PANEL -->
+<div class="dxf-control-panel mb-3" *ngIf="mode === 'dxf'">
+  <div class="dxf-header-row">
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-primary px-2.5 py-1.5"><i class="fas fa-drafting-compass me-1"></i> CAD (DXF) Mode</span>
+      <span class="fs-12 text-dark fw-700">{{ imageName }}</span>
+    </div>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <div class="d-flex align-items-center gap-1.5">
+        <label class="fs-11 text-muted fw-700">Plot Layer:</label>
+        <select class="f-input compact-select" [(ngModel)]="selectedPlotLayer" (change)="runDxfExtraction()" style="width: auto; min-width: 130px;">
+          <option *ngFor="let l of dxfLayers" [value]="l.name">{{ l.name }} ({{ layerCount(l, 'LWPOLYLINE', 'POLYLINE') }})</option>
+        </select>
+      </div>
+
+      <div class="d-flex align-items-center gap-1.5">
+        <label class="fs-11 text-muted fw-700">Number Layer:</label>
+        <select class="f-input compact-select" [(ngModel)]="selectedNumberLayer" (change)="runDxfExtraction()" style="width: auto; min-width: 130px;">
+          <option *ngFor="let l of dxfLayers" [value]="l.name">{{ l.name }} ({{ layerCount(l, 'TEXT', 'MTEXT') }})</option>
+        </select>
+      </div>
+
+      <div class="d-flex align-items-center gap-1.5">
+        <label class="fs-11 text-muted fw-700">Unit:</label>
+        <select class="f-input compact-select" [(ngModel)]="selectedUnit" (change)="runDxfExtraction()" style="width: 75px;">
+          <option value="ft">ft</option>
+          <option value="m">m</option>
+          <option value="mm">mm</option>
+        </select>
+      </div>
+
+      <button type="button" class="btn btn-outline-green btn-sm" (click)="runDxfExtraction()" [disabled]="loading">
+        <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Re-extract
+      </button>
+    </div>
+  </div>
+
+  <div class="dxf-stats-strip mt-2.5" *ngIf="dxfStats">
+    <div><span>Polygons:</span> <strong>{{ dxfStats.plotPolygons }}</strong></div>
+    <div><span>Numbers:</span> <strong>{{ dxfStats.numbersFound }}</strong></div>
+    <div><span>Matched:</span> <strong class="text-success">{{ dxfStats.matched }}</strong></div>
+    <div><span>Unnumbered:</span> <strong [class.text-danger]="dxfStats.unnumbered > 0">{{ dxfStats.unnumbered }}</strong></div>
+    <div><span>Duplicates:</span> <strong [class.text-danger]="dxfStats.duplicates > 0">{{ dxfStats.duplicates }}</strong></div>
+    <div *ngIf="dxfStats.ignoredOpenOrLine > 0"><span>Ignored open/lines:</span> <strong class="text-warning">{{ dxfStats.ignoredOpenOrLine }}</strong></div>
+    <div *ngIf="dxfStats.insertBlocks > 0"><span>Blocks:</span> <strong>{{ dxfStats.insertBlocks }}</strong></div>
+  </div>
+
+  <div class="dxf-warnings mt-2" *ngIf="dxfWarnings.length">
+    <button type="button" class="dxf-warnings-toggle" (click)="showWarningsList = !showWarningsList">
+      <span><i class="fas fa-exclamation-triangle text-warning me-1"></i><strong>{{ dxfWarnings.length }} Layer / Extraction Notice(s)</strong></span>
+      <i class="fas" [ngClass]="showWarningsList ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+    </button>
+    <ul class="dxf-warnings-list" *ngIf="showWarningsList">
+      <li *ngFor="let w of dxfWarnings">{{ w }}</li>
+    </ul>
+  </div>
+</div>
+
 <div class="detector-layout">
   <section class="panel-card preview-card">
     <div class="preview-meta">
-      <span>{{ imageName || 'No image selected' }}</span>
+      <span>{{ imageName || 'No drawing or image selected' }}</span>
       <strong *ngIf="imageWidth">{{ imageWidth }} x {{ imageHeight }} px • {{ zoom | number:'1.1-1' }}x</strong>
     </div>
 
-    <div class="detector-empty" *ngIf="!imageUrl">
-      <i class="fas fa-image"></i>
-      <h6>Upload a plot map image</h6>
-      <p>PNG, JPG, JPEG, WEBP, or SVG. Master SVG with data-plot-no imports exact plot count.</p>
-      <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">Choose Image</button>
+    <div class="detector-empty" *ngIf="!imageUrl && mode !== 'dxf'">
+      <i class="fas fa-drafting-compass"></i>
+      <h6>Upload a CAD (DXF) or Plot Map Image</h6>
+      <p>CAD (.dxf), PNG, JPG, JPEG, WEBP, or SVG. DXF provides exact vector boundaries &amp; numbers with zero OCR error.</p>
+      <button type="button" class="btn btn-green btn-sm" (click)="fileInput.click()">Choose File</button>
     </div>
 
-    <div class="detector-stage" *ngIf="imageUrl">
+    <div class="detector-stage" *ngIf="imageUrl || mode === 'dxf'">
       <div class="detector-loading" *ngIf="loading">
         <i class="fas fa-spinner fa-spin"></i>
-        <span>{{ progress || 'Processing image...' }}</span>
+        <span>{{ progress || 'Processing file...' }}</span>
       </div>
 
       <svg
@@ -81,8 +151,38 @@
         (mouseleave)="endPan(); onHover(null)"
         (click)="onStageClick($event)">
         <g [attr.transform]="transform">
-          <image [attr.href]="imageUrl" x="0" y="0" [attr.width]="imageWidth" [attr.height]="imageHeight"></image>
-          <g *ngIf="debugMode" class="debug-layer">
+          <!-- Raster Image Layer (Image/SVG Mode) -->
+          <image *ngIf="mode === 'image' && imageUrl" [attr.href]="imageUrl" x="0" y="0" [attr.width]="imageWidth" [attr.height]="imageHeight"></image>
+
+          <!-- CAD Vector Background Layer (DXF Mode) -->
+          <g *ngIf="mode === 'dxf'" class="cad-background-layer">
+            <ng-container *ngFor="let shape of dxfBackground">
+              <path *ngIf="shape.kind === 'path' && shape.d"
+                    [attr.d]="shape.d"
+                    [attr.fill]="shape.fill || 'none'"
+                    [attr.stroke]="shape.stroke || 'none'"
+                    [attr.stroke-width]="shape.strokeWidth || 1"
+                    [attr.stroke-dasharray]="shape.dash || null"
+                    vector-effect="non-scaling-stroke"></path>
+              <circle *ngIf="shape.kind === 'circle' && shape.cx !== undefined"
+                      [attr.cx]="shape.cx"
+                      [attr.cy]="shape.cy"
+                      [attr.r]="shape.r || 4"
+                      [attr.fill]="shape.fill || '#2e7d32'"
+                      [attr.stroke]="shape.stroke || '#1b5e20'"
+                      [attr.stroke-width]="shape.strokeWidth || 1"></circle>
+              <text *ngIf="shape.kind === 'text' && shape.text"
+                    [attr.x]="shape.x"
+                    [attr.y]="shape.y"
+                    [attr.fill]="shape.fill || '#1e293b'"
+                    [attr.font-size]="shape.fontSize || 12"
+                    font-family="sans-serif"
+                    text-anchor="middle"
+                    dominant-baseline="middle">{{ shape.text }}</text>
+            </ng-container>
+          </g>
+
+          <g *ngIf="debugMode && mode === 'image'" class="debug-layer">
             <polygon
               *ngFor="let candidate of candidateDebug"
               class="candidate"
@@ -111,21 +211,41 @@
               <title>OCR {{ word.text }} - {{ word.confidence }}%</title>
             </rect>
           </g>
+
+          <!-- Plot Polygons -->
           <g *ngFor="let plot of detections">
             <polygon
               [attr.points]="polygonPoints(plot)"
               [class.selected]="selected?.id === plot.id"
-              [class.low]="plot.status === 'low confidence'"
-              [class.missing]="plot.status === 'boundary not found'"
-              [class.invalid]="plot.status === 'invalid'"
+              [class.low]="viewMode === 'detection' && plot.status === 'low confidence'"
+              [class.missing]="viewMode === 'detection' && plot.status === 'boundary not found'"
+              [class.invalid]="viewMode === 'detection' && plot.status === 'invalid'"
+              [attr.fill]="viewMode === 'sales' ? getPlotStatusStyle(plot)?.fill : null"
+              [attr.stroke]="viewMode === 'sales' ? getPlotStatusStyle(plot)?.stroke : null"
+              [attr.stroke-width]="viewMode === 'sales' ? getPlotStatusStyle(plot)?.strokeWidth : null"
               (pointerdown)="$event.stopPropagation()"
               (mouseenter)="onHover(plot, $event)"
               (mousemove)="onHover(plot, $event)"
               (mouseleave)="onHover(null)"
               (click)="selectPlot(plot, $event)">
-              <title>Plot {{ plot.plot_no }} - {{ plot.status }}</title>
+              <title>Plot {{ plot.plot_no }} - {{ viewMode === 'sales' ? (getPlotStatusStyle(plot)?.label || 'Available') : plot.status }}</title>
             </polygon>
-            <text [attr.x]="center(plot).x" [attr.y]="center(plot).y">{{ plot.plot_no }}</text>
+
+            <!-- Plot Number Text -->
+            <text [attr.x]="center(plot).x"
+                  [attr.y]="shouldShowSoldOut(plot) ? (center(plot).y - 7) : center(plot).y">
+              {{ plot.plot_no }}
+            </text>
+
+            <!-- SOLD OUT text overlay when sold out in sales status mode -->
+            <text *ngIf="shouldShowSoldOut(plot)"
+                  class="sold-out-badge"
+                  [attr.x]="center(plot).x"
+                  [attr.y]="center(plot).y + 9">
+              SOLD OUT
+            </text>
+
+            <!-- Interactive Vertex Drag Handles for Boundary Adjustment -->
             <g *ngIf="adjustingPlot && selected?.id === plot.id" class="vertex-layer">
               <circle
                 *ngFor="let point of plot.points; let pointIndex = index"

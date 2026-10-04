@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { ApiService } from '../../services/api.service';
+import { getPlotStyle, getPlotStatusLabel, shouldShowSoldText } from '../../shared/plot-status.config';
 
 type MapPoint = { x: number; y: number };
 type DragState =
@@ -1297,11 +1298,19 @@ export class PlotMapEditorComponent implements OnInit {
   }
 
   plotColor(status: string) {
-    return this.statusItems.find(item => item.value === this.normalizedStatus(status))?.color || '#16a34a';
+    return getPlotStyle(status).stroke;
+  }
+
+  plotStyle(status: string) {
+    return getPlotStyle(status);
   }
 
   statusLabel(status: string) {
-    return this.statusItems.find(item => item.value === this.normalizedStatus(status))?.label || 'Vacant';
+    return getPlotStatusLabel(status);
+  }
+
+  shouldShowSoldOut(plot: any): boolean {
+    return shouldShowSoldText(plot?.plot_status);
   }
 
   detectionConfidenceClass(plot: any) {

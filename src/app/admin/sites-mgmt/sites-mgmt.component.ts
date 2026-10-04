@@ -8,6 +8,7 @@ import { SiteToggleService } from '../../services/site-toggle.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
+import { getPlotStyle, getPlotStatusLabel, shouldShowSoldText } from '../../shared/plot-status.config';
 
 @Component({
   selector: 'app-sites-mgmt',
@@ -393,12 +394,15 @@ export class SitesMgmtComponent implements OnInit {
   }
 
   plotColor(status: string): string {
-    const clean = String(status || '').replace(/\s|_/g, '').toLowerCase();
-    if (clean === 'vacant' || clean === 'available') return '#16a34a';
-    if (clean === 'inprocess' || clean === 'paymentpending' || clean === 'processing') return '#eab308';
-    if (clean === 'booked' || clean === 'hold') return '#ef4444';
-    if (clean === 'sold') return '#6b7280';
-    return '#16a34a';
+    return getPlotStyle(status).fill;
+  }
+
+  plotStyle(status: string) {
+    return getPlotStyle(status);
+  }
+
+  shouldShowSoldOut(plot: any): boolean {
+    return shouldShowSoldText(plot?.plot_status);
   }
 
   // --- ACTIONS & MODALS ---

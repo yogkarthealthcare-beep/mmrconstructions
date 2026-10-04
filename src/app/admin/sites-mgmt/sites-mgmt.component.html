@@ -311,9 +311,8 @@
                 <polygon
                   *ngIf="p._polygonPoints"
                   [attr.points]="p._polygonPoints"
-                  [attr.fill]="p._color || plotColor(p.plot_status)"
-                  fill-opacity="0.55"
-                  stroke="#ffffff"
+                  [attr.fill]="plotStyle(p.plot_status).fill"
+                  [attr.stroke]="plotStyle(p.plot_status).stroke"
                   stroke-width="0.35"
                   [class.active-polygon]="selectedPlot?.plot_id === p.plot_id"
                   (click)="selectPlot(p)"
@@ -324,7 +323,7 @@
                 <text
                   *ngIf="p._polygonPoints"
                   [attr.x]="p._labelPoint?.x || 0"
-                  [attr.y]="p._labelPoint?.y || 0"
+                  [attr.y]="shouldShowSoldOut(p) ? ((p._labelPoint?.y || 0) - 0.7) : (p._labelPoint?.y || 0)"
                   text-anchor="middle"
                   dominant-baseline="central"
                   fill="#ffffff"
@@ -332,6 +331,18 @@
                   font-weight="700"
                   style="pointer-events: none; text-shadow: 0 1px 3px rgba(0,0,0,0.85);">
                   {{ p.plot_number }}
+                </text>
+                <text
+                  *ngIf="p._polygonPoints && shouldShowSoldOut(p)"
+                  [attr.x]="p._labelPoint?.x || 0"
+                  [attr.y]="(p._labelPoint?.y || 0) + 1.1"
+                  text-anchor="middle"
+                  dominant-baseline="central"
+                  fill="#fee2e2"
+                  font-size="1.1"
+                  font-weight="800"
+                  style="pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">
+                  SOLD OUT
                 </text>
               </g>
             </g>
@@ -488,7 +499,7 @@
   <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-content border-0 rounded-14 shadow-lg">
       <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-plus-circle text-gold me-2"></i>Create New Project Site</h5>
+        <h5 class="modal-title fs-15 fw-700 text-white"><i class="fas fa-plus-circle text-gold me-2"></i>Create New Project Site</h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
       </div>
 
@@ -569,7 +580,7 @@
   <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-content border-0 rounded-14 shadow-lg">
       <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-edit text-gold me-2"></i>Edit Site Details</h5>
+        <h5 class="modal-title fs-15 fw-700 text-white"><i class="fas fa-edit text-gold me-2"></i>Edit Site Details</h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
       </div>
 
@@ -659,7 +670,7 @@
   <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content border-0 rounded-14 shadow-lg">
       <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-th-large text-gold me-2"></i>Add New Plot to {{ activeSite?.site_name }}</h5>
+        <h5 class="modal-title fs-15 fw-700 text-white"><i class="fas fa-th-large text-gold me-2"></i>Add New Plot to {{ activeSite?.site_name }}</h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
       </div>
 

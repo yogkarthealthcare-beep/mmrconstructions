@@ -155,6 +155,10 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     return this.router.url.includes('/admin/test-otp');
   }
 
+  isPlotBookingProcessActive(): boolean {
+    return this.router.url.includes('/admin/plot-booking-process');
+  }
+
   filteredNavGroups: NavGroup[] = [];
 
   ngOnInit() {
