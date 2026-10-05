@@ -489,6 +489,136 @@ export class AdminEnrollmentsComponent implements OnInit {
     }
   }
 
+  onCustomerInlineStatusChange(item: any, event: any) {
+    const newStatus = event.target.value;
+    const oldStatus = item.enrollment_status;
+    const oldAppStatus = item.application_status;
+    const id = item.submission_id || item.id || item.user_id;
+
+    const payload: any = {
+      enrollment_status: newStatus,
+      application_status: newStatus === 'Completed' ? 'Approved' : (newStatus === 'Rejected' ? 'Rejected' : 'Pending'),
+      applicant_name: item.applicant_name || item.full_name
+    };
+
+    item.enrollment_status = newStatus;
+    item.application_status = payload.application_status;
+
+    this.api.adminUpdateCustomerEnrollment(id, payload).subscribe({
+      next: () => {
+        Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        }).fire({
+          icon: 'success',
+          title: `Customer status updated to ${newStatus}`
+        });
+        this.loadStats();
+      },
+      error: (err) => {
+        item.enrollment_status = oldStatus;
+        item.application_status = oldAppStatus;
+        event.target.value = oldStatus || 'Pending';
+        Swal.fire({
+          icon: 'error',
+          title: 'Update Failed',
+          text: err.error?.message || 'Failed to update customer status.',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    });
+  }
+
+  onAssociateInlineStatusChange(item: any, event: any) {
+    const newStatus = event.target.value;
+    const oldStatus = item.enrollment_status;
+    const oldAppStatus = item.status;
+    const id = item.associate_id || item.id || item.user_id;
+
+    const payload: any = {
+      status: newStatus === 'Completed' ? 'approved' : (newStatus === 'Rejected' ? 'rejected' : 'pending'),
+      enrollment_status: newStatus,
+      full_name: item.full_name,
+      contact_1: item.mobile_1 || item.mobile_no || item.contact_1,
+      pan_no: item.pan_no || item.pan_number,
+      aadhar_no: item.aadhar_no || item.aadhar_number,
+      email: item.email
+    };
+
+    item.enrollment_status = newStatus;
+    item.status = payload.status;
+
+    this.api.adminUpdateAssociateEnrollment(id, payload).subscribe({
+      next: () => {
+        Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        }).fire({
+          icon: 'success',
+          title: `Associate status updated to ${newStatus}`
+        });
+        this.loadStats();
+      },
+      error: (err) => {
+        item.enrollment_status = oldStatus;
+        item.status = oldAppStatus;
+        event.target.value = oldStatus || 'Pending';
+        Swal.fire({
+          icon: 'error',
+          title: 'Update Failed',
+          text: err.error?.message || 'Failed to update associate status.',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    });
+  }
+
+  onInvestorInlineStatusChange(item: any, event: any) {
+    const newStatus = event.target.value;
+    const oldStatus = item.enrollment_status;
+    const id = item.submission_id || item.investor_enrollment_id || item.investor_id || item.id || item.user_id;
+
+    const payload: any = {
+      enrollment_status: newStatus,
+      inv_first_name: item.inv_first_name,
+      inv_surname: item.inv_surname
+    };
+
+    item.enrollment_status = newStatus;
+
+    this.api.adminUpdateInvestorEnrollment(id, payload).subscribe({
+      next: () => {
+        Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        }).fire({
+          icon: 'success',
+          title: `Investor status updated to ${newStatus}`
+        });
+        this.loadStats();
+      },
+      error: (err) => {
+        item.enrollment_status = oldStatus;
+        event.target.value = oldStatus || 'Pending';
+        Swal.fire({
+          icon: 'error',
+          title: 'Update Failed',
+          text: err.error?.message || 'Failed to update investor status.',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    });
+  }
+
   private saveBlob(blob: Blob, filename: string) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');

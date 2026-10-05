@@ -190,10 +190,20 @@
               <span class="amount-val">₹{{ (item.basic_sale_price || 0) + (item.plc_dev_charges || 0) | number }}</span>
             </td>
             <td class="td-status">
-              <span class="status-badge" [class.completed]="item.enrollment_status === 'Completed'" [class.pending]="item.enrollment_status === 'Pending'">
-                <i class="fas" [class.fa-check-circle]="item.enrollment_status === 'Completed'" [class.fa-clock]="item.enrollment_status === 'Pending'"></i>
-                {{ item.enrollment_status }}
-              </span>
+              <select
+                class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
+                style="min-width: 120px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
+                [ngClass]="{
+                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.application_status === 'Approved',
+                  'border-warning text-warning-dark bg-warning-subtle': item.enrollment_status === 'Pending' || item.application_status === 'Pending' || !item.enrollment_status,
+                  'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.application_status === 'Rejected'
+                }"
+                [value]="item.enrollment_status || (item.application_status === 'Approved' ? 'Completed' : 'Pending')"
+                (change)="onCustomerInlineStatusChange(item, $event)">
+                <option value="Pending">Pending</option>
+                <option value="Completed">&#x2714; Approved (Completed)</option>
+                <option value="Rejected">&#x2716; Rejected</option>
+              </select>
             </td>
             <td class="td-actions text-end">
               <div class="action-btn-group">
@@ -252,10 +262,20 @@
               <small class="d-block text-muted">{{ item.state || 'Uttar Pradesh' }}</small>
             </td>
             <td class="td-status">
-              <span class="status-badge" [class.completed]="item.enrollment_status === 'Completed'" [class.pending]="item.enrollment_status === 'Pending'">
-                <i class="fas" [class.fa-check-circle]="item.enrollment_status === 'Completed'" [class.fa-clock]="item.enrollment_status === 'Pending'"></i>
-                {{ item.enrollment_status }}
-              </span>
+              <select
+                class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
+                style="min-width: 120px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
+                [ngClass]="{
+                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.status === 'approved',
+                  'border-warning text-warning-dark bg-warning-subtle': item.enrollment_status === 'Pending' || item.status === 'pending' || !item.enrollment_status,
+                  'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.status === 'rejected'
+                }"
+                [value]="item.enrollment_status || (item.status === 'approved' ? 'Completed' : 'Pending')"
+                (change)="onAssociateInlineStatusChange(item, $event)">
+                <option value="Pending">Pending</option>
+                <option value="Completed">&#x2714; Approved (Completed)</option>
+                <option value="Rejected">&#x2716; Rejected</option>
+              </select>
             </td>
             <td class="td-date">
               <small class="date-text">{{ item.created_at ? (item.created_at | date:'mediumDate') : (item.sign_date | date:'mediumDate') || '—' }}</small>
@@ -323,10 +343,20 @@
               </span>
             </td>
             <td class="td-status">
-              <span class="status-badge" [class.completed]="item.enrollment_status === 'Completed'" [class.pending]="item.enrollment_status === 'Pending'">
-                <i class="fas" [class.fa-check-circle]="item.enrollment_status === 'Completed'" [class.fa-clock]="item.enrollment_status === 'Pending'"></i>
-                {{ item.enrollment_status }}
-              </span>
+              <select
+                class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
+                style="min-width: 120px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
+                [ngClass]="{
+                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed',
+                  'border-warning text-warning-dark bg-warning-subtle': item.enrollment_status === 'Pending' || !item.enrollment_status,
+                  'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected'
+                }"
+                [value]="item.enrollment_status || 'Pending'"
+                (change)="onInvestorInlineStatusChange(item, $event)">
+                <option value="Pending">Pending</option>
+                <option value="Completed">&#x2714; Approved (Completed)</option>
+                <option value="Rejected">&#x2716; Rejected</option>
+              </select>
             </td>
             <td class="td-date">
               <small class="date-text">{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
