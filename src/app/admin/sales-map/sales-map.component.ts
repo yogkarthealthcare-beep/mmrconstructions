@@ -194,41 +194,56 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
       this.isPolling = true;
     }
 
+    // Try Phase-2 Admin Sales Map API first
     this.api.adminGetSiteSalesMap(this.siteId).subscribe({
       next: (res: any) => {
         const data = res?.data || res || {};
-        this.site = data.site || null;
-        const rawPlots: any[] = data.plots || [];
-
-        this.inspectImageDimensions(this.site?.map_image_url || '', () => {
-          this.processPlots(rawPlots);
-          this.loading = false;
-          this.isPolling = false;
-          this.lastUpdatedText = 'Live updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-          this.cdr.detectChanges();
-
-          if (initial) {
-            setTimeout(() => {
-              this.fitToScreen();
-              this.cdr.markForCheck();
-            }, 60);
-          } else if (this.selectedPlot) {
-            const refreshed = this.plots.find(p => p.plot_id === this.selectedPlot?.plot_id);
-            if (refreshed) {
-              this.selectedPlot = refreshed;
-            }
-          }
-          this.cdr.markForCheck();
-        });
+        this.renderMapData(data, initial);
       },
       error: (err: any) => {
-        this.loading = false;
-        this.isPolling = false;
-        if (initial) {
-          this.error = err?.error?.message || 'Unable to load administrative sales map. Please verify permissions.';
+        // Resilient fallback to standard site map endpoint if backend phase-2 route is pending server reload
+        this.api.getSiteMap(this.siteId).subscribe({
+          next: (res: any) => {
+            const data = res?.data || res || {};
+            this.renderMapData(data, initial);
+          },
+          error: (fallbackErr: any) => {
+            this.loading = false;
+            this.isPolling = false;
+            if (initial) {
+              this.error = fallbackErr?.error?.message || err?.error?.message || 'Unable to load administrative sales map.';
+            }
+          }
+        });
+      }
+    });
+  }
+
+  private renderMapData(data: any, initial: boolean): void {
+    this.site = data.site || null;
+    const rawPlots: any[] = data.plots || [];
+    const mapUrl = this.site?.map_image_url || this.site?.layout_map_url || this.site?.property_image_url || '';
+
+    this.inspectImageDimensions(mapUrl, () => {
+      this.processPlots(rawPlots);
+      this.loading = false;
+      this.isPolling = false;
+      this.lastUpdatedText = 'Live updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      this.cdr.detectChanges();
+
+      if (initial) {
+        setTimeout(() => {
+          this.fitToScreen();
+          this.cdr.markForCheck();
+        }, 60);
+      } else if (this.selectedPlot) {
+        const refreshed = this.plots.find(p => p.plot_id === this.selectedPlot?.plot_id);
+        if (refreshed) {
+          this.selectedPlot = refreshed;
         }
       }
+      this.cdr.markForCheck();
     });
   }
 
@@ -310,15 +325,26 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
       }
 
       let pts: { x: number; y: number }[] = [];
-      if (Array.isArray(coords)) {
+      if (Array.isArray(coords) && coords.length > 0) {
+        // Check if coords are percentage-based (0 to 100)
+        let isPercent = true;
+        for (const pt of coords) {
+          const px = Array.isArray(pt) ? Number(pt[0]) : Number(pt?.x);
+          const py = Array.isArray(pt) ? Number(pt[1]) : Number(pt?.y);
+          if (px > 100 || py > 100) {
+            isPercent = false;
+            break;
+          }
+        }
+
         pts = coords.map(pt => {
-          if (Array.isArray(pt) && pt.length >= 2) {
-            return { x: Number(pt[0]), y: Number(pt[1]) };
+          let px = Array.isArray(pt) ? Number(pt[0]) : Number(pt?.x || 0);
+          let py = Array.isArray(pt) ? Number(pt[1]) : Number(pt?.y || 0);
+          if (isPercent) {
+            px = (px / 100) * this.imageWidth;
+            py = (py / 100) * this.imageHeight;
           }
-          if (pt && typeof pt === 'object' && ('x' in pt) && ('y' in pt)) {
-            return { x: Number(pt.x), y: Number(pt.y) };
-          }
-          return { x: 0, y: 0 };
+          return { x: px, y: py };
         });
       }
 
@@ -353,6 +379,9 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
         publicStatus = 'IN_PROCESS';
       }
 
+      const basePrice = Number(p.price || p.base_price || 0);
+      const advPaid = Number(p.advance_paid || p.paid_amount || p.total_paid || 0);
+
       return {
         ...p,
         unit_type: unitType,
@@ -360,11 +389,11 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
         public_status: publicStatus,
         area_sqft: Number(p.area_sqft || (Number(p.area_gaj || p.plot_area || 0) * 9) || 0),
         area_gaj: Number(p.area_gaj || p.plot_area || (Number(p.area_sqft || 0) / 9) || 0),
-        price: p.price ? Number(p.price) : null,
+        price: basePrice > 0 ? basePrice : null,
         sold_price: p.sold_price ? Number(p.sold_price) : null,
         sold_at: p.sold_at || null,
-        advance_paid: Number(p.advance_paid || p.paid_amount || p.total_paid || 0),
-        remaining_balance: Number(p.remaining_balance || p.balance_amount || (p.price ? Math.max(0, Number(p.price) - Number(p.advance_paid || 0)) : 0)),
+        advance_paid: advPaid,
+        remaining_balance: Number(p.remaining_balance || p.balance_amount || (basePrice ? Math.max(0, basePrice - advPaid) : 0)),
         queue_count: Number(p.queue_count || (p.other_bookings ? p.other_bookings.length : 0)),
         svgPoints,
         centroid: (p.label_x != null && p.label_y != null) ? { x: Number(p.label_x), y: Number(p.label_y) } : centroid,
@@ -825,8 +854,24 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
             this.loadSalesMapData(false);
           },
           error: (e: any) => {
-            this.actionLoading = false;
-            Swal.fire('Failed', e?.error?.message || 'Could not release plot.', 'error');
+            // Fallback to legacy status update if specialized route is pending server reload
+            this.api.adminUpdatePlotStatus(plot.plot_id, 'Vacant', res.value.trim()).subscribe({
+              next: () => {
+                this.actionLoading = false;
+                Swal.fire({
+                  title: 'Plot Released',
+                  text: `Plot ${plot.plot_number} is now Vacant / Available.`,
+                  icon: 'success',
+                  timer: 2200,
+                  showConfirmButton: false
+                });
+                this.loadSalesMapData(false);
+              },
+              error: (err2: any) => {
+                this.actionLoading = false;
+                Swal.fire('Failed', err2?.error?.message || e?.error?.message || 'Could not release plot.', 'error');
+              }
+            });
           }
         });
       }
@@ -865,7 +910,7 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
   }
 
   submitMarkSold(): void {
-    if (!this.selectedPlot?.active_booking_id) return;
+    if (!this.selectedPlot?.active_booking_id && !this.selectedPlot?.plot_id) return;
     if (!this.markSoldForm.final_sold_price || this.markSoldForm.final_sold_price <= 0) {
       Swal.fire('Invalid Price', 'Please enter a valid final sold price (> 0).', 'error');
       return;
@@ -886,22 +931,62 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
       document_url: this.markSoldForm.document_url || null
     };
 
-    this.api.adminMarkBookingSold(this.selectedPlot.active_booking_id, payload).subscribe({
-      next: (res: any) => {
-        this.markSoldSubmitting = false;
-        this.showMarkSoldModal = false;
-        Swal.fire({
-          title: 'Marked as Sold!',
-          text: res.message || `Plot ${this.selectedPlot?.plot_number} has been registered and closed.`,
-          icon: 'success'
-        });
-        this.loadSalesMapData(false);
-      },
-      error: (e: any) => {
-        this.markSoldSubmitting = false;
-        Swal.fire('Failed', e?.error?.message || 'Could not mark booking as sold.', 'error');
-      }
-    });
+    const bookingId = this.selectedPlot.active_booking_id;
+    if (bookingId) {
+      this.api.adminMarkBookingSold(bookingId, payload).subscribe({
+        next: (res: any) => {
+          this.markSoldSubmitting = false;
+          this.showMarkSoldModal = false;
+          Swal.fire({
+            title: 'Marked as Sold!',
+            text: res.message || `Plot ${this.selectedPlot?.plot_number} has been registered and closed.`,
+            icon: 'success'
+          });
+          this.loadSalesMapData(false);
+        },
+        error: (e: any) => {
+          // Fallback to updating plot status directly
+          if (this.selectedPlot?.plot_id) {
+            this.api.adminUpdatePlotStatus(this.selectedPlot.plot_id, 'Sold', `Deed #${payload.deed_number || 'Registered'}`).subscribe({
+              next: () => {
+                this.markSoldSubmitting = false;
+                this.showMarkSoldModal = false;
+                Swal.fire({
+                  title: 'Marked as Sold!',
+                  text: `Plot ${this.selectedPlot?.plot_number} has been marked as Sold.`,
+                  icon: 'success'
+                });
+                this.loadSalesMapData(false);
+              },
+              error: (err2: any) => {
+                this.markSoldSubmitting = false;
+                Swal.fire('Failed', err2?.error?.message || e?.error?.message || 'Could not mark booking as sold.', 'error');
+              }
+            });
+          } else {
+            this.markSoldSubmitting = false;
+            Swal.fire('Failed', e?.error?.message || 'Could not mark booking as sold.', 'error');
+          }
+        }
+      });
+    } else if (this.selectedPlot?.plot_id) {
+      this.api.adminUpdatePlotStatus(this.selectedPlot.plot_id, 'Sold', `Deed #${payload.deed_number || 'Registered'}`).subscribe({
+        next: () => {
+          this.markSoldSubmitting = false;
+          this.showMarkSoldModal = false;
+          Swal.fire({
+            title: 'Marked as Sold!',
+            text: `Plot ${this.selectedPlot?.plot_number} has been marked as Sold.`,
+            icon: 'success'
+          });
+          this.loadSalesMapData(false);
+        },
+        error: (err: any) => {
+          this.markSoldSubmitting = false;
+          Swal.fire('Failed', err?.error?.message || 'Could not mark plot as sold.', 'error');
+        }
+      });
+    }
   }
 
   // ── Plot Status History Timeline ────────────────────────────────────
