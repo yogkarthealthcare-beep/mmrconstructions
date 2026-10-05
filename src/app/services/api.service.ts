@@ -258,6 +258,7 @@ export class ApiService {
   adminGetCustomerEnrollments(params: any = {}) { return this.get('/api/admin/customer-enrollments', params, true); }
   adminGetCustomerEnrollment(id: string) { return this.get(`/api/customer-enrollment/${id}`, {}, true); }
   adminUpdateCustomerEnrollment(id: string, data: any) { return this.put(`/api/admin/customer-enrollments/${id}`, data, true); }
+  adminQuickUpdateCustomerStatus(id: string, data: any) { return this.patch(`/api/admin/customer-enrollments/${id}/status`, data, true); }
 
   // ── Associate Enrollment ──────────────────────────
   getMyAssociateEnrollment()          { return this.get('/api/associate-enrollment/me'); }
