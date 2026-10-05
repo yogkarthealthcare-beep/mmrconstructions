@@ -55,14 +55,25 @@ export class SignupComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.route.data.subscribe(data => {
+      if (data?.['type']) {
+        const typeLower = String(data['type']).toLowerCase();
+        if (typeLower === 'associate') this.selectRole('Associate');
+        else if (typeLower === 'investor') this.selectRole('Investor');
+        else if (typeLower === 'customer') this.selectRole('Customer');
+      }
+    });
+
     this.route.queryParams.subscribe(params => {
-      const typeParam = params['type'];
-      if (typeParam === 'Associate') {
+      const typeParam = String(params['type'] || '').trim().toLowerCase();
+      if (typeParam === 'associate') {
         this.selectRole('Associate');
-      } else if (typeParam === 'Investor') {
+      } else if (typeParam === 'investor') {
         this.selectRole('Investor');
-      } else if (typeParam === 'Customer') {
+      } else if (typeParam === 'customer') {
         this.selectRole('Customer');
+      } else if (!params['type'] && !this.route.snapshot.data['type']) {
+        this.roleSelected = false;
       }
 
       const rawRef = params['ref'] ?? params['sponsor'] ?? params['sponsor_invite_code'];

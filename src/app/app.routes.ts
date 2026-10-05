@@ -20,6 +20,23 @@ export const routes: Routes = [
     title: 'Register — MMR Construction'
   },
   { 
+    path: 'register/associate', 
+    loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
+    data: { type: 'Associate' },
+    title: 'Associate Registration — MMR Construction'
+  },
+  { 
+    path: 'register/customer', 
+    loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
+    data: { type: 'Customer' },
+    title: 'Customer Registration — MMR Construction'
+  },
+  { 
+    path: 'register/investor', 
+    loadComponent: () => import('./investor/investor-signup/investor-signup.component').then(m => m.InvestorSignupComponent),
+    title: 'Investor Registration — MMR Construction'
+  },
+  { 
     path: 'signup', 
     loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
     title: 'Sign Up — MMR Construction'
