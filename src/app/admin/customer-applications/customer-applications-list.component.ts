@@ -113,7 +113,7 @@ import Swal from 'sweetalert2';
     </div>
 
     <!-- Main Table Card -->
-    <div class="panel-card p-3 mb-3 bg-white rounded-12 border shadow-sm">
+    <div class="panel-card p-2.5 p-md-3 mb-3 bg-white rounded-12 border shadow-sm">
       <app-admin-table-container
         *ngIf="filteredApplications.length > 0"
         title="Customer Applications &amp; Enrollments"
@@ -123,124 +123,121 @@ import Swal from 'sweetalert2';
           <table class="table align-middle custom-dash-table mb-0 w-100">
             <thead class="bg-light">
               <tr>
-                <th class="th-sno text-center" style="width: 32px;">#</th>
-                <th style="width: 140px;">DATE &amp; APP NO.</th>
-                <th style="min-width: 150px;">APPLICANT NAME</th>
-                <th style="min-width: 140px;">CONTACT &amp; EMAIL</th>
-                <th style="min-width: 120px;">PROJECT &amp; PROPERTY</th>
-                <th style="width: 150px;">APPROVAL STATUS</th>
-                <th style="width: 110px;">PAYMENT STATUS</th>
-                <th class="text-end" style="width: 110px;">ACTIONS</th>
+                <th class="th-sno text-center" style="width: 30px;">#</th>
+                <th style="width: 110px;">DATE &amp; APP NO.</th>
+                <th style="min-width: 140px;">APPLICANT &amp; CONTACT</th>
+                <th style="min-width: 120px;">PROJECT &amp; SPONSOR</th>
+                <th style="min-width: 200px;">STATUS &amp; PAYMENT</th>
+                <th class="text-end" style="width: 85px;">ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let app of pagedApplications; let i = index">
-                <td class="td-sno text-center fs-11 fw-700 text-muted">{{ (page - 1) * pageSize + i + 1 }}</td>
+                <!-- # S.No -->
+                <td class="td-sno text-center fs-11 fw-700 text-muted py-2">{{ (page - 1) * pageSize + i + 1 }}</td>
                 
                 <!-- Date & App No -->
-                <td>
+                <td class="py-2">
                   <div class="d-flex flex-column gap-0.5">
-                    <span class="badge bg-dark text-gold border px-2 py-0.5 fs-10 fw-700 text-start w-fit">
+                    <span class="badge bg-dark text-gold border px-1.5 py-0.5 fs-10 fw-700 text-start w-fit">
                       {{ app.application_no || app.member_id || 'Pending' }}
                     </span>
-                    <small class="fs-10 text-muted mt-0.5">
+                    <small class="fs-10 text-muted mt-0.5 text-nowrap">
                       <i class="fas fa-calendar-alt me-1 text-gold"></i>{{ app.form_date ? (app.form_date | date:'dd MMM yyyy') : (app.registered_at | date:'dd MMM yyyy') }}
                     </small>
                   </div>
                 </td>
 
-                <!-- Applicant Name & Sponsor -->
-                <td>
+                <!-- Applicant Name & Contact -->
+                <td class="py-2">
                   <div class="d-flex align-items-center gap-2">
-                    <div class="avatar-circle-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-800 fs-11" style="width: 28px; height: 28px; min-width: 28px;">
+                    <div class="avatar-circle-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-800 fs-10" style="width: 26px; height: 26px; min-width: 26px;">
                       {{ (app.applicant_name || app.full_name || 'C').charAt(0).toUpperCase() }}
                     </div>
                     <div class="min-w-0">
                       <div class="fs-12 fw-800 text-dark text-truncate">{{ app.applicant_name || app.full_name || 'N/A' }}</div>
-                      <small class="fs-10 text-muted text-truncate d-block" *ngIf="app.sponsor_name">Ref: {{ app.sponsor_name }} ({{ app.sponsor_id }})</small>
+                      <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <small class="fs-10 text-dark fw-600 text-nowrap"><i class="fas fa-phone-alt me-1 text-emerald fs-9"></i>{{ app.mobile_1 || app.mobile_no || 'N/A' }}</small>
+                        <small class="fs-10 text-muted text-truncate" *ngIf="app.email_1 || app.email" [title]="app.email_1 || app.email"><i class="fas fa-envelope me-1 text-muted fs-8"></i>{{ app.email_1 || app.email }}</small>
+                      </div>
                     </div>
                   </div>
                 </td>
 
-                <!-- Contact & Email -->
-                <td>
-                  <div class="fs-11 fw-700 text-dark"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ app.mobile_1 || app.mobile_no || 'N/A' }}</div>
-                  <div class="fs-10 text-muted text-truncate" style="max-width: 140px;" *ngIf="app.email_1 || app.email" [title]="app.email_1 || app.email">
-                    <i class="fas fa-envelope me-1 text-muted fs-9"></i>{{ app.email_1 || app.email }}
-                  </div>
-                </td>
-
-                <!-- Project & Property -->
-                <td>
-                  <div class="fs-11 fw-700 text-dark">{{ app.project_name || '—' }}</div>
-                  <small class="fs-10 text-muted d-block text-truncate" *ngIf="app.property_type || app.plot_flat_no">
-                    {{ app.property_type }} <span *ngIf="app.plot_flat_no">(#{{ app.plot_flat_no }})</span>
+                <!-- Project & Sponsor -->
+                <td class="py-2">
+                  <div class="fs-11 fw-700 text-dark text-truncate">{{ app.project_name || '—' }}</div>
+                  <small class="fs-10 text-muted d-block text-truncate" *ngIf="app.sponsor_name">
+                    Ref: {{ app.sponsor_name }} ({{ app.sponsor_id }})
                   </small>
                 </td>
 
-                <!-- INLINE APPROVAL STATUS DROPDOWN -->
-                <td>
-                  <div class="position-relative">
-                    <select
-                      class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none w-100"
-                      [ngClass]="{
-                        'border-success text-success bg-success-subtle': app.application_status === 'Approved',
-                        'border-warning text-warning-dark bg-warning-subtle': app.application_status === 'Pending',
-                        'border-info text-info bg-info-subtle': app.application_status === 'Hold/Pending KYC',
-                        'border-danger text-danger bg-danger-subtle': app.application_status === 'Rejected'
-                      }"
-                      [value]="app.application_status || 'Pending'"
-                      [disabled]="app._updatingStatus"
-                      (change)="onStatusChange(app, $event)">
-                      <option value="Pending">Pending</option>
-                      <option value="Approved">&#x2714; Approved (Verified)</option>
-                      <option value="Hold/Pending KYC">&#x26A0; Hold / Pending KYC</option>
-                      <option value="Rejected">&#x2716; Rejected</option>
-                    </select>
-                    <i *ngIf="app._updatingStatus" class="fas fa-spinner fa-spin text-primary position-absolute end-0 top-50 translate-middle-y me-3"></i>
+                <!-- INLINE APPROVAL & PAYMENT DROPDOWNS -->
+                <td class="py-2">
+                  <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                    <!-- Status Select -->
+                    <div class="position-relative flex-grow-1" style="min-width: 110px; max-width: 140px;">
+                      <select
+                        class="form-select form-select-sm fs-10 fw-700 status-dropdown shadow-none w-100"
+                        [ngClass]="{
+                          'border-success text-success bg-success-subtle': app.application_status === 'Approved',
+                          'border-warning text-warning-dark bg-warning-subtle': app.application_status === 'Pending',
+                          'border-info text-info bg-info-subtle': app.application_status === 'Hold/Pending KYC',
+                          'border-danger text-danger bg-danger-subtle': app.application_status === 'Rejected'
+                        }"
+                        [value]="app.application_status || 'Pending'"
+                        [disabled]="app._updatingStatus"
+                        (change)="onStatusChange(app, $event)">
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">&#x2714; Approved</option>
+                        <option value="Hold/Pending KYC">&#x26A0; Hold KYC</option>
+                        <option value="Rejected">&#x2716; Rejected</option>
+                      </select>
+                      <i *ngIf="app._updatingStatus" class="fas fa-spinner fa-spin text-primary position-absolute end-0 top-50 translate-middle-y me-2 fs-10"></i>
+                    </div>
+
+                    <!-- Payment Select -->
+                    <div style="min-width: 80px; max-width: 95px;">
+                      <select
+                        class="form-select form-select-sm fs-10 fw-600 payment-dropdown shadow-none w-100"
+                        [ngClass]="{
+                          'border-success text-success': app.payment_status === 'Cleared',
+                          'border-warning text-warning-dark': app.payment_status === 'Pending' || !app.payment_status,
+                          'border-danger text-danger': app.payment_status === 'Bounced'
+                        }"
+                        [value]="app.payment_status || 'Pending'"
+                        [disabled]="app._updatingPayment"
+                        (change)="onPaymentStatusChange(app, $event)">
+                        <option value="Pending">Pending</option>
+                        <option value="Cleared">Cleared</option>
+                        <option value="Bounced">Bounced</option>
+                      </select>
+                    </div>
                   </div>
                 </td>
 
-                <!-- INLINE PAYMENT STATUS DROPDOWN -->
-                <td>
-                  <select
-                    class="form-select form-select-sm fs-11 fw-600 payment-dropdown shadow-none w-100"
-                    [ngClass]="{
-                      'border-success text-success': app.payment_status === 'Cleared',
-                      'border-warning text-warning-dark': app.payment_status === 'Pending' || !app.payment_status,
-                      'border-danger text-danger': app.payment_status === 'Bounced'
-                    }"
-                    [value]="app.payment_status || 'Pending'"
-                    [disabled]="app._updatingPayment"
-                    (change)="onPaymentStatusChange(app, $event)">
-                    <option value="Pending">Pending</option>
-                    <option value="Cleared">Cleared</option>
-                    <option value="Bounced">Bounced</option>
-                  </select>
-                </td>
-
                 <!-- Actions -->
-                <td class="text-end">
+                <td class="text-end py-2">
                   <div class="d-flex align-items-center justify-content-end gap-1">
                     <button
-                      class="btn btn-xs btn-outline-primary py-1 px-2 rounded-6 fs-11 fw-700 d-inline-flex align-items-center gap-1"
+                      class="btn btn-xs btn-outline-primary py-0.5 px-1.5 rounded-6 fs-10 fw-700 d-inline-flex align-items-center gap-1"
                       (click)="viewDetails(app)"
-                      title="View Full Application Details">
-                      <i class="fas fa-eye fs-10"></i> <span>Details</span>
+                      title="View Details">
+                      <i class="fas fa-eye fs-9"></i> <span>Details</span>
                     </button>
                     <button
-                      class="btn btn-xs btn-outline-danger py-1 px-1.5 rounded-6 fs-11 d-inline-flex align-items-center justify-content-center"
-                      style="width: 26px; height: 26px;"
+                      class="btn btn-xs btn-outline-danger py-0.5 px-1 rounded-6 fs-10 d-inline-flex align-items-center justify-content-center"
+                      style="width: 24px; height: 24px;"
                       (click)="downloadPdf(app)"
                       [disabled]="app._printing"
-                      title="Download Application PDF">
+                      title="Download PDF">
                       <i class="fas" [class.fa-file-pdf]="!app._printing" [class.fa-spinner]="app._printing" [class.fa-spin]="app._printing"></i>
                     </button>
                   </div>
                 </td>
               </tr>
               <tr *ngIf="filteredApplications.length === 0">
-                <td colspan="8" class="text-center py-4 text-muted fs-12">
+                <td colspan="6" class="text-center py-4 text-muted fs-12">
                   <i class="fas fa-info-circle me-1 text-gold"></i> No customer enrollment records matched your search.
                 </td>
               </tr>
@@ -410,35 +407,36 @@ import Swal from 'sweetalert2';
     }
 
     .custom-dash-table thead th {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 700;
       color: #64748b;
       letter-spacing: 0.5px;
-      padding: 10px 8px;
+      padding: 8px 6px;
       white-space: nowrap;
       border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
     }
 
     .custom-dash-table tbody td {
-      padding: 10px 8px;
+      padding: 8px 6px;
       vertical-align: middle;
       border-bottom: 1px solid #f1f5f9;
     }
 
     .status-dropdown {
-      font-size: 11px;
-      padding: 3px 6px;
-      border-radius: 6px;
+      font-size: 10px !important;
+      padding: 2px 4px !important;
+      border-radius: 5px;
       cursor: pointer;
-      min-width: 120px;
+      height: 26px;
     }
 
     .payment-dropdown {
-      font-size: 11px;
-      padding: 3px 6px;
-      border-radius: 6px;
+      font-size: 10px !important;
+      padding: 2px 4px !important;
+      border-radius: 5px;
       cursor: pointer;
-      min-width: 85px;
+      height: 26px;
     }
 
     .modal-backdrop-custom {
