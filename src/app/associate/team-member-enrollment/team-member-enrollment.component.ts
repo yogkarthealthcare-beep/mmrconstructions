@@ -5,7 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
-import { MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN } from '../../shared/utils/form-helpers';
+import { MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN, NORTH_INDIAN_STATES, getMaxAdultDobDate, adultAgeValidator, calculateAgeFromDob } from '../../shared/utils/form-helpers';
 
 interface SignaturePadController {
   clear: () => void;
@@ -25,6 +25,10 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   @ViewChild('associateSigCanvas') associateSigCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   enrollmentForm!: FormGroup;
+
+  statesList = NORTH_INDIAN_STATES;
+  maxAdultDob = getMaxAdultDobDate();
+  calculatedAge = signal<number | ''>('');
 
   // View state
   activeTab: 'enroll' | 'list' = 'enroll';
@@ -97,7 +101,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       associateName: [{ value: this.associateName || '', disabled: true }, Validators.required],
       fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
       fatherHusbandName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
-      dateOfBirth: ['', Validators.required],
+      dateOfBirth: ['', [Validators.required, adultAgeValidator(18)]],
       gender: ['Male', Validators.required],
       aadharNo: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
       panNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
@@ -116,6 +120,10 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       ifscCode: ['', [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
 
       declarationAccepted: [false, Validators.requiredTrue]
+    });
+
+    this.enrollmentForm.get('dateOfBirth')?.valueChanges.subscribe(val => {
+      this.calculatedAge.set(calculateAgeFromDob(val));
     });
   }
 

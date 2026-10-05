@@ -132,7 +132,11 @@
       </div>
 
       <div class="row2">
-        <div class="field"><label>Date of Birth <span class="text-danger">*</span></label><input type="date" formControlName="dob"></div>
+        <div class="field">
+          <label>Date of Birth (18+ Years) <span class="text-danger">*</span></label>
+          <input type="date" formControlName="dob" [max]="maxAdultDob">
+          <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('dob')?.errors?.['underAge']">Applicant must be at least 18 years old / आवेदक की आयु कम से कम 18 वर्ष होनी चाहिए</span>
+        </div>
         <div class="field"><label>Age (Auto-calculated) <span class="text-danger">*</span></label><input type="number" formControlName="age" readonly style="background:#f8f9fa;"></div>
       </div>
 
@@ -172,9 +176,16 @@
       <div class="field"><label>Occupation <span class="text-danger">*</span></label><input type="text" formControlName="occupation"></div>
 
       <div class="field"><label>Present Address <span class="text-danger">*</span></label><textarea formControlName="presentAddress" rows="2" placeholder="House No., Street, Landmark"></textarea></div>
-      <div class="row2">
+      <div class="row3">
         <div class="field"><label>City / Dist. <span class="text-danger">*</span></label><input type="text" formControlName="presentCity"></div>
-        <div class="field"><label>State &amp; Pin Code <span class="text-danger">*</span></label><input type="text" formControlName="presentStatePin"></div>
+        <div class="field">
+          <label>State <span class="text-danger">*</span></label>
+          <select formControlName="presentState">
+            <option value="">Select State</option>
+            <option *ngFor="let s of statesList" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="field"><label>Pin Code <span class="text-danger">*</span></label><input type="text" formControlName="presentPinCode" maxlength="6" placeholder="6-digit PIN"></div>
       </div>
 
       <div style="margin: 10px 0; display: flex; align-items: center; gap: 8px; background: #f0f7ff; padding: 8px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
@@ -185,9 +196,16 @@
       </div>
 
       <div class="field"><label>Permanent Address <span class="text-danger">*</span></label><textarea formControlName="permanentAddress" rows="2" placeholder="Permanent House No., Street"></textarea></div>
-      <div class="row2">
+      <div class="row3">
         <div class="field"><label>City / Dist. <span class="text-danger">*</span></label><input type="text" formControlName="permanentCity"></div>
-        <div class="field"><label>State &amp; Pin Code <span class="text-danger">*</span></label><input type="text" formControlName="permanentStatePin"></div>
+        <div class="field">
+          <label>State <span class="text-danger">*</span></label>
+          <select formControlName="permanentState">
+            <option value="">Select State</option>
+            <option *ngFor="let s of statesList" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="field"><label>Pin Code <span class="text-danger">*</span></label><input type="text" formControlName="permanentPinCode" maxlength="6" placeholder="6-digit PIN"></div>
       </div>
 
       <div class="row2">
@@ -206,7 +224,11 @@
       <div class="field"><label>Relation with Applicant</label><input type="text" formControlName="coRelation"></div>
 
       <div class="row2">
-        <div class="field"><label>Date of Birth</label><input type="date" formControlName="coDob"></div>
+        <div class="field">
+          <label>Date of Birth</label>
+          <input type="date" formControlName="coDob" [max]="maxAdultDob">
+          <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('coDob')?.errors?.['underAge']">Co-Applicant must be at least 18 years old</span>
+        </div>
         <div class="field"><label>Age (Auto-calculated)</label><input type="number" formControlName="coAge" readonly style="background:#f8f9fa;"></div>
       </div>
 

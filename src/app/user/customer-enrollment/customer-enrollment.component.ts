@@ -5,7 +5,7 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { calculateAgeFromDob, numberToIndianWords, MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN } from '../../shared/utils/form-helpers';
+import { calculateAgeFromDob, numberToIndianWords, MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN, NORTH_INDIAN_STATES, getMaxAdultDobDate, adultAgeValidator } from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-customer-enrollment',
@@ -23,6 +23,9 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   toastMsg = '';
   submissionId: string | null = null;
   printing = false;
+
+  statesList = NORTH_INDIAN_STATES;
+  maxAdultDob = getMaxAdultDobDate();
   
   photo1DataUrl = '';
   photo2DataUrl = '';
@@ -73,22 +76,26 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       
       applicantName: ['', Validators.required],
       fhName: ['', Validators.required],
-      dob: ['', Validators.required],
+      dob: ['', [Validators.required, adultAgeValidator(18)]],
       age: ['', Validators.required],
       gender: ['', Validators.required],
       maritalStatus: ['', Validators.required],
-      nationality: ['', Validators.required],
+      nationality: ['Indian', Validators.required],
       nationalityOther: [{ value: '', disabled: true }],
       pan: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
       aadhar: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
       occupation: ['', Validators.required],
       presentAddress: ['', Validators.required],
       presentCity: ['', Validators.required],
-      presentStatePin: ['', Validators.required],
+      presentState: ['Uttar Pradesh', Validators.required],
+      presentPinCode: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]],
+      presentStatePin: ['Uttar Pradesh'],
       sameAsPresent: [false],
       permanentAddress: ['', Validators.required],
       permanentCity: ['', Validators.required],
-      permanentStatePin: ['', Validators.required],
+      permanentState: ['Uttar Pradesh', Validators.required],
+      permanentPinCode: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]],
+      permanentStatePin: ['Uttar Pradesh'],
       mobile1: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
       mobile2: ['', [Validators.pattern(MOBILE_PATTERN)]],
       email1: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
@@ -96,7 +103,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       coApplicantName: [''],
       coFhName: [''],
       coRelation: [''],
-      coDob: [''],
+      coDob: ['', [adultAgeValidator(18)]],
       coAge: [''],
       coGender: [''],
       coPan: [''],
@@ -156,6 +163,29 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       this.enrollmentForm.get('bookingAmountWords')?.setValue(words, { emitEvent: false });
     });
 
+    const syncPresentStatePin = () => {
+      const st = this.enrollmentForm.get('presentState')?.value || 'Uttar Pradesh';
+      const pin = this.enrollmentForm.get('presentPinCode')?.value || '';
+      const combined = pin ? `${st} - ${pin}` : st;
+      this.enrollmentForm.get('presentStatePin')?.setValue(combined, { emitEvent: false });
+      if (this.enrollmentForm.get('sameAsPresent')?.value) {
+        this.enrollmentForm.get('permanentState')?.setValue(st, { emitEvent: false });
+        this.enrollmentForm.get('permanentPinCode')?.setValue(pin, { emitEvent: false });
+        this.enrollmentForm.get('permanentStatePin')?.setValue(combined, { emitEvent: false });
+      }
+    };
+    this.enrollmentForm.get('presentState')?.valueChanges.subscribe(syncPresentStatePin);
+    this.enrollmentForm.get('presentPinCode')?.valueChanges.subscribe(syncPresentStatePin);
+
+    const syncPermanentStatePin = () => {
+      const st = this.enrollmentForm.get('permanentState')?.value || 'Uttar Pradesh';
+      const pin = this.enrollmentForm.get('permanentPinCode')?.value || '';
+      const combined = pin ? `${st} - ${pin}` : st;
+      this.enrollmentForm.get('permanentStatePin')?.setValue(combined, { emitEvent: false });
+    };
+    this.enrollmentForm.get('permanentState')?.valueChanges.subscribe(syncPermanentStatePin);
+    this.enrollmentForm.get('permanentPinCode')?.valueChanges.subscribe(syncPermanentStatePin);
+
     this.enrollmentForm.get('presentAddress')?.valueChanges.subscribe(val => {
       if (this.enrollmentForm.get('sameAsPresent')?.value) {
         this.enrollmentForm.get('permanentAddress')?.setValue(val || '', { emitEvent: false });
@@ -164,11 +194,6 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     this.enrollmentForm.get('presentCity')?.valueChanges.subscribe(val => {
       if (this.enrollmentForm.get('sameAsPresent')?.value) {
         this.enrollmentForm.get('permanentCity')?.setValue(val || '', { emitEvent: false });
-      }
-    });
-    this.enrollmentForm.get('presentStatePin')?.valueChanges.subscribe(val => {
-      if (this.enrollmentForm.get('sameAsPresent')?.value) {
-        this.enrollmentForm.get('permanentStatePin')?.setValue(val || '', { emitEvent: false });
       }
     });
 
@@ -187,10 +212,14 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   onSameAsPresentChange(event: any) {
     const isChecked = event.target.checked;
     if (isChecked) {
+      const pState = this.enrollmentForm.get('presentState')?.value || 'Uttar Pradesh';
+      const pPin = this.enrollmentForm.get('presentPinCode')?.value || '';
       this.enrollmentForm.patchValue({
         permanentAddress: this.enrollmentForm.get('presentAddress')?.value || '',
         permanentCity: this.enrollmentForm.get('presentCity')?.value || '',
-        permanentStatePin: this.enrollmentForm.get('presentStatePin')?.value || ''
+        permanentState: pState,
+        permanentPinCode: pPin,
+        permanentStatePin: pPin ? `${pState} - ${pPin}` : pState
       });
     }
   }
@@ -435,6 +464,33 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     this.sigSoleImage = enroll.signature_sole_first_applicant_url || '';
     this.sigCoImage = enroll.signature_co_applicant_url || '';
     
+    let presState = 'Uttar Pradesh';
+    let presPin = '';
+    if (enroll.present_state_pin) {
+      const parts = enroll.present_state_pin.split(/[-–,]/).map((s: string) => s.trim());
+      if (parts.length >= 2) {
+        presState = parts[0] || 'Uttar Pradesh';
+        presPin = parts[1] || '';
+      } else if (/^\d{6}$/.test(parts[0])) {
+        presPin = parts[0];
+      } else if (parts[0]) {
+        presState = parts[0];
+      }
+    }
+    let permState = presState;
+    let permPin = presPin;
+    if (enroll.permanent_state_pin) {
+      const parts = enroll.permanent_state_pin.split(/[-–,]/).map((s: string) => s.trim());
+      if (parts.length >= 2) {
+        permState = parts[0] || 'Uttar Pradesh';
+        permPin = parts[1] || '';
+      } else if (/^\d{6}$/.test(parts[0])) {
+        permPin = parts[0];
+      } else if (parts[0]) {
+        permState = parts[0];
+      }
+    }
+
     this.enrollmentForm.patchValue({
       formDate: enroll.form_date ? enroll.form_date.split('T')[0] : '',
       applicationNo: enroll.application_no || '',
@@ -460,10 +516,14 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       occupation: enroll.occupation || '',
       presentAddress: enroll.present_address || '',
       presentCity: enroll.present_city || '',
-      presentStatePin: enroll.present_state_pin || '',
+      presentState: presState,
+      presentPinCode: presPin,
+      presentStatePin: enroll.present_state_pin || (presPin ? `${presState} - ${presPin}` : presState),
       permanentAddress: enroll.permanent_address || '',
       permanentCity: enroll.permanent_city || '',
-      permanentStatePin: enroll.permanent_state_pin || '',
+      permanentState: permState,
+      permanentPinCode: permPin,
+      permanentStatePin: enroll.permanent_state_pin || (permPin ? `${permState} - ${permPin}` : permState),
       mobile1: enroll.mobile_1 || '',
       mobile2: enroll.mobile_2 || '',
       email1: enroll.email_1 || '',
@@ -522,6 +582,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       next: (res: any) => {
         if (res.success && res.data) {
           const u = res.data;
+          const pin = u.pincode || u.pin_code || '';
+          const state = u.state || 'Uttar Pradesh';
           this.enrollmentForm.patchValue({
             applicantName: u.full_name || '',
             dob: u.date_of_birth ? u.date_of_birth.split('T')[0] : '',
@@ -536,10 +598,14 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
             aadhar: u.aadhar_number || '',
             presentAddress: u.address || '',
             presentCity: u.city || '',
-            presentStatePin: u.pincode || u.pin_code || '',
+            presentState: state,
+            presentPinCode: pin,
+            presentStatePin: pin ? `${state} - ${pin}` : state,
             permanentAddress: u.address || '',
             permanentCity: u.city || '',
-            permanentStatePin: u.pincode || u.pin_code || '',
+            permanentState: state,
+            permanentPinCode: pin,
+            permanentStatePin: pin ? `${state} - ${pin}` : state,
             accHolderName: u.account_holder_name || u.full_name || '',
             accNumber: u.account_number || '',
             ifscCode: u.ifsc_code || ''
@@ -619,13 +685,11 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       const pinMatch = res.ADDRESS.match(/\b\d{6}\b/);
       if (pinMatch) {
         const pin = pinMatch[0];
-        const presentPin = this.enrollmentForm.get('presentStatePin');
-        if (!presentPin?.value) {
-          presentPin?.setValue(pin);
+        if (!this.enrollmentForm.get('presentPinCode')?.value) {
+          this.enrollmentForm.get('presentPinCode')?.setValue(pin);
         }
-        const permPin = this.enrollmentForm.get('permanentStatePin');
-        if (!permPin?.value) {
-          permPin?.setValue(pin);
+        if (!this.enrollmentForm.get('permanentPinCode')?.value) {
+          this.enrollmentForm.get('permanentPinCode')?.setValue(pin);
         }
       }
     }

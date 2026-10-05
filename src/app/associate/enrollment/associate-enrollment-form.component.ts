@@ -10,7 +10,7 @@ import { selectLoading, selectSuccess, selectAssociateId, selectError } from './
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
-import { MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN } from '../../shared/utils/form-helpers';
+import { MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN, NORTH_INDIAN_STATES, getMaxAdultDobDate, adultAgeValidator, calculateAgeFromDob } from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-associate-enrollment-form',
@@ -21,6 +21,15 @@ import { MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN } from '../../shared/uti
 })
 export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   enrollmentForm!: FormGroup;
+
+  // Northern & Neighboring States dropdown list
+  statesList = NORTH_INDIAN_STATES;
+  maxAdultDob = getMaxAdultDobDate();
+  todayStr = new Date().toISOString().split('T')[0];
+
+  // Computed signals for calculated age displays
+  applicantAge = signal<number | ''>('');
+  nomineeAge = signal<number | ''>('');
 
   // Selected files from the custom photo uploader component
   applicantPhotoFile: File | null = null;
@@ -243,7 +252,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     this.enrollmentForm = this.fb.group({
       personalDetails: this.fb.group({
         fullName: ['', Validators.required],
-        dob: ['', Validators.required],
+        dob: ['', [Validators.required, adultAgeValidator(18)]],
         gender: ['', Validators.required],
         fatherName: ['', Validators.required],
         motherName: ['', Validators.required],
@@ -264,13 +273,13 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
       addressDetails: this.fb.group({
         permAddress: ['', Validators.required],
         permCity: ['', Validators.required],
-        permState: ['', Validators.required],
+        permState: ['Uttar Pradesh', Validators.required],
         permCountry: ['India', Validators.required],
         permPin: ['', Validators.required],
         sameAsPerm: [false],
         localAddress: ['', Validators.required],
         localCity: ['', Validators.required],
-        localState: ['', Validators.required],
+        localState: ['Uttar Pradesh', Validators.required],
         localCountry: ['India', Validators.required],
         localPin: ['', Validators.required]
       }),
@@ -316,6 +325,20 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
       })
     });
 
+    const personalGroup = this.enrollmentForm.get('personalDetails') as FormGroup;
+    this.subs.add(
+      personalGroup.get('dob')?.valueChanges.subscribe(val => {
+        this.applicantAge.set(calculateAgeFromDob(val));
+      })
+    );
+
+    const nomineeGroup = this.enrollmentForm.get('nomineeDetails') as FormGroup;
+    this.subs.add(
+      nomineeGroup.get('nomineeDob')?.valueChanges.subscribe(val => {
+        this.nomineeAge.set(calculateAgeFromDob(val));
+      })
+    );
+
     const addrGroup = this.enrollmentForm.get('addressDetails') as FormGroup;
     addrGroup.get('permAddress')?.valueChanges.subscribe(val => {
       if (addrGroup.get('sameAsPerm')?.value) {
@@ -329,7 +352,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     });
     addrGroup.get('permState')?.valueChanges.subscribe(val => {
       if (addrGroup.get('sameAsPerm')?.value) {
-        addrGroup.get('localState')?.setValue(val || '', { emitEvent: false });
+        addrGroup.get('localState')?.setValue(val || 'Uttar Pradesh', { emitEvent: false });
       }
     });
     addrGroup.get('permCountry')?.valueChanges.subscribe(val => {

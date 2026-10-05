@@ -80,7 +80,11 @@
       </div>
 
       <div class="row3">
-        <div class="field"><label>Date of Birth</label><input type="date" formControlName="dob"></div>
+        <div class="field">
+          <label>Date of Birth (18+ Years) <span class="text-danger">*</span></label>
+          <input type="date" formControlName="dob" [max]="maxAdultDob">
+          <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('dob')?.errors?.['underAge']">Applicant must be at least 18 years old / आवेदक की आयु कम से कम 18 वर्ष होनी चाहिए</span>
+        </div>
         <div class="field"><label>Age (Auto-calculated)</label><input type="number" formControlName="age" readonly style="background:#f8f9fa;"></div>
         <fieldset class="inline-choices">
           <legend>Gender</legend>
@@ -109,8 +113,14 @@
 
       <div class="row3">
         <div class="field"><label>City</label><input type="text" formControlName="city"></div>
-        <div class="field"><label>State</label><input type="text" formControlName="state"></div>
-        <div class="field"><label>Pin Code</label><input type="text" formControlName="pinCode"></div>
+        <div class="field">
+          <label>State <span class="text-danger">*</span></label>
+          <select formControlName="state">
+            <option value="">Select State</option>
+            <option *ngFor="let s of statesList" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="field"><label>Pin Code</label><input type="text" formControlName="pinCode" maxlength="6" placeholder="6-digit PIN"></div>
       </div>
 
       <div style="margin: 12px 0 8px; display: flex; align-items: center; gap: 8px; background: #f0f7ff; padding: 8px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
@@ -124,8 +134,14 @@
 
       <div class="row3">
         <div class="field"><label>City</label><input type="text" formControlName="corrCity"></div>
-        <div class="field"><label>State</label><input type="text" formControlName="corrState"></div>
-        <div class="field"><label>Pin Code</label><input type="text" formControlName="corrPinCode"></div>
+        <div class="field">
+          <label>State <span class="text-danger">*</span></label>
+          <select formControlName="corrState">
+            <option value="">Select State</option>
+            <option *ngFor="let s of statesList" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="field"><label>Pin Code</label><input type="text" formControlName="corrPinCode" maxlength="6" placeholder="6-digit PIN"></div>
       </div>
 
       <div class="row3">

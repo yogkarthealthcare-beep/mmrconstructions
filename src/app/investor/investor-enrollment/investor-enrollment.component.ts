@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
-import { calculateAgeFromDob, numberToIndianWords, MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN } from '../../shared/utils/form-helpers';
+import { calculateAgeFromDob, numberToIndianWords, MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN, NORTH_INDIAN_STATES, getMaxAdultDobDate, adultAgeValidator } from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-investor-enrollment',
@@ -21,6 +21,10 @@ export class InvestorEnrollmentComponent implements OnInit {
   private router = inject(Router);
 
   enrollmentForm!: FormGroup;
+
+  statesList = NORTH_INDIAN_STATES;
+  maxAdultDob = getMaxAdultDobDate();
+
   photoDataUrl: string = '';
   showModal: boolean = false;
   modalAgreeCheck: boolean = false;
@@ -70,19 +74,19 @@ export class InvestorEnrollmentComponent implements OnInit {
       fhFirstName: ['', Validators.required],
       fhMiddleName: [''],
       fhSurname: ['', Validators.required],
-      dob: ['', Validators.required],
+      dob: ['', [Validators.required, adultAgeValidator(18)]],
       age: ['', Validators.required],
       gender: ['', Validators.required],
       occupation: ['', Validators.required],
       occupationOther: [{ value: '', disabled: true }],
       address: ['', Validators.required],
       city: ['', Validators.required],
-      state: ['', Validators.required],
+      state: ['Uttar Pradesh', Validators.required],
       pinCode: ['', Validators.required],
       sameAsPermanent: [false],
       corrAddress: ['', Validators.required],
       corrCity: ['', Validators.required],
-      corrState: ['', Validators.required],
+      corrState: ['Uttar Pradesh', Validators.required],
       corrPinCode: ['', Validators.required],
       mobile: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
       altTel: ['', [Validators.pattern(MOBILE_PATTERN)]],
@@ -411,7 +415,8 @@ export class InvestorEnrollmentComponent implements OnInit {
             aadhar: u.aadhar_number || '',
             address: u.address || '',
             city: u.city || '',
-            state: u.state || '',
+            state: u.state || 'Uttar Pradesh',
+            corrState: u.state || 'Uttar Pradesh',
             pinCode: u.pincode || u.pin_code || '',
             declSignatureName: u.full_name || '',
             firstApplicantName: u.full_name || ''

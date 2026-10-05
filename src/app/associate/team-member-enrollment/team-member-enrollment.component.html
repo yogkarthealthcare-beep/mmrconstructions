@@ -203,17 +203,26 @@
 
           <div class="grid-col-4">
             <div class="form-group" [class.has-error]="enrollmentForm.get('dateOfBirth')?.invalid && enrollmentForm.get('dateOfBirth')?.touched">
-              <label class="required-label">Date of Birth</label>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="required-label mb-0">Date of Birth (18+)</label>
+                <span class="badge bg-success text-white" *ngIf="calculatedAge() !== ''" style="font-size:10px; padding:2px 6px; border-radius:4px;">
+                  Age: {{ calculatedAge() }} Yrs
+                </span>
+              </div>
               <div class="input-with-icon">
                 <i class="fas fa-calendar-alt input-icon"></i>
                 <input 
                   type="date" 
                   formControlName="dateOfBirth" 
+                  [max]="maxAdultDob"
                   class="form-control"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('dateOfBirth')?.errors?.['required'] && enrollmentForm.get('dateOfBirth')?.touched">
                 Date of birth is required.
+              </span>
+              <span class="error-msg" *ngIf="enrollmentForm.get('dateOfBirth')?.errors?.['underAge'] && enrollmentForm.get('dateOfBirth')?.touched">
+                Applicant must be at least 18 years old / टीम सदस्य की आयु कम से कम 18 वर्ष होनी चाहिए।
               </span>
             </div>
           </div>

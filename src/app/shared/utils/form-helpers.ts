@@ -105,3 +105,47 @@ export function numberToIndianWords(amount: number | string | null | undefined):
 
   return `${finalStr} Only`;
 }
+
+/**
+ * Northern & neighboring states of UP for all enrollment forms
+ */
+export const NORTH_INDIAN_STATES: string[] = [
+  'Uttar Pradesh',
+  'Madhya Pradesh',
+  'Bihar',
+  'Jharkhand',
+  'Rajasthan',
+  'Haryana',
+  'Punjab',
+  'Delhi',
+  'Uttarakhand',
+  'Himachal Pradesh',
+  'Chhattisgarh',
+  'Chandigarh',
+  'Jammu & Kashmir',
+  'Other'
+];
+
+/**
+ * Returns ISO date string (YYYY-MM-DD) for exactly 18 years ago from today.
+ */
+export function getMaxAdultDobDate(): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 18);
+  return d.toISOString().split('T')[0];
+}
+
+/**
+ * Angular Validator ensuring applicant is 18 years or older
+ */
+export function adultAgeValidator(minAge: number = 18) {
+  return (control: { value: any }) => {
+    if (!control.value) return null;
+    const age = calculateAgeFromDob(control.value);
+    if (age === '' || typeof age !== 'number') return null;
+    if (age < minAge) {
+      return { underAge: { requiredAge: minAge, actualAge: age } };
+    }
+    return null;
+  };
+}

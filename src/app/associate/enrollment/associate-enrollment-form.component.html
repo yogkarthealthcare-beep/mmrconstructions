@@ -94,10 +94,16 @@
             </div>
 
             <div class="field">
-              <label>Date of Birth <span class="req">*</span></label>
-              <input type="date" formControlName="dob">
-              <div *ngIf="personal.get('dob')?.touched && personal.get('dob')?.errors?.['required']" class="error-text">
-                Date of Birth is required.
+              <label>
+                Date of Birth (only Adult 18+) <span class="req">*</span>
+                <span *ngIf="applicantAge() !== ''" style="margin-left: 8px; font-size: 11.5px; font-weight: 700; color: #166534; background: #dcfce7; padding: 2px 8px; border-radius: 4px;">
+                  <i class="fas fa-user-check me-1"></i>Age: {{ applicantAge() }} Yrs
+                </span>
+              </label>
+              <input type="date" formControlName="dob" [max]="maxAdultDob" style="cursor: pointer;">
+              <div *ngIf="personal.get('dob')?.touched" class="error-text">
+                <span *ngIf="personal.get('dob')?.errors?.['required']">Date of Birth is required.</span>
+                <span *ngIf="personal.get('dob')?.errors?.['underAge']">Applicant must be at least 18 years old (आयु न्यूनतम 18 वर्ष होनी चाहिए).</span>
               </div>
             </div>
 
@@ -150,7 +156,7 @@
 
             <div class="field">
               <label>Nationality <span class="req">*</span></label>
-              <input type="text" formControlName="nationality" placeholder="Nationality">
+              <input type="text" formControlName="nationality" placeholder="Nationality" readonly style="background: #f8fafc; font-weight: 600;">
             </div>
 
             <div class="field">
@@ -233,11 +239,13 @@
           </div>
           <div class="field">
             <label>State <span class="req">*</span></label>
-            <input type="text" formControlName="permState" placeholder="State">
+            <select formControlName="permState">
+              <option *ngFor="let st of statesList" [value]="st">{{ st }}</option>
+            </select>
           </div>
           <div class="field">
             <label>Country <span class="req">*</span></label>
-            <input type="text" formControlName="permCountry">
+            <input type="text" formControlName="permCountry" readonly style="background: #f8fafc; font-weight: 600;">
           </div>
           <div class="field">
             <label>Pin Code <span class="req">*</span></label>
@@ -264,11 +272,13 @@
           </div>
           <div class="field">
             <label>State <span class="req">*</span></label>
-            <input type="text" formControlName="localState" placeholder="State">
+            <select formControlName="localState">
+              <option *ngFor="let st of statesList" [value]="st">{{ st }}</option>
+            </select>
           </div>
           <div class="field">
             <label>Country <span class="req">*</span></label>
-            <input type="text" formControlName="localCountry">
+            <input type="text" formControlName="localCountry" readonly style="background: #f8fafc; font-weight: 600;">
           </div>
           <div class="field">
             <label>Pin Code <span class="req">*</span></label>
@@ -313,42 +323,43 @@
             <input type="text" formControlName="branchCode" placeholder="Branch Code">
           </div>
           <div class="field">
-            <label>Swift Code</label>
-            <input type="text" formControlName="swift" placeholder="Swift Code" style="text-transform: uppercase">
-          </div>
-          <div class="field">
             <label>Branch Country <span class="req">*</span></label>
-            <input type="text" formControlName="branchCountry">
+            <input type="text" formControlName="branchCountry" readonly style="background: #f8fafc; font-weight: 600;">
           </div>
         </div>
       </div>
 
       <!-- 4. Nominee Details -->
       <div class="section" formGroupName="nomineeDetails">
-        <h2><span class="num">4</span>Nominee Details</h2>
-        <div class="grid with-photo">
-          <div class="grid" style="grid-template-columns: repeat(2, 1fr);">
-            <div class="field">
-              <label>Nominee Name <span class="req">*</span></label>
-              <input type="text" formControlName="nomineeName" placeholder="Nominee Name">
-            </div>
-            <div class="field">
-              <label>Date of Birth <span class="req">*</span></label>
-              <input type="date" formControlName="nomineeDob">
-            </div>
-            <div class="field">
-              <label>Gender <span class="req">*</span></label>
-              <select formControlName="nomineeGender">
-                <option value="">Select</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Nationality <span class="req">*</span></label>
-              <input type="text" formControlName="nomineeNationality">
-            </div>
+          <h2><span class="num">4</span>Nominee Details</h2>
+          <div class="grid with-photo">
+            <div class="grid" style="grid-template-columns: repeat(2, 1fr);">
+              <div class="field">
+                <label>Nominee Name <span class="req">*</span></label>
+                <input type="text" formControlName="nomineeName" placeholder="Nominee Name">
+              </div>
+              <div class="field">
+                <label>
+                  Date of Birth
+                  <span *ngIf="nomineeAge() !== ''" style="margin-left: 8px; font-size: 11.5px; font-weight: 700; color: #1e3a8a; background: #dbeafe; padding: 2px 8px; border-radius: 4px;">
+                    Age: {{ nomineeAge() }} Yrs
+                  </span>
+                </label>
+                <input type="date" formControlName="nomineeDob" [max]="todayStr" style="cursor: pointer;">
+              </div>
+              <div class="field">
+                <label>Gender <span class="req">*</span></label>
+                <select formControlName="nomineeGender">
+                  <option value="">Select</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Nationality <span class="req">*</span></label>
+                <input type="text" formControlName="nomineeNationality" readonly style="background: #f8fafc; font-weight: 600;">
+              </div>
             <div class="field">
               <label>Residential Status <span class="req">*</span></label>
               <input type="text" formControlName="nomineeResStatus" placeholder="Residential Status">
