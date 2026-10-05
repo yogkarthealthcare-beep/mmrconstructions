@@ -162,7 +162,7 @@ export class UserDashboardComponent implements OnInit {
           if (r?.success && r.data) {
             this.hasSubmittedEnrollment = true;
             this.enrollmentData = r.data;
-            const st = String(r.data.status || r.data.app_status || 'pending').toLowerCase();
+            const st = String(r.data.status || r.data.app_status || r.data.enrollment_status || r.data.application_status || 'pending').toLowerCase();
             this.isEnrollmentPending = (st === 'pending' || st === 'inforequested');
           } else {
             this.hasSubmittedEnrollment = false;
@@ -173,7 +173,7 @@ export class UserDashboardComponent implements OnInit {
           if (r?.success && Array.isArray(r.data) && r.data.length > 0) {
             this.hasSubmittedEnrollment = true;
             this.enrollmentData = r.data[0];
-            const st = String(r.data[0].status || r.data[0].app_status || 'pending').toLowerCase();
+            const st = String(r.data[0].application_status || r.data[0].status || r.data[0].app_status || r.data[0].enrollment_status || 'pending').toLowerCase();
             this.isEnrollmentPending = (st === 'pending' || st.includes('hold') || st === 'inforequested');
           } else {
             this.hasSubmittedEnrollment = false;

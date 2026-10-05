@@ -365,6 +365,11 @@ export class AdminEnrollmentsComponent implements OnInit {
 
     if (this.activeCategory === 'customer') {
       const id = this.editFormData.id || this.editFormData.submission_id || this.selectedItem?.submission_id || this.selectedItem?.id || this.selectedItem?.user_id;
+      if (this.editFormData.enrollment_status === 'Completed') {
+        this.editFormData.application_status = 'Approved';
+      } else if (this.editFormData.enrollment_status === 'Pending') {
+        this.editFormData.application_status = 'Pending';
+      }
       this.api.adminUpdateCustomerEnrollment(id, this.editFormData).subscribe({
         next: (res: any) => {
           this.saving = false;
