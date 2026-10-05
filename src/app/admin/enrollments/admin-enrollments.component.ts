@@ -498,7 +498,7 @@ export class AdminEnrollmentsComponent implements OnInit {
     const payload: any = {
       enrollment_status: newStatus,
       application_status: newStatus === 'Completed' ? 'Approved' : (newStatus === 'Rejected' ? 'Rejected' : 'Pending'),
-      applicant_name: item.applicant_name || item.full_name
+      applicant_name: item.applicant_name || item.full_name || ''
     };
 
     item.enrollment_status = newStatus;
@@ -541,11 +541,11 @@ export class AdminEnrollmentsComponent implements OnInit {
     const payload: any = {
       status: newStatus === 'Completed' ? 'approved' : (newStatus === 'Rejected' ? 'rejected' : 'pending'),
       enrollment_status: newStatus,
-      full_name: item.full_name,
-      contact_1: item.mobile_1 || item.mobile_no || item.contact_1,
-      pan_no: item.pan_no || item.pan_number,
-      aadhar_no: item.aadhar_no || item.aadhar_number,
-      email: item.email
+      full_name: item.full_name || '',
+      contact_1: item.mobile_1 || item.mobile_no || item.contact_1 || '',
+      pan_no: item.pan_no || item.pan_number || '',
+      aadhar_no: item.aadhar_no || item.aadhar_number || '',
+      email: item.email || ''
     };
 
     item.enrollment_status = newStatus;
@@ -586,8 +586,8 @@ export class AdminEnrollmentsComponent implements OnInit {
 
     const payload: any = {
       enrollment_status: newStatus,
-      inv_first_name: item.inv_first_name,
-      inv_surname: item.inv_surname
+      inv_first_name: item.inv_first_name || '',
+      inv_surname: item.inv_surname || ''
     };
 
     item.enrollment_status = newStatus;
