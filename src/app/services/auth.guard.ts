@@ -25,11 +25,6 @@ export const enrollmentGuard: CanActivateFn = (_route, state) => {
 
   // If navigating to enrollment form:
   if (url.includes('/enrollment')) {
-    if (isCompleted) {
-      // Already enrolled -> go directly to dashboard
-      return router.createUrlTree([`${prefix}/dashboard`]);
-    }
-    // Not yet enrolled -> allow opening the enrollment form
     return true;
   }
 
@@ -51,9 +46,6 @@ export const customerGuard: CanActivateFn = (_route, state) => {
   const isCompleted = auth.isEnrollmentCompleted();
 
   if (url.includes('/enrollment')) {
-    if (isCompleted) {
-      return router.createUrlTree(['/customer/dashboard']);
-    }
     return true;
   }
 
@@ -77,9 +69,6 @@ export const associateGuard: CanActivateFn = (_route, state) => {
   const isCompleted = auth.isEnrollmentCompleted();
 
   if (url.includes('/enrollment')) {
-    if (isCompleted) {
-      return router.createUrlTree(['/associate/dashboard']);
-    }
     return true;
   }
 
@@ -99,9 +88,6 @@ export const investorGuard: CanActivateFn = (_route, state) => {
   const isCompleted = auth.isEnrollmentCompleted();
 
   if (url.includes('/enrollment')) {
-    if (isCompleted) {
-      return router.createUrlTree(['/investor/dashboard']);
-    }
     return true;
   }
 
@@ -122,9 +108,6 @@ export const userGuard: CanActivateFn = (_route, state) => {
   const prefix = auth.getUserRolePrefix();
 
   if (url.includes('/enrollment')) {
-    if (isCompleted) {
-      return router.createUrlTree([`${prefix}/dashboard`]);
-    }
     return true;
   }
 

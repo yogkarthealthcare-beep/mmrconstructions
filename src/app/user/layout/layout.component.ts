@@ -56,9 +56,6 @@ export class UserLayoutComponent implements OnInit {
             if (res && res.success && res.data) {
               this.auth.setEnrollmentCompleted();
               this.initNavGroups(true);
-              if (this.router.url.includes('/enrollment')) {
-                this.router.navigate(['/associate/dashboard']);
-              }
             }
           },
           error: () => {}
@@ -69,9 +66,6 @@ export class UserLayoutComponent implements OnInit {
             if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
               this.auth.setEnrollmentCompleted();
               this.initNavGroups(true);
-              if (this.router.url.includes('/enrollment')) {
-                this.router.navigate(['/customer/dashboard']);
-              }
             }
           },
           error: () => {}
@@ -158,17 +152,11 @@ export class UserLayoutComponent implements OnInit {
 
     // ASSOCIATE / OTHER ROLE NAVIGATION (Preserved for Associates)
     const accountItems: NavItem[] = [
-      { icon: 'fas fa-folder-open', label: 'My Documents', route: `${p}/documents` }
-    ];
-
-    if (!this.auth.isEnrollmentCompleted() && (p === '/associate' || p === '/customer')) {
-      accountItems.push({ icon: 'fas fa-file-contract', label: 'Enrollment Form', route: `${p}/enrollment` });
-    }
-
-    accountItems.push(
+      { icon: 'fas fa-folder-open', label: 'My Documents', route: `${p}/documents` },
+      { icon: 'fas fa-file-contract', label: 'Enrollment Form', route: `${p}/enrollment` },
       { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` },
       { icon: 'fas fa-user-circle', label: 'Profile & KYC', route: `${p}/profile` }
-    );
+    ];
 
     this.navGroups = [
       {

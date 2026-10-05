@@ -30,11 +30,10 @@ export class InvestorLayoutComponent implements OnInit {
   }
 
   initNavGroups() {
-    const formItems = [];
-    if (!this.auth.isEnrollmentCompleted()) {
-      formItems.push({ icon: 'fas fa-file-contract', label: 'Enrollment Form', route: '/investor/enrollment' });
-    }
-    formItems.push({ icon: 'fas fa-file-upload', label: 'Document Upload', route: '/investor/documents' });
+    const formItems = [
+      { icon: 'fas fa-file-contract', label: 'Enrollment Form', route: '/investor/enrollment' },
+      { icon: 'fas fa-file-upload', label: 'Document Upload', route: '/investor/documents' }
+    ];
 
     this.navGroups = [
       {
@@ -114,9 +113,6 @@ export class InvestorLayoutComponent implements OnInit {
           if (res && res.success && res.data) {
             this.auth.setEnrollmentCompleted();
             this.initNavGroups();
-            if (this.router.url.includes('/enrollment')) {
-              this.router.navigate(['/investor/dashboard']);
-            }
           }
         },
         error: () => {}
