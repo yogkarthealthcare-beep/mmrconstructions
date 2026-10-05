@@ -550,15 +550,31 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     const formData = new FormData();
     const formValue = this.enrollmentForm.value;
 
+    const cleanVal = (val: any, key: string): any => {
+      if (val === null || val === undefined) return null;
+      if (typeof val === 'boolean') return String(val);
+      if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (!trimmed) return null;
+        if (key.toLowerCase().includes('pan')) return trimmed.toUpperCase();
+        if (key.toLowerCase().includes('ifsc') || key.toLowerCase().includes('swift')) return trimmed.toUpperCase();
+        if (key.toLowerCase().includes('aadhar') || key.toLowerCase().includes('contact') || key.toLowerCase().includes('mobile')) {
+          return trimmed.replace(/[\s-]/g, '');
+        }
+        if (key.toLowerCase().includes('email')) return trimmed.toLowerCase();
+        return trimmed;
+      }
+      return val;
+    };
+
     // Append nested FormGroup fields to FormData
     Object.keys(formValue).forEach((sectionKey) => {
       const sectionValue = formValue[sectionKey];
       if (typeof sectionValue === 'object' && sectionValue !== null) {
         Object.keys(sectionValue).forEach((fieldKey) => {
-          const val = sectionValue[fieldKey];
-          if (val !== null && val !== undefined && val !== '') {
-            // Convert boolean to string for form-data compatibility
-            formData.append(fieldKey, typeof val === 'boolean' ? String(val) : val);
+          const cleaned = cleanVal(sectionValue[fieldKey], fieldKey);
+          if (cleaned !== null && cleaned !== undefined && cleaned !== '') {
+            formData.append(fieldKey, cleaned);
           }
         });
       }

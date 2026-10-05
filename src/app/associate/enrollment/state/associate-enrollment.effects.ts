@@ -23,13 +23,18 @@ export class AssociateEnrollmentEffects {
               return AssociateEnrollmentActions.submitFormFailure({ error: response.message || 'Submission failed' });
             }
           }),
-          catchError((error) =>
-            of(
+          catchError((error) => {
+            let errMsg = error?.error?.message || error?.message || 'Server error occurred';
+            if (error?.error?.errors && Array.isArray(error.error.errors) && error.error.errors.length > 0) {
+              const fieldErrors = error.error.errors.map((e: any) => `${e.field ? e.field + ': ' : ''}${e.message}`).join(', ');
+              errMsg = `Validation error: ${fieldErrors}`;
+            }
+            return of(
               AssociateEnrollmentActions.submitFormFailure({
-                error: error?.error?.message || error?.message || 'Server error occurred'
+                error: errMsg
               })
-            )
-          )
+            );
+          })
         )
       )
     )
