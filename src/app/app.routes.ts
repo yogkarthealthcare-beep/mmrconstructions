@@ -17,13 +17,7 @@ export const routes: Routes = [
   { 
     path: 'register', 
     loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
-    title: 'Register — MMR Construction'
-  },
-  { 
-    path: 'register/associate', 
-    loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
-    data: { type: 'Associate' },
-    title: 'Associate Registration — MMR Construction'
+    title: 'Choose Registration Type — MMR Construction'
   },
   { 
     path: 'register/customer', 
@@ -33,8 +27,21 @@ export const routes: Routes = [
   },
   { 
     path: 'register/investor', 
-    loadComponent: () => import('./investor/investor-signup/investor-signup.component').then(m => m.InvestorSignupComponent),
+    loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
+    data: { type: 'Investor' },
     title: 'Investor Registration — MMR Construction'
+  },
+  { 
+    path: 'register/associate', 
+    loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
+    data: { type: 'Associate' },
+    title: 'Associate Registration — MMR Construction'
+  },
+  { 
+    path: 'register/team-member', 
+    loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
+    data: { type: 'Team Member' },
+    title: 'Team Member Registration — MMR Construction'
   },
   { 
     path: 'signup', 

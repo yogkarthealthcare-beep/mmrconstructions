@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router, ActivatedRoute } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { filter } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 
-export type UserRole = 'Customer' | 'Investor' | 'Associate';
+export type UserRole = 'Customer' | 'Investor' | 'Associate' | 'Team Member';
 
 @Component({
   selector: 'app-signup',
@@ -55,88 +56,147 @@ export class SignupComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.route.data.subscribe(data => {
-      if (data?.['type']) {
-        const typeLower = String(data['type']).toLowerCase();
-        if (typeLower === 'associate') this.selectRole('Associate');
-        else if (typeLower === 'investor') this.selectRole('Investor');
-        else if (typeLower === 'customer') this.selectRole('Customer');
-      }
+    this.handleRouteState();
+
+    this.route.data.subscribe(() => {
+      this.handleRouteState();
     });
 
-    this.route.queryParams.subscribe(params => {
-      const typeParam = String(params['type'] || '').trim().toLowerCase();
-      if (typeParam === 'associate') {
-        this.selectRole('Associate');
-      } else if (typeParam === 'investor') {
-        this.selectRole('Investor');
-      } else if (typeParam === 'customer') {
-        this.selectRole('Customer');
-      } else if (!params['type'] && !this.route.snapshot.data['type']) {
-        this.roleSelected = false;
-      }
+    this.route.queryParams.subscribe(() => {
+      this.handleRouteState();
+    });
 
-      const rawRef = params['ref'] ?? params['sponsor'] ?? params['sponsor_invite_code'];
-      const cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
-
-      if (cleanRef) {
-        // Condition 1: URL has a valid non-empty ref -> Priority to URL referral
-        this.form.sponsor_invite_code = cleanRef;
-        this.referralLocked = true;
-        localStorage.setItem('mmr_referral_code', cleanRef);
-        this.api.trackReferralCode(cleanRef).subscribe({ error: () => {} });
-        this.verifySponsor(cleanRef);
-      } else {
-        // Condition 2 & 3: ref is missing, blank, or empty -> Fallback to default sponsor MMR0001 (Suraj Kumar Verma)
-        this.form.sponsor_invite_code = 'MMR0001';
-        this.referralLocked = false;
-        this.verifySponsor('MMR0001');
-      }
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.handleRouteState();
     });
   }
 
-  // ── Step 1: Role Selection ──
+  private handleRouteState() {
+    const url = this.router.url.split('?')[0].toLowerCase();
+    const routeType = this.route.snapshot.data?.['type'];
+    const queryType = this.route.snapshot.queryParams?.['type'];
+
+    if (routeType) {
+      this.setupRole(routeType as UserRole);
+    } else if (url.includes('/register/customer')) {
+      this.setupRole('Customer');
+    } else if (url.includes('/register/investor')) {
+      this.setupRole('Investor');
+    } else if (url.includes('/register/associate')) {
+      this.setupRole('Associate');
+    } else if (url.includes('/register/team-member')) {
+      this.setupRole('Team Member');
+    } else if (queryType) {
+      const qLower = String(queryType).toLowerCase();
+      if (qLower === 'associate') this.setupRole('Associate');
+      else if (qLower === 'investor') this.setupRole('Investor');
+      else if (qLower === 'customer') this.setupRole('Customer');
+      else if (qLower.includes('team')) this.setupRole('Team Member');
+      else this.roleSelected = false;
+    } else {
+      // Base /register selection page
+      this.roleSelected = false;
+    }
+
+    this.initSponsor();
+  }
+
+  // ── Step 1: Role Selection Navigation ──
   selectRole(role: UserRole) {
+    if (role === 'Customer') {
+      this.router.navigate(['/register/customer']);
+    } else if (role === 'Investor') {
+      this.router.navigate(['/register/investor']);
+    } else if (role === 'Associate') {
+      this.router.navigate(['/register/associate']);
+    } else if (role === 'Team Member') {
+      this.router.navigate(['/register/team-member']);
+    }
+  }
+
+  private setupRole(role: UserRole) {
     if (this.userType !== role && this.roleSelected) {
       this.resetForm();
     }
     this.userType = role;
     this.roleSelected = true;
     this.error = '';
-    if (!this.form.sponsor_invite_code) {
-      this.form.sponsor_invite_code = 'MMR0001';
-    }
-    this.verifySponsor(this.form.sponsor_invite_code);
   }
 
   goBackToRoleSelection() {
     this.roleSelected = false;
     this.error = '';
     this.resetForm();
+    this.router.navigate(['/register']);
   }
 
   resetForm() {
-    const currentSponsor = this.form.sponsor_invite_code || 'MMR0001';
     this.form = {
       full_name: '',
       email: '',
       mobile_no: '',
       password: '',
       confirmPassword: '',
-      sponsor_invite_code: currentSponsor,
+      sponsor_invite_code: '',
       terms_accepted: false
     };
+    this.sponsorValid = false;
+    this.sponsorName = '';
+    this.sponsorCodeFormatted = '';
+    this.referralLocked = false;
     this.v = {};
+  }
+
+  private initSponsor() {
+    if (this.userType === 'Team Member') {
+      // Team Member: Sponsor ID MUST BE INITIALLY EMPTY. No auto-fill, no default fallback.
+      this.form.sponsor_invite_code = '';
+      this.referralLocked = false;
+      this.sponsorValid = false;
+      this.sponsorName = '';
+      this.sponsorCodeFormatted = '';
+      delete this.v['sponsor_invite_code'];
+      return;
+    }
+
+    const params = this.route.snapshot.queryParams;
+    const rawRef = params['ref'] ?? params['sponsor'] ?? params['sponsor_invite_code'];
+    const cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
+
+    if (cleanRef) {
+      // Condition 1: URL has a valid non-empty ref -> Priority to URL referral
+      this.form.sponsor_invite_code = cleanRef;
+      this.referralLocked = true;
+      localStorage.setItem('mmr_referral_code', cleanRef);
+      this.api.trackReferralCode(cleanRef).subscribe({ error: () => {} });
+      this.verifySponsor(cleanRef);
+    } else {
+      // Default fallback for Customer / Investor / Associate
+      this.form.sponsor_invite_code = 'MMR0001';
+      this.referralLocked = false;
+      this.verifySponsor('MMR0001');
+    }
   }
 
   // ── Sponsor Live Validation & Role Rules ──
   onSponsorCodeInput(value: string) {
     const clean = (value || '').replace(/\*/g, '').trim().toUpperCase();
     this.form.sponsor_invite_code = clean;
+
     if (!clean) {
-      // If user clears the input, fallback to MMR0001
-      this.form.sponsor_invite_code = 'MMR0001';
-      this.verifySponsor('MMR0001');
+      this.sponsorValid = false;
+      this.sponsorName = '';
+      this.sponsorCodeFormatted = '';
+      if (this.userType === 'Team Member') {
+        this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
+      } else if (this.userType === 'Customer') {
+        delete this.v['sponsor_invite_code'];
+      } else {
+        this.form.sponsor_invite_code = 'MMR0001';
+        this.verifySponsor('MMR0001');
+      }
     } else {
       this.verifySponsor(clean);
     }
@@ -147,6 +207,13 @@ export class SignupComponent implements OnInit {
     let cleanCode = (rawCode || '').replace(/\*/g, '').trim().toUpperCase();
 
     if (!cleanCode) {
+      if (this.userType === 'Team Member') {
+        this.sponsorChecking = false;
+        this.sponsorValid = false;
+        this.sponsorName = '';
+        this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
+        return;
+      }
       cleanCode = 'MMR0001';
       this.form.sponsor_invite_code = 'MMR0001';
     }
@@ -177,7 +244,6 @@ export class SignupComponent implements OnInit {
       error: () => {
         this.sponsorChecking = false;
         if (cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
-          // Default Sponsor Fallback Guarantee
           this.sponsorValid = true;
           this.sponsorName = 'Suraj Kumar Verma (Default Sponsor)';
           this.sponsorCodeFormatted = 'MMR0001';
@@ -282,6 +348,13 @@ export class SignupComponent implements OnInit {
       if (cleanSponsor && !this.sponsorValid) {
         this.v['sponsor_invite_code'] = '✕ Sponsor not available';
       }
+    } else if (this.userType === 'Team Member') {
+      // Mandatory for Team Member (Strictly Required, No default pre-fill)
+      if (!cleanSponsor) {
+        this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
+      } else if (!this.sponsorValid) {
+        this.v['sponsor_invite_code'] = '✕ Sponsor not available';
+      }
     } else {
       // Mandatory for Investor & Associate
       if (!cleanSponsor) {
@@ -301,7 +374,10 @@ export class SignupComponent implements OnInit {
 
   private getEffectiveSponsorCode(): string {
     const code = this.form.sponsor_invite_code.replace(/\*/g, '').trim().toUpperCase();
-    return code || 'MMR0001'; // Default sponsor fallback (Suraj Kumar Verma)
+    if (this.userType === 'Team Member') {
+      return code; // Never fallback to default for Team Member
+    }
+    return code || 'MMR0001'; // Default sponsor fallback for other roles
   }
 
   submit() {
@@ -315,7 +391,7 @@ export class SignupComponent implements OnInit {
 
     this.loading = true;
     const payload = {
-      user_type:           this.userType,
+      user_type:           this.userType === 'Team Member' ? 'Associate' : this.userType,
       full_name:           this.form.full_name.trim(),
       email:               this.form.email.toLowerCase().trim(),
       mobile_no:           this.form.mobile_no,
@@ -332,7 +408,7 @@ export class SignupComponent implements OnInit {
             const userObj = res.data.user || {};
             const userType = String(userObj.user_type || userObj.role || this.userType || '').toLowerCase();
             
-            if (userType.includes('associate')) {
+            if (userType.includes('associate') || this.userType === 'Team Member') {
               import('sweetalert2').then(Swal => {
                 Swal.default.fire({
                   icon: 'success',
