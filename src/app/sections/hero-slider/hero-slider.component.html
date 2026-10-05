@@ -13,18 +13,12 @@
           <h2 *ngIf="i > 0" class="slide-title">{{ slide.title }}<br/><span class="hl">{{ slide.titleHl }}</span></h2>
           <p class="slide-desc">{{ slide.desc }}</p>
           <div class="slide-btns">
-            <button *ngIf="slide.btn1.scroll" class="btn btn-gold btn-lg" (click)="scrollTo(slide.btn1.scroll!)">
-              <i [class]="slide.btn1.icon + ' me-2'" aria-hidden="true"></i>{{ slide.btn1.text }}
+            <button *ngIf="slide.btn1.show !== false && slide.btn1.text" type="button" class="btn btn-gold btn-lg" (click)="onButtonClick(slide.btn1, $event)">
+              <i [class]="(slide.btn1.icon || 'fas fa-arrow-right') + ' me-2'" aria-hidden="true"></i>{{ slide.btn1.text }}
             </button>
-            <a *ngIf="slide.btn1.link" [routerLink]="slide.btn1.link" class="btn btn-gold btn-lg">
-              <i [class]="slide.btn1.icon + ' me-2'" aria-hidden="true"></i>{{ slide.btn1.text }}
-            </a>
-            <button *ngIf="slide.btn2.scroll" class="btn btn-outline-white btn-lg" (click)="scrollTo(slide.btn2.scroll!)">
-              <i [class]="slide.btn2.icon + ' me-2'" aria-hidden="true"></i>{{ slide.btn2.text }}
+            <button *ngIf="slide.btn2.show !== false && slide.btn2.text" type="button" class="btn btn-outline-white btn-lg" (click)="onButtonClick(slide.btn2, $event)">
+              <i [class]="(slide.btn2.icon || 'fas fa-arrow-right') + ' me-2'" aria-hidden="true"></i>{{ slide.btn2.text }}
             </button>
-            <a *ngIf="slide.btn2.link" [routerLink]="slide.btn2.link" class="btn btn-outline-white btn-lg">
-              <i [class]="slide.btn2.icon + ' me-2'" aria-hidden="true"></i>{{ slide.btn2.text }}
-            </a>
           </div>
           <!-- Bottom Statistics Section (Hidden as per requirement) -->
           <!--
