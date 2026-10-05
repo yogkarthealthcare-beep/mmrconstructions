@@ -153,12 +153,18 @@
 .btn-auth-user, .btn-auth-login {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 8px 16px;
-  min-height: 40px;
+  min-height: 38px;
+  height: 38px;
   border-radius: 8px;
   font-size: 0.84rem;
   font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1;
   transition: all 0.2s ease;
 }
 
@@ -181,6 +187,7 @@
 .btn-auth-login:hover {
   background: linear-gradient(135deg, #e0b754 0%, #c49216 100%);
   transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(212, 168, 67, 0.45);
 }
 
 /* ── Main Layout Body ─────────────────────────────────────────────────── */
@@ -1067,32 +1074,78 @@
 /* ── Responsive Mobile & Tablet Media Queries ──────────────────────────── */
 @media (max-width: 991.98px) {
   .map-topbar {
-    height: 56px;
-    min-height: 56px;
+    height: 54px;
+    min-height: 54px;
     padding: 0 12px;
+    gap: 8px;
   }
 
   .topbar-left {
     gap: 8px;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  .topbar-title-wrap {
+    min-width: 0;
   }
 
   .topbar-title {
-    font-size: 1.05rem;
+    font-size: 0.98rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
   }
 
   .topbar-location {
-    font-size: 0.72rem;
+    display: none;
   }
 
   .btn-back {
     padding: 6px 10px;
     min-height: 34px;
+    height: 34px;
+    font-size: 0.8rem;
+    border-radius: 7px;
+    flex-shrink: 0;
+  }
+
+  .mobile-stats-row {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .mobile-stat-pill {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+    border-radius: 99px;
+  }
+
+  .topbar-right {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-auth-user, .btn-auth-login {
+    padding: 6px 12px;
+    min-height: 34px;
+    height: 34px;
     font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 7px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    line-height: 1;
+    flex-shrink: 0;
   }
 
   .map-layout-body {
-    height: calc(100vh - 56px);
-    height: calc(100dvh - 56px);
+    height: calc(100vh - 54px);
+    height: calc(100dvh - 54px);
   }
 
   .map-viewport {
@@ -1108,39 +1161,59 @@
   }
 
   .zoom-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 0.9rem;
+    width: 36px;
+    height: 36px;
+    font-size: 0.85rem;
     border-radius: 8px;
   }
 }
 
 @media (max-width: 575.98px) {
-  .topbar-title {
-    font-size: 0.92rem;
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .map-topbar {
+    height: 50px;
+    min-height: 50px;
+    padding: 0 8px;
+    gap: 6px;
   }
 
-  .topbar-location {
-    display: none;
+  .topbar-title {
+    font-size: 0.88rem;
+    max-width: 95px;
   }
 
   .mobile-stats-row {
-    gap: 4px;
+    gap: 3px;
   }
 
   .mobile-stat-pill {
-    font-size: 0.62rem;
-    padding: 2px 6px;
+    font-size: 0.6rem;
+    padding: 2px 5px;
+  }
+
+  .mobile-stat-pill .dot {
+    width: 5px;
+    height: 5px;
   }
 
   .btn-auth-user, .btn-auth-login {
-    padding: 6px 10px;
-    min-height: 34px;
+    padding: 5px 9px;
+    min-height: 32px;
+    height: 32px;
+    font-size: 0.74rem;
+    border-radius: 6px;
+    gap: 4px;
+  }
+
+  .btn-auth-user i, .btn-auth-login i {
+    font-size: 0.75rem;
+  }
+
+  .btn-back {
+    padding: 5px 8px;
+    min-height: 32px;
+    height: 32px;
     font-size: 0.76rem;
+    border-radius: 6px;
   }
 
   .gesture-hint-toast {
@@ -1151,3 +1224,34 @@
     text-align: center;
   }
 }
+
+@media (max-width: 380px) {
+  .map-topbar {
+    padding: 0 6px;
+    gap: 4px;
+  }
+
+  .topbar-title {
+    max-width: 72px;
+    font-size: 0.82rem;
+  }
+
+  .mobile-stat-pill {
+    font-size: 0.56rem;
+    padding: 2px 4px;
+  }
+
+  .btn-auth-login, .btn-auth-user {
+    padding: 4px 7px;
+    font-size: 0.7rem;
+    min-height: 30px;
+    height: 30px;
+  }
+
+  .btn-back {
+    padding: 4px 6px;
+    min-height: 30px;
+    height: 30px;
+  }
+}
+
