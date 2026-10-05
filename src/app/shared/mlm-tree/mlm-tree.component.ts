@@ -32,6 +32,10 @@ type MlmNode = {
   salesGaj: number;
   commissionEarned: number;
   pendingCommission: number;
+  profile_image_url?: string;
+  purchasedPlotsCount?: number;
+  purchasedAmount?: number;
+  city?: string;
   expanded: boolean;
   loaded: boolean;
   children: MlmNode[];
@@ -62,6 +66,7 @@ export class MlmTreeComponent implements OnInit {
   searchTerm = '';
   searchResults: MlmNode[] = [];
   focusedNode: MlmNode | null = null;
+  selectedProfileNode: MlmNode | null = null;
   hoveredNode: MlmNode | null = null;
   tooltip = { x: 0, y: 0 };
   zoom = 1;
@@ -280,6 +285,10 @@ export class MlmTreeComponent implements OnInit {
       salesGaj: Number(item.total_gaj_sold || 0),
       commissionEarned: Number(item.total_commission_earned || item.commission_earned || 0),
       pendingCommission: Number(item.pending_commission || 0),
+      profile_image_url: item.profile_image_url || item.profile_image || item.avatar || item.image || '',
+      purchasedPlotsCount: Number(item.total_purchased_plots || item.purchased_plots_count || item.total_plots_bought || item.bookings_count || 0),
+      purchasedAmount: Number(item.total_purchased_amount || item.purchased_amount || item.total_investment || item.total_paid || 0),
+      city: item.city || item.location || item.district || item.state || '',
       expanded: fallbackLevel <= 2,
       loaded: fallbackLevel <= 2,
       children: [],
@@ -405,24 +414,37 @@ export class MlmTreeComponent implements OnInit {
   onNodeClick(node: MlmNode, event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
-    // 1. Single click MUST NOT work on Free/Disabled account records
-    if (this.isFreeOrDisabled(node)) {
-      return;
-    }
-    this.focusNode(node);
+    this.selectedProfileNode = node;
   }
 
   onNodeDblClick(node: MlmNode, event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
-    // 2. Double click MUST NOT work on Free/Disabled records (no action)
-    return;
+    this.selectedProfileNode = node;
+  }
+
+  closeProfileModal() {
+    this.selectedProfileNode = null;
+  }
+
+  focusSelectedNode() {
+    if (this.selectedProfileNode) {
+      this.focusNode(this.selectedProfileNode);
+      this.selectedProfileNode = null;
+    }
+  }
+
+  getProfileImageUrl(node: MlmNode): string {
+    const url = node?.profile_image_url;
+    if (!url) {
+      const name = encodeURIComponent(node?.name || 'Member');
+      return `https://ui-avatars.com/api/?name=${name}&background=062b18&color=e8c97a&size=180&bold=true`;
+    }
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+    return this.api.url(url);
   }
 
   focusNode(node: MlmNode) {
-    if (this.isFreeOrDisabled(node)) {
-      return;
-    }
     this.focusedNode = node;
     node.loaded = true;
     node.expanded = true;

@@ -51,11 +51,20 @@
   <!-- KPI Metric Summary Cards -->
   <div class="kpi-grid">
     <div class="kpi-card">
-      <div class="kpi-icon-wrap kpi-blue"><i class="fas fa-file-signature"></i></div>
+      <div class="kpi-icon-wrap kpi-amber"><i class="fas fa-clock"></i></div>
       <div class="kpi-content">
-        <span class="kpi-label">Total Allocations</span>
-        <h4 class="kpi-value">{{ totalBookingsCount }}</h4>
-        <span class="kpi-subtext">Total Value: ₹{{ totalBookingVolume | number:'1.0-0' }}</span>
+        <span class="kpi-label">Pending Verification</span>
+        <h4 class="kpi-value text-amber">{{ pendingBookingsCount }}</h4>
+        <span class="kpi-subtext">Awaiting Admin Action</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap kpi-purple"><i class="fas fa-list-ol"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Waitlisted Applications</span>
+        <h4 class="kpi-value text-purple">{{ waitlistedBookingsCount }}</h4>
+        <span class="kpi-subtext">Queue on In-Process Plots</span>
       </div>
     </div>
 
@@ -69,20 +78,11 @@
     </div>
 
     <div class="kpi-card">
-      <div class="kpi-icon-wrap kpi-amber"><i class="fas fa-clock"></i></div>
+      <div class="kpi-icon-wrap kpi-blue"><i class="fas fa-undo-alt"></i></div>
       <div class="kpi-content">
-        <span class="kpi-label">Pending Verification</span>
-        <h4 class="kpi-value text-amber">{{ pendingBookingsCount }}</h4>
-        <span class="kpi-subtext">Awaiting Admin Action</span>
-      </div>
-    </div>
-
-    <div class="kpi-card">
-      <div class="kpi-icon-wrap kpi-purple"><i class="fas fa-money-check-alt"></i></div>
-      <div class="kpi-content">
-        <span class="kpi-label">Offline / Cheque Mode</span>
-        <h4 class="kpi-value text-purple">{{ offlineBookingsCount }}</h4>
-        <span class="kpi-subtext">Manual Receipt Verification</span>
+        <span class="kpi-label">Refund Due</span>
+        <h4 class="kpi-value text-danger">{{ refundDueBookingsCount }}</h4>
+        <span class="kpi-subtext">Flagged for Accounts</span>
       </div>
     </div>
   </div>
@@ -95,16 +95,24 @@
         <span class="tab-badge">{{ totalBookingsCount }}</span>
       </button>
       <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'PENDING'" (click)="setQuickFilter('PENDING')">
-        <i class="fas fa-hourglass-half me-1.5 text-amber"></i> Pending Action
+        <i class="fas fa-hourglass-half me-1.5 text-amber"></i> Pending
         <span class="tab-badge badge-amber">{{ pendingBookingsCount }}</span>
       </button>
+      <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'WAITLISTED'" (click)="setQuickFilter('WAITLISTED')">
+        <i class="fas fa-list-ol me-1.5 text-purple"></i> Waitlisted
+        <span class="tab-badge badge-purple">{{ waitlistedBookingsCount }}</span>
+      </button>
       <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'CONFIRMED'" (click)="setQuickFilter('CONFIRMED')">
-        <i class="fas fa-check-circle me-1.5 text-emerald"></i> Confirmed &amp; Allotted
+        <i class="fas fa-check-circle me-1.5 text-emerald"></i> Confirmed
         <span class="tab-badge badge-emerald">{{ confirmedBookingsCount }}</span>
       </button>
+      <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'REFUND_DUE'" (click)="setQuickFilter('REFUND_DUE')">
+        <i class="fas fa-undo me-1.5 text-danger"></i> Refund Due
+        <span class="tab-badge badge-danger">{{ refundDueBookingsCount }}</span>
+      </button>
       <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'OFFLINE'" (click)="setQuickFilter('OFFLINE')">
-        <i class="fas fa-money-bill-wave me-1.5 text-purple"></i> Offline Modes
-        <span class="tab-badge badge-purple">{{ offlineBookingsCount }}</span>
+        <i class="fas fa-money-bill-wave me-1.5 text-muted"></i> Offline Modes
+        <span class="tab-badge">{{ offlineBookingsCount }}</span>
       </button>
       <button type="button" class="quick-tab-btn" [class.active]="activeQuickFilter === 'CANCELLED'" (click)="setQuickFilter('CANCELLED')">
         <i class="fas fa-times-circle me-1.5 text-danger"></i> Cancelled
@@ -330,6 +338,10 @@
             <i class="fas fa-receipt me-1"></i> Ledger &amp; Payments
             <span class="drawer-tab-badge" *ngIf="selected.payments?.length">{{ selected.payments.length }}</span>
           </button>
+          <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'queue'" (click)="activeDetailTab = 'queue'">
+            <i class="fas fa-list-ol me-1"></i> Queue &amp; Waitlist
+            <span class="drawer-tab-badge" *ngIf="selected.other_bookings_on_plot?.length">{{ selected.other_bookings_on_plot.length }}</span>
+          </button>
           <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'emi'" (click)="activeDetailTab = 'emi'">
             <i class="fas fa-history me-1"></i> Audit Trail
           </button>
@@ -512,7 +524,57 @@
             </ng-template>
           </div>
 
-          <!-- TAB 4: APPOINTMENT -->
+          <!-- TAB 4: QUEUE & WAITLIST -->
+          <div class="tab-pane-content" *ngIf="activeDetailTab === 'queue'">
+            <div class="detail-card-section">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h6 class="section-title mb-0"><i class="fas fa-list-ol me-1.5 text-purple"></i> Other Applications for Plot #{{ selected.plot_number || selected.plot?.plot_number }}</h6>
+              </div>
+
+              <div class="queue-list-wrap" *ngIf="selected.other_bookings_on_plot?.length; else noQueueItems">
+                <div class="queue-item-card p-3 border rounded mb-2 bg-white d-flex justify-content-between align-items-center flex-wrap gap-2"
+                     *ngFor="let item of selected.other_bookings_on_plot">
+                  <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <span class="badge bg-purple text-white">Queue #{{ item.queue_position || 1 }}</span>
+                      <strong class="fs-13">{{ item.customer_name }}</strong>
+                      <span class="badge" [ngClass]="item.booking_status === 'Waitlisted' ? 'bg-secondary' : 'bg-info text-dark'">
+                        {{ item.booking_status }}
+                      </span>
+                      <span class="badge bg-danger" *ngIf="item.refund_due">Refund Due</span>
+                    </div>
+                    <div class="text-muted fs-11">
+                      <span><i class="fas fa-phone-alt me-1"></i>{{ item.mobile_no }}</span>
+                      <span class="mx-1.5">·</span>
+                      <span>Ref: {{ item.booking_serial || ('#' + item.booking_id) }}</span>
+                      <span class="mx-1.5">·</span>
+                      <span>Advance: ₹{{ (item.advance_amount || 0) | number:'1.0-0' }}</span>
+                    </div>
+                  </div>
+
+                  <div class="d-flex gap-1.5 align-items-center flex-wrap">
+                    <button type="button" class="btn btn-outline-primary btn-xs" (click)="openMovePlotModal(item)" title="Move to another vacant plot">
+                      <i class="fas fa-exchange-alt me-1"></i> Move Plot
+                    </button>
+                    <button *ngIf="item.booking_status === 'Waitlisted'" type="button" class="btn btn-outline-success btn-xs" (click)="promoteBooking(item)" title="Promote to active application">
+                      <i class="fas fa-arrow-up me-1"></i> Promote
+                    </button>
+                    <button *ngIf="!item.refund_due && item.booking_status !== 'Cancelled'" type="button" class="btn btn-outline-danger btn-xs" (click)="openCancelRefundModal(item)" title="Cancel with refund due flag">
+                      <i class="fas fa-undo me-1"></i> Cancel &amp; Refund
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <ng-template #noQueueItems>
+                <div class="p-3 text-center text-muted fs-12 bg-light rounded">
+                  <i class="fas fa-check-circle text-emerald me-1"></i> No other applications or waitlisted buyers on this plot.
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- TAB 5: APPOINTMENT -->
           <div class="tab-pane-content" *ngIf="activeDetailTab === 'appointment' && selected.appointment">
             <div class="detail-card-section">
               <h6 class="section-title"><i class="fas fa-calendar-check me-1.5 text-emerald"></i> Site Visit Schedule</h6>
@@ -538,16 +600,34 @@
       <!-- Modal Footer Toolbar -->
       <div class="erp-modal-footer py-2 px-3 bg-light border-top d-flex justify-content-between align-items-center flex-wrap gap-2" *ngIf="!detailLoading">
         <div class="d-flex align-items-center gap-2">
-          <button *ngIf="selected.booking_status !== 'Cancelled'" 
+          <!-- Primary Action depending on State -->
+          <button *ngIf="selected.booking_status !== 'Confirmed' && selected.booking_status !== 'Cancelled' && selected.workflow_status !== 'Fully Paid'" 
                   type="button" 
-                  class="btn btn-cancel-action btn-sm fs-12" 
-                  (click)="openRejectModal()" 
+                  class="btn btn-success-action btn-sm fs-12 fw-bold" 
+                  (click)="approveDirectly()" 
                   [disabled]="actionLoading">
-            <i class="fas fa-ban me-1"></i> Cancel Allocation
+            <i class="fas fa-check-circle me-1"></i>
+            {{ (selected.payment_method === 'Offline' || selected.payment_type === 'Offline') ? 'Verify & Approve Offline Payment' : 'Approve & Confirm Allocation' }}
+          </button>
+
+          <button *ngIf="selected.booking_status === 'Confirmed' || selected.workflow_status === 'Fully Paid'"
+                  type="button"
+                  class="btn btn-gold btn-sm fs-12 fw-bold"
+                  [disabled]="!canMarkSold(selected) || actionLoading"
+                  [title]="getMarkSoldDisabledReason(selected)"
+                  (click)="openMarkSoldModal()">
+            <i class="fas fa-certificate me-1"></i> Mark as Sold (Registry)
           </button>
         </div>
 
         <div class="d-flex align-items-center gap-2 flex-wrap">
+          <button type="button" 
+                  class="btn btn-outline-secondary btn-sm fs-12" 
+                  (click)="openMovePlotModal(selected)"
+                  title="Transfer booking to another plot">
+            <i class="fas fa-exchange-alt me-1"></i> Move Plot
+          </button>
+
           <button type="button" 
                   class="btn btn-partial-action btn-sm fs-12" 
                   (click)="openRecordPaymentModal()" 
@@ -555,13 +635,12 @@
             <i class="fas fa-hand-holding-usd me-1"></i> Record Milestone Payment
           </button>
 
-          <button *ngIf="selected.booking_status !== 'Confirmed' && selected.booking_status !== 'Fully Paid'" 
+          <button *ngIf="selected.booking_status !== 'Cancelled'" 
                   type="button" 
-                  class="btn btn-success-action btn-sm fs-12" 
-                  (click)="approveDirectly()" 
+                  class="btn btn-cancel-action btn-sm fs-12" 
+                  (click)="openCancelRefundModal(selected)" 
                   [disabled]="actionLoading">
-            <i class="fas fa-check-circle me-1"></i>
-            {{ (selected.payment_method === 'Offline' || selected.payment_type === 'Offline') ? 'Verify & Approve Offline Payment' : 'Approve & Confirm Allocation' }}
+            <i class="fas fa-undo me-1"></i> Cancel &amp; Refund Due
           </button>
 
           <button type="button" class="btn btn-secondary btn-sm fs-12 px-3" (click)="closeDetail()">Close</button>
@@ -1077,6 +1156,161 @@
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: MARK AS SOLD (REGISTRY & FINAL PRICE) -->
+<!-- ========================================================================= -->
+<div class="erp-modal-backdrop" *ngIf="showMarkSoldModal">
+  <div class="erp-modal-box erp-modal-lg">
+    <div class="erp-modal-header bg-dark text-white">
+      <h5 class="modal-title text-gold"><i class="fas fa-certificate me-2"></i> Mark Plot as Sold &amp; Record Registry</h5>
+      <button type="button" class="btn-close-modal text-white" (click)="showMarkSoldModal = false">&times;</button>
+    </div>
+    <form [formGroup]="markSoldForm" (ngSubmit)="submitMarkSold()">
+      <div class="erp-modal-body">
+        
+        <!-- Summary Strip -->
+        <div class="p-3 bg-light border rounded mb-3">
+          <div class="row g-2 fs-12">
+            <div class="col-sm-4"><strong>Customer:</strong> {{ selected?.customer_name || selected?.full_name || selected?.customer?.full_name }}</div>
+            <div class="col-sm-4"><strong>Plot:</strong> Plot #{{ selected?.plot_number || selected?.plot?.plot_number }} ({{ selected?.site_name || selected?.site?.site_name }})</div>
+            <div class="col-sm-4"><strong>Agreed Price:</strong> ₹{{ (selected?.base_price || selected?.plot?.base_price || 0) | number:'1.0-0' }}</div>
+            <div class="col-sm-4"><strong>Total Paid:</strong> ₹{{ (selected?.advance_amount || selected?.booking_amount || 0) | number:'1.0-0' }}</div>
+            <div class="col-sm-4"><strong>Balance:</strong> <span class="text-emerald fw-bold">₹0 (Cleared)</span></div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <!-- Sale Details -->
+          <div class="col-12"><h6 class="fw-bold text-dark border-bottom pb-1 mb-2"><i class="fas fa-file-invoice-dollar text-gold me-1.5"></i> Sale Details</h6></div>
+          
+          <div class="col-sm-6">
+            <label class="erp-label">Final Sold Price (₹) <span class="text-danger">*</span></label>
+            <input type="number" class="erp-input" formControlName="final_sold_price" placeholder="e.g. 1500000">
+          </div>
+
+          <div class="col-sm-6">
+            <label class="erp-label">Sold Date <span class="text-danger">*</span></label>
+            <input type="date" class="erp-input" formControlName="sold_date">
+          </div>
+
+          <!-- Registry Details -->
+          <div class="col-12 mt-3"><h6 class="fw-bold text-dark border-bottom pb-1 mb-2"><i class="fas fa-file-contract text-emerald me-1.5"></i> Statutory Registry &amp; Possession Details</h6></div>
+
+          <div class="col-sm-6">
+            <label class="erp-label">Registry / Deed Number <span class="text-danger">*</span></label>
+            <input type="text" class="erp-input" formControlName="registry_no" placeholder="e.g. REG-2026-448291">
+          </div>
+
+          <div class="col-sm-6">
+            <label class="erp-label">Registry Date</label>
+            <input type="date" class="erp-input" formControlName="registry_date">
+          </div>
+
+          <div class="col-sm-6">
+            <label class="erp-label">Mutation / Dakhil Kharij Date</label>
+            <input type="date" class="erp-input" formControlName="mutation_date">
+          </div>
+
+          <div class="col-sm-6">
+            <label class="erp-label">Possession Date</label>
+            <input type="date" class="erp-input" formControlName="possession_date">
+          </div>
+
+          <div class="col-12">
+            <label class="erp-label">Document File URL / Path</label>
+            <input type="text" class="erp-input" formControlName="document_path" placeholder="e.g. /uploads/registry/deed_101.pdf">
+          </div>
+
+          <div class="col-12">
+            <label class="erp-label">Remarks / Note</label>
+            <textarea class="erp-input" rows="2" formControlName="remarks" placeholder="Optional notes regarding registry or deed handover..."></textarea>
+          </div>
+        </div>
+
+      </div>
+      <div class="erp-modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="showMarkSoldModal = false">Cancel</button>
+        <button type="submit" class="btn btn-gold btn-sm fw-bold px-4" [disabled]="markSoldForm.invalid || markSoldSubmitting">
+          <i class="fas fa-certificate me-1"></i> Confirm &amp; Mark as Sold
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: MOVE BOOKING TO ANOTHER PLOT -->
+<!-- ========================================================================= -->
+<div class="erp-modal-backdrop" *ngIf="showMovePlotModal">
+  <div class="erp-modal-box">
+    <div class="erp-modal-header">
+      <h5 class="modal-title"><i class="fas fa-exchange-alt text-primary me-2"></i> Move Booking to Another Plot</h5>
+      <button type="button" class="btn-close-modal" (click)="showMovePlotModal = false">&times;</button>
+    </div>
+    <div class="erp-modal-body">
+      <div class="p-2.5 bg-light border rounded mb-3 fs-12">
+        <div><strong>Applicant:</strong> {{ targetBookingForMove?.customer_name || targetBookingForMove?.full_name }}</div>
+        <div><strong>Current Unit:</strong> Plot #{{ targetBookingForMove?.plot_number }}</div>
+        <div><strong>Advance Paid:</strong> ₹{{ (targetBookingForMove?.advance_amount || 0) | number:'1.0-0' }}</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="erp-label">Select Target Vacant Plot <span class="text-danger">*</span></label>
+        <div *ngIf="vacantPlotsLoading" class="text-muted fs-12 py-2">
+          <i class="fas fa-spinner fa-spin me-1"></i> Loading vacant plots for site...
+        </div>
+        <select class="erp-input" *ngIf="!vacantPlotsLoading" [(ngModel)]="movePlotTargetPlotId">
+          <option [ngValue]="null">-- Select a Vacant Plot --</option>
+          <option *ngFor="let p of vacantPlotsForSite" [ngValue]="p.plot_id">
+            Plot #{{ p.plot_number }} — {{ p.plot_area }} gaj (₹{{ p.base_price | number:'1.0-0' }})
+          </option>
+        </select>
+        <div *ngIf="!vacantPlotsLoading && !vacantPlotsForSite.length" class="text-danger fs-12 mt-1">
+          No vacant plots available in this project site.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="erp-label">Reason / Notes</label>
+        <textarea class="erp-input" rows="2" [(ngModel)]="movePlotRemarks" placeholder="e.g. Customer selected alternative corner plot..."></textarea>
+      </div>
+    </div>
+    <div class="erp-modal-footer">
+      <button type="button" class="btn btn-secondary btn-sm" (click)="showMovePlotModal = false">Cancel</button>
+      <button type="button" class="btn btn-primary btn-sm" [disabled]="!movePlotTargetPlotId || movePlotSubmitting" (click)="submitMovePlot()">
+        <i class="fas fa-check me-1"></i> Transfer Booking
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: CANCEL WITH REFUND DUE FLAG -->
+<!-- ========================================================================= -->
+<div class="erp-modal-backdrop" *ngIf="showCancelRefundModal">
+  <div class="erp-modal-box">
+    <div class="erp-modal-header bg-danger text-white">
+      <h5 class="modal-title text-white"><i class="fas fa-undo me-2"></i> Cancel Booking &amp; Flag for Refund</h5>
+      <button type="button" class="btn-close-modal text-white" (click)="showCancelRefundModal = false">&times;</button>
+    </div>
+    <div class="erp-modal-body">
+      <div class="alert alert-warning py-2 fs-12 mb-3">
+        <i class="fas fa-info-circle me-1"></i> This action cancels the booking and flags it in the <strong>Refund Due</strong> ledger. No automatic gateway transaction is processed.
+      </div>
+      <div class="mb-3">
+        <label class="erp-label">Reason for Cancellation &amp; Refund Due <span class="text-danger">*</span></label>
+        <textarea class="erp-input" rows="3" [(ngModel)]="cancelRefundReason" placeholder="State reason for cancellation and refund approval (e.g. Buyer opted for refund, unit allotted to primary applicant)..."></textarea>
+      </div>
+    </div>
+    <div class="erp-modal-footer">
+      <button type="button" class="btn btn-secondary btn-sm" (click)="showCancelRefundModal = false">Keep Booking</button>
+      <button type="button" class="btn btn-danger btn-sm" [disabled]="!cancelRefundReason.trim() || cancelRefundSubmitting" (click)="submitCancelRefund()">
+        <i class="fas fa-ban me-1"></i> Confirm Cancel &amp; Mark Refund Due
+      </button>
+    </div>
   </div>
 </div>
 

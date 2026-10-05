@@ -14,6 +14,7 @@ export class InvestorsComponent implements OnInit {
   investors: any[] = [];
   totalCount = 0;
   loading = true;
+  selectedInvestor: any = null;
 
   constructor(private api: ApiService) {}
 
@@ -33,6 +34,18 @@ export class InvestorsComponent implements OnInit {
       },
       error: () => this.loading = false
     });
+  }
+
+  openInvestorProfile(investor: any, event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.selectedInvestor = investor;
+  }
+
+  closeInvestorProfile() {
+    this.selectedInvestor = null;
   }
 
   /**

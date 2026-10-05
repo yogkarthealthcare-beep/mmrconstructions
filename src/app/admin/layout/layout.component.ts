@@ -119,6 +119,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-draw-polygon', label: '4. Edit / Modify Plots (Map Editor)', route: '/admin/plot-map-editor', badge: 'EDIT' },
         { icon: 'fas fa-layer-group', label: '5. Site Gallery', route: '/admin/site-gallery' },
         { icon: 'fas fa-calculator', label: '6. EMI Calculator Mgmt', route: '/admin/emi-calculator-mgmt' },
+        { icon: 'fas fa-map-marked-alt', label: '7. Admin Sales Map', route: '/admin/sales-map', badge: 'SALES' },
       ]
     },
     {

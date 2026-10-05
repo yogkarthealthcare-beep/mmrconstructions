@@ -222,7 +222,7 @@
 </ng-template>
 
 <!-- Enhanced Hover Tooltip for complete node details -->
-<div class="node-tooltip" *ngIf="hoveredNode" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
+<div class="node-tooltip" *ngIf="hoveredNode && !selectedProfileNode" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
   <div class="d-flex align-items-center justify-content-between mb-1">
     <div class="d-flex align-items-center gap-1">
       <strong class="fs-13">{{ hoveredNode.name }}</strong>
@@ -245,7 +245,178 @@
   <span *ngIf="audience === 'admin' || hoveredNode.id === root?.id"><strong>Pending Commission:</strong> {{ hoveredNode.pendingCommission | currency:'INR':'symbol':'1.0-0' }}</span>
   <span><strong>Joining:</strong> {{ hoveredNode.joinDate | date:'dd MMM yyyy' }}</span>
   <span><strong>Status:</strong> {{ hoveredNode.status }}</span>
-  <div *ngIf="isFreeOrDisabled(hoveredNode)" class="mt-1 pt-1 border-top border-secondary-subtle text-danger fs-11 fw-600">
-    <i class="fas fa-lock me-1"></i> Disabled account (Hover only, no clicks)
+  <div class="mt-1 pt-1 border-top border-secondary-subtle text-primary fs-10 fw-600">
+    <i class="fas fa-hand-pointer me-1"></i> Click to view complete profile summary
   </div>
 </div>
+
+<!-- MEMBER PROFILE SUMMARY MODAL / DRAWER (CLICK ON ANY TREE NODE) -->
+<div class="tree-profile-backdrop" *ngIf="selectedProfileNode" (click)="closeProfileModal()">
+  <div class="tree-profile-card shadow-2xl" (click)="$event.stopPropagation()">
+    
+    <!-- Top Header Navigation -->
+    <div class="profile-card-header d-flex align-items-center justify-content-between p-3 border-bottom bg-dark-green text-white">
+      <button type="button" class="btn-back-tree d-flex align-items-center gap-1.5" (click)="closeProfileModal()">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Tree</span>
+      </button>
+      <span class="fs-12 fw-700 text-gold text-uppercase tracking-wider">
+        <i class="fas fa-id-card me-1"></i> Member Profile
+      </span>
+      <button type="button" class="btn-close-modal" (click)="closeProfileModal()" title="Close Profile">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Profile Body -->
+    <div class="profile-card-body p-3.5 overflow-y-auto">
+      
+      <!-- Top Hero Strip: Photo, Name, Member ID, Rank -->
+      <div class="d-flex align-items-center gap-3 p-3 rounded-3 bg-light border mb-3">
+        <div class="profile-avatar-wrap position-relative flex-shrink-0">
+          <img [src]="getProfileImageUrl(selectedProfileNode)" [alt]="selectedProfileNode.name" class="profile-avatar-img rounded-circle border border-2 border-gold shadow-sm" />
+          <span *ngIf="selectedProfileNode.is_verified" class="verified-avatar-badge" title="Verified Member">
+            <i class="fas fa-check-circle text-primary"></i>
+          </span>
+        </div>
+
+        <div class="flex-grow-1 min-w-0">
+          <div class="d-flex align-items-center gap-1.5 flex-wrap mb-1">
+            <h5 class="fw-800 text-dark mb-0 fs-16 text-truncate">{{ selectedProfileNode.name }}</h5>
+            <app-verified-badge [user]="selectedProfileNode" size="xs"></app-verified-badge>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 flex-wrap fs-12 mb-1">
+            <span class="badge bg-gold text-dark fw-800 fs-11">
+              <i class="fas fa-award me-1"></i>{{ selectedProfileNode.rank || 'Associate' }}
+            </span>
+            <span class="badge" [class.bg-success]="!isFreeOrDisabled(selectedProfileNode) && selectedProfileNode.status === 'Active'" [class.bg-danger]="isFreeOrDisabled(selectedProfileNode)">
+              {{ isFreeOrDisabled(selectedProfileNode) ? 'Free / Inactive' : 'Active' }}
+            </span>
+          </div>
+
+          <div class="fs-11 text-muted">
+            <span>ID: <strong class="text-dark">{{ selectedProfileNode.memberCode || selectedProfileNode.userId }}</strong></span>
+            <span *ngIf="selectedProfileNode.city" class="ms-2"><i class="fas fa-map-marker-alt text-gold me-1"></i>{{ selectedProfileNode.city }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPONSOR & JOINING SUMMARY CARD -->
+      <div class="summary-section-box p-3 rounded-3 mb-3 bg-white border">
+        <div class="row g-2 fs-12">
+          <div class="col-6 border-end">
+            <div class="fs-10 text-muted fw-700 text-uppercase mb-0.5">
+              <i class="fas fa-user-shield text-gold me-1"></i> Sponsor Info
+            </div>
+            <strong class="text-dark d-block text-truncate">{{ selectedProfileNode.sponsorName || sponsorInfo?.name || 'System Admin' }}</strong>
+            <span class="fs-10 text-muted">ID: {{ selectedProfileNode.sponsorId || sponsorInfo?.id || 'MMR0001' }}</span>
+          </div>
+          <div class="col-6 ps-2">
+            <div class="fs-10 text-muted fw-700 text-uppercase mb-0.5">
+              <i class="fas fa-calendar-alt text-success me-1"></i> Joined Date
+            </div>
+            <strong class="text-dark d-block">{{ selectedProfileNode.joinDate | date:'dd MMM yyyy' }}</strong>
+            <span class="fs-10 text-muted">Tree Level #{{ selectedProfileNode.level }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEAM ADDITIONS SUMMARY (Directs & Total Team) -->
+      <div class="summary-section-box p-3 rounded-3 mb-3 bg-white border">
+        <div class="fs-11 fw-800 text-dark text-uppercase mb-2.5 d-flex align-items-center justify-content-between">
+          <span><i class="fas fa-users text-primary me-1.5"></i> Team Members Added</span>
+          <span class="badge bg-primary-subtle text-primary fs-10 fw-700">Network Summary</span>
+        </div>
+        <div class="row g-2 text-center">
+          <div class="col-6">
+            <div class="p-2.5 rounded-3 bg-light border">
+              <div class="fs-10 text-muted fw-700 text-uppercase">Direct Referrals</div>
+              <div class="fs-18 fw-800 text-primary">{{ selectedProfileNode.directCount || 0 }}</div>
+              <div class="fs-10 text-muted">Directly Added Members</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2.5 rounded-3 bg-light border">
+              <div class="fs-10 text-muted fw-700 text-uppercase">Total Downline Team</div>
+              <div class="fs-18 fw-800 text-dark">{{ selectedProfileNode.teamCount || 0 }}</div>
+              <div class="fs-10 text-muted">Total Network Size</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUSINESS / SALES VOLUME TO COMPANY -->
+      <div class="summary-section-box p-3 rounded-3 mb-3 bg-white border">
+        <div class="fs-11 fw-800 text-dark text-uppercase mb-2.5 d-flex align-items-center justify-content-between">
+          <span><i class="fas fa-chart-line text-success me-1.5"></i> Sales Given to Company</span>
+          <span class="badge bg-success-subtle text-success fs-10 fw-700">Volume &amp; Earnings</span>
+        </div>
+        <div class="row g-2 text-center">
+          <div class="col-6">
+            <div class="p-2.5 rounded-3 bg-light border">
+              <div class="fs-10 text-muted fw-700 text-uppercase">Total Sales Volume</div>
+              <div class="fs-16 fw-800 text-success">{{ (selectedProfileNode.salesGaj || 0) | number }} <small class="fs-11">Gaj</small></div>
+              <div class="fs-10 text-muted">Plots Area Sold</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2.5 rounded-3 bg-light border">
+              <div class="fs-10 text-muted fw-700 text-uppercase">Commission Generated</div>
+              <div class="fs-16 fw-800 text-gold-dark">₹{{ (selectedProfileNode.commissionEarned || 0) | number }}</div>
+              <div class="fs-10 text-muted">Earnings Recorded</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PURCHASES SUMMARY (WHAT / HOW MUCH PURCHASED) -->
+      <div class="summary-section-box p-3 rounded-3 mb-3 bg-white border">
+        <div class="fs-11 fw-800 text-dark text-uppercase mb-2.5 d-flex align-items-center justify-content-between">
+          <span><i class="fas fa-home text-gold me-1.5"></i> Property Purchases Summary</span>
+          <span class="badge bg-gold-subtle text-dark fs-10 fw-700">Holdings</span>
+        </div>
+        <div class="row g-2 text-center">
+          <div class="col-6">
+            <div class="p-2.5 rounded-3 bg-light border">
+              <div class="fs-10 text-muted fw-700 text-uppercase">Plots Purchased</div>
+              <div class="fs-16 fw-800 text-dark">{{ selectedProfileNode.purchasedPlotsCount || 0 }} <small class="fs-11">Units</small></div>
+              <div class="fs-10 text-muted">Registered Properties</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2.5 rounded-3 bg-light border">
+              <div class="fs-10 text-muted fw-700 text-uppercase">Purchase Value</div>
+              <div class="fs-16 fw-800 text-emerald">₹{{ (selectedProfileNode.purchasedAmount || 0) | number }}</div>
+              <div class="fs-10 text-muted">Total Paid / Investment</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACT DETAILS (IF LOGGED-IN / ADMIN) -->
+      <div *ngIf="selectedProfileNode.mobile && selectedProfileNode.mobile !== '-'" class="p-2.5 rounded-3 mb-3 bg-light border fs-12 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+          <i class="fas fa-phone-alt text-success me-1"></i>
+          <span class="text-muted">Contact:</span> <strong class="text-dark">{{ selectedProfileNode.mobile }}</strong>
+        </div>
+        <a [href]="'tel:' + selectedProfileNode.mobile" class="btn btn-xs btn-outline-success">
+          <i class="fas fa-phone me-1"></i> Call Member
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Footer Action Buttons -->
+    <div class="profile-card-footer p-3 bg-light border-top d-flex gap-2">
+      <button type="button" class="btn btn-gold flex-fill fw-700 fs-12" (click)="closeProfileModal()">
+        <i class="fas fa-arrow-left me-1.5"></i> Back to Tree
+      </button>
+      <button type="button" class="btn btn-outline-dark flex-fill fw-700 fs-12" (click)="focusSelectedNode()">
+        <i class="fas fa-crosshairs me-1.5"></i> Focus in Tree
+      </button>
+    </div>
+
+  </div>
+</div>
+

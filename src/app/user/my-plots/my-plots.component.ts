@@ -124,6 +124,8 @@ export class MyPlotsComponent implements OnInit {
         computedStatus = 'Sold';
       } else if (isBuybackPending) {
         computedStatus = 'Buyback In Review';
+      } else if (b.booking_status === 'Waitlisted') {
+        computedStatus = 'Waitlisted';
       }
 
       let financialStatus = 'Partial Paid';
@@ -152,7 +154,15 @@ export class MyPlotsComponent implements OnInit {
         computedStatus,
         financialStatus,
         isBuybackApproved,
-        isBuybackPending
+        isBuybackPending,
+        queue_position: b.queue_position || (b.booking_status === 'Waitlisted' ? 1 : null),
+        refund_due: !!b.refund_due,
+        refund_reason: b.refund_reason || '',
+        deed_number: b.deed_number || '',
+        registry_date: b.registry_date || null,
+        mutation_date: b.mutation_date || null,
+        possession_date: b.possession_date || null,
+        registry_document_url: b.registry_document_url || null
       };
     });
   }

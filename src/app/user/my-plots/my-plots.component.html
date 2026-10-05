@@ -184,8 +184,11 @@
                   [class.sbadge-green]="b.computedStatus==='Confirmed'||b.computedStatus==='Active'"
                   [class.sbadge-blue]="b.computedStatus==='Allocated'||b.computedStatus==='Buyback In Review'"
                   [class.sbadge-yellow]="b.computedStatus==='PaymentPending'||b.computedStatus==='InProcess'||b.computedStatus==='Pending'"
+                  [class.sbadge-purple]="b.computedStatus==='Waitlisted'"
                   [class.sbadge-red]="b.computedStatus==='Sold'||b.computedStatus==='Cancelled'">
+              <i *ngIf="b.computedStatus==='Waitlisted'" class="fas fa-clock me-1"></i>
               {{ b.computedStatus }}
+              <span *ngIf="b.queue_position" class="ms-1 fw-700">(Queue #{{ b.queue_position }})</span>
             </span>
             <span class="sbadge fs-10" 
                   [class.sbadge-green]="b.financialStatus==='Fully Paid'" 
@@ -194,11 +197,41 @@
                   [class.sbadge-red]="b.financialStatus==='Overdue'">
               {{ b.financialStatus }}
             </span>
+            <span *ngIf="b.refund_due" class="badge bg-danger text-white fs-10">
+              <i class="fas fa-undo-alt me-1"></i> Refund Due
+            </span>
           </div>
         </div>
 
         <!-- Body & Spec Details -->
         <div class="p-3 bg-white">
+          <!-- Waitlist Alert Banner (If Waitlisted) -->
+          <div *ngIf="b.computedStatus === 'Waitlisted'" class="alert alert-warning p-2 px-3 fs-12 rounded-3 mb-3 border border-warning">
+            <div class="d-flex align-items-start gap-2">
+              <i class="fas fa-info-circle text-warning fs-5 mt-1"></i>
+              <div>
+                <strong class="text-dark">Waitlist Position #{{ b.queue_position || 1 }}</strong>
+                <p class="mb-0 text-muted fs-11">
+                  Another booking for Plot {{ b.plot_number }} has been confirmed. You are on the waitlist. Our team will contact you to transfer your booking to another prime vacant plot or assist with refund options.
+                </p>
+                <div *ngIf="b.refund_due" class="text-danger fw-700 mt-1 fs-11">
+                  <i class="fas fa-hand-holding-usd me-1"></i> Refund Marked: {{ b.refund_reason || 'Eligible for refund of advance amount' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pre-confirmation Queue Position (If > 1 and not yet confirmed) -->
+          <div *ngIf="b.queue_position > 1 && b.computedStatus !== 'Waitlisted' && b.computedStatus !== 'Confirmed' && b.computedStatus !== 'Sold'" class="alert alert-info p-2 px-3 fs-12 rounded-3 mb-3 border border-info">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-user-clock text-info fs-5"></i>
+              <div>
+                <span class="text-dark">You are at <strong>Queue Position #{{ b.queue_position }}</strong> for Plot {{ b.plot_number }}.</span>
+                <span class="text-muted ms-1 fs-11">Bookings are confirmed in first-come first-served order.</span>
+              </div>
+            </div>
+          </div>
+
           <!-- 4-Grid Specs -->
           <div class="row g-2 mb-3">
             <div class="col-6 col-sm-3">
@@ -254,16 +287,33 @@
             </div>
           </div>
 
-          <!-- Registry Details Banner (If Available) -->
-          <div *ngIf="b.registry_status || b.registry_date" class="p-2 px-3 rounded-3 mb-3 bg-light border border-info text-info fs-12 d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2">
-              <i class="fas fa-file-contract text-primary"></i>
-              <span class="text-dark">Registry Status: <strong>{{ b.registry_status || 'In Process' }}</strong></span>
-              <span *ngIf="b.registry_date" class="text-muted ms-1">(Date: {{ b.registry_date | date:'dd MMM yyyy' }})</span>
+          <!-- Registry Details Card (If Available or Sold) -->
+          <div *ngIf="b.deed_number || b.registry_date || b.possession_date || b.computedStatus === 'Sold'" class="p-3 rounded-3 mb-3 bg-light border border-success">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="fs-12 fw-700 text-success">
+                <i class="fas fa-file-contract me-1"></i> Legal Registry &amp; Possession Record
+              </div>
+              <span class="badge bg-success-subtle text-success border border-success fs-11">Registered</span>
             </div>
-            <a *ngIf="b.registry_document_url" [href]="b.registry_document_url" target="_blank" class="btn btn-xs btn-outline-primary">
-              <i class="fas fa-download me-1"></i> Registry Doc
-            </a>
+            <div class="row g-2 fs-11 text-dark mb-2">
+              <div class="col-6" *ngIf="b.deed_number">
+                <span class="text-muted">Deed / Reg. No:</span> <strong class="text-dark">{{ b.deed_number }}</strong>
+              </div>
+              <div class="col-6" *ngIf="b.registry_date">
+                <span class="text-muted">Registry Date:</span> <strong class="text-dark">{{ b.registry_date | date:'dd MMM yyyy' }}</strong>
+              </div>
+              <div class="col-6" *ngIf="b.mutation_date">
+                <span class="text-muted">Mutation Date:</span> <strong class="text-dark">{{ b.mutation_date | date:'dd MMM yyyy' }}</strong>
+              </div>
+              <div class="col-6" *ngIf="b.possession_date">
+                <span class="text-muted">Possession Date:</span> <strong class="text-dark">{{ b.possession_date | date:'dd MMM yyyy' }}</strong>
+              </div>
+            </div>
+            <div *ngIf="b.registry_document_url" class="pt-2 border-top">
+              <a [href]="b.registry_document_url" target="_blank" class="btn btn-xs btn-outline-success">
+                <i class="fas fa-file-pdf me-1"></i> Download Registry Deed Document
+              </a>
+            </div>
           </div>
 
           <!-- Next EMI Alert Banner (If Applicable) -->

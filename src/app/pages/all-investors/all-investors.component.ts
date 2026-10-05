@@ -19,8 +19,21 @@ export class AllInvestorsComponent implements OnInit {
   filteredInvestors: any[] = [];
   loading = true;
   searchTerm = '';
+  selectedInvestor: any = null;
 
   constructor(private api: ApiService) {}
+
+  openInvestorProfile(investor: any, event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.selectedInvestor = investor;
+  }
+
+  closeInvestorProfile() {
+    this.selectedInvestor = null;
+  }
 
   ngOnInit() {
     this.api.getInvestors().subscribe({

@@ -38,10 +38,10 @@ export class BookingManagementComponent implements OnInit {
   toastType: 'success' | 'error' = 'success';
 
   // Quick Filter Tab for Bookings
-  activeQuickFilter: 'ALL' | 'PENDING' | 'CONFIRMED' | 'OFFLINE' | 'CANCELLED' = 'ALL';
+  activeQuickFilter: 'ALL' | 'PENDING' | 'WAITLISTED' | 'CONFIRMED' | 'REFUND_DUE' | 'OFFLINE' | 'CANCELLED' = 'ALL';
 
   // Detail Drawer Active Tab
-  activeDetailTab: 'overview' | 'proofs' | 'emi' | 'appointment' = 'overview';
+  activeDetailTab: 'overview' | 'proofs' | 'emi' | 'appointment' | 'queue' = 'overview';
 
   // Booking Filter Form
   filterForm = this.fb.group({
@@ -52,6 +52,41 @@ export class BookingManagementComponent implements OnInit {
 
   // Dynamic Sites List
   sites: any[] = [];
+
+  // ==========================================
+  // MARK AS SOLD STATE
+  // ==========================================
+  showMarkSoldModal = false;
+  markSoldSubmitting = false;
+  markSoldForm = this.fb.group({
+    final_sold_price: [null as number | null, [Validators.required, Validators.min(1)]],
+    sold_date: [new Date().toISOString().slice(0, 10), Validators.required],
+    registry_no: ['', Validators.required],
+    registry_date: [''],
+    mutation_date: [''],
+    possession_date: [''],
+    document_path: [''],
+    remarks: [''],
+  });
+
+  // ==========================================
+  // MOVE PLOT STATE
+  // ==========================================
+  showMovePlotModal = false;
+  movePlotSubmitting = false;
+  targetBookingForMove: any = null;
+  movePlotTargetPlotId: number | null = null;
+  movePlotRemarks = '';
+  vacantPlotsForSite: any[] = [];
+  vacantPlotsLoading = false;
+
+  // ==========================================
+  // CANCEL + REFUND DUE STATE
+  // ==========================================
+  showCancelRefundModal = false;
+  cancelRefundSubmitting = false;
+  cancelRefundBooking: any = null;
+  cancelRefundReason = '';
 
   // ==========================================
   // PLOT ALLOCATION MODAL STATE
@@ -202,6 +237,14 @@ export class BookingManagementComponent implements OnInit {
     return this.bookings.filter(b => b.booking_status === 'Confirmed' || b.booking_status === 'Fully Paid').length;
   }
 
+  get waitlistedBookingsCount(): number {
+    return this.bookings.filter(b => b.booking_status === 'Waitlisted').length;
+  }
+
+  get refundDueBookingsCount(): number {
+    return this.bookings.filter(b => b.refund_due === true).length;
+  }
+
   get pendingBookingsCount(): number {
     return this.bookings.filter(b =>
       b.booking_status === 'Pending' ||
@@ -232,7 +275,7 @@ export class BookingManagementComponent implements OnInit {
   }
 
   // Quick Filter Switcher
-  setQuickFilter(filter: 'ALL' | 'PENDING' | 'CONFIRMED' | 'OFFLINE' | 'CANCELLED') {
+  setQuickFilter(filter: 'ALL' | 'PENDING' | 'WAITLISTED' | 'CONFIRMED' | 'REFUND_DUE' | 'OFFLINE' | 'CANCELLED') {
     this.activeQuickFilter = filter;
     this.page = 1;
   }
@@ -252,8 +295,12 @@ export class BookingManagementComponent implements OnInit {
                           b.workflow_status === 'Under Review' ||
                           b.workflow_status === 'Plot Allocated by Admin';
         if (!isPending) return false;
+      } else if (this.activeQuickFilter === 'WAITLISTED') {
+        if (b.booking_status !== 'Waitlisted') return false;
       } else if (this.activeQuickFilter === 'CONFIRMED') {
         if (b.booking_status !== 'Confirmed' && b.booking_status !== 'Fully Paid') return false;
+      } else if (this.activeQuickFilter === 'REFUND_DUE') {
+        if (!b.refund_due) return false;
       } else if (this.activeQuickFilter === 'OFFLINE') {
         const pm = String(b.payment_method || b.payment_type || '').toLowerCase();
         if (pm !== 'offline' && pm !== 'cheque' && pm !== 'cash' && pm !== 'bank transfer') return false;
@@ -834,6 +881,163 @@ export class BookingManagementComponent implements OnInit {
     } else {
       this.exportService.exportToPdf(formatted, columns, filename, title);
     }
+  }
+
+  // ==========================================
+  // PHASE 2: MARK AS SOLD METHODS
+  // ==========================================
+  canMarkSold(booking: any): boolean {
+    if (!booking) return false;
+    const isConfirmed = booking.booking_status === 'Confirmed' || booking.workflow_status === 'Fully Paid';
+    const isBooked = booking.plot?.plot_status === 'Booked' || booking.plot?.plot_status === 'Sold';
+    const balance = Number(booking.remaining_balance || 0);
+    return isConfirmed && isBooked && balance <= 0;
+  }
+
+  getMarkSoldDisabledReason(booking: any): string {
+    if (!booking) return '';
+    if (booking.booking_status !== 'Confirmed' && booking.workflow_status !== 'Fully Paid') {
+      return 'Booking must be Confirmed before marking as Sold.';
+    }
+    const balance = Number(booking.remaining_balance || 0);
+    if (balance > 0) {
+      return `Outstanding balance of ₹${balance.toLocaleString('en-IN')} remains. Balance must be ₹0.`;
+    }
+    return '';
+  }
+
+  openMarkSoldModal() {
+    if (!this.selected) return;
+    const price = Number(this.selected.base_price || this.selected.plot?.base_price || this.selected.total_price || 0);
+    this.markSoldForm.reset({
+      final_sold_price: price > 0 ? price : null,
+      sold_date: new Date().toISOString().slice(0, 10),
+      registry_no: this.selected.registry?.registry_no || `REG-${new Date().getFullYear()}-${String(this.selected.booking_id).padStart(4, '0')}`,
+      registry_date: this.selected.registry?.registry_date ? this.selected.registry.registry_date.slice(0, 10) : new Date().toISOString().slice(0, 10),
+      mutation_date: this.selected.registry?.mutation_date ? this.selected.registry.mutation_date.slice(0, 10) : '',
+      possession_date: this.selected.registry?.possession_date ? this.selected.registry.possession_date.slice(0, 10) : '',
+      document_path: this.selected.registry?.document_path || '',
+      remarks: this.selected.registry?.remarks || ''
+    });
+    this.showMarkSoldModal = true;
+  }
+
+  submitMarkSold() {
+    if (this.markSoldForm.invalid || !this.selected) return;
+    this.markSoldSubmitting = true;
+    this.api.adminMarkBookingSold(this.selected.booking_id, this.markSoldForm.value).subscribe({
+      next: (res: any) => {
+        this.markSoldSubmitting = false;
+        this.showMarkSoldModal = false;
+        this.showToast(res?.message || 'Plot successfully registered and marked as Sold!');
+        this.refreshAfterAction();
+      },
+      error: (e: any) => {
+        this.markSoldSubmitting = false;
+        this.showToast(e?.error?.message || 'Failed to mark as sold.', 'error');
+      }
+    });
+  }
+
+  // ==========================================
+  // PHASE 2: MOVE PLOT METHODS
+  // ==========================================
+  openMovePlotModal(booking: any) {
+    this.targetBookingForMove = booking || this.selected;
+    this.movePlotTargetPlotId = null;
+    this.movePlotRemarks = '';
+    this.showMovePlotModal = true;
+    const siteId = this.targetBookingForMove?.site_id || this.targetBookingForMove?.plot?.site_id || this.selected?.site?.id || (this.sites[0]?.site_id);
+    this.loadVacantPlots(siteId);
+  }
+
+  loadVacantPlots(siteId: number) {
+    if (!siteId) return;
+    this.vacantPlotsLoading = true;
+    this.api.adminGetSitePlots(siteId).subscribe({
+      next: (res: any) => {
+        const allPlots = Array.isArray(res) ? res : (res?.data || []);
+        this.vacantPlotsForSite = allPlots.filter((p: any) => p.plot_status === 'Vacant' && p.is_active !== false);
+        this.vacantPlotsLoading = false;
+      },
+      error: () => {
+        this.vacantPlotsLoading = false;
+      }
+    });
+  }
+
+  submitMovePlot() {
+    if (!this.targetBookingForMove || !this.movePlotTargetPlotId) {
+      this.showToast('Please select a target vacant plot.', 'error');
+      return;
+    }
+    this.movePlotSubmitting = true;
+    this.api.adminMoveBookingPlot(this.targetBookingForMove.booking_id, {
+      new_plot_id: this.movePlotTargetPlotId,
+      remarks: this.movePlotRemarks
+    }).subscribe({
+      next: (res: any) => {
+        this.movePlotSubmitting = false;
+        this.showMovePlotModal = false;
+        this.showToast(res?.message || 'Booking transferred to new plot successfully.');
+        this.refreshAfterAction();
+      },
+      error: (e: any) => {
+        this.movePlotSubmitting = false;
+        this.showToast(e?.error?.message || 'Failed to move booking.', 'error');
+      }
+    });
+  }
+
+  // ==========================================
+  // PHASE 2: CANCEL + REFUND DUE METHODS
+  // ==========================================
+  openCancelRefundModal(booking: any) {
+    this.cancelRefundBooking = booking || this.selected;
+    this.cancelRefundReason = '';
+    this.showCancelRefundModal = true;
+  }
+
+  submitCancelRefund() {
+    if (!this.cancelRefundBooking || !this.cancelRefundReason.trim()) {
+      this.showToast('Please provide a reason for refund due cancellation.', 'error');
+      return;
+    }
+    this.cancelRefundSubmitting = true;
+    this.api.adminCancelBookingRefundDue(this.cancelRefundBooking.booking_id, {
+      reason: this.cancelRefundReason.trim()
+    }).subscribe({
+      next: (res: any) => {
+        this.cancelRefundSubmitting = false;
+        this.showCancelRefundModal = false;
+        this.showToast(res?.message || 'Booking cancelled and flagged as Refund Due.');
+        this.refreshAfterAction();
+      },
+      error: (e: any) => {
+        this.cancelRefundSubmitting = false;
+        this.showToast(e?.error?.message || 'Failed to cancel booking.', 'error');
+      }
+    });
+  }
+
+  // ==========================================
+  // PHASE 2: PROMOTE WAITLISTED BOOKING
+  // ==========================================
+  promoteBooking(booking: any) {
+    const target = booking || this.selected;
+    if (!target) return;
+    this.actionLoading = true;
+    this.api.adminPromoteBooking(target.booking_id).subscribe({
+      next: (res: any) => {
+        this.actionLoading = false;
+        this.showToast(res?.message || 'Waitlisted booking promoted to Active.');
+        this.refreshAfterAction();
+      },
+      error: (e: any) => {
+        this.actionLoading = false;
+        this.showToast(e?.error?.message || 'Failed to promote booking.', 'error');
+      }
+    });
   }
 
   private refreshAfterAction() {

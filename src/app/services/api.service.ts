@@ -303,6 +303,27 @@ export class ApiService {
   adminCancelBooking(id: number, reason: string) {
     return this.post(`/api/admin/bookings/${id}/cancel`, { reason }, true);
   }
+  adminMarkBookingSold(id: number, data: any) {
+    return this.post(`/api/admin/bookings/${id}/mark-sold`, data, true);
+  }
+  adminMoveBookingPlot(id: number, data: { new_plot_id: number; remarks?: string }) {
+    return this.post(`/api/admin/bookings/${id}/move-plot`, data, true);
+  }
+  adminCancelBookingRefundDue(id: number, data: { reason: string }) {
+    return this.post(`/api/admin/bookings/${id}/cancel-refund-due`, data, true);
+  }
+  adminPromoteBooking(id: number) {
+    return this.post(`/api/admin/bookings/${id}/promote`, {}, true);
+  }
+  adminGetSiteSalesMap(siteId: number) {
+    return this.get(`/api/admin/sites/${siteId}/sales-map`, {}, true);
+  }
+  adminReleasePlot(plotId: number, reason: string) {
+    return this.post(`/api/admin/plots/${plotId}/release`, { reason }, true);
+  }
+  adminGetPlotStatusHistory(plotId: number) {
+    return this.get(`/api/admin/plots/${plotId}/status-history`, {}, true);
+  }
   adminGetOverdueEmi()             { return this.get('/api/admin/emi/overdue', {}, true); }
   adminConfirmEmi(id: number, paid_amount: number) {
     return this.post(`/api/admin/emi/${id}/confirm`, { paid_amount }, true);

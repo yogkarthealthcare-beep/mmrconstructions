@@ -1,0 +1,577 @@
+<!-- ADMIN SALES MAP HEADER & SITE SELECTOR -->
+<div class="sales-map-header-card mb-3 p-3 bg-white rounded-3 border shadow-sm">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <div class="site-selector-wrap">
+        <label class="form-label fs-11 fw-700 text-muted mb-1 d-flex align-items-center gap-1">
+          <i class="fas fa-building text-gold"></i> SELECT TOWNSHIP / SITE
+        </label>
+        <select class="form-select form-select-sm site-dropdown fw-700" [ngModel]="siteId" (ngModelChange)="onSiteChange($event)">
+          <option *ngFor="let s of sites" [value]="s.site_id">
+            {{ s.site_name }} &bull; {{ s.location || 'Lucknow' }} ({{ s.total_plots || 0 }} Plots)
+          </option>
+        </select>
+      </div>
+
+      <div *ngIf="site" class="site-meta-pill d-none d-md-flex align-items-center gap-2 p-2 px-3 rounded-2 bg-light border">
+        <i class="fas fa-map-marked-alt text-success fs-5"></i>
+        <div>
+          <div class="fs-12 fw-700 text-dark">{{ site.site_name }}</div>
+          <div class="fs-10 text-muted">{{ site.location || 'Uttar Pradesh' }} &bull; {{ totalPlotsCount }} total units mapped</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+      <span class="fs-11 text-muted d-none d-lg-inline">
+        <i class="fas fa-satellite-dish text-success me-1"></i>{{ lastUpdatedText }}
+      </span>
+      <button class="btn btn-outline-secondary btn-xs px-3" (click)="loadSalesMapData(false)" [disabled]="loading || actionLoading">
+        <i class="fas fa-sync-alt me-1" [class.fa-spin]="isPolling"></i> Refresh
+      </button>
+      <button class="btn btn-outline-success btn-xs px-3" (click)="exportFilteredPlotsToCsv()" [disabled]="loading || plots.length === 0">
+        <i class="fas fa-file-excel me-1"></i> Export CSV
+      </button>
+      <a routerLink="/admin/booking-management" class="btn btn-gold btn-xs px-3 shadow-sm">
+        <i class="fas fa-calendar-check me-1"></i> Booking Queue
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- TOP SUMMARY METRICS STRIP -->
+<div class="row g-2 mb-3" *ngIf="!loading && site">
+  <!-- Available Plots -->
+  <div class="col-6 col-md-3 col-xl">
+    <div class="sales-metric-card stat-vacant h-100" (click)="statusFilter = 'AVAILABLE'">
+      <div class="d-flex align-items-center justify-content-between mb-1">
+        <span class="metric-label text-success"><i class="fas fa-check-circle me-1"></i>Available</span>
+        <span class="badge bg-success-subtle text-success fs-10">Vacant</span>
+      </div>
+      <div class="metric-value text-success">{{ availableCount }}</div>
+      <div class="metric-sub text-muted fs-11">Ready to book</div>
+    </div>
+  </div>
+
+  <!-- In Process -->
+  <div class="col-6 col-md-3 col-xl">
+    <div class="sales-metric-card stat-inprocess h-100" (click)="statusFilter = 'IN_PROCESS'">
+      <div class="d-flex align-items-center justify-content-between mb-1">
+        <span class="metric-label text-warning"><i class="fas fa-hourglass-half me-1"></i>In Process</span>
+        <span class="badge bg-warning-subtle text-warning fs-10">Active Holds</span>
+      </div>
+      <div class="metric-value text-warning">{{ inProcessCount }}</div>
+      <div class="metric-sub text-muted fs-11">Advance submitted</div>
+    </div>
+  </div>
+
+  <!-- Booked / Allotted -->
+  <div class="col-6 col-md-3 col-xl">
+    <div class="sales-metric-card stat-booked h-100" (click)="statusFilter = 'BOOKED'">
+      <div class="d-flex align-items-center justify-content-between mb-1">
+        <span class="metric-label text-primary"><i class="fas fa-file-contract me-1"></i>Booked</span>
+        <span class="badge bg-primary-subtle text-primary fs-10">Confirmed</span>
+      </div>
+      <div class="metric-value text-primary">{{ bookedCount }}</div>
+      <div class="metric-sub text-muted fs-11">Allotment issued</div>
+    </div>
+  </div>
+
+  <!-- Sold / Registered -->
+  <div class="col-6 col-md-3 col-xl">
+    <div class="sales-metric-card stat-sold h-100" (click)="statusFilter = 'SOLD'">
+      <div class="d-flex align-items-center justify-content-between mb-1">
+        <span class="metric-label text-danger"><i class="fas fa-stamp me-1"></i>Sold Out</span>
+        <span class="badge bg-danger-subtle text-danger fs-10">Registry Done</span>
+      </div>
+      <div class="metric-value text-danger">{{ soldCount }}</div>
+      <div class="metric-sub text-muted fs-11">Deed registered</div>
+    </div>
+  </div>
+
+  <!-- Financial Valuation Strip -->
+  <div class="col-12 col-md-12 col-xl-4">
+    <div class="sales-metric-card stat-finance h-100 bg-dark-green text-white">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="fs-11 fw-700 text-gold text-uppercase"><i class="fas fa-coins me-1"></i>Total Sales Valuation</span>
+        <span class="badge bg-gold text-dark fs-10 fw-800">₹{{ totalSalesValue | number }}</span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center fs-12 pt-1 border-top border-secondary">
+        <div>
+          <span class="text-white-70 fs-10">COLLECTED:</span>
+          <strong class="text-emerald ms-1">₹{{ totalCollected | number }}</strong>
+        </div>
+        <div>
+          <span class="text-white-70 fs-10">PENDING:</span>
+          <strong class="text-warning ms-1">₹{{ totalPending | number }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+<div *ngIf="loading" class="sales-map-loading-box p-5 text-center bg-white rounded-3 border">
+  <div class="spinner-border text-gold me-2" role="status"></div>
+  <div class="fs-14 fw-700 text-dark mt-3">Loading Administrative Sales Map &amp; CAD Polygons...</div>
+  <div class="fs-12 text-muted">Retrieving live occupancy data, active buyer dossiers, and unit geometry</div>
+</div>
+
+<!-- ERROR STATE -->
+<div *ngIf="!loading && error" class="alert alert-danger p-4 text-center rounded-3">
+  <i class="fas fa-exclamation-triangle fs-2 mb-2 d-block text-danger"></i>
+  <h6 class="fw-700">{{ error }}</h6>
+  <button class="btn btn-outline-danger btn-xs mt-2" (click)="loadSalesMapData(true)">Retry Loading</button>
+</div>
+
+<!-- MAIN WORKSPACE: SIDEBAR + SVG MAP CANVAS + RIGHT DRAWER -->
+<div class="sales-workspace-container rounded-3 border bg-white shadow-sm" *ngIf="!loading && !error">
+  
+  <!-- LEFT FILTER SIDEBAR (260px) -->
+  <div class="sales-map-sidebar p-3 border-end" [class.mobile-open]="mobileFiltersOpen">
+    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+      <h6 class="fs-12 fw-800 text-dark mb-0 text-uppercase letter-spacing-1">
+        <i class="fas fa-filter text-gold me-1"></i> Map Filters
+      </h6>
+      <button class="btn-close d-md-none" (click)="mobileFiltersOpen = false"></button>
+    </div>
+
+    <!-- Search Input -->
+    <div class="mb-3">
+      <label class="form-label fs-10 fw-700 text-muted text-uppercase mb-1">Search Plot / Buyer / Associate</label>
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-light"><i class="fas fa-search text-muted"></i></span>
+        <input type="text" class="form-control" placeholder="Plot #, Buyer name, mobile..." [(ngModel)]="searchTerm" />
+        <button *ngIf="searchTerm" class="btn btn-outline-secondary" (click)="searchTerm = ''">&times;</button>
+      </div>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="mb-3">
+      <label class="form-label fs-10 fw-700 text-muted text-uppercase mb-1">Occupancy Status</label>
+      <select class="form-select form-select-sm" [(ngModel)]="statusFilter">
+        <option value="ALL">All Status ({{ totalPlotsCount }})</option>
+        <option value="AVAILABLE">Available ({{ availableCount }})</option>
+        <option value="IN_PROCESS">In Process ({{ inProcessCount }})</option>
+        <option value="BOOKED">Booked ({{ bookedCount }})</option>
+        <option value="SOLD">Sold ({{ soldCount }})</option>
+      </select>
+    </div>
+
+    <!-- Unit Type Filter -->
+    <div class="mb-3" *ngIf="unitTypesPresent.length > 0">
+      <label class="form-label fs-10 fw-700 text-muted text-uppercase mb-1">Unit Type</label>
+      <select class="form-select form-select-sm" [(ngModel)]="unitTypeFilter">
+        <option value="ALL">All Unit Types</option>
+        <option *ngFor="let u of unitTypesPresent" [value]="u">{{ u }}</option>
+      </select>
+    </div>
+
+    <!-- Legend -->
+    <div class="pt-3 border-top">
+      <label class="form-label fs-10 fw-700 text-muted text-uppercase mb-2">Map Legend &amp; Colors</label>
+      <div class="legend-item d-flex align-items-center justify-content-between mb-2 p-1 px-2 rounded bg-light">
+        <div class="d-flex align-items-center gap-2">
+          <span class="legend-swatch bg-emerald"></span>
+          <span class="fs-11 fw-600 text-dark">Available / Vacant</span>
+        </div>
+        <strong class="fs-11 text-success">{{ availableCount }}</strong>
+      </div>
+      <div class="legend-item d-flex align-items-center justify-content-between mb-2 p-1 px-2 rounded bg-light">
+        <div class="d-flex align-items-center gap-2">
+          <span class="legend-swatch bg-warning"></span>
+          <span class="fs-11 fw-600 text-dark">In Process (Hold)</span>
+        </div>
+        <strong class="fs-11 text-warning">{{ inProcessCount }}</strong>
+      </div>
+      <div class="legend-item d-flex align-items-center justify-content-between mb-2 p-1 px-2 rounded bg-light">
+        <div class="d-flex align-items-center gap-2">
+          <span class="legend-swatch bg-primary"></span>
+          <span class="fs-11 fw-600 text-dark">Booked / Confirmed</span>
+        </div>
+        <strong class="fs-11 text-primary">{{ bookedCount }}</strong>
+      </div>
+      <div class="legend-item d-flex align-items-center justify-content-between mb-2 p-1 px-2 rounded bg-light">
+        <div class="d-flex align-items-center gap-2">
+          <span class="legend-swatch bg-danger"></span>
+          <span class="fs-11 fw-600 text-dark">Sold Out / Registry</span>
+        </div>
+        <strong class="fs-11 text-danger">{{ soldCount }}</strong>
+      </div>
+    </div>
+
+    <!-- Filter Stats & Reset -->
+    <div class="pt-3 border-top mt-3">
+      <div class="d-flex justify-content-between align-items-center fs-11 text-muted mb-2">
+        <span>Showing plots:</span>
+        <strong class="text-dark">{{ filteredPlots.length }} of {{ totalPlotsCount }}</strong>
+      </div>
+      <button class="btn btn-outline-secondary btn-xs w-100" (click)="searchTerm=''; statusFilter='ALL'; unitTypeFilter='ALL'">
+        <i class="fas fa-undo me-1"></i> Reset Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- CENTER MAP CANVAS CONTAINER -->
+  <div class="sales-map-canvas-wrap position-relative" #mapViewport
+       (wheel)="onWheel($event)"
+       (pointerdown)="onPointerDown($event)"
+       (pointermove)="onPointerMove($event)"
+       (pointerup)="onPointerUp($event)">
+
+    <!-- Mobile Filter Toggle Button -->
+    <button class="btn btn-dark btn-xs position-absolute top-2 start-2 z-3 d-md-none shadow" (click)="mobileFiltersOpen = true">
+      <i class="fas fa-filter me-1"></i> Filters ({{ filteredPlots.length }})
+    </button>
+
+    <!-- Floating Zoom Toolbar (Top-Right) -->
+    <div class="map-floating-controls position-absolute top-2 end-2 z-3 d-flex flex-column gap-1 shadow-sm">
+      <button class="btn btn-white btn-sm shadow-sm map-ctrl-btn" title="Zoom In" (click)="zoomIn()">
+        <i class="fas fa-plus"></i>
+      </button>
+      <button class="btn btn-white btn-sm shadow-sm map-ctrl-btn" title="Zoom Out" (click)="zoomOut()">
+        <i class="fas fa-minus"></i>
+      </button>
+      <button class="btn btn-white btn-sm shadow-sm map-ctrl-btn" title="Reset View" (click)="fitToScreen()">
+        <i class="fas fa-expand-arrows-alt"></i>
+      </button>
+    </div>
+
+    <!-- SVG RENDER LAYER -->
+    <svg #mapSvg class="sales-map-svg"
+         [attr.viewBox]="'0 0 ' + imageWidth + ' ' + imageHeight"
+         [style.transform]="'translate(' + pan.x + 'px, ' + pan.y + 'px) scale(' + zoom + ')'">
+
+      <!-- Background CAD / Blueprint Layout Image -->
+      <image *ngIf="site?.map_image_url"
+             [attr.href]="resolveImageUrl(site.map_image_url)"
+             [attr.xlink:href]="resolveImageUrl(site.map_image_url)"
+             x="0" y="0"
+             [attr.width]="imageWidth"
+             [attr.height]="imageHeight"
+             preserveAspectRatio="xMidYMid meet" />
+
+      <!-- Plot Polygons -->
+      <g *ngFor="let p of filteredPlots">
+        <polygon
+          *ngIf="p.svgPoints"
+          [attr.points]="p.svgPoints"
+          [attr.fill]="getPlotColor(p)"
+          [attr.fill-opacity]="getPlotFillOpacity(p)"
+          [attr.stroke]="getPlotStroke(p)"
+          [attr.stroke-width]="getPlotStrokeWidth(p)"
+          stroke-linejoin="round"
+          class="plot-polygon-interactive"
+          [class.plot-selected]="selectedPlot?.plot_id === p.plot_id"
+          (click)="onPlotClick(p)"
+          (mouseenter)="onPlotHover($event, p)"
+          (mousemove)="onPlotMove($event, p)"
+          (mouseleave)="onPlotLeave()"
+        />
+
+        <!-- Plot Labels (Collision safe, size aware) -->
+        <g *ngIf="p.centroid && shouldShowLabel(p)" [attr.transform]="'translate(' + p.centroid.x + ',' + p.centroid.y + ')'" pointer-events="none">
+          <!-- Background pill for readability -->
+          <rect
+            [attr.x]="-14"
+            [attr.y]="-7"
+            width="28"
+            height="14"
+            rx="3"
+            fill="rgba(15, 23, 42, 0.82)"
+          />
+          <text
+            x="0"
+            y="3.5"
+            text-anchor="middle"
+            fill="#ffffff"
+            font-size="8.5"
+            font-weight="700"
+            font-family="system-ui, sans-serif"
+          >
+            {{ p.plot_number }}
+          </text>
+        </g>
+      </g>
+    </svg>
+
+    <!-- DESKTOP COLLISION-SAFE HOVER TOOLTIP -->
+    <div *ngIf="tooltip.visible && tooltip.plot" class="map-hover-tooltip shadow-lg" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
+      <div class="d-flex align-items-center justify-content-between gap-2 border-bottom pb-1 mb-1">
+        <strong class="fs-12 text-dark">Plot #{{ tooltip.plot.plot_number }}</strong>
+        <span class="badge" [class.bg-success]="tooltip.plot.status==='Vacant'" [class.bg-warning]="tooltip.plot.status==='InProcess'" [class.bg-primary]="tooltip.plot.status==='Booked'" [class.bg-danger]="tooltip.plot.status==='Sold'">
+          {{ tooltip.plot.status }}
+        </span>
+      </div>
+      <div class="fs-11 text-muted">
+        <div>Size: <strong>{{ tooltip.plot.area_sqft }} sq.ft ({{ tooltip.plot.area_gaj }} Gaj)</strong></div>
+        <div *ngIf="tooltip.plot.price">Price: <strong>₹{{ tooltip.plot.price | number }}</strong></div>
+        <div *ngIf="tooltip.plot.customer_name" class="text-primary mt-1">
+          <i class="fas fa-user me-1"></i>{{ tooltip.plot.customer_name }}
+        </div>
+        <div *ngIf="tooltip.plot.advance_paid" class="text-success">
+          Paid: ₹{{ tooltip.plot.advance_paid | number }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE DETAIL DRAWER (400px Desktop / Bottom sheet on mobile) -->
+  <div class="sales-plot-drawer" *ngIf="selectedPlot" [class.open]="selectedPlot !== null">
+    <div class="drawer-header p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="fs-15 fw-800 text-dark">Plot {{ selectedPlot.plot_number }}</span>
+          <span class="badge" [class.bg-success]="selectedPlot.status==='Vacant'" [class.bg-warning]="selectedPlot.status==='InProcess'" [class.bg-primary]="selectedPlot.status==='Booked'" [class.bg-danger]="selectedPlot.status==='Sold'">
+            {{ selectedPlot.status }}
+          </span>
+        </div>
+        <div class="fs-11 text-muted">{{ site?.site_name }} &bull; {{ selectedPlot.unit_type }}</div>
+      </div>
+      <button type="button" class="btn-close" (click)="closeDrawer()"></button>
+    </div>
+
+    <!-- Drawer Body Content -->
+    <div class="drawer-body p-3">
+      
+      <!-- Key Facts 4-Grid -->
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <div class="p-2 rounded bg-light border">
+            <div class="fs-10 text-muted fw-700 text-uppercase">Area (Sq.Ft / Gaj)</div>
+            <div class="fs-13 fw-800 text-dark">{{ selectedPlot.area_sqft }} <small>Sq.Ft</small> ({{ selectedPlot.area_gaj }} Gaj)</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-2 rounded bg-light border">
+            <div class="fs-10 text-muted fw-700 text-uppercase">Base Valuation</div>
+            <div class="fs-13 fw-800 text-dark">₹{{ (selectedPlot.price || 0) | number }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OCCUPANCY & BUYER DOSSIER SECTION -->
+      <div class="buyer-dossier-card p-3 rounded-3 mb-3 border" [class.bg-white]="selectedPlot.status !== 'Vacant'" [class.bg-light]="selectedPlot.status === 'Vacant'">
+        <div class="fs-11 fw-700 text-muted text-uppercase mb-2 d-flex align-items-center justify-content-between">
+          <span><i class="fas fa-id-card-alt me-1 text-gold"></i> Buyer &amp; Allotment Dossier</span>
+          <span *ngIf="selectedPlot.active_booking_serial" class="badge bg-gold text-dark fs-10">
+            {{ selectedPlot.active_booking_serial }}
+          </span>
+        </div>
+
+        <!-- Vacant Case -->
+        <div *ngIf="selectedPlot.status === 'Vacant'" class="text-center py-3 text-muted">
+          <i class="fas fa-check-circle text-success fs-3 mb-2 d-block"></i>
+          <div class="fs-12 fw-700 text-dark">Plot is Vacant &amp; Available</div>
+          <div class="fs-11 text-muted">Ready for booking application from customer or associate portal</div>
+        </div>
+
+        <!-- Occupied Case -->
+        <div *ngIf="selectedPlot.status !== 'Vacant'">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div>
+              <div class="fs-13 fw-700 text-dark">{{ selectedPlot.customer_name || 'Customer' }}</div>
+              <div class="fs-11 text-muted" *ngIf="selectedPlot.customer_mobile">
+                <i class="fas fa-phone text-success me-1"></i>
+                <a [href]="'tel:' + selectedPlot.customer_mobile" class="text-decoration-none text-muted">{{ selectedPlot.customer_mobile }}</a>
+              </div>
+            </div>
+            <span *ngIf="selectedPlot.booking_status" class="badge bg-secondary fs-10">{{ selectedPlot.booking_status }}</span>
+          </div>
+
+          <!-- Associate info if any -->
+          <div *ngIf="selectedPlot.associate_name" class="fs-11 text-muted mb-2 pt-1 border-top">
+            <i class="fas fa-user-tie text-gold me-1"></i> Associate: <strong>{{ selectedPlot.associate_name }}</strong>
+            <span *ngIf="selectedPlot.associate_code"> ({{ selectedPlot.associate_code }})</span>
+          </div>
+
+          <!-- Financial summary -->
+          <div class="row g-2 text-center p-2 rounded bg-light border mb-2 fs-11">
+            <div class="col-6 border-end">
+              <span class="text-muted d-block">Advance Paid</span>
+              <strong class="text-success fs-12">₹{{ (selectedPlot.advance_paid || 0) | number }}</strong>
+            </div>
+            <div class="col-6">
+              <span class="text-muted d-block">Remaining Balance</span>
+              <strong class="text-danger fs-12">₹{{ (selectedPlot.remaining_balance || 0) | number }}</strong>
+            </div>
+          </div>
+
+          <!-- Queue Count Alert if waitlist exists -->
+          <div *ngIf="selectedPlot.queue_count && selectedPlot.queue_count > 0" class="alert alert-warning p-2 fs-11 rounded mb-0 d-flex align-items-center justify-content-between">
+            <span><i class="fas fa-users text-warning me-1"></i> <strong>{{ selectedPlot.queue_count }}</strong> applicant(s) in Waitlist</span>
+            <button class="btn btn-xs btn-outline-dark" (click)="goToBookingDossier(selectedPlot.active_booking_id)">View Queue</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sold / Registry Specifics (If Sold) -->
+      <div *ngIf="selectedPlot.status === 'Sold'" class="p-3 rounded-3 mb-3 bg-danger-subtle border border-danger">
+        <div class="fs-11 fw-700 text-danger text-uppercase mb-1">
+          <i class="fas fa-stamp me-1"></i> Closed &amp; Registered Sale
+        </div>
+        <div class="fs-12 text-dark">
+          Final Sold Price: <strong>₹{{ (selectedPlot.sold_price || selectedPlot.price || 0) | number }}</strong>
+        </div>
+        <div *ngIf="selectedPlot.sold_at" class="fs-11 text-muted">
+          Sold Date: {{ selectedPlot.sold_at | date:'dd MMM yyyy' }}
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS SECTION -->
+      <div class="d-flex flex-column gap-2 pt-2 border-top">
+        
+        <!-- Primary Action: Open Full Booking Dossier -->
+        <button *ngIf="selectedPlot.active_booking_id" class="btn btn-gold btn-sm w-100 fw-700 shadow-sm" (click)="goToBookingDossier(selectedPlot.active_booking_id)">
+          <i class="fas fa-folder-open me-1"></i> Open Booking Dossier
+        </button>
+
+        <!-- Mark as Sold Button (If Booked & Remaining Balance is 0) -->
+        <button *ngIf="selectedPlot.status === 'Booked' && selectedPlot.active_booking_id"
+                class="btn btn-danger btn-sm w-100 fw-700"
+                [disabled]="(selectedPlot.remaining_balance || 0) > 0 || actionLoading"
+                (click)="openMarkSoldModal(selectedPlot)">
+          <i class="fas fa-stamp me-1"></i> Mark as Sold (Registry)
+        </button>
+        <div *ngIf="selectedPlot.status === 'Booked' && (selectedPlot.remaining_balance || 0) > 0" class="fs-10 text-muted text-center">
+          * Mark as Sold requires zero outstanding balance (Remaining: ₹{{ selectedPlot.remaining_balance | number }}).
+        </div>
+
+        <!-- Confirm Booking (If InProcess) -->
+        <button *ngIf="selectedPlot.status === 'InProcess' && selectedPlot.active_booking_id"
+                class="btn btn-success btn-sm w-100 fw-700"
+                (click)="confirmBookingFromMap(selectedPlot)"
+                [disabled]="actionLoading">
+          <i class="fas fa-check me-1"></i> Confirm Booking
+        </button>
+
+        <!-- Secondary Actions in row -->
+        <div class="d-flex gap-2">
+          <!-- Release Plot to Vacant -->
+          <button *ngIf="selectedPlot.status !== 'Booked' && selectedPlot.status !== 'Sold'"
+                  class="btn btn-outline-secondary btn-xs flex-fill"
+                  (click)="releasePlotVacant(selectedPlot)"
+                  [disabled]="actionLoading">
+            <i class="fas fa-door-open me-1"></i> Release Plot
+          </button>
+
+          <!-- Cancel Booking (If occupied) -->
+          <button *ngIf="selectedPlot.active_booking_id && selectedPlot.status !== 'Sold'"
+                  class="btn btn-outline-danger btn-xs flex-fill"
+                  (click)="cancelBookingFromMap(selectedPlot)"
+                  [disabled]="actionLoading">
+            <i class="fas fa-times me-1"></i> Cancel Booking
+          </button>
+        </div>
+
+        <!-- Status History Link -->
+        <button class="btn btn-link btn-xs text-muted text-decoration-none mt-1" (click)="openPlotHistory(selectedPlot)">
+          <i class="fas fa-history me-1"></i> View Plot Status Audit History
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MARK AS SOLD MODAL -->
+<div *ngIf="showMarkSoldModal && selectedPlot" class="modal-backdrop-custom">
+  <div class="modal-card-custom p-4 bg-white rounded-3 shadow-lg border max-w-550">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+      <div>
+        <h5 class="fw-800 text-dark mb-0"><i class="fas fa-stamp text-danger me-2"></i>Mark Plot as Sold</h5>
+        <div class="fs-11 text-muted">Legal registry recording &amp; final possession closure</div>
+      </div>
+      <button type="button" class="btn-close" (click)="showMarkSoldModal = false"></button>
+    </div>
+
+    <!-- Top Summary Strip -->
+    <div class="p-2 px-3 rounded bg-light border mb-3 fs-12 d-flex justify-content-between align-items-center">
+      <div>
+        <strong>Plot #{{ selectedPlot.plot_number }}</strong> &bull; {{ site?.site_name }}
+      </div>
+      <div class="text-success fw-700">
+        Balance: ₹{{ (selectedPlot.remaining_balance || 0) | number }} (100% Cleared)
+      </div>
+    </div>
+
+    <form (ngSubmit)="submitMarkSold()">
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Final Sold Price (₹) *</label>
+          <input type="number" class="form-control form-control-sm" [(ngModel)]="markSoldForm.final_sold_price" name="final_sold_price" required min="1" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Sale Execution Date *</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="markSoldForm.sold_date" name="sold_date" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Registry / Deed Number</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="markSoldForm.deed_number" name="deed_number" placeholder="e.g. REG-2026/8942" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Registry Date</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="markSoldForm.registry_date" name="registry_date" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Mutation Date</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="markSoldForm.mutation_date" name="mutation_date" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Possession Date</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="markSoldForm.possession_date" name="possession_date" />
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger flex-fill fw-700" [disabled]="markSoldSubmitting">
+          <i [class]="markSoldSubmitting ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check me-1'"></i>
+          {{ markSoldSubmitting ? 'Recording Sale...' : 'Confirm Mark as Sold' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary flex-fill" (click)="showMarkSoldModal = false">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- PLOT STATUS AUDIT TIMELINE MODAL -->
+<div *ngIf="showHistoryModal" class="modal-backdrop-custom">
+  <div class="modal-card-custom p-4 bg-white rounded-3 shadow-lg border max-w-550">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+      <div>
+        <h5 class="fw-800 text-dark mb-0"><i class="fas fa-history text-gold me-2"></i>Plot Status History</h5>
+        <div class="fs-11 text-muted">Plot #{{ selectedPlot?.plot_number }} audit timeline</div>
+      </div>
+      <button type="button" class="btn-close" (click)="showHistoryModal = false"></button>
+    </div>
+
+    <div *ngIf="historyLoading" class="text-center py-4">
+      <div class="spinner-border spinner-border-sm text-gold" role="status"></div>
+      <div class="fs-11 text-muted mt-2">Loading audit timeline...</div>
+    </div>
+
+    <div *ngIf="!historyLoading && plotHistory.length === 0" class="text-center py-4 text-muted fs-12">
+      No historical status records logged for this plot yet.
+    </div>
+
+    <div *ngIf="!historyLoading && plotHistory.length > 0" class="timeline-container max-h-350 overflow-y-auto pr-2">
+      <div *ngFor="let h of plotHistory" class="timeline-entry mb-3 pb-2 border-bottom">
+        <div class="d-flex align-items-center justify-content-between mb-1">
+          <span class="badge bg-secondary fs-10">{{ h.new_status }}</span>
+          <span class="fs-10 text-muted">{{ h.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
+        </div>
+        <div class="fs-11 text-dark" *ngIf="h.reason">
+          Reason: <em>{{ h.reason }}</em>
+        </div>
+        <div class="fs-10 text-muted" *ngIf="h.changed_by_name">
+          Updated by: <strong>{{ h.changed_by_name }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-end pt-2 mt-3 border-top">
+      <button class="btn btn-outline-secondary btn-xs px-3" (click)="showHistoryModal = false">Close</button>
+    </div>
+  </div>
+</div>

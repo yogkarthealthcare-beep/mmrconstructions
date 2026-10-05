@@ -73,6 +73,16 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./plot-map-editor/plot-map-editor.component').then(m => m.PlotMapEditorComponent) 
   },
   { 
+    path: 'sales-map', 
+    loadComponent: () => import('./sales-map/sales-map.component').then(m => m.AdminSalesMapComponent),
+    title: 'Admin Sales Map'
+  },
+  { 
+    path: 'sales-map/:siteId', 
+    loadComponent: () => import('./sales-map/sales-map.component').then(m => m.AdminSalesMapComponent),
+    title: 'Admin Sales Map'
+  },
+  { 
     path: 'booking-management', 
     loadComponent: () => import('./booking-management/booking-management.component').then(m => m.BookingManagementComponent) 
   },
