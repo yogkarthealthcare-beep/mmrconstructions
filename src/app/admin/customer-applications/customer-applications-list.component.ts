@@ -32,53 +32,53 @@ import Swal from 'sweetalert2';
     <!-- Quick Stats Cards -->
     <div class="row g-2.5 mb-3">
       <div class="col-6 col-lg-3">
-        <div class="stat-card p-2.5 px-3 rounded-12 bg-white border shadow-sm h-100">
+        <div class="stat-card stat-card-total p-2.5 px-3 rounded-12 shadow-sm h-100">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <span class="fs-10 text-muted text-uppercase fw-700 letter-spacing-05">Total Enrolled</span>
-              <h3 class="fs-22 fw-800 text-dark mb-0 font-sans">{{ applications.length }}</h3>
+              <span class="fs-10 stat-card-title text-uppercase fw-700 letter-spacing-05">Total Enrolled</span>
+              <h3 class="fs-22 fw-800 stat-val-total mb-0 font-sans">{{ applications.length }}</h3>
             </div>
-            <div class="stat-icon-wrap bg-primary-subtle text-primary p-2 rounded-10">
-              <i class="fas fa-users fs-15"></i>
+            <div class="stat-icon-wrap stat-icon-total p-2 rounded-10 d-flex align-items-center justify-content-center">
+              <i class="fas fa-users fs-14"></i>
             </div>
           </div>
         </div>
       </div>
       <div class="col-6 col-lg-3">
-        <div class="stat-card p-2.5 px-3 rounded-12 bg-white border shadow-sm h-100">
+        <div class="stat-card stat-card-approved p-2.5 px-3 rounded-12 shadow-sm h-100">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <span class="fs-10 text-muted text-uppercase fw-700 letter-spacing-05">Approved</span>
-              <h3 class="fs-22 fw-800 text-success mb-0 font-sans">{{ countByStatus('Approved') }}</h3>
+              <span class="fs-10 stat-card-title text-uppercase fw-700 letter-spacing-05">Approved</span>
+              <h3 class="fs-22 fw-800 stat-val-approved mb-0 font-sans">{{ countByStatus('Approved') }}</h3>
             </div>
-            <div class="stat-icon-wrap bg-success-subtle text-success p-2 rounded-10">
-              <i class="fas fa-check-circle fs-15"></i>
+            <div class="stat-icon-wrap stat-icon-approved p-2 rounded-10 d-flex align-items-center justify-content-center">
+              <i class="fas fa-check-circle fs-14"></i>
             </div>
           </div>
         </div>
       </div>
       <div class="col-6 col-lg-3">
-        <div class="stat-card p-2.5 px-3 rounded-12 bg-white border shadow-sm h-100">
+        <div class="stat-card stat-card-pending p-2.5 px-3 rounded-12 shadow-sm h-100">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <span class="fs-10 text-muted text-uppercase fw-700 letter-spacing-05">Pending Review</span>
-              <h3 class="fs-22 fw-800 text-warning mb-0 font-sans">{{ countByStatus('Pending') + countByStatus('Hold/Pending KYC') }}</h3>
+              <span class="fs-10 stat-card-title text-uppercase fw-700 letter-spacing-05">Pending Review</span>
+              <h3 class="fs-22 fw-800 stat-val-pending mb-0 font-sans">{{ countByStatus('Pending') + countByStatus('Hold/Pending KYC') }}</h3>
             </div>
-            <div class="stat-icon-wrap bg-warning-subtle text-warning p-2 rounded-10">
-              <i class="fas fa-clock fs-15"></i>
+            <div class="stat-icon-wrap stat-icon-pending p-2 rounded-10 d-flex align-items-center justify-content-center">
+              <i class="fas fa-clock fs-14"></i>
             </div>
           </div>
         </div>
       </div>
       <div class="col-6 col-lg-3">
-        <div class="stat-card p-2.5 px-3 rounded-12 bg-white border shadow-sm h-100">
+        <div class="stat-card stat-card-payment p-2.5 px-3 rounded-12 shadow-sm h-100">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <span class="fs-10 text-muted text-uppercase fw-700 letter-spacing-05">Payment Cleared</span>
-              <h3 class="fs-22 fw-800 text-info mb-0 font-sans">{{ countByPaymentStatus('Cleared') }}</h3>
+              <span class="fs-10 stat-card-title text-uppercase fw-700 letter-spacing-05">Payment Cleared</span>
+              <h3 class="fs-22 fw-800 stat-val-payment mb-0 font-sans">{{ countByPaymentStatus('Cleared') }}</h3>
             </div>
-            <div class="stat-icon-wrap bg-info-subtle text-info p-2 rounded-10">
-              <i class="fas fa-money-bill-wave fs-15"></i>
+            <div class="stat-icon-wrap stat-icon-payment p-2 rounded-10 d-flex align-items-center justify-content-center">
+              <i class="fas fa-money-bill-wave fs-14"></i>
             </div>
           </div>
         </div>
@@ -385,8 +385,66 @@ import Swal from 'sweetalert2';
       width: fit-content !important;
     }
     .text-gold { color: #d97706 !important; }
-    .text-emerald { color: #059669 !important; }
-    .text-warning-dark { color: #92400e !important; }
+    .stat-card {
+      transition: all 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
+    }
+
+    .stat-card-total {
+      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important;
+      border: 1px solid #bfdbfe !important;
+      border-left: 4px solid #2563eb !important;
+    }
+    .stat-card-total .stat-card-title { color: #1d4ed8 !important; }
+    .stat-val-total { color: #1e3a8a !important; }
+    .stat-icon-total {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+      color: #ffffff !important;
+      box-shadow: 0 3px 8px rgba(37, 99, 235, 0.35) !important;
+    }
+
+    .stat-card-approved {
+      background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%) !important;
+      border: 1px solid #a7f3d0 !important;
+      border-left: 4px solid #10b981 !important;
+    }
+    .stat-card-approved .stat-card-title { color: #047857 !important; }
+    .stat-val-approved { color: #064e3b !important; }
+    .stat-icon-approved {
+      background: linear-gradient(135deg, #10b981, #059669) !important;
+      color: #ffffff !important;
+      box-shadow: 0 3px 8px rgba(5, 150, 105, 0.35) !important;
+    }
+
+    .stat-card-pending {
+      background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%) !important;
+      border: 1px solid #fde68a !important;
+      border-left: 4px solid #f59e0b !important;
+    }
+    .stat-card-pending .stat-card-title { color: #b45309 !important; }
+    .stat-val-pending { color: #78350f !important; }
+    .stat-icon-pending {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #ffffff !important;
+      box-shadow: 0 3px 8px rgba(217, 119, 6, 0.35) !important;
+    }
+
+    .stat-card-payment {
+      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%) !important;
+      border: 1px solid #bae6fd !important;
+      border-left: 4px solid #0284c7 !important;
+    }
+    .stat-card-payment .stat-card-title { color: #0369a1 !important; }
+    .stat-val-payment { color: #0c4a6e !important; }
+    .stat-icon-payment {
+      background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
+      color: #ffffff !important;
+      box-shadow: 0 3px 8px rgba(2, 132, 199, 0.35) !important;
+    }
+
     .bg-primary-subtle { background-color: #eef2ff !important; }
     .bg-success-subtle { background-color: #ecfdf5 !important; }
     .bg-warning-subtle { background-color: #fefce8 !important; }
