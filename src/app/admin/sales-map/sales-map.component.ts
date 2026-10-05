@@ -233,10 +233,15 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
 
       if (initial) {
+        this.fitToScreen();
         setTimeout(() => {
           this.fitToScreen();
           this.cdr.markForCheck();
-        }, 60);
+        }, 50);
+        setTimeout(() => {
+          this.fitToScreen();
+          this.cdr.markForCheck();
+        }, 200);
       } else if (this.selectedPlot) {
         const refreshed = this.plots.find(p => p.plot_id === this.selectedPlot?.plot_id);
         if (refreshed) {
@@ -603,76 +608,129 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
     };
   }
 
+  get transformStyle(): string {
+    return `translate(${this.pan.x.toFixed(1)}px, ${this.pan.y.toFixed(1)}px) scale(${this.zoom.toFixed(3)})`;
+  }
+
+  get siteMapUrl(): string {
+    return this.resolveImageUrl(this.site?.map_image_url || this.site?.layout_map_url || this.site?.property_image_url || '');
+  }
+
   // ── Pan & Zoom Controls ─────────────────────────────────────────────
   zoomIn(): void {
-    this.setZoom(this.zoom * 1.35);
+    this.zoomAtCenter(1.3);
   }
 
   zoomOut(): void {
-    this.setZoom(this.zoom / 1.35);
+    this.zoomAtCenter(1 / 1.3);
+  }
+
+  resetZoom(): void {
+    this.fitToScreen();
   }
 
   fitToScreen(): void {
     const vp = this.mapViewportRef?.nativeElement;
-    if (!vp || this.imageWidth <= 0 || this.imageHeight <= 0) return;
-
-    const vpWidth = vp.clientWidth || 800;
-    const vpHeight = vp.clientHeight || 600;
-
-    const scaleX = vpWidth / this.imageWidth;
-    const scaleY = vpHeight / this.imageHeight;
-    const bestScale = Math.min(scaleX, scaleY) * 0.96;
-
-    this.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, bestScale));
-    this.pan = {
-      x: (vpWidth - this.imageWidth * this.zoom) / 2,
-      y: (vpHeight - this.imageHeight * this.zoom) / 2
-    };
-    this.cdr.markForCheck();
-  }
-
-  private setZoom(newZoom: number, focalPoint?: { x: number; y: number }): void {
-    const clampedZoom = Math.max(this.minZoom, Math.min(this.maxZoom, newZoom));
-    if (Math.abs(clampedZoom - this.zoom) < 0.0001) return;
-
-    const vp = this.mapViewportRef?.nativeElement;
-    const focalX = focalPoint ? focalPoint.x : (vp ? vp.clientWidth / 2 : 400);
-    const focalY = focalPoint ? focalPoint.y : (vp ? vp.clientHeight / 2 : 300);
-
-    const worldX = (focalX - this.pan.x) / this.zoom;
-    const worldY = (focalY - this.pan.y) / this.zoom;
-
-    this.zoom = clampedZoom;
-    this.pan = {
-      x: focalX - worldX * this.zoom,
-      y: focalY - worldY * this.zoom
-    };
-    this.cdr.markForCheck();
-  }
-
-  onWheel(event: WheelEvent): void {
-    event.preventDefault();
-    const vp = this.mapViewportRef?.nativeElement;
     if (!vp) return;
-    const rect = vp.getBoundingClientRect();
-    const focalPoint = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
-    };
+    const vpW = vp.clientWidth;
+    const vpH = vp.clientHeight;
+    if (vpW <= 0 || vpH <= 0) return;
 
-    const delta = event.deltaY < 0 ? 1.18 : 0.85;
-    this.setZoom(this.zoom * delta, focalPoint);
+    const targetW = this.imageWidth || 2000;
+    const targetH = this.imageHeight || 1637;
+
+    // 2-3% comfortable margin around borders (~16-20px)
+    const scaleX = (vpW * 0.96) / targetW;
+    const scaleY = (vpH * 0.96) / targetH;
+    this.zoom = Math.min(scaleX, scaleY);
+    this.zoom = Math.max(this.minZoom, Math.min(this.zoom, 3));
+
+    this.pan = {
+      x: (vpW - targetW * this.zoom) / 2,
+      y: (vpH - targetH * this.zoom) / 2
+    };
+    this.cdr.markForCheck();
   }
 
-  onPointerDown(event: PointerEvent): void {
-    if (event.button !== 0 && event.pointerType === 'mouse') return;
+  private zoomAtCenter(factor: number): void {
+    const viewport = this.mapViewportRef?.nativeElement;
+    if (!viewport) return;
+    const cx = viewport.clientWidth / 2;
+    const cy = viewport.clientHeight / 2;
+    this.applyZoom(factor, cx, cy);
+  }
+
+  private applyZoom(factor: number, clientCenterX: number, clientCenterY: number): void {
+    const newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoom * factor));
+    if (Math.abs(newZoom - this.zoom) < 0.0001) return;
+
+    // Zoom relative to focal point (clientCenterX, clientCenterY)
+    const ratio = newZoom / this.zoom;
+    this.pan.x = clientCenterX - (clientCenterX - this.pan.x) * ratio;
+    this.pan.y = clientCenterY - (clientCenterY - this.pan.y) * ratio;
+    this.zoom = newZoom;
+    this.clampPan();
+    this.cdr.markForCheck();
+  }
+
+  private clampPan(): void {
+    const viewport = this.mapViewportRef?.nativeElement;
+    if (!viewport) return;
+    const vpW = viewport.clientWidth;
+    const vpH = viewport.clientHeight;
+    const contentW = this.imageWidth * this.zoom;
+    const contentH = this.imageHeight * this.zoom;
+
+    // If map width is smaller than or equal to viewport, keep strictly centered
+    if (contentW <= vpW) {
+      this.pan.x = (vpW - contentW) / 2;
+    } else {
+      const margin = 20;
+      const minX = vpW - contentW - margin;
+      const maxX = margin;
+      this.pan.x = Math.max(minX, Math.min(maxX, this.pan.x));
+    }
+
+    // If map height is smaller than or equal to viewport, keep strictly centered
+    if (contentH <= vpH) {
+      this.pan.y = (vpH - contentH) / 2;
+    } else {
+      const margin = 20;
+      const minY = vpH - contentH - margin;
+      const maxY = margin;
+      this.pan.y = Math.max(minY, Math.min(maxY, this.pan.y));
+    }
+  }
+
+  onWheel(e: WheelEvent): void {
+    e.preventDefault();
+    const viewport = this.mapViewportRef?.nativeElement;
+    const rect = viewport?.getBoundingClientRect();
+    const cursorX = rect ? e.clientX - rect.left : e.clientX;
+    const cursorY = rect ? e.clientY - rect.top : e.clientY;
+
+    const zoomFactor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+    this.applyZoom(zoomFactor, cursorX, cursorY);
+  }
+
+  onDoubleClick(e: MouseEvent): void {
+    const viewport = this.mapViewportRef?.nativeElement;
+    const rect = viewport?.getBoundingClientRect();
+    const cursorX = rect ? e.clientX - rect.left : e.clientX;
+    const cursorY = rect ? e.clientY - rect.top : e.clientY;
+    this.applyZoom(1.5, cursorX, cursorY);
+  }
+
+  onPointerDown(e: PointerEvent): void {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    (e.target as HTMLElement)?.setPointerCapture?.(e.pointerId);
 
     this.isPointerDown = true;
     this.pointerDistanceMoved = 0;
-    this.pointerStart = { x: event.clientX, y: event.clientY };
+    this.pointerStart = { x: e.clientX, y: e.clientY };
     this.panStart = { ...this.pan };
 
-    this.activeTouchPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    this.activeTouchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
     if (this.activeTouchPointers.size === 2) {
       const pts = Array.from(this.activeTouchPointers.values());
@@ -681,40 +739,52 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
     }
   }
 
-  onPointerMove(event: PointerEvent): void {
-    if (this.activeTouchPointers.has(event.pointerId)) {
-      this.activeTouchPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  onPointerMove(e: PointerEvent): void {
+    if (this.activeTouchPointers.has(e.pointerId)) {
+      this.activeTouchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     }
 
     if (this.activeTouchPointers.size === 2) {
       const pts = Array.from(this.activeTouchPointers.values());
       const currentDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
       if (this.initialPinchDistance > 10) {
-        const scale = currentDist / this.initialPinchDistance;
-        const midX = (pts[0].x + pts[1].x) / 2;
-        const midY = (pts[0].y + pts[1].y) / 2;
-        const vp = this.mapViewportRef?.nativeElement;
-        const rect = vp ? vp.getBoundingClientRect() : { left: 0, top: 0 };
-        this.setZoom(this.initialPinchZoom * scale, { x: midX - rect.left, y: midY - rect.top });
+        const factor = currentDist / this.initialPinchDistance;
+        const pinchCenter = {
+          x: (pts[0].x + pts[1].x) / 2,
+          y: (pts[0].y + pts[1].y) / 2
+        };
+        const viewport = this.mapViewportRef?.nativeElement;
+        const rect = viewport?.getBoundingClientRect();
+        const relCenterX = rect ? pinchCenter.x - rect.left : pinchCenter.x;
+        const relCenterY = rect ? pinchCenter.y - rect.top : pinchCenter.y;
+
+        const targetZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.initialPinchZoom * factor));
+        const ratio = targetZoom / this.zoom;
+        this.pan.x = relCenterX - (relCenterX - this.pan.x) * ratio;
+        this.pan.y = relCenterY - (relCenterY - this.pan.y) * ratio;
+        this.zoom = targetZoom;
+        this.clampPan();
+        this.cdr.markForCheck();
       }
       return;
     }
 
     if (!this.isPointerDown) return;
 
-    const dx = event.clientX - this.pointerStart.x;
-    const dy = event.clientY - this.pointerStart.y;
+    const dx = e.clientX - this.pointerStart.x;
+    const dy = e.clientY - this.pointerStart.y;
     this.pointerDistanceMoved = Math.hypot(dx, dy);
 
     this.pan = {
       x: this.panStart.x + dx,
       y: this.panStart.y + dy
     };
+    this.clampPan();
     this.cdr.markForCheck();
   }
 
-  onPointerUp(event: PointerEvent): void {
-    this.activeTouchPointers.delete(event.pointerId);
+  onPointerUp(e: PointerEvent): void {
+    this.activeTouchPointers.delete(e.pointerId);
     if (this.activeTouchPointers.size < 2) {
       this.initialPinchDistance = 0;
     }

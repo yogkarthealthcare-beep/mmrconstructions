@@ -218,7 +218,9 @@
        (wheel)="onWheel($event)"
        (pointerdown)="onPointerDown($event)"
        (pointermove)="onPointerMove($event)"
-       (pointerup)="onPointerUp($event)">
+       (pointerup)="onPointerUp($event)"
+       (pointercancel)="onPointerUp($event)"
+       (dblclick)="onDoubleClick($event)">
 
     <!-- Mobile Filter Toggle Button -->
     <button class="btn btn-dark btn-xs position-absolute top-2 start-2 z-3 d-md-none shadow" (click)="mobileFiltersOpen = true">
@@ -227,13 +229,13 @@
 
     <!-- Floating Zoom Toolbar (Top-Right) -->
     <div class="map-floating-controls position-absolute top-2 end-2 z-3 d-flex flex-column gap-1 shadow-sm">
-      <button class="btn btn-white btn-sm shadow-sm map-ctrl-btn" title="Zoom In" (click)="zoomIn()">
+      <button class="btn btn-white btn-sm shadow-sm map-ctrl-btn" title="Zoom In (+)" (click)="zoomIn()">
         <i class="fas fa-plus"></i>
       </button>
-      <button class="btn btn-white btn-sm shadow-sm map-ctrl-btn" title="Zoom Out" (click)="zoomOut()">
+      <button class="btn btn-white btn-sm shadow-sm map-ctrl-btn" title="Zoom Out (-)" (click)="zoomOut()">
         <i class="fas fa-minus"></i>
       </button>
-      <button class="btn btn-white btn-sm shadow-sm map-ctrl-btn" title="Reset View" (click)="fitToScreen()">
+      <button class="btn btn-white btn-sm shadow-sm map-ctrl-btn" title="Fit Map to Screen" (click)="resetZoom()">
         <i class="fas fa-expand-arrows-alt"></i>
       </button>
     </div>
@@ -241,16 +243,19 @@
     <!-- SVG RENDER LAYER -->
     <svg #mapSvg class="sales-map-svg"
          [attr.viewBox]="'0 0 ' + imageWidth + ' ' + imageHeight"
-         [style.transform]="'translate(' + pan.x + 'px, ' + pan.y + 'px) scale(' + zoom + ')'">
+         [attr.width]="imageWidth"
+         [attr.height]="imageHeight"
+         [style.width.px]="imageWidth"
+         [style.height.px]="imageHeight"
+         [style.transform]="transformStyle">
 
       <!-- Background CAD / Blueprint Layout Image -->
-      <image *ngIf="site?.map_image_url"
-             [attr.href]="resolveImageUrl(site.map_image_url)"
-             [attr.xlink:href]="resolveImageUrl(site.map_image_url)"
+      <image *ngIf="siteMapUrl"
+             [attr.href]="siteMapUrl"
              x="0" y="0"
              [attr.width]="imageWidth"
              [attr.height]="imageHeight"
-             preserveAspectRatio="xMidYMid meet" />
+             preserveAspectRatio="none" />
 
       <!-- Plot Polygons -->
       <g *ngFor="let p of filteredPlots">
