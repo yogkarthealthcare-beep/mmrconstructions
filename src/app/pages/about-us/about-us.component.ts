@@ -59,26 +59,26 @@ export class AboutUsComponent implements OnInit {
     {
       icon: 'fas fa-calendar-alt',
       value: '15+',
-      label: 'Years of Experience',
-      sub: 'Excellence since 2009',
+      label: 'Saalon Ka Experience',
+      sub: '2009 se nirantar vishwas',
     },
     {
       icon: 'fas fa-users',
       value: '10,000+',
-      label: 'Happy Families & Clients',
-      sub: 'Plots & homes delivered',
+      label: 'Khushaal Parivaar',
+      sub: 'Plots aur homes delivered',
     },
     {
       icon: 'fas fa-shield-alt',
       value: '100%',
       label: 'Dispute-Free Land',
-      sub: 'Clear titles & legal security',
+      sub: 'Clear titles aur legal security',
     },
     {
       icon: 'fas fa-map-marker-alt',
       value: '6+',
       label: 'Prime Project Sites',
-      sub: 'Kanpur, Unnao, Lucknow',
+      sub: 'Kanpur, Unnao aur Lucknow mein',
     },
   ];
 
@@ -86,39 +86,39 @@ export class AboutUsComponent implements OnInit {
   services: ServiceCard[] = [
     {
       icon: 'fas fa-home',
-      title: 'Residential Plots & Homes',
-      description: 'Well-planned plots, modern homes and secure communities.',
-      linkText: 'Learn More',
+      title: 'Residential Plots & Gated Townships',
+      description: 'Well-planned plots, pakki sadkein, drainage aur 24×7 electricity ke saath surakshit society.',
+      linkText: 'Sites Dekhein',
     },
     {
       icon: 'fas fa-building',
-      title: 'Commercial Spaces',
-      description: 'Shops, offices, malls and business hubs for growth.',
-      linkText: 'Learn More',
+      title: 'Commercial Shops & Hubs',
+      description: 'Highway aur prime locations par shops, showrooms aur business ke liye high-return spaces.',
+      linkText: 'Explore Karein',
     },
     {
       icon: 'fas fa-map-marked-alt',
-      title: 'Township Development',
-      description: 'Modern infrastructure with parks, roads and premium amenities.',
-      linkText: 'Learn More',
+      title: 'Master-Planned Townships',
+      description: 'Parks, boundary wall, grand entrance gate aur modern amenities se lais townships.',
+      linkText: 'Janiye Aur',
     },
     {
-      icon: 'fas fa-hard-hat',
-      title: 'Custom Construction',
-      description: 'Tailored construction solutions for homes and businesses.',
-      linkText: 'Learn More',
+      icon: 'fas fa-shield-alt',
+      title: '100% Legal & Registry Support',
+      description: 'Dispute-free zameen, clear registry, dakhil kharij aur bank verification ki complete suvidha.',
+      linkText: 'Janiye Aur',
     },
     {
-      icon: 'fas fa-tools',
-      title: 'Renovation & Upgradation',
-      description: 'Enhance your existing spaces with modern designs.',
-      linkText: 'Learn More',
+      icon: 'fas fa-hand-holding-usd',
+      title: '2-Year Buyback Guarantee',
+      description: 'Aapka paisa 100% safe — 2 saal mein investment + ₹1,00,000 extra return ki guarantee.',
+      linkText: 'Buyback Terms',
     },
     {
-      icon: 'fas fa-award',
-      title: '12+ Year Expertise',
-      description: 'Trusted by thousands for quality and commitment.',
-      linkText: 'Learn More',
+      icon: 'fas fa-user-tie',
+      title: 'Associate Earning Program',
+      description: 'Associate banein aur plot sales par 12 saal tak monthly commission aur target bonus kamayein.',
+      linkText: 'Join Karein',
     },
   ];
 
@@ -126,23 +126,23 @@ export class AboutUsComponent implements OnInit {
   strengths: StrengthCard[] = [
     {
       icon: 'fas fa-shield-alt',
-      title: 'Trusted & Transparent',
-      description: 'Clear titles, legal security and honest dealings.',
+      title: '100% Legal & Transparent',
+      description: 'Har plot ki legal scrutiny, clear registry aur transparent paperwork.',
     },
     {
-      icon: 'fas fa-users',
-      title: 'Customer Focused',
-      description: 'Your satisfaction is our priority.',
+      icon: 'fas fa-calculator',
+      title: 'Aasan EMI & Bank Finance',
+      description: 'Sirf ₹51,000 down payment aur aasan maasik kishton par apna plot payein.',
     },
     {
       icon: 'fas fa-city',
-      title: 'Modern Infrastructure',
-      description: 'Well-planned, sustainable and future-ready.',
+      title: 'Highway & Prime Locations',
+      description: 'Airports, highways aur railway stations se sirf kuch hi minutes ki doori.',
     },
     {
       icon: 'fas fa-clock',
-      title: 'On-Time Delivery',
-      description: 'Commitment to deliver as promised.',
+      title: 'Samay Par Possession',
+      description: 'Paved roads, electric poles aur boundary ke saath waqt par direct possession.',
     },
   ];
 
@@ -151,7 +151,7 @@ export class AboutUsComponent implements OnInit {
     {
       name: 'Suraj Kumar Verma',
       designation: 'Director',
-      description: 'Leads strategic planning, project execution and business expansion with a focus on sustainable growth.',
+      description: 'Strategic planning, project execution aur business expansion ko lead karte hain, jisse har grahak ko mile behtar vishwas.',
       avatar: 'assets/suraj-kumar-verma.jpg',
       linkedinUrl: '#',
       youtubeUrl: '#',
@@ -159,7 +159,7 @@ export class AboutUsComponent implements OnInit {
     {
       name: 'Sangeet Rajput',
       designation: 'Managing Director',
-      description: 'Brings expertise in operations, project management and customer relations to ensure excellence.',
+      description: 'Ground operations, site planning aur customer relations mein vishesh anubhav ke saath best quality deliver karte hain.',
       avatar: 'assets/sangeet-rajput.jpg',
       linkedinUrl: '#',
       youtubeUrl: '#',
