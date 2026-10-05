@@ -30,55 +30,55 @@ import Swal from 'sweetalert2';
     </div>
 
     <!-- Quick Stats Cards -->
-    <div class="row g-3 mb-3">
-      <div class="col-6 col-md-3">
-        <div class="stat-card p-3 rounded-12 bg-white border shadow-sm">
+    <div class="row g-2.5 mb-3">
+      <div class="col-6 col-lg-3">
+        <div class="stat-card p-2.5 px-3 rounded-12 bg-white border shadow-sm h-100">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <span class="fs-11 text-muted text-uppercase fw-700">Total Enrolled</span>
-              <h3 class="fs-20 fw-800 text-dark mb-0">{{ applications.length }}</h3>
+              <span class="fs-10 text-muted text-uppercase fw-700 letter-spacing-05">Total Enrolled</span>
+              <h3 class="fs-22 fw-800 text-dark mb-0 font-sans">{{ applications.length }}</h3>
             </div>
-            <div class="stat-icon-wrap bg-primary-subtle text-primary p-2.5 rounded-10">
-              <i class="fas fa-users fs-16"></i>
+            <div class="stat-icon-wrap bg-primary-subtle text-primary p-2 rounded-10">
+              <i class="fas fa-users fs-15"></i>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="stat-card p-3 rounded-12 bg-white border shadow-sm">
+      <div class="col-6 col-lg-3">
+        <div class="stat-card p-2.5 px-3 rounded-12 bg-white border shadow-sm h-100">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <span class="fs-11 text-muted text-uppercase fw-700">Approved</span>
-              <h3 class="fs-20 fw-800 text-success mb-0">{{ countByStatus('Approved') }}</h3>
+              <span class="fs-10 text-muted text-uppercase fw-700 letter-spacing-05">Approved</span>
+              <h3 class="fs-22 fw-800 text-success mb-0 font-sans">{{ countByStatus('Approved') }}</h3>
             </div>
-            <div class="stat-icon-wrap bg-success-subtle text-success p-2.5 rounded-10">
-              <i class="fas fa-check-circle fs-16"></i>
+            <div class="stat-icon-wrap bg-success-subtle text-success p-2 rounded-10">
+              <i class="fas fa-check-circle fs-15"></i>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="stat-card p-3 rounded-12 bg-white border shadow-sm">
+      <div class="col-6 col-lg-3">
+        <div class="stat-card p-2.5 px-3 rounded-12 bg-white border shadow-sm h-100">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <span class="fs-11 text-muted text-uppercase fw-700">Pending Review</span>
-              <h3 class="fs-20 fw-800 text-warning mb-0">{{ countByStatus('Pending') + countByStatus('Hold/Pending KYC') }}</h3>
+              <span class="fs-10 text-muted text-uppercase fw-700 letter-spacing-05">Pending Review</span>
+              <h3 class="fs-22 fw-800 text-warning mb-0 font-sans">{{ countByStatus('Pending') + countByStatus('Hold/Pending KYC') }}</h3>
             </div>
-            <div class="stat-icon-wrap bg-warning-subtle text-warning p-2.5 rounded-10">
-              <i class="fas fa-clock fs-16"></i>
+            <div class="stat-icon-wrap bg-warning-subtle text-warning p-2 rounded-10">
+              <i class="fas fa-clock fs-15"></i>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="stat-card p-3 rounded-12 bg-white border shadow-sm">
+      <div class="col-6 col-lg-3">
+        <div class="stat-card p-2.5 px-3 rounded-12 bg-white border shadow-sm h-100">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <span class="fs-11 text-muted text-uppercase fw-700">Payment Cleared</span>
-              <h3 class="fs-20 fw-800 text-info mb-0">{{ countByPaymentStatus('Cleared') }}</h3>
+              <span class="fs-10 text-muted text-uppercase fw-700 letter-spacing-05">Payment Cleared</span>
+              <h3 class="fs-22 fw-800 text-info mb-0 font-sans">{{ countByPaymentStatus('Cleared') }}</h3>
             </div>
-            <div class="stat-icon-wrap bg-info-subtle text-info p-2.5 rounded-10">
-              <i class="fas fa-money-bill-wave fs-16"></i>
+            <div class="stat-icon-wrap bg-info-subtle text-info p-2 rounded-10">
+              <i class="fas fa-money-bill-wave fs-15"></i>
             </div>
           </div>
         </div>
@@ -86,18 +86,18 @@ import Swal from 'sweetalert2';
     </div>
 
     <!-- Filter & Search Bar -->
-    <div class="panel-card p-3 mb-3 bg-white rounded-12 border shadow-sm">
+    <div class="panel-card p-2.5 px-3 mb-3 bg-white rounded-12 border shadow-sm">
       <div class="row g-2 align-items-center">
-        <div class="col-md-5">
+        <div class="col-md-5 col-lg-5">
           <div class="input-group input-group-sm">
-            <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search fs-12"></i></span>
             <input type="text" class="form-control bg-light border-start-0 fs-12" [(ngModel)]="searchQuery" (input)="page = 1" placeholder="Search by Customer Name, Mobile, App No, Project...">
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 col-lg-4">
           <div class="d-flex align-items-center gap-2">
             <label class="fs-11 fw-700 text-muted mb-0 text-nowrap">Filter Status:</label>
-            <select class="form-select form-select-sm fs-12" [(ngModel)]="statusFilter" (change)="page = 1">
+            <select class="form-select form-select-sm fs-12 py-1" [(ngModel)]="statusFilter" (change)="page = 1">
               <option value="">All Statuses</option>
               <option value="Approved">Approved (Verified)</option>
               <option value="Pending">Pending (Awaiting Approval)</option>
@@ -106,8 +106,8 @@ import Swal from 'sweetalert2';
             </select>
           </div>
         </div>
-        <div class="col-md-3 text-end">
-          <span class="fs-12 text-muted fw-600">Showing {{ filteredApplications.length }} Records</span>
+        <div class="col-md-3 col-lg-3 text-md-end">
+          <span class="fs-12 text-muted fw-700">Showing {{ filteredApplications.length }} Records</span>
         </div>
       </div>
     </div>
@@ -119,66 +119,70 @@ import Swal from 'sweetalert2';
         title="Customer Applications &amp; Enrollments"
         [count]="filteredApplications.length"
         (export)="exportData('all', 'excel')">
-        <div class="table-responsive">
-          <table class="table align-middle custom-dash-table mb-0">
+        <div class="table-responsive enrollment-table-responsive">
+          <table class="table align-middle custom-dash-table mb-0 w-100">
             <thead class="bg-light">
               <tr>
-                <th class="th-sno" style="width: 40px;">#</th>
-                <th style="min-width: 110px;">Date &amp; App No.</th>
-                <th style="min-width: 170px;">Applicant Name</th>
-                <th style="min-width: 150px;">Contact &amp; Email</th>
-                <th style="min-width: 160px;">Project &amp; Property</th>
-                <th style="min-width: 170px;">Approval Status</th>
-                <th style="min-width: 140px;">Payment Status</th>
-                <th class="text-end" style="min-width: 120px;">Actions</th>
+                <th class="th-sno text-center" style="width: 32px;">#</th>
+                <th style="width: 140px;">DATE &amp; APP NO.</th>
+                <th style="min-width: 150px;">APPLICANT NAME</th>
+                <th style="min-width: 140px;">CONTACT &amp; EMAIL</th>
+                <th style="min-width: 120px;">PROJECT &amp; PROPERTY</th>
+                <th style="width: 150px;">APPROVAL STATUS</th>
+                <th style="width: 110px;">PAYMENT STATUS</th>
+                <th class="text-end" style="width: 110px;">ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let app of pagedApplications; let i = index">
-                <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
+                <td class="td-sno text-center fs-11 fw-700 text-muted">{{ (page - 1) * pageSize + i + 1 }}</td>
                 
                 <!-- Date & App No -->
                 <td>
-                  <div class="d-flex flex-column">
-                    <span class="fs-11 fw-700 text-dark"><span class="badge bg-dark text-gold border px-2 py-1">{{ app.application_no || app.member_id || 'Pending' }}</span></span>
-                    <small class="fs-10 text-muted mt-1"><i class="fas fa-calendar-alt me-1 text-gold"></i>{{ app.form_date ? (app.form_date | date:'dd MMM yyyy') : (app.registered_at | date:'dd MMM yyyy') }}</small>
+                  <div class="d-flex flex-column gap-0.5">
+                    <span class="badge bg-dark text-gold border px-2 py-0.5 fs-10 fw-700 text-start w-fit">
+                      {{ app.application_no || app.member_id || 'Pending' }}
+                    </span>
+                    <small class="fs-10 text-muted mt-0.5">
+                      <i class="fas fa-calendar-alt me-1 text-gold"></i>{{ app.form_date ? (app.form_date | date:'dd MMM yyyy') : (app.registered_at | date:'dd MMM yyyy') }}
+                    </small>
                   </div>
                 </td>
 
                 <!-- Applicant Name & Sponsor -->
                 <td>
                   <div class="d-flex align-items-center gap-2">
-                    <div class="avatar-circle-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-700 fs-11" style="width: 30px; height: 30px; min-width: 30px;">
+                    <div class="avatar-circle-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-800 fs-11" style="width: 28px; height: 28px; min-width: 28px;">
                       {{ (app.applicant_name || app.full_name || 'C').charAt(0).toUpperCase() }}
                     </div>
-                    <div>
-                      <div class="fs-12 fw-800 text-dark">{{ app.applicant_name || app.full_name || 'N/A' }}</div>
-                      <small class="fs-10 text-muted" *ngIf="app.sponsor_name">Ref: {{ app.sponsor_name }} ({{ app.sponsor_id }})</small>
+                    <div class="min-w-0">
+                      <div class="fs-12 fw-800 text-dark text-truncate">{{ app.applicant_name || app.full_name || 'N/A' }}</div>
+                      <small class="fs-10 text-muted text-truncate d-block" *ngIf="app.sponsor_name">Ref: {{ app.sponsor_name }} ({{ app.sponsor_id }})</small>
                     </div>
                   </div>
                 </td>
 
                 <!-- Contact & Email -->
                 <td>
-                  <div class="fs-11 fw-700 text-dark"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ app.mobile_1 || app.mobile_no || 'N/A' }}</div>
-                  <div class="fs-10 text-muted text-truncate" style="max-width: 150px;" *ngIf="app.email_1 || app.email" [title]="app.email_1 || app.email">
-                    <i class="fas fa-envelope me-1 text-muted"></i>{{ app.email_1 || app.email }}
+                  <div class="fs-11 fw-700 text-dark"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ app.mobile_1 || app.mobile_no || 'N/A' }}</div>
+                  <div class="fs-10 text-muted text-truncate" style="max-width: 140px;" *ngIf="app.email_1 || app.email" [title]="app.email_1 || app.email">
+                    <i class="fas fa-envelope me-1 text-muted fs-9"></i>{{ app.email_1 || app.email }}
                   </div>
                 </td>
 
                 <!-- Project & Property -->
                 <td>
                   <div class="fs-11 fw-700 text-dark">{{ app.project_name || '—' }}</div>
-                  <small class="fs-10 text-muted" *ngIf="app.property_type || app.plot_flat_no">
+                  <small class="fs-10 text-muted d-block text-truncate" *ngIf="app.property_type || app.plot_flat_no">
                     {{ app.property_type }} <span *ngIf="app.plot_flat_no">(#{{ app.plot_flat_no }})</span>
                   </small>
                 </td>
 
                 <!-- INLINE APPROVAL STATUS DROPDOWN -->
                 <td>
-                  <div class="d-flex align-items-center gap-1.5 position-relative">
+                  <div class="position-relative">
                     <select
-                      class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
+                      class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none w-100"
                       [ngClass]="{
                         'border-success text-success bg-success-subtle': app.application_status === 'Approved',
                         'border-warning text-warning-dark bg-warning-subtle': app.application_status === 'Pending',
@@ -188,19 +192,19 @@ import Swal from 'sweetalert2';
                       [value]="app.application_status || 'Pending'"
                       [disabled]="app._updatingStatus"
                       (change)="onStatusChange(app, $event)">
-                      <option value="Pending">⏳ Pending Approval</option>
-                      <option value="Approved">✅ Approved (Verified)</option>
-                      <option value="Hold/Pending KYC">⚠️ Hold / Pending KYC</option>
-                      <option value="Rejected">❌ Rejected</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Approved">&#x2714; Approved (Verified)</option>
+                      <option value="Hold/Pending KYC">&#x26A0; Hold / Pending KYC</option>
+                      <option value="Rejected">&#x2716; Rejected</option>
                     </select>
-                    <i *ngIf="app._updatingStatus" class="fas fa-spinner fa-spin text-primary position-absolute end-0 me-4"></i>
+                    <i *ngIf="app._updatingStatus" class="fas fa-spinner fa-spin text-primary position-absolute end-0 top-50 translate-middle-y me-3"></i>
                   </div>
                 </td>
 
                 <!-- INLINE PAYMENT STATUS DROPDOWN -->
                 <td>
                   <select
-                    class="form-select form-select-sm fs-11 fw-600 payment-dropdown shadow-none"
+                    class="form-select form-select-sm fs-11 fw-600 payment-dropdown shadow-none w-100"
                     [ngClass]="{
                       'border-success text-success': app.payment_status === 'Cleared',
                       'border-warning text-warning-dark': app.payment_status === 'Pending' || !app.payment_status,
@@ -217,15 +221,16 @@ import Swal from 'sweetalert2';
 
                 <!-- Actions -->
                 <td class="text-end">
-                  <div class="d-flex align-items-center justify-content-end gap-1.5">
+                  <div class="d-flex align-items-center justify-content-end gap-1">
                     <button
-                      class="btn btn-xs btn-outline-primary py-1 px-2 rounded-8"
+                      class="btn btn-xs btn-outline-primary py-1 px-2 rounded-6 fs-11 fw-700 d-inline-flex align-items-center gap-1"
                       (click)="viewDetails(app)"
                       title="View Full Application Details">
-                      <i class="fas fa-eye"></i> Details
+                      <i class="fas fa-eye fs-10"></i> <span>Details</span>
                     </button>
                     <button
-                      class="btn btn-xs btn-outline-danger py-1 px-2 rounded-8"
+                      class="btn btn-xs btn-outline-danger py-1 px-1.5 rounded-6 fs-11 d-inline-flex align-items-center justify-content-center"
+                      style="width: 26px; height: 26px;"
                       (click)="downloadPdf(app)"
                       [disabled]="app._printing"
                       title="Download Application PDF">
@@ -287,10 +292,10 @@ import Swal from 'sweetalert2';
                     class="form-select form-select-sm fs-12 fw-700"
                     [(ngModel)]="selectedApp.application_status"
                     (change)="onModalStatusChange(selectedApp)">
-                    <option value="Pending">⏳ Pending Approval</option>
-                    <option value="Approved">✅ Approved (Verified Customer)</option>
-                    <option value="Hold/Pending KYC">⚠️ Hold / Pending KYC</option>
-                    <option value="Rejected">❌ Rejected</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved (Verified Customer)</option>
+                    <option value="Hold/Pending KYC">Hold / Pending KYC</option>
+                    <option value="Rejected">Rejected</option>
                   </select>
                 </div>
                 <div class="col-md-6">
@@ -373,29 +378,67 @@ import Swal from 'sweetalert2';
     </div>
   `,
   styles: [`
-    .text-gold { color: #f59e0b !important; }
-    .text-emerald { color: #10b981 !important; }
-    .text-warning-dark { color: #b45309 !important; }
-    .bg-primary-subtle { background-color: #e0e7ff !important; }
-    .bg-success-subtle { background-color: #dcfce7 !important; }
-    .bg-warning-subtle { background-color: #fef3c7 !important; }
-    .bg-info-subtle { background-color: #e0f2fe !important; }
-    .bg-danger-subtle { background-color: #fee2e2 !important; }
+    .font-sans {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    }
+    .letter-spacing-05 {
+      letter-spacing: 0.5px;
+    }
+    .w-fit {
+      width: fit-content !important;
+    }
+    .text-gold { color: #d97706 !important; }
+    .text-emerald { color: #059669 !important; }
+    .text-warning-dark { color: #92400e !important; }
+    .bg-primary-subtle { background-color: #eef2ff !important; }
+    .bg-success-subtle { background-color: #ecfdf5 !important; }
+    .bg-warning-subtle { background-color: #fefce8 !important; }
+    .bg-info-subtle { background-color: #f0f9ff !important; }
+    .bg-danger-subtle { background-color: #fef2f2 !important; }
+
+    .enrollment-table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .custom-dash-table {
+      width: 100%;
+      table-layout: auto;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .custom-dash-table thead th {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.5px;
+      padding: 10px 8px;
+      white-space: nowrap;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .custom-dash-table tbody td {
+      padding: 10px 8px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+    }
 
     .status-dropdown {
-      min-width: 145px;
       font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 8px;
+      padding: 3px 6px;
+      border-radius: 6px;
       cursor: pointer;
+      min-width: 120px;
     }
 
     .payment-dropdown {
-      min-width: 110px;
       font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 8px;
+      padding: 3px 6px;
+      border-radius: 6px;
       cursor: pointer;
+      min-width: 85px;
     }
 
     .modal-backdrop-custom {
