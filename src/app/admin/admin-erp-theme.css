@@ -429,12 +429,10 @@
 .panel-shell .admin-table-wrapper,
 .panel-shell .panel-card,
 .admin-table-wrapper {
-  container-type: inline-size;
-  container-name: tableContainer;
   min-width: 0 !important;
   max-width: 100% !important;
-  overflow: hidden;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
+  position: relative;
 }
 
 .panel-shell .table-responsive,
@@ -443,9 +441,13 @@
   width: 100% !important;
   max-width: 100% !important;
   min-width: 0 !important;
+  min-height: 220px !important;
   margin-bottom: 0 !important;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-bottom: 12px !important;
+  box-sizing: border-box !important;
 }
 
 .panel-shell .data-table,
@@ -456,7 +458,6 @@
 table.data-table,
 table.custom-dash-table {
   width: 100% !important;
-  table-layout: fixed !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
   margin-bottom: 0 !important;
@@ -482,8 +483,7 @@ table.custom-dash-table {
   white-space: nowrap !important;
   vertical-align: middle !important;
   line-height: 1.2 !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  display: table-cell !important;
 }
 
 .panel-shell .data-table tbody td,
@@ -500,7 +500,9 @@ table.custom-dash-table {
   line-height: 1.25 !important;
   background: #ffffff !important;
   transition: background-color 0.12s ease !important;
-  overflow: hidden !important;
+  overflow: visible !important;
+  position: relative;
+  display: table-cell !important;
 }
 
 .panel-shell .data-table tbody tr:hover td,
@@ -529,75 +531,99 @@ table.custom-dash-table {
   font-size: 11px !important;
 }
 
-/* Priority Column Management */
-@container tableContainer (max-width: 900px) {
-  .priority-3,
-  .col-priority-3,
-  th.priority-3,
-  td.priority-3 {
-    display: none !important;
-  }
+.panel-shell td:last-child,
+.panel-shell td.td-actions,
+.panel-shell td.text-end,
+.panel-shell th:last-child,
+.panel-shell th.th-actions,
+.panel-shell th.text-end {
+  overflow: visible !important;
 }
 
-@container tableContainer (max-width: 680px) {
-  .priority-2,
-  .col-priority-2,
-  th.priority-2,
-  td.priority-2 {
-    display: none !important;
-  }
+/* ── 8B. IN-TABLE DROPDOWNS & ACTIONS MENUS (FLOAT ABOVE ROWS) ────────── */
+.panel-shell td .dropdown,
+.panel-shell .custom-dash-table td .dropdown,
+.panel-shell .data-table td .dropdown,
+.panel-shell table td .dropdown {
+  position: relative !important;
+  display: inline-block !important;
+  overflow: visible !important;
 }
 
-/* Stacked Card Layout on Narrow Containers */
-@container tableContainer (max-width: 520px) {
-  .data-table.stacked-on-mobile thead,
-  .custom-dash-table.stacked-on-mobile thead,
-  .custom-team-table.stacked-on-mobile thead {
-    display: none !important;
-  }
+.panel-shell td .dropdown-menu,
+.panel-shell .custom-dash-table td .dropdown-menu,
+.panel-shell .data-table td .dropdown-menu,
+.panel-shell .rm-actions-dropdown,
+.panel-shell .dropdown-menu.show {
+  display: block !important;
+  position: absolute !important;
+  top: calc(100% + 4px) !important;
+  right: 0 !important;
+  left: auto !important;
+  z-index: 9999 !important;
+  min-width: 175px !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 4px 0 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
 
-  .data-table.stacked-on-mobile tbody tr,
-  .custom-dash-table.stacked-on-mobile tbody tr,
-  .custom-team-table.stacked-on-mobile tbody tr {
-    display: block !important;
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    margin-bottom: 8px !important;
-    padding: 8px 10px !important;
-  }
+/* Smart Dropup for bottom rows in tables (Prevents clipping at table bottom) */
+.panel-shell tr:nth-last-child(-n+3):not(:first-child) td .dropdown-menu,
+.panel-shell tr:nth-last-child(-n+3):not(:first-child) .dropdown-menu,
+.panel-shell tr:nth-last-child(-n+3):not(:first-child) .rm-actions-dropdown,
+.panel-shell tr.dropup .dropdown-menu,
+.panel-shell td.dropup .dropdown-menu {
+  top: auto !important;
+  bottom: calc(100% + 4px) !important;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.18), 0 -4px 12px rgba(0, 0, 0, 0.08) !important;
+}
 
-  .data-table.stacked-on-mobile tbody td,
-  .custom-dash-table.stacked-on-mobile tbody td,
-  .custom-team-table.stacked-on-mobile tbody td {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 4px 0 !important;
-    border-bottom: 1px dashed #f1f5f9 !important;
-    height: auto !important;
-    min-height: auto !important;
-    font-size: 11px !important;
-    width: 100% !important;
-  }
+.panel-shell tr:first-child td .dropdown-menu,
+.panel-shell tr:nth-child(-n+2) td .dropdown-menu {
+  top: calc(100% + 4px) !important;
+  bottom: auto !important;
+}
 
-  .data-table.stacked-on-mobile tbody td::before,
-  .custom-dash-table.stacked-on-mobile tbody td::before,
-  .custom-team-table.stacked-on-mobile tbody td::before {
-    content: attr(data-label) !important;
-    font-weight: 700 !important;
-    color: #64748b !important;
-    font-size: 10.5px !important;
-    margin-right: 8px !important;
-    flex-shrink: 0 !important;
-  }
+.panel-shell tr:has(.dropdown-menu.show),
+.panel-shell tr:has(.rm-actions-dropdown),
+.panel-shell tr:has(.dropdown.show),
+.panel-shell tr:has(.show),
+.panel-shell tr.active-row-menu,
+.panel-shell tr:focus-within {
+  position: relative !important;
+  z-index: 1060 !important;
+}
 
-  .data-table.stacked-on-mobile tbody td:last-child,
-  .custom-dash-table.stacked-on-mobile tbody td:last-child,
-  .custom-team-table.stacked-on-mobile tbody td:last-child {
-    border-bottom: none !important;
-    margin-top: 4px !important;
-  }
+.panel-shell td:has(.dropdown-menu.show),
+.panel-shell td:has(.rm-actions-dropdown),
+.panel-shell td:has(.show),
+.panel-shell td:focus-within {
+  position: relative !important;
+  z-index: 1061 !important;
+}
+
+/* Native Select Status Dropdowns in Tables */
+.panel-shell select.status-dropdown,
+.panel-shell .form-select.status-dropdown,
+.panel-shell select.status-select-pill {
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 105px !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  padding: 2px 22px 2px 8px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  background-color: #ffffff !important;
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* Truncation & Ellipsis Standards */

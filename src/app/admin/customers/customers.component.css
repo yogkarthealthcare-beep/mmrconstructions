@@ -156,21 +156,26 @@
   font-size: 11px;
 }
 
-/* ── TABLE RESPONSIVE & FIXED LAYOUT ───────────────────────── */
+/* ── TABLE RESPONSIVE & CARD CONTAINMENT ───────────────────────── */
 .table-responsive {
   width: 100% !important;
   max-width: 100% !important;
   min-width: 0 !important;
-  overflow-x: hidden !important; /* Table left-right scroll strictly disabled */
+  min-height: 220px !important;
+  overflow-x: auto !important;
   overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
   margin-bottom: 0;
   border-top-left-radius: 14px;
   border-top-right-radius: 14px;
+  padding-bottom: 8px;
+  box-sizing: border-box !important;
 }
 
 .custom-dash-table {
   width: 100% !important;
-  table-layout: fixed !important; /* Critical: strict percentage widths prevent overflow at 100% zoom */
+  min-width: 860px;
+  table-layout: auto !important;
   margin-bottom: 0;
   border-collapse: separate;
   border-spacing: 0;
@@ -188,8 +193,6 @@
   background: #f8fafc;
   white-space: nowrap;
   vertical-align: middle;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .custom-dash-table td {
@@ -200,7 +203,8 @@
   vertical-align: middle;
   background: #ffffff;
   transition: background-color 0.15s ease;
-  overflow: hidden;
+  overflow: visible !important;
+  position: relative;
 }
 
 .custom-dash-table tr:hover td {
