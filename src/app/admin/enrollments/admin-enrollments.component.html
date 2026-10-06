@@ -223,12 +223,12 @@
                 style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
                 [ngClass]="{
                   'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.application_status === 'Approved',
-                  'border-warning text-warning-dark bg-warning-subtle': item.enrollment_status === 'Pending' || item.application_status === 'Pending' || !item.enrollment_status,
+                  'border-warning text-warning-dark bg-warning-subtle': (item.enrollment_status === 'Pending' || item.application_status === 'Pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.application_status !== 'Approved' && item.enrollment_status !== 'Rejected' && item.application_status !== 'Rejected',
                   'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.application_status === 'Rejected'
                 }"
-                [value]="item.enrollment_status || (item.application_status === 'Approved' ? 'Completed' : 'Pending')"
+                [value]="item.enrollment_status || (item.application_status === 'Approved' ? 'Completed' : (item.application_status === 'Rejected' ? 'Rejected' : 'Pending'))"
                 (change)="onCustomerInlineStatusChange(item, $event)">
-                <option value="Pending">Pending</option>
+                <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.application_status !== 'Approved' && item.application_status !== 'Rejected')">Pending</option>
                 <option value="Completed">&#x2714; Approved (Completed)</option>
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
@@ -295,12 +295,12 @@
                 style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
                 [ngClass]="{
                   'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.status === 'approved',
-                  'border-warning text-warning-dark bg-warning-subtle': item.enrollment_status === 'Pending' || item.status === 'pending' || !item.enrollment_status,
+                  'border-warning text-warning-dark bg-warning-subtle': (item.enrollment_status === 'Pending' || item.status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.status !== 'approved' && item.enrollment_status !== 'Rejected' && item.status !== 'rejected',
                   'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.status === 'rejected'
                 }"
-                [value]="item.enrollment_status || (item.status === 'approved' ? 'Completed' : 'Pending')"
+                [value]="item.enrollment_status || (item.status === 'approved' ? 'Completed' : (item.status === 'rejected' ? 'Rejected' : 'Pending'))"
                 (change)="onAssociateInlineStatusChange(item, $event)">
-                <option value="Pending">Pending</option>
+                <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.status !== 'approved' && item.status !== 'rejected')">Pending</option>
                 <option value="Completed">&#x2714; Approved (Completed)</option>
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
@@ -375,13 +375,13 @@
                 class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
                 style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
                 [ngClass]="{
-                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed',
-                  'border-warning text-warning-dark bg-warning-subtle': item.enrollment_status === 'Pending' || !item.enrollment_status,
-                  'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected'
+                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.app_status === 'approved' || item.status === 'approved',
+                  'border-warning text-warning-dark bg-warning-subtle': (item.enrollment_status === 'Pending' || item.app_status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.app_status !== 'approved' && item.enrollment_status !== 'Rejected' && item.app_status !== 'rejected',
+                  'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.app_status === 'rejected' || item.status === 'rejected'
                 }"
-                [value]="item.enrollment_status || 'Pending'"
+                [value]="item.enrollment_status || (item.app_status === 'approved' ? 'Completed' : (item.app_status === 'rejected' ? 'Rejected' : 'Pending'))"
                 (change)="onInvestorInlineStatusChange(item, $event)">
-                <option value="Pending">Pending</option>
+                <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.app_status !== 'approved' && item.app_status !== 'rejected')">Pending</option>
                 <option value="Completed">&#x2714; Approved (Completed)</option>
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
@@ -454,14 +454,14 @@
                 class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
                 style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
                 [ngClass]="{
-                  'border-success text-success bg-success-subtle': item.status === 'Active',
-                  'border-warning text-warning-dark bg-warning-subtle': item.status === 'Pending' || !item.status,
+                  'border-success text-success bg-success-subtle': item.status === 'Active' || item.status === 'Approved',
+                  'border-warning text-warning-dark bg-warning-subtle': (item.status === 'Pending' || !item.status) && item.status !== 'Active' && item.status !== 'Approved' && item.status !== 'Suspended' && item.status !== 'Rejected',
                   'border-danger text-danger bg-danger-subtle': item.status === 'Suspended' || item.status === 'Rejected'
                 }"
                 [value]="item.status || 'Active'"
                 (change)="onTeamMemberInlineStatusChange(item, $event)">
+                <option value="Pending" *ngIf="item.status === 'Pending' || !item.status">Pending</option>
                 <option value="Active">&#x2714; Active</option>
-                <option value="Pending">Pending</option>
                 <option value="Suspended">&#x2716; Suspended</option>
               </select>
             </td>
@@ -1042,8 +1042,9 @@
           <div class="field">
             <label>Enrollment Status</label>
             <select [(ngModel)]="editFormData.enrollment_status" [disabled]="!isEditMode">
-              <option value="Completed">Completed (Unlocked)</option>
-              <option value="Pending">Pending (Mandatory Lock)</option>
+              <option value="Pending" *ngIf="editFormData.enrollment_status === 'Pending' || !editFormData.enrollment_status">Pending</option>
+              <option value="Completed">&#x2714; Approved (Completed)</option>
+              <option value="Rejected">&#x2716; Rejected</option>
             </select>
           </div>
         </div>
