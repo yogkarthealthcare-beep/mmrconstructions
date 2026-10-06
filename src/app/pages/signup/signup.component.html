@@ -47,102 +47,154 @@
   <div class="auth-right-container">
     <div class="auth-box-card" [ngClass]="roleSelected ? 'form-view' : 'selection-view'">
 
-      <!-- MOBILE BRANDING BAR -->
-      <div class="mobile-brand-banner d-block d-lg-none text-center mb-4">
-        <div class="mobile-logo-circle mb-2">
-          <img src="assets/mmr-logo.png" alt="MMR Logo" />
+      <!-- ── TOP COMPACT TRUST / SUPPORT & BRAND HEADER ── -->
+      <div class="auth-top-header">
+        <div class="header-brand-wrap">
+          <a routerLink="/" class="header-logo-link" title="MMR Construction & Developers">
+            <img src="assets/mmr-logo.png" alt="MMR Logo" class="header-brand-logo" />
+            <div class="header-brand-text">
+              <span class="brand-name">MMR</span>
+              <span class="brand-sub">CONSTRUCTION &amp; DEV.</span>
+            </div>
+          </a>
         </div>
-        <div class="mobile-brand-title">MMR Construction &amp; Developers</div>
-        <div class="mobile-brand-sub">Pvt. Ltd.</div>
+        <div class="header-trust-badges">
+          <div class="trust-badge-pill">
+            <i class="fas fa-shield-alt text-trust-green"></i>
+            <span>Secure &amp; Trusted</span>
+          </div>
+          <div class="trust-badge-pill">
+            <i class="fas fa-headset text-trust-gold"></i>
+            <span>24/7 Support</span>
+          </div>
+        </div>
       </div>
 
-      <!-- ── STEP 1: CHOOSE REGISTRATION TYPE (4 CARDS) ── -->
+      <!-- ── STEP 1: CHOOSE REGISTRATION TYPE (2×2 GRID + WIDE LOGIN PANEL) ── -->
       <div *ngIf="!roleSelected" class="role-selection-section">
-        <div class="text-center mb-4">
-          <span class="step-tag-badge mb-2">WELCOME TO MMR</span>
+        <div class="section-title-wrap text-center mb-4">
+          <span class="step-tag-badge mb-2">
+            <i class="fas fa-award me-1"></i> WELCOME TO MMR
+          </span>
           <h2 class="section-heading">Choose Your Registration Type</h2>
-          <p class="section-subtext">Select how you want to register with us to begin</p>
+          <p class="section-subtext">Select how you want to register with us to begin your journey.</p>
         </div>
 
-        <div class="row g-3 mb-4">
+        <div class="row g-3 g-xl-4 mb-4">
 
           <!-- 1. Customer Card -->
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="role-select-card card-customer h-100" (click)="selectRole('Customer')">
-              <div>
-                <div class="role-badge-tag mb-3"><i class="fas fa-home me-1"></i> PLOT BUYER</div>
-                <div class="role-icon-box mb-3">
-                  <i class="fas fa-user-circle"></i>
+          <div class="col-12 col-sm-6">
+            <div class="reg-type-card card-customer h-100" (click)="selectRole('Customer')" role="button" tabindex="0">
+              <div class="card-inner-top">
+                <div class="card-header-row">
+                  <span class="reg-badge-tag badge-customer">
+                    <i class="fas fa-map-marker-alt me-1"></i> PLOT BUYER
+                  </span>
+                  <div class="reg-accent-icon-wrap icon-customer">
+                    <i class="fas fa-landmark"></i>
+                  </div>
                 </div>
-                <h3 class="role-title">Customer</h3>
-                <p class="role-desc">Register to explore plots, track EMI schedules, and book plot allocations.</p>
+                <h3 class="reg-card-title">Customer</h3>
+                <p class="reg-card-desc">Register to explore plots, track EMI schedules, and book plot allocations.</p>
               </div>
-              <div class="role-card-footer mt-3">
-                <span>Register as Customer</span>
-                <i class="fas fa-arrow-right ms-1"></i>
+              <div class="card-inner-bottom">
+                <div class="reg-cta-btn cta-customer">
+                  <span>Register as Customer</span>
+                  <i class="fas fa-arrow-right ms-2"></i>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- 2. Investor Card -->
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="role-select-card card-investor h-100" (click)="selectRole('Investor')">
-              <div>
-                <div class="role-badge-tag mb-3"><i class="fas fa-coins me-1"></i> HIGH RETURN</div>
-                <div class="role-icon-box mb-3">
-                  <i class="fas fa-chart-line"></i>
+          <div class="col-12 col-sm-6">
+            <div class="reg-type-card card-investor h-100" (click)="selectRole('Investor')" role="button" tabindex="0">
+              <div class="card-inner-top">
+                <div class="card-header-row">
+                  <span class="reg-badge-tag badge-investor">
+                    <i class="fas fa-chart-line me-1"></i> HIGH RETURN
+                  </span>
+                  <div class="reg-accent-icon-wrap icon-investor">
+                    <i class="fas fa-coins"></i>
+                  </div>
                 </div>
-                <h3 class="role-title">Investor</h3>
-                <p class="role-desc">Register to invest in prime real-estate projects with high capital growth.</p>
+                <h3 class="reg-card-title">Investor</h3>
+                <p class="reg-card-desc">Register to invest in prime real-estate projects with high capital growth.</p>
               </div>
-              <div class="role-card-footer mt-3">
-                <span>Register as Investor</span>
-                <i class="fas fa-arrow-right ms-1"></i>
+              <div class="card-inner-bottom">
+                <div class="reg-cta-btn cta-investor">
+                  <span>Register as Investor</span>
+                  <i class="fas fa-arrow-right ms-2"></i>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- 3. Associate Card -->
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="role-select-card card-associate h-100" (click)="selectRole('Associate')">
-              <div>
-                <div class="role-badge-tag mb-3"><i class="fas fa-user-tie me-1"></i> EARN &amp; GROW</div>
-                <div class="role-icon-box mb-3">
-                  <i class="fas fa-users"></i>
+          <div class="col-12 col-sm-6">
+            <div class="reg-type-card card-associate h-100" (click)="selectRole('Associate')" role="button" tabindex="0">
+              <div class="card-inner-top">
+                <div class="card-header-row">
+                  <span class="reg-badge-tag badge-associate">
+                    <i class="fas fa-handshake me-1"></i> EARN &amp; GROW
+                  </span>
+                  <div class="reg-accent-icon-wrap icon-associate">
+                    <i class="fas fa-user-tie"></i>
+                  </div>
                 </div>
-                <h3 class="role-title">Associate</h3>
-                <p class="role-desc">Register as an associate partner to build network &amp; earn commissions.</p>
+                <h3 class="reg-card-title">Associate</h3>
+                <p class="reg-card-desc">Register as an associate partner to build network &amp; earn commissions.</p>
               </div>
-              <div class="role-card-footer mt-3">
-                <span>Register as Associate</span>
-                <i class="fas fa-arrow-right ms-1"></i>
+              <div class="card-inner-bottom">
+                <div class="reg-cta-btn cta-associate">
+                  <span>Register as Associate</span>
+                  <i class="fas fa-arrow-right ms-2"></i>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- 4. Team Member Card (NEW) -->
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="role-select-card card-teammember h-100" (click)="selectRole('Team Member')">
-              <div>
-                <div class="role-badge-tag mb-3"><i class="fas fa-user-shield me-1"></i> SPONSORED</div>
-                <div class="role-icon-box mb-3">
-                  <i class="fas fa-user-friends"></i>
+          <!-- 4. Team Member Card -->
+          <div class="col-12 col-sm-6">
+            <div class="reg-type-card card-teammember h-100" (click)="selectRole('Team Member')" role="button" tabindex="0">
+              <div class="card-inner-top">
+                <div class="card-header-row">
+                  <span class="reg-badge-tag badge-teammember">
+                    <i class="fas fa-users me-1"></i> SPONSORED
+                  </span>
+                  <div class="reg-accent-icon-wrap icon-teammember">
+                    <i class="fas fa-user-friends"></i>
+                  </div>
                 </div>
-                <h3 class="role-title">Team Member</h3>
-                <p class="role-desc">Register with a Sponsor/Member ID to join an active associate team.</p>
+                <h3 class="reg-card-title">Team Member</h3>
+                <p class="reg-card-desc">Register with a Sponsor/Member ID to join an active associate team.</p>
               </div>
-              <div class="role-card-footer mt-3">
-                <span>Register as Team Member</span>
-                <i class="fas fa-arrow-right ms-1"></i>
+              <div class="card-inner-bottom">
+                <div class="reg-cta-btn cta-teammember">
+                  <span>Register as Team Member</span>
+                  <i class="fas fa-arrow-right ms-2"></i>
+                </div>
               </div>
             </div>
           </div>
 
         </div>
 
-        <div class="text-center pt-2">
-          <span class="fs-13 text-muted">Already have an account? </span>
-          <a routerLink="/login" class="login-redirect-link">Login here</a>
+        <!-- ── WIDE ELEGANT LOGIN PANEL ── -->
+        <div class="login-prompt-panel">
+          <div class="login-prompt-content">
+            <div class="login-user-icon">
+              <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="login-prompt-text">
+              <h4 class="login-title">Already have an account?</h4>
+              <p class="login-subtitle">Login to access your dashboard and continue.</p>
+            </div>
+          </div>
+          <a routerLink="/login" class="btn-login-cta">
+            <span>Login here</span>
+            <i class="fas fa-arrow-right ms-2"></i>
+          </a>
         </div>
       </div>
 
