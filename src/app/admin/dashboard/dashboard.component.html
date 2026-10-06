@@ -1,53 +1,97 @@
 <!-- LOADING STATE -->
-<div class="panel-card text-center py-5 mb-2" *ngIf="loading">
-  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
-  <p class="text-muted fs-12 mt-2 mb-0">Loading executive admin control panel...</p>
+<div class="dash-loading-card text-center py-5 mb-3" *ngIf="loading">
+  <div class="dash-spinner mb-3">
+    <i class="fas fa-circle-notch fa-spin"></i>
+  </div>
+  <h5 class="fw-700 text-dark mb-1">Loading MMR Executive Control Center...</h5>
+  <p class="text-muted fs-12 mb-0">Synchronizing live network hierarchy, plot inventory, team metrics &amp; financials.</p>
 </div>
 
 <ng-container *ngIf="!loading">
 
-  <!-- TOP HERO EXECUTIVE BANNER -->
-  <div class="admin-hero-card mb-2">
+  <!-- 1. TOP EXECUTIVE HERO BANNER -->
+  <div class="admin-hero-card mb-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
       <div>
-        <div class="admin-hero-badge"><i class="fas fa-shield-alt me-1"></i>SYSTEM EXECUTIVE CONTROL PANEL</div>
-        <h2 class="admin-hero-title mb-1">Admin Dashboard Overview</h2>
-        <p class="admin-hero-sub mb-0">Monitor live plot bookings, site occupancy, customer KYC approvals &amp; financial revenue.</p>
+        <div class="admin-hero-badge">
+          <i class="fas fa-shield-alt me-1"></i>MMR CONSTRUCTIONS — CENTRAL CONTROL CENTER
+        </div>
+        <h2 class="admin-hero-title mb-1">Executive Dashboard &amp; Operations Center</h2>
+        <p class="admin-hero-sub mb-0">Real-time overview of associates, team member hierarchy, customer enrollments &amp; property inventory.</p>
       </div>
 
       <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-        <button type="button" class="btn btn-outline-light btn-xs" (click)="loadDashboard()" aria-label="Refresh Dashboard Data">
-          <i class="fas fa-sync me-1"></i> Refresh Data
+        <button type="button" class="btn btn-outline-light btn-sm" (click)="loadDashboard()" title="Refresh live statistics">
+          <i class="fas fa-sync-alt me-1"></i> Refresh Data
         </button>
-        <a routerLink="/admin/approvals" class="btn btn-gold btn-xs position-relative" aria-label="View Pending Approvals">
-          <i class="fas fa-user-check me-1"></i> Pending Approvals
-          <span class="badge bg-danger text-white rounded-pill ms-1 fs-10 px-1.5">{{ stats.pending_approvals || 0 }}</span>
+        <a routerLink="/admin/network-tree" class="btn btn-emerald-glass btn-sm" title="Open Complete Network MLM Tree">
+          <i class="fas fa-project-diagram me-1"></i> Full Network Tree
         </a>
+        <a routerLink="/admin/approvals" class="btn btn-gold btn-sm position-relative" title="View Pending KYC & User Approvals">
+          <i class="fas fa-user-check me-1"></i> Approvals
+          <span class="badge bg-danger text-white rounded-pill ms-1.5 fs-11 px-1.5" *ngIf="stats.pending_approvals > 0">
+            {{ stats.pending_approvals }}
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Quick Micro KPI Indicators inside Hero -->
+    <div class="hero-kpi-bar mt-3 pt-2.5 border-top border-white-15 d-flex align-items-center gap-3 flex-wrap">
+      <div class="hero-kpi-pill">
+        <i class="fas fa-user-plus text-warning"></i>
+        <span>New Team Members Today:</span>
+        <strong class="text-warning">{{ stats.team_members_today || 0 }}</strong>
+      </div>
+      <div class="hero-kpi-pill">
+        <i class="fas fa-map-marker-alt text-emerald-light"></i>
+        <span>Active Sites:</span>
+        <strong>{{ sites.length }}</strong>
+      </div>
+      <div class="hero-kpi-pill">
+        <i class="fas fa-clock text-info"></i>
+        <span>Open Inquiries:</span>
+        <strong>{{ stats.open_enquiries || 0 }}</strong>
+      </div>
+      <div class="hero-kpi-pill ms-auto" *ngIf="stats.commission_due > 0">
+        <i class="fas fa-hand-holding-usd text-danger-light"></i>
+        <span>Unpaid Commissions:</span>
+        <strong>{{ getStatVal('commission_due') }}</strong>
       </div>
     </div>
   </div>
 
-  <!-- 8 METRIC STAT CARDS GRID (ALL PROPERLY ACTIONABLE & CONNECTED TO REPORTS) -->
-  <div class="row g-2 mb-2">
-    <div class="col-6 col-xl-3" *ngFor="let s of statCards">
-      <a [routerLink]="s.route"
-         class="stat-card-link text-decoration-none d-block h-100"
-         [attr.aria-label]="s.lbl + ': ' + getStatVal(s.key) + ' (' + s.delta + '). Click to view report.'">
-        <div class="stat-mini-card h-100" [class]="s.boxClass">
-          <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-            <span class="stat-mini-lbl text-truncate pe-1">{{ s.lbl }}</span>
-            <div class="icon-wrap" [style.background]="s.bg" [style.color]="s.color">
-              <i [class]="s.icon"></i>
+  <!-- 2. SUMMARY CARDS: PEOPLE & HIERARCHY -->
+  <div class="dash-section-header mb-2 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <div class="section-icon-badge bg-amber-soft text-amber">
+        <i class="fas fa-users-cog"></i>
+      </div>
+      <div>
+        <h6 class="dash-section-title mb-0">People &amp; Network Team</h6>
+        <span class="dash-section-sub">Direct access to associates, team members, customers and investors</span>
+      </div>
+    </div>
+    <span class="fs-11 fw-600 text-muted">4 Connected Modules</span>
+  </div>
+
+  <div class="row g-2 mb-3">
+    <div class="col-12 col-sm-6 col-xl-3" *ngFor="let card of peopleCards">
+      <a [routerLink]="card.route" [queryParams]="card.queryParams" class="stat-card-anchor text-decoration-none">
+        <div class="stat-action-card h-100" [style.border-top-color]="card.borderAccent">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="stat-category-lbl text-truncate">{{ card.label }}</span>
+            <div class="stat-icon-wrapper" [style.background]="card.bg" [style.color]="card.color">
+              <i [class]="card.icon"></i>
             </div>
           </div>
-          <div class="stat-mini-val">{{ getStatVal(s.key) }}</div>
-          <div class="d-flex align-items-center justify-content-between fs-11 mt-auto pt-1">
-            <div class="kpi-pill-badge" [style.color]="s.color">
-              <i [class]="s.up ? 'fas fa-arrow-up' : 'fas fa-exclamation-circle'"></i>
-              <span class="text-truncate fw-600">{{ s.delta }}</span>
-            </div>
-            <span class="kpi-nav-indicator" [style.color]="s.color" title="View report">
-              <i class="fas fa-chevron-right fs-10"></i>
+          <div class="stat-metric-value mb-1">{{ getStatVal(card.key) }}</div>
+          <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top">
+            <span class="stat-pill-badge" [ngClass]="card.badgeClass || 'badge-default'">
+              <i class="fas fa-check-circle me-1"></i>{{ card.badgeText }}
+            </span>
+            <span class="stat-card-link-text" [style.color]="card.color">
+              {{ card.actionText }}
             </span>
           </div>
         </div>
@@ -55,115 +99,760 @@
     </div>
   </div>
 
-  <!-- ROW 2: SITE OCCUPANCY & RECENT BOOKINGS -->
-  <div class="row g-2 mb-2">
-    
-    <!-- LEFT: LIVE SITE OCCUPANCY -->
-    <div class="col-lg-5">
-      <div class="panel-card h-100 d-flex flex-column">
-        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-          <h6 class="section-card-title mb-0"><i class="fas fa-map-marked-alt text-emerald me-2"></i>Live Site Occupancy</h6>
-          <a routerLink="/admin/sites" class="section-link-btn" aria-label="Manage Sites">Manage Sites →</a>
+  <!-- 3. SUMMARY CARDS: BUSINESS & OPERATIONS -->
+  <div class="dash-section-header mb-2 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <div class="section-icon-badge bg-emerald-soft text-emerald">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div>
+        <h6 class="dash-section-title mb-0">Business, Plots &amp; Revenue</h6>
+        <span class="dash-section-sub">Live booking progress, plot availability and collections</span>
+      </div>
+    </div>
+    <span class="fs-11 fw-600 text-muted">4 Operational Streams</span>
+  </div>
+
+  <div class="row g-2 mb-3">
+    <div class="col-12 col-sm-6 col-xl-3" *ngFor="let card of businessCards">
+      <a [routerLink]="card.route" class="stat-card-anchor text-decoration-none">
+        <div class="stat-action-card h-100" [style.border-top-color]="card.borderAccent">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="stat-category-lbl text-truncate">{{ card.label }}</span>
+            <div class="stat-icon-wrapper" [style.background]="card.bg" [style.color]="card.color">
+              <i [class]="card.icon"></i>
+            </div>
+          </div>
+          <div class="stat-metric-value mb-1">{{ getStatVal(card.key) }}</div>
+          <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top">
+            <span class="stat-pill-badge" [ngClass]="card.badgeClass || 'badge-default'">
+              <i class="fas fa-shield-alt me-1"></i>{{ card.badgeText }}
+            </span>
+            <span class="stat-card-link-text" [style.color]="card.color">
+              {{ card.actionText }}
+            </span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- 4. TEAM MEMBER FOCUS & BREAKDOWN ROW -->
+  <div class="row g-2 mb-3">
+    <div class="col-12">
+      <div class="team-focus-card">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-2 mb-2 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <div class="team-badge-icon">
+              <i class="fas fa-users text-primary"></i>
+            </div>
+            <div>
+              <h6 class="team-focus-title mb-0">Team Member Command &amp; Activity Center</h6>
+              <span class="team-focus-sub">Track real-time enrollment statuses and new member additions</span>
+            </div>
+          </div>
+          <a routerLink="/admin/enrollments" [queryParams]="{ tab: 'team_member' }" class="btn btn-sm btn-outline-primary fw-700">
+            <i class="fas fa-external-link-alt me-1"></i> Manage All Team Members →
+          </a>
         </div>
 
-        <div *ngIf="sites.length === 0" class="empty-state-box text-center py-4 my-auto">
-          <div class="empty-icon-circle mb-2">
-            <i class="fas fa-map-marked-alt"></i>
+        <div class="row g-2 align-items-stretch">
+          <div class="col-6 col-md-3">
+            <div class="team-metric-box box-total">
+              <span class="metric-sub-lbl">TOTAL TEAM MEMBERS</span>
+              <div class="metric-num-val">{{ stats.total_team_members || 0 }}</div>
+              <span class="metric-hint text-primary">Enrolled in system</span>
+            </div>
           </div>
-          <p class="empty-title mb-1">No active site data available</p>
-          <span class="empty-sub">Sites and layout plots will appear here once added.</span>
-        </div>
-
-        <div *ngFor="let s of sites" class="site-occ-item mb-2.5">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="fw-700 fs-12 text-dark text-truncate" style="max-width: 65%;">{{ s.site_name }}</span>
-            <span class="fs-11 fw-700 text-muted">{{ s.sold || 0 }}/{{ s.total_plots || 0 }} Sold</span>
+          <div class="col-6 col-md-3">
+            <div class="team-metric-box box-active">
+              <span class="metric-sub-lbl">ACTIVE MEMBERS</span>
+              <div class="metric-num-val text-success">{{ stats.team_members_active || 0 }}</div>
+              <span class="metric-hint text-success"><i class="fas fa-check-circle me-1"></i>Verified &amp; active</span>
+            </div>
           </div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar-fill" [class.gold-gradient]="occupancyPct(s) >= 50" [style.width]="occupancyPct(s) + '%'"></div>
+          <div class="col-6 col-md-3">
+            <div class="team-metric-box box-pending">
+              <span class="metric-sub-lbl">PENDING APPROVAL</span>
+              <div class="metric-num-val text-warning">{{ stats.team_members_pending || 0 }}</div>
+              <span class="metric-hint text-warning"><i class="fas fa-clock me-1"></i>Awaiting review</span>
+            </div>
           </div>
-          <div class="d-flex justify-content-between mt-1">
-            <span class="fs-10 text-muted fw-600">{{ occupancyPct(s) }}% Occupied</span>
-            <span class="fs-10 text-success fw-700"><i class="fas fa-check-circle me-1"></i>{{ s.vacant || 0 }} Vacant Plots</span>
+          <div class="col-6 col-md-3">
+            <div class="team-metric-box box-today">
+              <span class="metric-sub-lbl">JOINED TODAY</span>
+              <div class="metric-num-val text-primary-dark">{{ stats.team_members_today || 0 }}</div>
+              <span class="metric-hint text-primary-dark"><i class="fas fa-calendar-day me-1"></i>Database timestamped</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- RIGHT: RECENT PLOT BOOKINGS -->
-    <div class="col-lg-7">
-      <div class="panel-card h-100 d-flex flex-column">
-        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-          <h6 class="section-card-title mb-0"><i class="fas fa-calendar-alt text-gold me-2"></i>Recent Plot Bookings</h6>
-          <a routerLink="/admin/booking-report" class="section-link-btn" aria-label="View All Bookings">View All Bookings →</a>
-        </div>
-
-        <div *ngIf="recentBookings.length === 0" class="empty-state-box text-center py-4 my-auto">
-          <div class="empty-icon-circle mb-2">
-            <i class="fas fa-calendar-times"></i>
+  <!-- 5. MIDDLE ROW: NETWORK TREE PREVIEW & QUICK ACTIONS HUB -->
+  <div class="row g-2 mb-3">
+    
+    <!-- LEFT: MINI NETWORK TREE PREVIEW (EXPANDABLE) -->
+    <div class="col-12 col-xl-7">
+      <div class="dash-panel-card h-100 d-flex flex-column">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <div class="panel-icon-circle bg-emerald-soft text-emerald">
+              <i class="fas fa-sitemap"></i>
+            </div>
+            <div>
+              <h6 class="panel-header-title mb-0">Network Tree Hierarchy Preview</h6>
+              <span class="panel-header-sub">Associates and direct team member mapping</span>
+            </div>
           </div>
-          <p class="empty-title mb-1">No recent plot bookings recorded</p>
-          <span class="empty-sub">Latest customer and associate bookings will show here.</span>
+
+          <div class="d-flex align-items-center gap-1.5">
+            <button type="button" class="btn btn-sm btn-gold-outline" (click)="toggleTreeExpand()" title="Expand Network Tree">
+              <i class="fas fa-expand-arrows-alt me-1"></i> Expand Tree
+            </button>
+            <a routerLink="/admin/network-tree" class="btn btn-sm btn-outline-secondary" title="Open Full Tree Module">
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+          </div>
         </div>
 
-        <div class="table-responsive" *ngIf="recentBookings.length > 0">
-          <table class="table align-middle custom-dash-table mb-0">
-            <thead>
-              <tr>
-                <th>Booking #</th>
-                <th>Customer</th>
-                <th>Plot &amp; Site</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let b of recentBookings">
-                <td><span class="fw-700 text-primary fs-12">#{{ b.booking_serial || b.booking_id }}</span></td>
-                <td>
-                  <div class="fw-700 text-dark fs-12">{{ b.full_name }}</div>
-                  <div class="fs-10 text-muted"><i class="fas fa-clock me-1 text-gold"></i>{{ b.booking_date | date:'dd MMM yyyy' }}</div>
-                </td>
-                <td class="fs-12">
-                  <span class="fw-700 text-dark">Plot #{{ b.plot_number }}</span>
-                  <div class="fs-10 text-muted">{{ b.site_name }}</div>
-                </td>
-                <td>
-                  <span class="sbadge"
-                    [class.sbadge-green]="b.booking_status==='Confirmed'"
-                    [class.sbadge-yellow]="b.booking_status==='PaymentPending'"
-                    [class.sbadge-red]="b.booking_status==='Cancelled'"
-                    [class.sbadge-blue]="b.booking_status==='InProcess'">
-                    {{ b.booking_status }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Tree Preview Content -->
+        <div class="tree-preview-container flex-grow-1" *ngIf="networkPreview.length > 0">
+          <div class="tree-branch-item mb-2.5" *ngFor="let assoc of networkPreview.slice(0, 4)">
+            <!-- Associate Node Banner -->
+            <div class="assoc-node-card d-flex align-items-center justify-content-between cursor-pointer"
+                 (click)="onAssociateNodeClick(assoc)"
+                 title="Click to view associate details">
+              <div class="d-flex align-items-center gap-2 min-w-0">
+                <div class="assoc-avatar">
+                  <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="assoc-name text-truncate fw-700 fs-12">
+                    {{ assoc.full_name }}
+                    <span class="badge bg-gold-subtle text-dark fs-10 ms-1">{{ assoc.rank || 'Associate' }}</span>
+                  </div>
+                  <div class="assoc-id fs-10 text-muted">
+                    ID: {{ assoc.member_id || ('USR-' + assoc.user_id) }} | Mobile: {{ assoc.mobile_no || '—' }}
+                  </div>
+                </div>
+              </div>
+              <div class="assoc-stats text-end flex-shrink-0">
+                <span class="badge bg-light text-dark border fs-10 fw-700">
+                  <i class="fas fa-users me-1 text-primary"></i>{{ assoc.team_members?.length || assoc.team_count || 0 }} Members
+                </span>
+              </div>
+            </div>
+
+            <!-- Team Members Under this Associate -->
+            <div class="team-subbranch ps-3 mt-1.5 border-start-dashed">
+              <div *ngIf="(!assoc.team_members || assoc.team_members.length === 0)" class="fs-11 text-muted ps-2 py-0.5">
+                <i class="fas fa-info-circle me-1"></i>No direct team members enrolled under this associate.
+              </div>
+              
+              <div class="d-flex flex-wrap gap-1.5 mt-1" *ngIf="assoc.team_members && assoc.team_members.length > 0">
+                <div class="tm-chip-badge cursor-pointer"
+                     *ngFor="let tm of assoc.team_members.slice(0, 4)"
+                     (click)="onTeamMemberNodeClick(tm)"
+                     title="Click to view team member enrollment">
+                  <i class="fas fa-user text-indigo me-1"></i>
+                  <span class="tm-chip-name fw-600 fs-11">{{ tm.full_name }}</span>
+                  <span class="tm-chip-slot ms-1 text-muted fs-10">Slot {{ tm.slot_number || 1 }}</span>
+                </div>
+                <span class="tm-chip-more badge bg-secondary text-white fs-10 cursor-pointer"
+                      *ngIf="assoc.team_members.length > 4"
+                      (click)="onAssociateNodeClick(assoc)">
+                  +{{ assoc.team_members.length - 4 }} more
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state-card text-center py-4 my-auto" *ngIf="networkPreview.length === 0">
+          <i class="fas fa-sitemap fs-1 text-muted mb-2 opacity-50"></i>
+          <p class="fs-12 fw-700 text-dark mb-1">No Associate Hierarchy Found</p>
+          <span class="fs-11 text-muted">Associate networks and team members will be visualized here.</span>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-auto">
+          <span class="fs-11 text-muted">
+            <i class="fas fa-info-circle me-1"></i>Click any associate or team member node to open records
+          </span>
+          <button type="button" class="btn btn-link btn-xs text-emerald fw-700 text-decoration-none p-0" (click)="toggleTreeExpand()">
+            Expand Complete Tree View →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: QUICK ACTIONS & ERP ACCESS TILES -->
+    <div class="col-12 col-xl-5">
+      <div class="dash-panel-card h-100 d-flex flex-column">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <div class="panel-icon-circle bg-blue-soft text-blue">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <div>
+              <h6 class="panel-header-title mb-0">Quick Actions Hub</h6>
+              <span class="panel-header-sub">Direct access to primary administrative workflows</span>
+            </div>
+          </div>
+          <span class="badge bg-light text-dark border fs-10">6 Actions</span>
+        </div>
+
+        <div class="row g-2 flex-grow-1">
+          <div class="col-6" *ngFor="let qa of quickActions">
+            <div class="quick-action-tile h-100 cursor-pointer"
+                 (click)="onQuickActionClick(qa)"
+                 [style.border-top-color]="qa.accent"
+                 [attr.aria-label]="qa.label + ' - ' + qa.sub">
+              <div class="d-flex align-items-center justify-content-between mb-1.5">
+                <div class="qa-icon-wrap" [style.background]="qa.bg" [style.color]="qa.color">
+                  <i [class]="qa.icon"></i>
+                </div>
+                <span class="badge bg-light text-muted border fs-9 fw-600">{{ qa.badge }}</span>
+              </div>
+              <div class="qa-title text-truncate fw-700 fs-12">{{ qa.label }}</div>
+              <div class="qa-sub text-truncate fs-10 text-muted mb-2">{{ qa.sub }}</div>
+              <div class="qa-link-arrow mt-auto pt-1 d-flex align-items-center gap-1 fs-10 fw-700" [style.color]="qa.color">
+                <span>Open Form</span>
+                <i class="fas fa-arrow-right fs-9"></i>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- ROW 3: BOTTOM QUICK-ACTION CARDS (ERP ALIGNED, COMPACT, 100% ACTIONABLE) -->
-  <div class="row g-2 mb-2">
-    <div class="col-12 col-sm-6 col-lg-3" *ngFor="let qa of quickActions">
-      <a [routerLink]="qa.route"
-         class="quick-tile-link text-decoration-none d-block h-100"
-         [attr.aria-label]="qa.label + ' (' + qa.sub + ') - Open Admin module'">
-        <div class="quick-action-tile h-100" [class]="qa.boxClass">
-          <div class="quick-tile-icon-wrap" [style.background]="qa.bg" [style.color]="qa.clr">
-            <i [class]="qa.icon"></i>
+  <!-- 6. RECENT DATA TABLES PANEL (TABBED COMPACT PREVIEWS) -->
+  <div class="row g-2 mb-3">
+    <div class="col-12">
+      <div class="dash-panel-card">
+        
+        <!-- Tab Navigation Bar -->
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-2 mb-3 border-bottom">
+          <div class="d-flex align-items-center gap-1.5 flex-wrap">
+            <button type="button" class="recent-tab-btn"
+                    [class.active]="activeRecentTab === 'team_members'"
+                    (click)="setRecentTab('team_members')">
+              <i class="fas fa-users-cog me-1.5"></i> Recent Team Members
+              <span class="badge rounded-pill bg-indigo text-white ms-1 fs-10">{{ recentTeamMembers.length }}</span>
+            </button>
+
+            <button type="button" class="recent-tab-btn"
+                    [class.active]="activeRecentTab === 'customers'"
+                    (click)="setRecentTab('customers')">
+              <i class="fas fa-users me-1.5"></i> Recent Customers
+              <span class="badge rounded-pill bg-blue text-white ms-1 fs-10">{{ recentCustomers.length }}</span>
+            </button>
+
+            <button type="button" class="recent-tab-btn"
+                    [class.active]="activeRecentTab === 'associates'"
+                    (click)="setRecentTab('associates')">
+              <i class="fas fa-user-tie me-1.5"></i> Recent Associates
+              <span class="badge rounded-pill bg-amber text-white ms-1 fs-10">{{ recentAssociates.length }}</span>
+            </button>
+
+            <button type="button" class="recent-tab-btn"
+                    [class.active]="activeRecentTab === 'investors'"
+                    (click)="setRecentTab('investors')">
+              <i class="fas fa-hand-holding-usd me-1.5"></i> Recent Investors
+              <span class="badge rounded-pill bg-fuchsia text-white ms-1 fs-10">{{ recentInvestors.length }}</span>
+            </button>
+
+            <button type="button" class="recent-tab-btn"
+                    [class.active]="activeRecentTab === 'bookings'"
+                    (click)="setRecentTab('bookings')">
+              <i class="fas fa-calendar-check me-1.5"></i> Recent Bookings
+              <span class="badge rounded-pill bg-emerald text-white ms-1 fs-10">{{ recentBookings.length }}</span>
+            </button>
           </div>
-          <div class="quick-tile-content min-w-0 flex-fill">
-            <div class="tile-title text-truncate">{{ qa.label }}</div>
-            <div class="tile-sub text-truncate">{{ qa.sub }}</div>
-          </div>
-          <div class="quick-tile-arrow" [style.color]="qa.clr">
-            <i class="fas fa-arrow-right"></i>
+
+          <!-- View All Dynamic Link Button -->
+          <div>
+            <a *ngIf="activeRecentTab === 'team_members'" routerLink="/admin/enrollments" [queryParams]="{ tab: 'team_member' }" class="btn btn-xs btn-outline-primary fw-700">
+              View All Team Members →
+            </a>
+            <a *ngIf="activeRecentTab === 'customers'" routerLink="/admin/customers" class="btn btn-xs btn-outline-primary fw-700">
+              View All Customers →
+            </a>
+            <a *ngIf="activeRecentTab === 'associates'" routerLink="/admin/associates" class="btn btn-xs btn-outline-primary fw-700">
+              View All Associates →
+            </a>
+            <a *ngIf="activeRecentTab === 'investors'" routerLink="/admin/investor-enrollments" class="btn btn-xs btn-outline-primary fw-700">
+              View All Investors →
+            </a>
+            <a *ngIf="activeRecentTab === 'bookings'" routerLink="/admin/booking-report" class="btn btn-xs btn-outline-primary fw-700">
+              View All Bookings →
+            </a>
           </div>
         </div>
-      </a>
+
+        <!-- TAB 1: RECENT TEAM MEMBERS -->
+        <div *ngIf="activeRecentTab === 'team_members'">
+          <div *ngIf="recentTeamMembers.length === 0" class="empty-state-card text-center py-4">
+            <i class="fas fa-users-slash fs-1 text-muted mb-2 opacity-50"></i>
+            <p class="fs-12 fw-700 text-dark mb-1">No Team Members Recorded</p>
+            <span class="fs-11 text-muted">Newly enrolled team members will show here automatically.</span>
+          </div>
+
+          <div class="table-responsive" *ngIf="recentTeamMembers.length > 0">
+            <table class="table align-middle custom-dash-table mb-0">
+              <thead>
+                <tr>
+                  <th>Team Member</th>
+                  <th>Associate Leader</th>
+                  <th>Slot #</th>
+                  <th>Contact</th>
+                  <th>Joined Date</th>
+                  <th>Status</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let tm of recentTeamMembers">
+                  <td>
+                    <div class="fw-700 text-dark fs-12">{{ tm.full_name }}</div>
+                    <div class="fs-10 text-muted">UID: {{ tm.team_member_uid || ('TM-' + tm.id) }}</div>
+                  </td>
+                  <td>
+                    <div class="fw-600 text-dark fs-12">{{ tm.associate_name || 'Direct' }}</div>
+                    <div class="fs-10 text-muted" *ngIf="tm.associate_member_id">ID: {{ tm.associate_member_id }}</div>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border fs-10">Slot {{ tm.slot_number || 1 }}</span>
+                  </td>
+                  <td class="fs-11 text-muted">
+                    <div><i class="fas fa-phone-alt me-1 text-gold"></i>{{ tm.mobile_no || '—' }}</div>
+                  </td>
+                  <td class="fs-11 text-muted">
+                    <i class="fas fa-calendar-alt me-1 text-muted"></i>{{ tm.created_at | date:'dd MMM yyyy' }}
+                  </td>
+                  <td>
+                    <span class="sbadge"
+                          [class.sbadge-green]="tm.status?.toLowerCase() === 'active'"
+                          [class.sbadge-yellow]="tm.status?.toLowerCase() === 'pending'"
+                          [class.sbadge-red]="tm.status?.toLowerCase() === 'inactive' || tm.status?.toLowerCase() === 'suspended'">
+                      {{ tm.status || 'Active' }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <button type="button" class="btn btn-xs btn-outline-secondary" (click)="onTeamMemberNodeClick(tm)" title="View Team Member Details">
+                      View →
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 2: RECENT CUSTOMERS -->
+        <div *ngIf="activeRecentTab === 'customers'">
+          <div *ngIf="recentCustomers.length === 0" class="empty-state-card text-center py-4">
+            <i class="fas fa-users-slash fs-1 text-muted mb-2 opacity-50"></i>
+            <p class="fs-12 fw-700 text-dark mb-1">No Customers Recorded</p>
+            <span class="fs-11 text-muted">Recent property buyers will appear here.</span>
+          </div>
+
+          <div class="table-responsive" *ngIf="recentCustomers.length > 0">
+            <table class="table align-middle custom-dash-table mb-0">
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Member / User ID</th>
+                  <th>Mobile &amp; Email</th>
+                  <th>Location</th>
+                  <th>Joined Date</th>
+                  <th>Status</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of recentCustomers">
+                  <td>
+                    <div class="fw-700 text-dark fs-12">{{ c.full_name }}</div>
+                  </td>
+                  <td>
+                    <span class="fw-600 text-primary fs-11">{{ c.member_id || ('USR-' + c.user_id) }}</span>
+                  </td>
+                  <td class="fs-11">
+                    <div><i class="fas fa-phone-alt me-1 text-gold"></i>{{ c.mobile_no || '—' }}</div>
+                    <div class="text-muted fs-10">{{ c.email || '—' }}</div>
+                  </td>
+                  <td class="fs-11 text-muted">
+                    {{ c.city || '—' }}{{ c.state ? ', ' + c.state : '' }}
+                  </td>
+                  <td class="fs-11 text-muted">
+                    <i class="fas fa-calendar-alt me-1 text-muted"></i>{{ c.created_at | date:'dd MMM yyyy' }}
+                  </td>
+                  <td>
+                    <span class="sbadge"
+                          [class.sbadge-green]="c.account_status === 'Active'"
+                          [class.sbadge-yellow]="c.account_status === 'Pending'"
+                          [class.sbadge-red]="c.account_status === 'Blocked'">
+                      {{ c.account_status || 'Active' }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <button type="button" class="btn btn-xs btn-outline-secondary" (click)="onCustomerClick(c)" title="View Customer Details">
+                      View →
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 3: RECENT ASSOCIATES -->
+        <div *ngIf="activeRecentTab === 'associates'">
+          <div *ngIf="recentAssociates.length === 0" class="empty-state-card text-center py-4">
+            <i class="fas fa-user-slash fs-1 text-muted mb-2 opacity-50"></i>
+            <p class="fs-12 fw-700 text-dark mb-1">No Associates Recorded</p>
+            <span class="fs-11 text-muted">Registered associates will be listed here.</span>
+          </div>
+
+          <div class="table-responsive" *ngIf="recentAssociates.length > 0">
+            <table class="table align-middle custom-dash-table mb-0">
+              <thead>
+                <tr>
+                  <th>Associate Name</th>
+                  <th>Associate Code</th>
+                  <th>Rank</th>
+                  <th>Total Sales (Gaj)</th>
+                  <th>Contact</th>
+                  <th>Status</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let a of recentAssociates">
+                  <td>
+                    <div class="fw-700 text-dark fs-12">{{ a.full_name }}</div>
+                    <div class="fs-10 text-muted">{{ a.city || '—' }}</div>
+                  </td>
+                  <td>
+                    <span class="fw-700 text-amber fs-11">{{ a.member_id || ('ASC-' + a.user_id) }}</span>
+                  </td>
+                  <td>
+                    <span class="badge bg-gold-subtle text-dark border fs-10 fw-700">{{ a.rank || 'Associate' }}</span>
+                  </td>
+                  <td class="fs-11 fw-700 text-dark">
+                    {{ (a.total_gaj_sold || 0) | number:'1.2-2' }} Gaj
+                  </td>
+                  <td class="fs-11">
+                    <div><i class="fas fa-phone-alt me-1 text-gold"></i>{{ a.mobile_no || '—' }}</div>
+                  </td>
+                  <td>
+                    <span class="sbadge"
+                          [class.sbadge-green]="a.account_status === 'Active'"
+                          [class.sbadge-yellow]="a.account_status === 'Pending'"
+                          [class.sbadge-red]="a.account_status === 'Suspended' || a.account_status === 'Blacklisted'">
+                      {{ a.account_status || 'Active' }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <button type="button" class="btn btn-xs btn-outline-secondary" (click)="onAssociateNodeClick(a)" title="View Associate Profile">
+                      View →
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 4: RECENT INVESTORS -->
+        <div *ngIf="activeRecentTab === 'investors'">
+          <div *ngIf="recentInvestors.length === 0" class="empty-state-card text-center py-4">
+            <i class="fas fa-hand-holding-usd fs-1 text-muted mb-2 opacity-50"></i>
+            <p class="fs-12 fw-700 text-dark mb-1">No Investors Recorded</p>
+            <span class="fs-11 text-muted">Investor enrollment submissions will show here.</span>
+          </div>
+
+          <div class="table-responsive" *ngIf="recentInvestors.length > 0">
+            <table class="table align-middle custom-dash-table mb-0">
+              <thead>
+                <tr>
+                  <th>Investor Name</th>
+                  <th>Enrollment / ID</th>
+                  <th>Invested Amount</th>
+                  <th>Project / Branch</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let inv of recentInvestors">
+                  <td>
+                    <div class="fw-700 text-dark fs-12">{{ inv.full_name }}</div>
+                  </td>
+                  <td>
+                    <span class="fw-600 text-fuchsia fs-11">{{ inv.investor_enrollment_id || ('INV-' + inv.id) }}</span>
+                  </td>
+                  <td class="fs-12 fw-700 text-success">
+                    ₹{{ (inv.amount || 0) | number }}
+                  </td>
+                  <td class="fs-11 text-muted">
+                    {{ inv.project_name || 'Main Project' }}
+                  </td>
+                  <td class="fs-11 text-muted">
+                    <i class="fas fa-calendar-alt me-1 text-muted"></i>{{ inv.created_at | date:'dd MMM yyyy' }}
+                  </td>
+                  <td>
+                    <span class="sbadge"
+                          [class.sbadge-green]="inv.status === 'Active' || inv.status === 'Completed'"
+                          [class.sbadge-yellow]="inv.status === 'Pending'"
+                          [class.sbadge-red]="inv.status === 'Rejected'">
+                      {{ inv.status || 'Active' }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <button type="button" class="btn btn-xs btn-outline-secondary" (click)="onInvestorClick(inv)" title="View Investor Enrollment">
+                      View →
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 5: RECENT BOOKINGS -->
+        <div *ngIf="activeRecentTab === 'bookings'">
+          <div *ngIf="recentBookings.length === 0" class="empty-state-card text-center py-4">
+            <i class="fas fa-calendar-times fs-1 text-muted mb-2 opacity-50"></i>
+            <p class="fs-12 fw-700 text-dark mb-1">No Recent Bookings</p>
+            <span class="fs-11 text-muted">Customer plot bookings will appear here in real-time.</span>
+          </div>
+
+          <div class="table-responsive" *ngIf="recentBookings.length > 0">
+            <table class="table align-middle custom-dash-table mb-0">
+              <thead>
+                <tr>
+                  <th>Booking #</th>
+                  <th>Customer</th>
+                  <th>Plot &amp; Site</th>
+                  <th>Booking Date</th>
+                  <th>Status</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let b of recentBookings">
+                  <td>
+                    <span class="fw-700 text-primary fs-12">#{{ b.booking_serial || b.booking_id }}</span>
+                  </td>
+                  <td>
+                    <div class="fw-700 text-dark fs-12">{{ b.full_name }}</div>
+                  </td>
+                  <td class="fs-12">
+                    <span class="fw-700 text-dark">Plot #{{ b.plot_number }}</span>
+                    <div class="fs-10 text-muted">{{ b.site_name }}</div>
+                  </td>
+                  <td class="fs-11 text-muted">
+                    <i class="fas fa-clock me-1 text-gold"></i>{{ b.booking_date | date:'dd MMM yyyy' }}
+                  </td>
+                  <td>
+                    <span class="sbadge"
+                          [class.sbadge-green]="b.booking_status==='Confirmed'"
+                          [class.sbadge-yellow]="b.booking_status==='PaymentPending'"
+                          [class.sbadge-red]="b.booking_status==='Cancelled'"
+                          [class.sbadge-blue]="b.booking_status==='InProcess'">
+                      {{ b.booking_status }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <button type="button" class="btn btn-xs btn-outline-secondary" (click)="onBookingClick(b)" title="View Booking Details">
+                      View →
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. SITE OCCUPANCY & PLOT INVENTORY METRICS -->
+  <div class="row g-2 mb-3">
+    <div class="col-12">
+      <div class="dash-panel-card">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <div class="panel-icon-circle bg-green-soft text-green">
+              <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div>
+              <h6 class="panel-header-title mb-0">Live Site Occupancy &amp; Plot Inventory</h6>
+              <span class="panel-header-sub">Plot sales progress and inventory availability across all project sites</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <a routerLink="/admin/sales-map" class="btn btn-xs btn-outline-success fw-700">
+              <i class="fas fa-map me-1"></i> Interactive Sales Map →
+            </a>
+            <a routerLink="/admin/sites" class="btn btn-xs btn-outline-secondary fw-700">
+              Manage Sites →
+            </a>
+          </div>
+        </div>
+
+        <div *ngIf="sites.length === 0" class="empty-state-card text-center py-4">
+          <i class="fas fa-map-marked-alt fs-1 text-muted mb-2 opacity-50"></i>
+          <p class="fs-12 fw-700 text-dark mb-1">No Active Sites Found</p>
+          <span class="fs-11 text-muted">Sites and layout plots will appear here once registered.</span>
+        </div>
+
+        <div class="row g-2" *ngIf="sites.length > 0">
+          <div class="col-12 col-md-6 col-xl-4" *ngFor="let s of sites">
+            <div class="site-card-item">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-700 fs-12 text-dark text-truncate" style="max-width: 65%;">{{ s.site_name }}</span>
+                <span class="fs-11 fw-700 text-muted">{{ s.sold || 0 }}/{{ s.total_plots || 0 }} Sold</span>
+              </div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" [class.gold-gradient]="occupancyPct(s) >= 50" [style.width]="occupancyPct(s) + '%'"></div>
+              </div>
+              <div class="d-flex justify-content-between mt-1.5">
+                <span class="fs-10 text-muted fw-600">{{ occupancyPct(s) }}% Occupied</span>
+                <span class="fs-10 text-success fw-700"><i class="fas fa-check-circle me-1"></i>{{ s.vacant || 0 }} Vacant Plots</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. FULLSCREEN / EXPANDED NETWORK TREE MODAL (INSIDE DASHBOARD AREA) -->
+  <div class="tree-expanded-overlay" *ngIf="isTreeExpanded">
+    <div class="tree-expanded-modal d-flex flex-column">
+      
+      <!-- Modal Top Header -->
+      <div class="tree-modal-header d-flex align-items-center justify-content-between p-3 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <div class="panel-icon-circle bg-emerald text-white">
+            <i class="fas fa-sitemap"></i>
+          </div>
+          <div>
+            <h5 class="fw-800 text-dark mb-0">Complete Network &amp; Team Hierarchy View</h5>
+            <span class="fs-11 text-muted">Interactive exploration of MMR associate network and enrolled team members</span>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <!-- Search in Tree -->
+          <div class="tree-search-wrap position-relative">
+            <i class="fas fa-search tree-search-icon"></i>
+            <input type="text" class="form-control form-control-sm ps-4"
+                   placeholder="Search associate or member..."
+                   [(ngModel)]="treeSearchTerm">
+          </div>
+
+          <a routerLink="/admin/network-tree" class="btn btn-sm btn-emerald-glass" (click)="closeExpandedTree()">
+            <i class="fas fa-project-diagram me-1"></i> Open Full MLM Tree Page
+          </a>
+
+          <button type="button" class="btn btn-sm btn-dark" (click)="closeExpandedTree()" title="Collapse back to dashboard">
+            <i class="fas fa-compress-arrows-alt me-1"></i> Exit Fullscreen / Collapse
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body: Complete Scrollable Hierarchy -->
+      <div class="tree-modal-body p-3 flex-grow-1 overflow-auto">
+        <div *ngIf="filteredNetworkPreview.length === 0" class="empty-state-card text-center py-5">
+          <i class="fas fa-search fs-1 text-muted mb-2"></i>
+          <p class="fs-13 fw-700 text-dark mb-1">No Matching Associates or Team Members</p>
+          <span class="fs-11 text-muted">Try clearing the search term to view the full hierarchy.</span>
+        </div>
+
+        <div class="row g-3" *ngIf="filteredNetworkPreview.length > 0">
+          <div class="col-12 col-md-6 col-xl-4" *ngFor="let assoc of filteredNetworkPreview">
+            <div class="expanded-assoc-card h-100 d-flex flex-column">
+              <!-- Associate Head Node -->
+              <div class="assoc-node-head p-3 cursor-pointer"
+                   (click)="onAssociateNodeClick(assoc)"
+                   title="Click to view full associate record">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="badge bg-amber text-dark fw-700 fs-10">ASSOCIATE LEADER</span>
+                  <span class="badge bg-emerald-soft text-emerald fw-700 fs-10">{{ assoc.account_status || 'Active' }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2.5">
+                  <div class="assoc-avatar-lg">
+                    <i class="fas fa-user-tie"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-800 text-dark mb-0 fs-13">{{ assoc.full_name }}</h6>
+                    <span class="fs-11 text-muted">Code: <strong>{{ assoc.member_id || ('ASC-' + assoc.user_id) }}</strong></span>
+                    <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-gold"></i>{{ assoc.mobile_no || '—' }}</div>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top fs-11">
+                  <span class="text-muted">Rank: <strong>{{ assoc.rank || 'Associate' }}</strong></span>
+                  <span class="text-primary fw-700">{{ assoc.team_members?.length || assoc.team_count || 0 }} Direct Members</span>
+                </div>
+              </div>
+
+              <!-- Enrolled Team Members List -->
+              <div class="assoc-members-body p-3 flex-grow-1 border-top bg-light-subtle">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="fs-11 fw-700 text-dark text-uppercase">Team Members ({{ assoc.team_members?.length || 0 }})</span>
+                  <button type="button" class="btn btn-link btn-xs text-primary p-0 fw-700 text-decoration-none" (click)="onAssociateNodeClick(assoc)">
+                    View List →
+                  </button>
+                </div>
+
+                <div *ngIf="(!assoc.team_members || assoc.team_members.length === 0)" class="fs-11 text-muted py-2 text-center">
+                  No direct team members enrolled under this associate.
+                </div>
+
+                <div class="team-member-tree-item mb-1.5 p-2 bg-white rounded border d-flex align-items-center justify-content-between cursor-pointer"
+                     *ngFor="let tm of assoc.team_members"
+                     (click)="onTeamMemberNodeClick(tm)"
+                     title="Click to view team member details">
+                  <div class="d-flex align-items-center gap-2 min-w-0">
+                    <div class="tm-dot-indicator" [class.active]="tm.status?.toLowerCase() === 'active'"></div>
+                    <div class="min-w-0">
+                      <div class="fw-700 fs-11 text-dark text-truncate">{{ tm.full_name }}</div>
+                      <div class="fs-10 text-muted">Slot {{ tm.slot_number || 1 }} | UID: {{ tm.team_member_uid || ('TM-' + tm.id) }}</div>
+                    </div>
+                  </div>
+                  <span class="sbadge ms-2 flex-shrink-0"
+                        [class.sbadge-green]="tm.status?.toLowerCase() === 'active'"
+                        [class.sbadge-yellow]="tm.status?.toLowerCase() === 'pending'"
+                        [class.sbadge-red]="tm.status?.toLowerCase() === 'inactive'">
+                    {{ tm.status || 'Active' }}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="tree-modal-footer p-2.5 px-3 border-top d-flex align-items-center justify-content-between bg-white">
+        <span class="fs-11 text-muted">
+          <i class="fas fa-shield-alt me-1 text-gold"></i>MMR Network Tree Preview Engine • Real-time Data
+        </span>
+        <button type="button" class="btn btn-sm btn-secondary" (click)="closeExpandedTree()">
+          <i class="fas fa-times me-1"></i> Close / Collapse
+        </button>
+      </div>
+
     </div>
   </div>
 
