@@ -281,23 +281,205 @@ export class AdminDashboardComponent implements OnInit {
     this.loading = true;
     this.api.adminDashboard().subscribe({
       next: (res: any) => {
-        if (res.success && res.data) {
-          this.stats             = res.data.stats || {};
-          this.sites             = res.data.sites || [];
-          this.recentBookings    = res.data.recent_bookings || [];
-          this.recentTeamMembers = res.data.recent_team_members || [];
-          this.recentCustomers   = res.data.recent_customers || [];
-          this.recentAssociates  = res.data.recent_associates || [];
-          this.recentInvestors   = res.data.recent_investors || [];
-          this.networkPreview    = res.data.network_preview || [];
-          this.monthlySales      = res.data.monthly_sales || [];
+        if (res && res.data) {
+          const d = res.data;
+          this.stats = d.stats || {};
+          
+          // Map root-level keys if stats object was incomplete
+          if (!this.stats.total_customers && d.totalCustomers) this.stats.total_customers = d.totalCustomers;
+          if (!this.stats.total_associates && d.activeAssociates) this.stats.total_associates = d.activeAssociates;
+          if (!this.stats.total_plots_sold && d.plotsSold) this.stats.total_plots_sold = d.plotsSold;
+          if (!this.stats.monthly_emi_due && d.monthlyEmiDue) this.stats.monthly_emi_due = d.monthlyEmiDue;
+          if (!this.stats.pending_approvals && d.pendingApprovals) this.stats.pending_approvals = d.pendingApprovals;
+
+          this.sites             = Array.isArray(d.sites) ? d.sites : [];
+          this.recentBookings    = Array.isArray(d.recent_bookings) ? d.recent_bookings : [];
+          this.recentTeamMembers = Array.isArray(d.recent_team_members) ? d.recent_team_members : [];
+          this.recentCustomers   = Array.isArray(d.recent_customers) ? d.recent_customers : [];
+          this.recentAssociates  = Array.isArray(d.recent_associates) ? d.recent_associates : [];
+          this.recentInvestors   = Array.isArray(d.recent_investors) ? d.recent_investors : [];
+          this.networkPreview    = Array.isArray(d.network_preview) ? d.network_preview : [];
+          this.monthlySales      = Array.isArray(d.monthly_sales) ? d.monthly_sales : [];
         }
         this.loading = false;
+        this.enrichDashboardFallback();
       },
       error: () => {
         this.loading = false;
+        this.enrichDashboardFallback();
       }
     });
+  }
+
+  /**
+   * Resilient fallback aggregator that queries module endpoints in parallel
+   * ensuring the dashboard ALWAYS displays full live data even if one aggregator endpoint is cached.
+   */
+  enrichDashboardFallback() {
+    // 1. Enrich Sites & Plot Availability
+    if (!this.sites || this.sites.length === 0) {
+      this.api.adminGetSites().subscribe({
+        next: (res: any) => {
+          const list = res.data || res || [];
+          if (Array.isArray(list) && list.length > 0) {
+            this.sites = list;
+            let totalAvailable = 0;
+            let totalSold = 0;
+            let totalBooked = 0;
+            list.forEach(s => {
+              totalAvailable += Number(s.vacant || 0);
+              totalSold += Number(s.sold || 0);
+              totalBooked += Number(s.booked || s.in_process || 0);
+            });
+            if (!this.stats.available_plots) this.stats.available_plots = totalAvailable;
+            if (!this.stats.total_plots_sold && totalSold > 0) this.stats.total_plots_sold = totalSold;
+            if (!this.stats.booked_plots) this.stats.booked_plots = totalSold + totalBooked;
+          }
+        },
+        error: () => {}
+      });
+    }
+
+    // 2. Enrich Team Members
+    if (!this.recentTeamMembers || this.recentTeamMembers.length === 0 || !this.stats.total_team_members) {
+      this.api.adminGetTeamMembers({ limit: 10 }).subscribe({
+        next: (res: any) => {
+          const items = res.data?.items || res.data || res.items || [];
+          const total = Number(res.data?.total || res.total || items.length || 0);
+          if (items.length > 0) {
+            if (!this.recentTeamMembers || this.recentTeamMembers.length === 0) {
+              this.recentTeamMembers = items.slice(0, 6);
+            }
+          }
+          if (total > 0 && !this.stats.total_team_members) {
+            this.stats.total_team_members = total;
+            const activeCount = items.filter((x: any) => String(x.status || '').toLowerCase() === 'active').length;
+            const pendingCount = items.filter((x: any) => String(x.status || '').toLowerCase() === 'pending').length;
+            this.stats.team_members_active = activeCount || total;
+            this.stats.team_members_pending = pendingCount;
+          }
+        },
+        error: () => {}
+      });
+    }
+
+    // 3. Enrich Customers
+    if (!this.recentCustomers || this.recentCustomers.length === 0 || !this.stats.total_customers) {
+      this.api.adminGetCustomers({ limit: 10 }).subscribe({
+        next: (res: any) => {
+          const list = res.data?.users || res.data || res.users || [];
+          const total = Number(res.data?.totalRecords || res.totalRecords || list.length || 0);
+          if (list.length > 0 && (!this.recentCustomers || this.recentCustomers.length === 0)) {
+            this.recentCustomers = list.slice(0, 6);
+          }
+          if (total > 0 && !this.stats.total_customers) {
+            this.stats.total_customers = total;
+          }
+        },
+        error: () => {
+          // Fallback to customer enrollments
+          this.api.adminGetCustomerEnrollments({ limit: 10 }).subscribe({
+            next: (cRes: any) => {
+              const cList = cRes.data || [];
+              if (cList.length > 0) {
+                if (!this.recentCustomers || this.recentCustomers.length === 0) {
+                  this.recentCustomers = cList.slice(0, 6).map((c: any) => ({
+                    user_id: c.user_id || c.id,
+                    member_id: c.application_no || c.member_id,
+                    full_name: c.applicant_name || c.full_name,
+                    mobile_no: c.mobile_1 || c.mobile_no,
+                    email: c.email_1 || c.email,
+                    city: c.project_name || '',
+                    account_status: c.enrollment_status || 'Active',
+                    created_at: c.form_date || c.created_at
+                  }));
+                }
+                if (!this.stats.total_customers) this.stats.total_customers = cList.length;
+              }
+            },
+            error: () => {}
+          });
+        }
+      });
+    }
+
+    // 4. Enrich Associates
+    if (!this.recentAssociates || this.recentAssociates.length === 0 || !this.stats.total_associates) {
+      this.api.adminGetAssociates({ limit: 10 }).subscribe({
+        next: (res: any) => {
+          const list = res.data?.users || res.data || res.users || [];
+          const total = Number(res.data?.totalRecords || res.totalRecords || list.length || 0);
+          if (list.length > 0 && (!this.recentAssociates || this.recentAssociates.length === 0)) {
+            this.recentAssociates = list.slice(0, 6);
+          }
+          if (total > 0 && !this.stats.total_associates) {
+            this.stats.total_associates = total;
+          }
+          if ((!this.networkPreview || this.networkPreview.length === 0) && list.length > 0) {
+            this.networkPreview = list.slice(0, 5).map((a: any) => ({
+              user_id: a.user_id,
+              member_id: a.member_id,
+              full_name: a.full_name,
+              mobile_no: a.mobile_no,
+              rank: a.rank_name || a.rank || 'Associate',
+              team_count: 0,
+              team_members: []
+            }));
+          }
+        },
+        error: () => {}
+      });
+    }
+
+    // 5. Enrich Investors
+    if (!this.recentInvestors || this.recentInvestors.length === 0 || !this.stats.total_investors) {
+      this.api.adminGetInvestorEnrollments({}).subscribe({
+        next: (res: any) => {
+          const list = res.data || [];
+          if (list.length > 0) {
+            if (!this.recentInvestors || this.recentInvestors.length === 0) {
+              this.recentInvestors = list.slice(0, 6).map((inv: any) => ({
+                id: inv.id,
+                investor_enrollment_id: inv.investor_enrollment_id || inv.form_no || ('INV-' + inv.id),
+                full_name: inv.inv_first_name ? `${inv.inv_first_name} ${inv.inv_surname || ''}`.trim() : (inv.full_name || 'Investor'),
+                mobile_no: inv.mobile || inv.mobile_no || '—',
+                amount: inv.amount || 0,
+                status: inv.enrollment_status || 'Active',
+                project_name: inv.project_name || 'Main Fund',
+                created_at: inv.created_at || inv.cheque_date
+              }));
+            }
+            if (!this.stats.total_investors) this.stats.total_investors = list.length;
+          }
+        },
+        error: () => {}
+      });
+    }
+
+    // 6. Enrich Bookings
+    if (!this.recentBookings || this.recentBookings.length === 0 || !this.stats.total_bookings) {
+      this.api.adminGetBookings({ limit: 10 }).subscribe({
+        next: (res: any) => {
+          const list = res.data?.items || res.data || res.items || [];
+          const total = Number(res.data?.total || res.total || list.length || 0);
+          if (list.length > 0 && (!this.recentBookings || this.recentBookings.length === 0)) {
+            this.recentBookings = list.slice(0, 6).map((b: any) => ({
+              booking_id: b.booking_id,
+              booking_serial: b.booking_serial || ('MMR-' + b.booking_id),
+              full_name: b.full_name || b.customer_name || 'Customer',
+              plot_number: b.plot_number || '—',
+              site_name: b.site_name || 'Main Site',
+              booking_date: b.booking_date || b.created_at,
+              booking_status: b.booking_status || 'Confirmed'
+            }));
+          }
+          if (total > 0 && !this.stats.total_bookings) {
+            this.stats.total_bookings = total;
+          }
+        },
+        error: () => {}
+      });
+    }
   }
 
   setRecentTab(tab: 'team_members' | 'customers' | 'associates' | 'investors' | 'bookings') {
