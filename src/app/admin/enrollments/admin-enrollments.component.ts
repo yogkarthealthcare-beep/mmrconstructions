@@ -6,7 +6,19 @@ import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
-import { APPROVED_INDIAN_STATES, normalizeHumanName, isValidHumanName } from '../../shared/utils/form-helpers';
+import { 
+  APPROVED_INDIAN_STATES, 
+  normalizeHumanName, 
+  isValidHumanName,
+  ASSOCIATE_CATEGORIES,
+  ASSOCIATE_QUALIFICATIONS,
+  ASSOCIATE_OCCUPATIONS,
+  ASSOCIATE_ANNUAL_INCOMES,
+  NOMINEE_RELATIONSHIPS,
+  GENDER_LIST,
+  RESIDENTIAL_STATUS_LIST,
+  RELIGIONS_LIST
+} from '../../shared/utils/form-helpers';
 import Swal from 'sweetalert2';
 
 type CategoryType = 'customer' | 'associate' | 'investor' | 'team_member';
@@ -25,6 +37,14 @@ export class AdminEnrollmentsComponent implements OnInit {
   loading = false;
   items: any[] = [];
   statesList = APPROVED_INDIAN_STATES;
+  religionsList = RELIGIONS_LIST;
+  categoriesList = ASSOCIATE_CATEGORIES;
+  qualificationsList = ASSOCIATE_QUALIFICATIONS;
+  occupationsList = ASSOCIATE_OCCUPATIONS;
+  incomesList = ASSOCIATE_ANNUAL_INCOMES;
+  relationshipsList = NOMINEE_RELATIONSHIPS;
+  gendersList = GENDER_LIST;
+  resStatusesList = RESIDENTIAL_STATUS_LIST;
 
   // Pagination state
   page = 1;
@@ -363,6 +383,32 @@ export class AdminEnrollmentsComponent implements OnInit {
             if (this.editFormData.dob) {
               this.editFormData.dob = this.formatDate(this.editFormData.dob);
             }
+            if (this.editFormData.nominee_dob) {
+              this.editFormData.nominee_dob = this.formatDate(this.editFormData.nominee_dob);
+            }
+
+            const findMatched = (list: string[], val: any, fallback: string = ''): string => {
+              if (!val) return fallback;
+              const strVal = String(val).trim();
+              const exact = list.find(item => item.toLowerCase() === strVal.toLowerCase());
+              if (exact) return exact;
+              const partial = list.find(item => item.toLowerCase().includes(strVal.toLowerCase()) || strVal.toLowerCase().includes(item.toLowerCase()));
+              if (partial) return partial;
+              return strVal;
+            };
+
+            if (this.editFormData.gender) this.editFormData.gender = findMatched(this.gendersList, this.editFormData.gender);
+            if (this.editFormData.category) this.editFormData.category = findMatched(this.categoriesList, this.editFormData.category);
+            if (this.editFormData.education) this.editFormData.education = findMatched(this.qualificationsList, this.editFormData.education);
+            if (this.editFormData.occupation) this.editFormData.occupation = findMatched(this.occupationsList, this.editFormData.occupation);
+            if (this.editFormData.annual_income) this.editFormData.annual_income = findMatched(this.incomesList, this.editFormData.annual_income);
+            if (this.editFormData.religion) this.editFormData.religion = findMatched(this.religionsList, this.editFormData.religion);
+            if (this.editFormData.residential_status) this.editFormData.residential_status = findMatched(this.resStatusesList, this.editFormData.residential_status, 'Resident Individual');
+            if (this.editFormData.perm_state) this.editFormData.perm_state = findMatched(this.statesList, this.editFormData.perm_state, 'Uttar Pradesh');
+            if (this.editFormData.local_state) this.editFormData.local_state = findMatched(this.statesList, this.editFormData.local_state, 'Uttar Pradesh');
+            if (this.editFormData.nominee_gender) this.editFormData.nominee_gender = findMatched(this.gendersList, this.editFormData.nominee_gender, 'Male');
+            if (this.editFormData.nominee_res_status) this.editFormData.nominee_res_status = findMatched(this.resStatusesList, this.editFormData.nominee_res_status, 'Resident Individual');
+            if (this.editFormData.nominee_relationship) this.editFormData.nominee_relationship = findMatched(this.relationshipsList, this.editFormData.nominee_relationship);
           }
         },
         error: (err) => {

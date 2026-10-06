@@ -22,7 +22,14 @@ import {
   formatDateToDDMMYYYY, 
   parseDDMMYYYYToISO,
   humanNameValidator,
-  normalizeHumanName 
+  normalizeHumanName,
+  ASSOCIATE_CATEGORIES,
+  ASSOCIATE_QUALIFICATIONS,
+  ASSOCIATE_OCCUPATIONS,
+  ASSOCIATE_ANNUAL_INCOMES,
+  NOMINEE_RELATIONSHIPS,
+  GENDER_LIST,
+  RESIDENTIAL_STATUS_LIST
 } from '../../shared/utils/form-helpers';
 
 @Component({
@@ -35,9 +42,17 @@ import {
 export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   enrollmentForm!: FormGroup;
 
-  // Approved Indian States dropdown list (Default: Uttar Pradesh)
+  // Approved Indian States and master dropdown lists
   statesList = APPROVED_INDIAN_STATES;
   religionsList = RELIGIONS_LIST;
+  categoriesList = ASSOCIATE_CATEGORIES;
+  qualificationsList = ASSOCIATE_QUALIFICATIONS;
+  occupationsList = ASSOCIATE_OCCUPATIONS;
+  incomesList = ASSOCIATE_ANNUAL_INCOMES;
+  relationshipsList = NOMINEE_RELATIONSHIPS;
+  gendersList = GENDER_LIST;
+  resStatusesList = RESIDENTIAL_STATUS_LIST;
+
   maxAdultDob = getMaxAdultDobDate();
   todayStr = new Date().toISOString().split('T')[0];
 
@@ -161,36 +176,46 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     this.existingNomineePhoto = d.nominee_photo_url || d.nominee_photo_path || '';
     this.enrollmentStatus = (d.status || d.app_status || 'pending').toLowerCase();
 
+    const findMatched = (list: string[], val: any, fallback: string = ''): string => {
+      if (!val) return fallback;
+      const strVal = String(val).trim();
+      const exact = list.find(item => item.toLowerCase() === strVal.toLowerCase());
+      if (exact) return exact;
+      const partial = list.find(item => item.toLowerCase().includes(strVal.toLowerCase()) || strVal.toLowerCase().includes(item.toLowerCase()));
+      if (partial) return partial;
+      return strVal;
+    };
+
     this.enrollmentForm.patchValue({
       personalDetails: {
         fullName: d.full_name || '',
         dob: formatDateToDDMMYYYY(d.dob),
-        gender: d.gender || '',
+        gender: findMatched(this.gendersList, d.gender),
         fatherName: d.father_name || '',
         motherName: d.mother_name || '',
         spouseName: d.spouse_name || '',
         contact1: d.contact_primary || d.contact_1 || d.contact1 || d.mobile_no || '',
         contact2: d.contact_secondary || d.contact_2 || d.contact2 || '',
         nationality: d.nationality || 'Indian',
-        residentialStatus: d.residential_status || 'Resident',
+        residentialStatus: findMatched(this.resStatusesList, d.residential_status, 'Resident Individual'),
         panNo: d.pan_number || d.pan_no || d.panNo || '',
         aadharNo: d.aadhar_number || d.aadhar_no || d.aadharNo || '',
         email: d.email || '',
-        occupation: d.occupation || '',
-        annualIncome: d.annual_income || d.annualIncome || '',
-        education: d.education || '',
-        category: d.category || '',
-        religion: d.religion || ''
+        occupation: findMatched(this.occupationsList, d.occupation),
+        annualIncome: findMatched(this.incomesList, d.annual_income || d.annualIncome),
+        education: findMatched(this.qualificationsList, d.education),
+        category: findMatched(this.categoriesList, d.category),
+        religion: findMatched(this.religionsList, d.religion)
       },
       addressDetails: {
         permAddress: d.perm_address_line1 || d.permAddress || d.address || '',
         permCity: d.perm_city || d.permCity || d.city || '',
-        permState: d.perm_state || d.permState || d.state || '',
+        permState: findMatched(this.statesList, d.perm_state || d.permState || d.state, 'Uttar Pradesh'),
         permCountry: d.perm_country || d.permCountry || 'India',
         permPin: d.perm_pincode || d.permPin || d.pincode || '',
         localAddress: d.local_address_line1 || d.localAddress || d.perm_address_line1 || d.address || '',
         localCity: d.local_city || d.localCity || d.perm_city || d.city || '',
-        localState: d.local_state || d.localState || d.perm_state || d.state || '',
+        localState: findMatched(this.statesList, d.local_state || d.localState || d.perm_state || d.state, 'Uttar Pradesh'),
         localCountry: d.local_country || d.localCountry || 'India',
         localPin: d.local_pincode || d.localPin || d.perm_pincode || d.pincode || ''
       },
@@ -208,10 +233,10 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
       nomineeDetails: {
         nomineeName: d.nominee_name || d.nomineeName || '',
         nomineeDob: formatDateToDDMMYYYY(d.nominee_dob || d.nomineeDob),
-        nomineeGender: d.nominee_gender || d.nomineeGender || 'Male',
+        nomineeGender: findMatched(this.gendersList, d.nominee_gender || d.nomineeGender, 'Male'),
         nomineeNationality: d.nominee_nationality || 'Indian',
-        nomineeResStatus: d.nominee_res_status || 'Resident',
-        nomineeRelationship: d.nominee_relationship || d.nomineeRelationship || '',
+        nomineeResStatus: findMatched(this.resStatusesList, d.nominee_res_status, 'Resident Individual'),
+        nomineeRelationship: findMatched(this.relationshipsList, d.nominee_relationship || d.nomineeRelationship),
         nomineePanName: d.nominee_pan_name || '',
         nomineePanNo: d.nominee_pan_no || '',
         nomineeAadharName: d.nominee_aadhar_name || '',

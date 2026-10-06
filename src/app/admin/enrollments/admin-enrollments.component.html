@@ -681,15 +681,25 @@
             </div>
             <div class="field">
               <label>Gender</label>
-              <input type="text" [(ngModel)]="editFormData.gender" [disabled]="!isEditMode">
+              <select [(ngModel)]="editFormData.gender" [disabled]="!isEditMode">
+                <option value="">Select Gender</option>
+                <option *ngFor="let g of gendersList" [value]="g">{{ g }}</option>
+                <option *ngIf="editFormData.gender && !gendersList.includes(editFormData.gender)" [value]="editFormData.gender">
+                  {{ editFormData.gender }}
+                </option>
+              </select>
             </div>
             <div class="field">
-              <label>Father / Spouse Name</label>
+              <label>Father's Name</label>
               <input type="text" [(ngModel)]="editFormData.father_name" [disabled]="!isEditMode">
             </div>
             <div class="field">
-              <label>Mother Name</label>
+              <label>Mother's Name</label>
               <input type="text" [(ngModel)]="editFormData.mother_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Spouse's Name</label>
+              <input type="text" [(ngModel)]="editFormData.spouse_name" [disabled]="!isEditMode">
             </div>
             <div class="field">
               <label>Primary Contact</label>
@@ -704,6 +714,66 @@
               <input type="text" [(ngModel)]="editFormData.email" [disabled]="!isEditMode">
             </div>
             <div class="field">
+              <label>Caste Category</label>
+              <select [(ngModel)]="editFormData.category" [disabled]="!isEditMode">
+                <option value="">Select Category</option>
+                <option *ngFor="let c of categoriesList" [value]="c">{{ c }}</option>
+                <option *ngIf="editFormData.category && !categoriesList.includes(editFormData.category)" [value]="editFormData.category">
+                  {{ editFormData.category }}
+                </option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Qualification / Education</label>
+              <select [(ngModel)]="editFormData.education" [disabled]="!isEditMode">
+                <option value="">Select Qualification</option>
+                <option *ngFor="let q of qualificationsList" [value]="q">{{ q }}</option>
+                <option *ngIf="editFormData.education && !qualificationsList.includes(editFormData.education)" [value]="editFormData.education">
+                  {{ editFormData.education }}
+                </option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Occupation</label>
+              <select [(ngModel)]="editFormData.occupation" [disabled]="!isEditMode">
+                <option value="">Select Occupation</option>
+                <option *ngFor="let o of occupationsList" [value]="o">{{ o }}</option>
+                <option *ngIf="editFormData.occupation && !occupationsList.includes(editFormData.occupation)" [value]="editFormData.occupation">
+                  {{ editFormData.occupation }}
+                </option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Annual Income</label>
+              <select [(ngModel)]="editFormData.annual_income" [disabled]="!isEditMode">
+                <option value="">Select Annual Income</option>
+                <option *ngFor="let inc of incomesList" [value]="inc">{{ inc }}</option>
+                <option *ngIf="editFormData.annual_income && !incomesList.includes(editFormData.annual_income)" [value]="editFormData.annual_income">
+                  {{ editFormData.annual_income }}
+                </option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Religion</label>
+              <select [(ngModel)]="editFormData.religion" [disabled]="!isEditMode">
+                <option value="">Select Religion</option>
+                <option *ngFor="let r of religionsList" [value]="r">{{ r }}</option>
+                <option *ngIf="editFormData.religion && !religionsList.includes(editFormData.religion)" [value]="editFormData.religion">
+                  {{ editFormData.religion }}
+                </option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Residential Status</label>
+              <select [(ngModel)]="editFormData.residential_status" [disabled]="!isEditMode">
+                <option value="">Select Status</option>
+                <option *ngFor="let rs of resStatusesList" [value]="rs">{{ rs }}</option>
+                <option *ngIf="editFormData.residential_status && !resStatusesList.includes(editFormData.residential_status)" [value]="editFormData.residential_status">
+                  {{ editFormData.residential_status }}
+                </option>
+              </select>
+            </div>
+            <div class="field">
               <label>PAN Number</label>
               <input type="text" [(ngModel)]="editFormData.pan_no" [disabled]="!isEditMode">
             </div>
@@ -716,16 +786,26 @@
               <input type="text" [(ngModel)]="editFormData.perm_address" [disabled]="!isEditMode">
             </div>
             <div class="field">
-              <label>Permanent City / State / PIN</label>
-              <input type="text" [(ngModel)]="editFormData.perm_state" [disabled]="!isEditMode">
+              <label>Permanent State</label>
+              <select [(ngModel)]="editFormData.perm_state" [disabled]="!isEditMode">
+                <option *ngFor="let st of statesList" [value]="st">{{ st }}</option>
+                <option *ngIf="editFormData.perm_state && !statesList.includes(editFormData.perm_state)" [value]="editFormData.perm_state">
+                  {{ editFormData.perm_state }}
+                </option>
+              </select>
             </div>
             <div class="field span-2">
               <label>Local / Correspondence Address</label>
               <input type="text" [(ngModel)]="editFormData.local_address" [disabled]="!isEditMode">
             </div>
             <div class="field">
-              <label>Local City / State / PIN</label>
-              <input type="text" [(ngModel)]="editFormData.local_state" [disabled]="!isEditMode">
+              <label>Local State</label>
+              <select [(ngModel)]="editFormData.local_state" [disabled]="!isEditMode">
+                <option *ngFor="let st of statesList" [value]="st">{{ st }}</option>
+                <option *ngIf="editFormData.local_state && !statesList.includes(editFormData.local_state)" [value]="editFormData.local_state">
+                  {{ editFormData.local_state }}
+                </option>
+              </select>
             </div>
           </div>
         </div>
@@ -775,7 +855,33 @@
             </div>
             <div class="field">
               <label>Relationship</label>
-              <input type="text" [(ngModel)]="editFormData.nominee_relationship" [disabled]="!isEditMode">
+              <select [(ngModel)]="editFormData.nominee_relationship" [disabled]="!isEditMode">
+                <option value="">Select Relationship</option>
+                <option *ngFor="let rel of relationshipsList" [value]="rel">{{ rel }}</option>
+                <option *ngIf="editFormData.nominee_relationship && !relationshipsList.includes(editFormData.nominee_relationship)" [value]="editFormData.nominee_relationship">
+                  {{ editFormData.nominee_relationship }}
+                </option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Nominee Gender</label>
+              <select [(ngModel)]="editFormData.nominee_gender" [disabled]="!isEditMode">
+                <option value="">Select Gender</option>
+                <option *ngFor="let g of gendersList" [value]="g">{{ g }}</option>
+                <option *ngIf="editFormData.nominee_gender && !gendersList.includes(editFormData.nominee_gender)" [value]="editFormData.nominee_gender">
+                  {{ editFormData.nominee_gender }}
+                </option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Nominee Residential Status</label>
+              <select [(ngModel)]="editFormData.nominee_res_status" [disabled]="!isEditMode">
+                <option value="">Select Status</option>
+                <option *ngFor="let rs of resStatusesList" [value]="rs">{{ rs }}</option>
+                <option *ngIf="editFormData.nominee_res_status && !resStatusesList.includes(editFormData.nominee_res_status)" [value]="editFormData.nominee_res_status">
+                  {{ editFormData.nominee_res_status }}
+                </option>
+              </select>
             </div>
             <div class="field">
               <label>Nominee Aadhar / PAN</label>
@@ -792,6 +898,10 @@
             <div class="field">
               <label>Sponsor Name</label>
               <input type="text" [(ngModel)]="editFormData.sponsor_name" [disabled]="!isEditMode">
+            </div>
+            <div class="field">
+              <label>Sponsor Contact</label>
+              <input type="text" [(ngModel)]="editFormData.sponsor_contact" [disabled]="!isEditMode">
             </div>
           </div>
         </div>

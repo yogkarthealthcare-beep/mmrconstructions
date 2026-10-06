@@ -89,7 +89,108 @@ export const RELIGIONS_LIST: string[] = [
   'Sikh',
   'Christian',
   'Jain',
-  'Buddhist'
+  'Buddhist',
+  'Other'
+];
+
+/**
+ * Standard Castes / Categories Dropdown List
+ */
+export const ASSOCIATE_CATEGORIES: string[] = [
+  'General',
+  'OBC',
+  'SC',
+  'ST',
+  'Others'
+];
+
+/**
+ * Standard Educational Qualifications Dropdown List
+ */
+export const ASSOCIATE_QUALIFICATIONS: string[] = [
+  'Illiterate (अनपढ़ / Non-Literate)',
+  'Primary (5th Pass)',
+  'Middle (8th Pass)',
+  'High School (10th / Matric)',
+  'Intermediate (12th / 10+2)',
+  'ITI',
+  'Polytechnic / Diploma',
+  'B.A.',
+  'B.Sc.',
+  'B.Com.',
+  'B.Tech / B.E.',
+  'B.Sc. Agriculture',
+  'BCA / BBA',
+  'M.A.',
+  'M.Sc.',
+  'M.Com.',
+  'M.Tech / M.E.',
+  'MBA / MCA',
+  'Post Graduate / Master\'s',
+  'Doctorate / Ph.D.',
+  'Other / Agriculture'
+];
+
+/**
+ * Standard Occupations Dropdown List
+ */
+export const ASSOCIATE_OCCUPATIONS: string[] = [
+  'Self Employed',
+  'Business / Trader',
+  'Private Service',
+  'Government Service',
+  'Agriculture / Farming',
+  'Real Estate Agent / Consultant',
+  'Professional (Doctor/Lawyer/CA/Engineer)',
+  'Retired',
+  'Homemaker / Housewife',
+  'Student',
+  'Other'
+];
+
+/**
+ * Standard Annual Incomes Dropdown List
+ */
+export const ASSOCIATE_ANNUAL_INCOMES: string[] = [
+  'Below ₹1,00,000',
+  '₹1,00,000 - ₹2,50,000',
+  '₹2,50,000 - ₹5,00,000',
+  '₹5,00,000 - ₹10,00,000',
+  'Above ₹10,00,000'
+];
+
+/**
+ * Standard Nominee Relationships Dropdown List
+ */
+export const NOMINEE_RELATIONSHIPS: string[] = [
+  'Father',
+  'Mother',
+  'Spouse (Husband/Wife)',
+  'Son',
+  'Daughter',
+  'Brother',
+  'Sister',
+  'Guardian',
+  'Other'
+];
+
+/**
+ * Standard Gender List
+ */
+export const GENDER_LIST: string[] = [
+  'Male',
+  'Female',
+  'Other'
+];
+
+/**
+ * Standard Residential Status List
+ */
+export const RESIDENTIAL_STATUS_LIST: string[] = [
+  'Resident Individual',
+  'Non-Resident Indian (NRI)',
+  'Person of Indian Origin (PIO)',
+  'Foreign National'
 ];
 
 /**

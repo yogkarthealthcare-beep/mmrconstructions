@@ -124,10 +124,11 @@
             <div class="field">
               <label>Gender <span class="req">*</span></label>
               <select formControlName="gender">
-                <option value="">Select</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="">Select Gender</option>
+                <option *ngFor="let g of gendersList" [value]="g">{{ g }}</option>
+                <option *ngIf="personal.get('gender')?.value && !gendersList.includes(personal.get('gender')?.value)" [value]="personal.get('gender')?.value">
+                  {{ personal.get('gender')?.value }}
+                </option>
               </select>
               <div *ngIf="personal.get('gender')?.touched && personal.get('gender')?.errors?.['required']" class="error-text">
                 Gender is required.
@@ -175,7 +176,16 @@
 
             <div class="field">
               <label>Residential Status <span class="req">*</span></label>
-              <input type="text" formControlName="residentialStatus" placeholder="Residential Status">
+              <select formControlName="residentialStatus">
+                <option value="">Select Residential Status</option>
+                <option *ngFor="let rs of resStatusesList" [value]="rs">{{ rs }}</option>
+                <option *ngIf="personal.get('residentialStatus')?.value && !resStatusesList.includes(personal.get('residentialStatus')?.value)" [value]="personal.get('residentialStatus')?.value">
+                  {{ personal.get('residentialStatus')?.value }}
+                </option>
+              </select>
+              <div *ngIf="personal.get('residentialStatus')?.touched && personal.get('residentialStatus')?.errors?.['required']" class="error-text">
+                Residential status is required.
+              </div>
             </div>
 
             <div class="field">
@@ -207,22 +217,58 @@
 
             <div class="field">
               <label>Occupation <span class="req">*</span></label>
-              <input type="text" formControlName="occupation" placeholder="Occupation">
+              <select formControlName="occupation">
+                <option value="">Select Occupation</option>
+                <option *ngFor="let occ of occupationsList" [value]="occ">{{ occ }}</option>
+                <option *ngIf="personal.get('occupation')?.value && !occupationsList.includes(personal.get('occupation')?.value)" [value]="personal.get('occupation')?.value">
+                  {{ personal.get('occupation')?.value }}
+                </option>
+              </select>
+              <div *ngIf="personal.get('occupation')?.touched && personal.get('occupation')?.errors?.['required']" class="error-text">
+                Occupation is required.
+              </div>
             </div>
 
             <div class="field">
               <label>Annual Income <span class="req">*</span></label>
-              <input type="text" formControlName="annualIncome" placeholder="Annual Income">
+              <select formControlName="annualIncome">
+                <option value="">Select Annual Income</option>
+                <option *ngFor="let inc of incomesList" [value]="inc">{{ inc }}</option>
+                <option *ngIf="personal.get('annualIncome')?.value && !incomesList.includes(personal.get('annualIncome')?.value)" [value]="personal.get('annualIncome')?.value">
+                  {{ personal.get('annualIncome')?.value }}
+                </option>
+              </select>
+              <div *ngIf="personal.get('annualIncome')?.touched && personal.get('annualIncome')?.errors?.['required']" class="error-text">
+                Annual income is required.
+              </div>
             </div>
 
             <div class="field">
-              <label>Education <span class="req">*</span></label>
-              <input type="text" formControlName="education" placeholder="Education Level">
+              <label>Qualification / Education <span class="req">*</span></label>
+              <select formControlName="education">
+                <option value="">Select Qualification</option>
+                <option *ngFor="let q of qualificationsList" [value]="q">{{ q }}</option>
+                <option *ngIf="personal.get('education')?.value && !qualificationsList.includes(personal.get('education')?.value)" [value]="personal.get('education')?.value">
+                  {{ personal.get('education')?.value }}
+                </option>
+              </select>
+              <div *ngIf="personal.get('education')?.touched && personal.get('education')?.errors?.['required']" class="error-text">
+                Qualification is required.
+              </div>
             </div>
 
             <div class="field">
-              <label>Category <span class="req">*</span></label>
-              <input type="text" formControlName="category" placeholder="Category (e.g. Gen/OBC/SC/ST)">
+              <label>Caste Category <span class="req">*</span></label>
+              <select formControlName="category">
+                <option value="">Select Category</option>
+                <option *ngFor="let cat of categoriesList" [value]="cat">{{ cat }}</option>
+                <option *ngIf="personal.get('category')?.value && !categoriesList.includes(personal.get('category')?.value)" [value]="personal.get('category')?.value">
+                  {{ personal.get('category')?.value }}
+                </option>
+              </select>
+              <div *ngIf="personal.get('category')?.touched && personal.get('category')?.errors?.['required']" class="error-text">
+                Category is required.
+              </div>
             </div>
 
             <div class="field full">
@@ -230,6 +276,9 @@
               <select formControlName="religion">
                 <option value="">Select Religion</option>
                 <option *ngFor="let r of religionsList" [value]="r">{{ r }}</option>
+                <option *ngIf="personal.get('religion')?.value && !religionsList.includes(personal.get('religion')?.value)" [value]="personal.get('religion')?.value">
+                  {{ personal.get('religion')?.value }}
+                </option>
               </select>
               <div *ngIf="personal.get('religion')?.touched && personal.get('religion')?.errors?.['required']" class="error-text">
                 Religion is required.
@@ -388,10 +437,11 @@
               <div class="field">
                 <label>Gender <span class="req">*</span></label>
                 <select formControlName="nomineeGender">
-                  <option value="">Select</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
+                  <option value="">Select Gender</option>
+                  <option *ngFor="let g of gendersList" [value]="g">{{ g }}</option>
+                  <option *ngIf="nominee.get('nomineeGender')?.value && !gendersList.includes(nominee.get('nomineeGender')?.value)" [value]="nominee.get('nomineeGender')?.value">
+                    {{ nominee.get('nomineeGender')?.value }}
+                  </option>
                 </select>
               </div>
               <div class="field">
@@ -400,11 +450,26 @@
               </div>
             <div class="field">
               <label>Residential Status <span class="req">*</span></label>
-              <input type="text" formControlName="nomineeResStatus" placeholder="Residential Status">
+              <select formControlName="nomineeResStatus">
+                <option value="">Select Residential Status</option>
+                <option *ngFor="let rs of resStatusesList" [value]="rs">{{ rs }}</option>
+                <option *ngIf="nominee.get('nomineeResStatus')?.value && !resStatusesList.includes(nominee.get('nomineeResStatus')?.value)" [value]="nominee.get('nomineeResStatus')?.value">
+                  {{ nominee.get('nomineeResStatus')?.value }}
+                </option>
+              </select>
             </div>
             <div class="field">
               <label>Relationship <span class="req">*</span></label>
-              <input type="text" formControlName="nomineeRelationship" placeholder="Relationship to Applicant">
+              <select formControlName="nomineeRelationship">
+                <option value="">Select Relationship</option>
+                <option *ngFor="let rel of relationshipsList" [value]="rel">{{ rel }}</option>
+                <option *ngIf="nominee.get('nomineeRelationship')?.value && !relationshipsList.includes(nominee.get('nomineeRelationship')?.value)" [value]="nominee.get('nomineeRelationship')?.value">
+                  {{ nominee.get('nomineeRelationship')?.value }}
+                </option>
+              </select>
+              <div *ngIf="nominee.get('nomineeRelationship')?.touched && nominee.get('nomineeRelationship')?.errors?.['required']" class="error-text">
+                Relationship is required.
+              </div>
             </div>
             <div class="field">
               <label>PAN Name</label>
