@@ -5,7 +5,21 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
-import { calculateAgeFromDob, numberToIndianWords, MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN, NORTH_INDIAN_STATES, getMaxAdultDobDate, adultAgeValidator } from '../../shared/utils/form-helpers';
+import {
+  calculateAgeFromDob,
+  numberToIndianWords,
+  MOBILE_PATTERN,
+  EMAIL_PATTERN,
+  AADHAAR_PATTERN,
+  APPROVED_INDIAN_STATES,
+  getMaxAdultDobDate,
+  adultAgeValidator,
+  RELIGIONS_LIST,
+  formatDateToDDMMYYYY,
+  parseDDMMYYYYToISO,
+  humanNameValidator,
+  normalizeHumanName
+} from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-investor-enrollment',
@@ -22,7 +36,8 @@ export class InvestorEnrollmentComponent implements OnInit {
 
   enrollmentForm!: FormGroup;
 
-  statesList = NORTH_INDIAN_STATES;
+  statesList = APPROVED_INDIAN_STATES;
+  religionsList = RELIGIONS_LIST;
   maxAdultDob = getMaxAdultDobDate();
 
   photoDataUrl: string = '';
@@ -30,6 +45,8 @@ export class InvestorEnrollmentComponent implements OnInit {
   modalAgreeCheck: boolean = false;
   submitting: boolean = false;
   isSubmitted: boolean = false;
+  isFinalSubmitted: boolean = false;
+  isEditing: boolean = false;
   enrollmentId: string | null = null;
   printing: boolean = false;
 
@@ -68,15 +85,16 @@ export class InvestorEnrollmentComponent implements OnInit {
       branchName: ['', Validators.required],
       investorId: ['', Validators.required],
       projectName: ['', Validators.required],
-      invFirstName: ['', Validators.required],
-      invMiddleName: [''],
-      invSurname: ['', Validators.required],
-      fhFirstName: ['', Validators.required],
-      fhMiddleName: [''],
-      fhSurname: ['', Validators.required],
+      invFirstName: ['', [Validators.required, humanNameValidator()]],
+      invMiddleName: ['', [humanNameValidator()]],
+      invSurname: ['', [Validators.required, humanNameValidator()]],
+      fhFirstName: ['', [Validators.required, humanNameValidator()]],
+      fhMiddleName: ['', [humanNameValidator()]],
+      fhSurname: ['', [Validators.required, humanNameValidator()]],
       dob: ['', [Validators.required, adultAgeValidator(18)]],
       age: ['', Validators.required],
       gender: ['', Validators.required],
+      religion: ['', Validators.required],
       occupation: ['', Validators.required],
       occupationOther: [{ value: '', disabled: true }],
       address: ['', Validators.required],
@@ -105,9 +123,9 @@ export class InvestorEnrollmentComponent implements OnInit {
       declarationCheck: [false, Validators.requiredTrue],
       declDate: [todayStr, Validators.required],
       declPlace: ['', Validators.required],
-      declSignatureName: ['', Validators.required],
-      firstApplicantName: ['', Validators.required],
-      jointApplicantName: [''],
+      declSignatureName: ['', [Validators.required, humanNameValidator()]],
+      firstApplicantName: ['', [Validators.required, humanNameValidator()]],
+      jointApplicantName: ['', [humanNameValidator()]],
       appStatus: [{ value: 'Hold/Pending KYC', disabled: true }],
       verifiedBy: [{ value: '', disabled: true }],
       paymentStatus: [{ value: '', disabled: true }],
@@ -164,6 +182,25 @@ export class InvestorEnrollmentComponent implements OnInit {
     });
   }
 
+  onDobInput(event: any) {
+    let val = (event.target.value || '').replace(/[^0-9/]/g, '');
+    if (val.length === 2 && !val.includes('/')) {
+      val = val + '/';
+    } else if (val.length === 5 && val.split('/').length === 2) {
+      val = val + '/';
+    }
+    event.target.value = val;
+    this.enrollmentForm.get('dob')?.setValue(val, { emitEvent: true });
+  }
+
+  onDatepickerSelect(event: any) {
+    const pickedDate = event.target.value;
+    if (pickedDate) {
+      const formatted = formatDateToDDMMYYYY(pickedDate);
+      this.enrollmentForm.get('dob')?.setValue(formatted, { emitEvent: true });
+    }
+  }
+
   onSameAsPermanentChange(event: any) {
     const isChecked = event.target.checked;
     if (isChecked) {
@@ -180,12 +217,12 @@ export class InvestorEnrollmentComponent implements OnInit {
     return this.enrollmentForm.get('nominees') as FormArray;
   }
 
-  createNomineeGroup(): FormGroup {
+  createNomineeGroup(data: any = {}): FormGroup {
     return this.fb.group({
-      name: ['', Validators.required],
-      relationship: ['', Validators.required],
-      age: ['', Validators.required],
-      proportion: ['', [Validators.required, Validators.min(1), Validators.max(100)]]
+      name: [data.name || '', Validators.required],
+      relationship: [data.relationship || '', Validators.required],
+      age: [data.age || '', Validators.required],
+      proportion: [data.proportion || '', [Validators.required, Validators.min(1), Validators.max(100)]]
     });
   }
 
@@ -330,13 +367,33 @@ export class InvestorEnrollmentComponent implements OnInit {
     this.showModal = true;
   }
 
+  private normalizePayloadNames(formData: any): any {
+    if (formData.fullName) formData.fullName = normalizeHumanName(formData.fullName);
+    if (formData.fatherHusbandName) formData.fatherHusbandName = normalizeHumanName(formData.fatherHusbandName);
+    if (formData.jointApplicantName) formData.jointApplicantName = normalizeHumanName(formData.jointApplicantName);
+    if (formData.declSignatureName) formData.declSignatureName = normalizeHumanName(formData.declSignatureName);
+    if (formData.firstApplicantName) formData.firstApplicantName = normalizeHumanName(formData.firstApplicantName);
+    if (Array.isArray(formData.nominees)) {
+      formData.nominees = formData.nominees.map((nom: any) => ({
+        ...nom,
+        name: nom.name ? normalizeHumanName(nom.name) : nom.name,
+        guardianName: nom.guardianName ? normalizeHumanName(nom.guardianName) : nom.guardianName
+      }));
+    }
+    return formData;
+  }
+
   confirmAndSubmit() {
     if (!this.modalAgreeCheck || this.submitting) return;
 
     this.submitting = true;
-    const formData = { ...this.enrollmentForm.getRawValue() };
+    let formData = { ...this.enrollmentForm.getRawValue() };
+    formData = this.normalizePayloadNames(formData);
 
+    formData.dob = parseDDMMYYYYToISO(formData.dob);
     formData.photo = this.photoDataUrl || null;
+    formData.is_final_submitted = false;
+    formData.isFinalSubmit = false;
     
     if (this.sigFirstCanvas && !this.isCanvasEmpty(this.sigFirstCanvas.nativeElement)) {
       formData.signatureFirstApplicant = this.sigFirstCanvas.nativeElement.toDataURL('image/png');
@@ -350,17 +407,24 @@ export class InvestorEnrollmentComponent implements OnInit {
         this.submitting = false;
         this.showModal = false;
         this.isSubmitted = true;
-        this.enrollmentId = res.data?.id || null;
+        this.isEditing = false;
+        this.isFinalSubmitted = false;
+        this.enrollmentId = res.data?.id || this.enrollmentId;
         this.auth.setEnrollmentCompleted();
-        this.enrollmentForm.disable(); // Lock the form to show it's finalized
+        this.enrollmentForm.disable();
         Swal.fire({
           icon: 'success',
           title: 'Enrollment Submitted Successfully!',
-          text: 'Your investor enrollment form has been submitted.',
+          html: `
+            <p style="font-size:14px; color:#475569; margin-bottom:12px;">
+              Your investor enrollment form has been saved and is currently in <strong>Read-Only Mode</strong>.
+            </p>
+            <p style="font-size:13px; color:#64748b; margin-bottom:12px;">
+              You can click <strong>Edit</strong> to modify details, or click <strong>Final Submit</strong> to permanently finalize your enrollment.
+            </p>
+          `,
           confirmButtonColor: '#1a5c3a',
-          confirmButtonText: 'Go to Dashboard'
-        }).then(() => {
-          this.goToDashboard();
+          confirmButtonText: 'OK'
         });
       },
       error: (err: any) => {
@@ -375,8 +439,170 @@ export class InvestorEnrollmentComponent implements OnInit {
     });
   }
 
+  onEdit() {
+    if (this.isFinalSubmitted) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Form Finalized',
+        text: 'This investor enrollment form has been permanently finalized and cannot be edited.'
+      });
+      return;
+    }
+    this.isEditing = true;
+    this.enrollmentForm.enable();
+    this.enrollmentForm.get('formNo')?.disable();
+    this.enrollmentForm.get('formDate')?.disable();
+    this.enrollmentForm.get('declDate')?.disable();
+    this.enrollmentForm.get('age')?.disable();
+    this.enrollmentForm.get('amountWords')?.disable();
+    this.enrollmentForm.get('appStatus')?.disable();
+    this.enrollmentForm.get('verifiedBy')?.disable();
+    this.enrollmentForm.get('paymentStatus')?.disable();
+    this.enrollmentForm.get('paymentStatusDate')?.disable();
+    this.enrollmentForm.get('authorizedSignatory')?.disable();
+  }
+
+  onFinalSubmit() {
+    if (this.isFinalSubmitted) return;
+    Swal.fire({
+      title: 'Confirm Final Submission?',
+      text: 'Once finalized, your Investor Enrollment will be permanently locked and you will not be able to edit it anymore.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1a5c3a',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, Final Submit',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.executeFinalSubmit();
+      }
+    });
+  }
+
+  private executeFinalSubmit() {
+    this.submitting = true;
+    let formData = { ...this.enrollmentForm.getRawValue() };
+    formData = this.normalizePayloadNames(formData);
+
+    formData.dob = parseDDMMYYYYToISO(formData.dob);
+    formData.photo = this.photoDataUrl || null;
+    formData.is_final_submitted = true;
+    formData.isFinalSubmit = true;
+    
+    if (this.sigFirstCanvas && !this.isCanvasEmpty(this.sigFirstCanvas.nativeElement)) {
+      formData.signatureFirstApplicant = this.sigFirstCanvas.nativeElement.toDataURL('image/png');
+    }
+    if (this.sigJointCanvas && !this.isCanvasEmpty(this.sigJointCanvas.nativeElement)) {
+      formData.signatureJointApplicant = this.sigJointCanvas.nativeElement.toDataURL('image/png');
+    }
+
+    this.api.post('/api/investor/enroll', formData).subscribe({
+      next: (res: any) => {
+        this.submitting = false;
+        this.isSubmitted = true;
+        this.isFinalSubmitted = true;
+        this.isEditing = false;
+        this.enrollmentId = res.data?.id || this.enrollmentId;
+        this.auth.setEnrollmentCompleted();
+        this.enrollmentForm.disable();
+        Swal.fire({
+          icon: 'success',
+          title: 'Investor Enrollment Finalized!',
+          text: 'Your investor enrollment has been permanently finalized and locked.',
+          confirmButtonColor: '#1a5c3a'
+        });
+      },
+      error: (err: any) => {
+        this.submitting = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'Final Submission Failed',
+          text: err.error?.message || 'Failed to final submit investor enrollment.',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    });
+  }
+
   goToDashboard() {
     this.router.navigate(['/investor/dashboard']);
+  }
+
+  patchSubmittedData(d: any) {
+    this.isSubmitted = true;
+    this.isFinalSubmitted = Boolean(d.is_final_submitted || d.isFinalSubmitted);
+    this.isEditing = false;
+    this.enrollmentId = d.id || null;
+
+    if (d.photo_url) {
+      this.photoDataUrl = d.photo_url;
+    }
+
+    // Populate nominees if available
+    if (d.nominees) {
+      let nomList: any[] = [];
+      try {
+        nomList = typeof d.nominees === 'string' ? JSON.parse(d.nominees) : d.nominees;
+      } catch (e) {
+        nomList = [];
+      }
+      if (Array.isArray(nomList) && nomList.length > 0) {
+        this.nominees.clear();
+        nomList.forEach((n) => this.nominees.push(this.createNomineeGroup(n)));
+      }
+    }
+
+    this.enrollmentForm.patchValue({
+      formNo: d.form_no || `MMR-INV-${Date.now().toString().slice(-6)}`,
+      formDate: d.form_date || new Date().toISOString().split('T')[0],
+      branchCode: d.branch_code || '',
+      branchName: d.branch_name || '',
+      investorId: d.investor_enrollment_id || d.investor_id || '',
+      projectName: d.project_name || '',
+      invFirstName: d.inv_first_name || '',
+      invMiddleName: d.inv_middle_name || '',
+      invSurname: d.inv_surname || '',
+      fhFirstName: d.fh_first_name || '',
+      fhMiddleName: d.fh_middle_name || '',
+      fhSurname: d.fh_surname || '',
+      dob: formatDateToDDMMYYYY(d.dob),
+      age: d.age || '',
+      gender: d.gender || '',
+      religion: d.religion || '',
+      occupation: d.occupation || '',
+      occupationOther: d.occupation_other || '',
+      address: d.address || '',
+      city: d.city || '',
+      state: d.state || 'Uttar Pradesh',
+      pinCode: d.pin_code || '',
+      corrAddress: d.corr_address || d.address || '',
+      corrCity: d.corr_city || d.city || '',
+      corrState: d.corr_state || d.state || 'Uttar Pradesh',
+      corrPinCode: d.corr_pin_code || d.pin_code || '',
+      mobile: d.mobile || '',
+      altTel: d.alt_tel || '',
+      email: d.email || '',
+      pan: d.pan || '',
+      aadhar: d.aadhar || '',
+      amount: d.amount || '',
+      amountWords: d.amount_words || '',
+      paymentMode: d.payment_mode || 'NEFT/RTGS/UPI',
+      txnNo: d.txn_no || '',
+      txnDate: d.txn_date || '',
+      bankBranch: d.bank_branch || '',
+      accountNumber: d.account_number || '',
+      ifscCode: d.ifsc_code || '',
+      declarationCheck: true,
+      declDate: d.decl_date || new Date().toISOString().split('T')[0],
+      declPlace: d.decl_place || '',
+      declSignatureName: d.decl_signature_name || '',
+      firstApplicantName: d.first_applicant_name || '',
+      jointApplicantName: d.joint_applicant_name || ''
+    });
+
+    this.enrollmentForm.disable();
+    this.auth.setEnrollmentCompleted();
   }
 
   prefillProfile() {
@@ -409,7 +635,7 @@ export class InvestorEnrollmentComponent implements OnInit {
             mobile: u.mobile_no || '',
             altTel: u.alternate_mobile || '',
             email: u.email || '',
-            dob: u.date_of_birth ? u.date_of_birth.split('T')[0] : '',
+            dob: u.date_of_birth ? formatDateToDDMMYYYY(u.date_of_birth) : '',
             gender: u.gender || '',
             pan: u.pan_number || '',
             aadhar: u.aadhar_number || '',
@@ -509,12 +735,7 @@ export class InvestorEnrollmentComponent implements OnInit {
     this.api.getInvestorEnrollment().subscribe({
       next: (res: any) => {
         if (res && res.success && res.data) {
-          const enroll = res.data;
-          this.isSubmitted = true;
-          this.enrollmentId = enroll.id;
-          this.auth.setEnrollmentCompleted();
-          this.goToDashboard();
-          return;
+          this.patchSubmittedData(res.data);
         } else {
           this.prefillProfile();
         }
@@ -536,7 +757,7 @@ export class InvestorEnrollmentComponent implements OnInit {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `MMR-Investor-${this.enrollmentForm.get('investorId')?.value}-${new Date().toISOString().split('T')[0]}.pdf`;
+        a.download = `MMR-Investor-${this.enrollmentForm.get('investorId')?.value || 'Enrollment'}-${new Date().toISOString().split('T')[0]}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

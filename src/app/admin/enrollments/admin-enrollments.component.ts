@@ -6,9 +6,10 @@ import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
+import { APPROVED_INDIAN_STATES, normalizeHumanName, isValidHumanName } from '../../shared/utils/form-helpers';
 import Swal from 'sweetalert2';
 
-type CategoryType = 'customer' | 'associate' | 'investor';
+type CategoryType = 'customer' | 'associate' | 'investor' | 'team_member';
 
 @Component({
   selector: 'app-admin-enrollments',
@@ -23,6 +24,7 @@ export class AdminEnrollmentsComponent implements OnInit {
   statusFilter = '';
   loading = false;
   items: any[] = [];
+  statesList = APPROVED_INDIAN_STATES;
 
   // Pagination state
   page = 1;
@@ -32,7 +34,8 @@ export class AdminEnrollmentsComponent implements OnInit {
   stats = {
     customer: { total: 0, completed: 0, pending: 0 },
     associate: { total: 0, completed: 0, pending: 0 },
-    investor: { total: 0, completed: 0, pending: 0 }
+    investor: { total: 0, completed: 0, pending: 0 },
+    team_member: { total: 0, completed: 0, pending: 0 }
   };
 
   // View / Edit Modal State
@@ -128,6 +131,36 @@ export class AdminEnrollmentsComponent implements OnInit {
         enrollment_status: item.enrollment_status || 'Pending',
         date_display: item.created_at ? new Date(item.created_at).toLocaleDateString() : (item.sign_date ? new Date(item.sign_date).toLocaleDateString() : '—')
       }));
+    } else if (this.activeCategory === 'team_member') {
+      title = mode === 'current' ? `Team Member Enrollments (Page ${this.page})` : 'All Team Member Enrollments';
+      columns = [
+        { header: '#', key: '_sno', width: 6 },
+        { header: 'Team Member Name', key: 'full_name', width: 22 },
+        { header: 'Member ID', key: 'member_id', width: 16 },
+        { header: 'Associate Leader', key: 'associate_display', width: 20 },
+        { header: 'Slot #', key: 'slot_number', width: 10 },
+        { header: 'Mobile', key: 'mobile_no', width: 14 },
+        { header: 'Email', key: 'email', width: 22 },
+        { header: 'Sales (Gaj)', key: 'sales_gaj', width: 12 },
+        { header: 'Commission (Rs.)', key: 'commission_earned', width: 15 },
+        { header: 'Status', key: 'status', width: 12 },
+        { header: 'Joined Date', key: 'date_display', width: 14 }
+      ];
+
+      formatted = list.map((item, idx) => ({
+        ...item,
+        _sno: baseIndex + idx + 1,
+        full_name: item.full_name || 'N/A',
+        member_id: item.member_id || 'Pending',
+        associate_display: item.associate_name ? `${item.associate_name} (${item.associate_member_id || '—'})` : '—',
+        slot_number: item.slot_number ? `Slot ${item.slot_number}` : '—',
+        mobile_no: item.mobile_no || 'N/A',
+        email: item.email || 'N/A',
+        sales_gaj: Number(item.total_sq_yard_sold || 0).toFixed(2),
+        commission_earned: Number(item.total_commission_earned || 0).toLocaleString(),
+        status: item.status || 'Active',
+        date_display: item.joined_at ? new Date(item.joined_at).toLocaleDateString() : (item.created_at ? new Date(item.created_at).toLocaleDateString() : '—')
+      }));
     } else {
       title = mode === 'current' ? `Investor Enrollments (Page ${this.page})` : 'All Investor Enrollments';
       columns = [
@@ -168,7 +201,7 @@ export class AdminEnrollmentsComponent implements OnInit {
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      if (params['tab'] && ['customer', 'associate', 'investor'].includes(params['tab'])) {
+      if (params['tab'] && ['customer', 'associate', 'investor', 'team_member'].includes(params['tab'])) {
         this.activeCategory = params['tab'] as CategoryType;
       }
       this.loadData();
@@ -224,6 +257,17 @@ export class AdminEnrollmentsComponent implements OnInit {
           console.error('Error fetching investor enrollments:', err);
         }
       });
+    } else if (this.activeCategory === 'team_member') {
+      this.api.adminGetTeamMembers(params).subscribe({
+        next: (res: any) => {
+          this.loading = false;
+          this.items = res.data || [];
+        },
+        error: (err) => {
+          this.loading = false;
+          console.error('Error fetching team member enrollments:', err);
+        }
+      });
     }
   }
 
@@ -253,6 +297,15 @@ export class AdminEnrollmentsComponent implements OnInit {
         this.stats.investor.total = list.length;
         this.stats.investor.completed = list.filter((x: any) => x.enrollment_status === 'Completed').length;
         this.stats.investor.pending = list.filter((x: any) => x.enrollment_status === 'Pending').length;
+      }
+    });
+
+    this.api.adminGetTeamMembers({}).subscribe({
+      next: (res: any) => {
+        const list = res.data || [];
+        this.stats.team_member.total = list.length;
+        this.stats.team_member.completed = list.filter((x: any) => x.status === 'Active').length;
+        this.stats.team_member.pending = list.filter((x: any) => x.status === 'Pending').length;
       }
     });
   }
@@ -362,6 +415,20 @@ export class AdminEnrollmentsComponent implements OnInit {
 
   saveChanges() {
     this.saving = true;
+
+    // Normalize any human names in editFormData
+    if (this.editFormData.full_name) this.editFormData.full_name = normalizeHumanName(this.editFormData.full_name);
+    if (this.editFormData.applicant_name) this.editFormData.applicant_name = normalizeHumanName(this.editFormData.applicant_name);
+    if (this.editFormData.father_name) this.editFormData.father_name = normalizeHumanName(this.editFormData.father_name);
+    if (this.editFormData.father_husband_name) this.editFormData.father_husband_name = normalizeHumanName(this.editFormData.father_husband_name);
+    if (this.editFormData.fh_name) this.editFormData.fh_name = normalizeHumanName(this.editFormData.fh_name);
+    if (this.editFormData.co_applicant_name) this.editFormData.co_applicant_name = normalizeHumanName(this.editFormData.co_applicant_name);
+    if (this.editFormData.nominee_name) this.editFormData.nominee_name = normalizeHumanName(this.editFormData.nominee_name);
+    if (this.editFormData.inv_first_name) this.editFormData.inv_first_name = normalizeHumanName(this.editFormData.inv_first_name);
+    if (this.editFormData.inv_middle_name) this.editFormData.inv_middle_name = normalizeHumanName(this.editFormData.inv_middle_name);
+    if (this.editFormData.inv_surname) this.editFormData.inv_surname = normalizeHumanName(this.editFormData.inv_surname);
+    if (this.editFormData.fh_first_name) this.editFormData.fh_first_name = normalizeHumanName(this.editFormData.fh_first_name);
+    if (this.editFormData.decl_signature_name) this.editFormData.decl_signature_name = normalizeHumanName(this.editFormData.decl_signature_name);
 
     if (this.activeCategory === 'customer') {
       const id = this.editFormData.id || this.editFormData.submission_id || this.selectedItem?.submission_id || this.selectedItem?.id || this.selectedItem?.user_id;
@@ -619,6 +686,40 @@ export class AdminEnrollmentsComponent implements OnInit {
     });
   }
 
+  onTeamMemberInlineStatusChange(item: any, event: any) {
+    const newStatus = event.target.value;
+    const oldStatus = item.status;
+    const id = item.team_member_id || item.id;
+
+    item.status = newStatus;
+
+    this.api.adminUpdateTeamMemberStatus(id, { status: newStatus }).subscribe({
+      next: () => {
+        Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        }).fire({
+          icon: 'success',
+          title: `Team member status updated to ${newStatus}`
+        });
+        this.loadStats();
+      },
+      error: (err) => {
+        item.status = oldStatus;
+        event.target.value = oldStatus || 'Pending';
+        Swal.fire({
+          icon: 'error',
+          title: 'Update Failed',
+          text: err.error?.message || 'Failed to update team member status.',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    });
+  }
+
   private saveBlob(blob: Blob, filename: string) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -630,3 +731,4 @@ export class AdminEnrollmentsComponent implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 }
+

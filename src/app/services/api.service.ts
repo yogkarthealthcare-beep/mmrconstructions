@@ -266,6 +266,11 @@ export class ApiService {
   adminGetAssociateEnrollment(id: string) { return this.get(`/api/admin/associate-enrollments/${id}`, {}, true); }
   adminUpdateAssociateEnrollment(id: string, data: any) { return typeof data === 'object' && !(data instanceof FormData) ? this.put(`/api/admin/associate-enrollments/${id}`, data, true) : this.putForm(`/api/admin/associate-enrollments/${id}`, data, true); }
 
+  // ── ADMIN — Team Members & Enrollments ───────────
+  adminGetTeamMembers(params: any = {}) { return this.get('/api/admin/team-members', params, true); }
+  adminGetTeamMember(id: number | string) { return this.get(`/api/team-members/${id}`, {}, true); }
+  adminUpdateTeamMemberStatus(id: number | string, data: any) { return this.patch(`/api/team-members/${id}/status`, data, true); }
+
   // ── ADMIN — Investor Enrollments ──────────────────
   adminGetInvestorEnrollments(params: any = {}) { return this.get('/api/admin/investor-enrollment', params, true); }
   adminGetInvestorEnrollment(id: string) { return this.get(`/api/admin/investor-enrollment/${id}`, {}, true); }

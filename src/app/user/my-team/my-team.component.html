@@ -35,6 +35,9 @@
       </div>
 
       <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+        <a class="btn btn-outline-light btn-sm fw-700 shadow-sm px-3" routerLink="/associate/team-member-enrollment">
+          <i class="fas fa-th-large me-1.5"></i> 10 Direct Slots
+        </a>
         <button class="btn btn-gold btn-sm fw-700 shadow-sm px-3" (click)="openAddCustomerModal()">
           <i class="fas fa-user-plus me-1.5"></i> + Add New Customer
         </button>
@@ -330,20 +333,20 @@
   <!-- ══════════════════════════════════════════════════════════════════════ -->
   <!-- VIEW 2: COMPACT LIST / TABLE VIEW                                     -->
   <!-- ══════════════════════════════════════════════════════════════════════ -->
-  <div class="panel-card mb-4 overflow-hidden position-relative shadow-sm" *ngIf="viewMode==='list'">
+  <div class="panel-card mb-4 overflow-hidden position-relative shadow-sm table-container" *ngIf="viewMode==='list'">
     <div class="table-responsive">
-      <table class="table align-middle custom-team-table mb-0">
+      <table class="table align-middle custom-dash-table stacked-on-mobile mb-0" style="table-layout: fixed; width: 100%;">
         <thead>
           <tr>
-            <th>Member ID</th>
-            <th>Customer / Associate</th>
-            <th>Sponsor ID</th>
-            <th>Plot / Property</th>
-            <th>Total Plot Value</th>
-            <th>Paid Amount</th>
-            <th>Unpaid Balance</th>
-            <th>Booking Status</th>
-            <th class="text-end">Actions</th>
+            <th style="width: 13%;">Member ID</th>
+            <th style="width: 21%;">Customer / Associate</th>
+            <th class="priority-3" style="width: 9%;">Sponsor</th>
+            <th class="priority-2" style="width: 14%;">Plot / Property</th>
+            <th class="priority-2" style="width: 11%;">Total Value</th>
+            <th class="priority-2" style="width: 10%;">Paid Amount</th>
+            <th class="priority-3" style="width: 9%;">Unpaid</th>
+            <th style="width: 7%;">Status</th>
+            <th class="text-end" style="width: 6%;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -352,53 +355,53 @@
               No matching team members found for search criteria.
             </td>
           </tr>
-          <tr *ngFor="let m of filteredTeamMembers"
+          <tr *ngFor="let m of pagedTeamMembers"
               (mouseenter)="showListTooltip(m, $event)"
               (mousemove)="showListTooltip(m, $event)"
               (mouseleave)="hideListTooltip()">
-            <td>
-              <span class="member-code-badge"><i class="fas fa-id-badge me-1"></i>{{ m.member_id }}</span>
+            <td data-label="Member ID">
+              <span class="member-code-badge text-truncate-safe" [title]="m.member_id"><i class="fas fa-id-badge me-1"></i>{{ m.member_id }}</span>
             </td>
-            <td>
+            <td data-label="Customer / Associate">
               <div class="d-flex align-items-center gap-2">
                 <div class="mini-avatar">{{ getNodeInitials(m.full_name) }}</div>
-                <div>
-                  <div class="fw-700 text-dark d-flex align-items-center gap-1">
-                    <span>{{ m.full_name }}</span>
+                <div class="min-w-0 flex-fill">
+                  <div class="fw-700 text-dark d-flex align-items-center gap-1 field-single-line" [title]="m.full_name">
+                    <span class="text-truncate">{{ m.full_name }}</span>
                     <app-verified-badge [user]="m" size="xs"></app-verified-badge>
                   </div>
-                  <div class="fs-11 text-muted" *ngIf="m.mobile_no"><i class="fas fa-phone me-1"></i>{{ m.mobile_no }}</div>
+                  <div class="fs-11 text-muted field-single-line" *ngIf="m.mobile_no" [title]="m.mobile_no"><i class="fas fa-phone me-1"></i>{{ m.mobile_no }}</div>
                 </div>
               </div>
             </td>
-            <td>
-              <span class="fs-12 text-muted">#{{ m.sponsor_user_id || currentUser?.user_id || '—' }}</span>
+            <td class="priority-3" data-label="Sponsor">
+              <span class="fs-12 text-muted text-truncate-safe">#{{ m.sponsor_user_id || currentUser?.user_id || '—' }}</span>
             </td>
-            <td>
-              <div *ngIf="m.plot_number">
+            <td class="priority-2" data-label="Plot / Property">
+              <div *ngIf="m.plot_number" class="field-multi-line-2">
                 <strong class="text-dark">{{ m.plot_number }}</strong>
-                <div class="fs-11 text-muted text-truncate" style="max-width: 130px;">{{ m.site_name || 'MMR City' }}</div>
+                <span class="fs-11 text-muted d-block text-truncate" [title]="m.site_name">{{ m.site_name || 'MMR City' }}</span>
               </div>
               <span class="text-muted fs-11" *ngIf="!m.plot_number">— None —</span>
             </td>
-            <td>
-              <span class="fw-700 text-dark" *ngIf="m.total_plot_amount">₹{{ m.total_plot_amount | number }}</span>
+            <td class="priority-2" data-label="Total Value">
+              <span class="fw-700 text-dark text-truncate-safe" *ngIf="m.total_plot_amount">₹{{ m.total_plot_amount | number }}</span>
               <span class="text-muted" *ngIf="!m.total_plot_amount">—</span>
             </td>
-            <td>
-              <span class="fw-700 text-success" *ngIf="m.total_paid_amount">₹{{ m.total_paid_amount | number }}</span>
+            <td class="priority-2" data-label="Paid Amount">
+              <span class="fw-700 text-success text-truncate-safe" *ngIf="m.total_paid_amount">₹{{ m.total_paid_amount | number }}</span>
               <span class="text-muted" *ngIf="!m.total_paid_amount">₹0</span>
             </td>
-            <td>
-              <span class="fw-700 text-danger" *ngIf="m.total_unpaid_amount">₹{{ m.total_unpaid_amount | number }}</span>
+            <td class="priority-3" data-label="Unpaid">
+              <span class="fw-700 text-danger text-truncate-safe" *ngIf="m.total_unpaid_amount">₹{{ m.total_unpaid_amount | number }}</span>
               <span class="text-muted" *ngIf="!m.total_unpaid_amount">₹0</span>
             </td>
-            <td>
+            <td data-label="Status">
               <span class="sbadge" [class.sbadge-green]="m.booking_status==='Confirmed'" [class.sbadge-yellow]="m.booking_status && m.booking_status!=='Confirmed'" [class.sbadge-gray]="!m.booking_status">
                 {{ m.booking_status === 'Confirmed' ? 'Approved' : (m.booking_status || 'Not Booked') }}
               </span>
             </td>
-            <td class="text-end">
+            <td class="text-end" data-label="Actions">
               <div class="d-inline-flex align-items-center gap-1">
                 <button class="btn btn-navy-action btn-xs" (click)="openBookingModal(m)" title="Book Plot">
                   <i class="fas fa-map-marked-alt me-1"></i> Book
@@ -415,6 +418,15 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Mandatory Pagination Component -->
+    <app-admin-pagination
+      [page]="page"
+      [pageSize]="pageSize"
+      [total]="filteredTeamMembers.length"
+      (pageChange)="page = $event"
+      (pageSizeChange)="pageSize = $event; page = 1"
+    ></app-admin-pagination>
 
     <!-- Floating List Tooltip on Row Hover -->
     <div class="list-hover-tooltip" *ngIf="hoveredMember" [style.left.px]="tooltipPos.x" [style.top.px]="tooltipPos.y">

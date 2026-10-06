@@ -26,7 +26,10 @@ export class CommissionNotesComponent implements OnInit {
   }
 
   get model(): string {
-    return this.settings.commission_model === 'LevelWise' ? 'Level Wise' : 'Upline';
+    if (this.settings.commission_model === 'FlatTeam' || this.settings.commission_model === 'TeamMemberModel') return 'MMR Flat Team Member';
+    if (this.settings.commission_model === 'EqualDistribution') return 'Equal Distribution';
+    if (this.settings.commission_model === 'LevelWise') return 'Level Wise';
+    return 'Upline';
   }
 
   get levelFormula(): string {

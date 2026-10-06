@@ -4,6 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
+import {
+  APPROVED_INDIAN_STATES,
+  DEFAULT_STATE,
+  DEFAULT_COUNTRY,
+  COUNTRIES_LIST,
+  normalizeHumanName,
+  isValidHumanName
+} from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-investor-profile',
@@ -15,6 +23,9 @@ import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-bad
 export class InvestorProfileComponent implements OnInit {
   activeTab = 'personal'; // 'personal', 'bank', 'security'
 
+  statesList = APPROVED_INDIAN_STATES;
+  countriesList = COUNTRIES_LIST;
+
   profile: any = {};
   loading = true;
 
@@ -25,8 +36,8 @@ export class InvestorProfileComponent implements OnInit {
     email: '',
     address: '',
     city: '',
-    state: '',
-    country: 'India',
+    state: DEFAULT_STATE,
+    country: DEFAULT_COUNTRY,
     pincode: '',
     pan_number: '',
     aadhaar_number: '',
@@ -161,10 +172,38 @@ export class InvestorProfileComponent implements OnInit {
     });
   }
 
+  onNameBlur(fieldName: 'full_name' | 'nominee_name') {
+    if (this.personalForm[fieldName]) {
+      this.personalForm[fieldName] = normalizeHumanName(this.personalForm[fieldName]);
+    }
+  }
+
   savePersonal() {
     this.personalSaving = true;
     this.personalMsg = '';
     this.personalErr = '';
+
+    if (this.personalForm.full_name && this.personalForm.full_name.trim()) {
+      if (!isValidHumanName(this.personalForm.full_name)) {
+        this.personalSaving = false;
+        this.personalErr = 'Full Name may only contain alphabetic letters and spaces.';
+        return;
+      }
+      this.personalForm.full_name = normalizeHumanName(this.personalForm.full_name);
+    } else {
+      this.personalSaving = false;
+      this.personalErr = 'Full Name is required.';
+      return;
+    }
+
+    if (this.personalForm.nominee_name && this.personalForm.nominee_name.trim()) {
+      if (!isValidHumanName(this.personalForm.nominee_name)) {
+        this.personalSaving = false;
+        this.personalErr = 'Nominee Name may only contain alphabetic letters and spaces.';
+        return;
+      }
+      this.personalForm.nominee_name = normalizeHumanName(this.personalForm.nominee_name);
+    }
 
     this.api.updateInvestorProfile(this.personalForm).subscribe({
       next: (res: any) => {

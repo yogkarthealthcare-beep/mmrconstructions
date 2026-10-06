@@ -424,28 +424,50 @@
   gap: 3px !important;
 }
 
-/* ── 8. COMPACT ERP DATA TABLES ──────────────────────────────────────────── */
+/* ── 8. COMPACT ERP DATA TABLES (STANDARDIZED) ────────────────────────── */
+.panel-shell .table-container,
+.panel-shell .admin-table-wrapper,
+.panel-shell .panel-card,
+.admin-table-wrapper {
+  container-type: inline-size;
+  container-name: tableContainer;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
 .panel-shell .table-responsive,
-.panel-shell .admin-table-scroll-container {
+.panel-shell .admin-table-scroll-container,
+.admin-table-scroll-container {
   width: 100% !important;
   max-width: 100% !important;
   min-width: 0 !important;
   margin-bottom: 0 !important;
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .panel-shell .data-table,
 .panel-shell .custom-dash-table,
-.panel-shell table.table {
+.panel-shell .custom-team-table,
+.panel-shell .team-table,
+.panel-shell table.table,
+table.data-table,
+table.custom-dash-table {
   width: 100% !important;
+  table-layout: fixed !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
   margin-bottom: 0 !important;
   text-align: left !important;
+  font-size: clamp(11px, 0.3cqi + 10px, 12px) !important;
 }
 
 .panel-shell .data-table thead th,
 .panel-shell .custom-dash-table thead th,
+.panel-shell .custom-team-table thead th,
+.panel-shell .team-table thead th,
 .panel-shell table.table thead th {
   background: #f8fafc !important;
   height: 36px !important;
@@ -460,42 +482,141 @@
   white-space: nowrap !important;
   vertical-align: middle !important;
   line-height: 1.2 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .panel-shell .data-table tbody td,
 .panel-shell .custom-dash-table tbody td,
+.panel-shell .custom-team-table tbody td,
+.panel-shell .team-table tbody td,
 .panel-shell table.table tbody td {
   height: 42px !important;
   padding: 6px 8px !important;
   border-bottom: 1px solid #f1f5f9 !important;
-  font-size: 11.5px !important;
+  font-size: clamp(11px, 0.3cqi + 10px, 11.5px) !important;
   color: #1e293b !important;
   vertical-align: middle !important;
   line-height: 1.25 !important;
   background: #ffffff !important;
   transition: background-color 0.12s ease !important;
+  overflow: hidden !important;
 }
 
 .panel-shell .data-table tbody tr:hover td,
 .panel-shell .custom-dash-table tbody tr:hover td,
+.panel-shell .custom-team-table tbody tr:hover td,
+.panel-shell .team-table tbody tr:hover td,
 .panel-shell table.table tbody tr:hover td {
   background-color: #f8fafc !important;
 }
 
 .panel-shell .data-table tbody tr:last-child td,
 .panel-shell .custom-dash-table tbody tr:last-child td,
+.panel-shell .custom-team-table tbody tr:last-child td,
+.panel-shell .team-table tbody tr:last-child td,
 .panel-shell table.table tbody tr:last-child td {
   border-bottom: none !important;
 }
 
 .panel-shell .th-sno,
 .panel-shell .td-sno {
-  width: 42px !important;
-  min-width: 42px !important;
+  width: 5% !important;
+  min-width: 36px !important;
   text-align: center !important;
   font-weight: 700 !important;
   color: #475569 !important;
   font-size: 11px !important;
+}
+
+/* Priority Column Management */
+@container tableContainer (max-width: 900px) {
+  .priority-3,
+  .col-priority-3,
+  th.priority-3,
+  td.priority-3 {
+    display: none !important;
+  }
+}
+
+@container tableContainer (max-width: 680px) {
+  .priority-2,
+  .col-priority-2,
+  th.priority-2,
+  td.priority-2 {
+    display: none !important;
+  }
+}
+
+/* Stacked Card Layout on Narrow Containers */
+@container tableContainer (max-width: 520px) {
+  .data-table.stacked-on-mobile thead,
+  .custom-dash-table.stacked-on-mobile thead,
+  .custom-team-table.stacked-on-mobile thead {
+    display: none !important;
+  }
+
+  .data-table.stacked-on-mobile tbody tr,
+  .custom-dash-table.stacked-on-mobile tbody tr,
+  .custom-team-table.stacked-on-mobile tbody tr {
+    display: block !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    margin-bottom: 8px !important;
+    padding: 8px 10px !important;
+  }
+
+  .data-table.stacked-on-mobile tbody td,
+  .custom-dash-table.stacked-on-mobile tbody td,
+  .custom-team-table.stacked-on-mobile tbody td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 4px 0 !important;
+    border-bottom: 1px dashed #f1f5f9 !important;
+    height: auto !important;
+    min-height: auto !important;
+    font-size: 11px !important;
+    width: 100% !important;
+  }
+
+  .data-table.stacked-on-mobile tbody td::before,
+  .custom-dash-table.stacked-on-mobile tbody td::before,
+  .custom-team-table.stacked-on-mobile tbody td::before {
+    content: attr(data-label) !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    font-size: 10.5px !important;
+    margin-right: 8px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .data-table.stacked-on-mobile tbody td:last-child,
+  .custom-dash-table.stacked-on-mobile tbody td:last-child,
+  .custom-team-table.stacked-on-mobile tbody td:last-child {
+    border-bottom: none !important;
+    margin-top: 4px !important;
+  }
+}
+
+/* Truncation & Ellipsis Standards */
+.field-single-line,
+.text-truncate-1 {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  min-width: 0;
+}
+
+.field-multi-line-2,
+.text-truncate-2 {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  min-width: 0;
 }
 
 /* ── 9. STATUS & BADGE PILLS ─────────────────────────────────────────────── */
@@ -651,3 +772,71 @@
   padding: 2px 8px !important;
   border-radius: 5px !important;
 }
+
+/* ── 13. PRIMARY / GREEN BACKGROUNDS — WHITE TEXT ENFORCEMENT ─────────────── */
+.bg-success,
+.bg-emerald,
+.bg-dark-emerald,
+.bg-primary-green,
+.badge-green,
+.badge-emerald,
+.btn-emerald,
+.btn-green,
+.btn-primary-green,
+.btn-slot-enroll,
+.btn-create-cust,
+.btn-primary,
+.admin-hero-card,
+.team-hero-card,
+.capacity-hero-card,
+.header-card,
+.modal-header.bg-success,
+.modal-header.bg-dark-emerald,
+.modal-header.bg-modal-header,
+.filter-tab.active,
+.quick-tab-btn.active,
+.filter-pill.approved.active,
+.slot-pill.approved,
+.toast-success,
+.step-badge-icon,
+.success-check-badge {
+  color: #ffffff !important;
+}
+
+.bg-success *,
+.bg-emerald *,
+.bg-dark-emerald *,
+.bg-primary-green *,
+.btn-emerald *,
+.btn-green *,
+.btn-primary-green *,
+.btn-slot-enroll *,
+.btn-create-cust *,
+.btn-primary *,
+.admin-hero-card *,
+.team-hero-card *,
+.capacity-hero-card *,
+.header-card *,
+.modal-header.bg-success *,
+.modal-header.bg-dark-emerald *,
+.modal-header.bg-modal-header *,
+.filter-pill.approved.active *,
+.toast-success *,
+.step-badge-icon *,
+.success-check-badge * {
+  color: inherit;
+}
+
+/* ── 14. RESPONSIVE OVERFLOW & WRAPPING SAFETY ───────────────────────────── */
+.panel-shell * {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.panel-shell .text-truncate-safe {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+}
+

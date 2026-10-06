@@ -334,9 +334,9 @@
           <div *ngIf="fStep===3" class="q-step">
             <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Personal Information</h5>
             <div class="row g-3">
-              <div class="col-sm-6"><label class="f-label">Full Name *</label><input type="text" class="f-input" placeholder="As per Aadhar" [(ngModel)]="fForm.full_name" name="fname"/></div>
-              <div class="col-sm-6"><label class="f-label">Father's Name *</label><input type="text" class="f-input" [(ngModel)]="fForm.father_name" name="ffname"/></div>
-              <div class="col-sm-6"><label class="f-label">Date of Birth *</label><input type="date" class="f-input" [(ngModel)]="fForm.date_of_birth" name="fdob"/></div>
+              <div class="col-sm-6"><label class="f-label">Full Name *</label><input type="text" class="f-input" placeholder="Letters only (e.g. Rahul Sharma)" [(ngModel)]="fForm.full_name" name="fname" (blur)="onNameBlur('full_name')"/></div>
+              <div class="col-sm-6"><label class="f-label">Father's Name *</label><input type="text" class="f-input" placeholder="Letters only" [(ngModel)]="fForm.father_name" name="ffname" (blur)="onNameBlur('father_name')"/></div>
+              <div class="col-sm-6"><label class="f-label">Date of Birth * (Min. 18 Years)</label><input type="date" class="f-input" [max]="maxAdultDob" [(ngModel)]="fForm.date_of_birth" name="fdob"/></div>
               <div class="col-sm-6"><label class="f-label">Gender *</label>
                 <select class="f-select" [(ngModel)]="fForm.gender" name="fgender">
                   <option value="">Select</option><option>Male</option><option>Female</option><option>Other</option>
@@ -369,7 +369,12 @@
             <div class="row g-3">
               <div class="col-12"><label class="f-label">Full Address *</label><textarea class="f-input" rows="2" [(ngModel)]="fForm.perm_address_line1" name="faddr"></textarea></div>
               <div class="col-sm-5"><label class="f-label">City *</label><input type="text" class="f-input" [(ngModel)]="fForm.perm_city" name="fcity"/></div>
-              <div class="col-sm-4"><label class="f-label">State</label><input type="text" class="f-input" [(ngModel)]="fForm.perm_state" name="fstate" placeholder="Uttar Pradesh"/></div>
+              <div class="col-sm-4">
+                <label class="f-label">State</label>
+                <select class="f-select" [(ngModel)]="fForm.perm_state" name="fstate">
+                  <option *ngFor="let s of statesList" [value]="s">{{ s }}</option>
+                </select>
+              </div>
               <div class="col-sm-3"><label class="f-label">Pincode</label><input type="text" class="f-input" [(ngModel)]="fForm.perm_pin" name="fpin"/></div>
             </div>
             <div class="d-flex gap-2 mt-4">
@@ -397,8 +402,8 @@
           <div *ngIf="fStep===7" class="q-step">
             <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Nominee Details</h5>
             <div class="row g-3">
-              <div class="col-sm-6"><label class="f-label">Nominee Name *</label><input type="text" class="f-input" [(ngModel)]="fForm.nominee_name" name="fnomname"/></div>
-              <div class="col-sm-6"><label class="f-label">Relation *</label>
+              <div class="col-sm-6"><label class="f-label">Nominee Name</label><input type="text" class="f-input" placeholder="Letters only" [(ngModel)]="fForm.nominee_name" name="fnomname" (blur)="onNameBlur('nominee_name')"/></div>
+              <div class="col-sm-6"><label class="f-label">Relation</label>
                 <select class="f-select" [(ngModel)]="fForm.nominee_relationship" name="fnom_rel">
                   <option value="">Select</option>
                   <option *ngFor="let r of ['Spouse','Son','Daughter','Father','Mother','Brother','Sister','Other']">{{ r }}</option>

@@ -434,11 +434,19 @@ export class AuthService {
   }
 
   // ── Helpers ─────────────────────
-  isAssociate(): boolean {
+  isTeamMember(): boolean {
     const user = this.getUser();
     if (!user) return false;
     const type = String(user.user_type || user.role || '').toLowerCase().trim();
-    return type === 'associate' || type.includes('associate') || user.is_associate === true;
+    return type === 'team member' || type.includes('team member') || type === 'teammember';
+  }
+
+  isAssociate(): boolean {
+    if (this.isTeamMember()) return false;
+    const user = this.getUser();
+    if (!user) return false;
+    const type = String(user.user_type || user.role || '').toLowerCase().trim();
+    return (type === 'associate' || type.includes('associate') || user.is_associate === true) && !type.includes('team member');
   }
 
   isApprovedUser(): boolean {
@@ -547,6 +555,8 @@ export class AuthService {
     }
     const user = this.getUser();
     if (!user) return false;
+    const type = String(user.user_type || user.role || '').toLowerCase().trim();
+    if (type === 'team member' || type.includes('team member') || type === 'teammember') return true;
     const status = String(user.enrollment_status || user.enrollmentStatus || '').toLowerCase().trim();
     if (status === 'completed' || status === 'submitted') return true;
     if (user.is_enrolled === true || user.isEnrolled === true || user.enrollment_form_submitted === true || user.enrollment_completed === true) return true;
@@ -572,6 +582,7 @@ export class AuthService {
     if (this.isInvestorLoggedIn()) return '/investor';
     const user = this.getUser();
     const type = String(user?.user_type || user?.role || '').toLowerCase();
+    if (type.includes('team member') || type === 'team member' || type === 'teammember') return '/team-member';
     if (type.includes('associate')) return '/associate';
     if (type.includes('investor')) return '/investor';
     return '/customer';

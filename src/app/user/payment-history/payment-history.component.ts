@@ -70,7 +70,8 @@ export class PaymentHistoryComponent implements OnInit {
   ngOnInit(): void {
     const user = this.auth.getUser();
     const type = String(user?.user_type || user?.role || '').toLowerCase();
-    this.isAssociateUser = this.auth.isAssociate() || type.includes('associate') || this.router.url.startsWith('/associate');
+    const isTeamMember = type.includes('team member') || this.auth.isTeamMember();
+    this.isAssociateUser = !isTeamMember && (this.auth.isAssociate() || type.includes('associate') || this.router.url.startsWith('/associate'));
     this.loadData();
   }
 

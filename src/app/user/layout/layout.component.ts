@@ -93,17 +93,31 @@ export class UserLayoutComponent implements OnInit {
     this.activeDropdown = null;
   }
 
+  get isTeamMember(): boolean {
+    const type = String(this.userData?.user_type || this.userData?.role || '').toLowerCase();
+    return this.auth.isTeamMember() || type === 'team member' || type.includes('team member');
+  }
+
   get basePrefix(): string {
     const url = this.router.url || '';
-    if (url.startsWith('/associate') || this.auth.isAssociate()) {
+    if (url.startsWith('/team-member') || this.isTeamMember) {
+      return '/team-member';
+    }
+    if (url.startsWith('/associate') || (this.auth.isAssociate() && !this.isTeamMember)) {
       return '/associate';
     }
     const type = String(this.userData?.user_type || this.userData?.role || '').toLowerCase();
+    if (type.includes('team member')) {
+      return '/team-member';
+    }
     if (type.includes('associate')) {
       return '/associate';
     }
     const authPrefix = this.auth.getUserRolePrefix();
-    if (authPrefix === '/associate') {
+    if (authPrefix === '/team-member') {
+      return '/team-member';
+    }
+    if (authPrefix === '/associate' && !this.isTeamMember) {
       return '/associate';
     }
     if (url.startsWith('/customer') || type.includes('customer') || authPrefix === '/customer') {
@@ -118,6 +132,42 @@ export class UserLayoutComponent implements OnInit {
       return;
     }
     this._cachedPrefix = p;
+
+    // TEAM MEMBER PORTAL NAVIGATION (Permitted modules only)
+    if (this.isTeamMember || p === '/team-member') {
+      this.navGroups = [
+        {
+          label: 'DASHBOARD & PERFORMANCE',
+          icon: 'fas fa-chart-pie',
+          expanded: true,
+          items: [
+            { icon: 'fas fa-th-large', label: 'Dashboard Overview', route: `${p}/dashboard` },
+            { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` }
+          ]
+        },
+        {
+          label: 'SALES & PROPERTIES',
+          icon: 'fas fa-building',
+          expanded: true,
+          items: [
+            { icon: 'fas fa-map-marked-alt', label: 'My Booked Properties', route: `${p}/my-plots` },
+            { icon: 'fas fa-calendar-check', label: 'EMI Schedule', route: `${p}/emi-history` },
+            { icon: 'fas fa-receipt', label: 'Payment Records', route: `${p}/payments` },
+            { icon: 'fas fa-folder-open', label: 'Documents', route: `${p}/documents` }
+          ]
+        },
+        {
+          label: 'ACCOUNT & PROFILE',
+          icon: 'fas fa-user-shield',
+          expanded: false,
+          items: [
+            { icon: 'fas fa-user-circle', label: 'Profile & KYC Details', route: `${p}/profile` }
+          ]
+        }
+      ];
+      this.checkActiveGroup(this.router.url);
+      return;
+    }
 
     // CUSTOMER PORTAL NAVIGATION (Strictly Customer only - No wallet, no associate features)
     if (p === '/customer' || (!this.auth.isAssociate() && !this.isAssociate)) {
@@ -233,15 +283,17 @@ export class UserLayoutComponent implements OnInit {
   }
 
   get isAssociate(): boolean {
+    if (this.isTeamMember) return false;
     const type = String(this.userData?.user_type || this.userData?.role || '').toLowerCase();
     return this.auth.isAssociate() || type.includes('associate');
   }
 
   get isCustomer(): boolean {
-    return !this.isAssociate;
+    return !this.isAssociate && !this.isTeamMember;
   }
 
   get roleLabel(): string {
+    if (this.isTeamMember) return 'Team Member';
     if (this.isAssociate) return 'Associate';
     if (this.userData?.user_type === 'Investor') return 'Investor';
     return 'Customer';

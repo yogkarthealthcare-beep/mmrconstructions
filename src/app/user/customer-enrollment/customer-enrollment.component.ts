@@ -5,7 +5,21 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { calculateAgeFromDob, numberToIndianWords, MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN, NORTH_INDIAN_STATES, getMaxAdultDobDate, adultAgeValidator } from '../../shared/utils/form-helpers';
+import { 
+  calculateAgeFromDob, 
+  numberToIndianWords, 
+  MOBILE_PATTERN, 
+  EMAIL_PATTERN, 
+  AADHAAR_PATTERN, 
+  APPROVED_INDIAN_STATES, 
+  getMaxAdultDobDate, 
+  adultAgeValidator, 
+  RELIGIONS_LIST, 
+  formatDateToDDMMYYYY, 
+  parseDDMMYYYYToISO,
+  humanNameValidator,
+  normalizeHumanName 
+} from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-customer-enrollment',
@@ -18,13 +32,16 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   enrollmentForm!: FormGroup;
   submitting = false;
   isSubmitted = false;
+  isFinalSubmitted = false;
+  isEditing = false;
   enrollmentStatus: string = 'Pending';
   showToast = false;
   toastMsg = '';
   submissionId: string | null = null;
   printing = false;
 
-  statesList = NORTH_INDIAN_STATES;
+  statesList = APPROVED_INDIAN_STATES;
+  religionsList = RELIGIONS_LIST;
   maxAdultDob = getMaxAdultDobDate();
   
   photo1DataUrl = '';
@@ -74,14 +91,15 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       bsp: ['', Validators.required],
       plcDev: ['', Validators.required],
       
-      applicantName: ['', Validators.required],
-      fhName: ['', Validators.required],
+      applicantName: ['', [Validators.required, humanNameValidator()]],
+      fhName: ['', [Validators.required, humanNameValidator()]],
       dob: ['', [Validators.required, adultAgeValidator(18)]],
       age: ['', Validators.required],
       gender: ['', Validators.required],
       maritalStatus: ['', Validators.required],
       nationality: ['Indian', Validators.required],
       nationalityOther: [{ value: '', disabled: true }],
+      religion: ['', Validators.required],
       pan: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
       aadhar: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
       occupation: ['', Validators.required],
@@ -100,8 +118,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       mobile2: ['', [Validators.pattern(MOBILE_PATTERN)]],
       email1: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
       
-      coApplicantName: [''],
-      coFhName: [''],
+      coApplicantName: ['', [humanNameValidator()]],
+      coFhName: ['', [humanNameValidator()]],
       coRelation: [''],
       coDob: ['', [adultAgeValidator(18)]],
       coAge: [''],
@@ -121,15 +139,15 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       txnDate: ['', Validators.required],
       drawnBankBranch: ['', Validators.required],
       
-      accHolderName: ['', Validators.required],
+      accHolderName: ['', [Validators.required, humanNameValidator()]],
       accBankBranch: ['', Validators.required],
       accNumber: ['', Validators.required],
       ifscCode: ['', [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
       
-      associateName: ['', Validators.required],
+      associateName: ['', [Validators.required, humanNameValidator()]],
       associateId: ['', Validators.required],
       associateMobile: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
-      associateSignatureName: ['', Validators.required],
+      associateSignatureName: ['', [Validators.required, humanNameValidator()]],
       
       appStatus: [{ value: 'Hold/Pending KYC', disabled: true }],
       verifiedBy: [{ value: '', disabled: true }],
@@ -230,7 +248,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
 
   createNomineeGroup(): FormGroup {
     return this.fb.group({
-      nomineeName: ['', Validators.required],
+      nomineeName: ['', [Validators.required, humanNameValidator()]],
       nomineeRelation: ['', Validators.required],
       nomineeAgeDob: ['', Validators.required],
       nomineeAadhar: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]]
@@ -389,6 +407,128 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     }, 100);
   }
 
+  onDobInput(event: any, fieldName: string = 'dob') {
+    let val = (event.target.value || '').replace(/[^0-9/]/g, '');
+    if (val.length === 2 && !val.includes('/')) {
+      val = val + '/';
+    } else if (val.length === 5 && val.split('/').length === 2) {
+      val = val + '/';
+    }
+    event.target.value = val;
+    this.enrollmentForm.get(fieldName)?.setValue(val, { emitEvent: true });
+  }
+
+  onDatepickerSelect(event: any, fieldName: string = 'dob') {
+    const pickedDate = event.target.value;
+    if (pickedDate) {
+      const formatted = formatDateToDDMMYYYY(pickedDate);
+      this.enrollmentForm.get(fieldName)?.setValue(formatted, { emitEvent: true });
+    }
+  }
+
+  onEdit() {
+    if (this.isFinalSubmitted) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Form Finalized',
+        text: 'This enrollment form has been permanently final submitted and cannot be edited.'
+      });
+      return;
+    }
+    this.isEditing = true;
+    this.enrollmentForm.enable();
+    this.enrollmentForm.get('appStatus')?.disable();
+    this.enrollmentForm.get('verifiedBy')?.disable();
+    this.enrollmentForm.get('paymentStatus')?.disable();
+    this.enrollmentForm.get('paymentStatusDate')?.disable();
+    this.enrollmentForm.get('authorizedSignatory')?.disable();
+    this.enrollmentForm.get('applicationNo')?.disable();
+    this.enrollmentForm.get('formDate')?.disable();
+    this.enrollmentForm.get('age')?.disable();
+    this.enrollmentForm.get('coAge')?.disable();
+  }
+
+  onFinalSubmit() {
+    if (this.isFinalSubmitted) return;
+    Swal.fire({
+      title: 'Confirm Final Submission?',
+      text: 'Once finalized, your Customer Enrollment will be permanently locked and you will not be able to edit it anymore.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1a5c3a',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, Final Submit',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.executeFinalSubmit();
+      }
+    });
+  }
+
+  private normalizeCustomerPayloadNames(p: any) {
+    if (p.applicantName) p.applicantName = normalizeHumanName(p.applicantName);
+    if (p.fhName) p.fhName = normalizeHumanName(p.fhName);
+    if (p.coApplicantName) p.coApplicantName = normalizeHumanName(p.coApplicantName);
+    if (p.coFhName) p.coFhName = normalizeHumanName(p.coFhName);
+    if (p.accHolderName) p.accHolderName = normalizeHumanName(p.accHolderName);
+    if (p.associateName) p.associateName = normalizeHumanName(p.associateName);
+    if (p.associateSignatureName) p.associateSignatureName = normalizeHumanName(p.associateSignatureName);
+    if (Array.isArray(p.nominees)) {
+      p.nominees.forEach((nom: any) => {
+        if (nom.nomineeName) nom.nomineeName = normalizeHumanName(nom.nomineeName);
+      });
+    }
+  }
+
+  private executeFinalSubmit() {
+    this.submitting = true;
+    const raw = this.enrollmentForm.getRawValue();
+    this.normalizeCustomerPayloadNames(raw);
+    const sigSole = this.sigSoleImage || (this.sigSolePad && !this.sigSolePad.isEmpty() ? this.sigSolePad.dataUrl() : '');
+    const sigCo = this.sigCoImage || (this.sigCoPad && !this.sigCoPad.isEmpty() ? this.sigCoPad.dataUrl() : '');
+
+    const payload: any = {
+      ...raw,
+      dob: parseDDMMYYYYToISO(raw.dob),
+      coDob: parseDDMMYYYYToISO(raw.coDob),
+      isFinalSubmitted: true,
+      is_final_submitted: true,
+      photoFirstApplicant: this.photo1DataUrl,
+      photoCoApplicant: '',
+      signatureSoleFirstApplicant: sigSole,
+      signatureCoApplicant: sigCo,
+      signatureAuthorizedSignatory: 'MMR_AUTHORIZED_OFFICIAL_SEAL',
+      termsAccepted: true
+    };
+
+    this.api.submitCustomerEnrollment(payload).subscribe({
+      next: (res: any) => {
+        this.submitting = false;
+        this.isSubmitted = true;
+        this.isFinalSubmitted = true;
+        this.isEditing = false;
+        this.submissionId = res.data?.id || this.submissionId;
+        this.enrollmentForm.disable();
+        Swal.fire({
+          icon: 'success',
+          title: 'Enrollment Finalized!',
+          text: 'Your customer enrollment form has been permanently finalized and locked.',
+          confirmButtonColor: '#1a5c3a'
+        });
+      },
+      error: (err: any) => {
+        this.submitting = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'Final Submission Failed',
+          text: err.error?.message || 'Failed to final submit form.',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    });
+  }
+
   onSubmit() {
     const isPhotoMissing = !this.photo1DataUrl;
     const sigSole = this.sigSoleImage || (this.sigSolePad && !this.sigSolePad.isEmpty() ? this.sigSolePad.dataUrl() : '');
@@ -403,6 +543,11 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     this.submitting = true;
     
     const payload = this.enrollmentForm.getRawValue();
+    this.normalizeCustomerPayloadNames(payload);
+    payload.dob = parseDDMMYYYYToISO(payload.dob);
+    payload.coDob = parseDDMMYYYYToISO(payload.coDob);
+    payload.isFinalSubmitted = false;
+    payload.is_final_submitted = false;
     payload.photoFirstApplicant = this.photo1DataUrl;
     payload.photoCoApplicant = '';
     payload.signatureSoleFirstApplicant = sigSole;
@@ -414,7 +559,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       next: (res: any) => {
         this.submitting = false;
         this.isSubmitted = true;
-        this.submissionId = res.data?.id || null;
+        this.isEditing = false;
+        this.submissionId = res.data?.id || this.submissionId;
         this.enrollmentStatus = 'Pending';
         this.auth.setEnrollmentCompleted();
         this.enrollmentForm.disable(); // Disable form after successful submission
@@ -423,7 +569,10 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
           title: 'Enrollment Submitted Successfully!',
           html: `
             <p style="font-size:14px; color:#475569; margin-bottom:12px;">
-              Your customer enrollment form has been submitted and is currently <strong>Pending Admin Verification</strong>.
+              Your customer enrollment form has been saved and is currently in <strong>Read-Only Mode</strong>.
+            </p>
+            <p style="font-size:13px; color:#64748b; margin-bottom:12px;">
+              You can click <strong>Edit</strong> to modify details, or click <strong>Final Submit</strong> to permanently lock the form.
             </p>
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:left; font-size:13px; color:#1e293b;">
               <div style="font-weight:700; margin-bottom:6px; color:#062b18;"><i class="fas fa-headset me-1 text-gold"></i> For Quick Approval Assistance:</div>
@@ -433,9 +582,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
             </div>
           `,
           confirmButtonColor: '#1a5c3a',
-          confirmButtonText: 'Go to Dashboard'
-        }).then(() => {
-          this.goToDashboard();
+          confirmButtonText: 'OK'
         });
       },
       error: (err: any) => {
@@ -457,6 +604,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
 
   patchSubmittedData(enroll: any) {
     this.isSubmitted = true;
+    this.isFinalSubmitted = Boolean(enroll.is_final_submitted || enroll.isFinalSubmitted);
+    this.isEditing = false;
     this.submissionId = enroll.id || enroll.submission_id;
     this.enrollmentStatus = enroll.status || enroll.app_status || 'Pending';
     this.photo1DataUrl = enroll.photo_first_applicant_url || enroll.photo_applicant_1 || '';
@@ -505,12 +654,13 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       plcDev: enroll.plc_dev_charges || '',
       applicantName: enroll.applicant_name || '',
       fhName: enroll.fh_name || '',
-      dob: enroll.date_of_birth ? enroll.date_of_birth.split('T')[0] : '',
+      dob: formatDateToDDMMYYYY(enroll.date_of_birth),
       age: enroll.age || '',
       gender: enroll.gender || '',
       maritalStatus: enroll.marital_status || '',
       nationality: enroll.nationality || 'Indian',
       nationalityOther: enroll.nationality_other || '',
+      religion: enroll.religion || '',
       pan: enroll.pan_no || '',
       aadhar: enroll.aadhar_no || '',
       occupation: enroll.occupation || '',
@@ -530,7 +680,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       coApplicantName: enroll.co_applicant_name || '',
       coFhName: enroll.co_fh_name || '',
       coRelation: enroll.co_relation || '',
-      coDob: enroll.co_date_of_birth ? enroll.co_date_of_birth.split('T')[0] : '',
+      coDob: formatDateToDDMMYYYY(enroll.co_date_of_birth),
       coAge: enroll.co_age || '',
       coGender: enroll.co_gender || '',
       coPan: enroll.co_pan_no || '',
@@ -586,7 +736,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
           const state = u.state || 'Uttar Pradesh';
           this.enrollmentForm.patchValue({
             applicantName: u.full_name || '',
-            dob: u.date_of_birth ? u.date_of_birth.split('T')[0] : '',
+            dob: formatDateToDDMMYYYY(u.date_of_birth),
             gender: u.gender || '',
             fatherName: u.father_name || '',
             motherName: u.mother_name || '',

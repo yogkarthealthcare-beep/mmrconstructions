@@ -102,7 +102,10 @@ export class LoginComponent implements OnInit {
           let targetDashboard = '/customer/dashboard';
           let targetEnrollment = '/customer/enrollment';
 
-          if (userType.includes('associate')) {
+          if (userType.includes('team member') || userType === 'team member') {
+            targetDashboard = '/team-member/dashboard';
+            targetEnrollment = '/team-member/dashboard';
+          } else if (userType.includes('associate')) {
             targetDashboard = '/associate/dashboard';
             targetEnrollment = '/associate/enrollment';
           } else if (userType.includes('investor')) {

@@ -32,9 +32,10 @@
       <div class="setting-field">
         <label>Commission Model</label>
         <select class="form-select form-select-sm" [(ngModel)]="settings.commission_model">
+          <option value="FlatTeam">MMR Flat Team Member Model (Official)</option>
+          <option value="EqualDistribution">Equal Distribution Commission Model</option>
           <option value="Upline">Upline Commission Model</option>
           <option value="LevelWise">Level Wise Commission Model</option>
-          <option value="EqualDistribution">Equal Distribution Commission Model</option>
         </select>
         <small>एक समय में केवल यही चुना हुआ model future transactions पर लागू होगा।</small>
       </div>
@@ -44,6 +45,45 @@
         <small>Commission network में अधिकतम कितने levels तक distribute होगा।</small>
       </div>
     </div>
+  </section>
+
+  <section class="panel-card mb-3" *ngIf="settings.commission_model === 'FlatTeam' || settings.commission_model === 'TeamMemberModel'">
+    <div class="panel-card-title">MMR Flat Team Member Model Configuration (Official)</div>
+    <div class="settings-grid">
+      <div class="setting-field">
+        <label>Direct Seller Percentage</label>
+        <div class="input-group input-group-sm">
+          <input class="form-control" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.team_direct_percentage">
+          <span class="input-group-text">%</span>
+        </div>
+        <small>Direct sale karne wale Seller (Team Member ya Associate) ko 5% direct commission milega.</small>
+      </div>
+      <div class="setting-field">
+        <label>Associate Leader Percentage</label>
+        <div class="input-group input-group-sm">
+          <input class="form-control" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.associate_leader_percentage">
+          <span class="input-group-text">%</span>
+        </div>
+        <small>Team Member ki sale par Associate Leader ko 0.5% passive share milega.</small>
+      </div>
+      <div class="setting-field">
+        <label>Team Member Passive Percentage (Each)</label>
+        <div class="input-group input-group-sm">
+          <input class="form-control" type="number" min="0" max="100" step="0.01" [(ngModel)]="settings.team_passive_percentage">
+          <span class="input-group-text">%</span>
+        </div>
+        <small>Team ke baaki sabhi active team members ko 0.5% passive share milega.</small>
+      </div>
+    </div>
+    <div class="panel-card-title mt-3">Flat Team Model Preview (₹{{ previewAmount | number }})</div>
+    <div class="formula-preview">
+      <div><span>Direct Seller (5%)</span><strong>{{ flatTeamDirectPreview | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+      <div><span>Associate Leader (0.5%)</span><strong>{{ flatTeamLeaderPreview | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+      <div><span>Each Other Team Member (0.5%)</span><strong>{{ flatTeamPassivePreview | currency:'INR':'symbol':'1.0-2' }}</strong></div>
+    </div>
+    <p class="formula-copy mb-0 mt-2">
+      <strong>Official Rule:</strong> Team Member sale: Seller = 5%, Associate Leader = 0.5%, Each other eligible Team Member = 0.5%. Associate sale: Associate Seller = 5%, Eligible Team Members = 0.5% each. Flat team only (no recursive multi-level commission).
+    </p>
   </section>
 
   <section class="panel-card mb-3" *ngIf="settings.commission_model === 'EqualDistribution'">

@@ -112,55 +112,61 @@
 
   <app-admin-table-container [title]="'Associates Directory'" [count]="total" *ngIf="filtered.length > 0">
     <div class="table-responsive">
-      <table class="table align-middle custom-dash-table mb-0">
+      <table class="table align-middle custom-dash-table stacked-on-mobile mb-0">
         <thead>
           <tr>
-            <th class="th-sno">#</th>
-            <th>Associate Profile</th>
-            <th>Contact &amp; Mobile</th>
-            <th>Invite Code</th>
-            <th>Rank &amp; Role</th>
-            <th>Joined</th>
-            <th>Status</th>
-            <th class="text-end">Actions</th>
+            <th class="th-sno" style="width: 5%;">#</th>
+            <th style="width: 23%;">Associate Profile</th>
+            <th style="width: 18%;">Contact &amp; Mobile</th>
+            <th class="priority-2" style="width: 12%;">Invite Code</th>
+            <th class="priority-2" style="width: 12%;">Rank &amp; Role</th>
+            <th style="width: 10%;">Team</th>
+            <th class="priority-3" style="width: 10%;">Joined</th>
+            <th style="width: 10%;">Status</th>
+            <th class="text-end" style="width: 10%;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let a of filtered; let i = index"
               (click)="onRowClick(a, $event)">
-            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td>
-              <div class="d-flex align-items-center gap-2.5">
-                <div class="user-avatar-circle bg-gold-avatar">
+            <td class="td-sno" data-label="#">{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td data-label="Associate Profile">
+              <div class="d-flex align-items-center gap-2.5 min-w-0">
+                <div class="user-avatar-circle bg-gold-avatar flex-shrink-0">
                   {{ getInitials(a.full_name) }}
                 </div>
-                <div>
-                  <div class="fw-700 text-dark fs-12 d-flex align-items-center gap-1">
-                    <span>{{ a.full_name }}</span>
+                <div class="min-w-0 flex-fill">
+                  <div class="fw-700 text-dark fs-12 d-flex align-items-center gap-1 text-truncate" [title]="a.full_name">
+                    <span class="text-truncate">{{ a.full_name }}</span>
                     <app-verified-badge [user]="a" [isVerified]="a.is_verified" size="xs"></app-verified-badge>
                   </div>
-                  <div class="fs-10 text-muted"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ a.member_id || '—' }}</div>
+                  <div class="fs-10 text-muted text-truncate"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ a.member_id || '—' }}</div>
                 </div>
               </div>
             </td>
-            <td>
-              <div class="fw-700 text-dark fs-12"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ a.mobile_no }}</div>
-              <div class="fs-10 text-muted"><i class="fas fa-envelope me-1 text-gold"></i>{{ a.email || 'No email' }}</div>
+            <td data-label="Contact & Mobile">
+              <div class="fw-700 text-dark fs-12 text-truncate" [title]="a.mobile_no"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ a.mobile_no }}</div>
+              <div class="fs-10 text-muted text-truncate" [title]="a.email || 'No email'"><i class="fas fa-envelope me-1 text-gold"></i>{{ a.email || 'No email' }}</div>
             </td>
-            <td>
+            <td class="priority-2" data-label="Invite Code">
               <span class="invite-code-pill" *ngIf="a.invitation_code">{{ a.invitation_code }}</span>
               <span class="fs-11 text-muted" *ngIf="!a.invitation_code">—</span>
             </td>
-            <td>
+            <td class="priority-2" data-label="Rank & Role">
               <span class="badge bg-warning-subtle text-warning-emphasis">
                 <i class="fas fa-award me-1"></i>{{ a.rank_name || 'Associate' }}
               </span>
             </td>
-            <td>
+            <td data-label="Team">
+              <span class="badge" [ngClass]="(a.team_size || 0) >= 10 ? 'bg-danger-subtle text-danger' : ((a.team_size || 0) > 0 ? 'bg-primary-subtle text-primary' : 'bg-light text-muted')">
+                <i class="fas fa-users me-1"></i>{{ a.team_size || 0 }}/10
+              </span>
+            </td>
+            <td class="priority-3" data-label="Joined">
               <div class="fs-11 text-dark fw-600">{{ a.registered_at | date:'dd MMM yyyy' }}</div>
               <div class="fs-10 text-muted">{{ a.registered_at | date:'hh:mm a' }}</div>
             </td>
-            <td>
+            <td data-label="Status">
               <span class="sbadge"
                 [class.sbadge-green]="a.account_status==='Active'"
                 [class.sbadge-yellow]="a.account_status==='Pending'"
@@ -168,7 +174,7 @@
                 {{ a.account_status || 'Active' }}
               </span>
             </td>
-            <td class="text-end">
+            <td class="text-end" data-label="Actions">
               <div class="dropdown d-inline-block position-relative">
                 <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="toggleDropdown(i, $event)">
                   <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>

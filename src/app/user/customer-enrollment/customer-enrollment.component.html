@@ -26,21 +26,25 @@
       <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
         <div style="display: flex; align-items: flex-start; gap: 14px;">
           <div style="width: 42px; height: 42px; border-radius: 50%; background: #fef9c3; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #a16207; flex-shrink: 0;">
-            <i class="fas" [class.fa-hourglass-half]="enrollmentStatus!=='Approved' && enrollmentStatus!=='Completed'" [class.fa-check-circle]="enrollmentStatus==='Approved' || enrollmentStatus==='Completed'"></i>
+            <i class="fas" [class.fa-lock]="isFinalSubmitted" [class.fa-hourglass-half]="!isFinalSubmitted && enrollmentStatus!=='Approved' && enrollmentStatus!=='Completed'" [class.fa-check-circle]="enrollmentStatus==='Approved' || enrollmentStatus==='Completed'"></i>
           </div>
           <div>
             <div style="font-weight: 800; font-size: 15px; color: #713f12; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <span>Customer Enrollment Form Submitted (Read-Only) / फॉर्म जमा हो चुका है</span>
-              <span class="badge" style="background: #fef08a; color: #854d0e; font-size: 11px; padding: 4px 8px; border-radius: 6px;" *ngIf="enrollmentStatus!=='Approved' && enrollmentStatus!=='Completed'">
-                <i class="fas fa-clock me-1"></i> Awaiting Admin Verification
+              <span *ngIf="!isFinalSubmitted">Customer Enrollment Form Saved (Read-Only Mode) / फॉर्म सहेजा गया</span>
+              <span *ngIf="isFinalSubmitted">Customer Enrollment Form Finalized (Locked) / फॉर्म अंतिम रूप से जमा हो चुका है</span>
+              <span class="badge" style="background: #fef08a; color: #854d0e; font-size: 11px; padding: 4px 8px; border-radius: 6px;" *ngIf="!isFinalSubmitted">
+                <i class="fas fa-edit me-1"></i> Saved — Click Edit to modify or Final Submit to finalize
               </span>
-              <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 11px; padding: 4px 8px; border-radius: 6px;" *ngIf="enrollmentStatus==='Approved' || enrollmentStatus==='Completed'">
-                <i class="fas fa-check-circle me-1"></i> Approved &amp; Verified
+              <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 11px; padding: 4px 8px; border-radius: 6px;" *ngIf="isFinalSubmitted">
+                <i class="fas fa-check-circle me-1"></i> Permanently Finalized
               </span>
             </div>
             
-            <p style="font-size: 12.5px; color: #854d0e; margin: 4px 0 10px; line-height: 1.4;">
-              Your customer enrollment form has been submitted and locked. You cannot fill or submit this form multiple times.
+            <p style="font-size: 12.5px; color: #854d0e; margin: 4px 0 10px; line-height: 1.4;" *ngIf="!isFinalSubmitted">
+              Your enrollment details have been saved. You can click <strong>Edit</strong> to modify details or <strong>Final Submit</strong> to permanently finalize your application.
+            </p>
+            <p style="font-size: 12.5px; color: #854d0e; margin: 4px 0 10px; line-height: 1.4;" *ngIf="isFinalSubmitted">
+              Your customer enrollment form has been finalized and permanently locked.
             </p>
 
             <!-- Support Contact Info Strip -->
@@ -62,6 +66,12 @@
         </div>
 
         <div style="display: flex; gap: 8px;" class="no-print ms-auto">
+          <button *ngIf="isSubmitted && !isFinalSubmitted && !isEditing" type="button" (click)="onEdit()" style="background: #d97706; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px;">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button *ngIf="isSubmitted && !isFinalSubmitted && !isEditing" type="button" (click)="onFinalSubmit()" style="background: #15803d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px;">
+            <i class="fas fa-check-double"></i> Final Submit
+          </button>
           <button type="button" (click)="goToDashboard()" style="background: #062b18; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px;">
             <i class="fas fa-th-large"></i> Go to Dashboard
           </button>
@@ -133,9 +143,15 @@
 
       <div class="row2">
         <div class="field">
-          <label>Date of Birth (18+ Years) <span class="text-danger">*</span></label>
-          <input type="date" formControlName="dob" [max]="maxAdultDob">
-          <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('dob')?.errors?.['underAge']">Applicant must be at least 18 years old / आवेदक की आयु कम से कम 18 वर्ष होनी चाहिए</span>
+          <label>Date of Birth (DD/MM/YYYY) <span class="text-danger">*</span></label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="text" formControlName="dob" placeholder="DD/MM/YYYY" maxlength="10" (input)="onDobInput($event, 'dob')" style="padding-right: 36px;">
+            <input type="date" [max]="maxAdultDob" (change)="onDatepickerSelect($event, 'dob')" style="position: absolute; right: 6px; width: 26px; height: 26px; opacity: 0; cursor: pointer; z-index: 2;" title="Choose date from calendar">
+            <i class="fas fa-calendar-alt" style="position: absolute; right: 10px; color: #64748b; pointer-events: none; font-size: 16px;"></i>
+          </div>
+          <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('dob')?.touched && enrollmentForm.get('dob')?.errors?.['underAge']">
+            Applicant must be at least 18 years old / आवेदक की आयु कम से कम 18 वर्ष होनी चाहिए
+          </span>
         </div>
         <div class="field"><label>Age (Auto-calculated) <span class="text-danger">*</span></label><input type="number" formControlName="age" readonly style="background:#f8f9fa;"></div>
       </div>
@@ -170,10 +186,23 @@
       </fieldset>
 
       <div class="row2">
+        <div class="field">
+          <label>Religion <span class="text-danger">*</span></label>
+          <select formControlName="religion">
+            <option value="">Select Religion</option>
+            <option *ngFor="let r of religionsList" [value]="r">{{ r }}</option>
+          </select>
+          <div *ngIf="enrollmentForm.get('religion')?.touched && enrollmentForm.get('religion')?.invalid" class="text-danger" style="font-size: 11px;">
+            Religion is required.
+          </div>
+        </div>
+        <div class="field"><label>Occupation <span class="text-danger">*</span></label><input type="text" formControlName="occupation"></div>
+      </div>
+
+      <div class="row2">
         <div class="field"><label>PAN No. <span class="text-danger">*</span></label><input type="text" formControlName="pan" maxlength="10" style="text-transform:uppercase"></div>
         <div class="field"><label>Aadhar No. (12 Digits) <span class="text-danger">*</span></label><input type="text" formControlName="aadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>
       </div>
-      <div class="field"><label>Occupation <span class="text-danger">*</span></label><input type="text" formControlName="occupation"></div>
 
       <div class="field"><label>Present Address <span class="text-danger">*</span></label><textarea formControlName="presentAddress" rows="2" placeholder="House No., Street, Landmark"></textarea></div>
       <div class="row3">
@@ -225,9 +254,13 @@
 
       <div class="row2">
         <div class="field">
-          <label>Date of Birth</label>
-          <input type="date" formControlName="coDob" [max]="maxAdultDob">
-          <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('coDob')?.errors?.['underAge']">Co-Applicant must be at least 18 years old</span>
+          <label>Date of Birth (DD/MM/YYYY)</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="text" formControlName="coDob" placeholder="DD/MM/YYYY" maxlength="10" (input)="onDobInput($event, 'coDob')" style="padding-right: 36px;">
+            <input type="date" [max]="maxAdultDob" (change)="onDatepickerSelect($event, 'coDob')" style="position: absolute; right: 6px; width: 26px; height: 26px; opacity: 0; cursor: pointer; z-index: 2;" title="Choose date from calendar">
+            <i class="fas fa-calendar-alt" style="position: absolute; right: 10px; color: #64748b; pointer-events: none; font-size: 16px;"></i>
+          </div>
+          <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('coDob')?.touched && enrollmentForm.get('coDob')?.errors?.['underAge']">Co-Applicant must be at least 18 years old</span>
         </div>
         <div class="field"><label>Age (Auto-calculated)</label><input type="number" formControlName="coAge" readonly style="background:#f8f9fa;"></div>
       </div>
@@ -455,19 +488,33 @@
     </section>
 
     <div class="submit-wrap" style="display: flex; gap: 15px; align-items: center; justify-content: center; margin-top: 34px; clear: both; flex-wrap: wrap;">
-      <button *ngIf="!isSubmitted" type="submit" class="submit-btn" [disabled]="submitting">
-        {{ submitting ? 'Submitting...' : 'Submit Application' }}
+      <!-- When never submitted OR currently in edit mode: Show primary Submit button -->
+      <button *ngIf="!isSubmitted || isEditing" type="submit" class="submit-btn" [disabled]="submitting" style="background-color: var(--green-dark, #15803d); color: white; border: none; padding: 13px 32px; border-radius: 6px; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+        <i class="fas" [class.fa-spinner]="submitting" [class.fa-spin]="submitting" [class.fa-paper-plane]="!submitting"></i>
+        {{ submitting ? 'Submitting...' : 'Submit' }}
       </button>
 
-      <div *ngIf="isSubmitted" class="submitted-badge" style="background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; padding: 12px 24px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-        <i class="fas fa-check-circle"></i> Application Submitted (Read-Only)
+      <!-- When submitted but NOT finalized and NOT editing: Show Edit and Final Submit -->
+      <ng-container *ngIf="isSubmitted && !isFinalSubmitted && !isEditing">
+        <button type="button" class="no-print" (click)="onEdit()" style="background-color: #d97706; color: white; border: none; padding: 13px 26px; border-radius: 6px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button type="button" class="no-print" (click)="onFinalSubmit()" [disabled]="submitting" style="background-color: #15803d; color: white; border: none; padding: 13px 26px; border-radius: 6px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+          <i class="fas fa-check-double"></i> Final Submit
+        </button>
+      </ng-container>
+
+      <!-- When permanently final submitted: Show Locked Badge -->
+      <div *ngIf="isFinalSubmitted" class="submitted-badge" style="background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; padding: 12px 24px; border-radius: 6px; font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 15px;">
+        <i class="fas fa-lock"></i> Enrollment Finalized (Permanently Locked)
       </div>
 
-      <button *ngIf="isSubmitted" type="button" class="no-print" (click)="goToDashboard()" style="background-color: var(--blue, #1a365d); color: white; border: none; padding: 13px 26px; border-radius: 5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+      <!-- Navigation / PDF Actions for submitted form -->
+      <button *ngIf="isSubmitted && !isEditing" type="button" class="no-print" (click)="goToDashboard()" style="background-color: var(--blue, #1a365d); color: white; border: none; padding: 13px 26px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
         <i class="fas fa-th-large"></i> Go to Dashboard
       </button>
 
-      <button *ngIf="isSubmitted" type="button" class="no-print" (click)="downloadPdf()" [disabled]="printing" style="background-color: var(--green-dark, #2e7d32); color: white; border: none; padding: 13px 26px; border-radius: 5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); letter-spacing: 0.3px;">
+      <button *ngIf="isSubmitted && !isEditing" type="button" class="no-print" (click)="downloadPdf()" [disabled]="printing" style="background-color: #064e3b; color: white; border: none; padding: 13px 26px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); letter-spacing: 0.3px;">
         <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i>
         {{ printing ? 'Generating PDF...' : 'Download / Print Form' }}
       </button>

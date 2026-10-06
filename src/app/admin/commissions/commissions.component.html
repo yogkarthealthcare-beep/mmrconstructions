@@ -104,52 +104,60 @@
     [count]="filtered.length"
     (export)="exportData('all', 'excel')">
     <div class="table-responsive">
-      <table class="table align-middle custom-dash-table mb-0">
+      <table class="table align-middle custom-dash-table stacked-on-mobile mb-0">
         <thead>
           <tr>
-            <th class="th-sno">#</th>
-            <th>Associate Agent</th>
-            <th>Type &amp; Level</th>
-            <th>Gross / Net Payable</th>
-            <th>Plot &amp; Booking Info</th>
-            <th>Payment UTR / Ref</th>
-            <th>Status</th>
-            <th class="text-end">Actions</th>
+            <th class="th-sno" style="width: 5%;">#</th>
+            <th style="width: 22%;">Associate Agent</th>
+            <th style="width: 18%;">Role / Type</th>
+            <th style="width: 14%;">Gross / Net Payable</th>
+            <th class="priority-2" style="width: 16%;">Plot &amp; Booking Info</th>
+            <th class="priority-2" style="width: 11%;">Payment UTR / Ref</th>
+            <th style="width: 8%;">Status</th>
+            <th class="text-end" style="width: 6%;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let c of pagedCommissions; let i = index">
-            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td>
-              <div class="d-flex align-items-center gap-2.5">
-                <div class="user-avatar-circle bg-gold-avatar">
+            <td class="td-sno" data-label="#">{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td data-label="Associate Agent">
+              <div class="d-flex align-items-center gap-2.5 min-w-0">
+                <div class="user-avatar-circle bg-gold-avatar flex-shrink-0">
                   {{ getInitials(c.associate_name || c.full_name) }}
                 </div>
-                <div>
-                  <div class="fw-700 text-dark fs-12">{{ c.associate_name || c.full_name }}</div>
-                  <div class="fs-10 text-muted"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ c.member_id || '—' }}</div>
+                <div class="min-w-0 flex-fill">
+                  <div class="fw-700 text-dark fs-12 text-truncate" [title]="c.associate_name || c.full_name">{{ c.associate_name || c.full_name }}</div>
+                  <div class="fs-10 text-muted text-truncate"><i class="fas fa-id-card me-1 text-gold"></i>ID: {{ c.member_id || '—' }}</div>
                 </div>
               </div>
             </td>
-            <td>
-              <span class="badge bg-light text-dark border fw-600">
-                {{ c.commission_type || 'Referral Commission' }}
-              </span>
-              <div class="fs-10 text-muted" *ngIf="c.commission_month">Month: {{ c.commission_month }}</div>
+            <td data-label="Role / Type">
+              <div class="d-flex flex-column gap-1 min-w-0">
+                <span class="badge text-truncate" [ngClass]="c.distribution_role === 'Seller' ? 'bg-success-subtle text-success' : (c.distribution_role === 'AssociateLeader' ? 'bg-primary-subtle text-primary' : 'bg-light text-dark border')">
+                  {{ c.distribution_role || c.commission_type || 'Referral Commission' }}
+                  <span *ngIf="c.commission_percentage">({{ c.commission_percentage }}%)</span>
+                </span>
+                <div class="fs-10 text-muted text-truncate" *ngIf="c.seller_name" [title]="'Seller: ' + c.seller_name">
+                  <i class="fas fa-shopping-bag me-1 text-gold"></i>Seller: {{ c.seller_name }}
+                </div>
+                <div class="fs-10 text-muted text-truncate" *ngIf="c.commission_month && !c.seller_name">Month: {{ c.commission_month }}</div>
+              </div>
             </td>
-            <td>
+            <td data-label="Gross / Net Payable">
               <div class="fw-800 text-emerald fs-13">₹{{ (c.net_amount || c.commission_amount || c.amount || 0) | number:'1.0-0' }}</div>
               <div class="fs-10 text-muted" *ngIf="c.gross_amount">Gross: ₹{{ c.gross_amount | number }}</div>
             </td>
-            <td>
-              <div class="fw-700 text-primary fs-12" *ngIf="c.plot_number">Plot #{{ c.plot_number }}</div>
-              <div class="fs-10 text-muted">{{ c.site_name || c.booking_serial || 'Direct Sale' }}</div>
+            <td class="priority-2" data-label="Plot & Booking Info">
+              <div class="min-w-0">
+                <div class="fw-700 text-primary fs-12 text-truncate" *ngIf="c.plot_number">Plot #{{ c.plot_number }}</div>
+                <div class="fs-10 text-muted text-truncate">{{ c.site_name || c.booking_serial || 'Direct Sale' }}</div>
+              </div>
             </td>
-            <td>
+            <td class="priority-2" data-label="Payment UTR / Ref">
               <span class="utr-code-pill" *ngIf="c.payment_reference">{{ c.payment_reference }}</span>
               <span class="fs-11 text-muted" *ngIf="!c.payment_reference">—</span>
             </td>
-            <td>
+            <td data-label="Status">
               <span class="sbadge"
                 [class.sbadge-green]="c.commission_status==='Paid'||c.commission_status==='Approved'"
                 [class.sbadge-yellow]="c.commission_status==='Pending'"
@@ -157,7 +165,7 @@
                 {{ c.commission_status || 'Pending' }}
               </span>
             </td>
-            <td class="text-end">
+            <td class="text-end" data-label="Actions">
               <div class="dropdown d-inline-block position-relative">
                 <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === c.commission_id ? null : c.commission_id)">
                   <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>

@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 
-type CommissionModel = 'Upline' | 'LevelWise' | 'EqualDistribution';
+type CommissionModel = 'Upline' | 'LevelWise' | 'EqualDistribution' | 'FlatTeam' | 'TeamMemberModel';
 
 @Component({
   selector: 'app-commission-settings',
@@ -101,6 +101,7 @@ export class CommissionSettingsComponent implements OnInit {
   }
 
   modelLabel(value: string): string {
+    if (value === 'FlatTeam' || value === 'TeamMemberModel') return 'MMR Flat Team Member';
     if (value === 'LevelWise') return 'Level Wise';
     if (value === 'EqualDistribution') return 'Equal Distribution';
     return 'Upline';
@@ -119,19 +120,34 @@ export class CommissionSettingsComponent implements OnInit {
     return this.roundMoney(this.equalPoolPreview / count);
   }
 
+  get flatTeamDirectPreview(): number {
+    return this.roundMoney(Number(this.previewAmount || 0) * Number(this.settings.team_direct_percentage || 5) / 100);
+  }
+
+  get flatTeamLeaderPreview(): number {
+    return this.roundMoney(Number(this.previewAmount || 0) * Number(this.settings.associate_leader_percentage || 0.5) / 100);
+  }
+
+  get flatTeamPassivePreview(): number {
+    return this.roundMoney(Number(this.previewAmount || 0) * Number(this.settings.team_passive_percentage || 0.5) / 100);
+  }
+
   private roundMoney(value: number): number {
     return Math.round(Number(value || 0) * 100) / 100;
   }
 
   private emptySettings(): any {
     return {
-      commission_model: 'EqualDistribution' as CommissionModel,
+      commission_model: 'FlatTeam' as CommissionModel,
       maximum_levels: 3,
       direct_percentage: 10,
       upline_percentage: 2,
       seller_percentage: 50,
       equal_distribution_percentage: 50,
       equal_distribution_enabled: true,
+      team_direct_percentage: 5,
+      team_passive_percentage: 0.5,
+      associate_leader_percentage: 0.5,
       distribution_scope: 'TopAssociateNetwork',
       payment_mode_rules: {
         full_payment: 'instant',

@@ -4,6 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import {
+  APPROVED_INDIAN_STATES,
+  DEFAULT_STATE,
+  DEFAULT_COUNTRY,
+  COUNTRIES_LIST,
+  normalizeHumanName,
+  isValidHumanName,
+  calculateAgeFromDob,
+  getMaxAdultDobDate
+} from '../../shared/utils/form-helpers';
 
 type RegMode = 'quick' | 'full';
 type Step = 1 | 2 | 3 | 4;
@@ -18,6 +28,10 @@ type Step = 1 | 2 | 3 | 4;
 export class RegisterComponent {
   // ── Mode ────────────────────────────────────────
   mode: RegMode = 'quick';  // quick = 3-step | full = 8-step
+
+  statesList = APPROVED_INDIAN_STATES;
+  countriesList = COUNTRIES_LIST;
+  maxAdultDob = getMaxAdultDobDate();
 
   // ── Quick Registration state (3 steps) ─────────
   qStep: Step = 1;
@@ -49,7 +63,7 @@ export class RegisterComponent {
     user_type: 'Customer', full_name: '', date_of_birth: '', gender: '',
     father_name: '', mobile_no: '', email: '', otp_code: '',
     pan_number: '', aadhar_number: '',
-    perm_address_line1: '', perm_city: '', perm_state: '', perm_pin: '',
+    perm_address_line1: '', perm_city: '', perm_state: DEFAULT_STATE, perm_country: DEFAULT_COUNTRY, perm_pin: '',
     account_number: '', ifsc_code: '', bank_name: '', branch_name: '',
     nominee_name: '', nominee_dob: '', nominee_relationship: '',
     sponsor_invite_code: '', terms_accepted: false,
@@ -165,11 +179,97 @@ export class RegisterComponent {
     }
   }
 
-  fNext() { if (this.fStep < this.fTotalSteps) { this.fStep++; this.error = ''; } }
+  onNameBlur(fieldName: string) {
+    if (this.fForm[fieldName]) {
+      this.fForm[fieldName] = normalizeHumanName(this.fForm[fieldName]);
+    }
+  }
+
+  fNext() {
+    this.error = '';
+    // Step 3 validation (Personal)
+    if (this.fStep === 3) {
+      if (!this.fForm.full_name || !this.fForm.full_name.trim()) {
+        this.error = 'Full name is required';
+        return;
+      }
+      if (!isValidHumanName(this.fForm.full_name)) {
+        this.error = 'Full Name must contain only alphabets and spaces (no numbers or special characters)';
+        return;
+      }
+      this.fForm.full_name = normalizeHumanName(this.fForm.full_name);
+
+      if (this.fForm.father_name && this.fForm.father_name.trim()) {
+        if (!isValidHumanName(this.fForm.father_name)) {
+          this.error = "Father's Name must contain only alphabets and spaces (no numbers or special characters)";
+          return;
+        }
+        this.fForm.father_name = normalizeHumanName(this.fForm.father_name);
+      }
+
+      if (!this.fForm.date_of_birth) {
+        this.error = 'Date of birth is required';
+        return;
+      }
+      const age = Number(calculateAgeFromDob(this.fForm.date_of_birth)) || 0;
+      if (age < 18) {
+        this.error = `Applicant must be at least 18 years old (current calculated age: ${age})`;
+        return;
+      }
+    }
+
+    // Step 7 validation (Nominee)
+    if (this.fStep === 7) {
+      if (this.fForm.nominee_name && this.fForm.nominee_name.trim()) {
+        if (!isValidHumanName(this.fForm.nominee_name)) {
+          this.error = 'Nominee Name must contain only alphabets and spaces (no numbers or special characters)';
+          return;
+        }
+        this.fForm.nominee_name = normalizeHumanName(this.fForm.nominee_name);
+      }
+    }
+
+    if (this.fStep < this.fTotalSteps) {
+      this.fStep++;
+      this.error = '';
+    }
+  }
+
   fPrev() { if (this.fStep > 1) { this.fStep--; this.error = ''; } }
 
   fullSubmit() {
     if (!this.fForm.terms_accepted) { this.error = 'Accept terms to continue'; return; }
+    
+    // Final verification of names and DOB
+    if (this.fForm.full_name) {
+      if (!isValidHumanName(this.fForm.full_name)) {
+        this.error = 'Full Name must contain only alphabets and spaces';
+        return;
+      }
+      this.fForm.full_name = normalizeHumanName(this.fForm.full_name);
+    }
+    if (this.fForm.father_name) {
+      if (!isValidHumanName(this.fForm.father_name)) {
+        this.error = "Father's Name must contain only alphabets and spaces";
+        return;
+      }
+      this.fForm.father_name = normalizeHumanName(this.fForm.father_name);
+    }
+    if (this.fForm.nominee_name) {
+      if (!isValidHumanName(this.fForm.nominee_name)) {
+        this.error = 'Nominee Name must contain only alphabets and spaces';
+        return;
+      }
+      this.fForm.nominee_name = normalizeHumanName(this.fForm.nominee_name);
+    }
+    if (this.fForm.date_of_birth) {
+      const age = Number(calculateAgeFromDob(this.fForm.date_of_birth)) || 0;
+      if (age < 18) {
+        this.error = `Applicant must be at least 18 years old (current age: ${age})`;
+        return;
+      }
+    }
+
     this.loading = true; this.error = '';
     const sponsorCode = (this.fForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR0001';
     const fd = new FormData();

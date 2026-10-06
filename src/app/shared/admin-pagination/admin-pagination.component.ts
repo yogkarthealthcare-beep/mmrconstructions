@@ -24,6 +24,15 @@ export class AdminPaginationComponent {
     return this.currentPage;
   }
 
+  @Input() set total(val: number) {
+    if (val !== undefined && val !== null) {
+      this.totalItems = Number(val);
+    }
+  }
+  get total(): number {
+    return this.totalItems;
+  }
+
   @Input() currentPage = 1;
   @Input() totalItems = 0;
   @Input() pageSize = 10;

@@ -1,22 +1,174 @@
 <a routerLink="/admin/associates" class="btn btn-outline-green btn-sm mb-3"><i class="fas fa-arrow-left me-1"></i>Back</a>
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner fa-spin"></i></div>
 <ng-container *ngIf="!loading">
-  <div class="pg-header"><h4>{{ data.profile?.full_name || 'Associate Detail' }}</h4><p>{{ data.profile?.member_id }} • {{ data.profile?.rank_name }}</p></div>
+  <div class="pg-header">
+    <h4>{{ data.profile?.full_name || 'Associate Detail' }}</h4>
+    <p>{{ data.profile?.member_id }} • {{ data.profile?.rank_name }} • Team: {{ data.profile?.team_size || (data.team_members?.length || 0) }}/10 Members</p>
+  </div>
   <div class="tabs mb-3">
-    <button *ngFor="let t of ['profile','referrals','commissions','payouts','status']" class="filter-tab" [class.active]="tab===t" (click)="tab=t">{{ t | titlecase }}</button>
+    <button *ngFor="let t of ['profile','team','referrals','commissions','payouts','status']" class="filter-tab" [class.active]="tab===t" (click)="tab=t">
+      {{ (t === 'team' ? 'Team Members' : t) | titlecase }}
+      <span *ngIf="t === 'team' && (data.team_members?.length || data.profile?.team_size)" class="badge bg-primary ms-1">
+        {{ data.team_members?.length || data.profile?.team_size }}
+      </span>
+    </button>
   </div>
   <section class="panel-card" *ngIf="tab==='profile'">
     <div class="detail-grid">
       <div><span>Email</span><strong>{{ data.profile?.email || '-' }}</strong></div>
       <div><span>Mobile</span><strong>{{ data.profile?.mobile_no || '-' }}</strong></div>
       <div><span>Sponsor</span><strong>{{ data.profile?.sponsor_name || 'Direct' }}</strong></div>
-      <div><span>Total Gaj Sold</span><strong>{{ data.profile?.total_gaj_sold || 0 }}</strong></div>
-      <div><span>Total Commission</span><strong>{{ data.profile?.total_commission_earned | currency:'INR':'symbol':'1.0-0' }}</strong></div>
-      <div><span>Status</span><strong>{{ data.profile?.account_status }}</strong></div>
+      <div><span>Associate Sales (Gaj)</span><strong>{{ data.profile?.total_gaj_sold || 0 }} Gaj</strong></div>
+      <div><span>Associate Commission</span><strong>{{ data.profile?.total_commission_earned | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+      <div><span>Team Size</span><strong>{{ data.profile?.team_size || (data.team_members?.length || 0) }} / 10 Slots</strong></div>
+      <div><span>Team Sales (Gaj)</span><strong>{{ data.profile?.team_sales_gaj || 0 }} Gaj</strong></div>
+      <div><span>Team Commission</span><strong>{{ data.profile?.team_commission_earned | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+      <div><span>Account Status</span><strong [class.text-success]="data.profile?.account_status==='Active'" [class.text-danger]="data.profile?.account_status==='Blacklisted'">{{ data.profile?.account_status }}</strong></div>
     </div>
   </section>
-  <section class="panel-card" *ngIf="tab==='referrals'"><table class="table"><tr *ngFor="let r of data.direct_referrals"><td>{{ r.full_name }}</td><td>{{ r.member_id }}</td><td>{{ r.status }}</td></tr></table></section>
-  <section class="panel-card" *ngIf="tab==='commissions'"><table class="table"><tr *ngFor="let c of data.commissions"><td>{{ c.commission_type }}</td><td>{{ c.net_amount | currency:'INR':'symbol':'1.0-0' }}</td><td>{{ c.commission_status }}</td></tr></table></section>
-  <section class="panel-card" *ngIf="tab==='payouts'"><table class="table"><tr *ngFor="let p of data.payouts"><td>{{ p.requested_amount | currency:'INR':'symbol':'1.0-0' }}</td><td>{{ p.status }}</td><td>{{ p.payment_reference || '-' }}</td></tr></table></section>
-  <section class="panel-card" *ngIf="tab==='status'"><table class="table"><tr *ngFor="let h of data.status_history"><td>{{ h.old_status }} → {{ h.new_status }}</td><td>{{ h.reason }}</td><td>{{ h.changed_at | date:'dd MMM yyyy' }}</td></tr></table></section>
+
+  <section class="panel-card p-3" *ngIf="tab==='team'">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+      <h6 class="fw-800 text-dark mb-0"><i class="fas fa-users-gear text-primary me-2"></i>Associate Team Roster (Official Flat Team Model)</h6>
+      <span class="badge bg-success text-white py-1 px-2.5">{{ data.team_members?.length || 0 }} / 10 Slots Occupied</span>
+    </div>
+    <div class="table-responsive" *ngIf="data.team_members?.length; else noTeam">
+      <table class="table align-middle custom-dash-table stacked-on-mobile mb-0">
+        <thead>
+          <tr>
+            <th style="width: 10%;">Slot #</th>
+            <th style="width: 22%;">Team Member</th>
+            <th class="priority-2" style="width: 14%;">Member ID</th>
+            <th style="width: 18%;">Contact</th>
+            <th style="width: 10%;">Status</th>
+            <th style="width: 12%;">Gaj Sold</th>
+            <th style="width: 14%;">Commission</th>
+            <th class="priority-3" style="width: 10%;">Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tm of data.team_members">
+            <td data-label="Slot #"><span class="badge bg-secondary text-white">Slot {{ tm.slot_number || '-' }}</span></td>
+            <td data-label="Team Member">
+              <strong class="text-dark d-block text-truncate" [title]="tm.full_name">{{ tm.full_name }}</strong>
+              <div *ngIf="tm.gender" class="text-muted fs-10">{{ tm.gender }} • {{ tm.date_of_birth | date:'dd MMM yyyy' }}</div>
+            </td>
+            <td class="priority-2" data-label="Member ID"><code>{{ tm.member_id || tm.team_member_uid }}</code></td>
+            <td data-label="Contact">
+              <div class="fw-600 text-dark fs-11 text-truncate" [title]="tm.mobile_no">{{ tm.mobile_no }}</div>
+              <small class="text-muted fs-10 text-truncate d-block" *ngIf="tm.email_id || tm.email" [title]="tm.email_id || tm.email">{{ tm.email_id || tm.email }}</small>
+            </td>
+            <td data-label="Status">
+              <span class="badge" [class.bg-success]="tm.status==='approved'||tm.status==='active'||tm.account_status==='Active'||tm.account_status==='Approved'" [class.bg-warning]="tm.status==='pending'||tm.status==='submitted'" [class.bg-danger]="tm.status==='rejected'||tm.status==='inactive'||tm.status==='blocked'">
+                {{ tm.status | titlecase }}
+              </span>
+            </td>
+            <td data-label="Gaj Sold"><strong class="text-dark">{{ tm.total_gaj_sold || 0 }}</strong> Gaj</td>
+            <td data-label="Commission"><strong class="text-emerald">{{ tm.total_commission_earned | currency:'INR':'symbol':'1.0-0' }}</strong></td>
+            <td class="priority-3" data-label="Joined">{{ tm.created_at | date:'dd MMM yyyy' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noTeam>
+      <div class="text-center py-4 text-muted">
+        <i class="fas fa-user-plus fa-2x mb-2 text-gold"></i>
+        <p class="mb-0 fs-12">No team members registered under this Associate yet.</p>
+      </div>
+    </ng-template>
+  </section>
+
+  <section class="panel-card p-3" *ngIf="tab==='referrals'">
+    <div class="table-responsive" *ngIf="data.direct_referrals?.length; else noRef">
+      <table class="table align-middle custom-dash-table stacked-on-mobile mb-0">
+        <thead>
+          <tr>
+            <th style="width: 40%;">Name</th>
+            <th style="width: 30%;">Member ID</th>
+            <th style="width: 30%;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of data.direct_referrals">
+            <td data-label="Name"><strong>{{ r.full_name }}</strong></td>
+            <td data-label="Member ID"><code>{{ r.member_id }}</code></td>
+            <td data-label="Status"><span class="sbadge sbadge-green">{{ r.status || r.account_status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noRef><div class="text-center py-4 text-muted fs-12">No direct referrals found.</div></ng-template>
+  </section>
+
+  <section class="panel-card p-3" *ngIf="tab==='commissions'">
+    <div class="table-responsive" *ngIf="data.commissions?.length; else noComm">
+      <table class="table align-middle custom-dash-table stacked-on-mobile mb-0">
+        <thead>
+          <tr>
+            <th style="width: 25%;">Type</th>
+            <th style="width: 20%;">Role / Level</th>
+            <th style="width: 20%;">Net Amount</th>
+            <th style="width: 15%;">Status</th>
+            <th class="priority-3" style="width: 20%;">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of data.commissions">
+            <td data-label="Type">{{ c.commission_type }}</td>
+            <td data-label="Role / Level"><span class="badge bg-light text-dark border">{{ c.distribution_role || ('L' + c.commission_level) }}</span></td>
+            <td data-label="Net Amount"><strong class="text-emerald">{{ c.net_amount | currency:'INR':'symbol':'1.0-0' }}</strong></td>
+            <td data-label="Status"><span class="badge" [class.bg-success]="c.commission_status==='Paid'" [class.bg-warning]="c.commission_status==='Pending'">{{ c.commission_status }}</span></td>
+            <td class="priority-3" data-label="Date">{{ c.created_at | date:'dd MMM yyyy' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noComm><div class="text-center py-4 text-muted fs-12">No commission records found.</div></ng-template>
+  </section>
+
+  <section class="panel-card p-3" *ngIf="tab==='payouts'">
+    <div class="table-responsive" *ngIf="data.payouts?.length; else noPayout">
+      <table class="table align-middle custom-dash-table stacked-on-mobile mb-0">
+        <thead>
+          <tr>
+            <th style="width: 30%;">Requested Amount</th>
+            <th style="width: 20%;">Status</th>
+            <th style="width: 30%;">Payment Reference</th>
+            <th class="priority-3" style="width: 20%;">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of data.payouts">
+            <td data-label="Requested Amount"><strong class="text-dark">{{ p.requested_amount | currency:'INR':'symbol':'1.0-0' }}</strong></td>
+            <td data-label="Status">{{ p.status }}</td>
+            <td data-label="Payment Reference">{{ p.payment_reference || '-' }}</td>
+            <td class="priority-3" data-label="Date">{{ p.requested_at | date:'dd MMM yyyy' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noPayout><div class="text-center py-4 text-muted fs-12">No payout requests found.</div></ng-template>
+  </section>
+
+  <section class="panel-card p-3" *ngIf="tab==='status'">
+    <div class="table-responsive" *ngIf="data.status_history?.length; else noHist">
+      <table class="table align-middle custom-dash-table stacked-on-mobile mb-0">
+        <thead>
+          <tr>
+            <th style="width: 40%;">Status Change</th>
+            <th style="width: 35%;">Reason</th>
+            <th class="priority-3" style="width: 25%;">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let h of data.status_history">
+            <td data-label="Status Change">{{ h.old_status }} → {{ h.new_status }}</td>
+            <td data-label="Reason">{{ h.reason }}</td>
+            <td class="priority-3" data-label="Date">{{ h.changed_at | date:'dd MMM yyyy' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noHist><div class="text-center py-4 text-muted fs-12">No status history records found.</div></ng-template>
+  </section>
 </ng-container>

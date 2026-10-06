@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 
 export interface TeamMemberNode {
   user_id: number;
@@ -27,7 +28,7 @@ export interface TeamMemberNode {
 @Component({
   selector: 'app-my-team',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, VerifiedBadgeComponent],
+  imports: [CommonModule, FormsModule, RouterLink, VerifiedBadgeComponent, AdminPaginationComponent],
   templateUrl: './my-team.component.html',
   styleUrls: ['./my-team.component.css']
 })
@@ -40,6 +41,10 @@ export class MyTeamComponent implements OnInit {
   flatList: any[] = [];
   teamMembers: any[] = [];
   viewMode: 'cards' | 'list' | 'tree' = 'cards';
+
+  // Pagination
+  page = 1;
+  pageSize = 10;
 
   // Filters & Search
   searchTerm = '';
@@ -149,11 +154,13 @@ export class MyTeamComponent implements OnInit {
         }
       }
 
-      const flatData = (networkRes?.success && Array.isArray(networkRes.data)) ? networkRes.data : [];
+      const flatData = (networkRes?.success && Array.isArray(networkRes.data))
+        ? networkRes.data.filter((item: any) => item.user_type !== 'Customer')
+        : [];
       this.flatList = flatData;
 
       if (teamMembersRes?.success && Array.isArray(teamMembersRes.data)) {
-        this.teamMembers = teamMembersRes.data;
+        this.teamMembers = teamMembersRes.data.filter((item: any) => item.user_type !== 'Customer');
       } else {
         this.teamMembers = flatData;
       }
@@ -181,9 +188,9 @@ export class MyTeamComponent implements OnInit {
       user_id: rawRoot.user_id || rootUser.user_id || 0,
       member_id: rawRoot.member_id || rootUser.member_id || 'MMR001',
       full_name: rawRoot.full_name || rootUser.full_name || 'My Profile',
-      user_type: rawRoot.user_type || rootUser.user_type || 'Associate',
+      user_type: rawRoot.user_type || rootUser.user_type || 'Associate Leader',
       status: rawRoot.status || rawRoot.account_status || rootUser.account_status || 'Active',
-      rank: rawRoot.rank || 'Team Leader',
+      rank: rawRoot.rank || 'Associate Leader',
       total_gaj_sold: Number(rawRoot.total_gaj_sold || 0),
       commission_earned: Number(rawRoot.commission_earned || 0),
       level: 0,
@@ -192,21 +199,26 @@ export class MyTeamComponent implements OnInit {
     };
 
     if (Array.isArray(rawRoot.children)) {
-      rootNode.children = rawRoot.children.map((child: any) => this.mapChildNode(child, 1));
+      rootNode.children = rawRoot.children
+        .filter((child: any) => child.user_type !== 'Customer')
+        .map((child: any) => this.mapChildNode(child, 1));
     }
 
     return rootNode;
   }
 
   private mapChildNode(rawNode: any, depth: number): TeamMemberNode {
+    const isTeamMember = rawNode.user_type === 'Team Member' || Boolean(rawNode.slot_number);
     const node: TeamMemberNode = {
       user_id: rawNode.user_id,
-      member_id: rawNode.member_id || `MMR${rawNode.user_id}`,
-      full_name: rawNode.full_name || 'Team Associate',
-      user_type: rawNode.user_type || 'Associate',
+      member_id: rawNode.member_id || rawNode.team_member_uid || `MMR${rawNode.user_id}`,
+      full_name: rawNode.full_name || 'Team Member',
+      user_type: isTeamMember ? 'Team Member' : (rawNode.user_type || 'Associate'),
       sponsor_user_id: rawNode.sponsor_user_id,
       status: rawNode.status || rawNode.account_status || 'Active',
-      rank: rawNode.rank || (depth === 1 ? 'Direct Associate' : 'Team Member'),
+      rank: rawNode.slot_number
+        ? `Slot #${rawNode.slot_number} Team Member`
+        : (rawNode.rank || (isTeamMember ? 'Direct Team Member' : (depth === 1 ? 'Direct Associate' : 'Team Member'))),
       total_gaj_sold: Number(rawNode.total_gaj_sold || 0),
       commission_earned: Number(rawNode.commission_earned || 0),
       mobile_no: rawNode.mobile_no,
@@ -217,7 +229,9 @@ export class MyTeamComponent implements OnInit {
     };
 
     if (Array.isArray(rawNode.children)) {
-      node.children = rawNode.children.map((c: any) => this.mapChildNode(c, depth + 1));
+      node.children = rawNode.children
+        .filter((c: any) => c.user_type !== 'Customer')
+        .map((c: any) => this.mapChildNode(c, depth + 1));
     }
 
     return node;
@@ -388,6 +402,11 @@ export class MyTeamComponent implements OnInit {
     });
   }
 
+  get pagedTeamMembers(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredTeamMembers.slice(start, start + this.pageSize);
+  }
+
   get filteredFlatList(): any[] {
     return this.flatList.filter(m => {
       const matchesSearch = !this.searchTerm ||
@@ -450,6 +469,7 @@ export class MyTeamComponent implements OnInit {
     this.searchTerm = '';
     this.statusFilter = 'all';
     this.bookingFilter = 'all';
+    this.page = 1;
   }
 
   showToast(msg: string, type: 'success' | 'error' | 'info' = 'success'): void {

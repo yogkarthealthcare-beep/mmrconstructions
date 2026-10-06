@@ -55,7 +55,13 @@ export class UserDashboardComponent implements OnInit {
   hasSubmittedEnrollment: boolean = false;
   enrollmentData: any = null;
 
+  get isTeamMember(): boolean {
+    const type = String(this.userData?.user_type || this.userData?.role || this.profile?.user_type || '').toLowerCase();
+    return this.auth.isTeamMember() || type === 'team member' || type.includes('team member') || this.router.url.startsWith('/team-member');
+  }
+
   get isAssociate(): boolean {
+    if (this.isTeamMember) return false;
     return this.userData?.user_type === 'Associate' || this.router.url.startsWith('/associate');
   }
 
@@ -145,6 +151,7 @@ export class UserDashboardComponent implements OnInit {
   }
 
   get basePrefix(): string {
+    if (this.isTeamMember || this.router.url.startsWith('/team-member')) return '/team-member';
     return this.router.url.startsWith('/associate') ? '/associate' : '/customer';
   }
 
@@ -157,29 +164,35 @@ export class UserDashboardComponent implements OnInit {
   loadAllData() {
     this.loading = true;
 
-    const checkEnrollmentPromise = this.isAssociate
-      ? this.api.getMyAssociateEnrollment().toPromise().then((r: any) => {
-          if (r?.success && r.data) {
-            this.hasSubmittedEnrollment = true;
-            this.enrollmentData = r.data;
-            const st = String(r.data.status || r.data.app_status || r.data.enrollment_status || r.data.application_status || 'pending').toLowerCase();
-            this.isEnrollmentPending = (st === 'pending' || st === 'inforequested');
-          } else {
-            this.hasSubmittedEnrollment = false;
-            this.isEnrollmentPending = false;
-          }
-        }).catch(() => {})
-      : this.api.getMyCustomerEnrollments().toPromise().then((r: any) => {
-          if (r?.success && Array.isArray(r.data) && r.data.length > 0) {
-            this.hasSubmittedEnrollment = true;
-            this.enrollmentData = r.data[0];
-            const st = String(r.data[0].application_status || r.data[0].status || r.data[0].app_status || r.data[0].enrollment_status || 'pending').toLowerCase();
-            this.isEnrollmentPending = (st === 'pending' || st.includes('hold') || st === 'inforequested');
-          } else {
-            this.hasSubmittedEnrollment = false;
-            this.isEnrollmentPending = false;
-          }
-        }).catch(() => {});
+    const checkEnrollmentPromise = this.isTeamMember
+      ? Promise.resolve().then(() => {
+          this.hasSubmittedEnrollment = true;
+          this.isEnrollmentPending = false;
+        })
+      : (this.isAssociate
+        ? this.api.getMyAssociateEnrollment().toPromise().then((r: any) => {
+            if (r?.success && r.data) {
+              this.hasSubmittedEnrollment = true;
+              this.enrollmentData = r.data;
+              const st = String(r.data.status || r.data.app_status || r.data.enrollment_status || r.data.application_status || 'pending').toLowerCase();
+              this.isEnrollmentPending = (st === 'pending' || st === 'inforequested');
+            } else {
+              this.hasSubmittedEnrollment = false;
+              this.isEnrollmentPending = false;
+            }
+          }).catch(() => {})
+        : this.api.getMyCustomerEnrollments().toPromise().then((r: any) => {
+            if (r?.success && Array.isArray(r.data) && r.data.length > 0) {
+              this.hasSubmittedEnrollment = true;
+              this.enrollmentData = r.data[0];
+              const st = String(r.data[0].application_status || r.data[0].status || r.data[0].app_status || r.data[0].enrollment_status || 'pending').toLowerCase();
+              this.isEnrollmentPending = (st === 'pending' || st.includes('hold') || st === 'inforequested');
+            } else {
+              this.hasSubmittedEnrollment = false;
+              this.isEnrollmentPending = false;
+            }
+          }).catch(() => {})
+      );
 
     Promise.all([
       this.api.getProfile().toPromise().then((r: any) => {

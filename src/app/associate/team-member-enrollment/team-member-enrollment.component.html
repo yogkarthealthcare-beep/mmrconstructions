@@ -17,7 +17,18 @@
         <button 
           type="button"
           class="tab-btn" 
+          [class.active]="activeTab === 'slots'"
+          (click)="setTab('slots')"
+        >
+          <i class="fas fa-th-large"></i>
+          <span>10 Direct Slots</span>
+          <span class="count-pill">{{ occupiedSlotsCount() }}/10</span>
+        </button>
+        <button 
+          type="button"
+          class="tab-btn" 
           [class.active]="activeTab === 'enroll'"
+          [class.disabled-tab]="isCapacityFull()"
           (click)="setTab('enroll')"
         >
           <i class="fas fa-user-plus"></i>
@@ -29,10 +40,118 @@
           [class.active]="activeTab === 'list'"
           (click)="setTab('list')"
         >
-          <i class="fas fa-users"></i>
-          <span>My Team Members</span>
+          <i class="fas fa-list-ul"></i>
+          <span>Team Members Table</span>
           <span class="count-pill" *ngIf="totalCount() > 0">{{ totalCount() }}</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 0: 10 DIRECT SLOTS GRID VIEW -->
+  <div class="tab-content" *ngIf="activeTab === 'slots'">
+    <div class="slots-overview-container">
+      
+      <!-- Capacity Summary Card -->
+      <div class="capacity-hero-card">
+        <div class="capacity-info">
+          <h3><i class="fas fa-network-wired"></i> Direct Team Capacity (Max 10 Members)</h3>
+          <p>Each Associate can sponsor and manage a maximum of 10 direct Team Members across dedicated Slots 1 through 10.</p>
+        </div>
+
+        <div class="capacity-gauge-wrap">
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="(occupiedSlotsCount() / 10) * 100"></div>
+          </div>
+          <div class="capacity-counter">
+            {{ occupiedSlotsCount() }} <span>/ 10 Slots</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Capacity Warning if Full -->
+      <div class="capacity-warning-banner" *ngIf="isCapacityFull()">
+        <i class="fas fa-exclamation-triangle fs-5"></i>
+        <div>
+          <strong>Maximum Direct Team Limit Reached (10/10 Slots Occupied):</strong>
+          Your associate direct line is at full capacity. Additional enrollments (Slot 11+) are strictly prohibited by business policy.
+        </div>
+      </div>
+
+      <!-- 10 Slot Cards Grid -->
+      <div class="slots-grid">
+        <div 
+          class="slot-card" 
+          *ngFor="let slot of slots()" 
+          [ngClass]="slot.status"
+        >
+          <!-- Slot Header -->
+          <div class="slot-header">
+            <span class="slot-pill" [ngClass]="slot.status">SLOT #{{ slot.slotNumber }}</span>
+            <span class="slot-status-badge" [ngClass]="slot.status">
+              <i class="fas" [ngClass]="{
+                'fa-plus-circle': slot.status === 'empty',
+                'fa-clock': slot.status === 'pending',
+                'fa-check-circle': slot.status === 'approved',
+                'fa-times-circle': slot.status === 'rejected',
+                'fa-ban': slot.status === 'inactive'
+              }"></i>
+              <ng-container [ngSwitch]="slot.status">
+                <span *ngSwitchCase="'empty'">Available</span>
+                <span *ngSwitchCase="'pending'">Pending Approval</span>
+                <span *ngSwitchCase="'approved'">Approved</span>
+                <span *ngSwitchCase="'rejected'">Rejected</span>
+                <span *ngSwitchCase="'inactive'">Inactive</span>
+              </ng-container>
+            </span>
+          </div>
+
+          <!-- Slot Body (Empty or Occupied) -->
+          <div class="slot-body empty-state" *ngIf="slot.status === 'empty'">
+            <div class="empty-icon-box">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <h4>Slot {{ slot.slotNumber }} Open</h4>
+            <p>Ready for new direct Team Member enrollment.</p>
+          </div>
+
+          <div class="slot-body" *ngIf="slot.status !== 'empty' && slot.member">
+            <div class="member-info-box">
+              <span class="member-uid-tag">{{ slot.member.team_member_uid }}</span>
+              <h4 class="member-name">{{ slot.member.full_name }}</h4>
+              <div class="member-detail-line">
+                <i class="fas fa-phone text-muted"></i> {{ slot.member.mobile_no }}
+              </div>
+              <div class="member-detail-line">
+                <i class="fas fa-id-card text-muted"></i> {{ slot.member.aadhar_no_masked || slot.member.aadhar_no }}
+              </div>
+              <div class="member-detail-line" *ngIf="slot.member.bank_name">
+                <i class="fas fa-university text-muted"></i> {{ slot.member.bank_name }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Slot Footer Actions -->
+          <div class="slot-actions">
+            <button 
+              type="button" 
+              class="btn-slot-enroll" 
+              *ngIf="slot.status === 'empty'"
+              (click)="enrollIntoSlot(slot.slotNumber)"
+            >
+              <i class="fas fa-user-plus"></i> Enroll into Slot {{ slot.slotNumber }}
+            </button>
+
+            <button 
+              type="button" 
+              class="btn-slot-view" 
+              *ngIf="slot.status !== 'empty' && slot.member"
+              (click)="viewMemberDetails(slot.member)"
+            >
+              <i class="fas fa-eye"></i> View Application
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -93,8 +212,17 @@
       </div>
     </div>
 
+    <!-- Capacity Full Alert in Enrollment Tab -->
+    <div class="capacity-warning-banner mb-3" *ngIf="isCapacityFull()">
+      <i class="fas fa-ban fs-4"></i>
+      <div>
+        <strong>Enrollment Closed: Maximum Limit Reached (10/10 Slots)</strong>
+        <p class="mb-0 fs-12">All 10 Direct Team Member slots under your associate account are currently occupied. Cannot enroll an 11th member.</p>
+      </div>
+    </div>
+
     <!-- Main Enrollment Reactive Form -->
-    <form [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()" class="enrollment-form-card" novalidate>
+    <form [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()" class="enrollment-form-card" [class.form-disabled]="isCapacityFull()" novalidate>
       
       <!-- Section A: Associate & Personal Details -->
       <div class="form-section">
@@ -647,7 +775,7 @@
 
   <!-- Tab 2: ENROLLED TEAM MEMBERS LIST VIEW -->
   <div class="tab-content" *ngIf="activeTab === 'list'">
-    <div class="list-container-card">
+    <div class="list-container-card table-container">
       
       <!-- Filter and Search Header -->
       <div class="list-controls-bar">
@@ -714,43 +842,45 @@
         </button>
       </div>
 
-      <!-- Table View (Desktop & Tablet) -->
-      <div *ngIf="!loadingList() && teamMembers().length > 0" class="table-responsive desktop-table-view">
-        <table class="table team-table">
+      <!-- Standard Responsive Table -->
+      <div *ngIf="!loadingList() && teamMembers().length > 0" class="table-responsive">
+        <table class="table team-table custom-dash-table stacked-on-mobile mb-0" style="table-layout: fixed; width: 100%;">
           <thead>
             <tr>
-              <th>Team Member UID</th>
-              <th>Full Name</th>
-              <th>Mobile Number</th>
-              <th>Aadhar Number</th>
-              <th>Bank & Branch</th>
-              <th>Status</th>
-              <th>Enrolled Date</th>
-              <th>Action</th>
+              <th style="width: 14%;">Team Member UID</th>
+              <th style="width: 21%;">Full Name</th>
+              <th style="width: 12%;">Mobile</th>
+              <th class="priority-2" style="width: 13%;">Aadhar Number</th>
+              <th class="priority-2" style="width: 15%;">Bank &amp; Branch</th>
+              <th style="width: 10%;">Status</th>
+              <th class="priority-3" style="width: 9%;">Enrolled</th>
+              <th class="text-end" style="width: 6%;">Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let member of teamMembers()">
-              <td>
-                <span class="uid-badge">{{ member.team_member_uid }}</span>
+            <tr *ngFor="let member of pagedMembers()">
+              <td data-label="Team Member UID">
+                <span class="uid-badge text-truncate-safe" [title]="member.team_member_uid">{{ member.team_member_uid }}</span>
               </td>
-              <td>
+              <td data-label="Full Name">
                 <div class="member-name-cell">
-                  <span class="member-name">{{ member.full_name }}</span>
-                  <small class="text-muted">{{ member.gender }} • S/D/W: {{ member.father_husband_name }}</small>
+                  <span class="member-name field-single-line" [title]="member.full_name">{{ member.full_name }}</span>
+                  <small class="text-muted field-single-line" [title]="member.gender + ' • S/D/W: ' + member.father_husband_name">{{ member.gender }} • S/D/W: {{ member.father_husband_name }}</small>
                 </div>
               </td>
-              <td>
-                <i class="fas fa-phone text-muted me-1"></i> {{ member.mobile_no }}
+              <td data-label="Mobile">
+                <span class="field-single-line" [title]="member.mobile_no"><i class="fas fa-phone text-muted me-1"></i> {{ member.mobile_no }}</span>
               </td>
-              <td>
-                <span class="masked-text">{{ member.aadhar_no_masked || member.aadhar_no }}</span>
+              <td class="priority-2" data-label="Aadhar Number">
+                <span class="masked-text text-truncate-safe" [title]="member.aadhar_no_masked || member.aadhar_no">{{ member.aadhar_no_masked || member.aadhar_no }}</span>
               </td>
-              <td>
-                <span>{{ member.bank_name }}</span><br>
-                <small class="text-muted">{{ member.branch_name }}</small>
+              <td class="priority-2" data-label="Bank & Branch">
+                <div class="field-multi-line-2">
+                  <span class="fw-600 text-truncate d-block" [title]="member.bank_name">{{ member.bank_name }}</span>
+                  <small class="text-muted text-truncate d-block" [title]="member.branch_name">{{ member.branch_name }}</small>
+                </div>
               </td>
-              <td>
+              <td data-label="Status">
                 <span class="badge-status" [ngClass]="member.status">
                   <i class="fas" [ngClass]="{
                     'fa-clock': member.status === 'pending',
@@ -760,10 +890,10 @@
                   {{ member.status | uppercase }}
                 </span>
               </td>
-              <td>
-                {{ member.created_at | date:'dd MMM yyyy' }}
+              <td class="priority-3" data-label="Enrolled">
+                <span class="text-truncate-safe">{{ member.created_at | date:'dd MMM yyyy' }}</span>
               </td>
-              <td>
+              <td class="text-end" data-label="Action">
                 <button type="button" class="btn-action-view" (click)="viewMemberDetails(member)">
                   <i class="fas fa-eye"></i> View
                 </button>
@@ -773,43 +903,16 @@
         </table>
       </div>
 
-      <!-- Mobile Stacked Card View -->
-      <div *ngIf="!loadingList() && teamMembers().length > 0" class="mobile-cards-view">
-        <div class="mobile-member-card" *ngFor="let member of teamMembers()">
-          <div class="card-top-row">
-            <span class="uid-badge">{{ member.team_member_uid }}</span>
-            <span class="badge-status" [ngClass]="member.status">
-              {{ member.status | uppercase }}
-            </span>
-          </div>
+      <!-- Mandatory Pagination -->
+      <app-admin-pagination
+        *ngIf="!loadingList() && teamMembers().length > 0"
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [total]="teamMembers().length"
+        (pageChange)="page.set($event)"
+        (pageSizeChange)="pageSize.set($event); page.set(1)"
+      ></app-admin-pagination>
 
-          <div class="card-main-info">
-            <h4 class="member-title">{{ member.full_name }}</h4>
-            <div class="info-row">
-              <span class="info-label"><i class="fas fa-phone"></i> Mobile:</span>
-              <span class="info-val">{{ member.mobile_no }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label"><i class="fas fa-id-card"></i> Aadhar:</span>
-              <span class="info-val masked-text">{{ member.aadhar_no_masked || member.aadhar_no }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label"><i class="fas fa-university"></i> Bank:</span>
-              <span class="info-val">{{ member.bank_name }} ({{ member.branch_name }})</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label"><i class="fas fa-calendar"></i> Enrolled:</span>
-              <span class="info-val">{{ member.created_at | date:'dd MMM yyyy' }}</span>
-            </div>
-          </div>
-
-          <div class="card-footer-action">
-            <button type="button" class="btn-mobile-view" (click)="viewMemberDetails(member)">
-              <i class="fas fa-eye"></i> View Full Application Details
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 

@@ -10,7 +10,20 @@ import { selectLoading, selectSuccess, selectAssociateId, selectError } from './
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
-import { MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN, NORTH_INDIAN_STATES, getMaxAdultDobDate, adultAgeValidator, calculateAgeFromDob } from '../../shared/utils/form-helpers';
+import { 
+  MOBILE_PATTERN, 
+  EMAIL_PATTERN, 
+  AADHAAR_PATTERN, 
+  APPROVED_INDIAN_STATES, 
+  getMaxAdultDobDate, 
+  adultAgeValidator, 
+  calculateAgeFromDob, 
+  RELIGIONS_LIST, 
+  formatDateToDDMMYYYY, 
+  parseDDMMYYYYToISO,
+  humanNameValidator,
+  normalizeHumanName 
+} from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-associate-enrollment-form',
@@ -22,8 +35,9 @@ import { MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN, NORTH_INDIAN_STATES, ge
 export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   enrollmentForm!: FormGroup;
 
-  // Northern & Neighboring States dropdown list
-  statesList = NORTH_INDIAN_STATES;
+  // Approved Indian States dropdown list (Default: Uttar Pradesh)
+  statesList = APPROVED_INDIAN_STATES;
+  religionsList = RELIGIONS_LIST;
   maxAdultDob = getMaxAdultDobDate();
   todayStr = new Date().toISOString().split('T')[0];
 
@@ -41,8 +55,10 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   associateId$ = this.store.select(selectAssociateId);
   error$ = this.store.select(selectError);
 
-  // Read-only state for already submitted user
+  // Read-only & submission state
   isSubmitted: boolean = false;
+  isFinalSubmitted: boolean = false;
+  isEditing: boolean = false;
   submissionAssociateId: string | null = null;
   existingApplicantPhoto = '';
   existingNomineePhoto = '';
@@ -108,6 +124,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         if (success) {
           this.auth.setEnrollmentCompleted();
           this.isSubmitted = true;
+          this.isEditing = false;
           this.enrollmentStatus = 'pending';
           this.enrollmentForm.disable();
           Swal.fire({
@@ -115,7 +132,10 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
             title: 'Enrollment Submitted Successfully!',
             html: `
               <p style="font-size:14px; color:#475569; margin-bottom:12px;">
-                Your associate enrollment form has been submitted and is currently <strong>Pending Admin Verification</strong>.
+                Your associate enrollment form has been saved and is currently in <strong>Read-Only Mode</strong>.
+              </p>
+              <p style="font-size:13px; color:#64748b; margin-bottom:12px;">
+                You can click <strong>Edit</strong> to modify details, or click <strong>Final Submit</strong> to permanently finalize your enrollment.
               </p>
               <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:left; font-size:13px; color:#1e293b;">
                 <div style="font-weight:700; margin-bottom:6px; color:#062b18;"><i class="fas fa-headset me-1 text-gold"></i> For Quick Approval Assistance:</div>
@@ -125,9 +145,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
               </div>
             `,
             confirmButtonColor: '#1a5c3a',
-            confirmButtonText: 'Go to Dashboard'
-          }).then(() => {
-            this.router.navigate(['/associate/dashboard']);
+            confirmButtonText: 'OK'
           });
         }
       })
@@ -136,6 +154,8 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
 
   patchSubmittedData(d: any) {
     this.isSubmitted = true;
+    this.isFinalSubmitted = Boolean(d.is_final_submitted || d.isFinalSubmitted);
+    this.isEditing = false;
     this.submissionAssociateId = d.associate_id || d.associateId || d.id || null;
     this.existingApplicantPhoto = d.applicant_photo_url || d.applicant_photo_path || '';
     this.existingNomineePhoto = d.nominee_photo_url || d.nominee_photo_path || '';
@@ -144,7 +164,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     this.enrollmentForm.patchValue({
       personalDetails: {
         fullName: d.full_name || '',
-        dob: d.dob ? d.dob.split('T')[0] : '',
+        dob: formatDateToDDMMYYYY(d.dob),
         gender: d.gender || '',
         fatherName: d.father_name || '',
         motherName: d.mother_name || '',
@@ -187,7 +207,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
       },
       nomineeDetails: {
         nomineeName: d.nominee_name || d.nomineeName || '',
-        nomineeDob: d.nominee_dob ? d.nominee_dob.split('T')[0] : (d.nomineeDob || ''),
+        nomineeDob: formatDateToDDMMYYYY(d.nominee_dob || d.nomineeDob),
         nomineeGender: d.nominee_gender || d.nomineeGender || 'Male',
         nomineeNationality: d.nominee_nationality || 'Indian',
         nomineeResStatus: d.nominee_res_status || 'Resident',
@@ -212,7 +232,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         tc6: true
       },
       signature: {
-        signDate: d.sign_date ? d.sign_date.split('T')[0] : new Date().toISOString().split('T')[0]
+        signDate: formatDateToDDMMYYYY(d.sign_date) || this.todayStr
       }
     });
 
@@ -251,12 +271,12 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   initForm() {
     this.enrollmentForm = this.fb.group({
       personalDetails: this.fb.group({
-        fullName: ['', Validators.required],
+        fullName: ['', [Validators.required, humanNameValidator()]],
         dob: ['', [Validators.required, adultAgeValidator(18)]],
         gender: ['', Validators.required],
-        fatherName: ['', Validators.required],
-        motherName: ['', Validators.required],
-        spouseName: [''],
+        fatherName: ['', [Validators.required, humanNameValidator()]],
+        motherName: ['', [Validators.required, humanNameValidator()]],
+        spouseName: ['', [humanNameValidator()]],
         contact1: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
         contact2: ['', [Validators.pattern(MOBILE_PATTERN)]],
         nationality: ['Indian', Validators.required],
@@ -285,7 +305,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
       }),
       bankDetails: this.fb.group({
         bankName: ['', Validators.required],
-        accHolder: ['', Validators.required],
+        accHolder: ['', [Validators.required, humanNameValidator()]],
         accNo: ['', Validators.required],
         ifsc: ['', [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
         micr: [''],
@@ -295,15 +315,15 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         branchCountry: ['India', Validators.required]
       }),
       nomineeDetails: this.fb.group({
-        nomineeName: ['', Validators.required],
+        nomineeName: ['', [Validators.required, humanNameValidator()]],
         nomineeDob: ['', Validators.required],
         nomineeGender: ['', Validators.required],
         nomineeNationality: ['Indian', Validators.required],
         nomineeResStatus: ['', Validators.required],
         nomineeRelationship: ['', Validators.required],
-        nomineePanName: [''],
+        nomineePanName: ['', [humanNameValidator()]],
         nomineePanNo: ['', Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)],
-        nomineeAadharName: [''],
+        nomineeAadharName: ['', [humanNameValidator()]],
         nomineeAadharNo: ['', [Validators.pattern(AADHAAR_PATTERN)]],
         nomineeAddress: ['', Validators.required]
       }),
@@ -562,16 +582,64 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     }, 100);
   }
 
-  onSubmit() {
-    const isPhotoMissing = (!this.applicantPhotoFile && !this.existingApplicantPhoto) || (!this.nomineePhotoFile && !this.existingNomineePhoto);
-    if (this.enrollmentForm.invalid || !this.allTermsAccepted() || isPhotoMissing) {
-      this.enrollmentForm.markAllAsTouched();
-      this.focusFirstInvalidControl();
+  onDobInput(event: any, groupName: string, controlName: string) {
+    let val = (event.target.value || '').replace(/[^0-9/]/g, '');
+    if (val.length === 2 && !val.includes('/')) {
+      val = val + '/';
+    } else if (val.length === 5 && val.split('/').length === 2) {
+      val = val + '/';
+    }
+    event.target.value = val;
+    this.enrollmentForm.get(`${groupName}.${controlName}`)?.setValue(val, { emitEvent: true });
+  }
+
+  onDatepickerSelect(event: any, groupName: string, controlName: string) {
+    const pickedDate = event.target.value;
+    if (pickedDate) {
+      const formatted = formatDateToDDMMYYYY(pickedDate);
+      this.enrollmentForm.get(`${groupName}.${controlName}`)?.setValue(formatted, { emitEvent: true });
+    }
+  }
+
+  onEdit() {
+    if (this.isFinalSubmitted) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Form Finalized',
+        text: 'This associate enrollment form has been permanently final submitted and cannot be edited.'
+      });
       return;
     }
+    this.isEditing = true;
+    this.enrollmentForm.enable();
+    this.enrollmentForm.get('personalDetails.nationality')?.disable();
+    this.enrollmentForm.get('addressDetails.permCountry')?.disable();
+    this.enrollmentForm.get('addressDetails.localCountry')?.disable();
+    this.enrollmentForm.get('bankDetails.branchCountry')?.disable();
+    this.enrollmentForm.get('nomineeDetails.nomineeNationality')?.disable();
+  }
 
+  onFinalSubmit() {
+    if (this.isFinalSubmitted) return;
+    Swal.fire({
+      title: 'Confirm Final Submission?',
+      text: 'Once finalized, your Associate Enrollment will be permanently locked and you will not be able to edit it anymore.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1a5c3a',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, Final Submit',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.executeFinalSubmit();
+      }
+    });
+  }
+
+  private executeFinalSubmit() {
     const formData = new FormData();
-    const formValue = this.enrollmentForm.value;
+    const formValue = this.enrollmentForm.getRawValue();
 
     const cleanVal = (val: any, key: string): any => {
       if (val === null || val === undefined) return null;
@@ -585,6 +653,92 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
           return trimmed.replace(/[\s-]/g, '');
         }
         if (key.toLowerCase().includes('email')) return trimmed.toLowerCase();
+        const nameKeys = ['fullname', 'fathername', 'mothername', 'spousename', 'accholder', 'nomineename', 'nomineepanname', 'nomineeaadharname', 'sponsorname', 'applicantname'];
+        if (nameKeys.some(n => key.toLowerCase().includes(n))) {
+          return normalizeHumanName(trimmed);
+        }
+        return trimmed;
+      }
+      return val;
+    };
+
+    Object.keys(formValue).forEach((sectionKey) => {
+      const sectionValue = formValue[sectionKey];
+      if (typeof sectionValue === 'object' && sectionValue !== null) {
+        Object.keys(sectionValue).forEach((fieldKey) => {
+          let cleaned = cleanVal(sectionValue[fieldKey], fieldKey);
+          if (fieldKey === 'dob' || fieldKey === 'nomineeDob' || fieldKey === 'signDate') {
+            cleaned = parseDDMMYYYYToISO(cleaned);
+          }
+          if (cleaned !== null && cleaned !== undefined && cleaned !== '') {
+            formData.append(fieldKey, cleaned);
+          }
+        });
+      }
+    });
+
+    if (this.applicantPhotoFile) {
+      formData.append('applicantPhoto', this.applicantPhotoFile);
+    }
+    if (this.nomineePhotoFile) {
+      formData.append('nomineePhoto', this.nomineePhotoFile);
+    }
+
+    formData.append('termsAccepted', 'true');
+    formData.append('isFinalSubmitted', 'true');
+    formData.append('is_final_submitted', 'true');
+
+    this.api.postForm('/api/associate-enrollment', formData).subscribe({
+      next: (res: any) => {
+        this.isSubmitted = true;
+        this.isFinalSubmitted = true;
+        this.isEditing = false;
+        this.enrollmentForm.disable();
+        Swal.fire({
+          icon: 'success',
+          title: 'Associate Enrollment Finalized!',
+          text: 'Your associate enrollment has been permanently finalized and locked.',
+          confirmButtonColor: '#1a5c3a'
+        });
+      },
+      error: (err: any) => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Final Submission Failed',
+          text: err.error?.message || 'Failed to final submit associate enrollment.',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    });
+  }
+
+  onSubmit() {
+    const isPhotoMissing = (!this.applicantPhotoFile && !this.existingApplicantPhoto) || (!this.nomineePhotoFile && !this.existingNomineePhoto);
+    if (this.enrollmentForm.invalid || !this.allTermsAccepted() || isPhotoMissing) {
+      this.enrollmentForm.markAllAsTouched();
+      this.focusFirstInvalidControl();
+      return;
+    }
+
+    const formData = new FormData();
+    const formValue = this.enrollmentForm.getRawValue();
+
+    const cleanVal = (val: any, key: string): any => {
+      if (val === null || val === undefined) return null;
+      if (typeof val === 'boolean') return String(val);
+      if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (!trimmed) return null;
+        if (key.toLowerCase().includes('pan')) return trimmed.toUpperCase();
+        if (key.toLowerCase().includes('ifsc') || key.toLowerCase().includes('swift')) return trimmed.toUpperCase();
+        if (key.toLowerCase().includes('aadhar') || key.toLowerCase().includes('contact') || key.toLowerCase().includes('mobile')) {
+          return trimmed.replace(/[\s-]/g, '');
+        }
+        if (key.toLowerCase().includes('email')) return trimmed.toLowerCase();
+        const nameKeys = ['fullname', 'fathername', 'mothername', 'spousename', 'accholder', 'nomineename', 'nomineepanname', 'nomineeaadharname', 'sponsorname', 'applicantname'];
+        if (nameKeys.some(n => key.toLowerCase().includes(n))) {
+          return normalizeHumanName(trimmed);
+        }
         return trimmed;
       }
       return val;
@@ -595,7 +749,10 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
       const sectionValue = formValue[sectionKey];
       if (typeof sectionValue === 'object' && sectionValue !== null) {
         Object.keys(sectionValue).forEach((fieldKey) => {
-          const cleaned = cleanVal(sectionValue[fieldKey], fieldKey);
+          let cleaned = cleanVal(sectionValue[fieldKey], fieldKey);
+          if (fieldKey === 'dob' || fieldKey === 'nomineeDob' || fieldKey === 'signDate') {
+            cleaned = parseDDMMYYYYToISO(cleaned);
+          }
           if (cleaned !== null && cleaned !== undefined && cleaned !== '') {
             formData.append(fieldKey, cleaned);
           }
@@ -613,6 +770,8 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
 
     // Force termsAccepted boolean flag
     formData.append('termsAccepted', 'true');
+    formData.append('isFinalSubmitted', 'false');
+    formData.append('is_final_submitted', 'false');
 
     this.store.dispatch(submitForm({ formData }));
   }
@@ -673,7 +832,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
           this.enrollmentForm.patchValue({
             personalDetails: {
               fullName: u.full_name || '',
-              dob: u.date_of_birth ? u.date_of_birth.split('T')[0] : '',
+              dob: formatDateToDDMMYYYY(u.date_of_birth),
               gender: u.gender || '',
               fatherName: u.father_name || '',
               motherName: u.mother_name || '',

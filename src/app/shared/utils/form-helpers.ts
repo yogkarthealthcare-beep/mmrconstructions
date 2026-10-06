@@ -8,17 +8,183 @@ export const AADHAAR_PATTERN = /^[0-9]{12}$/;
 export const POSITIVE_NUM_PATTERN = /^[0-9]+(\.[0-9]{1,2})?$/;
 
 /**
- * Calculates exact age in completed years from DOB string (YYYY-MM-DD)
+ * Human Name Pattern: Strictly letters (A-Z, a-z) and spaces.
+ * Disallows numbers, symbols, emojis, and special characters.
+ */
+export const HUMAN_NAME_PATTERN = /^[A-Za-z]+(\s+[A-Za-z]+)*$/;
+
+/**
+ * Normalizes a human name:
+ * 1. Trims leading/trailing whitespace
+ * 2. Collapses multiple spaces into a single space
+ * 3. Converts each word to Title Case (e.g. "  vIkAs   rAjPuT  " -> "Vikas Rajput")
+ */
+export function normalizeHumanName(val: string | null | undefined): string {
+  if (!val || typeof val !== 'string') return '';
+  const cleaned = val.trim().replace(/\s+/g, ' ');
+  if (!cleaned) return '';
+  return cleaned
+    .split(' ')
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+/**
+ * Checks if a string is a valid human name containing only letters and spaces
+ */
+export function isValidHumanName(val: string | null | undefined): boolean {
+  if (!val || typeof val !== 'string') return false;
+  const trimmed = val.trim();
+  if (trimmed.length < 2) return false;
+  return /^[A-Za-z]+(\s+[A-Za-z]+)*$/.test(trimmed);
+}
+
+/**
+ * Angular Validator ensuring input is a genuine human name (A-Z, a-z, spaces only)
+ */
+export function humanNameValidator() {
+  return (control: { value: any }) => {
+    if (!control.value) return null;
+    const s = String(control.value).trim();
+    if (!s) return null;
+    if (!/^[A-Za-z]+(\s+[A-Za-z]+)*$/.test(s)) {
+      return { invalidHumanName: true };
+    }
+    return null;
+  };
+}
+
+/**
+ * Approved States for Indian address/location across the project (Default: Uttar Pradesh)
+ */
+export const APPROVED_INDIAN_STATES: string[] = [
+  'Haryana',
+  'Punjab',
+  'Rajasthan',
+  'Gujarat',
+  'Madhya Pradesh',
+  'Andhra Pradesh',
+  'Bihar',
+  'Chhattisgarh',
+  'Odisha',
+  'Uttar Pradesh'
+];
+
+export const DEFAULT_STATE = 'Uttar Pradesh';
+export const DEFAULT_COUNTRY = 'India';
+export const COUNTRIES_LIST: string[] = ['India'];
+
+/**
+ * Backward compatibility alias for existing components
+ */
+export const NORTH_INDIAN_STATES: string[] = APPROVED_INDIAN_STATES;
+
+/**
+ * Fixed Religions List for Customer, Associate and Investor Enrollment Forms
+ */
+export const RELIGIONS_LIST: string[] = [
+  'Hindu',
+  'Muslim',
+  'Sikh',
+  'Christian',
+  'Jain',
+  'Buddhist'
+];
+
+/**
+ * Formats a date string (YYYY-MM-DD, ISO timestamp, or DD/MM/YYYY) to DD/MM/YYYY without timezone shift
+ */
+export function formatDateToDDMMYYYY(val: string | null | undefined): string {
+  if (!val) return '';
+  const s = String(val).trim();
+  if (!s) return '';
+  
+  // Already in DD/MM/YYYY or DD-MM-YYYY
+  const ddmmyyyy = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (ddmmyyyy) {
+    const [, d, m, y] = ddmmyyyy;
+    return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+  }
+
+  // Matches YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss...
+  const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    const [, y, m, d] = isoMatch;
+    return `${d}/${m}/${y}`;
+  }
+
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  return s;
+}
+
+/**
+ * Parses a DD/MM/YYYY string to ISO YYYY-MM-DD format for storage / API
+ */
+export function parseDDMMYYYYToISO(val: string | null | undefined): string {
+  if (!val) return '';
+  const s = String(val).trim();
+  if (!s) return '';
+
+  // Matches DD/MM/YYYY or DD-MM-YYYY
+  const ddmmyyyy = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (ddmmyyyy) {
+    const [, d, m, y] = ddmmyyyy;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  // Already in YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    return s;
+  }
+
+  return s;
+}
+
+/**
+ * Validates whether string is a valid DD/MM/YYYY calendar date
+ */
+export function isValidDDMMYYYY(val: string | null | undefined): boolean {
+  if (!val) return false;
+  const s = String(val).trim();
+  const ddmmyyyy = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (!ddmmyyyy) return false;
+  const day = parseInt(ddmmyyyy[1], 10);
+  const month = parseInt(ddmmyyyy[2], 10);
+  const year = parseInt(ddmmyyyy[3], 10);
+
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+  if (year < 1900 || year > new Date().getFullYear()) return false;
+
+  const daysInMonth = new Date(year, month, 0).getDate();
+  return day <= daysInMonth;
+}
+
+/**
+ * Calculates exact age in completed years from DOB string (DD/MM/YYYY or YYYY-MM-DD)
  */
 export function calculateAgeFromDob(dob: string | null | undefined): number | '' {
   if (!dob) return '';
-  const birthDate = new Date(dob);
-  if (isNaN(birthDate.getTime())) return '';
+  const isoStr = parseDDMMYYYYToISO(dob);
+  const parts = isoStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!parts) return '';
+
+  const birthYear = parseInt(parts[1], 10);
+  const birthMonth = parseInt(parts[2], 10) - 1; // 0-indexed
+  const birthDay = parseInt(parts[3], 10);
 
   const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+  let age = today.getFullYear() - birthYear;
+  const m = today.getMonth() - birthMonth;
+  if (m < 0 || (m === 0 && today.getDate() < birthDay)) {
     age--;
   }
   return age >= 0 ? age : '';
@@ -107,32 +273,19 @@ export function numberToIndianWords(amount: number | string | null | undefined):
 }
 
 /**
- * Northern & neighboring states of UP for all enrollment forms
- */
-export const NORTH_INDIAN_STATES: string[] = [
-  'Uttar Pradesh',
-  'Madhya Pradesh',
-  'Bihar',
-  'Jharkhand',
-  'Rajasthan',
-  'Haryana',
-  'Punjab',
-  'Delhi',
-  'Uttarakhand',
-  'Himachal Pradesh',
-  'Chhattisgarh',
-  'Chandigarh',
-  'Jammu & Kashmir',
-  'Other'
-];
-
-/**
  * Returns ISO date string (YYYY-MM-DD) for exactly 18 years ago from today.
  */
 export function getMaxAdultDobDate(): string {
   const d = new Date();
   d.setFullYear(d.getFullYear() - 18);
   return d.toISOString().split('T')[0];
+}
+
+/**
+ * Returns DD/MM/YYYY date string for exactly 18 years ago from today.
+ */
+export function getMaxAdultDobDateDDMMYYYY(): string {
+  return formatDateToDDMMYYYY(getMaxAdultDobDate());
 }
 
 /**

@@ -102,6 +102,34 @@
         <i class="fas fa-chevron-right"></i>
       </div>
     </div>
+
+    <!-- Team Member Card -->
+    <div class="category-card" [class.active]="activeCategory === 'team_member'" (click)="setCategory('team_member')">
+      <div class="card-icon-wrap team-member-icon">
+        <i class="fas fa-users-cog"></i>
+      </div>
+      <div class="card-info">
+        <h3>Team Members</h3>
+        <span class="card-sub">Direct Team Roster (10 Slots)</span>
+        <div class="card-stats-row">
+          <div class="stat-pill total">
+            <span class="label">Total</span>
+            <span class="val">{{ stats.team_member.total }}</span>
+          </div>
+          <div class="stat-pill completed">
+            <span class="label">Active</span>
+            <span class="val">{{ stats.team_member.completed }}</span>
+          </div>
+          <div class="stat-pill pending">
+            <span class="label">Pending</span>
+            <span class="val">{{ stats.team_member.pending }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-indicator" *ngIf="activeCategory === 'team_member'">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
   </div>
 
   <!-- Search & Filter Controls -->
@@ -150,49 +178,49 @@
     </div>
 
     <!-- ================= TABLES WITH ADMIN CONTAINER ================= -->
-    <app-admin-table-container [title]="activeCategory === 'customer' ? 'Customer Enrollments' : (activeCategory === 'associate' ? 'Associate Enrollments' : 'Investor Enrollments')" [count]="items.length" *ngIf="!loading && items.length > 0">
+    <app-admin-table-container [title]="activeCategory === 'customer' ? 'Customer Enrollments' : (activeCategory === 'associate' ? 'Associate Enrollments' : (activeCategory === 'team_member' ? 'Team Member Enrollments' : 'Investor Enrollments'))" [count]="items.length" *ngIf="!loading && items.length > 0">
       
       <!-- ================= CUSTOMER TABLE ================= -->
-      <table *ngIf="activeCategory === 'customer'" class="data-table">
+      <table *ngIf="activeCategory === 'customer'" class="table align-middle custom-dash-table stacked-on-mobile mb-0">
         <thead>
           <tr>
-            <th class="th-sno">#</th>
-            <th class="th-applicant">Applicant Name &amp; App No</th>
-            <th class="th-contact">Contact &amp; Email</th>
-            <th class="th-project">Project &amp; Property</th>
-            <th class="th-amount">Total Value</th>
-            <th class="th-status">Enrollment Status</th>
-            <th class="th-actions text-end">Actions</th>
+            <th class="th-sno" style="width: 5%;">#</th>
+            <th style="width: 23%;">Applicant Name &amp; App No</th>
+            <th style="width: 20%;">Contact &amp; Email</th>
+            <th class="priority-2" style="width: 18%;">Project &amp; Property</th>
+            <th style="width: 14%;">Total Value</th>
+            <th style="width: 10%;">Enrollment Status</th>
+            <th class="text-end" style="width: 10%;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of pagedItems; let i = index">
-            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td class="td-applicant">
-              <div class="applicant-cell">
-                <strong class="applicant-name">{{ item.applicant_name || item.full_name || 'N/A' }}</strong>
-                <span class="badge-sub">{{ item.application_no || item.user_id || 'Pending App' }}</span>
+            <td class="td-sno" data-label="#">{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td data-label="Applicant Name & App No">
+              <div class="applicant-cell min-w-0">
+                <strong class="applicant-name text-truncate d-block" [title]="item.applicant_name || item.full_name || 'N/A'">{{ item.applicant_name || item.full_name || 'N/A' }}</strong>
+                <span class="badge-sub text-truncate">{{ item.application_no || item.user_id || 'Pending App' }}</span>
               </div>
             </td>
-            <td class="td-contact">
-              <div class="contact-cell">
-                <span class="contact-phone"><i class="fas fa-phone-alt"></i> {{ item.mobile_1 || item.mobile_no || 'N/A' }}</span>
-                <small class="contact-email" *ngIf="item.email_1 || item.email" [title]="item.email_1 || item.email"><i class="fas fa-envelope"></i> {{ item.email_1 || item.email }}</small>
+            <td data-label="Contact & Email">
+              <div class="contact-cell min-w-0">
+                <span class="contact-phone text-truncate" [title]="item.mobile_1 || item.mobile_no || 'N/A'"><i class="fas fa-phone-alt"></i> {{ item.mobile_1 || item.mobile_no || 'N/A' }}</span>
+                <small class="contact-email text-truncate" *ngIf="item.email_1 || item.email" [title]="item.email_1 || item.email"><i class="fas fa-envelope"></i> {{ item.email_1 || item.email }}</small>
               </div>
             </td>
-            <td class="td-project">
-              <div class="project-cell">
-                <span class="project-title">{{ item.project_name || '—' }}</span>
-                <span class="prop-type">{{ item.property_type || '—' }} <span *ngIf="item.plot_flat_no">(#{{ item.plot_flat_no }})</span></span>
+            <td class="priority-2" data-label="Project & Property">
+              <div class="project-cell min-w-0">
+                <span class="project-title text-truncate d-block" [title]="item.project_name || '—'">{{ item.project_name || '—' }}</span>
+                <span class="prop-type text-truncate">{{ item.property_type || '—' }} <span *ngIf="item.plot_flat_no">(#{{ item.plot_flat_no }})</span></span>
               </div>
             </td>
-            <td class="td-amount">
-              <span class="amount-val">₹{{ (item.basic_sale_price || 0) + (item.plc_dev_charges || 0) | number }}</span>
+            <td data-label="Total Value">
+              <span class="amount-val fw-700 text-dark">₹{{ (item.basic_sale_price || 0) + (item.plc_dev_charges || 0) | number }}</span>
             </td>
-            <td class="td-status">
+            <td data-label="Enrollment Status">
               <select
                 class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
-                style="min-width: 120px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
+                style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
                 [ngClass]="{
                   'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.application_status === 'Approved',
                   'border-warning text-warning-dark bg-warning-subtle': item.enrollment_status === 'Pending' || item.application_status === 'Pending' || !item.enrollment_status,
@@ -205,7 +233,7 @@
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
             </td>
-            <td class="td-actions text-end">
+            <td class="td-actions text-end" data-label="Actions">
               <div class="action-btn-group">
                 <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
                   <i class="fas fa-eye"></i> <span>View</span>
@@ -223,48 +251,48 @@
       </table>
 
       <!-- ================= ASSOCIATE TABLE ================= -->
-      <table *ngIf="activeCategory === 'associate'" class="data-table">
+      <table *ngIf="activeCategory === 'associate'" class="table align-middle custom-dash-table stacked-on-mobile mb-0">
         <thead>
           <tr>
-            <th class="th-sno">#</th>
-            <th class="th-applicant">Associate Name &amp; ID</th>
-            <th class="th-contact">Contact &amp; Email</th>
-            <th class="th-sponsor">Sponsor Details</th>
-            <th class="th-category">Category / State</th>
-            <th class="th-status">Enrollment Status</th>
-            <th class="th-date">Submitted At</th>
-            <th class="th-actions text-end">Actions</th>
+            <th class="th-sno" style="width: 5%;">#</th>
+            <th style="width: 22%;">Associate Name &amp; ID</th>
+            <th style="width: 18%;">Contact &amp; Email</th>
+            <th class="priority-2" style="width: 16%;">Sponsor Details</th>
+            <th class="priority-2" style="width: 14%;">Category / State</th>
+            <th style="width: 10%;">Enrollment Status</th>
+            <th class="priority-3" style="width: 7%;">Submitted At</th>
+            <th class="text-end" style="width: 8%;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of pagedItems; let i = index">
-            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td class="td-applicant">
-              <div class="applicant-cell">
-                <strong class="applicant-name">{{ item.full_name || 'N/A' }}</strong>
-                <span class="badge-sub">{{ item.associate_id || item.user_id || 'Pending ID' }}</span>
+            <td class="td-sno" data-label="#">{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td data-label="Associate Name & ID">
+              <div class="applicant-cell min-w-0">
+                <strong class="applicant-name text-truncate d-block" [title]="item.full_name || 'N/A'">{{ item.full_name || 'N/A' }}</strong>
+                <span class="badge-sub text-truncate">{{ item.associate_id || item.user_id || 'Pending ID' }}</span>
               </div>
             </td>
-            <td class="td-contact">
-              <div class="contact-cell">
-                <span class="contact-phone"><i class="fas fa-phone-alt"></i> {{ item.mobile_1 || item.mobile_no || 'N/A' }}</span>
-                <small class="contact-email" *ngIf="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
+            <td data-label="Contact & Email">
+              <div class="contact-cell min-w-0">
+                <span class="contact-phone text-truncate" [title]="item.mobile_1 || item.mobile_no || 'N/A'"><i class="fas fa-phone-alt"></i> {{ item.mobile_1 || item.mobile_no || 'N/A' }}</span>
+                <small class="contact-email text-truncate" *ngIf="item.email" [title]="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
               </div>
             </td>
-            <td class="td-sponsor">
-              <div class="sponsor-cell">
-                <strong>{{ item.sponsor_name || '—' }}</strong>
-                <span class="badge-sub" *ngIf="item.sponsor_id">ID: {{ item.sponsor_id }}</span>
+            <td class="priority-2" data-label="Sponsor Details">
+              <div class="sponsor-cell min-w-0">
+                <strong class="text-truncate d-block" [title]="item.sponsor_name || '—'">{{ item.sponsor_name || '—' }}</strong>
+                <span class="badge-sub text-truncate" *ngIf="item.sponsor_id">ID: {{ item.sponsor_id }}</span>
               </div>
             </td>
-            <td class="td-category">
-              <span class="category-tag">{{ item.category || 'Executive' }}</span>
-              <small class="d-block text-muted">{{ item.state || 'Uttar Pradesh' }}</small>
+            <td class="priority-2" data-label="Category / State">
+              <span class="category-tag text-truncate">{{ item.category || 'Executive' }}</span>
+              <small class="d-block text-muted text-truncate">{{ item.state || 'Uttar Pradesh' }}</small>
             </td>
-            <td class="td-status">
+            <td data-label="Enrollment Status">
               <select
                 class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
-                style="min-width: 120px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
+                style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
                 [ngClass]="{
                   'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.status === 'approved',
                   'border-warning text-warning-dark bg-warning-subtle': item.enrollment_status === 'Pending' || item.status === 'pending' || !item.enrollment_status,
@@ -277,10 +305,10 @@
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
             </td>
-            <td class="td-date">
+            <td class="priority-3" data-label="Submitted At">
               <small class="date-text">{{ item.created_at ? (item.created_at | date:'mediumDate') : (item.sign_date | date:'mediumDate') || '—' }}</small>
             </td>
-            <td class="td-actions text-end">
+            <td class="td-actions text-end" data-label="Actions">
               <div class="action-btn-group">
                 <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
                   <i class="fas fa-eye"></i> <span>View</span>
@@ -298,54 +326,54 @@
       </table>
 
       <!-- ================= INVESTOR TABLE ================= -->
-      <table *ngIf="activeCategory === 'investor'" class="data-table">
+      <table *ngIf="activeCategory === 'investor'" class="table align-middle custom-dash-table stacked-on-mobile mb-0">
         <thead>
           <tr>
-            <th class="th-sno">#</th>
-            <th class="th-applicant">Investor Name &amp; ID</th>
-            <th class="th-contact">Contact &amp; Email</th>
-            <th class="th-project">Project &amp; Branch</th>
-            <th class="th-amount">Investment Amount</th>
-            <th class="th-paystatus">Payment Status</th>
-            <th class="th-status">Enrollment Status</th>
-            <th class="th-date">Date</th>
-            <th class="th-actions text-end">Actions</th>
+            <th class="th-sno" style="width: 5%;">#</th>
+            <th style="width: 22%;">Investor Name &amp; ID</th>
+            <th style="width: 18%;">Contact &amp; Email</th>
+            <th class="priority-2" style="width: 16%;">Project &amp; Branch</th>
+            <th style="width: 14%;">Amount</th>
+            <th class="priority-2" style="width: 10%;">Payment Status</th>
+            <th style="width: 10%;">Status</th>
+            <th class="priority-3" style="width: 5%;">Date</th>
+            <th class="text-end" style="width: 8%;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of pagedItems; let i = index">
-            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td class="td-applicant">
-              <div class="applicant-cell">
-                <strong class="applicant-name">{{ item.inv_first_name ? (item.inv_first_name + ' ' + (item.inv_surname || '')) : (item.full_name || 'N/A') }}</strong>
-                <span class="badge-sub">{{ item.investor_enrollment_id || item.form_no || item.user_id || 'Pending ID' }}</span>
+            <td class="td-sno" data-label="#">{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td data-label="Investor Name & ID">
+              <div class="applicant-cell min-w-0">
+                <strong class="applicant-name text-truncate d-block" [title]="item.inv_first_name ? (item.inv_first_name + ' ' + (item.inv_surname || '')) : (item.full_name || 'N/A')">{{ item.inv_first_name ? (item.inv_first_name + ' ' + (item.inv_surname || '')) : (item.full_name || 'N/A') }}</strong>
+                <span class="badge-sub text-truncate">{{ item.investor_enrollment_id || item.form_no || item.user_id || 'Pending ID' }}</span>
               </div>
             </td>
-            <td class="td-contact">
-              <div class="contact-cell">
-                <span class="contact-phone"><i class="fas fa-phone-alt"></i> {{ item.mobile || item.mobile_no || 'N/A' }}</span>
-                <small class="contact-email" *ngIf="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
+            <td data-label="Contact & Email">
+              <div class="contact-cell min-w-0">
+                <span class="contact-phone text-truncate" [title]="item.mobile || item.mobile_no || 'N/A'"><i class="fas fa-phone-alt"></i> {{ item.mobile || item.mobile_no || 'N/A' }}</span>
+                <small class="contact-email text-truncate" *ngIf="item.email" [title]="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
               </div>
             </td>
-            <td class="td-project">
-              <div class="project-cell">
-                <span class="project-title">{{ item.project_name || '—' }}</span>
-                <span class="prop-type">{{ item.branch_name }} ({{ item.branch_code }})</span>
+            <td class="priority-2" data-label="Project & Branch">
+              <div class="project-cell min-w-0">
+                <span class="project-title text-truncate d-block" [title]="item.project_name || '—'">{{ item.project_name || '—' }}</span>
+                <span class="prop-type text-truncate">{{ item.branch_name }} ({{ item.branch_code }})</span>
               </div>
             </td>
-            <td class="td-amount">
-              <span class="amount-val">₹{{ (item.amount || 0) | number }}</span>
-              <small class="d-block text-muted">{{ item.payment_mode || '—' }}</small>
+            <td data-label="Amount">
+              <span class="amount-val fw-700 text-dark">₹{{ (item.amount || 0) | number }}</span>
+              <small class="d-block text-muted text-truncate">{{ item.payment_mode || '—' }}</small>
             </td>
-            <td class="td-paystatus">
+            <td class="priority-2" data-label="Payment Status">
               <span class="badge-pay" [class.cleared]="item.payment_status === 'Cleared'" [class.pending]="item.payment_status !== 'Cleared'">
                 {{ item.payment_status || 'Pending' }}
               </span>
             </td>
-            <td class="td-status">
+            <td data-label="Status">
               <select
                 class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
-                style="min-width: 120px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
+                style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
                 [ngClass]="{
                   'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed',
                   'border-warning text-warning-dark bg-warning-subtle': item.enrollment_status === 'Pending' || !item.enrollment_status,
@@ -358,10 +386,10 @@
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
             </td>
-            <td class="td-date">
+            <td class="priority-3" data-label="Date">
               <small class="date-text">{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
             </td>
-            <td class="td-actions text-end">
+            <td class="td-actions text-end" data-label="Actions">
               <div class="action-btn-group">
                 <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
                   <i class="fas fa-eye"></i> <span>View</span>
@@ -373,6 +401,75 @@
                   <i class="fas fa-file-pdf"></i>
                 </button>
               </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ================= TEAM MEMBER TABLE ================= -->
+      <table *ngIf="activeCategory === 'team_member'" class="table align-middle custom-dash-table stacked-on-mobile mb-0">
+        <thead>
+          <tr>
+            <th class="th-sno" style="width: 5%;">#</th>
+            <th style="width: 22%;">Team Member</th>
+            <th style="width: 18%;">Contact &amp; Email</th>
+            <th class="priority-2" style="width: 16%;">Associate Leader</th>
+            <th style="width: 9%;">Slot</th>
+            <th style="width: 14%;">Sales &amp; Comm.</th>
+            <th style="width: 10%;">Status</th>
+            <th class="priority-3" style="width: 6%;">Joined At</th>
+            <th class="text-end" style="width: 8%;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of pagedItems; let i = index">
+            <td class="td-sno" data-label="#">{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td data-label="Team Member">
+              <div class="applicant-cell min-w-0">
+                <strong class="applicant-name text-truncate d-block" [title]="item.full_name || 'N/A'">{{ item.full_name || 'N/A' }}</strong>
+                <span class="badge-sub text-truncate">{{ item.member_id || item.user_id || 'Pending ID' }}</span>
+              </div>
+            </td>
+            <td data-label="Contact & Email">
+              <div class="contact-cell min-w-0">
+                <span class="contact-phone text-truncate" [title]="item.mobile_no || 'N/A'"><i class="fas fa-phone-alt"></i> {{ item.mobile_no || 'N/A' }}</span>
+                <small class="contact-email text-truncate" *ngIf="item.email" [title]="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
+              </div>
+            </td>
+            <td class="priority-2" data-label="Associate Leader">
+              <div class="sponsor-cell min-w-0">
+                <strong class="text-truncate d-block" [title]="item.associate_name || '—'">{{ item.associate_name || '—' }}</strong>
+                <span class="badge-sub text-truncate" *ngIf="item.associate_member_id">ID: {{ item.associate_member_id }}</span>
+              </div>
+            </td>
+            <td data-label="Slot">
+              <span class="badge bg-primary-subtle text-primary fw-700">Slot #{{ item.slot_number || '—' }}</span>
+            </td>
+            <td data-label="Sales & Comm.">
+              <span class="amount-val fw-700 text-dark">{{ item.total_sq_yard_sold || 0 | number:'1.2-2' }} Gaj</span>
+              <small class="d-block text-emerald fw-600">₹{{ (item.total_commission_earned || 0) | number:'1.0-0' }}</small>
+            </td>
+            <td data-label="Status">
+              <select
+                class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
+                style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
+                [ngClass]="{
+                  'border-success text-success bg-success-subtle': item.status === 'Active',
+                  'border-warning text-warning-dark bg-warning-subtle': item.status === 'Pending' || !item.status,
+                  'border-danger text-danger bg-danger-subtle': item.status === 'Suspended' || item.status === 'Rejected'
+                }"
+                [value]="item.status || 'Active'"
+                (change)="onTeamMemberInlineStatusChange(item, $event)">
+                <option value="Active">&#x2714; Active</option>
+                <option value="Pending">Pending</option>
+                <option value="Suspended">&#x2716; Suspended</option>
+              </select>
+            </td>
+            <td class="priority-3" data-label="Joined At">
+              <small class="date-text">{{ item.joined_at ? (item.joined_at | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
+            </td>
+            <td class="td-actions text-end" data-label="Actions">
+              <span class="badge bg-light text-muted border">Team Member</span>
             </td>
           </tr>
         </tbody>

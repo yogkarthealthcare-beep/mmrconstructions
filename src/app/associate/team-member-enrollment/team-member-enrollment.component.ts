@@ -4,8 +4,25 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import Swal from 'sweetalert2';
-import { MOBILE_PATTERN, EMAIL_PATTERN, AADHAAR_PATTERN, NORTH_INDIAN_STATES, getMaxAdultDobDate, adultAgeValidator, calculateAgeFromDob } from '../../shared/utils/form-helpers';
+import { 
+  MOBILE_PATTERN, 
+  EMAIL_PATTERN, 
+  AADHAAR_PATTERN, 
+  APPROVED_INDIAN_STATES, 
+  getMaxAdultDobDate, 
+  adultAgeValidator, 
+  calculateAgeFromDob,
+  humanNameValidator,
+  normalizeHumanName 
+} from '../../shared/utils/form-helpers';
+
+export interface TeamMemberSlot {
+  slotNumber: number;
+  status: 'empty' | 'pending' | 'approved' | 'rejected' | 'inactive';
+  member: any | null;
+}
 
 interface SignaturePadController {
   clear: () => void;
@@ -16,7 +33,7 @@ interface SignaturePadController {
 @Component({
   selector: 'app-team-member-enrollment',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, AdminPaginationComponent],
   templateUrl: './team-member-enrollment.component.html',
   styleUrls: ['./team-member-enrollment.component.css']
 })
@@ -26,12 +43,12 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
 
   enrollmentForm!: FormGroup;
 
-  statesList = NORTH_INDIAN_STATES;
+  statesList = APPROVED_INDIAN_STATES;
   maxAdultDob = getMaxAdultDobDate();
   calculatedAge = signal<number | ''>('');
 
-  // View state
-  activeTab: 'enroll' | 'list' = 'enroll';
+  // View state: 10 Slots Grid (default), Enrollment Form, or Table List
+  activeTab: 'slots' | 'enroll' | 'list' = 'slots';
   workflowOpen = signal<boolean>(false);
   submitting = signal<boolean>(false);
   loadingPrefill = signal<boolean>(false);
@@ -54,22 +71,87 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   ifscVerified = signal<boolean>(false);
   ifscBankInfo = signal<string>('');
 
-  // Team members list
+  // Team members list & pagination
   teamMembers = signal<any[]>([]);
   totalCount = signal<number>(0);
   searchQuery = signal<string>('');
   statusFilter = signal<string>('all');
   selectedMember = signal<any | null>(null);
 
+  page = signal<number>(1);
+  pageSize = signal<number>(10);
+
+  pagedMembers = computed(() => {
+    const start = (this.page() - 1) * this.pageSize();
+    return this.teamMembers().slice(start, start + this.pageSize());
+  });
+
   // Current logged in associate
   associateId: number = 0;
   associateName: string = '';
+
+  // ── 10 Direct Slots Computed ─────────────────────────
+  slots = computed<TeamMemberSlot[]>(() => {
+    const members = this.teamMembers() || [];
+    const result: TeamMemberSlot[] = [];
+    
+    // Map existing members by slot_number (1..10)
+    const slotMap = new Map<number, any>();
+    const unslotted: any[] = [];
+    
+    members.forEach((m: any) => {
+      const s = Number(m.slot_number);
+      if (s >= 1 && s <= 10) {
+        slotMap.set(s, m);
+      } else {
+        unslotted.push(m);
+      }
+    });
+
+    let unslottedIdx = 0;
+    for (let s = 1; s <= 10; s++) {
+      let member = slotMap.get(s) || null;
+      if (!member && unslottedIdx < unslotted.length) {
+        member = unslotted[unslottedIdx++];
+      }
+
+      let status: 'empty' | 'pending' | 'approved' | 'rejected' | 'inactive' = 'empty';
+      if (member) {
+        const rawStatus = String(member.status || '').toLowerCase();
+        if (rawStatus === 'approved' || rawStatus === 'active') {
+          status = 'approved';
+        } else if (rawStatus === 'rejected') {
+          status = 'rejected';
+        } else if (rawStatus === 'inactive' || rawStatus === 'blocked') {
+          status = 'inactive';
+        } else {
+          status = 'pending';
+        }
+      }
+
+      result.push({
+        slotNumber: s,
+        status,
+        member
+      });
+    }
+
+    return result;
+  });
+
+  occupiedSlotsCount = computed(() => {
+    return this.slots().filter(s => s.status !== 'empty' && s.status !== 'rejected').length;
+  });
+
+  isCapacityFull = computed(() => {
+    return this.occupiedSlotsCount() >= 10;
+  });
 
   // Submit gate computed: Checks declaration checkbox specifically
   canSubmit = computed(() => {
     if (!this.enrollmentForm) return false;
     const declaration = this.enrollmentForm.get('declarationAccepted')?.value;
-    return Boolean(declaration) && !this.submitting();
+    return Boolean(declaration) && !this.submitting() && !this.isCapacityFull();
   });
 
   constructor(
@@ -89,18 +171,12 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     this.loadTeamMembersList();
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initSignaturePads();
-    }, 200);
-  }
-
   initForm(): void {
     this.enrollmentForm = this.fb.group({
       associateId: [{ value: this.associateId || '', disabled: true }, Validators.required],
       associateName: [{ value: this.associateName || '', disabled: true }, Validators.required],
-      fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
-      fatherHusbandName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
+      fullName: ['', [Validators.required, humanNameValidator(), Validators.minLength(2), Validators.maxLength(150)]],
+      fatherHusbandName: ['', [Validators.required, humanNameValidator(), Validators.minLength(2), Validators.maxLength(150)]],
       dateOfBirth: ['', [Validators.required, adultAgeValidator(18)]],
       gender: ['Male', Validators.required],
       aadharNo: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
@@ -109,7 +185,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       emailId: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
       fullAddress: ['', [Validators.required, Validators.minLength(5)]],
 
-      nomineeName: ['', Validators.required],
+      nomineeName: ['', [Validators.required, humanNameValidator()]],
       nomineeRelation: ['', Validators.required],
       nomineeAgeDob: ['', Validators.required],
       nomineeContactNo: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
@@ -157,17 +233,45 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     });
   }
 
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.initSignaturePads();
+    }, 200);
+  }
+
   toggleWorkflow(): void {
     this.workflowOpen.set(!this.workflowOpen());
   }
 
-  setTab(tab: 'enroll' | 'list'): void {
+  setTab(tab: 'slots' | 'enroll' | 'list'): void {
+    if (tab === 'enroll' && this.isCapacityFull()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Maximum Capacity Reached',
+        text: 'You have already enrolled 10 direct Team Members (maximum 10 slots allowed).',
+        confirmButtonColor: '#0b5345'
+      });
+      return;
+    }
     this.activeTab = tab;
-    if (tab === 'list') {
+    if (tab === 'list' || tab === 'slots') {
       this.loadTeamMembersList();
-    } else {
+    } else if (tab === 'enroll') {
       setTimeout(() => this.initSignaturePads(), 150);
     }
+  }
+
+  enrollIntoSlot(slotNum?: number): void {
+    if (this.isCapacityFull()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'All 10 Slots Occupied',
+        text: 'This Associate has reached the maximum capacity of 10 direct Team Members. Slot 11 is not permitted.',
+        confirmButtonColor: '#0b5345'
+      });
+      return;
+    }
+    this.setTab('enroll');
   }
 
   onAadharInput(event: any): void {
@@ -400,9 +504,9 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     // Build FormData payload
     const formData = new FormData();
     formData.append('associateId', String(this.associateId));
-    formData.append('associateName', this.associateName);
-    formData.append('fullName', raw.fullName);
-    formData.append('fatherHusbandName', raw.fatherHusbandName);
+    formData.append('associateName', normalizeHumanName(this.associateName));
+    formData.append('fullName', normalizeHumanName(raw.fullName));
+    formData.append('fatherHusbandName', normalizeHumanName(raw.fatherHusbandName));
     formData.append('dateOfBirth', raw.dateOfBirth);
     formData.append('gender', raw.gender);
     formData.append('aadharNo', raw.aadharNo);
@@ -411,7 +515,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     if (raw.emailId) formData.append('emailId', raw.emailId);
     formData.append('fullAddress', raw.fullAddress);
 
-    if (raw.nomineeName) formData.append('nomineeName', raw.nomineeName);
+    if (raw.nomineeName) formData.append('nomineeName', normalizeHumanName(raw.nomineeName));
     if (raw.nomineeRelation) formData.append('nomineeRelation', raw.nomineeRelation);
     if (raw.nomineeAgeDob) formData.append('nomineeAgeDob', raw.nomineeAgeDob);
     if (raw.nomineeContactNo) formData.append('nomineeContactNo', raw.nomineeContactNo);
@@ -513,11 +617,13 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   onSearchChange(): void {
+    this.page.set(1);
     this.loadTeamMembersList();
   }
 
   onFilterStatus(status: string): void {
     this.statusFilter.set(status);
+    this.page.set(1);
     this.loadTeamMembersList();
   }
 

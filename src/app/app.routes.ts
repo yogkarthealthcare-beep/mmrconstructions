@@ -224,6 +224,15 @@ export const routes: Routes = [
     loadChildren: () => import('./user/user.routes').then(m => m.USER_ROUTES)
   },
 
+  // Feature Tree: Team Member (Lazy Loaded Layout & Routes)
+  {
+    path: 'team-member',
+    loadComponent: () => import('./user/layout/layout.component').then(m => m.UserLayoutComponent),
+    canActivate: [userGuard],
+    canActivateChild: [enrollmentGuard],
+    loadChildren: () => import('./user/user.routes').then(m => m.USER_ROUTES)
+  },
+
   // Feature Tree: Investor (Lazy Loaded Layout & Routes)
   {
     path: 'investor',

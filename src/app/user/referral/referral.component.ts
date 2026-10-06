@@ -88,9 +88,9 @@ export class ReferralComponent implements OnInit {
       user_id: rawRoot.user_id || rootUser.user_id || 0,
       member_id: rawRoot.member_id || this.invitationCode || 'MMR001',
       full_name: rawRoot.full_name || rootUser.full_name || 'My Profile',
-      user_type: rawRoot.user_type || rootUser.user_type || 'Associate',
+      user_type: rawRoot.user_type || rootUser.user_type || 'Associate Leader',
       status: rawRoot.status || rawRoot.account_status || rootUser.account_status || 'Active',
-      rank: rawRoot.rank || 'Team Leader',
+      rank: rawRoot.rank || 'Associate Leader',
       total_gaj_sold: Number(rawRoot.total_gaj_sold || 0),
       commission_earned: Number(rawRoot.commission_earned || 0),
       level: 0,
@@ -99,21 +99,26 @@ export class ReferralComponent implements OnInit {
     };
 
     if (Array.isArray(rawRoot.children)) {
-      rootNode.children = rawRoot.children.map((child: any) => this.mapChildNode(child, 1));
+      rootNode.children = rawRoot.children
+        .filter((child: any) => child.user_type !== 'Customer')
+        .map((child: any) => this.mapChildNode(child, 1));
     }
 
     return rootNode;
   }
 
   private mapChildNode(rawNode: any, depth: number): TeamNode {
+    const isTeamMember = rawNode.user_type === 'Team Member' || Boolean(rawNode.slot_number);
     const node: TeamNode = {
       user_id: rawNode.user_id,
-      member_id: rawNode.member_id || `MMR${rawNode.user_id}`,
-      full_name: rawNode.full_name || 'Associate Member',
-      user_type: rawNode.user_type || 'Associate',
+      member_id: rawNode.member_id || rawNode.team_member_uid || `MMR${rawNode.user_id}`,
+      full_name: rawNode.full_name || 'Team Member',
+      user_type: isTeamMember ? 'Team Member' : (rawNode.user_type || 'Associate'),
       sponsor_user_id: rawNode.sponsor_user_id,
       status: rawNode.status || rawNode.account_status || 'Active',
-      rank: rawNode.rank || (depth === 1 ? 'Direct Member' : 'Team Member'),
+      rank: rawNode.slot_number
+        ? `Slot #${rawNode.slot_number} Team Member`
+        : (rawNode.rank || (isTeamMember ? 'Direct Team Member' : (depth === 1 ? 'Direct Member' : 'Team Member'))),
       total_gaj_sold: Number(rawNode.total_gaj_sold || 0),
       commission_earned: Number(rawNode.commission_earned || 0),
       mobile_no: rawNode.mobile_no,
@@ -123,7 +128,9 @@ export class ReferralComponent implements OnInit {
     };
 
     if (Array.isArray(rawNode.children)) {
-      node.children = rawNode.children.map((c: any) => this.mapChildNode(c, depth + 1));
+      node.children = rawNode.children
+        .filter((c: any) => c.user_type !== 'Customer')
+        .map((c: any) => this.mapChildNode(c, depth + 1));
     }
 
     return node;
