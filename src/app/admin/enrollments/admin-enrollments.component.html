@@ -33,7 +33,7 @@
             <span class="val">{{ stats.customer.total }}</span>
           </div>
           <div class="stat-pill completed">
-            <span class="label">Completed</span>
+            <span class="label">Approved</span>
             <span class="val">{{ stats.customer.completed }}</span>
           </div>
           <div class="stat-pill pending">
@@ -61,7 +61,7 @@
             <span class="val">{{ stats.associate.total }}</span>
           </div>
           <div class="stat-pill completed">
-            <span class="label">Completed</span>
+            <span class="label">Approved</span>
             <span class="val">{{ stats.associate.completed }}</span>
           </div>
           <div class="stat-pill pending">
@@ -89,7 +89,7 @@
             <span class="val">{{ stats.investor.total }}</span>
           </div>
           <div class="stat-pill completed">
-            <span class="label">Completed</span>
+            <span class="label">Approved</span>
             <span class="val">{{ stats.investor.completed }}</span>
           </div>
           <div class="stat-pill pending">
@@ -150,7 +150,7 @@
     <div class="filter-group">
       <select [(ngModel)]="statusFilter" (change)="onSearch()">
         <option value="">All Statuses</option>
-        <option value="Completed">Completed Only</option>
+        <option value="Completed">Approved Only</option>
         <option value="Pending">Pending Only</option>
       </select>
 
@@ -229,7 +229,7 @@
                 [value]="item.enrollment_status || (item.application_status === 'Approved' ? 'Completed' : (item.application_status === 'Rejected' ? 'Rejected' : 'Pending'))"
                 (change)="onCustomerInlineStatusChange(item, $event)">
                 <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.application_status !== 'Approved' && item.application_status !== 'Rejected')">Pending</option>
-                <option value="Completed">&#x2714; Approved (Completed)</option>
+                <option value="Completed">&#x2714; Approved</option>
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
             </td>
@@ -301,7 +301,7 @@
                 [value]="item.enrollment_status || (item.status === 'approved' ? 'Completed' : (item.status === 'rejected' ? 'Rejected' : 'Pending'))"
                 (change)="onAssociateInlineStatusChange(item, $event)">
                 <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.status !== 'approved' && item.status !== 'rejected')">Pending</option>
-                <option value="Completed">&#x2714; Approved (Completed)</option>
+                <option value="Completed">&#x2714; Approved</option>
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
             </td>
@@ -382,7 +382,7 @@
                 [value]="item.enrollment_status || (item.app_status === 'approved' ? 'Completed' : (item.app_status === 'rejected' ? 'Rejected' : 'Pending'))"
                 (change)="onInvestorInlineStatusChange(item, $event)">
                 <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.app_status !== 'approved' && item.app_status !== 'rejected')">Pending</option>
-                <option value="Completed">&#x2714; Approved (Completed)</option>
+                <option value="Completed">&#x2714; Approved</option>
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
             </td>
@@ -1043,7 +1043,7 @@
             <label>Enrollment Status</label>
             <select [(ngModel)]="editFormData.enrollment_status" [disabled]="!isEditMode">
               <option value="Pending" *ngIf="editFormData.enrollment_status === 'Pending' || !editFormData.enrollment_status">Pending</option>
-              <option value="Completed">&#x2714; Approved (Completed)</option>
+              <option value="Completed">&#x2714; Approved</option>
               <option value="Rejected">&#x2716; Rejected</option>
             </select>
           </div>
