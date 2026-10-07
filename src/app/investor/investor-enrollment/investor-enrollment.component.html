@@ -118,15 +118,20 @@
               (input)="onDobInput($event)"
               style="padding-right: 36px;"
             />
-            <label style="position: absolute; right: 10px; cursor: pointer; margin: 0; color: #64748b;" title="Choose date">
-              <i class="fas fa-calendar-alt"></i>
-              <input
-                type="date"
-                [max]="maxAdultDob"
-                style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: auto;"
-                (change)="onDatepickerSelect($event)"
-              />
-            </label>
+            <input
+              #investorDobPicker
+              type="date"
+              [max]="maxAdultDob"
+              style="position: absolute; right: 6px; width: 28px; height: 28px; opacity: 0; cursor: pointer; z-index: 2;"
+              (change)="onDatepickerSelect($event)"
+              title="Choose date from calendar"
+            />
+            <i 
+              class="fas fa-calendar-alt" 
+              (click)="openDatePicker(investorDobPicker)"
+              style="position: absolute; right: 10px; color: #64748b; cursor: pointer; font-size: 16px; z-index: 1;"
+              title="Choose date"
+            ></i>
           </div>
           <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('dob')?.errors?.['underAge']">Applicant must be at least 18 years old / आवेदक की आयु कम से कम 18 वर्ष होनी चाहिए</span>
         </div>

@@ -149,8 +149,8 @@
           <label>Date of Birth (DD/MM/YYYY) <span class="text-danger">*</span></label>
           <div style="position: relative; display: flex; align-items: center;">
             <input type="text" formControlName="dob" placeholder="DD/MM/YYYY" maxlength="10" (input)="onDobInput($event, 'dob')" style="padding-right: 36px;">
-            <input type="date" [max]="maxAdultDob" (change)="onDatepickerSelect($event, 'dob')" style="position: absolute; right: 6px; width: 26px; height: 26px; opacity: 0; cursor: pointer; z-index: 2;" title="Choose date from calendar">
-            <i class="fas fa-calendar-alt" style="position: absolute; right: 10px; color: #64748b; pointer-events: none; font-size: 16px;"></i>
+            <input #customerDobPicker type="date" [max]="maxAdultDob" (change)="onDatepickerSelect($event, 'dob')" style="position: absolute; right: 6px; width: 28px; height: 28px; opacity: 0; cursor: pointer; z-index: 2;" title="Choose date from calendar">
+            <i class="fas fa-calendar-alt" (click)="openDatePicker(customerDobPicker)" style="position: absolute; right: 10px; color: #64748b; cursor: pointer; font-size: 16px; z-index: 1;" title="Choose date from calendar"></i>
           </div>
           <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('dob')?.touched && enrollmentForm.get('dob')?.errors?.['underAge']">
             Applicant must be at least 18 years old / आवेदक की आयु कम से कम 18 वर्ष होनी चाहिए
@@ -260,8 +260,8 @@
           <label>Date of Birth (DD/MM/YYYY)</label>
           <div style="position: relative; display: flex; align-items: center;">
             <input type="text" formControlName="coDob" placeholder="DD/MM/YYYY" maxlength="10" (input)="onDobInput($event, 'coDob')" style="padding-right: 36px;">
-            <input type="date" [max]="maxAdultDob" (change)="onDatepickerSelect($event, 'coDob')" style="position: absolute; right: 6px; width: 26px; height: 26px; opacity: 0; cursor: pointer; z-index: 2;" title="Choose date from calendar">
-            <i class="fas fa-calendar-alt" style="position: absolute; right: 10px; color: #64748b; pointer-events: none; font-size: 16px;"></i>
+            <input #customerCoDobPicker type="date" [max]="maxAdultDob" (change)="onDatepickerSelect($event, 'coDob')" style="position: absolute; right: 6px; width: 28px; height: 28px; opacity: 0; cursor: pointer; z-index: 2;" title="Choose date from calendar">
+            <i class="fas fa-calendar-alt" (click)="openDatePicker(customerCoDobPicker)" style="position: absolute; right: 10px; color: #64748b; cursor: pointer; font-size: 16px; z-index: 1;" title="Choose date from calendar"></i>
           </div>
           <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('coDob')?.touched && enrollmentForm.get('coDob')?.errors?.['underAge']">Co-Applicant must be at least 18 years old</span>
         </div>

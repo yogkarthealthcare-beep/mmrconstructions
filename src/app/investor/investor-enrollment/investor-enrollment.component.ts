@@ -205,6 +205,18 @@ export class InvestorEnrollmentComponent implements OnInit {
     }
   }
 
+  openDatePicker(picker: HTMLInputElement) {
+    if (!picker) return;
+    if (typeof picker.showPicker === 'function') {
+      try {
+        picker.showPicker();
+        return;
+      } catch (e) {}
+    }
+    picker.focus();
+    picker.click();
+  }
+
   onSameAsPermanentChange(event: any) {
     const isChecked = event.target.checked;
     if (isChecked) {

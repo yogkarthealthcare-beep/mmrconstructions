@@ -719,6 +719,18 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  openDatePicker(picker: HTMLInputElement) {
+    if (!picker) return;
+    if (typeof picker.showPicker === 'function') {
+      try {
+        picker.showPicker();
+        return;
+      } catch (e) {}
+    }
+    picker.focus();
+    picker.click();
+  }
+
   onEdit() {
     if (this.isFinalSubmitted) {
       Swal.fire({

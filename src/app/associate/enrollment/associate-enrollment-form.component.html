@@ -112,8 +112,8 @@
               </label>
               <div style="position: relative; display: flex; align-items: center;">
                 <input type="text" formControlName="dob" placeholder="DD/MM/YYYY" maxlength="10" (input)="onDobInput($event, 'personalDetails', 'dob')" style="padding-right: 36px;">
-                <input type="date" [max]="maxAdultDob" (change)="onDatepickerSelect($event, 'personalDetails', 'dob')" style="position: absolute; right: 6px; width: 26px; height: 26px; opacity: 0; cursor: pointer; z-index: 2;" title="Choose date from calendar">
-                <i class="fas fa-calendar-alt" style="position: absolute; right: 10px; color: #64748b; pointer-events: none; font-size: 16px;"></i>
+                <input #applicantDatePicker type="date" [max]="maxAdultDob" (change)="onDatepickerSelect($event, 'personalDetails', 'dob')" style="position: absolute; right: 6px; width: 28px; height: 28px; opacity: 0; cursor: pointer; z-index: 2;" title="Choose date from calendar">
+                <i class="fas fa-calendar-alt" (click)="openDatePicker(applicantDatePicker)" style="position: absolute; right: 10px; color: #64748b; cursor: pointer; font-size: 16px; z-index: 1;" title="Choose date from calendar"></i>
               </div>
               <div *ngIf="personal.get('dob')?.touched" class="error-text">
                 <span *ngIf="personal.get('dob')?.errors?.['required']">Date of Birth is required.</span>
@@ -423,15 +423,20 @@
                     (input)="onDobInput($event, 'nomineeDetails', 'nomineeDob')"
                     style="padding-right: 36px;"
                   />
-                  <label style="position: absolute; right: 10px; cursor: pointer; margin: 0; color: #64748b;" title="Choose date">
-                    <i class="fas fa-calendar-alt"></i>
-                    <input
-                      type="date"
-                      [max]="todayStr"
-                      style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: auto;"
-                      (change)="onDatepickerSelect($event, 'nomineeDetails', 'nomineeDob')"
-                    />
-                  </label>
+                  <input
+                    #nomineeDatePicker
+                    type="date"
+                    [max]="todayStr"
+                    (change)="onDatepickerSelect($event, 'nomineeDetails', 'nomineeDob')"
+                    style="position: absolute; right: 6px; width: 28px; height: 28px; opacity: 0; cursor: pointer; z-index: 2;"
+                    title="Choose date from calendar"
+                  />
+                  <i 
+                    class="fas fa-calendar-alt" 
+                    (click)="openDatePicker(nomineeDatePicker)"
+                    style="position: absolute; right: 10px; color: #64748b; cursor: pointer; font-size: 16px; z-index: 1;"
+                    title="Choose date from calendar"
+                  ></i>
                 </div>
               </div>
               <div class="field">
