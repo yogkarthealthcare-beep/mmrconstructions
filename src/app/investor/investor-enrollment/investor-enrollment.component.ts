@@ -573,6 +573,7 @@ export class InvestorEnrollmentComponent implements OnInit {
       return;
     }
     this.isEditing = true;
+    this.isSubmitted = false;
     this.enrollmentForm.enable();
     this.enrollmentForm.get('formNo')?.disable();
     this.enrollmentForm.get('formDate')?.disable();

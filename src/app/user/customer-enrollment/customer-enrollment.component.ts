@@ -471,6 +471,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       return;
     }
     this.isEditing = true;
+    this.isSubmitted = false;
     this.enrollmentForm.enable();
     this.enrollmentForm.get('appStatus')?.disable();
     this.enrollmentForm.get('verifiedBy')?.disable();
