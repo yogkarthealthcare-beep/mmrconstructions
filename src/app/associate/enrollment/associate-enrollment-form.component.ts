@@ -63,6 +63,12 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   // Selected files from the custom photo uploader component
   applicantPhotoFile: File | null = null;
   nomineePhotoFile: File | null = null;
+  sponsorSignatureFile: File | null = null;
+  sponsorSignaturePreview: string | null = null;
+  existingSponsorSignature = '';
+  applicantSignatureFile: File | null = null;
+  applicantSignaturePreview: string | null = null;
+  existingApplicantSignature = '';
 
   // NgRx selectors as observables
   loading$ = this.store.select(selectLoading);
@@ -174,6 +180,14 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     this.submissionAssociateId = d.associate_id || d.associateId || d.id || null;
     this.existingApplicantPhoto = d.applicant_photo_url || d.applicant_photo_path || '';
     this.existingNomineePhoto = d.nominee_photo_url || d.nominee_photo_path || '';
+    this.existingApplicantSignature = d.signature_url || d.signature_path || d.applicant_signature_url || d.applicant_signature_path || '';
+    if (this.existingApplicantSignature) {
+      this.applicantSignaturePreview = this.existingApplicantSignature;
+    }
+    this.existingSponsorSignature = d.sponsor_signature_url || d.sponsor_signature_path || d.sponsor_signature || '';
+    if (this.existingSponsorSignature) {
+      this.sponsorSignaturePreview = this.existingSponsorSignature;
+    }
     this.enrollmentStatus = (d.status || d.app_status || 'pending').toLowerCase();
 
     const findMatched = (list: string[], val: any, fallback: string = ''): string => {
@@ -443,6 +457,42 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     this.nomineePhotoFile = file;
   }
 
+  onApplicantSignatureSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.applicantSignatureFile = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.applicantSignaturePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  clearApplicantSignature() {
+    this.applicantSignatureFile = null;
+    this.applicantSignaturePreview = null;
+    this.existingApplicantSignature = '';
+  }
+
+  onSponsorSignatureSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.sponsorSignatureFile = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.sponsorSignaturePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  clearSponsorSignature() {
+    this.sponsorSignatureFile = null;
+    this.sponsorSignaturePreview = null;
+    this.existingSponsorSignature = '';
+  }
+
   private getFirstInvalidControlName(group: FormGroup): { name: string; label: string } | null {
     const fieldLabels: Record<string, string> = {
       fullName: 'Full Name',
@@ -708,6 +758,13 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     if (this.nomineePhotoFile) {
       formData.append('nomineePhoto', this.nomineePhotoFile);
     }
+    if (this.applicantSignatureFile) {
+      formData.append('applicantSignature', this.applicantSignatureFile);
+      formData.append('signature', this.applicantSignatureFile);
+    }
+    if (this.sponsorSignatureFile) {
+      formData.append('sponsorSignature', this.sponsorSignatureFile);
+    }
 
     formData.append('termsAccepted', 'true');
     formData.append('isFinalSubmitted', 'true');
@@ -792,6 +849,13 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     if (this.nomineePhotoFile) {
       formData.append('nomineePhoto', this.nomineePhotoFile);
     }
+    if (this.applicantSignatureFile) {
+      formData.append('applicantSignature', this.applicantSignatureFile);
+      formData.append('signature', this.applicantSignatureFile);
+    }
+    if (this.sponsorSignatureFile) {
+      formData.append('sponsorSignature', this.sponsorSignatureFile);
+    }
 
     // Force termsAccepted boolean flag
     formData.append('termsAccepted', 'true');
@@ -820,6 +884,12 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     });
     this.applicantPhotoFile = null;
     this.nomineePhotoFile = null;
+    this.applicantSignatureFile = null;
+    this.applicantSignaturePreview = null;
+    this.existingApplicantSignature = '';
+    this.sponsorSignatureFile = null;
+    this.sponsorSignaturePreview = null;
+    this.existingSponsorSignature = '';
     this.store.dispatch(resetFormState());
   }
 

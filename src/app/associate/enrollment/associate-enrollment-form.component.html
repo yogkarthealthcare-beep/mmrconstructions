@@ -525,9 +525,37 @@
               Please enter a valid 10-digit mobile number.
             </div>
           </div>
-          <div class="field">
-            <label>Sponsor's/Introducer's Signature</label>
-            <input type="text" placeholder="(signed copy attached)" disabled>
+          <div class="field full" style="grid-column: 1 / -1; margin-top: 8px;">
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <span>Sponsor's/Introducer's Signature</span>
+              <span style="font-size: 11px; color: #64748b; font-weight: normal;">(Upload Image / Photo)</span>
+            </label>
+            <div class="signature-upload-wrapper">
+              <div class="signature-box" [class.has-preview]="sponsorSignaturePreview" (click)="!isFinalSubmitted && sponsorSigInput.click()">
+                <ng-container *ngIf="sponsorSignaturePreview; else sponsorSignPlaceholder">
+                  <img [src]="sponsorSignaturePreview" alt="Sponsor Signature Preview">
+                </ng-container>
+                <ng-template #sponsorSignPlaceholder>
+                  <div class="sig-placeholder-content">
+                    <i class="fas fa-file-signature"></i>
+                    <span>Click to Upload Sponsor's Signature (JPG, PNG)</span>
+                  </div>
+                </ng-template>
+                <input 
+                  type="file" 
+                  #sponsorSigInput 
+                  (change)="onSponsorSignatureSelected($event)" 
+                  accept="image/*" 
+                  style="display: none;"
+                  [disabled]="isFinalSubmitted"
+                >
+              </div>
+              <div class="sig-controls" *ngIf="sponsorSignaturePreview && !isFinalSubmitted">
+                <button type="button" class="sig-clear-btn" (click)="clearSponsorSignature()">
+                  <i class="fas fa-times"></i> Remove Sponsor Signature
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -632,8 +660,36 @@
         <h2><span class="num">7</span>Applicant Signature</h2>
         <div class="sign-grid">
           <div class="field">
-            <label>Signature</label>
-            <input type="text" placeholder="(signed copy to be attached)" disabled>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <span>Signature</span>
+              <span style="font-size: 11px; color: #64748b; font-weight: normal;">(Upload Signature Image / Photo)</span>
+            </label>
+            <div class="signature-upload-wrapper">
+              <div class="signature-box" [class.has-preview]="applicantSignaturePreview" (click)="!isFinalSubmitted && applicantSigInput.click()">
+                <ng-container *ngIf="applicantSignaturePreview; else applicantSignPlaceholder">
+                  <img [src]="applicantSignaturePreview" alt="Applicant Signature Preview">
+                </ng-container>
+                <ng-template #applicantSignPlaceholder>
+                  <div class="sig-placeholder-content">
+                    <i class="fas fa-signature"></i>
+                    <span>Click to Upload Signature (JPG, PNG)</span>
+                  </div>
+                </ng-template>
+                <input 
+                  type="file" 
+                  #applicantSigInput 
+                  (change)="onApplicantSignatureSelected($event)" 
+                  accept="image/*" 
+                  style="display: none;"
+                  [disabled]="isFinalSubmitted"
+                >
+              </div>
+              <div class="sig-controls" *ngIf="applicantSignaturePreview && !isFinalSubmitted">
+                <button type="button" class="sig-clear-btn" (click)="clearApplicantSignature()">
+                  <i class="fas fa-times"></i> Remove Signature
+                </button>
+              </div>
+            </div>
           </div>
           <div class="field">
             <label>Date (Auto-filled) <span class="req">*</span></label>
