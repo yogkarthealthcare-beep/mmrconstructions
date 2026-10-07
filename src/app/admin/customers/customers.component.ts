@@ -483,7 +483,7 @@ export class CustomersComponent implements OnInit {
   deleteCustomer(customer: any) {
     Swal.fire({
       title: 'Are you sure?',
-      text: `You are about to delete customer ${customer.full_name} and ALL their associated data. This action cannot be undone!`,
+      text: `You are about to permanently delete customer ${customer.full_name} and their profile-specific registration, enrollment, KYC, bank, nominee details and uploaded documents. This action cannot be undone!`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',

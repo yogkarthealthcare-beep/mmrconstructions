@@ -275,7 +275,7 @@ export class AdminInvestorEnrollmentsListComponent implements OnInit {
 
     Swal.fire({
       title: 'Are you sure?',
-      text: `You are about to delete investor ${investor.full_name || 'this investor'} and ALL their associated data. This action cannot be undone!`,
+      text: `You are about to permanently delete investor ${investor.full_name || 'this investor'} and their profile-specific registration, enrollment, KYC, deposits, transactions and uploaded documents. This action cannot be undone!`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',

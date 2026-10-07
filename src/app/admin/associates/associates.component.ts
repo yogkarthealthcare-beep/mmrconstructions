@@ -541,7 +541,7 @@ export class AssociatesComponent implements OnInit {
   deleteAssociate(associate: any) {
     Swal.fire({
       title: 'Are you sure?',
-      text: `You are about to delete associate ${associate.full_name} and ALL their associated data (Network, Commission, Sales, Bookings). This action cannot be undone!`,
+      text: `You are about to permanently delete associate ${associate.full_name} and their profile-specific registration, enrollment, KYC, bank, nominee details and uploaded documents. This action cannot be undone!`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
