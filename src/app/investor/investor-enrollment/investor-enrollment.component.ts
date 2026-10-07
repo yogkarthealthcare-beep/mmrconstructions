@@ -606,6 +606,46 @@ export class InvestorEnrollmentComponent implements OnInit {
   }
 
   prefillProfile() {
+    const sessionUser = this.auth.getInvestorUser() || this.auth.getUser() || {};
+    let regUser: any = {};
+    try {
+      const regStr = sessionStorage.getItem('mmr_last_registered_user') || localStorage.getItem('mmr_last_registered_user');
+      if (regStr) regUser = JSON.parse(regStr);
+    } catch {}
+
+    const nameToSplit = sessionUser.full_name || sessionUser.name || regUser.full_name || '';
+    let initialFirst = '';
+    let initialMiddle = '';
+    let initialSurname = '';
+    if (nameToSplit) {
+      const parts = nameToSplit.trim().split(/\s+/);
+      if (parts.length === 1) {
+        initialFirst = parts[0];
+        initialSurname = parts[0];
+      } else if (parts.length === 2) {
+        initialFirst = parts[0];
+        initialSurname = parts[1];
+      } else if (parts.length >= 3) {
+        initialFirst = parts[0];
+        initialMiddle = parts.slice(1, -1).join(' ');
+        initialSurname = parts[parts.length - 1];
+      }
+    }
+    const initialMobile = sessionUser.mobile_no || sessionUser.mobile_number || sessionUser.mobile || sessionUser.phone || regUser.mobile_no || '';
+    const initialEmail = sessionUser.email || regUser.email || '';
+
+    if (nameToSplit || initialMobile || initialEmail) {
+      this.enrollmentForm.patchValue({
+        invFirstName: this.enrollmentForm.get('invFirstName')?.value || initialFirst,
+        invMiddleName: this.enrollmentForm.get('invMiddleName')?.value || initialMiddle,
+        invSurname: this.enrollmentForm.get('invSurname')?.value || initialSurname,
+        mobile: this.enrollmentForm.get('mobile')?.value || initialMobile,
+        email: this.enrollmentForm.get('email')?.value || initialEmail,
+        declSignatureName: this.enrollmentForm.get('declSignatureName')?.value || nameToSplit,
+        firstApplicantName: this.enrollmentForm.get('firstApplicantName')?.value || nameToSplit
+      });
+    }
+
     this.api.getProfile().subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
@@ -614,10 +654,12 @@ export class InvestorEnrollmentComponent implements OnInit {
           let first = '';
           let middle = '';
           let surname = '';
-          if (u.full_name) {
-            const parts = u.full_name.trim().split(/\s+/);
+          const fullNameStr = u.full_name || nameToSplit;
+          if (fullNameStr) {
+            const parts = fullNameStr.trim().split(/\s+/);
             if (parts.length === 1) {
               first = parts[0];
+              surname = parts[0];
             } else if (parts.length === 2) {
               first = parts[0];
               surname = parts[1];
@@ -629,12 +671,12 @@ export class InvestorEnrollmentComponent implements OnInit {
           }
 
           this.enrollmentForm.patchValue({
-            invFirstName: first,
-            invMiddleName: middle,
-            invSurname: surname,
-            mobile: u.mobile_no || '',
+            invFirstName: first || this.enrollmentForm.get('invFirstName')?.value || '',
+            invMiddleName: middle || this.enrollmentForm.get('invMiddleName')?.value || '',
+            invSurname: surname || this.enrollmentForm.get('invSurname')?.value || '',
+            mobile: u.mobile_no || u.mobile_number || sessionUser.mobile_no || regUser.mobile_no || this.enrollmentForm.get('mobile')?.value || '',
             altTel: u.alternate_mobile || '',
-            email: u.email || '',
+            email: u.email || sessionUser.email || regUser.email || this.enrollmentForm.get('email')?.value || '',
             dob: u.date_of_birth ? formatDateToDDMMYYYY(u.date_of_birth) : '',
             gender: u.gender || '',
             pan: u.pan_number || '',
@@ -644,8 +686,8 @@ export class InvestorEnrollmentComponent implements OnInit {
             state: u.state || 'Uttar Pradesh',
             corrState: u.state || 'Uttar Pradesh',
             pinCode: u.pincode || u.pin_code || '',
-            declSignatureName: u.full_name || '',
-            firstApplicantName: u.full_name || ''
+            declSignatureName: u.full_name || nameToSplit || this.enrollmentForm.get('declSignatureName')?.value || '',
+            firstApplicantName: u.full_name || nameToSplit || this.enrollmentForm.get('firstApplicantName')?.value || ''
           });
 
           // Trigger lookup if IFSC code is available
@@ -654,7 +696,8 @@ export class InvestorEnrollmentComponent implements OnInit {
             this.fetchIfscDetails(u.ifsc_code);
           }
         }
-      }
+      },
+      error: () => {}
     });
   }
 

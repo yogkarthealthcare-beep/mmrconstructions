@@ -204,6 +204,29 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   fetchPrefillData(): void {
+    let lastReg: any = null;
+    try {
+      const saved = sessionStorage.getItem('mmr_last_registered_user') || localStorage.getItem('mmr_last_registered_user');
+      if (saved) lastReg = JSON.parse(saved);
+    } catch {}
+
+    const sessionUser = this.auth.getUser();
+
+    // Default pre-fill candidate details from registration or session if empty
+    const defaultName = lastReg?.full_name || sessionUser?.full_name || '';
+    const defaultMobile = lastReg?.mobile_no || sessionUser?.mobile_no || sessionUser?.phone || sessionUser?.contact_no || '';
+    const defaultEmail = lastReg?.email || sessionUser?.email || '';
+
+    if (!this.enrollmentForm.get('fullName')?.value && defaultName) {
+      this.enrollmentForm.patchValue({ fullName: defaultName });
+    }
+    if (!this.enrollmentForm.get('mobileNo')?.value && defaultMobile) {
+      this.enrollmentForm.patchValue({ mobileNo: defaultMobile });
+    }
+    if (!this.enrollmentForm.get('emailId')?.value && defaultEmail) {
+      this.enrollmentForm.patchValue({ emailId: defaultEmail });
+    }
+
     if (!this.associateId) return;
     this.loadingPrefill.set(true);
 
@@ -217,8 +240,8 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
           this.enrollmentForm.patchValue({
             associateId: d.associateId || this.associateId,
             associateName: this.associateName,
-            mobileNo: this.enrollmentForm.get('mobileNo')?.value || d.mobileNo || '',
-            emailId: this.enrollmentForm.get('emailId')?.value || d.emailId || '',
+            mobileNo: this.enrollmentForm.get('mobileNo')?.value || d.mobileNo || defaultMobile || '',
+            emailId: this.enrollmentForm.get('emailId')?.value || d.emailId || defaultEmail || '',
             bankName: this.enrollmentForm.get('bankName')?.value || d.bankName || '',
             branchName: this.enrollmentForm.get('branchName')?.value || d.branchName || '',
             accountNo: this.enrollmentForm.get('accountNo')?.value || d.accountNo || '',

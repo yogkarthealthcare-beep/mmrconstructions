@@ -399,6 +399,17 @@ export class SignupComponent implements OnInit {
       sponsor_invite_code: this.getEffectiveSponsorCode(),
     };
 
+    try {
+      const regDetails = {
+        full_name: payload.full_name,
+        email: payload.email,
+        mobile_no: payload.mobile_no,
+        user_type: this.userType
+      };
+      sessionStorage.setItem('mmr_last_registered_user', JSON.stringify(regDetails));
+      localStorage.setItem('mmr_last_registered_user', JSON.stringify(regDetails));
+    } catch {}
+
     this.api.post('/api/auth/register-quick', payload).subscribe({
       next: (res: any) => {
         this.loading = false;

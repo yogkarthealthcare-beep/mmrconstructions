@@ -728,6 +728,26 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   prefillProfile() {
+    const sessionUser = this.auth.getUser() || {};
+    let regUser: any = {};
+    try {
+      const regStr = sessionStorage.getItem('mmr_last_registered_user') || localStorage.getItem('mmr_last_registered_user');
+      if (regStr) regUser = JSON.parse(regStr);
+    } catch {}
+
+    const initialName = sessionUser.full_name || sessionUser.name || regUser.full_name || '';
+    const initialMobile = sessionUser.mobile_no || sessionUser.mobile || sessionUser.phone || regUser.mobile_no || '';
+    const initialEmail = sessionUser.email || regUser.email || '';
+
+    if (initialName || initialMobile || initialEmail) {
+      this.enrollmentForm.patchValue({
+        applicantName: this.enrollmentForm.get('applicantName')?.value || initialName,
+        mobile1: this.enrollmentForm.get('mobile1')?.value || initialMobile,
+        email1: this.enrollmentForm.get('email1')?.value || initialEmail,
+        accHolderName: this.enrollmentForm.get('accHolderName')?.value || initialName
+      });
+    }
+
     this.api.getProfile().subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
@@ -735,15 +755,15 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
           const pin = u.pincode || u.pin_code || '';
           const state = u.state || 'Uttar Pradesh';
           this.enrollmentForm.patchValue({
-            applicantName: u.full_name || '',
+            applicantName: u.full_name || sessionUser.full_name || sessionUser.name || regUser.full_name || this.enrollmentForm.get('applicantName')?.value || '',
             dob: formatDateToDDMMYYYY(u.date_of_birth),
             gender: u.gender || '',
             fatherName: u.father_name || '',
             motherName: u.mother_name || '',
             spouseName: u.spouse_name || '',
-            mobile1: u.mobile_no || '',
+            mobile1: u.mobile_no || sessionUser.mobile_no || regUser.mobile_no || this.enrollmentForm.get('mobile1')?.value || '',
             mobile2: u.alternate_mobile || '',
-            email1: u.email || '',
+            email1: u.email || sessionUser.email || regUser.email || this.enrollmentForm.get('email1')?.value || '',
             pan: u.pan_number || '',
             aadhar: u.aadhar_number || '',
             presentAddress: u.address || '',
@@ -756,7 +776,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
             permanentState: state,
             permanentPinCode: pin,
             permanentStatePin: pin ? `${state} - ${pin}` : state,
-            accHolderName: u.account_holder_name || u.full_name || '',
+            accHolderName: u.account_holder_name || u.full_name || sessionUser.full_name || regUser.full_name || this.enrollmentForm.get('accHolderName')?.value || '',
             accNumber: u.account_number || '',
             ifscCode: u.ifsc_code || ''
           });
@@ -766,7 +786,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
             this.fetchIfscDetails(u.ifsc_code);
           }
         }
-      }
+      },
+      error: () => {}
     });
   }
 

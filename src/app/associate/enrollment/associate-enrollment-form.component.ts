@@ -824,6 +824,27 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   }
 
   prefillProfile() {
+    const sessionUser = this.auth.getUser() || {};
+    let regUser: any = {};
+    try {
+      const regStr = sessionStorage.getItem('mmr_last_registered_user') || localStorage.getItem('mmr_last_registered_user');
+      if (regStr) regUser = JSON.parse(regStr);
+    } catch {}
+
+    const initialName = sessionUser.full_name || sessionUser.name || regUser.full_name || '';
+    const initialMobile = sessionUser.mobile_no || sessionUser.mobile || sessionUser.phone || regUser.mobile_no || '';
+    const initialEmail = sessionUser.email || regUser.email || '';
+
+    if (initialName || initialMobile || initialEmail) {
+      this.enrollmentForm.patchValue({
+        personalDetails: {
+          fullName: this.enrollmentForm.get('personalDetails.fullName')?.value || initialName,
+          contact1: this.enrollmentForm.get('personalDetails.contact1')?.value || initialMobile,
+          email: this.enrollmentForm.get('personalDetails.email')?.value || initialEmail,
+        }
+      });
+    }
+
     this.api.getProfile().subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
@@ -856,33 +877,33 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
 
           this.enrollmentForm.patchValue({
             personalDetails: {
-              fullName: u.full_name || '',
+              fullName: u.full_name || sessionUser.full_name || sessionUser.name || regUser.full_name || this.enrollmentForm.get('personalDetails.fullName')?.value || '',
               dob: formatDateToDDMMYYYY(u.date_of_birth),
               gender: u.gender || '',
               fatherName: u.father_name || '',
               motherName: u.mother_name || '',
               spouseName: u.spouse_name || '',
-              contact1: u.mobile_no || '',
+              contact1: u.mobile_no || sessionUser.mobile_no || regUser.mobile_no || this.enrollmentForm.get('personalDetails.contact1')?.value || '',
               contact2: u.alternate_mobile || '',
-              email: u.email || '',
+              email: u.email || sessionUser.email || regUser.email || this.enrollmentForm.get('personalDetails.email')?.value || '',
               panNo: u.pan_number || '',
               aadharNo: u.aadhar_number || ''
             },
             addressDetails: {
               permAddress: u.address || '',
               permCity: u.city || '',
-              permState: u.state || '',
+              permState: u.state || 'Uttar Pradesh',
               permCountry: u.country || 'India',
               permPin: u.pincode || u.pin_code || '',
               localAddress: u.address || '',
               localCity: u.city || '',
-              localState: u.state || '',
+              localState: u.state || 'Uttar Pradesh',
               localCountry: u.country || 'India',
               localPin: u.pincode || u.pin_code || ''
             },
             bankDetails: {
               bankName: u.bank_name || '',
-              accHolder: u.account_holder_name || u.full_name || '',
+              accHolder: u.account_holder_name || u.full_name || sessionUser.full_name || regUser.full_name || '',
               accNo: u.account_number || '',
               ifsc: u.ifsc_code || '',
               branchCountry: 'India'
