@@ -147,8 +147,10 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
           this.auth.setEnrollmentCompleted();
           this.isSubmitted = true;
           this.isEditing = false;
+          this.isFinalSubmitted = false;
           this.enrollmentStatus = 'pending';
           this.enrollmentForm.disable();
+          this.checkSubmissionStatus();
           Swal.fire({
             icon: 'success',
             title: 'Enrollment Submitted Successfully!',
@@ -740,7 +742,9 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
       });
       return;
     }
+    this.store.dispatch(resetFormState());
     this.isEditing = true;
+    this.isSubmitted = false;
     this.enrollmentForm.enable();
     this.enrollmentForm.get('personalDetails.nationality')?.disable();
     this.enrollmentForm.get('addressDetails.permCountry')?.disable();
@@ -827,10 +831,14 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
 
     this.api.postForm('/api/associate-enrollment', formData).subscribe({
       next: (res: any) => {
+        this.store.dispatch(resetFormState());
         this.isSubmitted = true;
         this.isFinalSubmitted = true;
         this.isEditing = false;
         this.enrollmentForm.disable();
+        if (res?.data?.associateId) {
+          this.submissionAssociateId = res.data.associateId;
+        }
         Swal.fire({
           icon: 'success',
           title: 'Associate Enrollment Finalized!',

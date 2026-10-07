@@ -1,7 +1,6 @@
 <div class="wrap">
-  <!-- Header (Always visible unless form is successfully submitted) -->
-  <ng-container *ngIf="!(success$ | async)">
-    <div class="header">
+  <!-- Header (Always visible) -->
+  <div class="header">
       <div class="brand">
         <div class="brand-mark" style="background: #fff; padding: 4px; display: flex; align-items: center; justify-content: center;">
           <img src="assets/mmr-logo.png" alt="MMR Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px;">
@@ -787,30 +786,4 @@
       </div>
 
     </form>
-  </ng-container>
-
-  <!-- Success / Confirmation Screen -->
-  <ng-container *ngIf="success$ | async">
-    <div class="success-card">
-      <div class="success-icon">
-        <i class="fas fa-check-circle"></i>
-      </div>
-      <h2>Enrollment Successful!</h2>
-      <p>The associate has been successfully registered with MMR Construction &amp; Developers Pvt. Ltd.</p>
-      
-      <div class="id-badge" *ngIf="associateId$ | async as assocId">
-        <div>Associate Unique ID</div>
-        <div>{{ assocId }}</div>
-      </div>
-
-      <div class="btn-row" *ngIf="associateId$ | async as assocId">
-        <button class="btn-primary" (click)="resetForm()">Enroll Another Associate</button>
-        <button class="btn-secondary" (click)="downloadPdf(assocId)" [disabled]="printing" style="background-color: #14532d; color: white; display: flex; align-items: center; justify-content: center; gap: 6px;">
-          <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i>
-          {{ printing ? 'Generating PDF...' : 'Download / Print Form' }}
-        </button>
-        <button class="btn-secondary" routerLink="/associate/dashboard">Go to Dashboard</button>
-      </div>
-    </div>
-  </ng-container>
 </div>
