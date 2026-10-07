@@ -80,42 +80,77 @@
     </div>
 
     <div class="editor-workspace">
-    <div class="editor-toolbar" aria-label="Plot editor tools">
-      <button type="button" class="toolbar-toggle zoom-action" (click)="zoomOut()" title="Zoom out" aria-label="Zoom out"><i class="fas fa-search-minus"></i> Zoom Out</button>
-      <button type="button" class="tool-btn" (click)="resetView()" title="Fit to screen" aria-label="Fit to screen"><i class="fas fa-compress-arrows-alt"></i></button>
-      <button type="button" class="toolbar-toggle zoom-action" (click)="zoomIn()" title="Zoom in" aria-label="Zoom in"><i class="fas fa-search-plus"></i> Zoom In</button>
-      <button type="button" class="tool-btn" (click)="undo()" [disabled]="!canUndo" title="Undo" aria-label="Undo"><i class="fas fa-undo"></i></button>
-      <button type="button" class="tool-btn" (click)="redo()" [disabled]="!canRedo" title="Redo" aria-label="Redo"><i class="fas fa-redo"></i></button>
-      <button type="button" class="tool-btn" (click)="continueExistingNumbering()" title="Continue existing numbering" aria-label="Continue existing numbering"><i class="fas fa-forward"></i></button>
-      <button type="button" class="tool-btn" (click)="resetStartingNumber()" title="Reset starting number" aria-label="Reset starting number"><i class="fas fa-eraser"></i></button>
-      <button type="button" class="tool-btn" (click)="copySelection()" title="Copy" aria-label="Copy"><i class="fas fa-copy"></i></button>
-      <button type="button" class="tool-btn" (click)="pasteSelection()" [disabled]="!copiedPlots.length" title="Paste" aria-label="Paste"><i class="fas fa-paste"></i></button>
-      <button type="button" class="toolbar-toggle" (click)="autoDetectPlots()" [disabled]="!siteMapUrl || saving" title="Auto Detect" aria-label="Auto Detect">
-        <i class="fas fa-wand-magic-sparkles"></i> Auto Detect
-      </button>
-      <button type="button" class="toolbar-toggle" (click)="duplicateSelection()" [class.active]="selectedPlotIds.size > 0" title="Duplicate" aria-label="Duplicate">
-        <i class="fas fa-clone"></i> Duplicate
-      </button>
-      <button type="button" class="toolbar-toggle" (click)="splitSelectedPlot()" [disabled]="!selectedPlot" title="Split" aria-label="Split">
-        <i class="fas fa-columns"></i> Split
-      </button>
-      <button type="button" class="toolbar-toggle" (click)="mergeSelectedPlots()" [disabled]="selectedPlotIds.size < 2" title="Merge" aria-label="Merge">
-        <i class="fas fa-object-group"></i> Merge
-      </button>
-      <button type="button" class="toolbar-toggle danger-tool" (click)="deleteSelectedPlots()" [disabled]="!selectedPlotIds.size" title="Delete" aria-label="Delete">
-        <i class="fas fa-trash"></i> Delete
-      </button>
-      <button type="button" class="toolbar-toggle" [class.active]="panMode" (click)="panMode = !panMode; drawingPlot = null" title="Pan" aria-label="Pan">
-        <i class="fas fa-hand-paper"></i> Pan
-      </button>
-      <button type="button" class="toolbar-toggle" (click)="downloadImportTemplate()" title="Template" aria-label="Template">
-        <i class="fas fa-file-excel"></i> Template
-      </button>
-      <label class="toolbar-toggle" [class.active]="importing" title="Import">
-        <i class="fas fa-file-import"></i> Import
-        <input type="file" accept=".xlsx,.csv" (change)="importPlotDetails($event)">
-      </label>
-    </div>
+      <div class="editor-toolbar" aria-label="Plot editor tools">
+        <!-- Row 1: Zoom In & Zoom Out -->
+        <button type="button" class="tool-btn zoom-action" (click)="zoomIn()" title="Zoom In" aria-label="Zoom In">
+          <i class="fas fa-search-plus"></i>
+        </button>
+        <button type="button" class="tool-btn zoom-action" (click)="zoomOut()" title="Zoom Out" aria-label="Zoom Out">
+          <i class="fas fa-search-minus"></i>
+        </button>
+
+        <!-- Row 2: Fit to Screen & Pan Canvas -->
+        <button type="button" class="tool-btn" (click)="resetView()" title="Fit to Screen" aria-label="Fit to screen">
+          <i class="fas fa-compress-arrows-alt"></i>
+        </button>
+        <button type="button" class="tool-btn" [class.active]="panMode" (click)="panMode = !panMode; drawingPlot = null" title="Pan Canvas" aria-label="Pan">
+          <i class="fas fa-hand-paper"></i>
+        </button>
+
+        <!-- Row 3: Undo & Redo -->
+        <button type="button" class="tool-btn" (click)="undo()" [disabled]="!canUndo" title="Undo" aria-label="Undo">
+          <i class="fas fa-undo"></i>
+        </button>
+        <button type="button" class="tool-btn" (click)="redo()" [disabled]="!canRedo" title="Redo" aria-label="Redo">
+          <i class="fas fa-redo"></i>
+        </button>
+
+        <!-- Row 4: Copy & Paste -->
+        <button type="button" class="tool-btn" (click)="copySelection()" [disabled]="!selectedPlot && !selectedPlotIds.size" title="Copy Plot" aria-label="Copy">
+          <i class="fas fa-copy"></i>
+        </button>
+        <button type="button" class="tool-btn" (click)="pasteSelection()" [disabled]="!copiedPlots.length" title="Paste Plot" aria-label="Paste">
+          <i class="fas fa-paste"></i>
+        </button>
+
+        <!-- Row 5: Continue Numbering & Reset Starting Number -->
+        <button type="button" class="tool-btn" (click)="continueExistingNumbering()" title="Continue Existing Numbering" aria-label="Continue existing numbering">
+          <i class="fas fa-forward"></i>
+        </button>
+        <button type="button" class="tool-btn" (click)="resetStartingNumber()" title="Reset Starting Number" aria-label="Reset starting number">
+          <i class="fas fa-eraser"></i>
+        </button>
+
+        <!-- Row 6: Auto Detect & Duplicate -->
+        <button type="button" class="tool-btn" (click)="autoDetectPlots()" [disabled]="!siteMapUrl || saving" title="Auto Detect Plots" aria-label="Auto Detect">
+          <i class="fas fa-wand-magic-sparkles"></i>
+        </button>
+        <button type="button" class="tool-btn" (click)="duplicateSelection()" [class.active]="selectedPlotIds.size > 0" [disabled]="!selectedPlot && !selectedPlotIds.size" title="Duplicate Plot" aria-label="Duplicate">
+          <i class="fas fa-clone"></i>
+        </button>
+
+        <!-- Row 7: Split & Merge -->
+        <button type="button" class="tool-btn" (click)="splitSelectedPlot()" [disabled]="!selectedPlot" title="Split Selected Plot" aria-label="Split">
+          <i class="fas fa-columns"></i>
+        </button>
+        <button type="button" class="tool-btn" (click)="mergeSelectedPlots()" [disabled]="selectedPlotIds.size < 2" title="Merge Selected Plots" aria-label="Merge">
+          <i class="fas fa-object-group"></i>
+        </button>
+
+        <!-- Row 8: Template & Import -->
+        <button type="button" class="tool-btn" (click)="downloadImportTemplate()" title="Download Excel Template" aria-label="Template">
+          <i class="fas fa-file-excel"></i>
+        </button>
+        <label class="tool-btn mb-0" [class.active]="importing" title="Import Plots from Excel/CSV" aria-label="Import" style="cursor: pointer;">
+          <i class="fas fa-file-import"></i>
+          <input type="file" hidden accept=".xlsx,.csv" (change)="importPlotDetails($event)">
+        </label>
+
+        <!-- Row 9: Delete -->
+        <button type="button" class="tool-btn danger-tool" (click)="deleteSelectedPlots()" [disabled]="!selectedPlotIds.size && !selectedPlot" title="Delete Selected Plots" aria-label="Delete">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </div>
 
     <div class="editor-main">
     <div class="editor-top-tools" aria-label="Plot editor settings">
