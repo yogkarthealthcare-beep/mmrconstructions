@@ -239,26 +239,13 @@ export class ApprovalsComponent implements OnInit {
         if (res.success) {
           u.account_status = 'Active';
           u.is_verified = true;
-          u.enrollment_status = 'Completed';
           if (res.data?.member_id) u.member_id = res.data.member_id;
-          if (u.documents && Array.isArray(u.documents)) {
-            u.documents.forEach((d: any) => {
-              d.is_verified = true;
-              d.review_status = 'Approved';
-            });
-          }
           if (this.selectedUser) {
             this.selectedUser.account_status = 'Active';
             this.selectedUser.is_verified = true;
-            this.selectedUser.enrollment_status = 'Completed';
-            if (this.selectedUser.documents && Array.isArray(this.selectedUser.documents)) {
-              this.selectedUser.documents.forEach((d: any) => {
-                d.is_verified = true;
-                d.review_status = 'Approved';
-              });
-            }
+            if (res.data?.member_id) this.selectedUser.member_id = res.data.member_id;
           }
-          this.showToast(`User ${u.full_name} & KYC documents approved successfully!`);
+          this.showToast(`User account approved successfully! User can now log in.`);
           this.closeModals();
           this.loadAllStats();
           this.loadData();

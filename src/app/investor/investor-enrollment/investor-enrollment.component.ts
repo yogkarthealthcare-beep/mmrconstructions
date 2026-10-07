@@ -74,6 +74,11 @@ export class InvestorEnrollmentComponent implements OnInit {
     this.checkEnrollmentStatus();
   }
 
+  skipToDashboard(): void {
+    this.auth.setEnrollmentSkippedThisSession(true);
+    this.router.navigate(['/investor/dashboard']);
+  }
+
   ngAfterViewInit() {
     this.initSignaturePads();
   }

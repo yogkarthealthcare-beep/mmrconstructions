@@ -30,6 +30,9 @@ export const enrollmentGuard: CanActivateFn = (_route, state) => {
 
   // If navigating to internal pages but enrollment is not done:
   if (!isCompleted) {
+    if (auth.isEnrollmentSkippedThisSession()) {
+      return true;
+    }
     return router.createUrlTree([`${prefix}/enrollment`]);
   }
 
@@ -50,6 +53,9 @@ export const customerGuard: CanActivateFn = (_route, state) => {
   }
 
   if (!isCompleted) {
+    if (auth.isEnrollmentSkippedThisSession()) {
+      return true;
+    }
     return router.createUrlTree(['/customer/enrollment']);
   }
   return true;
@@ -73,6 +79,9 @@ export const associateGuard: CanActivateFn = (_route, state) => {
   }
 
   if (!isCompleted) {
+    if (auth.isEnrollmentSkippedThisSession()) {
+      return true;
+    }
     return router.createUrlTree(['/associate/enrollment']);
   }
   return true;
@@ -92,6 +101,9 @@ export const investorGuard: CanActivateFn = (_route, state) => {
   }
 
   if (!isCompleted) {
+    if (auth.isEnrollmentSkippedThisSession()) {
+      return true;
+    }
     return router.createUrlTree(['/investor/enrollment']);
   }
   return true;
@@ -112,6 +124,9 @@ export const userGuard: CanActivateFn = (_route, state) => {
   }
 
   if (!isCompleted) {
+    if (auth.isEnrollmentSkippedThisSession()) {
+      return auth.isApprovedUser() ? true : router.createUrlTree(['/login'], { queryParams: { unapproved: 'true' } });
+    }
     return router.createUrlTree([`${prefix}/enrollment`]);
   }
   return auth.isApprovedUser() ? true : router.createUrlTree(['/login'], { queryParams: { unapproved: 'true' } });

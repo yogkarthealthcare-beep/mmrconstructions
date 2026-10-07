@@ -118,6 +118,11 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
+  skipToDashboard(): void {
+    this.auth.setEnrollmentSkippedThisSession(true);
+    this.router.navigate(['/associate/dashboard']);
+  }
+
   ngOnInit() {
     this.store.dispatch(resetFormState());
     this.initForm();
@@ -177,6 +182,51 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   }
 
   patchSubmittedData(d: any) {
+    const findMatched = (list: string[], val: any, fallback: string = ''): string => {
+      if (!val) return fallback;
+      const strVal = String(val).trim();
+      const exact = list.find(item => item.toLowerCase() === strVal.toLowerCase());
+      if (exact) return exact;
+      const partial = list.find(item => item.toLowerCase().includes(strVal.toLowerCase()) || strVal.toLowerCase().includes(item.toLowerCase()));
+      if (partial) return partial;
+      return strVal;
+    };
+
+    const primaryContact = d.contact1 || d.contact_primary || d.contact_1 || d.contact_no_1 || d.mobile_no || '';
+    const secondaryContact = d.contact2 || d.contact_secondary || d.contact_2 || d.contact_no_2 || '';
+
+    if (d.is_new) {
+      this.isSubmitted = false;
+      this.isFinalSubmitted = false;
+      this.isEditing = true;
+      this.enrollmentStatus = 'pending';
+      this.enrollmentForm.enable();
+
+      this.enrollmentForm.patchValue({
+        personalDetails: {
+          fullName: d.full_name || '',
+          dob: formatDateToDDMMYYYY(d.dob),
+          gender: findMatched(this.gendersList, d.gender),
+          fatherName: d.father_name || '',
+          motherName: d.mother_name || '',
+          spouseName: d.spouse_name || '',
+          contact1: primaryContact,
+          contact2: secondaryContact,
+          nationality: d.nationality || 'Indian',
+          residentialStatus: findMatched(this.resStatusesList, d.residential_status, 'Resident Individual'),
+          panNo: d.pan_number || d.pan_no || d.panNo || '',
+          aadharNo: d.aadhar_number || d.aadhar_no || d.aadharNo || '',
+          email: d.email || '',
+        },
+        sponsorDetails: {
+          sponsorName: d.sponsor_name || d.sponsorName || 'Suraj Kumar Verma',
+          sponsorCode: d.sponsor_code || d.sponsorCode || 'MMR0001',
+          sponsorContact: d.sponsor_contact || d.sponsorContact || '7071951011'
+        }
+      });
+      return;
+    }
+
     this.isSubmitted = true;
     this.isFinalSubmitted = Boolean(d.is_final_submitted || d.isFinalSubmitted);
     this.isEditing = false;
@@ -193,16 +243,6 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     }
     this.enrollmentStatus = (d.status || d.app_status || 'pending').toLowerCase();
 
-    const findMatched = (list: string[], val: any, fallback: string = ''): string => {
-      if (!val) return fallback;
-      const strVal = String(val).trim();
-      const exact = list.find(item => item.toLowerCase() === strVal.toLowerCase());
-      if (exact) return exact;
-      const partial = list.find(item => item.toLowerCase().includes(strVal.toLowerCase()) || strVal.toLowerCase().includes(item.toLowerCase()));
-      if (partial) return partial;
-      return strVal;
-    };
-
     this.enrollmentForm.patchValue({
       personalDetails: {
         fullName: d.full_name || '',
@@ -211,8 +251,8 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         fatherName: d.father_name || '',
         motherName: d.mother_name || '',
         spouseName: d.spouse_name || '',
-        contact1: d.contact_primary || d.contact_1 || d.contact1 || d.mobile_no || '',
-        contact2: d.contact_secondary || d.contact_2 || d.contact2 || '',
+        contact1: primaryContact,
+        contact2: secondaryContact,
         nationality: d.nationality || 'Indian',
         residentialStatus: findMatched(this.resStatusesList, d.residential_status, 'Resident Individual'),
         panNo: d.pan_number || d.pan_no || d.panNo || '',
@@ -965,7 +1005,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     } catch {}
 
     const initialName = sessionUser.full_name || sessionUser.name || regUser.full_name || '';
-    const initialMobile = sessionUser.mobile_no || sessionUser.mobile || sessionUser.phone || regUser.mobile_no || '';
+    const initialMobile = sessionUser.mobile_no || sessionUser.mobile || sessionUser.phone || sessionUser.contact || regUser.mobile_no || '';
     const initialEmail = sessionUser.email || regUser.email || '';
 
     if (initialName || initialMobile || initialEmail) {
@@ -983,6 +1023,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         if (res.success && res.data) {
           const u = res.data;
           const sessionUser = this.auth.getUser() || {};
+          const mobileNum = u.mobile_no || u.mobile || u.phone || u.contact || sessionUser.mobile_no || sessionUser.mobile || sessionUser.phone || sessionUser.contact || regUser.mobile_no || this.enrollmentForm.get('personalDetails.contact1')?.value || '';
 
           // If the associate has an existing sponsor, auto-fill that sponsor's data;
           // If no sponsor exists, fallback to Admin sponsor (MMR0001 / Suraj Kumar Verma / 7071951011)
@@ -1016,7 +1057,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
               fatherName: u.father_name || '',
               motherName: u.mother_name || '',
               spouseName: u.spouse_name || '',
-              contact1: u.mobile_no || sessionUser.mobile_no || regUser.mobile_no || this.enrollmentForm.get('personalDetails.contact1')?.value || '',
+              contact1: mobileNum,
               contact2: u.alternate_mobile || '',
               email: u.email || sessionUser.email || regUser.email || this.enrollmentForm.get('personalDetails.email')?.value || '',
               panNo: u.pan_number || '',

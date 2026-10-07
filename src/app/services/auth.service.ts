@@ -359,6 +359,7 @@ export class AuthService {
 
     if (token) {
       this.clearUserStorage();
+      this.setEnrollmentSkippedThisSession(false);
       const now = new Date();
       const loginDate = this.getLocalDateString(now);
       const expiresAt = this.getNextDayMidnightTimestamp(now);
@@ -426,6 +427,7 @@ export class AuthService {
       this.userLogoutTimer = null;
     }
     this.clearUserStorage();
+    this.setEnrollmentSkippedThisSession(false);
     this._user$.next(null);
     const queryParams = sessionExpired ? { sessionExpired: 'true' } : undefined;
     this.router.navigate(['/login'], { queryParams }).then(() => {
@@ -491,6 +493,7 @@ export class AuthService {
       this.investorLogoutTimer = null;
     }
     this.clearInvestorStorage();
+    this.setEnrollmentSkippedThisSession(false);
     this._investorUser$.next(null);
     const queryParams = sessionExpired ? { sessionExpired: 'true' } : undefined;
     this.router.navigate(['/login'], { queryParams }).then(() => {
@@ -515,6 +518,7 @@ export class AuthService {
 
     if (token) {
       this.clearInvestorStorage();
+      this.setEnrollmentSkippedThisSession(false);
       const now = new Date();
       const loginDate = this.getLocalDateString(now);
       const expiresAt = this.getNextDayMidnightTimestamp(now);
@@ -542,6 +546,24 @@ export class AuthService {
       this.saveAuthItem('mmr_investor_user', JSON.stringify(updated));
       this._investorUser$.next(updated);
     }
+  }
+
+  isEnrollmentSkippedThisSession(): boolean {
+    try {
+      return sessionStorage.getItem('mmr_enrollment_skipped') === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  setEnrollmentSkippedThisSession(skipped: boolean = true) {
+    try {
+      if (skipped) {
+        sessionStorage.setItem('mmr_enrollment_skipped', 'true');
+      } else {
+        sessionStorage.removeItem('mmr_enrollment_skipped');
+      }
+    } catch {}
   }
 
   isEnrollmentCompleted(): boolean {

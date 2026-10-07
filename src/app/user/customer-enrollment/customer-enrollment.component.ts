@@ -64,6 +64,11 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     private router: Router
   ) {}
 
+  skipToDashboard(): void {
+    this.auth.setEnrollmentSkippedThisSession(true);
+    this.router.navigate(['/customer/dashboard']);
+  }
+
   ngOnInit() {
     this.initForm();
     this.checkSubmissionStatus();
