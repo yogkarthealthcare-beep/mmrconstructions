@@ -196,6 +196,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
     const secondaryContact = d.contact2 || d.contact_secondary || d.contact_2 || d.contact_no_2 || '';
 
     if (d.is_new) {
+      this.store.dispatch(resetFormState());
       this.isSubmitted = false;
       this.isFinalSubmitted = false;
       this.isEditing = true;
@@ -332,6 +333,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   }
 
   checkSubmissionStatus() {
+    this.store.dispatch(resetFormState());
     this.api.getMyAssociateEnrollment().subscribe({
       next: (res: any) => {
         if (res && res.success && res.data) {
