@@ -10,7 +10,8 @@ import {
   DEFAULT_COUNTRY,
   COUNTRIES_LIST,
   normalizeHumanName,
-  isValidHumanName
+  isValidHumanName,
+  validateImageUpload
 } from '../../shared/utils/form-helpers';
 
 @Component({
@@ -92,15 +93,11 @@ export class InvestorProfileComponent implements OnInit {
     const file: File | undefined = event.target?.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      this.photoErr = 'Please select a valid image file (JPG, PNG, WEBP, etc.).';
+    const val = validateImageUpload(file, 'photo');
+    if (!val.valid) {
+      this.photoErr = val.message || 'Invalid image file or size.';
       this.photoMsg = '';
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      this.photoErr = 'Image file size must be less than 5MB.';
-      this.photoMsg = '';
+      if (event.target) event.target.value = '';
       return;
     }
 

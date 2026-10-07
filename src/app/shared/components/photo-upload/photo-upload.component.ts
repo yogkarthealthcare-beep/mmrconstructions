@@ -1,12 +1,14 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import Swal from 'sweetalert2';
+import { validateImageUpload, UploadFileType } from '../../utils/form-helpers';
 
 @Component({
   selector: 'app-photo-upload',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="photo-box" [class.invalid-photo]="isInvalid" (click)="fileInput.click()">
+    <div class="photo-box" [class.invalid-photo]="isInvalid" (click)="fileInput.click()" [title]="uploadType === 'signature' ? 'Click to upload signature (JPG/PNG <= 50KB)' : 'Click to upload photo (JPG/PNG <= 100KB)'">
       <ng-container *ngIf="previewUrl; else uploadPlaceholder">
         <img [src]="previewUrl" alt="Photo preview">
       </ng-container>
@@ -17,7 +19,7 @@ import { CommonModule } from '@angular/common';
         type="file" 
         #fileInput 
         (change)="onFileSelected($event)" 
-        accept="image/*" 
+        accept=".jpg,.jpeg,.png,image/jpeg,image/png" 
         style="display: none;"
       >
     </div>
@@ -42,6 +44,10 @@ import { CommonModule } from '@angular/common';
       margin: 0 auto;
       transition: all 0.2s ease;
     }
+    .photo-box:hover {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
     .photo-box.invalid-photo {
       border: 2.5px dashed #dc2626 !important;
       background-color: #fef2f2 !important;
@@ -63,23 +69,43 @@ import { CommonModule } from '@angular/common';
 export class PhotoUploadComponent {
   @Input() placeholderText = 'PHOTO';
   @Input() isInvalid = false;
+  @Input() uploadType: UploadFileType = 'photo';
   @Output() fileSelected = new EventEmitter<File>();
+  @Output() fileCleared = new EventEmitter<void>();
 
   previewUrl: string | null = null;
 
   onFileSelected(event: any) {
     const file = event.target.files?.[0];
-    if (file) {
-      this.fileSelected.emit(file);
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.previewUrl = e.target.result;
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const validation = validateImageUpload(file, this.uploadType);
+    if (!validation.valid) {
+      event.target.value = '';
+      Swal.fire({
+        icon: 'error',
+        title: 'अमान्य फाइल / Invalid File',
+        text: validation.message,
+        confirmButtonColor: '#dc2626'
+      });
+      return;
     }
+
+    this.fileSelected.emit(file);
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.previewUrl = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  setPreview(url: string | null) {
+    this.previewUrl = url;
   }
 
   reset() {
     this.previewUrl = null;
+    this.fileCleared.emit();
   }
 }
+

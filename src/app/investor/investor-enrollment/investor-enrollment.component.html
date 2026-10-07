@@ -70,14 +70,15 @@
       </div>
     </div>
 
-    <div class="photo-box" [class.invalid-photo]="!photoDataUrl && enrollmentForm.touched" title="Click to attach passport size photo" (click)="photoInput.click()">
+    <div class="photo-box" [class.invalid-photo]="!photoDataUrl && enrollmentForm.touched" title="Click to attach passport size photo (JPG, PNG <= 100 KB)" (click)="photoInput.click()">
       <ng-container *ngIf="photoDataUrl; else photoPlaceholder">
         <img [src]="photoDataUrl" alt="Passport Photo">
       </ng-container>
       <ng-template #photoPlaceholder>
-        Please Affix<br>Passport Size<br>Self Attested<br>Photograph <span style="color:red; font-size: 18px; font-weight: bold;">*</span>
+        Please Affix<br>Passport Size<br>Photograph <span style="color:red; font-size: 18px; font-weight: bold;">*</span><br>
+        <span style="font-size: 9px; color: #16a34a; font-weight: 600;">(JPG/PNG &le; 100 KB)</span>
       </ng-template>
-      <input type="file" #photoInput accept="image/*" style="display:none;" (change)="onPhotoChange($event)">
+      <input type="file" #photoInput accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display:none;" (change)="onPhotoChange($event)">
     </div>
 
     <div class="meta-grid">
@@ -310,10 +311,39 @@
         </span>
       </label>
 
-      <div class="row3">
+      <div class="row3" style="align-items: flex-end;">
         <div class="field"><label>Date (Auto-filled)</label><input type="date" formControlName="declDate" readonly style="background:#f8f9fa;"></div>
-        <div class="field"><label>Place</label><input type="text" formControlName="declPlace"></div>
-        <div class="field"><label>Signature of Investor</label><input type="text" formControlName="declSignatureName" placeholder="Type full name as signature"></div>
+        <div class="field"><label>Place <span class="text-danger">*</span></label><input type="text" formControlName="declPlace" placeholder="City / Place of Signing"></div>
+        <div class="field">
+          <label style="display: flex; align-items: center; justify-content: space-between;">
+            <span>Signature of Investor <span class="text-danger">*</span></span>
+            <span style="font-size: 11px; color: #16a34a; font-weight: 600;">(JPG, PNG &le; 50 KB)</span>
+          </label>
+          <div class="signature-upload-wrapper" style="border: 1.5px dashed #cbd5e1; border-radius: 6px; background: #fafbfa; padding: 6px; text-align: center; cursor: pointer; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center;" (click)="!isFinalSubmitted && declSigInput.click()">
+            <ng-container *ngIf="declSignatureDataUrl; else declSignPlaceholder">
+              <img [src]="declSignatureDataUrl" alt="Signature of Investor" style="max-height: 70px; max-width: 100%; object-fit: contain;">
+            </ng-container>
+            <ng-template #declSignPlaceholder>
+              <div style="color: #64748b; font-size: 11.5px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <i class="fas fa-file-signature" style="font-size: 18px; color: #16a34a;"></i>
+                <span>Click to Upload Signature (JPG, PNG &le; 50 KB) <span style="color: red; font-weight: bold;">*</span></span>
+              </div>
+            </ng-template>
+            <input
+              type="file"
+              #declSigInput
+              (change)="onDeclSignatureChange($event)"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              style="display: none;"
+              [disabled]="isFinalSubmitted"
+            >
+          </div>
+          <div *ngIf="declSignatureDataUrl && !isFinalSubmitted" style="text-align: right; margin-top: 4px;">
+            <button type="button" (click)="clearDeclSignature()" style="background: none; border: none; color: #dc2626; font-size: 11px; cursor: pointer; padding: 2px 6px;">
+              <i class="fas fa-times"></i> Remove Signature
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -331,14 +361,36 @@
 
       <div class="sig-grid">
         <div class="sig-block">
-          <canvas #sigFirstCanvas width="380" height="110"></canvas>
+          <div class="sig-canvas-wrap" style="position: relative;">
+            <canvas #sigFirstCanvas width="380" height="110" [style.display]="sigFirstUploaded ? 'none' : 'block'"></canvas>
+            <div *ngIf="sigFirstUploaded" class="sig-uploaded-preview" style="height: 110px; display: flex; align-items: center; justify-content: center; background: #fff;">
+              <img [src]="sigFirstUploaded" alt="Sole Specimen Signature" style="max-height: 100px; max-width: 100%; object-fit: contain;">
+            </div>
+          </div>
           <div class="cap">Specimen Signature (First / Sole Applicant)</div>
-          <button type="button" class="sig-clear" (click)="clearSignature(1)">Clear</button>
+          <div style="display: flex; gap: 8px; justify-content: center; margin-top: 6px;">
+            <label class="btn btn-xs" style="background: #f1f5f9; border: 1px solid #cbd5e1; font-size: 11px; cursor: pointer; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+              <i class="fas fa-upload text-success"></i> Upload Sign (JPG/PNG &le; 50KB)
+              <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onSpecimenUpload($event, 1)" style="display: none;" [disabled]="isFinalSubmitted">
+            </label>
+            <button type="button" class="sig-clear" (click)="clearSignature(1)">Clear</button>
+          </div>
         </div>
         <div class="sig-block">
-          <canvas #sigJointCanvas width="380" height="110"></canvas>
+          <div class="sig-canvas-wrap" style="position: relative;">
+            <canvas #sigJointCanvas width="380" height="110" [style.display]="sigJointUploaded ? 'none' : 'block'"></canvas>
+            <div *ngIf="sigJointUploaded" class="sig-uploaded-preview" style="height: 110px; display: flex; align-items: center; justify-content: center; background: #fff;">
+              <img [src]="sigJointUploaded" alt="Joint Specimen Signature" style="max-height: 100px; max-width: 100%; object-fit: contain;">
+            </div>
+          </div>
           <div class="cap">Specimen Signature (Joint Applicant)</div>
-          <button type="button" class="sig-clear" (click)="clearSignature(2)">Clear</button>
+          <div style="display: flex; gap: 8px; justify-content: center; margin-top: 6px;">
+            <label class="btn btn-xs" style="background: #f1f5f9; border: 1px solid #cbd5e1; font-size: 11px; cursor: pointer; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+              <i class="fas fa-upload text-success"></i> Upload Sign (JPG/PNG &le; 50KB)
+              <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onSpecimenUpload($event, 2)" style="display: none;" [disabled]="isFinalSubmitted">
+            </label>
+            <button type="button" class="sig-clear" (click)="clearSignature(2)">Clear</button>
+          </div>
         </div>
       </div>
     </section>

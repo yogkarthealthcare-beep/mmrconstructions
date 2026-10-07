@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 
+import { validateImageUpload } from '../../shared/utils/form-helpers';
+
 @Component({
   selector: 'app-documents',
   standalone: true,
@@ -17,10 +19,10 @@ export class DocumentsComponent implements OnInit {
   selectedDoc: any = null;
 
   docTypes = [
-    { key: 'PANCard',      label: 'PAN Card',       icon: 'fas fa-credit-card',  desc: 'Government Income Tax PAN Identity' },
-    { key: 'AadharCard',   label: 'Aadhaar Card',   icon: 'fas fa-id-card',       desc: 'UIDAI Address & Identity Proof' },
-    { key: 'ProfilePhoto', label: 'Profile Photo',  icon: 'fas fa-user-circle',   desc: 'Official Passport Size Photo' },
-    { key: 'Other',        label: 'Bank / Passbook',icon: 'fas fa-university',    desc: 'Bank Passbook / Cancelled Cheque' },
+    { key: 'PANCard',      label: 'PAN Card',       icon: 'fas fa-credit-card',  desc: 'Government PAN Card Image (Max 500 KB)' },
+    { key: 'AadharCard',   label: 'Aadhaar Card',   icon: 'fas fa-id-card',       desc: 'UIDAI Aadhaar Card Image (Max 500 KB)' },
+    { key: 'ProfilePhoto', label: 'Profile Photo',  icon: 'fas fa-user-circle',   desc: 'Official Passport Photo (Max 100 KB)' },
+    { key: 'Other',        label: 'Bank / Passbook',icon: 'fas fa-university',    desc: 'Bank Passbook / Cheque Image (Max 500 KB)' },
   ];
 
   constructor(private api: ApiService) {}
@@ -47,8 +49,19 @@ export class DocumentsComponent implements OnInit {
   }
 
   upload(type: string, event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
+
+    const uploadType = (type === 'ProfilePhoto') ? 'photo' : 'document';
+    const val = validateImageUpload(file, uploadType);
+    if (!val.valid) {
+      this.toast = val.message || 'Invalid file format or size.';
+      input.value = '';
+      setTimeout(() => this.toast = '', 5000);
+      return;
+    }
+
     this.uploadingType = type;
     const form = new FormData();
     form.append('document', file);

@@ -18,7 +18,8 @@ import {
   formatDateToDDMMYYYY,
   parseDDMMYYYYToISO,
   humanNameValidator,
-  normalizeHumanName
+  normalizeHumanName,
+  validateImageUpload
 } from '../../shared/utils/form-helpers';
 
 @Component({
@@ -41,6 +42,9 @@ export class InvestorEnrollmentComponent implements OnInit {
   maxAdultDob = getMaxAdultDobDate();
 
   photoDataUrl: string = '';
+  declSignatureDataUrl: string = '';
+  sigFirstUploaded: string = '';
+  sigJointUploaded: string = '';
   showModal: boolean = false;
   modalAgreeCheck: boolean = false;
   submitting: boolean = false;
@@ -123,7 +127,7 @@ export class InvestorEnrollmentComponent implements OnInit {
       declarationCheck: [false, Validators.requiredTrue],
       declDate: [todayStr, Validators.required],
       declPlace: ['', Validators.required],
-      declSignatureName: ['', [Validators.required, humanNameValidator()]],
+      declSignatureName: ['', [humanNameValidator()]],
       firstApplicantName: ['', [Validators.required, humanNameValidator()]],
       jointApplicantName: ['', [humanNameValidator()]],
       appStatus: [{ value: 'Hold/Pending KYC', disabled: true }],
@@ -237,11 +241,78 @@ export class InvestorEnrollmentComponent implements OnInit {
   }
 
   onPhotoChange(event: any) {
-    const file = event.target.files[0];
+    const file = event.target.files?.[0];
     if (!file) return;
+    const val = validateImageUpload(file, 'photo');
+    if (!val.valid) {
+      event.target.value = '';
+      Swal.fire({
+        icon: 'error',
+        title: 'अमान्य फोटो / Invalid Photo',
+        text: val.message,
+        confirmButtonColor: '#dc2626'
+      });
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (e: any) => {
       this.photoDataUrl = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  onDeclSignatureChange(event: any) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const val = validateImageUpload(file, 'signature');
+    if (!val.valid) {
+      event.target.value = '';
+      Swal.fire({
+        icon: 'error',
+        title: 'अमान्य सिग्नेचर / Invalid Signature',
+        text: val.message,
+        confirmButtonColor: '#dc2626'
+      });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.declSignatureDataUrl = e.target.result;
+      if (!this.sigFirstUploaded) {
+        this.sigFirstUploaded = e.target.result;
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearDeclSignature() {
+    this.declSignatureDataUrl = '';
+  }
+
+  onSpecimenUpload(event: any, padNum: number) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const val = validateImageUpload(file, 'signature');
+    if (!val.valid) {
+      event.target.value = '';
+      Swal.fire({
+        icon: 'error',
+        title: 'अमान्य सिग्नेचर / Invalid Signature',
+        text: val.message,
+        confirmButtonColor: '#dc2626'
+      });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      if (padNum === 1) {
+        this.sigFirstUploaded = e.target.result;
+        if (!this.declSignatureDataUrl) {
+          this.declSignatureDataUrl = e.target.result;
+        }
+      } else {
+        this.sigJointUploaded = e.target.result;
+      }
     };
     reader.readAsDataURL(file);
   }
@@ -317,6 +388,11 @@ export class InvestorEnrollmentComponent implements OnInit {
   }
 
   clearSignature(padNum: number) {
+    if (padNum === 1) {
+      this.sigFirstUploaded = '';
+    } else {
+      this.sigJointUploaded = '';
+    }
     const canvas = padNum === 1 ? this.sigFirstCanvas?.nativeElement : this.sigJointCanvas?.nativeElement;
     const ctx = padNum === 1 ? this.padFirstContext : this.padJointContext;
     if (canvas && ctx) {
@@ -340,6 +416,14 @@ export class InvestorEnrollmentComponent implements OnInit {
         if (photoEl) {
           photoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           photoEl.focus();
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please upload Investor Photo (JPG/PNG <= 100 KB) *',
+            showConfirmButton: false,
+            timer: 3500
+          });
           return;
         }
       }
@@ -353,12 +437,31 @@ export class InvestorEnrollmentComponent implements OnInit {
         if (typeof invalidControl.focus === 'function') {
           invalidControl.focus();
         }
+        return;
+      }
+
+      // 3. If declaration signature is missing
+      if (!this.declSignatureDataUrl && !this.sigFirstUploaded && this.isCanvasEmpty(this.sigFirstCanvas?.nativeElement)) {
+        const sigEl = document.querySelector('.signature-upload-wrapper') as HTMLElement;
+        if (sigEl) {
+          sigEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          sigEl.focus();
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please upload Signature of Investor (JPG/PNG <= 50 KB) *',
+            showConfirmButton: false,
+            timer: 3500
+          });
+          return;
+        }
       }
     }, 100);
   }
 
   onSubmit() {
-    if (this.enrollmentForm.invalid || !this.photoDataUrl) {
+    if (this.enrollmentForm.invalid || !this.photoDataUrl || (!this.declSignatureDataUrl && !this.sigFirstUploaded && this.isCanvasEmpty(this.sigFirstCanvas?.nativeElement))) {
       this.enrollmentForm.markAllAsTouched();
       this.focusFirstInvalidControl();
       return;
@@ -392,13 +495,22 @@ export class InvestorEnrollmentComponent implements OnInit {
 
     formData.dob = parseDDMMYYYYToISO(formData.dob);
     formData.photo = this.photoDataUrl || null;
+    formData.signature = this.declSignatureDataUrl || this.sigFirstUploaded || null;
+    formData.declSignature = this.declSignatureDataUrl || null;
     formData.is_final_submitted = false;
     formData.isFinalSubmit = false;
     
-    if (this.sigFirstCanvas && !this.isCanvasEmpty(this.sigFirstCanvas.nativeElement)) {
+    if (this.sigFirstUploaded) {
+      formData.signatureFirstApplicant = this.sigFirstUploaded;
+    } else if (this.sigFirstCanvas && !this.isCanvasEmpty(this.sigFirstCanvas.nativeElement)) {
       formData.signatureFirstApplicant = this.sigFirstCanvas.nativeElement.toDataURL('image/png');
+    } else if (this.declSignatureDataUrl) {
+      formData.signatureFirstApplicant = this.declSignatureDataUrl;
     }
-    if (this.sigJointCanvas && !this.isCanvasEmpty(this.sigJointCanvas.nativeElement)) {
+
+    if (this.sigJointUploaded) {
+      formData.signatureJointApplicant = this.sigJointUploaded;
+    } else if (this.sigJointCanvas && !this.isCanvasEmpty(this.sigJointCanvas.nativeElement)) {
       formData.signatureJointApplicant = this.sigJointCanvas.nativeElement.toDataURL('image/png');
     }
 
@@ -487,13 +599,22 @@ export class InvestorEnrollmentComponent implements OnInit {
 
     formData.dob = parseDDMMYYYYToISO(formData.dob);
     formData.photo = this.photoDataUrl || null;
+    formData.signature = this.declSignatureDataUrl || this.sigFirstUploaded || null;
+    formData.declSignature = this.declSignatureDataUrl || null;
     formData.is_final_submitted = true;
     formData.isFinalSubmit = true;
     
-    if (this.sigFirstCanvas && !this.isCanvasEmpty(this.sigFirstCanvas.nativeElement)) {
+    if (this.sigFirstUploaded) {
+      formData.signatureFirstApplicant = this.sigFirstUploaded;
+    } else if (this.sigFirstCanvas && !this.isCanvasEmpty(this.sigFirstCanvas.nativeElement)) {
       formData.signatureFirstApplicant = this.sigFirstCanvas.nativeElement.toDataURL('image/png');
+    } else if (this.declSignatureDataUrl) {
+      formData.signatureFirstApplicant = this.declSignatureDataUrl;
     }
-    if (this.sigJointCanvas && !this.isCanvasEmpty(this.sigJointCanvas.nativeElement)) {
+
+    if (this.sigJointUploaded) {
+      formData.signatureJointApplicant = this.sigJointUploaded;
+    } else if (this.sigJointCanvas && !this.isCanvasEmpty(this.sigJointCanvas.nativeElement)) {
       formData.signatureJointApplicant = this.sigJointCanvas.nativeElement.toDataURL('image/png');
     }
 
@@ -537,6 +658,13 @@ export class InvestorEnrollmentComponent implements OnInit {
 
     if (d.photo_url) {
       this.photoDataUrl = d.photo_url;
+    }
+    if (d.signature_first_url || d.signature_url || d.signature) {
+      this.declSignatureDataUrl = d.signature_first_url || d.signature_url || d.signature;
+      this.sigFirstUploaded = this.declSignatureDataUrl;
+    }
+    if (d.signature_joint_url) {
+      this.sigJointUploaded = d.signature_joint_url;
     }
 
     // Populate nominees if available

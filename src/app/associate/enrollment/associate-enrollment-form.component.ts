@@ -23,6 +23,7 @@ import {
   parseDDMMYYYYToISO,
   humanNameValidator,
   normalizeHumanName,
+  validateImageUpload,
   ASSOCIATE_CATEGORIES,
   ASSOCIATE_QUALIFICATIONS,
   ASSOCIATE_OCCUPATIONS,
@@ -450,16 +451,47 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   get signature() { return this.enrollmentForm.get('signature') as FormGroup; }
 
   onApplicantPhotoSelected(file: File) {
+    const val = validateImageUpload(file, 'photo');
+    if (!val.valid) {
+      Swal.fire({
+        icon: 'error',
+        title: 'अमान्य फोटो / Invalid Photo',
+        text: val.message,
+        confirmButtonColor: '#dc2626'
+      });
+      return;
+    }
     this.applicantPhotoFile = file;
   }
 
   onNomineePhotoSelected(file: File) {
+    const val = validateImageUpload(file, 'photo');
+    if (!val.valid) {
+      Swal.fire({
+        icon: 'error',
+        title: 'अमान्य फोटो / Invalid Photo',
+        text: val.message,
+        confirmButtonColor: '#dc2626'
+      });
+      return;
+    }
     this.nomineePhotoFile = file;
   }
 
   onApplicantSignatureSelected(event: any) {
     const file = event.target.files?.[0];
     if (file) {
+      const val = validateImageUpload(file, 'signature');
+      if (!val.valid) {
+        event.target.value = '';
+        Swal.fire({
+          icon: 'error',
+          title: 'अमान्य सिग्नेचर / Invalid Signature',
+          text: val.message,
+          confirmButtonColor: '#dc2626'
+        });
+        return;
+      }
       this.applicantSignatureFile = file;
       const reader = new FileReader();
       reader.onload = (e: any) => {
@@ -478,6 +510,17 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   onSponsorSignatureSelected(event: any) {
     const file = event.target.files?.[0];
     if (file) {
+      const val = validateImageUpload(file, 'signature');
+      if (!val.valid) {
+        event.target.value = '';
+        Swal.fire({
+          icon: 'error',
+          title: 'अमान्य सिग्नेचर / Invalid Signature',
+          text: val.message,
+          confirmButtonColor: '#dc2626'
+        });
+        return;
+      }
       this.sponsorSignatureFile = file;
       const reader = new FileReader();
       reader.onload = (e: any) => {

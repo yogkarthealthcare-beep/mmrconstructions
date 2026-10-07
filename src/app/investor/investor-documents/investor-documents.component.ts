@@ -3,6 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 
+import { validateImageUpload } from '../../shared/utils/form-helpers';
+
 @Component({
   selector: 'app-investor-documents',
   standalone: true,
@@ -20,11 +22,11 @@ export class InvestorDocumentsComponent implements OnInit {
   selectedFile?: File;
 
   documentTypes = [
-    { value: 'pan_card', label: 'PAN Card' },
-    { value: 'aadhaar_card', label: 'Aadhaar Card' },
-    { value: 'passport_photo', label: 'Passport Size Photo' },
-    { value: 'property_document', label: 'Property Documents' },
-    { value: 'supporting_document', label: 'Other Supporting Documents' },
+    { value: 'pan_card', label: 'PAN Card (Max 500 KB)' },
+    { value: 'aadhaar_card', label: 'Aadhaar Card (Max 500 KB)' },
+    { value: 'passport_photo', label: 'Passport Size Photo (Max 100 KB)' },
+    { value: 'property_document', label: 'Property Documents (Max 500 KB)' },
+    { value: 'supporting_document', label: 'Other Supporting Documents (Max 500 KB)' },
   ];
 
   constructor(private api: ApiService) {}
@@ -49,18 +51,34 @@ export class InvestorDocumentsComponent implements OnInit {
 
   onFileChange(event: Event) {
     const input = event.target as HTMLInputElement;
-    this.selectedFile = input.files?.[0];
+    const file = input.files?.[0];
+    this.selectedFile = file;
+    this.error = '';
+    this.message = '';
+
+    if (file) {
+      const uploadType = (this.documentType === 'passport_photo') ? 'photo' : 'document';
+      const val = validateImageUpload(file, uploadType);
+      if (!val.valid) {
+        this.error = val.message || 'Invalid file format or size.';
+        this.selectedFile = undefined;
+        input.value = '';
+      }
+    }
   }
 
   uploadDocument() {
     this.message = '';
     this.error = '';
     if (!this.selectedFile) {
-      this.error = 'Please select a PDF, JPG, or PNG file.';
+      this.error = 'Please select a valid JPG or PNG image file.';
       return;
     }
-    if (this.selectedFile.size > 5 * 1024 * 1024) {
-      this.error = 'File size must be 5 MB or less.';
+
+    const uploadType = (this.documentType === 'passport_photo') ? 'photo' : 'document';
+    const val = validateImageUpload(this.selectedFile, uploadType);
+    if (!val.valid) {
+      this.error = val.message || 'Invalid file format or size.';
       return;
     }
     const form = new FormData();

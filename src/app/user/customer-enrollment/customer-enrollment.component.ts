@@ -18,7 +18,8 @@ import {
   formatDateToDDMMYYYY, 
   parseDDMMYYYYToISO,
   humanNameValidator,
-  normalizeHumanName 
+  normalizeHumanName,
+  validateImageUpload
 } from '../../shared/utils/form-helpers';
 
 @Component({
@@ -262,8 +263,19 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   onPhotoSelect(event: any, type: number) {
-    const file = event.target.files[0];
+    const file = event.target.files?.[0];
     if (!file) return;
+    const val = validateImageUpload(file, 'photo');
+    if (!val.valid) {
+      event.target.value = '';
+      Swal.fire({
+        icon: 'error',
+        title: 'अमान्य फोटो / Invalid Photo',
+        text: val.message,
+        confirmButtonColor: '#dc2626'
+      });
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (e: any) => {
       if (type === 1) this.photo1DataUrl = e.target.result;
@@ -327,6 +339,17 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
+      const val = validateImageUpload(file, 'signature');
+      if (!val.valid) {
+        input.value = '';
+        Swal.fire({
+          icon: 'error',
+          title: 'अमान्य सिग्नेचर / Invalid Signature',
+          text: val.message,
+          confirmButtonColor: '#dc2626'
+        });
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (e: any) => {
         if (type === 'sole') {

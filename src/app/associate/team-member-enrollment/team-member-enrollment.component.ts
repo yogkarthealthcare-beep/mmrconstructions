@@ -15,7 +15,8 @@ import {
   adultAgeValidator, 
   calculateAgeFromDob,
   humanNameValidator,
-  normalizeHumanName 
+  normalizeHumanName,
+  validateImageUpload 
 } from '../../shared/utils/form-helpers';
 
 export interface TeamMemberSlot {
@@ -61,6 +62,8 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   // File uploads
   photoFile: File | null = null;
   photoPreviewUrl: string | null = null;
+  uploadedApplicantSigUrl: string | null = null;
+  uploadedAssociateSigUrl: string | null = null;
 
   // Signature Controllers
   applicantSigPad: SignaturePadController | null = null;
@@ -354,13 +357,10 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      Swal.fire('Invalid File', 'Please upload a valid image file (JPG, PNG, WEBP).', 'warning');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      Swal.fire('File Too Large', 'Passport photo must be less than 5 MB.', 'warning');
+    const val = validateImageUpload(file, 'photo');
+    if (!val.valid) {
+      Swal.fire('Invalid Photo (अमान्य फोटो)', val.message, 'warning');
+      event.target.value = '';
       return;
     }
 
@@ -370,6 +370,59 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       this.photoPreviewUrl = e.target.result;
     };
     reader.readAsDataURL(file);
+  }
+
+  onApplicantSigUpload(event: any): void {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const val = validateImageUpload(file, 'signature');
+    if (!val.valid) {
+      Swal.fire('Invalid Signature (अमान्य सिग्नेचर)', val.message, 'warning');
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.uploadedApplicantSigUrl = e.target.result;
+      this.drawUploadedImageToCanvas(this.applicantSigCanvasRef?.nativeElement, this.uploadedApplicantSigUrl);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  onAssociateSigUpload(event: any): void {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const val = validateImageUpload(file, 'signature');
+    if (!val.valid) {
+      Swal.fire('Invalid Signature (अमान्य सिग्नेचर)', val.message, 'warning');
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.uploadedAssociateSigUrl = e.target.result;
+      this.drawUploadedImageToCanvas(this.associateSigCanvasRef?.nativeElement, this.uploadedAssociateSigUrl);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  private drawUploadedImageToCanvas(canvas: HTMLCanvasElement | undefined, dataUrl: string | null): void {
+    if (!canvas || !dataUrl) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const img = new Image();
+    img.onload = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+    };
+    img.src = dataUrl;
   }
 
   removePhoto(): void {
@@ -466,12 +519,14 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   clearApplicantSignature(): void {
+    this.uploadedApplicantSigUrl = null;
     if (this.applicantSigPad) {
       this.applicantSigPad.clear();
     }
   }
 
   clearAssociateSignature(): void {
+    this.uploadedAssociateSigUrl = null;
     if (this.associateSigPad) {
       this.associateSigPad.clear();
     }
@@ -521,8 +576,8 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     }
 
     const raw = this.enrollmentForm.getRawValue();
-    const applicantSig = this.applicantSigPad?.dataUrl() || '';
-    const associateSig = this.associateSigPad?.dataUrl() || '';
+    const applicantSig = this.uploadedApplicantSigUrl || this.applicantSigPad?.dataUrl() || '';
+    const associateSig = this.uploadedAssociateSigUrl || this.associateSigPad?.dataUrl() || '';
 
     // Build FormData payload
     const formData = new FormData();

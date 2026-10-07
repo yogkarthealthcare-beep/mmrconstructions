@@ -282,12 +282,12 @@
                 <label class="btn-file-upload">
                   <i class="fas fa-camera"></i>
                   <span>{{ photoPreviewUrl ? 'Change Photo' : 'Upload Passport Photo' }}</span>
-                  <input type="file" (change)="onPhotoSelected($event)" accept="image/jpeg,image/png,image/webp" style="display: none;">
+                  <input type="file" (change)="onPhotoSelected($event)" accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display: none;">
                 </label>
                 <button type="button" *ngIf="photoPreviewUrl" (click)="removePhoto()" class="btn-remove-photo">
                   <i class="fas fa-trash"></i> Remove
                 </button>
-                <span class="photo-hint">Max file size: 5 MB (JPG, PNG, WEBP)</span>
+                <span class="photo-hint">Max file size: 100 KB (JPG, PNG only)</span>
               </div>
             </div>
           </div>
@@ -716,28 +716,40 @@
           <div class="sig-pad-card">
             <div class="sig-pad-header">
               <label><i class="fas fa-signature text-gold"></i> Applicant Digital Signature</label>
-              <button type="button" class="btn-clear-sig" (click)="clearApplicantSignature()">
-                <i class="fas fa-eraser"></i> Clear Pad
-              </button>
+              <div class="d-flex align-items-center gap-2">
+                <label class="btn-clear-sig mb-0" style="cursor: pointer;">
+                  <i class="fas fa-upload text-gold"></i> Upload (<= 50KB)
+                  <input type="file" (change)="onApplicantSigUpload($event)" accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display: none;">
+                </label>
+                <button type="button" class="btn-clear-sig" (click)="clearApplicantSignature()">
+                  <i class="fas fa-eraser"></i> Clear Pad
+                </button>
+              </div>
             </div>
             <div class="canvas-wrapper">
               <canvas #applicantSigCanvas id="applicantSigCanvas" class="sig-canvas"></canvas>
             </div>
-            <span class="sig-hint">Draw signature inside the box using touch or mouse</span>
+            <span class="sig-hint">Draw signature inside the box or upload image (JPG/PNG <= 50 KB)</span>
           </div>
 
           <!-- Associate Signature Pad -->
           <div class="sig-pad-card">
             <div class="sig-pad-header">
               <label><i class="fas fa-file-signature text-gold"></i> Sponsoring Associate Signature</label>
-              <button type="button" class="btn-clear-sig" (click)="clearAssociateSignature()">
-                <i class="fas fa-eraser"></i> Clear Pad
-              </button>
+              <div class="d-flex align-items-center gap-2">
+                <label class="btn-clear-sig mb-0" style="cursor: pointer;">
+                  <i class="fas fa-upload text-gold"></i> Upload (<= 50KB)
+                  <input type="file" (change)="onAssociateSigUpload($event)" accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display: none;">
+                </label>
+                <button type="button" class="btn-clear-sig" (click)="clearAssociateSignature()">
+                  <i class="fas fa-eraser"></i> Clear Pad
+                </button>
+              </div>
             </div>
             <div class="canvas-wrapper">
               <canvas #associateSigCanvas id="associateSigCanvas" class="sig-canvas"></canvas>
             </div>
-            <span class="sig-hint">Sponsoring Associate signature verification</span>
+            <span class="sig-hint">Sponsoring Associate signature (Draw or upload JPG/PNG <= 50 KB)</span>
           </div>
         </div>
 

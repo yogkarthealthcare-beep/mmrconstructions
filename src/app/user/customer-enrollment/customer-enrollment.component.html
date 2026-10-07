@@ -133,10 +133,13 @@
         </div>
 
         <div class="applicant-photo-col">
-          <div class="photo-box" [class.invalid-photo]="!photo1DataUrl && enrollmentForm.touched" title="Click to attach passport size photo" (click)="photoInput1.click()">
-            <ng-container *ngIf="!photo1DataUrl">Affix Passport<br>Size Photo<br>(First Applicant) <span style="color:red; font-size: 16px; font-weight: bold;">*</span></ng-container>
+          <div class="photo-box" [class.invalid-photo]="!photo1DataUrl && enrollmentForm.touched" title="Click to attach passport size photo (JPG, PNG <= 100 KB)" (click)="photoInput1.click()">
+            <ng-container *ngIf="!photo1DataUrl">
+              Affix Passport<br>Size Photo<br>(First Applicant) <span style="color:red; font-size: 16px; font-weight: bold;">*</span><br>
+              <span style="font-size: 9px; color: #16a34a; font-weight: 600;">(JPG/PNG &le; 100 KB)</span>
+            </ng-container>
             <img *ngIf="photo1DataUrl" [src]="photo1DataUrl">
-            <input type="file" #photoInput1 accept="image/*" style="display:none;" (change)="onPhotoSelect($event, 1)">
+            <input type="file" #photoInput1 accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display:none;" (change)="onPhotoSelect($event, 1)">
           </div>
         </div>
       </div>
@@ -409,8 +412,8 @@
           <div class="cap">Signature of Sole / First Applicant <span style="color:#dc2626;">*</span></div>
           <div class="sig-btn-row">
             <label class="sig-action-btn sig-upload-btn">
-              <i class="fas fa-upload"></i> Upload Sign
-              <input type="file" accept="image/*" (change)="onSignatureFileSelect($event, 'sole')" style="display: none;">
+              <i class="fas fa-upload"></i> Upload Sign (JPG/PNG &le; 50KB)
+              <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onSignatureFileSelect($event, 'sole')" style="display: none;">
             </label>
             <button type="button" class="sig-action-btn sig-clear-btn" (click)="clearSig('sole')">
               <i class="fas fa-eraser"></i> Clear
@@ -428,8 +431,8 @@
           <div class="cap">Signature of Co-Applicant</div>
           <div class="sig-btn-row">
             <label class="sig-action-btn sig-upload-btn">
-              <i class="fas fa-upload"></i> Upload Sign
-              <input type="file" accept="image/*" (change)="onSignatureFileSelect($event, 'co')" style="display: none;">
+              <i class="fas fa-upload"></i> Upload Sign (JPG/PNG &le; 50KB)
+              <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onSignatureFileSelect($event, 'co')" style="display: none;">
             </label>
             <button type="button" class="sig-action-btn sig-clear-btn" (click)="clearSig('co')">
               <i class="fas fa-eraser"></i> Clear

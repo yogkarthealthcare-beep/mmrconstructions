@@ -403,3 +403,80 @@ export function adultAgeValidator(minAge: number = 18) {
     return null;
   };
 }
+
+export type UploadFileType = 'signature' | 'photo' | 'document';
+
+export interface FileValidationResult {
+  valid: boolean;
+  message?: string;
+  sizeKb?: number;
+  maxKb?: number;
+}
+
+/**
+ * Strict image upload validator across MMR Construction:
+ * - Allowed formats: Strictly JPG, JPEG, PNG only (NO PDF allowed).
+ * - File size limits:
+ *    - 'signature': Max 50 KB
+ *    - 'photo': Max 100 KB
+ *    - 'document': Max 500 KB (Aadhaar, PAN, Cheques, KYC)
+ */
+export function validateImageUpload(file: File | null | undefined, type: UploadFileType): FileValidationResult {
+  if (!file) {
+    return { valid: false, message: 'कृपया फाइल चुनें / Please select a file.' };
+  }
+
+  const name = (file.name || '').toLowerCase();
+  const ext = name.substring(name.lastIndexOf('.'));
+  const allowedExtensions = ['.jpg', '.jpeg', '.png'];
+  const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
+  // Explicit PDF check
+  if (file.type === 'application/pdf' || ext === '.pdf') {
+    return {
+      valid: false,
+      message: 'PDF फाइल अपलोड नहीं की जा सकती। केवल JPG, JPEG और PNG फॉर्मेट ही मान्य हैं। (PDF is not allowed. Only JPG, JPEG and PNG formats are allowed).'
+    };
+  }
+
+  const isExtAllowed = allowedExtensions.includes(ext);
+  const isMimeAllowed = !file.type || allowedMimeTypes.includes(file.type.toLowerCase());
+
+  if (!isExtAllowed && !isMimeAllowed) {
+    return {
+      valid: false,
+      message: 'अमान्य फाइल फॉर्मेट! केवल JPG, JPEG या PNG इमेज ही अपलोड करें। (Invalid format! Only JPG, JPEG or PNG images allowed).'
+    };
+  }
+
+  let maxKb = 100;
+  let typeLabelHindi = 'इमेज';
+  let typeLabelEng = 'Image';
+
+  if (type === 'signature') {
+    maxKb = 50;
+    typeLabelHindi = 'सिग्नेचर इमेज';
+    typeLabelEng = 'Signature image';
+  } else if (type === 'photo') {
+    maxKb = 100;
+    typeLabelHindi = 'पासपोर्ट/प्रोफ़ाइल फोटो';
+    typeLabelEng = 'Profile/Passport photo';
+  } else if (type === 'document') {
+    maxKb = 500;
+    typeLabelHindi = 'दस्तावेज़ इमेज (आधार/पैन)';
+    typeLabelEng = 'Document image (Aadhaar/PAN)';
+  }
+
+  const sizeKb = Math.round(file.size / 1024);
+  if (file.size > maxKb * 1024) {
+    return {
+      valid: false,
+      sizeKb,
+      maxKb,
+      message: `${typeLabelHindi} ${maxKb} KB से ज़्यादा नहीं होनी चाहिए। आपकी फाइल का साइज़ ${sizeKb} KB है। (${typeLabelEng} must not exceed ${maxKb} KB. Current size: ${sizeKb} KB).`
+    };
+  }
+
+  return { valid: true, sizeKb, maxKb };
+}
+

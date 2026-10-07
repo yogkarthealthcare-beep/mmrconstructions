@@ -39,7 +39,7 @@
             <label for="investorPhotoInput" class="position-absolute bottom-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow cursor-pointer" style="width: 28px; height: 28px; cursor: pointer; transform: translate(2px, 2px);" title="Upload Profile Picture">
               <i class="fas fa-camera fa-xs"></i>
             </label>
-            <input type="file" id="investorPhotoInput" class="d-none" accept="image/*" (change)="onPhotoSelected($event)" />
+            <input type="file" id="investorPhotoInput" class="d-none" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onPhotoSelected($event)" />
           </div>
 
           <div *ngIf="photoMsg" class="inv-alert inv-alert-success py-1 px-2 mb-2 text-start small" style="font-size: 11px;">{{ photoMsg }}</div>
@@ -101,7 +101,7 @@
               </div>
               <div>
                 <div class="fw-bold text-dark small">Profile Photograph</div>
-                <div class="text-muted" style="font-size: 11px;">JPG, PNG, or WEBP (Max 5MB)</div>
+                <div class="text-muted" style="font-size: 11px;">JPG, JPEG, PNG only (Max 100 KB)</div>
               </div>
             </div>
             <div>
@@ -110,7 +110,7 @@
                 <span *ngIf="uploadingPhoto" class="spinner-border spinner-border-sm me-1"></span>
                 {{ uploadingPhoto ? 'Uploading...' : (profile?.profile_picture_url ? 'Change Photo' : 'Upload Photo') }}
               </label>
-              <input type="file" id="personalPhotoInput" class="d-none" accept="image/*" (change)="onPhotoSelected($event)" />
+              <input type="file" id="personalPhotoInput" class="d-none" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onPhotoSelected($event)" />
             </div>
           </div>
 
