@@ -353,21 +353,53 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
   }
 
   initForm() {
+    const sessionUser = this.auth.getUser() || {};
+    let jwtUser: any = {};
+    const token = this.auth.userToken;
+    if (token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        jwtUser = JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+      } catch {}
+    }
+
+    let regUser: any = {};
+    try {
+      const regStr = sessionStorage.getItem('mmr_last_registered_user') || localStorage.getItem('mmr_last_registered_user');
+      if (regStr) regUser = JSON.parse(regStr);
+    } catch {}
+
+    const initName = sessionUser.full_name || sessionUser.name || jwtUser.full_name || regUser.full_name || '';
+    const initMobile = sessionUser.mobile_no || sessionUser.mobile || sessionUser.phone || sessionUser.contact || jwtUser.mobile_no || regUser.mobile_no || '';
+    const initEmail = sessionUser.email || jwtUser.email || regUser.email || '';
+    const initPan = sessionUser.pan_number || sessionUser.pan_no || regUser.pan_number || '';
+    const initAadhar = sessionUser.aadhar_number || sessionUser.aadhar_no || regUser.aadhar_number || '';
+    const initDob = formatDateToDDMMYYYY(sessionUser.date_of_birth || sessionUser.dob || regUser.date_of_birth);
+    const initGender = sessionUser.gender || regUser.gender || '';
+    const initFather = sessionUser.father_name || regUser.father_name || '';
+    const initMother = sessionUser.mother_name || regUser.mother_name || '';
+    const initSpouse = sessionUser.spouse_name || regUser.spouse_name || '';
+
+    const sName = sessionUser.sponsor_name || regUser.sponsor_name || 'Suraj Kumar Verma';
+    const sCode = sessionUser.sponsor_code || sessionUser.sponsor_id || regUser.sponsor_code || 'MMR0001';
+    const sContact = sessionUser.sponsor_contact || sessionUser.sponsor_mobile || regUser.sponsor_contact || '7071951011';
+
     this.enrollmentForm = this.fb.group({
       personalDetails: this.fb.group({
-        fullName: ['', [Validators.required, humanNameValidator()]],
-        dob: ['', [Validators.required, adultAgeValidator(18)]],
-        gender: ['', Validators.required],
-        fatherName: ['', [Validators.required, humanNameValidator()]],
-        motherName: ['', [Validators.required, humanNameValidator()]],
-        spouseName: ['', [humanNameValidator()]],
-        contact1: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
+        fullName: [initName, [Validators.required, humanNameValidator()]],
+        dob: [initDob, [Validators.required, adultAgeValidator(18)]],
+        gender: [initGender, Validators.required],
+        fatherName: [initFather, [Validators.required, humanNameValidator()]],
+        motherName: [initMother, [Validators.required, humanNameValidator()]],
+        spouseName: [initSpouse, [humanNameValidator()]],
+        contact1: [initMobile, [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
         contact2: ['', [Validators.pattern(MOBILE_PATTERN)]],
         nationality: ['Indian', Validators.required],
-        residentialStatus: ['', Validators.required],
-        panNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
-        aadharNo: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
-        email: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
+        residentialStatus: ['Resident Individual', Validators.required],
+        panNo: [initPan, [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
+        aadharNo: [initAadhar, [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
+        email: [initEmail, [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
         occupation: ['', Validators.required],
         annualIncome: ['', Validators.required],
         education: ['', Validators.required],
@@ -389,7 +421,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
       }),
       bankDetails: this.fb.group({
         bankName: ['', Validators.required],
-        accHolder: ['', [Validators.required, humanNameValidator()]],
+        accHolder: [initName, [Validators.required, humanNameValidator()]],
         accNo: ['', Validators.required],
         ifsc: ['', [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
         micr: [''],
@@ -403,7 +435,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         nomineeDob: ['', Validators.required],
         nomineeGender: ['', Validators.required],
         nomineeNationality: ['Indian', Validators.required],
-        nomineeResStatus: ['', Validators.required],
+        nomineeResStatus: ['Resident Individual', Validators.required],
         nomineeRelationship: ['', Validators.required],
         nomineePanName: ['', [humanNameValidator()]],
         nomineePanNo: ['', Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)],
@@ -412,9 +444,9 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         nomineeAddress: ['', Validators.required]
       }),
       sponsorDetails: this.fb.group({
-        sponsorName: ['', Validators.required],
-        sponsorCode: ['', Validators.required],
-        sponsorContact: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]]
+        sponsorName: [sName, Validators.required],
+        sponsorCode: [sCode, Validators.required],
+        sponsorContact: [sContact, [Validators.required, Validators.pattern(MOBILE_PATTERN)]]
       }),
       termsAndConditions: this.fb.group({
         tc1: [false, Validators.requiredTrue],
@@ -425,7 +457,7 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         tc6: [false, Validators.requiredTrue]
       }),
       signature: this.fb.group({
-        signDate: [new Date().toISOString().split('T')[0], Validators.required]
+        signDate: [this.todayStr, Validators.required]
       })
     });
 
