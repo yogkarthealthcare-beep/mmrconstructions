@@ -370,17 +370,20 @@ export class AssociatesComponent implements OnInit {
     return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   }
 
+  showNewPass = false;
+
   // --- MODAL & CRUD ACTIONS ---
 
   openAddModal() {
+    this.showNewPass = false;
     this.associateForm = {
       full_name: '',
       email: '',
       mobile_no: '',
       sponsor_code: '',
       rank_name: 'Associate',
-      password: 'password123',
-      confirm_password: 'password123',
+      password: '',
+      confirm_password: '',
       account_status: 'Active',
       address: '',
       city: '',
@@ -396,8 +399,23 @@ export class AssociatesComponent implements OnInit {
       return;
     }
 
+    const payload = { ...this.associateForm };
+    if (!payload.password) {
+      payload.password = 'password123';
+      payload.confirm_password = 'password123';
+    } else {
+      if (payload.password.length < 6) {
+        this.showToast('Password must be at least 6 characters');
+        return;
+      }
+      if (payload.password !== payload.confirm_password) {
+        this.showToast('Password and Confirm Password do not match');
+        return;
+      }
+    }
+
     this.actionLoading = true;
-    this.api.adminCreateAssociate(this.associateForm).subscribe({
+    this.api.adminCreateAssociate(payload).subscribe({
       next: (res: any) => {
         if (res.success) {
           this.showToast('Associate network agent created successfully!');

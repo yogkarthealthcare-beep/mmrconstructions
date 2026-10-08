@@ -282,6 +282,24 @@
             </select>
           </div>
 
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark d-flex justify-content-between align-items-center">
+              <span>Account Password</span>
+              <small class="text-muted fw-normal fs-10">(Default: <code>password123</code>)</small>
+            </label>
+            <div class="input-group input-group-sm">
+              <input [type]="showNewPass ? 'text' : 'password'" class="form-control form-control-sm" [(ngModel)]="associateForm.password" placeholder="Custom password or leave empty for default">
+              <button type="button" class="btn btn-outline-secondary" (click)="showNewPass = !showNewPass" title="Toggle visibility">
+                <i [class]="showNewPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fs-11 fw-700 text-dark">Confirm Password</label>
+            <input [type]="showNewPass ? 'text' : 'password'" class="form-control form-control-sm" [(ngModel)]="associateForm.confirm_password" placeholder="Confirm password">
+          </div>
+
           <div class="col-12">
             <label class="form-label fs-11 fw-700 text-dark">Address Line</label>
             <input type="text" class="form-control form-control-sm" [(ngModel)]="associateForm.address" placeholder="House no, Street name...">

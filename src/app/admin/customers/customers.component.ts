@@ -320,15 +320,18 @@ export class CustomersComponent implements OnInit {
     return loc.length > 25 ? loc.slice(0, 25) + '...' : loc;
   }
 
+  showNewPass = false;
+
   // --- MODAL & CRUD ACTIONS ---
 
   openAddModal() {
+    this.showNewPass = false;
     this.customerForm = {
       full_name: '',
       email: '',
       mobile_no: '',
-      password: 'password123',
-      confirm_password: 'password123',
+      password: '',
+      confirm_password: '',
       account_status: 'Active',
       address: '',
       city: '',
@@ -344,8 +347,23 @@ export class CustomersComponent implements OnInit {
       return;
     }
 
+    const payload = { ...this.customerForm };
+    if (!payload.password) {
+      payload.password = 'password123';
+      payload.confirm_password = 'password123';
+    } else {
+      if (payload.password.length < 6) {
+        this.showToast('Password must be at least 6 characters');
+        return;
+      }
+      if (payload.password !== payload.confirm_password) {
+        this.showToast('Password and Confirm Password do not match');
+        return;
+      }
+    }
+
     this.actionLoading = true;
-    this.api.adminCreateCustomer(this.customerForm).subscribe({
+    this.api.adminCreateCustomer(payload).subscribe({
       next: (res: any) => {
         if (res.success) {
           this.showToast('Customer created successfully!');
