@@ -55,6 +55,11 @@ export class UserDashboardComponent implements OnInit {
   hasSubmittedEnrollment: boolean = false;
   enrollmentData: any = null;
 
+  // Verification Documents State
+  userDocuments: any[] = [];
+  hasUploadedDocs: boolean = true;
+  docsLoaded: boolean = false;
+
   get isTeamMember(): boolean {
     const type = String(this.userData?.user_type || this.userData?.role || this.profile?.user_type || '').toLowerCase();
     return this.auth.isTeamMember() || type === 'team member' || type.includes('team member') || this.router.url.startsWith('/team-member');
@@ -238,7 +243,23 @@ export class UserDashboardComponent implements OnInit {
           site_id: Number(s.site_id || s.id),
           site_name: s.site_name || s.name || 'Project Site'
         }));
-      }).catch(err => console.warn('Sites fetch warning:', err))
+      }).catch(err => console.warn('Sites fetch warning:', err)),
+
+      this.api.getDocuments().toPromise().then((r: any) => {
+        if (r?.success && Array.isArray(r.data)) {
+          this.userDocuments = r.data;
+          this.hasUploadedDocs = r.data.length > 0;
+        } else {
+          this.userDocuments = [];
+          this.hasUploadedDocs = false;
+        }
+        this.docsLoaded = true;
+      }).catch(err => {
+        console.warn('Documents fetch warning:', err);
+        this.userDocuments = [];
+        this.hasUploadedDocs = true;
+        this.docsLoaded = true;
+      })
     ]).finally(() => {
       this.buildPropertyDossiers();
       this.loading = false;

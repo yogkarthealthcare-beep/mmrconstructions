@@ -5,6 +5,35 @@
 
 <ng-container *ngIf="!loading">
 
+  <!-- MISSING DOCUMENTS WARNING BANNER (YELLOW CARD FOR ASSOCIATE) -->
+  <div *ngIf="isAssociate && !hasUploadedDocs" class="missing-docs-warning-card mb-3 p-3 rounded-12 shadow-sm">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="missing-docs-icon-box">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+            <span class="badge warning-badge-tag px-2 py-0.5 fs-11 fw-700">
+              <i class="fas fa-file-upload me-1"></i> Document Required / दस्तावेज़ आवश्यक
+            </span>
+            <h5 class="fw-800 text-dark mb-0 fs-15">
+              Action Required: Verification Documents Not Uploaded / दस्तावेज़ अपलोड नहीं हैं
+            </h5>
+          </div>
+          <p class="fs-12 text-muted mb-0">
+            Aapke verification documents (Aadhaar Card, PAN Card, Photo, Bank Passbook) abhi upload nahi hain. Kripya verification ke liye documents upload karein.
+          </p>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <a [routerLink]="basePrefix + '/documents'" class="btn-upload-docs-link">
+          <i class="fas fa-cloud-upload-alt me-1.5"></i> Upload Documents / दस्तावेज़ जोड़ें
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- PENDING ENROLLMENT APPROVAL & SUPPORT CONTACT BANNER -->
   <div *ngIf="isEnrollmentPending" class="pending-approval-banner mb-3 p-3 rounded-12 shadow-sm">
     <div class="d-flex align-items-start gap-3 flex-wrap flex-md-nowrap">
