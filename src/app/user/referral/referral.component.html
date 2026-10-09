@@ -230,11 +230,12 @@
             <th>Gaj Sold</th>
             <th>Level</th>
             <th>Status</th>
+            <th class="text-end">Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="network.length===0">
-            <td colspan="5" class="text-center py-4 text-muted">
+            <td colspan="6" class="text-center py-4 text-muted">
               No team referrals registered under your code yet.
             </td>
           </tr>
@@ -262,6 +263,13 @@
               <span class="sbadge" [class.sbadge-green]="!isFreeOrDisabled(n) && n.account_status==='Active'" [class.sbadge-red]="isFreeOrDisabled(n)" [class.sbadge-yellow]="!isFreeOrDisabled(n) && n.account_status!=='Active'">
                 {{ isFreeOrDisabled(n) ? 'Disabled / Free' : (n.account_status || 'Active') }}
               </span>
+            </td>
+            <td class="text-end">
+              <button class="btn btn-success btn-xs fw-700" style="background: #10b981; border: none; color: #fff;" *ngIf="n.account_status!=='Active'" (click)="approveReferral(n, $event)" [disabled]="approvingId===n.user_id" title="Approve & Activate Referral">
+                <i class="fas" [class.fa-check-circle]="approvingId!==n.user_id" [class.fa-spinner]="approvingId===n.user_id" [class.fa-spin]="approvingId===n.user_id"></i>
+                Approve
+              </button>
+              <span class="badge bg-success-subtle text-success fs-11" *ngIf="n.account_status==='Active'"><i class="fas fa-check me-1"></i>Active</span>
             </td>
           </tr>
         </tbody>

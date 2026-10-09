@@ -42,6 +42,7 @@ export class ReferralComponent implements OnInit {
   // Hover Tooltip for List
   hoveredMember: any = null;
   tooltipPos = { x: 0, y: 0 };
+  approvingId: number | null = null;
 
   constructor(private api: ApiService, private auth: AuthService) {}
 
@@ -331,5 +332,29 @@ export class ReferralComponent implements OnInit {
 
   hideListTooltip(): void {
     this.hoveredMember = null;
+  }
+
+  approveReferral(member: any, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    const targetUserId = member.user_id;
+    if (!targetUserId) return;
+
+    this.approvingId = targetUserId;
+    this.api.approveAssociateReferral(targetUserId).subscribe({
+      next: (res: any) => {
+        this.approvingId = null;
+        if (res.success) {
+          member.account_status = 'Active';
+          member.status = 'approved';
+          this.loadAll();
+        }
+      },
+      error: () => {
+        this.approvingId = null;
+      }
+    });
   }
 }

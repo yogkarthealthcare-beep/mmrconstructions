@@ -144,6 +144,18 @@
 
             <button 
               type="button" 
+              class="btn-slot-approve mb-1.5 w-100 fw-700" 
+              style="background: #10b981; border: none; color: #fff; padding: 7px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;"
+              *ngIf="slot.status === 'pending' && slot.member"
+              (click)="approveSlotMember(slot.member, $event)"
+              [disabled]="approvingId() === (slot.member.id || slot.member.user_id)"
+            >
+              <i class="fas" [class.fa-check-circle]="approvingId() !== (slot.member.id || slot.member.user_id)" [class.fa-spinner]="approvingId() === (slot.member.id || slot.member.user_id)" [class.fa-spin]="approvingId() === (slot.member.id || slot.member.user_id)"></i>
+              Approve Member
+            </button>
+
+            <button 
+              type="button" 
               class="btn-slot-view" 
               *ngIf="slot.status !== 'empty' && slot.member"
               (click)="viewMemberDetails(slot.member)"
@@ -906,9 +918,23 @@
                 <span class="text-truncate-safe">{{ member.created_at | date:'dd MMM yyyy' }}</span>
               </td>
               <td class="text-end" data-label="Action">
-                <button type="button" class="btn-action-view" (click)="viewMemberDetails(member)">
-                  <i class="fas fa-eye"></i> View
-                </button>
+                <div class="d-inline-flex align-items-center gap-1">
+                  <button 
+                    type="button" 
+                    class="btn btn-success btn-xs fw-700" 
+                    style="background: #10b981; border: none; color: #fff; padding: 4px 8px; border-radius: 4px;"
+                    *ngIf="member.status === 'pending'"
+                    (click)="approveSlotMember(member, $event)"
+                    [disabled]="approvingId() === (member.id || member.user_id)"
+                    title="Approve Team Member"
+                  >
+                    <i class="fas" [class.fa-check-circle]="approvingId() !== (member.id || member.user_id)" [class.fa-spinner]="approvingId() === (member.id || member.user_id)" [class.fa-spin]="approvingId() === (member.id || member.user_id)"></i>
+                    Approve
+                  </button>
+                  <button type="button" class="btn-action-view" (click)="viewMemberDetails(member)">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -1008,8 +1034,19 @@
         </div>
       </div>
 
-      <div class="modal-footer-custom">
-        <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+      <div class="modal-footer-custom d-flex align-items-center justify-content-between">
+        <button 
+          type="button" 
+          class="btn btn-success fw-700" 
+          style="background: #10b981; border: none;" 
+          *ngIf="selectedMember()?.status === 'pending'"
+          (click)="approveSlotMember(selectedMember(), $event)"
+          [disabled]="approvingId() === (selectedMember()?.id || selectedMember()?.user_id)"
+        >
+          <i class="fas" [class.fa-check-circle]="approvingId() !== (selectedMember()?.id || selectedMember()?.user_id)" [class.fa-spinner]="approvingId() === (selectedMember()?.id || selectedMember()?.user_id)" [class.fa-spin]="approvingId() === (selectedMember()?.id || selectedMember()?.user_id)"></i>
+          Approve Application &amp; Activate Account
+        </button>
+        <button type="button" class="btn btn-secondary ms-auto" (click)="closeModal()">Close</button>
       </div>
     </div>
   </div>

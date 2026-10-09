@@ -243,6 +243,8 @@ export class ApiService {
   getAssociateTeamMembers(params: any = {}) { return this.get('/api/associate/team-members', params); }
   createAssociatePlotBooking(data: any) { return this.post('/api/associate/bookings', data); }
   getAssociateTeamMemberInvoices(userId: number) { return this.get(`/api/associate/team-members/${userId}/invoices`); }
+  approveAssociateTeamMember(id: number | string) { return this.post(`/api/associate/team-members/${id}/approve`, {}); }
+  approveAssociateReferral(userId: number | string) { return this.post(`/api/associate/referrals/${userId}/approve`, {}); }
 
   // ── Notifications ────────────────────────────────
   getNotifications(q: any = {})    { return this.get('/api/notifications', q); }

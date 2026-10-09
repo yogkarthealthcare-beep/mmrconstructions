@@ -80,6 +80,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   searchQuery = signal<string>('');
   statusFilter = signal<string>('all');
   selectedMember = signal<any | null>(null);
+  approvingId = signal<number | null>(null);
 
   page = signal<number>(1);
   pageSize = signal<number>(10);
@@ -749,6 +750,40 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
 
   closeModal(): void {
     this.selectedMember.set(null);
+  }
+
+  approveSlotMember(member: any, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    const targetId = member.id || member.user_id || member.team_member_uid;
+    if (!targetId) return;
+
+    this.approvingId.set(member.id || member.user_id);
+    this.api.approveAssociateTeamMember(targetId).subscribe({
+      next: (res: any) => {
+        this.approvingId.set(null);
+        if (res?.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Team Member Approved!',
+            text: `Team Member "${member.full_name}" has been approved and activated. They can now log in immediately.`,
+            confirmButtonColor: '#10b981'
+          });
+          this.loadTeamMembersList();
+          if (this.selectedMember()) {
+            this.selectedMember.set({ ...this.selectedMember(), status: 'approved' });
+          }
+        } else {
+          Swal.fire('Approval Error', res?.message || 'Failed to approve member.', 'error');
+        }
+      },
+      error: (err: any) => {
+        this.approvingId.set(null);
+        Swal.fire('Approval Error', err?.error?.message || 'Failed to approve member.', 'error');
+      }
+    });
   }
 
   formatFieldName(key: string): string {

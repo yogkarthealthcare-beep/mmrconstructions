@@ -87,6 +87,8 @@ export class MyTeamComponent implements OnInit {
   addTeamMemberSubmitting = false;
   addTeamMemberSuccess = false;
   addTeamMemberError = '';
+  autoApproveTeamMember = true;
+  approvingId: number | null = null;
   newTeamMember = {
     full_name: '',
     mobile_no: '',
@@ -679,6 +681,48 @@ export class MyTeamComponent implements OnInit {
         mobile: mobile,
         email: email,
         slot_number: slot
+      }
+    });
+  }
+
+  copyCreatedTeamMemberCredentials(): void {
+    if (!this.createdTeamMemberData) return;
+    const info = `MMR Construction Team Member Account Details:
+Name: ${this.createdTeamMemberData.full_name}
+Member ID: ${this.createdTeamMemberData.member_id}
+Mobile Number: ${this.createdTeamMemberData.mobile_no}
+Email: ${this.createdTeamMemberData.email}
+Password: ${this.newTeamMember.password || '******'}
+Assigned Slot: #${this.createdTeamMemberData.slot_number} of 10
+Login URL: https://mmrconstructions.in/login`;
+    navigator.clipboard.writeText(info);
+    this.showToast('Login credentials copied to clipboard!', 'success');
+  }
+
+  approveMember(member: any, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    const targetId = member.user_id || member.id;
+    if (!targetId) return;
+
+    this.approvingId = targetId;
+    this.api.approveAssociateTeamMember(targetId).subscribe({
+      next: (res: any) => {
+        this.approvingId = null;
+        if (res.success) {
+          member.account_status = 'Active';
+          member.status = 'approved';
+          this.showToast(`Team Member "${member.full_name}" has been approved and activated!`, 'success');
+          this.loadTeamData();
+        } else {
+          this.showToast(res.message || 'Failed to approve team member.', 'error');
+        }
+      },
+      error: (err: any) => {
+        this.approvingId = null;
+        this.showToast(err?.error?.message || 'Failed to approve team member. Please try again.', 'error');
       }
     });
   }

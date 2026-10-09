@@ -317,6 +317,10 @@
 
           <!-- Card Actions Footer -->
           <div class="member-card-footer d-flex align-items-center gap-1.5 flex-wrap">
+            <button class="btn btn-success btn-xs flex-fill fw-700 shadow-sm" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none; color: #fff;" *ngIf="m.account_status!=='Active' || m.status==='pending'" (click)="approveMember(m, $event)" [disabled]="approvingId === (m.user_id || m.id)">
+              <i class="fas" [class.fa-check-circle]="approvingId !== (m.user_id || m.id)" [class.fa-spinner]="approvingId === (m.user_id || m.id)" [class.fa-spin]="approvingId === (m.user_id || m.id)"></i>
+              {{ approvingId === (m.user_id || m.id) ? 'Approving...' : '✓ Approve Member' }}
+            </button>
             <button class="btn btn-navy-action btn-xs flex-fill" (click)="openBookingModal(m)">
               <i class="fas fa-map-marked-alt me-1"></i> Book Plot
             </button>
@@ -406,6 +410,10 @@
             </td>
             <td class="text-end" data-label="Actions">
               <div class="d-inline-flex align-items-center gap-1">
+                <button class="btn btn-success btn-xs fw-700 shadow-sm" style="background: #10b981; border: none; color: #fff;" *ngIf="m.account_status!=='Active' || m.status==='pending'" (click)="approveMember(m, $event)" [disabled]="approvingId === (m.user_id || m.id)" title="Approve & Activate Team Member">
+                  <i class="fas" [class.fa-check-circle]="approvingId !== (m.user_id || m.id)" [class.fa-spinner]="approvingId === (m.user_id || m.id)" [class.fa-spin]="approvingId === (m.user_id || m.id)"></i>
+                  Approve
+                </button>
                 <button class="btn btn-navy-action btn-xs" (click)="openBookingModal(m)" title="Book Plot">
                   <i class="fas fa-map-marked-alt me-1"></i> Book
                 </button>
@@ -978,6 +986,19 @@
               </div>
             </div>
           </div>
+
+          <!-- Instant Approval & Activation Notice -->
+          <div class="p-2.5 rounded-8 bg-success-subtle border border-success-subtle text-start d-flex align-items-center justify-content-between mt-2.5">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-check-double text-success fs-5"></i>
+              <div>
+                <span class="fw-700 text-success fs-12 d-block">Instant Approval &amp; Login Ready (तुरंत अप्रूव और एक्टिव)</span>
+                <span class="fs-11 text-muted">Upon registration, this account will be automatically Approved &amp; Active so the team member can log in right away.</span>
+              </div>
+            </div>
+            <span class="badge bg-success text-white px-2 py-1 fs-11"><i class="fas fa-bolt me-1"></i> Auto-Approved</span>
+          </div>
+
           <div class="form-text fs-11 text-muted mt-1">
             <i class="fas fa-info-circle text-success me-1"></i> The team member will log into the Team Member Portal using this mobile number and password.
           </div>
@@ -996,11 +1017,11 @@
       <button type="button" class="btn-create-cust" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);" (click)="submitAddTeamMember()" [disabled]="addTeamMemberSubmitting">
         <span class="d-flex align-items-center gap-2" *ngIf="!addTeamMemberSubmitting">
           <i class="fas fa-check-circle"></i>
-          <span>Register Team Member</span>
+          <span>Register &amp; Approve Team Member</span>
         </span>
         <span class="d-flex align-items-center gap-2" *ngIf="addTeamMemberSubmitting">
           <i class="fas fa-spinner fa-spin"></i>
-          <span>Registering Team Member...</span>
+          <span>Registering &amp; Approving...</span>
         </span>
       </button>
     </div>
@@ -1011,50 +1032,66 @@
         <i class="fas fa-check text-white fs-2"></i>
       </div>
 
-      <h4 class="fw-800 text-success mb-1">Team Member Registered Successfully!</h4>
-      <p class="text-muted fs-13 mb-4">The team member has been assigned to your direct 11-slot sales network.</p>
+      <h4 class="fw-800 text-success mb-1">Team Member Registered &amp; Approved!</h4>
+      <p class="text-muted fs-13 mb-3">Account has been activated and assigned to your direct 10-slot network (Slot #{{ createdTeamMemberData?.slot_number }}).</p>
+
+      <!-- Account Status Active Card -->
+      <div class="p-2.5 rounded-8 bg-success-subtle border border-success text-start d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fas fa-shield-check text-success fs-4"></i>
+          <div>
+            <div class="fw-800 text-success fs-13">Account Status: Active &amp; Approved (सक्रिय)</div>
+            <div class="fs-11 text-muted">Login is ready immediately. The team member can now sign in without waiting.</div>
+          </div>
+        </div>
+        <span class="badge bg-success text-white px-2.5 py-1 fs-12"><i class="fas fa-check-circle me-1"></i> Active</span>
+      </div>
 
       <!-- Team Member Details Card -->
-      <div class="created-account-summary-card text-start p-3 mb-4" style="border-left: 4px solid #10b981;">
+      <div class="created-account-summary-card text-start p-3 mb-3" style="border-left: 4px solid #10b981;">
         <div class="row g-2">
           <div class="col-6">
             <div class="fs-11 text-muted text-uppercase fw-600">Team Member Name</div>
             <div class="fw-700 text-dark fs-14">{{ createdTeamMemberData?.full_name }}</div>
           </div>
           <div class="col-6">
-            <div class="fs-11 text-muted text-uppercase fw-600">Member ID</div>
+            <div class="fs-11 text-muted text-uppercase fw-600">Member ID / UID</div>
             <div class="fw-800 text-success fs-14">{{ createdTeamMemberData?.member_id }}</div>
+          </div>
+          <div class="col-6 mt-2">
+            <div class="fs-11 text-muted text-uppercase fw-600">Mobile (Login Username)</div>
+            <div class="fw-700 text-dark fs-13 font-monospace">{{ createdTeamMemberData?.mobile_no }}</div>
           </div>
           <div class="col-6 mt-2">
             <div class="fs-11 text-muted text-uppercase fw-600">Direct Slot Assigned</div>
             <div class="fw-800 text-dark fs-13">
-              <span class="badge bg-success text-white px-2 py-1"><i class="fas fa-layer-group me-1"></i> Slot #{{ createdTeamMemberData?.slot_number }} of 11</span>
+              <span class="badge bg-success text-white px-2 py-1"><i class="fas fa-layer-group me-1"></i> Slot #{{ createdTeamMemberData?.slot_number }} of 10</span>
             </div>
           </div>
-          <div class="col-6 mt-2">
-            <div class="fs-11 text-muted text-uppercase fw-600">Parent Associate</div>
-            <div class="fw-700 text-dark fs-13">
-              <span class="badge bg-gold text-dark"><i class="fas fa-lock me-1"></i>{{ createdTeamMemberData?.sponsor_member_id || currentUser?.member_id }}</span>
-            </div>
-          </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between mt-3 pt-2 border-top">
+          <span class="fs-11 text-muted"><i class="fas fa-key me-1 text-gold"></i> Password: <strong>{{ newTeamMember.password || '******' }}</strong></span>
+          <button type="button" class="btn btn-outline-success btn-xs" (click)="copyCreatedTeamMemberCredentials()">
+            <i class="fas fa-copy me-1"></i> Copy Login Details
+          </button>
         </div>
       </div>
 
       <!-- NEXT STEP BANNER -->
-      <div class="next-step-action-box p-3 mb-4 text-start" style="border-left: 4px solid #059669; background: #f0fdf4;">
+      <div class="next-step-action-box p-3 mb-3 text-start" style="border-left: 4px solid #059669; background: #f0fdf4;">
         <div class="d-flex align-items-start gap-2.5">
           <div class="step-badge-icon" style="background: #10b981; color: #fff;"><i class="fas fa-file-contract"></i></div>
           <div class="flex-fill">
-            <h6 class="fw-800 text-dark mb-1">Next Step: Complete Team Member Enrollment</h6>
+            <h6 class="fw-800 text-dark mb-1">Optional: Complete Full KYC &amp; Bank Enrollment</h6>
             <p class="fs-12 text-muted mb-2">
-              Prefill KYC, address, bank details, and nominee information for this team member now.
+              Fill full Aadhaar, PAN, Bank Details, and Nominee details for this team member now or later.
             </p>
             <div class="d-flex align-items-center gap-2 flex-wrap">
               <button type="button" class="btn btn-success btn-sm fw-700 px-3" (click)="fillEnrollmentForCreatedTeamMember()">
                 <i class="fas fa-edit me-1.5"></i> Fill Enrollment Form Now
               </button>
               <button type="button" class="btn btn-outline-secondary btn-sm px-3" (click)="closeAddTeamMemberModal()">
-                View in Team
+                View in Team List
               </button>
             </div>
           </div>
@@ -1062,7 +1099,7 @@
       </div>
 
       <!-- Need Help & Support Section -->
-      <div class="support-footer-box p-2.5 rounded-8 bg-light border text-start d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div class="support-footer-box p-2.5 rounded-8 bg-light border text-start d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
         <div>
           <div class="fs-11 text-uppercase text-muted fw-700">Need Help? MMR Constructions Support</div>
           <div class="fs-12 text-dark"><strong>Phone:</strong> +91 7071951011 &nbsp;|&nbsp; <strong>Email:</strong> mmrconstructionsbuilder&#64;gmail.com</div>
