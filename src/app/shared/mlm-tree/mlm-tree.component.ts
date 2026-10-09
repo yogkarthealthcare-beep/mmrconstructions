@@ -577,6 +577,13 @@ export class MlmTreeComponent implements OnInit {
   }
 
   // ── SEARCH & RE-ROOTING ────────────────────────────────────────────
+  search(term?: string) {
+    if (typeof term === 'string') {
+      this.searchTerm = term;
+    }
+    this.onSearchInput();
+  }
+
   onSearchInput() {
     clearTimeout(this.searchDebounceTimer);
     const term = this.searchTerm.trim();
@@ -642,15 +649,15 @@ export class MlmTreeComponent implements OnInit {
   }
 
   // ── CONTEXT MENU & DOUBLE CLICK ───────────────────────────────────
-  onNodeContextMenu(node: MlmNode, event: MouseEvent) {
+  onNodeContextMenu(node: MlmNode, event?: MouseEvent) {
     if (this.audience !== 'admin') return;
-    event.preventDefault();
-    event.stopPropagation();
+    event?.preventDefault();
+    event?.stopPropagation();
 
     this.contextMenu = {
       visible: true,
-      x: event.clientX,
-      y: event.clientY,
+      x: event ? event.clientX : 100,
+      y: event ? event.clientY : 100,
       node
     };
   }
@@ -660,9 +667,9 @@ export class MlmTreeComponent implements OnInit {
     this.contextMenu.node = null;
   }
 
-  onNodeDblClick(node: MlmNode, event: MouseEvent) {
-    event.preventDefault();
-    event.stopPropagation();
+  onNodeDblClick(node: MlmNode, event?: MouseEvent) {
+    event?.preventDefault();
+    event?.stopPropagation();
 
     if (this.audience === 'admin') {
       if (node.userId === 'ADMIN' || node.id === 'ADMIN') return;
@@ -738,9 +745,11 @@ export class MlmTreeComponent implements OnInit {
 
   endPan() { this.isPanning = false; }
 
-  showTooltip(node: MlmNode, event: MouseEvent) {
+  showTooltip(node: MlmNode, event?: MouseEvent) {
     this.hoveredNode = node;
-    this.tooltip = { x: event.clientX + 12, y: event.clientY + 12 };
+    if (event) {
+      this.tooltip = { x: event.clientX + 12, y: event.clientY + 12 };
+    }
   }
 
   isSearchMatch(node: MlmNode) {
@@ -756,9 +765,9 @@ export class MlmTreeComponent implements OnInit {
     return status === 'free' || status === 'inactive' || status === 'pending' || status === 'disabled' || status === 'suspended' || status === 'blacklisted';
   }
 
-  onNodeClick(node: MlmNode, event: MouseEvent) {
-    event.stopPropagation();
-    event.preventDefault();
+  onNodeClick(node: MlmNode, event?: MouseEvent) {
+    event?.stopPropagation();
+    event?.preventDefault();
     this.selectedProfileNode = node;
   }
 
