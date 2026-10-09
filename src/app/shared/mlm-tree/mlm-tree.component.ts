@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -11,7 +11,7 @@ import { VerifiedBadgeComponent } from '../verified-badge/verified-badge.compone
 type TreeMode = 'binary' | 'hierarchical';
 type Audience = 'user' | 'associate' | 'admin';
 
-type MlmNode = {
+export type MlmNode = {
   id: string;
   name: string;
   userId: string;
@@ -25,6 +25,8 @@ type MlmNode = {
   enrollment_status?: string;
   sponsorName?: string;
   sponsorId?: string;
+  userType?: string;
+  slotNumber?: number | null;
   directCount: number;
   teamCount: number;
   level: number;
@@ -38,14 +40,12 @@ type MlmNode = {
   city?: string;
   expanded: boolean;
   loaded: boolean;
+  hasMoreChildren?: boolean;
   children: MlmNode[];
   left?: MlmNode | null;
   right?: MlmNode | null;
 };
 
-// FIX 8: Hard cap on rendered nodes — rendering 500+ nodes at once was
-// causing the browser's main thread to freeze (the root cause of the
-// "Page Unresponsive" popup after Tree Architecture was added)
 const MAX_RENDER_NODES = 200;
 
 @Component({
@@ -63,10 +63,25 @@ export class MlmTreeComponent implements OnInit {
   loading = true;
   toast = '';
   showInfoPanel = false;
+  showCustomers = false;
+
+  // Search
   searchTerm = '';
-  searchResults: MlmNode[] = [];
-  focusedNode: MlmNode | null = null;
+  searchResults: any[] = [];
+  searchLoading = false;
+  private searchDebounceTimer: any = null;
+
+  // Breadcrumbs & Re-rooting
+  currentRootId: string | number = 'ADMIN';
+  breadcrumbs: Array<{ user_id: string | number; member_id: string; full_name: string; user_type?: string }> = [];
+
+  // Context Menu & Modals
+  contextMenu: { visible: boolean; x: number; y: number; node: MlmNode | null } = { visible: false, x: 0, y: 0, node: null };
+  doubleClickConfirmModal: { visible: boolean; node: MlmNode | null } = { visible: false, node: null };
   selectedProfileNode: MlmNode | null = null;
+
+  // Viewport & Pan / Zoom
+  focusedNode: MlmNode | null = null;
   hoveredNode: MlmNode | null = null;
   tooltip = { x: 0, y: 0 };
   zoom = 1;
@@ -79,9 +94,11 @@ export class MlmTreeComponent implements OnInit {
   flatNodes: MlmNode[] = [];
   maxDepthAllowed = 12;
   sponsorInfo: { name: string; id: string; mobile?: string; email?: string } | null = null;
+  loadingChildrenForNodeId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private api: ApiService,
     private auth: AuthService,
   ) {}
@@ -91,12 +108,30 @@ export class MlmTreeComponent implements OnInit {
     this.loadTree();
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick() {
+    if (this.contextMenu.visible) {
+      this.closeContextMenu();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapePress() {
+    this.closeContextMenu();
+    this.closeProfileModal();
+    this.closeConfirmModal();
+  }
+
   get transform() {
     return `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.zoom})`;
   }
 
   get visibleRoot() {
     return this.root;
+  }
+
+  get isRootAdminActive() {
+    return this.currentRootId === 'ADMIN' || this.currentRootId === 'MMR-0' || this.currentRootId === 0;
   }
 
   get stats() {
@@ -127,13 +162,113 @@ export class MlmTreeComponent implements OnInit {
     return [...this.flatNodes].sort((a, b) => new Date(b.joinDate || 0).getTime() - new Date(a.joinDate || 0).getTime()).slice(0, 5);
   }
 
-  async loadTree() {
+  async loadTree(rootId: string | number = 'ADMIN') {
     this.loading = true;
     this.toast = '';
+    this.currentRootId = rootId;
+
+    if (this.audience === 'admin') {
+      await this.loadAdminTree(rootId, 4);
+    } else {
+      await this.loadLegacyOrAssociateTree();
+    }
+    this.loading = false;
+  }
+
+  // ── ADMIN TREE LOADER ─────────────────────────────────────────────
+  private async loadAdminTree(rootId: string | number = 'ADMIN', depth: number = 4) {
     try {
-      const profile = this.audience === 'admin'
-        ? (this.auth.getAdminUser() || { full_name: 'Admin', member_id: 'ADMIN' })
-        : await this.loadProfile();
+      const isRootAdmin = String(rootId).toUpperCase() === 'ADMIN' || rootId === '0' || rootId === 'MMR-0';
+
+      // 1. Fetch breadcrumb path
+      if (!isRootAdmin) {
+        try {
+          const pathRes: any = await firstValueFrom(this.api.adminGetNetworkTreePath(rootId));
+          this.breadcrumbs = pathRes?.success && Array.isArray(pathRes.data) ? pathRes.data : [];
+        } catch {
+          this.breadcrumbs = [{ user_id: 'ADMIN', member_id: 'MMR-0', full_name: 'MMR Admin' }];
+        }
+      } else {
+        this.breadcrumbs = [{ user_id: 'ADMIN', member_id: 'MMR-0', full_name: 'MMR Admin' }];
+      }
+
+      // 2. Fetch Tree Nodes
+      const treeRes: any = await firstValueFrom(this.api.adminGetNetworkTree(rootId, depth, this.showCustomers));
+      const rawNodes = treeRes?.success && treeRes.data?.nodes ? treeRes.data.nodes : [];
+
+      if (!rawNodes || rawNodes.length === 0) {
+        this.root = null;
+        this.flatNodes = [];
+        return;
+      }
+
+      this.root = this.buildAdminHierarchy(rawNodes, rootId);
+      this.flatNodes = this.flatten(this.root);
+      this.recalculate(this.root);
+      this.focusedNode = this.root;
+
+      if (this.flatNodes.length > MAX_RENDER_NODES) {
+        this.toast = `Showing first ${MAX_RENDER_NODES} members for performance. Click expand or search to inspect downlines.`;
+      }
+    } catch (error: any) {
+      this.toast = error?.message || 'Unable to load Admin Network Tree.';
+    }
+  }
+
+  private buildAdminHierarchy(rawList: any[], rootId: string | number): MlmNode | null {
+    const isRootAdmin = String(rootId).toUpperCase() === 'ADMIN' || rootId === '0' || rootId === 'MMR-0';
+    const byId = new Map<string, MlmNode>();
+
+    // Map raw DB objects to MlmNode
+    const nodes: MlmNode[] = rawList.map((item, index) => {
+      const node = this.toNode(item, item.level || 1, index);
+      node.expanded = (item.level <= 3); // initial view expanded up to 4 levels
+      node.loaded = true;
+      byId.set(String(item.user_id), node);
+      if (item.member_id) byId.set(String(item.member_id), node);
+      return node;
+    });
+
+    let rootNode: MlmNode | null = null;
+
+    if (isRootAdmin) {
+      rootNode = byId.get('ADMIN') || nodes[0] || null;
+    } else {
+      rootNode = byId.get(String(rootId)) || nodes[0] || null;
+    }
+
+    if (!rootNode) return null;
+
+    // Attach children based on sponsor_user_id
+    nodes.forEach(node => {
+      if (node === rootNode) return;
+      const rawItem = rawList.find(r => String(r.user_id) === String(node.userId)) || {};
+      const sponsorKey = rawItem.sponsor_user_id != null ? String(rawItem.sponsor_user_id) : '';
+
+      if (!sponsorKey || sponsorKey === 'null' || sponsorKey === 'ADMIN') {
+        // Direct child of Admin root
+        if (rootNode && rootNode.userId === 'ADMIN') {
+          rootNode.children.push(node);
+        }
+      } else {
+        const parent = byId.get(sponsorKey);
+        if (parent && parent !== node) {
+          parent.children.push(node);
+        } else if (isRootAdmin && rootNode) {
+          // If parent is not in current view, fallback attach to root
+          rootNode.children.push(node);
+        }
+      }
+    });
+
+    this.assignBinary(rootNode);
+    return rootNode;
+  }
+
+  // ── LEGACY & ASSOCIATE PORTAL TREE LOADER ──────────────────────────
+  private async loadLegacyOrAssociateTree() {
+    try {
+      const profile = await this.loadProfile();
 
       if (profile?.sponsor_name || profile?.sponsor_id) {
         this.sponsorInfo = {
@@ -145,9 +280,6 @@ export class MlmTreeComponent implements OnInit {
       }
 
       const network = await this.loadNetwork();
-
-      // FIX 8: Limit network to MAX_RENDER_NODES before building the tree
-      // A very large network (1000+ nodes) previously caused main-thread freeze
       const limitedNetwork = network.slice(0, MAX_RENDER_NODES);
 
       this.root = this.buildTree(profile, limitedNetwork);
@@ -157,19 +289,14 @@ export class MlmTreeComponent implements OnInit {
       this.collapseAll();
       if (this.root) this.root.expanded = true;
 
-      // Show info if data was trimmed
       if (network.length > MAX_RENDER_NODES) {
         this.toast = `Showing first ${MAX_RENDER_NODES} of ${network.length} members for performance. Use search to find specific members.`;
       }
     } catch (error: any) {
       this.toast = error?.message || 'Unable to load MLM tree.';
-    } finally {
-      this.loading = false;
     }
   }
 
-  // FIX 9: toPromise() replaced with firstValueFrom() — toPromise() is deprecated
-  // and can silently hang, contributing to page freeze
   private async loadProfile() {
     try {
       const response: any = await firstValueFrom(this.api.getProfile());
@@ -180,22 +307,11 @@ export class MlmTreeComponent implements OnInit {
   }
 
   private async loadNetwork() {
-    if (this.audience === 'admin') {
-      try {
-        const response: any = await firstValueFrom(this.api.adminGetMlmNetwork());
-        return response?.success ? (response.data || []) : [];
-      } catch {
-        return [];
-      }
-    }
-
     if (this.audience === 'associate') {
       try {
         const tmRes: any = await firstValueFrom(this.api.getAssociateTeamMembers()).catch(() => null);
         const tmList = tmRes?.success && Array.isArray(tmRes.data) ? tmRes.data : [];
-        if (tmList.length > 0) {
-          return tmList;
-        }
+        if (tmList.length > 0) return tmList;
         const response: any = await firstValueFrom(this.api.getAssocNetwork()).catch(() => null);
         return response?.success ? (response.data || []) : [];
       } catch {
@@ -204,7 +320,6 @@ export class MlmTreeComponent implements OnInit {
     }
 
     try {
-      // FIX 9: toPromise() → firstValueFrom()
       const response: any = await firstValueFrom(this.api.getAssocNetwork());
       return response?.success ? (response.data || []) : [];
     } catch {
@@ -215,11 +330,9 @@ export class MlmTreeComponent implements OnInit {
   private buildTree(profile: any, network: any[]) {
     const root = this.toNode(profile, 1, 0);
 
-    // FIXED 10-SLOT ASSOCIATE SALES TEAM TREE (1 ROOT TEAM LEAD + 10 SLOTS = 11 TOTAL)
     if (this.audience === 'associate') {
       root.children = [];
       const teamList = Array.isArray(network) ? network : [];
-      // Strictly filter only genuine Team Members (exclude Customers from tree slots)
       const validTeamMembers = teamList.filter(item => {
         const type = String(item.user_type || item.role || '').toLowerCase();
         return type !== 'customer';
@@ -287,8 +400,6 @@ export class MlmTreeComponent implements OnInit {
     }
 
     const nodes = network.map((item, index) => this.toNode(item, Math.min(Number(item.level || item.depth || 2), this.maxDepthAllowed), index + 1));
-    
-    // Index all nodes by userId, memberCode, and id for versatile key matching
     const byId = new Map<string, MlmNode>();
 
     const indexNode = (node: MlmNode) => {
@@ -341,8 +452,8 @@ export class MlmTreeComponent implements OnInit {
   }
 
   private toNode(item: any, fallbackLevel: number, index: number): MlmNode {
-    const direct = Number(item.direct_referrals || item.direct_count || item.direct_network_count || item.children_count || 0);
-    const team = Number(item.total_team_count || item.team_count || item.total_network_count || item.total_downline || direct);
+    const direct = Number(item.children_count ?? item.direct_referrals ?? item.direct_count ?? 0);
+    const team = Number(item.downline_count ?? item.total_team_count ?? item.team_count ?? direct);
     const rawStatus = String(item.account_status || item.status || 'Active').toLowerCase();
     const isFree = item.is_free === true || item.isFree === true || rawStatus === 'free' || rawStatus === 'inactive' || rawStatus === 'pending' || rawStatus === 'suspended' || rawStatus === 'blacklisted';
 
@@ -350,33 +461,40 @@ export class MlmTreeComponent implements OnInit {
     if (rawStatus === 'free') displayStatus = 'Free';
     else if (rawStatus === 'inactive' || rawStatus === 'pending' || rawStatus === 'suspended' || rawStatus === 'blacklisted') displayStatus = 'Inactive';
 
+    const rankTitle = item.slot_number != null
+      ? `Slot #${item.slot_number} · Team Member`
+      : (item.user_type === 'Team Member' ? 'Team Member' : (item.user_type === 'Admin' ? 'System Administrator' : (item.rank || this.rankFor(direct))));
+
     return {
       id: this.nodeId(item) || `node-${index}`,
       name: item.full_name || item.name || item.associate_name || item.email || 'Member',
-      userId: item.user_id || item.id || item.member_id || `U-${index}`,
-      memberCode: item.member_code || item.member_id || item.invitation_code || item.referral_code || `MMR-${index}`,
-      mobile: item.mobile_no || item.mobile || '-',
-      email: item.email || '-',
-      joinDate: item.registered_at || item.created_at || item.join_date || item.joining_date || new Date().toISOString(),
+      userId: String(item.user_id ?? item.id ?? item.member_id ?? `U-${index}`),
+      memberCode: item.member_id || item.member_code || item.invitation_code || item.referral_code || `MMR-${index}`,
+      mobile: item.mobile_no || item.mobile || '—',
+      email: item.email || '—',
+      joinDate: item.registered_at || item.created_at || item.join_date || '',
       status: displayStatus,
       isFree: isFree,
       is_verified: item.is_verified === true || item.isVerified === true || item.enrollment_status === 'Completed' || item.enrollment_status === 'submitted' || item.is_enrolled === true,
       enrollment_status: item.enrollment_status,
       sponsorName: item.sponsor_name || '',
-      sponsorId: item.sponsor_id || item.sponsor_member_id || (item.sponsor_user_id ? String(item.sponsor_user_id) : ''),
+      sponsorId: item.sponsor_member_id || (item.sponsor_user_id ? String(item.sponsor_user_id) : ''),
+      userType: item.user_type || (item.slot_number != null ? 'Team Member' : 'Associate'),
+      slotNumber: item.slot_number != null ? Number(item.slot_number) : null,
       directCount: direct,
       teamCount: team,
-      level: Math.min(Math.max(1, fallbackLevel || 1), this.maxDepthAllowed),
-      rank: this.rankFor(direct),
-      salesGaj: Number(item.total_gaj_sold || 0),
-      commissionEarned: Number(item.total_commission_earned || item.commission_earned || 0),
+      level: Math.min(Math.max(0, fallbackLevel), this.maxDepthAllowed),
+      rank: rankTitle,
+      salesGaj: Number(item.sales_gaj ?? item.total_gaj_sold ?? 0),
+      commissionEarned: Number(item.commission_earned ?? item.total_commission_earned ?? 0),
       pendingCommission: Number(item.pending_commission || 0),
-      profile_image_url: item.profile_image_url || item.profile_image || item.avatar || item.image || '',
-      purchasedPlotsCount: Number(item.total_purchased_plots || item.purchased_plots_count || item.total_plots_bought || item.bookings_count || 0),
-      purchasedAmount: Number(item.total_purchased_amount || item.purchased_amount || item.total_investment || item.total_paid || 0),
-      city: item.city || item.location || item.district || item.state || '',
-      expanded: fallbackLevel <= 2,
-      loaded: fallbackLevel <= 2,
+      profile_image_url: item.profile_image_url || '',
+      purchasedPlotsCount: Number(item.total_purchased_plots || item.purchased_plots_count || 0),
+      purchasedAmount: Number(item.total_purchased_amount || item.purchased_amount || 0),
+      city: item.city || item.location || '',
+      expanded: fallbackLevel <= 3,
+      loaded: fallbackLevel <= 3,
+      hasMoreChildren: direct > 0,
       children: [],
       left: null,
       right: null,
@@ -384,7 +502,7 @@ export class MlmTreeComponent implements OnInit {
   }
 
   private nodeId(item: any) {
-    return String(item.member_id || item.user_id || item.id || item.associate_id || item.email || '');
+    return String(item.user_id ?? item.member_id ?? item.id ?? item.associate_id ?? item.email ?? '');
   }
 
   private assignBinary(node: MlmNode) {
@@ -404,9 +522,11 @@ export class MlmTreeComponent implements OnInit {
     node.children = node.children.filter(child => child.level <= this.maxDepthAllowed);
     node.children.forEach(child => child.level = Math.min(this.maxDepthAllowed, Math.max(node.level + 1, child.level)));
     const childTeam = node.children.reduce((sum, child) => sum + this.recalculate(child), 0);
-    node.directCount = node.children.length || node.directCount;
-    node.teamCount = node.children.length + childTeam;
-    node.rank = this.rankFor(node.directCount);
+    if (this.audience !== 'admin') {
+      node.directCount = node.children.length || node.directCount;
+      node.teamCount = node.children.length + childTeam;
+      node.rank = this.rankFor(node.directCount);
+    }
     this.assignBinary(node);
     return node.teamCount;
   }
@@ -421,19 +541,166 @@ export class MlmTreeComponent implements OnInit {
     return 'Starter';
   }
 
-  setTree(mode: TreeMode) {
-    this.activeTree = mode;
+  // ── LAZY EXPANSION / TOGGLE ────────────────────────────────────────
+  async toggleNode(node: MlmNode, event?: Event) {
+    event?.stopPropagation();
+
+    if (node.expanded) {
+      node.expanded = false;
+      return;
+    }
+
+    if (this.audience === 'admin' && node.userId !== 'ADMIN' && node.directCount > 0 && node.children.length === 0) {
+      this.loadingChildrenForNodeId = node.userId;
+      try {
+        const res: any = await firstValueFrom(this.api.adminGetNetworkTreeChildren(node.userId, 1, 100, this.showCustomers));
+        const childItems = res?.success && res.data?.items ? res.data.items : [];
+
+        node.children = childItems.map((c: any, idx: number) => {
+          const childNode = this.toNode(c, node.level + 1, idx);
+          childNode.expanded = false;
+          childNode.loaded = false;
+          return childNode;
+        });
+
+        node.loaded = true;
+      } catch (err: any) {
+        this.toast = `Failed to load downlines for ${node.name}: ${err?.message || ''}`;
+      } finally {
+        this.loadingChildrenForNodeId = null;
+      }
+    }
+
+    node.expanded = true;
+    this.flatNodes = this.flatten(this.root);
+    this.recalculate(this.root);
+  }
+
+  // ── SEARCH & RE-ROOTING ────────────────────────────────────────────
+  onSearchInput() {
+    clearTimeout(this.searchDebounceTimer);
+    const term = this.searchTerm.trim();
+    if (!term || term.length < 2) {
+      this.searchResults = [];
+      this.searchLoading = false;
+      return;
+    }
+
+    this.searchLoading = true;
+    this.searchDebounceTimer = setTimeout(async () => {
+      if (this.audience === 'admin') {
+        try {
+          const res: any = await firstValueFrom(this.api.adminSearchNetworkTree(term, 20));
+          this.searchResults = res?.success && Array.isArray(res.data) ? res.data : [];
+        } catch {
+          this.searchResults = [];
+        } finally {
+          this.searchLoading = false;
+        }
+      } else {
+        const lower = term.toLowerCase();
+        this.searchResults = this.flatNodes.filter(node =>
+          [node.userId, node.memberCode, node.name, node.mobile].some(value => String(value || '').toLowerCase().includes(lower))
+        ).slice(0, 10);
+        this.searchLoading = false;
+      }
+    }, 300);
+  }
+
+  selectSearchResult(result: any) {
+    this.searchResults = [];
+    this.searchTerm = `${result.full_name || result.name} (${result.member_id || result.memberCode})`;
+
+    if (this.audience === 'admin') {
+      const targetId = result.user_id || result.userId;
+      if (targetId) {
+        this.reRootTree(targetId);
+      }
+    } else {
+      const node = this.flatNodes.find(n => n.userId === String(result.userId || result.user_id));
+      if (node) {
+        this.focusNode(node);
+      }
+    }
+  }
+
+  reRootTree(userId: string | number) {
+    this.loadTree(userId);
     this.resetView();
   }
 
-  toggleNode(node: MlmNode, event?: Event) {
-    event?.stopPropagation();
-    if (node.level >= this.maxDepthAllowed && !node.expanded) {
-      this.toast = 'Maximum 12 binary/MLM levels allowed.';
-      return;
+  resetToAdminRoot() {
+    this.searchTerm = '';
+    this.searchResults = [];
+    this.loadTree('ADMIN');
+    this.resetView();
+  }
+
+  toggleShowCustomers() {
+    this.showCustomers = !this.showCustomers;
+    this.loadTree(this.currentRootId);
+  }
+
+  // ── CONTEXT MENU & DOUBLE CLICK ───────────────────────────────────
+  onNodeContextMenu(node: MlmNode, event: MouseEvent) {
+    if (this.audience !== 'admin') return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.contextMenu = {
+      visible: true,
+      x: event.clientX,
+      y: event.clientY,
+      node
+    };
+  }
+
+  closeContextMenu() {
+    this.contextMenu.visible = false;
+    this.contextMenu.node = null;
+  }
+
+  onNodeDblClick(node: MlmNode, event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.audience === 'admin') {
+      if (node.userId === 'ADMIN' || node.id === 'ADMIN') return;
+      this.doubleClickConfirmModal = { visible: true, node };
+    } else {
+      this.selectedProfileNode = node;
     }
-    node.loaded = true;
-    node.expanded = !node.expanded;
+  }
+
+  closeConfirmModal() {
+    this.doubleClickConfirmModal.visible = false;
+    this.doubleClickConfirmModal.node = null;
+  }
+
+  confirmImpersonateLogin() {
+    const node = this.doubleClickConfirmModal.node || this.contextMenu.node;
+    this.closeConfirmModal();
+    this.closeContextMenu();
+
+    if (node) {
+      // Phase 2 placeholder toast (Phase 3 will wire secure window.open one-time login exchange)
+      this.toast = `Login session for ${node.name} (${node.memberCode}) is ready for Phase 3 secure token exchange.`;
+    }
+  }
+
+  openInDirectory(node: MlmNode) {
+    this.closeContextMenu();
+    if (node.userType === 'Team Member') {
+      this.router.navigate(['/admin/team-members'], { queryParams: { q: node.memberCode } });
+    } else {
+      this.router.navigate(['/admin/associates'], { queryParams: { q: node.memberCode } });
+    }
+  }
+
+  // ── TOOLBAR ACTIONS ───────────────────────────────────────────────
+  setTree(mode: TreeMode) {
+    this.activeTree = mode;
+    this.resetView();
   }
 
   expandAll() {
@@ -476,14 +743,6 @@ export class MlmTreeComponent implements OnInit {
     this.tooltip = { x: event.clientX + 12, y: event.clientY + 12 };
   }
 
-  search() {
-    const term = this.searchTerm.trim().toLowerCase();
-    if (!term) { this.searchResults = []; return; }
-    this.searchResults = this.flatNodes.filter(node =>
-      [node.userId, node.memberCode, node.name, node.mobile].some(value => String(value || '').toLowerCase().includes(term))
-    ).slice(0, 10);
-  }
-
   isSearchMatch(node: MlmNode) {
     const term = this.searchTerm.trim().toLowerCase();
     if (!term) return false;
@@ -498,12 +757,6 @@ export class MlmTreeComponent implements OnInit {
   }
 
   onNodeClick(node: MlmNode, event: MouseEvent) {
-    event.stopPropagation();
-    event.preventDefault();
-    this.selectedProfileNode = node;
-  }
-
-  onNodeDblClick(node: MlmNode, event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
     this.selectedProfileNode = node;

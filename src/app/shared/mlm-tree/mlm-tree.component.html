@@ -25,21 +25,41 @@
   </div>
 </div>
 
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i><span>Loading MLM tree...</span></div>
+<!-- Admin Breadcrumb Path & Re-rooting Bar -->
+<div class="tree-breadcrumbs panel-card p-2.5 mb-2 d-flex align-items-center justify-content-between flex-wrap gap-2" *ngIf="audience === 'admin'">
+  <div class="d-flex align-items-center flex-wrap gap-1.5 fs-13">
+    <span class="text-muted fw-600 me-1"><i class="fas fa-sitemap me-1 text-primary"></i> Path:</span>
+    <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
+      <button type="button" class="btn btn-xs crumb-pill" [class.active-crumb]="last" (click)="reRootTree(crumb.user_id)">
+        <i *ngIf="crumb.user_id === 'ADMIN' || crumb.user_id === 0" class="fas fa-crown me-1 text-gold"></i>
+        <span>{{ crumb.full_name }} ({{ crumb.member_id }})</span>
+      </button>
+      <i *ngIf="!last" class="fas fa-chevron-right text-muted fs-10 mx-1"></i>
+    </ng-container>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <button type="button" class="btn btn-xs btn-outline-secondary d-flex align-items-center gap-1" *ngIf="!isRootAdminActive" (click)="resetToAdminRoot()">
+      <i class="fas fa-undo me-1"></i> Back to MMR Admin
+    </button>
+  </div>
+</div>
+
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner fa-spin"></i><span>Loading MLM tree...</span></div>
 
 <ng-container *ngIf="!loading">
   <section class="tree-toolbar">
     <div class="tree-search">
       <i class="fas fa-search"></i>
-      <input class="f-input" placeholder="Search by User Name or User ID" [(ngModel)]="searchTerm" (ngModelChange)="search()">
+      <input class="f-input" placeholder="Search by name, ID, mobile, or sponsor" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput()">
       <div class="search-results" *ngIf="searchResults.length">
-        <button type="button" *ngFor="let result of searchResults" (click)="onNodeClick(result, $event)" [class.disabled-item]="isFreeOrDisabled(result)" [title]="isFreeOrDisabled(result) ? 'Free/Disabled Account - Hover to view' : ''">
-          <strong>{{ result.name }}</strong>
-          <span>ID: {{ result.userId }} - {{ result.memberCode }} <em *ngIf="isFreeOrDisabled(result)" class="text-danger fw-600">(Disabled/Free)</em></span>
+        <button type="button" *ngFor="let result of searchResults" (click)="selectSearchResult(result)" [class.disabled-item]="isFreeOrDisabled(result)" [title]="isFreeOrDisabled(result) ? 'Free/Disabled Account - Hover to view' : ''">
+          <strong>{{ result.full_name || result.name }}</strong>
+          <span>ID: {{ result.user_id || result.userId }} - {{ result.member_id || result.memberCode }} <span *ngIf="result.mobile_no || result.mobile">({{ result.mobile_no || result.mobile }})</span> <em *ngIf="isFreeOrDisabled(result)" class="text-danger fw-600">(Disabled/Free)</em></span>
         </button>
       </div>
     </div>
     <div class="toolbar-actions">
+      <button type="button" class="tool-btn" [class.tool-primary]="showCustomers" [title]="showCustomers ? 'Hide Customers' : 'Show Customers'" *ngIf="audience === 'admin'" (click)="toggleShowCustomers()"><i class="fas fa-user-tag"></i></button>
       <button type="button" class="tool-btn" title="Zoom in" (click)="zoomIn()"><i class="fas fa-search-plus"></i></button>
       <button type="button" class="tool-btn" title="Zoom out" (click)="zoomOut()"><i class="fas fa-search-minus"></i></button>
       <button type="button" class="tool-btn" title="Reset view" (click)="resetView()"><i class="fas fa-compress-arrows-alt"></i></button>
@@ -155,6 +175,7 @@
          (mousemove)="showTooltip(node, $event)"
          (mouseleave)="hoveredNode=null"
          (click)="onNodeClick(node, $event)"
+         (contextmenu)="onNodeContextMenu(node, $event)"
          (dblclick)="onNodeDblClick(node, $event)">
       
       <!-- Circular Avatar -->
@@ -175,8 +196,11 @@
       </div>
 
       <!-- Expand Toggle -->
-      <button type="button" class="org-toggle" *ngIf="node.children.length || node.left || node.right || (activeTree === 'binary' && node.level < maxDepthAllowed)" (click)="toggleNode(node, $event)">
-        <i [class]="node.expanded ? 'fas fa-minus' : 'fas fa-plus'"></i>
+      <button type="button" class="org-toggle"
+              *ngIf="node.children.length || node.directCount > 0 || node.hasMoreChildren || node.left || node.right || (activeTree === 'binary' && node.level < maxDepthAllowed)"
+              (click)="toggleNode(node, $event)">
+        <i *ngIf="loadingChildrenForNodeId === node.userId" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="loadingChildrenForNodeId !== node.userId" [class]="node.expanded ? 'fas fa-minus' : 'fas fa-plus'"></i>
       </button>
     </div>
 
@@ -417,6 +441,60 @@
       </button>
     </div>
 
+  </div>
+</div>
+
+<!-- Admin Right-Click Context Menu -->
+<div class="tree-context-menu shadow-lg" *ngIf="contextMenu.visible && contextMenu.node" [style.left.px]="contextMenu.x" [style.top.px]="contextMenu.y" (click)="$event.stopPropagation()">
+  <div class="context-menu-header">
+    <strong>{{ contextMenu.node.name }}</strong>
+    <small class="text-muted d-block">{{ contextMenu.node.memberCode }} &bull; {{ contextMenu.node.userType || 'Associate' }}</small>
+  </div>
+  <div class="context-menu-body">
+    <button type="button" class="context-item" (click)="reRootTree(contextMenu.node.userId); closeContextMenu()">
+      <i class="fas fa-sitemap text-primary"></i>
+      <span>Re-root tree here</span>
+    </button>
+    <button type="button" class="context-item" (click)="selectedProfileNode = contextMenu.node; closeContextMenu()">
+      <i class="fas fa-id-card text-info"></i>
+      <span>View Profile Summary</span>
+    </button>
+    <button type="button" class="context-item" (click)="openInDirectory(contextMenu.node)">
+      <i class="fas fa-address-book text-success"></i>
+      <span>Open in Directory</span>
+    </button>
+    <button type="button" class="context-item text-danger" *ngIf="contextMenu.node.userId !== 'ADMIN'" (click)="confirmImpersonateLogin()">
+      <i class="fas fa-user-secret text-danger"></i>
+      <span>Login as this user</span>
+    </button>
+  </div>
+</div>
+
+<!-- Double Click Confirm Modal (Phase 2 Login Modal) -->
+<div class="tree-profile-backdrop" *ngIf="doubleClickConfirmModal.visible && doubleClickConfirmModal.node" (click)="closeConfirmModal()">
+  <div class="confirm-login-card shadow-2xl" (click)="$event.stopPropagation()">
+    <div class="p-3 border-bottom bg-dark-green text-white d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-user-secret text-gold"></i>
+        <strong class="fs-14">Login as User (Impersonation)</strong>
+      </div>
+      <button type="button" class="btn-close-modal" (click)="closeConfirmModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-3.5">
+      <p class="fs-13 text-dark mb-2">
+        Are you sure you want to log in as <strong>{{ doubleClickConfirmModal.node.name }}</strong> (<code>{{ doubleClickConfirmModal.node.memberCode }}</code>)?
+      </p>
+      <div class="alert alert-warning p-2 fs-12 mb-0">
+        <i class="fas fa-exclamation-triangle me-1"></i>
+        This will open the user's portal in a new tab with an audited impersonation session.
+      </div>
+    </div>
+    <div class="p-3 bg-light border-top d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeConfirmModal()">Cancel</button>
+      <button type="button" class="btn btn-sm btn-primary" (click)="confirmImpersonateLogin()">
+        <i class="fas fa-sign-in-alt me-1"></i> Confirm &amp; Login
+      </button>
+    </div>
   </div>
 </div>
 

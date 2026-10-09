@@ -595,9 +595,19 @@ export class ApiService {
   // ── User Wallet & MLM (User Side) ─────────────────────────
   getBuybackTerms() { return this.get('/api/buyback/terms'); }
   getBookPlotBackgrounds() { return this.get('/api/book-plot/backgrounds'); }
-  createBookPlotLead(data: any) { return this.post('/api/book-plot/leads', data); }
   adminGetMlmNetwork() { return this.get('/api/admin/mlm/network', {}, true); }
-  changePassword(data: any) { return this.post('/api/user/change-password', data); }
+  adminGetNetworkTree(root: string | number = 'ADMIN', depth: number = 4, showCustomers: boolean = false) {
+    return this.get('/api/admin/network-tree', { root, depth, show_customers: showCustomers }, true);
+  }
+  adminGetNetworkTreeChildren(parent: string | number = 'ADMIN', page: number = 1, pageSize: number = 100, showCustomers: boolean = false) {
+    return this.get('/api/admin/network-tree/children', { parent, page, pageSize, show_customers: showCustomers }, true);
+  }
+  adminSearchNetworkTree(q: string, limit: number = 20) {
+    return this.get('/api/admin/network-tree/search', { q, limit }, true);
+  }
+  adminGetNetworkTreePath(userId: string | number) {
+    return this.get('/api/admin/network-tree/path', { user_id: userId }, true);
+  }
   initiateAddFund(amountOrPayload: any, gatewayName?: string) {
     const payload = (typeof amountOrPayload === 'object' && amountOrPayload !== null)
       ? amountOrPayload
