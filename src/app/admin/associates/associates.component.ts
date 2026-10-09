@@ -127,7 +127,8 @@ export class AssociatesComponent implements OnInit {
       this.api.adminGetAssociates(queryParams).subscribe({
         next: (res: any) => {
           this.actionLoading = false;
-          const list = res.data?.items || res.data?.users || res.data?.associates || (Array.isArray(res.data) ? res.data : []);
+          const rawList = res.data?.items || res.data?.users || res.data?.associates || (Array.isArray(res.data) ? res.data : []);
+          const list = rawList.filter((a: any) => !this.isTeamMember(a));
           const rows = list.map((a: any, i: number) => [
             i + 1,
             a.member_id || '—',
@@ -152,6 +153,13 @@ export class AssociatesComponent implements OnInit {
         }
       });
     }
+  }
+
+  isTeamMember(a: any): boolean {
+    if (!a) return false;
+    const memId = String(a.member_id || a.team_member_uid || '').toUpperCase().trim();
+    const uType = String(a.user_type || '').toLowerCase().trim();
+    return memId.startsWith('MMR-TM-') || !!a.team_member_uid || uType === 'teammember' || uType === 'team member';
   }
 
   isFreeOrDisabled(a: any): boolean {
@@ -248,9 +256,16 @@ export class AssociatesComponent implements OnInit {
           totalCount = Number(associatesRes.total || list.length);
         }
 
-        const enrollmentsList = (enrollmentsRes?.data && Array.isArray(enrollmentsRes.data)) 
+        // Strictly exclude Team Members from Associate Directory
+        list = (list || []).filter((a: any) => !this.isTeamMember(a));
+        if (associatesRes?.data?.total && list.length < (associatesRes.data.items || []).length) {
+          totalCount = list.length;
+        }
+
+        const rawEnrollmentsList = (enrollmentsRes?.data && Array.isArray(enrollmentsRes.data)) 
           ? enrollmentsRes.data 
           : (Array.isArray(enrollmentsRes) ? enrollmentsRes : []);
+        const enrollmentsList = rawEnrollmentsList.filter((e: any) => !this.isTeamMember(e));
         const enrollMap = new Map<string, any>();
         
         enrollmentsList.forEach((e: any) => {
