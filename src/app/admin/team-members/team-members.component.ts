@@ -7,6 +7,7 @@ import { AdminExportService } from '../../services/admin-export.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import Swal from 'sweetalert2';
+import { USER_TYPES } from '../../constants/user-types.constant';
 
 @Component({
   selector: 'app-admin-team-members',
@@ -88,7 +89,8 @@ export class AdminTeamMembersComponent implements OnInit {
     const queryParams: any = {
       page: this.page,
       pageSize: this.pageSize,
-      limit: this.pageSize
+      limit: this.pageSize,
+      user_type: USER_TYPES.TEAM_MEMBER
     };
 
     if (this.statusFilter !== 'all') {
@@ -104,15 +106,14 @@ export class AdminTeamMembersComponent implements OnInit {
         const members = Array.isArray(list) ? list : [];
 
         if (members.length === 0) {
-          // Fallback: check associates list for any users with MMR-TM-* member_id or TeamMember user_type
-          this.api.adminGetAssociates({ page: 1, pageSize: 100, limit: 100 }).subscribe({
-            next: (assocRes: any) => {
-              const rawList = assocRes.data?.items || assocRes.data?.users || assocRes.data?.associates || (Array.isArray(assocRes.data) ? assocRes.data : []);
+          // Fallback: check users list for Team Member user_type
+          this.api.adminGetUsers({ user_type: USER_TYPES.TEAM_MEMBER, page: 1, pageSize: 100, limit: 100 }).subscribe({
+            next: (usersRes: any) => {
+              const rawList = usersRes.data?.items || usersRes.data?.users || (Array.isArray(usersRes.data) ? usersRes.data : []);
               if (Array.isArray(rawList)) {
                 const foundTms = rawList.filter((u: any) => {
-                  const memId = String(u.member_id || u.team_member_uid || '').toUpperCase().trim();
                   const uType = String(u.user_type || '').toLowerCase().trim();
-                  return memId.startsWith('MMR-TM-') || memId.startsWith('TM-') || uType === 'teammember' || uType === 'team member';
+                  return uType === 'team member' || uType === 'teammember';
                 }).map((u: any) => ({
                   id: u.user_id || u.id,
                   team_member_uid: u.member_id || `MMR-TM-${u.user_id}`,

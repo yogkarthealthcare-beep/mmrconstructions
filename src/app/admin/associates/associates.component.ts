@@ -10,6 +10,7 @@ import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pa
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 import Swal from 'sweetalert2';
+import { USER_TYPES } from '../../constants/user-types.constant';
 
 @Component({
   selector: 'app-associates',
@@ -223,7 +224,7 @@ export class AssociatesComponent implements OnInit {
   load() {
     this.loading = true;
     const queryParams: any = {
-      user_type: 'Associate',
+      user_type: USER_TYPES.ASSOCIATE,
       page: this.page,
       pageSize: this.pageSize,
       limit: this.pageSize

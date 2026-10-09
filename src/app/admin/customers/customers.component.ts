@@ -8,6 +8,7 @@ import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pa
 import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { USER_TYPES } from '../../constants/user-types.constant';
 
 @Component({
   selector: 'app-customers',
@@ -216,7 +217,7 @@ export class CustomersComponent implements OnInit {
   load() {
     this.loading = true;
     const queryParams: any = {
-      user_type: 'Customer',
+      user_type: USER_TYPES.CUSTOMER,
       page: this.page,
       pageSize: this.pageSize
     };

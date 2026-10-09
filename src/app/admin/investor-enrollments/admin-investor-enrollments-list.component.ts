@@ -7,6 +7,7 @@ import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pa
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 import Swal from 'sweetalert2';
+import { USER_TYPES } from '../../constants/user-types.constant';
 
 @Component({
   selector: 'app-admin-investor-enrollments-list',

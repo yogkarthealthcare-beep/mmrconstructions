@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
+import { USER_TYPES, normalizeUserType, formatDisplayUserType } from '../../constants/user-types.constant';
 
 @Component({
   selector: 'app-approvals',
@@ -182,21 +183,10 @@ export class ApprovalsComponent implements OnInit {
 
   getUserType(u: any): string {
     if (!u) return 'Customer';
-    const mid = String(u.member_id || '').toUpperCase();
-    const rawType = String(u.user_type || '').toLowerCase();
-    if (mid.startsWith('MMR-TM-') || mid.startsWith('TM-') || rawType === 'team member' || rawType === 'teammember') {
-      return 'Team Member';
-    }
-    if (mid.startsWith('MMR-INV-') || mid.startsWith('INV-') || rawType === 'investor') {
+    if (u.is_investor || u.investor_id || String(u.role || '').toLowerCase() === 'investor' || String(u.user_type || '').toLowerCase() === 'investor') {
       return 'Investor';
     }
-    if (mid.startsWith('MMR-CUS-') || mid.startsWith('CUS-') || rawType === 'customer') {
-      return 'Customer';
-    }
-    if (mid.startsWith('MMR-ASC-') || mid.startsWith('ASC-') || mid.startsWith('MMR0') || rawType === 'associate') {
-      return 'Associate';
-    }
-    return u.user_type || 'Customer';
+    return formatDisplayUserType(normalizeUserType(u.user_type));
   }
 
   get pendingCount(): number {
