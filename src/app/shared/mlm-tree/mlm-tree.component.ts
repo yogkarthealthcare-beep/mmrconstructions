@@ -690,8 +690,7 @@ export class MlmTreeComponent implements OnInit {
     this.closeContextMenu();
 
     if (node) {
-      // Phase 2 placeholder toast (Phase 3 will wire secure window.open one-time login exchange)
-      this.toast = `Login session for ${node.name} (${node.memberCode}) is ready for Phase 3 secure token exchange.`;
+      this.toast = `Coming in Phase 3: Secure Login as ${node.name} (${node.memberCode})`;
     }
   }
 
