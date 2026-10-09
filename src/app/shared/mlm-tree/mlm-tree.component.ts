@@ -109,7 +109,7 @@ export class MlmTreeComponent implements OnInit {
   }
 
   @HostListener('document:click', ['$event'])
-  onDocumentClick() {
+  onDocumentClick(event?: MouseEvent) {
     if (this.contextMenu.visible) {
       this.closeContextMenu();
     }
