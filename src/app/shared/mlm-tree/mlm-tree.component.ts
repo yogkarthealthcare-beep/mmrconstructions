@@ -189,6 +189,20 @@ export class MlmTreeComponent implements OnInit {
       }
     }
 
+    if (this.audience === 'associate') {
+      try {
+        const tmRes: any = await firstValueFrom(this.api.getAssociateTeamMembers()).catch(() => null);
+        const tmList = tmRes?.success && Array.isArray(tmRes.data) ? tmRes.data : [];
+        if (tmList.length > 0) {
+          return tmList;
+        }
+        const response: any = await firstValueFrom(this.api.getAssocNetwork()).catch(() => null);
+        return response?.success ? (response.data || []) : [];
+      } catch {
+        return [];
+      }
+    }
+
     try {
       // FIX 9: toPromise() → firstValueFrom()
       const response: any = await firstValueFrom(this.api.getAssocNetwork());
@@ -200,6 +214,78 @@ export class MlmTreeComponent implements OnInit {
 
   private buildTree(profile: any, network: any[]) {
     const root = this.toNode(profile, 1, 0);
+
+    // FIXED 11-SLOT ASSOCIATE SALES TEAM TREE (AUDIENCE === 'ASSOCIATE')
+    if (this.audience === 'associate') {
+      root.children = [];
+      const teamList = Array.isArray(network) ? network : [];
+      // Strictly filter only genuine Team Members (exclude Customers from tree slots)
+      const validTeamMembers = teamList.filter(item => {
+        const type = String(item.user_type || item.role || '').toLowerCase();
+        return type !== 'customer';
+      });
+
+      const slotMap = new Map<number, any>();
+      const unslotted: any[] = [];
+      validTeamMembers.forEach((item: any) => {
+        const s = Number(item.slot_number);
+        if (s >= 1 && s <= 11) {
+          slotMap.set(s, item);
+        } else {
+          unslotted.push(item);
+        }
+      });
+
+      let unslottedIdx = 0;
+      for (let s = 1; s <= 11; s++) {
+        let member = slotMap.get(s);
+        if (!member && unslottedIdx < unslotted.length) {
+          member = unslotted[unslottedIdx++];
+        }
+
+        if (member) {
+          const node = this.toNode(member, 2, s);
+          node.rank = `Slot #${s} · Team Member`;
+          node.status = 'Active';
+          node.isFree = false;
+          (node as any).slotNumber = s;
+          (node as any).isEmptySlot = false;
+          root.children.push(node);
+        } else {
+          const emptyNode: MlmNode = {
+            id: `empty-slot-${s}`,
+            name: `Slot #${s} (Available)`,
+            userId: `SLOT-${s}`,
+            memberCode: `AVAILABLE`,
+            mobile: '—',
+            email: '—',
+            joinDate: '',
+            status: 'Inactive',
+            isFree: true,
+            is_verified: false,
+            directCount: 0,
+            teamCount: 0,
+            level: 2,
+            rank: `Slot #${s} · Open`,
+            salesGaj: 0,
+            commissionEarned: 0,
+            pendingCommission: 0,
+            expanded: false,
+            loaded: true,
+            children: [],
+            left: null,
+            right: null
+          };
+          (emptyNode as any).slotNumber = s;
+          (emptyNode as any).isEmptySlot = true;
+          root.children.push(emptyNode);
+        }
+      }
+
+      this.assignBinary(root);
+      return root;
+    }
+
     const nodes = network.map((item, index) => this.toNode(item, Math.min(Number(item.level || item.depth || 2), this.maxDepthAllowed), index + 1));
     
     // Index all nodes by userId, memberCode, and id for versatile key matching

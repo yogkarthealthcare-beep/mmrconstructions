@@ -81,6 +81,21 @@ export class MyTeamComponent implements OnInit {
   };
   createdCustomerData: any = null;
 
+  // ── Modal 1B: Add New Team Member State (11-Slot Direct Network) ──
+  showAddTeamMemberModal = false;
+  showTeamMemberPassword = false;
+  addTeamMemberSubmitting = false;
+  addTeamMemberSuccess = false;
+  addTeamMemberError = '';
+  newTeamMember = {
+    full_name: '',
+    mobile_no: '',
+    email: '',
+    password: '',
+    confirm_password: ''
+  };
+  createdTeamMemberData: any = null;
+
   // ── Modal 2: Plot Booking State ──
   showBookingModal = false;
   bookingSubmitting = false;
@@ -573,6 +588,99 @@ export class MyTeamComponent implements OnInit {
     };
     this.closeAddCustomerModal();
     this.openBookingModal(member);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MODAL 1B: ADD NEW TEAM MEMBER (11-SLOT DIRECT NETWORK)
+  // ═══════════════════════════════════════════════════════════════
+  openAddTeamMemberModal(): void {
+    this.newTeamMember = {
+      full_name: '',
+      mobile_no: '',
+      email: '',
+      password: '',
+      confirm_password: ''
+    };
+    this.addTeamMemberError = '';
+    this.addTeamMemberSuccess = false;
+    this.createdTeamMemberData = null;
+    this.showTeamMemberPassword = false;
+    this.showAddTeamMemberModal = true;
+  }
+
+  closeAddTeamMemberModal(): void {
+    this.showAddTeamMemberModal = false;
+    if (this.addTeamMemberSuccess) {
+      this.loadTeamData();
+    }
+  }
+
+  submitAddTeamMember(): void {
+    if (!this.newTeamMember.full_name?.trim() || !this.newTeamMember.mobile_no?.trim() || !this.newTeamMember.email?.trim() || !this.newTeamMember.password) {
+      this.addTeamMemberError = 'Please fill all required fields: Full Name, Mobile Number, Email Address, and Password.';
+      return;
+    }
+
+    const cleanMobile = this.newTeamMember.mobile_no.replace(/\D/g, '');
+    if (cleanMobile.length !== 10) {
+      this.addTeamMemberError = 'Please enter a valid 10-digit mobile number.';
+      return;
+    }
+
+    if (this.newTeamMember.password.length < 6) {
+      this.addTeamMemberError = 'Password must be at least 6 characters long.';
+      return;
+    }
+
+    if (this.newTeamMember.confirm_password && this.newTeamMember.password !== this.newTeamMember.confirm_password) {
+      this.addTeamMemberError = 'Passwords do not match.';
+      return;
+    }
+
+    this.addTeamMemberSubmitting = true;
+    this.addTeamMemberError = '';
+
+    this.api.createAssociateTeamMember({
+      full_name: this.newTeamMember.full_name.trim(),
+      mobile_no: cleanMobile,
+      email: this.newTeamMember.email.trim(),
+      password: this.newTeamMember.password
+    }).subscribe({
+      next: (res: any) => {
+        this.addTeamMemberSubmitting = false;
+        if (res.success) {
+          this.addTeamMemberSuccess = true;
+          this.createdTeamMemberData = res.data;
+          this.showToast(`Team Member added successfully (Slot #${res.data?.slot_number})!`, 'success');
+          this.loadTeamData();
+        } else {
+          this.addTeamMemberError = res.message || 'Failed to create team member account.';
+        }
+      },
+      error: (err: any) => {
+        this.addTeamMemberSubmitting = false;
+        this.addTeamMemberError = err?.error?.message || 'Failed to register team member. Please verify details and retry.';
+      }
+    });
+  }
+
+  fillEnrollmentForCreatedTeamMember(): void {
+    if (!this.createdTeamMemberData) return;
+    const targetUserId = this.createdTeamMemberData.user_id;
+    const applicantName = this.createdTeamMemberData.full_name;
+    const mobile = this.createdTeamMemberData.mobile_no;
+    const email = this.createdTeamMemberData.email;
+    const slot = this.createdTeamMemberData.slot_number;
+    this.closeAddTeamMemberModal();
+    this.router.navigate(['/associate/team-member-enrollment'], {
+      queryParams: {
+        user_id: targetUserId,
+        applicant_name: applicantName,
+        mobile: mobile,
+        email: email,
+        slot_number: slot
+      }
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════

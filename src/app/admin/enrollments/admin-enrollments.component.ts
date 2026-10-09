@@ -5,11 +5,15 @@ import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
+import { PhotoUploadComponent } from '../../shared/components/photo-upload/photo-upload.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 import { 
   APPROVED_INDIAN_STATES, 
   normalizeHumanName, 
   isValidHumanName,
+  calculateAgeFromDob,
+  getMaxAdultDobDate,
+  validateImageUpload,
   ASSOCIATE_CATEGORIES,
   ASSOCIATE_QUALIFICATIONS,
   ASSOCIATE_OCCUPATIONS,
@@ -26,7 +30,7 @@ type CategoryType = 'customer' | 'associate' | 'investor' | 'team_member';
 @Component({
   selector: 'app-admin-enrollments',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent, PhotoUploadComponent],
   templateUrl: './admin-enrollments.component.html',
   styleUrls: ['./admin-enrollments.component.css']
 })
@@ -66,12 +70,140 @@ export class AdminEnrollmentsComponent implements OnInit {
   printing = false;
   selectedItem: any = null;
   editFormData: any = {};
+  formErrorMessage = '';
+
+  // Photo uploads
+  applicantPhotoFile: File | null = null;
+  nomineePhotoFile: File | null = null;
+  existingApplicantPhoto = '';
+  existingNomineePhoto = '';
+
+  // Additional form helpers
+  sameAsPermAddress = false;
+  ifscLoading = false;
+  ifscStatus: { valid: boolean; msg: string } | null = null;
 
   constructor(
     private api: ApiService,
     private exportService: AdminExportService,
     private route: ActivatedRoute
   ) {}
+
+  // Date of Birth & Age helpers
+  get maxDob18Years(): string {
+    return getMaxAdultDobDate();
+  }
+
+  isDobEligible(dobStr: any): { valid: boolean; message?: string } {
+    if (!dobStr) {
+      return { valid: false, message: 'Date of Birth is required.' };
+    }
+    const isoStr = String(dobStr).trim();
+    const dob = new Date(isoStr);
+    if (isNaN(dob.getTime())) {
+      return { valid: false, message: 'Invalid Date of Birth format.' };
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const birthDate = new Date(dob.getFullYear(), dob.getMonth(), dob.getDate());
+    
+    if (birthDate > today) {
+      return { valid: false, message: 'Date of Birth cannot be in the future.' };
+    }
+
+    const age = calculateAgeFromDob(isoStr);
+    if (age === '' || typeof age !== 'number' || age < 18) {
+      return { valid: false, message: 'Date of Birth is not eligible. Member must be 18 years or older.' };
+    }
+
+    return { valid: true };
+  }
+
+  clearFormError() {
+    this.formErrorMessage = '';
+  }
+
+  // Validation helpers
+  isPanValid(pan: any): boolean {
+    if (!pan) return false;
+    return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(String(pan).trim().toUpperCase());
+  }
+
+  isAadhaarValid(aadhar: any): boolean {
+    if (!aadhar) return false;
+    const clean = String(aadhar).replace(/\s+/g, '');
+    return /^\d{12}$/.test(clean);
+  }
+
+  isContactValid(contact: any): boolean {
+    if (!contact) return false;
+    const clean = String(contact).replace(/\D/g, '').slice(-10);
+    return /^[6-9]\d{9}$/.test(clean);
+  }
+
+  onSameAddressToggle() {
+    if (this.sameAsPermAddress) {
+      this.editFormData.local_address = this.editFormData.perm_address || this.editFormData.perm_address_line1 || '';
+      this.editFormData.local_state = this.editFormData.perm_state || 'Uttar Pradesh';
+      this.editFormData.local_city = this.editFormData.perm_city || '';
+      this.editFormData.local_pincode = this.editFormData.perm_pincode || '';
+    }
+  }
+
+  onPermAddressChange() {
+    if (this.sameAsPermAddress) {
+      this.editFormData.local_address = this.editFormData.perm_address || this.editFormData.perm_address_line1 || '';
+      this.editFormData.local_state = this.editFormData.perm_state || 'Uttar Pradesh';
+      this.editFormData.local_city = this.editFormData.perm_city || '';
+      this.editFormData.local_pincode = this.editFormData.perm_pincode || '';
+    }
+  }
+
+  onIfscInput(code: string) {
+    const clean = (code || '').trim().toUpperCase();
+    this.editFormData.ifsc = clean;
+    this.editFormData.ifsc_code = clean;
+
+    if (!clean) {
+      this.ifscStatus = null;
+      return;
+    }
+
+    if (clean.length === 11) {
+      this.ifscLoading = true;
+      this.ifscStatus = null;
+      fetch(`https://ifsc.razorpay.com/${clean}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Invalid IFSC Code');
+          return res.json();
+        })
+        .then(data => {
+          this.ifscLoading = false;
+          if (data && data.BANK) {
+            this.editFormData.bank_name = data.BANK;
+            this.editFormData.branch_name = data.BRANCH || '';
+            this.editFormData.branch_code = data.BRANCH_CODE || data.IFSC || '';
+            if (data.MICR) {
+              this.editFormData.micr = data.MICR;
+              this.editFormData.micr_code = data.MICR;
+            }
+            if (this.activeCategory === 'customer') {
+              this.editFormData.acc_bank_branch = `${data.BANK} - ${data.BRANCH || ''}`.trim();
+            }
+            if (this.activeCategory === 'investor') {
+              this.editFormData.bank_branch = `${data.BANK} - ${data.BRANCH || ''}`.trim();
+            }
+            this.ifscStatus = { valid: true, msg: `${data.BANK} (${data.BRANCH || 'Branch'})` };
+          }
+        })
+        .catch(() => {
+          this.ifscLoading = false;
+          this.ifscStatus = { valid: false, msg: 'Invalid or unrecognized IFSC Code' };
+        });
+    } else {
+      this.ifscStatus = null;
+    }
+  }
 
   get pagedItems(): any[] {
     const start = (this.page - 1) * this.pageSize;
@@ -221,9 +353,18 @@ export class AdminEnrollmentsComponent implements OnInit {
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      if (params['tab'] && ['customer', 'associate', 'investor', 'team_member'].includes(params['tab'])) {
-        this.activeCategory = params['tab'] as CategoryType;
+      const tab = params['tab'];
+      let targetCat: CategoryType = 'customer';
+      if (tab) {
+        if (tab === 'associate') targetCat = 'associate';
+        else if (tab === 'investor') targetCat = 'investor';
+        else if (tab === 'team_member' || tab === 'team-member') targetCat = 'team_member';
+        else if (tab === 'customer') targetCat = 'customer';
       }
+      this.activeCategory = targetCat;
+      this.searchQuery = '';
+      this.statusFilter = '';
+      this.page = 1;
       this.loadData();
       this.loadStats();
     });
@@ -234,57 +375,92 @@ export class AdminEnrollmentsComponent implements OnInit {
       this.activeCategory = cat;
       this.searchQuery = '';
       this.statusFilter = '';
+      this.page = 1;
       this.loadData();
     }
   }
 
   loadData() {
     this.loading = true;
+    this.items = []; // Immediately isolate & clear previous data so stale rows never show
+    const currentCategory = this.activeCategory;
     const params: any = {};
     if (this.searchQuery.trim()) params.search = this.searchQuery.trim();
     if (this.statusFilter) params.status = this.statusFilter;
 
-    if (this.activeCategory === 'customer') {
+    if (currentCategory === 'customer') {
       this.api.adminGetCustomerEnrollments(params).subscribe({
         next: (res: any) => {
+          if (this.activeCategory !== currentCategory) return;
           this.loading = false;
           this.items = res.data || [];
+          if (!this.searchQuery && !this.statusFilter) {
+            this.stats.customer.total = this.items.length;
+            this.stats.customer.completed = this.items.filter((x: any) => x.enrollment_status === 'Completed').length;
+            this.stats.customer.pending = this.items.filter((x: any) => x.enrollment_status === 'Pending').length;
+          }
         },
         error: (err) => {
+          if (this.activeCategory !== currentCategory) return;
           this.loading = false;
+          this.items = [];
           console.error('Error fetching customer enrollments:', err);
         }
       });
-    } else if (this.activeCategory === 'associate') {
+    } else if (currentCategory === 'associate') {
       this.api.adminGetAssociateEnrollments(params).subscribe({
         next: (res: any) => {
+          if (this.activeCategory !== currentCategory) return;
           this.loading = false;
           this.items = res.data || [];
+          if (!this.searchQuery && !this.statusFilter) {
+            this.stats.associate.total = this.items.length;
+            this.stats.associate.completed = this.items.filter((x: any) => x.enrollment_status === 'Completed').length;
+            this.stats.associate.pending = this.items.filter((x: any) => x.enrollment_status === 'Pending').length;
+          }
         },
         error: (err) => {
+          if (this.activeCategory !== currentCategory) return;
           this.loading = false;
+          this.items = [];
           console.error('Error fetching associate enrollments:', err);
         }
       });
-    } else if (this.activeCategory === 'investor') {
+    } else if (currentCategory === 'investor') {
       this.api.adminGetInvestorEnrollments(params).subscribe({
         next: (res: any) => {
+          if (this.activeCategory !== currentCategory) return;
           this.loading = false;
           this.items = res.data || [];
+          if (!this.searchQuery && !this.statusFilter) {
+            this.stats.investor.total = this.items.length;
+            this.stats.investor.completed = this.items.filter((x: any) => x.enrollment_status === 'Completed').length;
+            this.stats.investor.pending = this.items.filter((x: any) => x.enrollment_status === 'Pending').length;
+          }
         },
         error: (err) => {
+          if (this.activeCategory !== currentCategory) return;
           this.loading = false;
+          this.items = [];
           console.error('Error fetching investor enrollments:', err);
         }
       });
-    } else if (this.activeCategory === 'team_member') {
+    } else if (currentCategory === 'team_member') {
       this.api.adminGetTeamMembers(params).subscribe({
         next: (res: any) => {
+          if (this.activeCategory !== currentCategory) return;
           this.loading = false;
           this.items = res.data || [];
+          if (!this.searchQuery && !this.statusFilter) {
+            this.stats.team_member.total = this.items.length;
+            this.stats.team_member.completed = this.items.filter((x: any) => x.status === 'Active' || x.status === 'Approved').length;
+            this.stats.team_member.pending = this.items.filter((x: any) => x.status === 'Pending' || !x.status).length;
+          }
         },
         error: (err) => {
+          if (this.activeCategory !== currentCategory) return;
           this.loading = false;
+          this.items = [];
           console.error('Error fetching team member enrollments:', err);
         }
       });
@@ -292,7 +468,7 @@ export class AdminEnrollmentsComponent implements OnInit {
   }
 
   loadStats() {
-    // Load summary stats for cards
+    // Load summary stats for all cards from DB
     this.api.adminGetCustomerEnrollments({}).subscribe({
       next: (res: any) => {
         const list = res.data || [];
@@ -324,8 +500,8 @@ export class AdminEnrollmentsComponent implements OnInit {
       next: (res: any) => {
         const list = res.data || [];
         this.stats.team_member.total = list.length;
-        this.stats.team_member.completed = list.filter((x: any) => x.status === 'Active').length;
-        this.stats.team_member.pending = list.filter((x: any) => x.status === 'Pending').length;
+        this.stats.team_member.completed = list.filter((x: any) => x.status === 'Active' || x.status === 'Approved').length;
+        this.stats.team_member.pending = list.filter((x: any) => x.status === 'Pending' || !x.status).length;
       }
     });
   }
@@ -347,6 +523,27 @@ export class AdminEnrollmentsComponent implements OnInit {
     this.editFormData = JSON.parse(JSON.stringify(item));
     this.showModal = true;
     this.modalLoading = true;
+    this.formErrorMessage = '';
+    this.ifscStatus = null;
+    this.ifscLoading = false;
+    this.applicantPhotoFile = null;
+    this.nomineePhotoFile = null;
+    this.existingApplicantPhoto = item.applicant_photo_url || item.applicant_photo_path || item.profile_image || '';
+    this.existingNomineePhoto = item.nominee_photo_url || item.nominee_photo_path || '';
+
+    // Initial prefill from table item row if address exists
+    if (!this.editFormData.perm_address) {
+      this.editFormData.perm_address = item.perm_address || item.address || item.address_line1 || item.perm_address_line1 || '';
+    }
+    if (!this.editFormData.perm_state) {
+      this.editFormData.perm_state = item.perm_state || item.state || 'Uttar Pradesh';
+    }
+    if (!this.editFormData.local_address) {
+      this.editFormData.local_address = item.local_address || item.local_address_line1 || this.editFormData.perm_address || '';
+    }
+    if (!this.editFormData.local_state) {
+      this.editFormData.local_state = item.local_state || item.perm_state || item.state || 'Uttar Pradesh';
+    }
 
     if (this.activeCategory === 'customer') {
       const lookupId = item.submission_id || item.id || item.user_id;
@@ -365,6 +562,12 @@ export class AdminEnrollmentsComponent implements OnInit {
             if (this.editFormData.txn_date) {
               this.editFormData.txn_date = this.formatDate(this.editFormData.txn_date);
             }
+            if (!this.editFormData.present_address && (item.address || item.address_line1)) {
+              this.editFormData.present_address = item.address || item.address_line1;
+            }
+            if (!this.editFormData.permanent_address && this.editFormData.present_address) {
+              this.editFormData.permanent_address = this.editFormData.present_address;
+            }
           }
         },
         error: (err) => {
@@ -380,6 +583,8 @@ export class AdminEnrollmentsComponent implements OnInit {
           const data = res.data || res;
           if (data) {
             this.editFormData = { ...this.editFormData, ...data };
+            this.existingApplicantPhoto = data.applicant_photo_url || data.applicant_photo_path || data.profile_image || this.existingApplicantPhoto || '';
+            this.existingNomineePhoto = data.nominee_photo_url || data.nominee_photo_path || this.existingNomineePhoto || '';
             if (this.editFormData.dob) {
               this.editFormData.dob = this.formatDate(this.editFormData.dob);
             }
@@ -409,6 +614,30 @@ export class AdminEnrollmentsComponent implements OnInit {
             if (this.editFormData.nominee_gender) this.editFormData.nominee_gender = findMatched(this.gendersList, this.editFormData.nominee_gender, 'Male');
             if (this.editFormData.nominee_res_status) this.editFormData.nominee_res_status = findMatched(this.resStatusesList, this.editFormData.nominee_res_status, 'Resident Individual');
             if (this.editFormData.nominee_relationship) this.editFormData.nominee_relationship = findMatched(this.relationshipsList, this.editFormData.nominee_relationship);
+
+            // Address prefill from user if not set
+            if (!this.editFormData.perm_address) {
+              this.editFormData.perm_address = this.editFormData.perm_address_line1 || item.address || item.address_line1 || '';
+            }
+            if (!this.editFormData.perm_state) {
+              this.editFormData.perm_state = item.perm_state || item.state || 'Uttar Pradesh';
+            }
+            if (!this.editFormData.local_address) {
+              this.editFormData.local_address = this.editFormData.local_address_line1 || this.editFormData.perm_address || '';
+            }
+            if (!this.editFormData.local_state) {
+              this.editFormData.local_state = this.editFormData.local_state || this.editFormData.perm_state;
+            }
+
+            // Bank prefill alias
+            if (!this.editFormData.acc_no) this.editFormData.acc_no = this.editFormData.account_number || '';
+            if (!this.editFormData.ifsc) this.editFormData.ifsc = this.editFormData.ifsc_code || '';
+            if (!this.editFormData.acc_holder) this.editFormData.acc_holder = this.editFormData.account_holder_name || this.editFormData.full_name || '';
+
+            // Check if same as permanent address
+            const pAddr = (this.editFormData.perm_address || '').trim();
+            const lAddr = (this.editFormData.local_address || '').trim();
+            this.sameAsPermAddress = Boolean(pAddr && (pAddr === lAddr));
           }
         },
         error: (err) => {
@@ -433,6 +662,12 @@ export class AdminEnrollmentsComponent implements OnInit {
             if (this.editFormData.txn_date) {
               this.editFormData.txn_date = this.formatDate(this.editFormData.txn_date);
             }
+            if (!this.editFormData.address && (item.address || item.address_line1)) {
+              this.editFormData.address = item.address || item.address_line1;
+            }
+            if (!this.editFormData.corr_address && this.editFormData.address) {
+              this.editFormData.corr_address = this.editFormData.address;
+            }
           }
         },
         error: (err) => {
@@ -441,6 +676,34 @@ export class AdminEnrollmentsComponent implements OnInit {
         }
       });
     }
+  }
+
+  onApplicantPhotoSelected(file: File) {
+    const val = validateImageUpload(file, 'photo');
+    if (!val.valid) {
+      Swal.fire({
+        icon: 'error',
+        title: 'अमान्य फोटो / Invalid Photo',
+        text: val.message,
+        confirmButtonColor: '#dc2626'
+      });
+      return;
+    }
+    this.applicantPhotoFile = file;
+  }
+
+  onNomineePhotoSelected(file: File) {
+    const val = validateImageUpload(file, 'photo');
+    if (!val.valid) {
+      Swal.fire({
+        icon: 'error',
+        title: 'अमान्य फोटो / Invalid Photo',
+        text: val.message,
+        confirmButtonColor: '#dc2626'
+      });
+      return;
+    }
+    this.nomineePhotoFile = file;
   }
 
   private formatDate(val: any): string {
@@ -456,11 +719,134 @@ export class AdminEnrollmentsComponent implements OnInit {
     this.showModal = false;
     this.selectedItem = null;
     this.editFormData = {};
+    this.formErrorMessage = '';
     this.modalLoading = false;
+    this.ifscStatus = null;
+    this.ifscLoading = false;
+    this.sameAsPermAddress = false;
+    this.applicantPhotoFile = null;
+    this.nomineePhotoFile = null;
+    this.existingApplicantPhoto = '';
+    this.existingNomineePhoto = '';
   }
 
   saveChanges() {
+    this.formErrorMessage = '';
+
+    // 1. Validation for Associate
+    if (this.activeCategory === 'associate') {
+      if (!this.editFormData.full_name?.trim()) {
+        this.formErrorMessage = 'Please enter the Associate Full Name.';
+        Swal.fire({ icon: 'warning', title: 'Full Name Required', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      const dobCheck = this.isDobEligible(this.editFormData.dob);
+      if (!dobCheck.valid) {
+        this.formErrorMessage = dobCheck.message || 'Date of Birth is not eligible. Member must be 18 years or older.';
+        Swal.fire({ icon: 'warning', title: 'Invalid Date of Birth', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (!this.editFormData.contact_1 || !this.isContactValid(this.editFormData.contact_1)) {
+        this.formErrorMessage = 'Primary contact must be a valid 10-digit mobile number starting with 6-9.';
+        Swal.fire({ icon: 'warning', title: 'Invalid Primary Contact', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (this.editFormData.pan_no && !this.isPanValid(this.editFormData.pan_no)) {
+        this.formErrorMessage = 'PAN format must be 5 uppercase letters, 4 digits, and 1 letter (e.g. ABCDE1234F).';
+        Swal.fire({ icon: 'warning', title: 'Invalid PAN Number', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (this.editFormData.aadhar_no && !this.isAadhaarValid(this.editFormData.aadhar_no)) {
+        this.formErrorMessage = 'Aadhaar must be a valid 12-digit number.';
+        Swal.fire({ icon: 'warning', title: 'Invalid Aadhaar Number', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (!this.editFormData.perm_address?.trim()) {
+        this.formErrorMessage = 'Please fill Permanent Address.';
+        Swal.fire({ icon: 'warning', title: 'Permanent Address Required', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (!this.editFormData.perm_state) {
+        this.formErrorMessage = 'Please select Permanent State.';
+        Swal.fire({ icon: 'warning', title: 'Permanent State Required', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+    }
+
+    // 2. Validation for Customer
+    if (this.activeCategory === 'customer') {
+      if (!this.editFormData.applicant_name?.trim()) {
+        this.formErrorMessage = 'Please enter Applicant Name.';
+        Swal.fire({ icon: 'warning', title: 'Applicant Name Required', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (this.editFormData.date_of_birth) {
+        const dobCheck = this.isDobEligible(this.editFormData.date_of_birth);
+        if (!dobCheck.valid) {
+          this.formErrorMessage = dobCheck.message || 'Date of Birth is not eligible. Member must be 18 years or older.';
+          Swal.fire({ icon: 'warning', title: 'Invalid Date of Birth', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+          return;
+        }
+      }
+      if (this.editFormData.mobile_1 && !this.isContactValid(this.editFormData.mobile_1)) {
+        this.formErrorMessage = 'Primary mobile must be a 10-digit number.';
+        Swal.fire({ icon: 'warning', title: 'Invalid Mobile Number', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (this.editFormData.pan_no && !this.isPanValid(this.editFormData.pan_no)) {
+        this.formErrorMessage = 'PAN format must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F).';
+        Swal.fire({ icon: 'warning', title: 'Invalid PAN Number', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (this.editFormData.aadhar_no && !this.isAadhaarValid(this.editFormData.aadhar_no)) {
+        this.formErrorMessage = 'Aadhaar must be a 12-digit number.';
+        Swal.fire({ icon: 'warning', title: 'Invalid Aadhaar Number', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+    }
+
+    // 3. Validation for Investor
+    if (this.activeCategory === 'investor') {
+      if (!this.editFormData.inv_first_name?.trim()) {
+        this.formErrorMessage = 'Please enter Investor First Name.';
+        Swal.fire({ icon: 'warning', title: 'First Name Required', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (this.editFormData.dob) {
+        const dobCheck = this.isDobEligible(this.editFormData.dob);
+        if (!dobCheck.valid) {
+          this.formErrorMessage = dobCheck.message || 'Date of Birth is not eligible. Member must be 18 years or older.';
+          Swal.fire({ icon: 'warning', title: 'Invalid Date of Birth', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+          return;
+        }
+      }
+      if (this.editFormData.mobile && !this.isContactValid(this.editFormData.mobile)) {
+        this.formErrorMessage = 'Mobile number must be 10 digits.';
+        Swal.fire({ icon: 'warning', title: 'Invalid Mobile Number', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (this.editFormData.pan && !this.isPanValid(this.editFormData.pan)) {
+        this.formErrorMessage = 'PAN format must be ABCDE1234F.';
+        Swal.fire({ icon: 'warning', title: 'Invalid PAN Number', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+      if (this.editFormData.aadhar && !this.isAadhaarValid(this.editFormData.aadhar)) {
+        this.formErrorMessage = 'Aadhaar must be 12 digits.';
+        Swal.fire({ icon: 'warning', title: 'Invalid Aadhaar Number', text: this.formErrorMessage, confirmButtonColor: '#dc2626' });
+        return;
+      }
+    }
+
     this.saving = true;
+
+    // Auto-uppercase PAN
+    if (this.editFormData.pan_no) this.editFormData.pan_no = this.editFormData.pan_no.trim().toUpperCase();
+    if (this.editFormData.pan) this.editFormData.pan = this.editFormData.pan.trim().toUpperCase();
+    if (this.editFormData.ifsc) this.editFormData.ifsc = this.editFormData.ifsc.trim().toUpperCase();
+    if (this.editFormData.ifsc_code) this.editFormData.ifsc_code = this.editFormData.ifsc_code.trim().toUpperCase();
+
+    // Mark as final submitted
+    this.editFormData.is_final_submitted = true;
 
     // Normalize any human names in editFormData
     if (this.editFormData.full_name) this.editFormData.full_name = normalizeHumanName(this.editFormData.full_name);
@@ -498,17 +884,34 @@ export class AdminEnrollmentsComponent implements OnInit {
         },
         error: (err) => {
           this.saving = false;
+          const errMsg = err.error?.message || err.message || 'Failed to update customer enrollment.';
+          this.formErrorMessage = errMsg;
           Swal.fire({
             icon: 'error',
             title: 'Update Failed',
-            text: err.error?.message || 'Failed to update customer enrollment.',
+            text: errMsg,
             confirmButtonColor: '#dc2626'
           });
         }
       });
     } else if (this.activeCategory === 'associate') {
       const id = this.editFormData.associate_id || this.editFormData.id || this.selectedItem?.associate_id || this.selectedItem?.id || this.selectedItem?.user_id;
-      this.api.adminUpdateAssociateEnrollment(id, this.editFormData).subscribe({
+      
+      const formData = new FormData();
+      Object.keys(this.editFormData).forEach(key => {
+        const val = this.editFormData[key];
+        if (val !== null && val !== undefined) {
+          formData.append(key, typeof val === 'object' ? JSON.stringify(val) : String(val));
+        }
+      });
+      if (this.applicantPhotoFile) {
+        formData.append('applicantPhoto', this.applicantPhotoFile);
+      }
+      if (this.nomineePhotoFile) {
+        formData.append('nomineePhoto', this.nomineePhotoFile);
+      }
+
+      this.api.adminUpdateAssociateEnrollment(id, formData).subscribe({
         next: (res: any) => {
           this.saving = false;
           Swal.fire({
@@ -523,10 +926,12 @@ export class AdminEnrollmentsComponent implements OnInit {
         },
         error: (err) => {
           this.saving = false;
+          const errMsg = err.error?.message || err.message || 'Failed to update associate enrollment.';
+          this.formErrorMessage = errMsg;
           Swal.fire({
             icon: 'error',
             title: 'Update Failed',
-            text: err.error?.message || 'Failed to update associate enrollment.',
+            text: errMsg,
             confirmButtonColor: '#dc2626'
           });
         }
@@ -548,10 +953,12 @@ export class AdminEnrollmentsComponent implements OnInit {
         },
         error: (err) => {
           this.saving = false;
+          const errMsg = err.error?.message || err.message || 'Failed to update investor enrollment.';
+          this.formErrorMessage = errMsg;
           Swal.fire({
             icon: 'error',
             title: 'Update Failed',
-            text: err.error?.message || 'Failed to update investor enrollment.',
+            text: errMsg,
             confirmButtonColor: '#dc2626'
           });
         }

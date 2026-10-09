@@ -254,12 +254,10 @@ export class AssociatesComponent implements OnInit {
         const enrollMap = new Map<string, any>();
         
         enrollmentsList.forEach((e: any) => {
-          const isCompleted = String(e.enrollment_status || e.app_status || '').toLowerCase() === 'completed' ||
-                              String(e.enrollment_status || e.app_status || '').toLowerCase() === 'submitted' ||
-                              String(e.enrollment_status || e.app_status || '').toLowerCase() === 'approved' ||
-                              (e.associate_id && String(e.associate_id).startsWith('MMR-ASC'));
+          const rawStatus = String(e.status || e.enrollment_status || e.app_status || '').toLowerCase().trim();
+          const isApproved = rawStatus === 'approved' || rawStatus === 'completed';
           
-          if (isCompleted) {
+          if (isApproved) {
             if (e.user_id) enrollMap.set(String(e.user_id), e);
             if (e.member_id) enrollMap.set(String(e.member_id).toUpperCase().trim(), e);
             if (e.mobile_no || e.contact_1 || e.contact_no_1) {
@@ -272,20 +270,25 @@ export class AssociatesComponent implements OnInit {
 
         // Fallback: If primary associates list is empty, but associate enrollments exist, display them seamlessly
         if (list.length === 0 && enrollmentsList.length > 0 && !this.search.trim() && this.statusFilter === 'all') {
-          list = enrollmentsList.map((e: any) => ({
-            user_id: e.user_id || e.id,
-            member_id: e.member_id || e.associate_id || e.id,
-            full_name: e.full_name || 'Associate',
-            email: e.email || '',
-            mobile_no: e.mobile_no || e.contact_1 || e.contact_no_1 || '',
-            invitation_code: e.sponsor_code || e.invitation_code || '',
-            registered_at: e.created_at || e.sign_date || new Date().toISOString(),
-            account_status: 'Active',
-            enrollment_status: 'Completed',
-            is_verified: true,
-            associate_enrollment_id: e.id,
-            rank_name: 'Associate'
-          }));
+          list = enrollmentsList.map((e: any) => {
+            const rawStatus = String(e.status || e.enrollment_status || e.app_status || '').toLowerCase().trim();
+            const isApproved = rawStatus === 'approved' || rawStatus === 'completed';
+            return {
+              user_id: e.user_id || e.id,
+              member_id: e.member_id || e.associate_id || e.id,
+              full_name: e.full_name || 'Associate',
+              email: e.email || '',
+              mobile_no: e.mobile_no || e.contact_1 || e.contact_no_1 || '',
+              invitation_code: e.sponsor_code || e.invitation_code || '',
+              registered_at: e.created_at || e.sign_date || new Date().toISOString(),
+              account_status: e.status || 'Active',
+              enrollment_status: isApproved ? 'Completed' : (rawStatus === 'submitted' ? 'Submitted' : (rawStatus === 'rejected' ? 'Rejected' : 'Pending')),
+              is_verified: isApproved,
+              isVerified: isApproved,
+              associate_enrollment_id: e.id,
+              rank_name: 'Associate'
+            };
+          });
           totalCount = list.length;
         }
 
@@ -300,19 +303,18 @@ export class AssociatesComponent implements OnInit {
                                 (mob ? enrollMap.get(mob) : null) || 
                                 (email ? enrollMap.get(email) : null);
           
-          const hasCompletedEnrollment = Boolean(matchedEnroll) || 
-                                         Boolean(a.associate_enrollment_id) || 
-                                         ['completed', 'submitted', 'approved'].includes(String(a.enrollment_status || '').toLowerCase());
+          const rawStatus = String(matchedEnroll?.status || a.enrollment_status || '').toLowerCase().trim();
+          const isApproved = rawStatus === 'approved' || rawStatus === 'completed';
 
           return {
             ...a,
             account_status: a.account_status || 'Active',
-            enrollment_status: hasCompletedEnrollment ? 'Completed' : 'Pending',
-            is_verified: hasCompletedEnrollment,
-            isVerified: hasCompletedEnrollment,
-            is_enrolled: hasCompletedEnrollment,
-            isEnrolled: hasCompletedEnrollment,
-            associate_enrollment_id: hasCompletedEnrollment ? (a.associate_enrollment_id || matchedEnroll?.associate_id || matchedEnroll?.id) : null
+            enrollment_status: isApproved ? 'Completed' : (rawStatus === 'submitted' ? 'Submitted' : (rawStatus === 'rejected' ? 'Rejected' : 'Pending')),
+            is_verified: isApproved,
+            isVerified: isApproved,
+            is_enrolled: isApproved,
+            isEnrolled: isApproved,
+            associate_enrollment_id: matchedEnroll ? (matchedEnroll.id || matchedEnroll.associate_id) : a.associate_enrollment_id || null
           };
         });
 

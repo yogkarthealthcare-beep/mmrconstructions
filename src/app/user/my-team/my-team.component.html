@@ -36,8 +36,11 @@
 
       <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
         <a class="btn btn-outline-light btn-sm fw-700 shadow-sm px-3" routerLink="/associate/team-member-enrollment">
-          <i class="fas fa-th-large me-1.5"></i> 10 Direct Slots
+          <i class="fas fa-th-large me-1.5"></i> 11 Direct Slots
         </a>
+        <button class="btn btn-success btn-sm fw-700 shadow-sm px-3" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none; color: #ffffff;" (click)="openAddTeamMemberModal()">
+          <i class="fas fa-user-shield me-1.5"></i> + Add New Team Member
+        </button>
         <button class="btn btn-gold btn-sm fw-700 shadow-sm px-3" (click)="openAddCustomerModal()">
           <i class="fas fa-user-plus me-1.5"></i> + Add New Customer
         </button>
@@ -784,6 +787,287 @@
           <div class="fs-12 text-dark"><strong>Phone:</strong> +91 99999 99999 &nbsp;|&nbsp; <strong>Email:</strong> support&#64;mmrconstructions.in</div>
         </div>
         <button type="button" class="btn btn-outline-secondary btn-xs ms-auto" (click)="closeAddCustomerModal()">
+          Close &amp; View Team
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL 1B: ADD NEW TEAM MEMBER (11-SLOT DIRECT NETWORK)                    -->
+<!-- ═════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop-custom" *ngIf="showAddTeamMemberModal" (click)="closeAddTeamMemberModal()">
+  <div class="add-customer-modal-dialog" (click)="$event.stopPropagation()">
+    
+    <!-- FIXED HEADER -->
+    <div class="add-cust-header d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%);">
+      <div class="d-flex align-items-center gap-2.5">
+        <div class="add-cust-icon-badge" style="background: #10b981; color: #fff;">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        <div>
+          <h5 class="add-cust-title mb-0.5 text-white">Add New Team Member</h5>
+          <p class="add-cust-sub mb-0 text-white-50">Register a new direct Team Member in your 11-slot capacity sales network.</p>
+        </div>
+      </div>
+      <button type="button" class="add-cust-close-btn" (click)="closeAddTeamMemberModal()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- SCROLLABLE BODY (FORM STATE) -->
+    <div class="add-cust-body" *ngIf="!addTeamMemberSuccess">
+      
+      <!-- SPONSOR & CAPACITY COMPACT CARD -->
+      <div class="sponsor-compact-card mb-3" style="border-left: 4px solid #10b981;">
+        <div class="d-flex align-items-start gap-2.5">
+          <div class="sponsor-lock-icon">
+            <i class="fas fa-sitemap text-success"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-1 mb-1">
+              <span class="sponsor-card-label text-success">PARENT ASSOCIATE / SPONSOR</span>
+              <span class="badge bg-success-subtle text-success fs-10 fw-700"><i class="fas fa-layer-group me-1"></i> Max 11 Direct Slots</span>
+            </div>
+            <div class="sponsor-value-pill">
+              <i class="fas fa-id-badge text-gold me-1.5"></i>
+              <span>{{ (currentUser?.member_id || ('ASSOC' + currentUser?.user_id)) + ' — ' + (currentUser?.full_name || 'Logged-in Associate') }}</span>
+            </div>
+            <div class="sponsor-helper-row d-flex align-items-center justify-content-between flex-wrap gap-1 mt-1.5">
+              <span class="sponsor-note">This team member will be assigned the next available slot (1 to 11).</span>
+              <span class="sponsor-sec-text"><i class="fas fa-shield-alt text-success me-1"></i> Role: Team Member</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ERROR ALERT -->
+      <div class="alert alert-danger py-2 px-3 fs-13 mb-3 d-flex align-items-center justify-content-between" *ngIf="addTeamMemberError">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fas fa-exclamation-circle text-danger"></i>
+          <span>{{ addTeamMemberError }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="addTeamMemberError = ''" style="font-size: 10px;"></button>
+      </div>
+
+      <form (ngSubmit)="submitAddTeamMember()">
+        
+        <!-- SECTION 1: TEAM MEMBER INFORMATION -->
+        <div class="form-section-block mb-3">
+          <div class="section-title-wrap mb-2.5">
+            <h6 class="form-section-heading mb-0.5 text-success"><i class="fas fa-user-circle me-1.5"></i> TEAM MEMBER INFORMATION</h6>
+            <p class="form-section-sub mb-0">Enter the basic profile details of the new team member.</p>
+          </div>
+
+          <!-- Full Name -->
+          <div class="form-field-group mb-2.5">
+            <label for="tm_full_name" class="field-label">Full Name <span class="text-danger">*</span></label>
+            <div class="modern-input-group">
+              <span class="ig-icon"><i class="fas fa-user"></i></span>
+              <input
+                type="text"
+                id="tm_full_name"
+                class="modern-input"
+                placeholder="e.g. Ramesh Chandra"
+                [(ngModel)]="newTeamMember.full_name"
+                name="tm_name"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- 2-Column: Mobile + Email -->
+          <div class="row g-2.5">
+            <!-- Mobile Number -->
+            <div class="col-12 col-md-6">
+              <div class="form-field-group">
+                <label for="tm_mobile_no" class="field-label">Mobile Number <span class="text-danger">*</span></label>
+                <div class="modern-input-group">
+                  <span class="ig-icon font-monospace fw-700 text-dark">+91</span>
+                  <input
+                    type="tel"
+                    id="tm_mobile_no"
+                    class="modern-input font-monospace"
+                    placeholder="10-digit mobile"
+                    maxlength="10"
+                    [(ngModel)]="newTeamMember.mobile_no"
+                    name="tm_mobile"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Email Address -->
+            <div class="col-12 col-md-6">
+              <div class="form-field-group">
+                <label for="tm_email_addr" class="field-label">Email Address <span class="text-danger">*</span></label>
+                <div class="modern-input-group">
+                  <span class="ig-icon"><i class="fas fa-envelope"></i></span>
+                  <input
+                    type="email"
+                    id="tm_email_addr"
+                    class="modern-input"
+                    placeholder="teammember@example.com"
+                    [(ngModel)]="newTeamMember.email"
+                    name="tm_email"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: ACCOUNT SECURITY -->
+        <div class="form-section-block mb-3">
+          <div class="section-title-wrap mb-2.5">
+            <h6 class="form-section-heading mb-0.5 text-success"><i class="fas fa-shield-alt me-1.5"></i> LOGIN CREDENTIALS</h6>
+            <p class="form-section-sub mb-0">Set up initial password for Team Member Portal access.</p>
+          </div>
+
+          <div class="row g-2.5">
+            <!-- Account Password -->
+            <div class="col-12 col-md-6">
+              <div class="form-field-group">
+                <label for="tm_account_pwd" class="field-label">Password <span class="text-danger">*</span></label>
+                <div class="modern-input-group">
+                  <span class="ig-icon"><i class="fas fa-key"></i></span>
+                  <input
+                    [type]="showTeamMemberPassword ? 'text' : 'password'"
+                    id="tm_account_pwd"
+                    class="modern-input"
+                    placeholder="Min 6 characters"
+                    [(ngModel)]="newTeamMember.password"
+                    name="tm_pwd"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="ig-addon-btn"
+                    (click)="showTeamMemberPassword = !showTeamMemberPassword"
+                    [title]="showTeamMemberPassword ? 'Hide password' : 'Show password'"
+                    tabindex="-1"
+                  >
+                    <i class="fas" [class.fa-eye]="!showTeamMemberPassword" [class.fa-eye-slash]="showTeamMemberPassword"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="col-12 col-md-6">
+              <div class="form-field-group">
+                <label for="tm_confirm_pwd" class="field-label">Confirm Password <span class="text-danger">*</span></label>
+                <div class="modern-input-group">
+                  <span class="ig-icon"><i class="fas fa-check-double"></i></span>
+                  <input
+                    [type]="showTeamMemberPassword ? 'text' : 'password'"
+                    id="tm_confirm_pwd"
+                    class="modern-input"
+                    placeholder="Repeat password"
+                    [(ngModel)]="newTeamMember.confirm_password"
+                    name="tm_confirm_pwd"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-text fs-11 text-muted mt-1">
+            <i class="fas fa-info-circle text-success me-1"></i> The team member will log into the Team Member Portal using this mobile number and password.
+          </div>
+        </div>
+
+        <!-- HIDDEN SUBMIT BUTTON TO ALLOW ENTER KEY -->
+        <button type="submit" style="display: none;"></button>
+      </form>
+    </div>
+
+    <!-- FIXED STICKY ACTION FOOTER (FORM STATE) -->
+    <div class="add-cust-footer d-flex align-items-center justify-content-between" *ngIf="!addTeamMemberSuccess">
+      <button type="button" class="btn-cancel-ghost" (click)="closeAddTeamMemberModal()" [disabled]="addTeamMemberSubmitting">
+        Cancel
+      </button>
+      <button type="button" class="btn-create-cust" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);" (click)="submitAddTeamMember()" [disabled]="addTeamMemberSubmitting">
+        <span class="d-flex align-items-center gap-2" *ngIf="!addTeamMemberSubmitting">
+          <i class="fas fa-check-circle"></i>
+          <span>Register Team Member</span>
+        </span>
+        <span class="d-flex align-items-center gap-2" *ngIf="addTeamMemberSubmitting">
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>Registering Team Member...</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- SCROLLABLE BODY (SUCCESS STATE) -->
+    <div class="add-cust-body text-center py-4" *ngIf="addTeamMemberSuccess">
+      <div class="success-check-badge mx-auto mb-3" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+        <i class="fas fa-check text-white fs-2"></i>
+      </div>
+
+      <h4 class="fw-800 text-success mb-1">Team Member Registered Successfully!</h4>
+      <p class="text-muted fs-13 mb-4">The team member has been assigned to your direct 11-slot sales network.</p>
+
+      <!-- Team Member Details Card -->
+      <div class="created-account-summary-card text-start p-3 mb-4" style="border-left: 4px solid #10b981;">
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="fs-11 text-muted text-uppercase fw-600">Team Member Name</div>
+            <div class="fw-700 text-dark fs-14">{{ createdTeamMemberData?.full_name }}</div>
+          </div>
+          <div class="col-6">
+            <div class="fs-11 text-muted text-uppercase fw-600">Member ID</div>
+            <div class="fw-800 text-success fs-14">{{ createdTeamMemberData?.member_id }}</div>
+          </div>
+          <div class="col-6 mt-2">
+            <div class="fs-11 text-muted text-uppercase fw-600">Direct Slot Assigned</div>
+            <div class="fw-800 text-dark fs-13">
+              <span class="badge bg-success text-white px-2 py-1"><i class="fas fa-layer-group me-1"></i> Slot #{{ createdTeamMemberData?.slot_number }} of 11</span>
+            </div>
+          </div>
+          <div class="col-6 mt-2">
+            <div class="fs-11 text-muted text-uppercase fw-600">Parent Associate</div>
+            <div class="fw-700 text-dark fs-13">
+              <span class="badge bg-gold text-dark"><i class="fas fa-lock me-1"></i>{{ createdTeamMemberData?.sponsor_member_id || currentUser?.member_id }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEXT STEP BANNER -->
+      <div class="next-step-action-box p-3 mb-4 text-start" style="border-left: 4px solid #059669; background: #f0fdf4;">
+        <div class="d-flex align-items-start gap-2.5">
+          <div class="step-badge-icon" style="background: #10b981; color: #fff;"><i class="fas fa-file-contract"></i></div>
+          <div class="flex-fill">
+            <h6 class="fw-800 text-dark mb-1">Next Step: Complete Team Member Enrollment</h6>
+            <p class="fs-12 text-muted mb-2">
+              Prefill KYC, address, bank details, and nominee information for this team member now.
+            </p>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <button type="button" class="btn btn-success btn-sm fw-700 px-3" (click)="fillEnrollmentForCreatedTeamMember()">
+                <i class="fas fa-edit me-1.5"></i> Fill Enrollment Form Now
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm px-3" (click)="closeAddTeamMemberModal()">
+                View in Team
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Need Help & Support Section -->
+      <div class="support-footer-box p-2.5 rounded-8 bg-light border text-start d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+          <div class="fs-11 text-uppercase text-muted fw-700">Need Help? MMR Constructions Support</div>
+          <div class="fs-12 text-dark"><strong>Phone:</strong> +91 7071951011 &nbsp;|&nbsp; <strong>Email:</strong> mmrconstructionsbuilder&#64;gmail.com</div>
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-xs ms-auto" (click)="closeAddTeamMemberModal()">
           Close &amp; View Team
         </button>
       </div>

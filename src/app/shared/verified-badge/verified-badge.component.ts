@@ -77,52 +77,53 @@ export class VerifiedBadgeComponent {
   @Input() user?: any;
   @Input() isVerified?: boolean;
   @Input() size: 'xs' | 'sm' | 'md' | 'lg' = 'sm';
-  @Input() tooltip: string = 'Verified - Enrollment Form Completed';
+  @Input() tooltip: string = 'Verified - Enrollment Form Approved';
   @Input() showLabel: boolean = false;
 
   get isUserVerified(): boolean {
-    if (this.isVerified !== undefined && this.isVerified !== null) {
-      return Boolean(this.isVerified);
-    }
-    if (!this.user) return false;
-    const u = this.user;
+    if (!this.user && (this.isVerified === undefined || this.isVerified === null)) return false;
+    const u = this.user || {};
 
-    // 1. Presence of enrollment record ID (Associate, Customer, Investor)
-    const hasEnrollmentId = Boolean(
-      u.customer_enrollment_id ||
-      u.associate_enrollment_id ||
-      u.investor_enrollment_id ||
-      u.enrollment_id
-    );
-
-    // 2. Enrollment Status checks (Completed, Submitted, Approved)
+    // Check enrollment status (must be strictly 'approved' or 'completed')
     const status = String(
       u.enrollment_status ||
       u.enrollmentStatus ||
       u.enrollment_form_status ||
       u.app_status ||
       u.appStatus ||
+      u.status ||
       ''
     ).toLowerCase().trim();
-    const hasCompletedStatus = status === 'completed' || status === 'submitted' || status === 'approved';
 
-    // 3. Enrolled boolean flags
-    const hasEnrolledFlag = (
-      u.is_enrolled === true ||
-      u.isEnrolled === true ||
-      u.enrollment_completed === true ||
-      u.enrollment_form_submitted === true ||
-      u.has_enrollment === true
+    const isExplicitlyApproved = status === 'approved' || status === 'completed';
+
+    // Explicit false always hides badge
+    if (this.isVerified === false || u.is_verified === false || u.isVerified === false) {
+      return false;
+    }
+
+    // If status is present, it MUST be approved/completed
+    if (status && !isExplicitlyApproved) {
+      return false;
+    }
+
+    // If enrollment id is present, status must still be approved
+    const hasEnrollmentId = Boolean(
+      u.customer_enrollment_id ||
+      u.associate_enrollment_id ||
+      u.investor_enrollment_id ||
+      u.submission_id
     );
 
-    // If explicit is_verified or isVerified boolean is provided in user object
-    if (u.is_verified !== undefined && typeof u.is_verified === 'boolean') {
-      return u.is_verified && (hasEnrollmentId || hasCompletedStatus || hasEnrolledFlag);
-    }
-    if (u.isVerified !== undefined && typeof u.isVerified === 'boolean') {
-      return u.isVerified && (hasEnrollmentId || hasCompletedStatus || hasEnrolledFlag);
+    if (hasEnrollmentId && !isExplicitlyApproved) {
+      return false;
     }
 
-    return hasEnrollmentId || hasCompletedStatus || hasEnrolledFlag;
+    // When is_verified flag is true and status is approved
+    if (this.isVerified === true || u.is_verified === true || u.isVerified === true) {
+      return isExplicitlyApproved;
+    }
+
+    return isExplicitlyApproved;
   }
 }

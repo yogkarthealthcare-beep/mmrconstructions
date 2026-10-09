@@ -239,6 +239,7 @@ export class ApiService {
   getAssocCommissions(q: any = {}) { return this.get('/api/associate/commissions', q); }
   getInviteCode()                  { return this.get('/api/associate/invite-code'); }
   createAssociateCustomer(data: any) { return this.post('/api/associate/customers', data); }
+  createAssociateTeamMember(data: any) { return this.post('/api/associate/team-members', data); }
   getAssociateTeamMembers(params: any = {}) { return this.get('/api/associate/team-members', params); }
   createAssociatePlotBooking(data: any) { return this.post('/api/associate/bookings', data); }
   getAssociateTeamMemberInvoices(userId: number) { return this.get(`/api/associate/team-members/${userId}/invoices`); }

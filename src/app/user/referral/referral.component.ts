@@ -100,7 +100,6 @@ export class ReferralComponent implements OnInit {
 
     if (Array.isArray(rawRoot.children)) {
       rootNode.children = rawRoot.children
-        .filter((child: any) => child.user_type !== 'Customer')
         .map((child: any) => this.mapChildNode(child, 1));
     }
 
@@ -108,17 +107,33 @@ export class ReferralComponent implements OnInit {
   }
 
   private mapChildNode(rawNode: any, depth: number): TeamNode {
-    const isTeamMember = rawNode.user_type === 'Team Member' || Boolean(rawNode.slot_number);
+    const rawType = String(rawNode.user_type || rawNode.role || '').toLowerCase();
+    const isCustomer = rawType === 'customer';
+    const isTeamMember = !isCustomer && (rawType === 'team member' || rawType.includes('team member') || Boolean(rawNode.slot_number));
+
+    let userTypeDisplay = 'Associate';
+    if (isCustomer) userTypeDisplay = 'Customer';
+    else if (isTeamMember) userTypeDisplay = 'Team Member';
+
+    let rankDisplay = rawNode.rank;
+    if (isCustomer) {
+      rankDisplay = 'Customer';
+    } else if (rawNode.slot_number) {
+      rankDisplay = `Slot #${rawNode.slot_number} Team Member`;
+    } else if (isTeamMember) {
+      rankDisplay = 'Direct Team Member';
+    } else if (!rankDisplay) {
+      rankDisplay = depth === 1 ? 'Direct Member' : `Level ${depth} Member`;
+    }
+
     const node: TeamNode = {
       user_id: rawNode.user_id,
       member_id: rawNode.member_id || rawNode.team_member_uid || `MMR${rawNode.user_id}`,
-      full_name: rawNode.full_name || 'Team Member',
-      user_type: isTeamMember ? 'Team Member' : (rawNode.user_type || 'Associate'),
+      full_name: rawNode.full_name || (isCustomer ? 'Customer' : 'Team Member'),
+      user_type: userTypeDisplay,
       sponsor_user_id: rawNode.sponsor_user_id,
       status: rawNode.status || rawNode.account_status || 'Active',
-      rank: rawNode.slot_number
-        ? `Slot #${rawNode.slot_number} Team Member`
-        : (rawNode.rank || (isTeamMember ? 'Direct Team Member' : (depth === 1 ? 'Direct Member' : 'Team Member'))),
+      rank: rankDisplay,
       total_gaj_sold: Number(rawNode.total_gaj_sold || 0),
       commission_earned: Number(rawNode.commission_earned || 0),
       mobile_no: rawNode.mobile_no,
@@ -127,9 +142,9 @@ export class ReferralComponent implements OnInit {
       collapsed: false
     };
 
-    if (Array.isArray(rawNode.children)) {
+    // Maximum 6 levels displayed for Referral Tree hierarchy
+    if (depth < 6 && Array.isArray(rawNode.children)) {
       node.children = rawNode.children
-        .filter((c: any) => c.user_type !== 'Customer')
         .map((c: any) => this.mapChildNode(c, depth + 1));
     }
 
@@ -158,18 +173,25 @@ export class ReferralComponent implements OnInit {
     map.set(rootId, rootNode);
 
     flatList.forEach(item => {
+      const rawType = String(item.user_type || item.role || '').toLowerCase();
+      const isCustomer = rawType === 'customer';
+      const isTeamMember = !isCustomer && (rawType === 'team member' || rawType.includes('team member') || Boolean(item.slot_number));
+      let userTypeDisplay = 'Associate';
+      if (isCustomer) userTypeDisplay = 'Customer';
+      else if (isTeamMember) userTypeDisplay = 'Team Member';
+
       map.set(item.user_id, {
         user_id: item.user_id,
         member_id: item.member_id || `MMR${item.user_id}`,
-        full_name: item.full_name || 'Associate Member',
-        user_type: item.user_type || 'Associate',
+        full_name: item.full_name || (isCustomer ? 'Customer' : 'Associate Member'),
+        user_type: userTypeDisplay,
         sponsor_user_id: item.sponsor_user_id,
         status: item.account_status || 'Active',
-        rank: `Level ${item.level || 1}`,
+        rank: isCustomer ? 'Customer' : `Level ${item.level || 1}`,
         total_gaj_sold: Number(item.total_gaj_sold || 0),
         commission_earned: Number(item.total_commission_earned || 0),
         mobile_no: item.mobile_no,
-        level: Number(item.level || 1),
+        level: Math.min(Number(item.level || 1), 6),
         children: [],
         collapsed: false
       });
@@ -179,8 +201,10 @@ export class ReferralComponent implements OnInit {
       if (node.user_id === rootId) return;
       const parentId = node.sponsor_user_id || rootId;
       const parent = map.get(parentId) || rootNode;
-      if (!parent.children) parent.children = [];
-      parent.children.push(node);
+      if ((node.level ?? 1) <= 6) {
+        if (!parent.children) parent.children = [];
+        parent.children.push(node);
+      }
     });
 
     return rootNode;

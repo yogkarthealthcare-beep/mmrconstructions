@@ -134,6 +134,21 @@ export class UserDashboardComponent implements OnInit {
     proof_file: null as File | null
   };
 
+  // Add Team Member Modal State
+  showAddTeamMemberModal = false;
+  showTeamMemberPassword = false;
+  addTeamMemberSubmitting = false;
+  addTeamMemberSuccess = false;
+  addTeamMemberError = '';
+  newTeamMember = {
+    full_name: '',
+    mobile_no: '',
+    email: '',
+    password: '',
+    confirm_password: ''
+  };
+  createdTeamMemberData: any = null;
+
   constructor(
     private api: ApiService,
     private auth: AuthService,
@@ -662,6 +677,96 @@ export class UserDashboardComponent implements OnInit {
       error: (err: any) => {
         this.inquirySubmitting = false;
         this.inquiryError = err?.error?.message || 'Failed to submit inquiry. Please try again.';
+      }
+    });
+  }
+
+  // ── Team Member Registration Modal Handlers ─────────────────────────
+  openAddTeamMemberModal() {
+    this.newTeamMember = {
+      full_name: '',
+      mobile_no: '',
+      email: '',
+      password: '',
+      confirm_password: ''
+    };
+    this.addTeamMemberError = '';
+    this.addTeamMemberSuccess = false;
+    this.createdTeamMemberData = null;
+    this.showTeamMemberPassword = false;
+    this.showAddTeamMemberModal = true;
+  }
+
+  closeAddTeamMemberModal() {
+    this.showAddTeamMemberModal = false;
+    if (this.addTeamMemberSuccess) {
+      this.loadAllData();
+    }
+  }
+
+  submitAddTeamMember() {
+    if (!this.newTeamMember.full_name?.trim() || !this.newTeamMember.mobile_no?.trim() || !this.newTeamMember.email?.trim() || !this.newTeamMember.password) {
+      this.addTeamMemberError = 'Please fill all required fields: Full Name, Mobile Number, Email Address, and Password.';
+      return;
+    }
+
+    const cleanMobile = this.newTeamMember.mobile_no.replace(/\D/g, '');
+    if (cleanMobile.length !== 10) {
+      this.addTeamMemberError = 'Please enter a valid 10-digit mobile number.';
+      return;
+    }
+
+    if (this.newTeamMember.password.length < 6) {
+      this.addTeamMemberError = 'Password must be at least 6 characters long.';
+      return;
+    }
+
+    if (this.newTeamMember.confirm_password && this.newTeamMember.password !== this.newTeamMember.confirm_password) {
+      this.addTeamMemberError = 'Passwords do not match.';
+      return;
+    }
+
+    this.addTeamMemberSubmitting = true;
+    this.addTeamMemberError = '';
+
+    this.api.createAssociateTeamMember({
+      full_name: this.newTeamMember.full_name.trim(),
+      mobile_no: cleanMobile,
+      email: this.newTeamMember.email.trim(),
+      password: this.newTeamMember.password
+    }).subscribe({
+      next: (res: any) => {
+        this.addTeamMemberSubmitting = false;
+        if (res.success) {
+          this.addTeamMemberSuccess = true;
+          this.createdTeamMemberData = res.data;
+          this.loadAllData();
+        } else {
+          this.addTeamMemberError = res.message || 'Failed to register team member.';
+        }
+      },
+      error: (err: any) => {
+        this.addTeamMemberSubmitting = false;
+        this.addTeamMemberError = err?.error?.message || 'Failed to register team member. Please verify details and retry.';
+      }
+    });
+  }
+
+  fillEnrollmentForCreatedTeamMember() {
+    if (!this.createdTeamMemberData) return;
+    const targetUserId = this.createdTeamMemberData.user_id;
+    const applicantName = this.createdTeamMemberData.full_name;
+    const mobile = this.createdTeamMemberData.mobile_no;
+    const email = this.createdTeamMemberData.email;
+    const slot = this.createdTeamMemberData.slot_number;
+    this.closeAddTeamMemberModal();
+    this.router.navigate(['/associate/team-member-enrollment'], {
+      queryParams: {
+        user_id: targetUserId,
+        applicant_name: applicantName,
+        mobile: mobile,
+        email: email,
+        slot_number: slot
       }
     });
   }

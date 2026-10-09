@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
@@ -93,18 +93,22 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   associateId: number = 0;
   associateName: string = '';
 
-  // ── 10 Direct Slots Computed ─────────────────────────
+  // Prefill target user ID & assigned slot from quick registration
+  targetUserId: number | null = null;
+  targetSlotNumber: number | null = null;
+
+  // ── 11 Direct Slots Computed ─────────────────────────
   slots = computed<TeamMemberSlot[]>(() => {
     const members = this.teamMembers() || [];
     const result: TeamMemberSlot[] = [];
     
-    // Map existing members by slot_number (1..10)
+    // Map existing members by slot_number (1..11)
     const slotMap = new Map<number, any>();
     const unslotted: any[] = [];
     
     members.forEach((m: any) => {
       const s = Number(m.slot_number);
-      if (s >= 1 && s <= 10) {
+      if (s >= 1 && s <= 11) {
         slotMap.set(s, m);
       } else {
         unslotted.push(m);
@@ -112,7 +116,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     });
 
     let unslottedIdx = 0;
-    for (let s = 1; s <= 10; s++) {
+    for (let s = 1; s <= 11; s++) {
       let member = slotMap.get(s) || null;
       if (!member && unslottedIdx < unslotted.length) {
         member = unslotted[unslottedIdx++];
@@ -147,7 +151,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   });
 
   isCapacityFull = computed(() => {
-    return this.occupiedSlotsCount() >= 10;
+    return this.occupiedSlotsCount() >= 11;
   });
 
   // Submit gate computed: Checks declaration checkbox specifically
@@ -161,7 +165,8 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     private fb: FormBuilder,
     private api: ApiService,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -172,6 +177,29 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     this.initForm();
     this.fetchPrefillData();
     this.loadTeamMembersList();
+
+    // Check for query parameters passed from quick registration
+    this.route.queryParams.subscribe(params => {
+      if (params['user_id']) {
+        this.targetUserId = Number(params['user_id']);
+      }
+      if (params['slot_number']) {
+        this.targetSlotNumber = Number(params['slot_number']);
+      }
+      if (params['applicant_name']) {
+        this.enrollmentForm.patchValue({ fullName: params['applicant_name'] });
+      }
+      if (params['mobile'] || params['mobile_no']) {
+        this.enrollmentForm.patchValue({ mobileNo: params['mobile'] || params['mobile_no'] });
+      }
+      if (params['email']) {
+        this.enrollmentForm.patchValue({ emailId: params['email'] });
+      }
+      if (params['user_id'] || params['applicant_name']) {
+        this.activeTab = 'enroll';
+        setTimeout(() => this.initSignaturePads(), 150);
+      }
+    });
   }
 
   initForm(): void {
@@ -274,7 +302,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       Swal.fire({
         icon: 'warning',
         title: 'Maximum Capacity Reached',
-        text: 'You have already enrolled 10 direct Team Members (maximum 10 slots allowed).',
+        text: 'You have already enrolled 11 direct Team Members (maximum 11 slots allowed).',
         confirmButtonColor: '#0b5345'
       });
       return;
@@ -291,11 +319,14 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     if (this.isCapacityFull()) {
       Swal.fire({
         icon: 'warning',
-        title: 'All 10 Slots Occupied',
-        text: 'This Associate has reached the maximum capacity of 10 direct Team Members. Slot 11 is not permitted.',
+        title: 'All 11 Slots Occupied',
+        text: 'This Associate has reached the maximum capacity of 11 direct Team Members. Slot 12 is not permitted.',
         confirmButtonColor: '#0b5345'
       });
       return;
+    }
+    if (slotNum) {
+      this.targetSlotNumber = slotNum;
     }
     this.setTab('enroll');
   }
@@ -612,6 +643,13 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     }
     if (associateSig) {
       formData.append('associateSignature', associateSig);
+    }
+
+    if (this.targetUserId) {
+      formData.append('userId', String(this.targetUserId));
+    }
+    if (this.targetSlotNumber) {
+      formData.append('slotNumber', String(this.targetSlotNumber));
     }
 
     this.submitting.set(true);

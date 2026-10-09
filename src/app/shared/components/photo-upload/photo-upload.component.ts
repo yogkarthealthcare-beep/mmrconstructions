@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 import { validateImageUpload, UploadFileType } from '../../utils/form-helpers';
@@ -8,12 +8,22 @@ import { validateImageUpload, UploadFileType } from '../../utils/form-helpers';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="photo-box" [class.invalid-photo]="isInvalid" (click)="fileInput.click()" [title]="uploadType === 'signature' ? 'Click to upload signature (JPG/PNG <= 50KB)' : 'Click to upload photo (JPG/PNG <= 100KB)'">
+    <div 
+      class="photo-box" 
+      [class.invalid-photo]="isInvalid" 
+      [class.disabled-box]="disabled"
+      (click)="triggerFileInput(fileInput)" 
+      [title]="disabled ? (previewUrl ? 'Photo preview' : 'No photo uploaded') : (uploadType === 'signature' ? 'Click to upload signature (JPG/PNG <= 50KB)' : 'Click to upload photo (JPG/PNG <= 100KB)')"
+    >
       <ng-container *ngIf="previewUrl; else uploadPlaceholder">
         <img [src]="previewUrl" alt="Photo preview">
       </ng-container>
       <ng-template #uploadPlaceholder>
-        <span>{{ placeholderText }}<br>(click to upload)</span>
+        <span>
+          {{ placeholderText }}<br>
+          <small *ngIf="!disabled" style="font-size: 9.5px; opacity: 0.85;">(click to upload)</small>
+          <small *ngIf="disabled" style="font-size: 9.5px; opacity: 0.75;">(No photo)</small>
+        </span>
       </ng-template>
       <input 
         type="file" 
@@ -43,10 +53,16 @@ import { validateImageUpload, UploadFileType } from '../../utils/form-helpers';
       overflow: hidden;
       margin: 0 auto;
       transition: all 0.2s ease;
+      position: relative;
     }
-    .photo-box:hover {
+    .photo-box:hover:not(.disabled-box) {
       border-color: #16a34a;
       background: #f0fdf4;
+    }
+    .photo-box.disabled-box {
+      cursor: default;
+      border-style: solid;
+      background: #f8fafc;
     }
     .photo-box.invalid-photo {
       border: 2.5px dashed #dc2626 !important;
@@ -66,14 +82,26 @@ import { validateImageUpload, UploadFileType } from '../../utils/form-helpers';
     }
   `]
 })
-export class PhotoUploadComponent {
+export class PhotoUploadComponent implements OnChanges {
   @Input() placeholderText = 'PHOTO';
   @Input() isInvalid = false;
   @Input() uploadType: UploadFileType = 'photo';
+  @Input() previewUrl: string | null = null;
+  @Input() disabled = false;
   @Output() fileSelected = new EventEmitter<File>();
   @Output() fileCleared = new EventEmitter<void>();
 
-  previewUrl: string | null = null;
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['previewUrl']) {
+      this.previewUrl = changes['previewUrl'].currentValue || null;
+    }
+  }
+
+  triggerFileInput(input: HTMLInputElement) {
+    if (!this.disabled && input) {
+      input.click();
+    }
+  }
 
   onFileSelected(event: any) {
     const file = event.target.files?.[0];

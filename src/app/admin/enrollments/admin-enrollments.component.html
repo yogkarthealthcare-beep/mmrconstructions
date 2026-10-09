@@ -17,10 +17,10 @@
     </div>
   </div>
 
-  <!-- 3 Category Cards -->
+  <!-- Current Category Card (Only the active section's card is displayed) -->
   <div class="category-cards-grid">
     <!-- Customer Card -->
-    <div class="category-card" [class.active]="activeCategory === 'customer'" (click)="setCategory('customer')">
+    <div class="category-card active" *ngIf="activeCategory === 'customer'">
       <div class="card-icon-wrap customer-icon">
         <i class="fas fa-users"></i>
       </div>
@@ -42,13 +42,10 @@
           </div>
         </div>
       </div>
-      <div class="card-indicator" *ngIf="activeCategory === 'customer'">
-        <i class="fas fa-chevron-right"></i>
-      </div>
     </div>
 
     <!-- Associate Card -->
-    <div class="category-card" [class.active]="activeCategory === 'associate'" (click)="setCategory('associate')">
+    <div class="category-card active" *ngIf="activeCategory === 'associate'">
       <div class="card-icon-wrap associate-icon">
         <i class="fas fa-user-tie"></i>
       </div>
@@ -70,13 +67,10 @@
           </div>
         </div>
       </div>
-      <div class="card-indicator" *ngIf="activeCategory === 'associate'">
-        <i class="fas fa-chevron-right"></i>
-      </div>
     </div>
 
     <!-- Investor Card -->
-    <div class="category-card" [class.active]="activeCategory === 'investor'" (click)="setCategory('investor')">
+    <div class="category-card active" *ngIf="activeCategory === 'investor'">
       <div class="card-icon-wrap investor-icon">
         <i class="fas fa-file-invoice-dollar"></i>
       </div>
@@ -98,13 +92,10 @@
           </div>
         </div>
       </div>
-      <div class="card-indicator" *ngIf="activeCategory === 'investor'">
-        <i class="fas fa-chevron-right"></i>
-      </div>
     </div>
 
     <!-- Team Member Card -->
-    <div class="category-card" [class.active]="activeCategory === 'team_member'" (click)="setCategory('team_member')">
+    <div class="category-card active" *ngIf="activeCategory === 'team_member'">
       <div class="card-icon-wrap team-member-icon">
         <i class="fas fa-users-cog"></i>
       </div>
@@ -125,9 +116,6 @@
             <span class="val">{{ stats.team_member.pending }}</span>
           </div>
         </div>
-      </div>
-      <div class="card-indicator" *ngIf="activeCategory === 'team_member'">
-        <i class="fas fa-chevron-right"></i>
       </div>
     </div>
   </div>
@@ -270,43 +258,43 @@
             <td data-label="Associate Name & ID">
               <div class="applicant-cell min-w-0">
                 <strong class="applicant-name text-truncate d-block" [title]="item.full_name || 'N/A'">{{ item.full_name || 'N/A' }}</strong>
-                <span class="badge-sub text-truncate">{{ item.associate_id || item.user_id || 'Pending ID' }}</span>
+                <span class="badge-sub text-truncate">{{ item.associate_id || item.member_id || item.user_id || 'Pending ID' }}</span>
               </div>
             </td>
             <td data-label="Contact & Email">
               <div class="contact-cell min-w-0">
-                <span class="contact-phone text-truncate" [title]="item.mobile_1 || item.mobile_no || 'N/A'"><i class="fas fa-phone-alt"></i> {{ item.mobile_1 || item.mobile_no || 'N/A' }}</span>
+                <span class="contact-phone text-truncate" [title]="item.mobile_no || item.contact_1 || item.mobile_1 || 'N/A'"><i class="fas fa-phone-alt"></i> {{ item.mobile_no || item.contact_1 || item.mobile_1 || 'N/A' }}</span>
                 <small class="contact-email text-truncate" *ngIf="item.email" [title]="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
               </div>
             </td>
             <td class="priority-2" data-label="Sponsor Details">
               <div class="sponsor-cell min-w-0">
                 <strong class="text-truncate d-block" [title]="item.sponsor_name || '—'">{{ item.sponsor_name || '—' }}</strong>
-                <span class="badge-sub text-truncate" *ngIf="item.sponsor_id">ID: {{ item.sponsor_id }}</span>
+                <span class="badge-sub text-truncate" *ngIf="item.sponsor_id || item.sponsor_code">ID: {{ item.sponsor_id || item.sponsor_code }}</span>
               </div>
             </td>
             <td class="priority-2" data-label="Category / State">
               <span class="category-tag text-truncate">{{ item.category || 'Executive' }}</span>
-              <small class="d-block text-muted text-truncate">{{ item.state || 'Uttar Pradesh' }}</small>
+              <small class="d-block text-muted text-truncate">{{ item.state || item.perm_state || 'Uttar Pradesh' }}</small>
             </td>
             <td data-label="Enrollment Status">
               <select
                 class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
                 style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
                 [ngClass]="{
-                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.status === 'approved',
-                  'border-warning text-warning-dark bg-warning-subtle': (item.enrollment_status === 'Pending' || item.status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.status !== 'approved' && item.enrollment_status !== 'Rejected' && item.status !== 'rejected',
-                  'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.status === 'rejected'
+                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.status === 'approved' || item.app_status === 'approved',
+                  'border-warning text-warning-dark bg-warning-subtle': (item.enrollment_status === 'Pending' || item.status === 'pending' || item.app_status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.status !== 'approved' && item.app_status !== 'approved' && item.enrollment_status !== 'Rejected' && item.status !== 'rejected' && item.app_status !== 'rejected',
+                  'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.status === 'rejected' || item.app_status === 'rejected'
                 }"
-                [value]="item.enrollment_status || (item.status === 'approved' ? 'Completed' : (item.status === 'rejected' ? 'Rejected' : 'Pending'))"
+                [value]="item.enrollment_status || (item.status === 'approved' || item.app_status === 'approved' ? 'Completed' : (item.status === 'rejected' || item.app_status === 'rejected' ? 'Rejected' : 'Pending'))"
                 (change)="onAssociateInlineStatusChange(item, $event)">
-                <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.status !== 'approved' && item.status !== 'rejected')">Pending</option>
+                <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.status !== 'approved' && item.app_status !== 'approved' && item.status !== 'rejected' && item.app_status !== 'rejected')">Pending</option>
                 <option value="Completed">&#x2714; Approved</option>
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
             </td>
             <td class="priority-3" data-label="Submitted At">
-              <small class="date-text">{{ item.created_at ? (item.created_at | date:'mediumDate') : (item.sign_date | date:'mediumDate') || '—' }}</small>
+              <small class="date-text">{{ item.created_at ? (item.created_at | date:'mediumDate') : (item.sign_date ? (item.sign_date | date:'mediumDate') : '—') }}</small>
             </td>
             <td class="td-actions text-end" data-label="Actions">
               <div class="action-btn-group">
@@ -316,7 +304,7 @@
                 <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
                   <i class="fas fa-edit"></i> <span>Edit</span>
                 </button>
-                <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
+                <button *ngIf="item.enrollment_status === 'Completed' || item.status === 'approved' || item.app_status === 'approved'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
                   <i class="fas fa-file-pdf"></i>
                 </button>
               </div>
@@ -346,19 +334,19 @@
             <td data-label="Investor Name & ID">
               <div class="applicant-cell min-w-0">
                 <strong class="applicant-name text-truncate d-block" [title]="item.inv_first_name ? (item.inv_first_name + ' ' + (item.inv_surname || '')) : (item.full_name || 'N/A')">{{ item.inv_first_name ? (item.inv_first_name + ' ' + (item.inv_surname || '')) : (item.full_name || 'N/A') }}</strong>
-                <span class="badge-sub text-truncate">{{ item.investor_enrollment_id || item.form_no || item.user_id || 'Pending ID' }}</span>
+                <span class="badge-sub text-truncate">{{ item.investor_enrollment_id || item.form_no || item.member_id || item.investor_id || item.user_id || 'Pending ID' }}</span>
               </div>
             </td>
             <td data-label="Contact & Email">
               <div class="contact-cell min-w-0">
-                <span class="contact-phone text-truncate" [title]="item.mobile || item.mobile_no || 'N/A'"><i class="fas fa-phone-alt"></i> {{ item.mobile || item.mobile_no || 'N/A' }}</span>
+                <span class="contact-phone text-truncate" [title]="item.mobile || item.mobile_no || item.mobile_number || 'N/A'"><i class="fas fa-phone-alt"></i> {{ item.mobile || item.mobile_no || item.mobile_number || 'N/A' }}</span>
                 <small class="contact-email text-truncate" *ngIf="item.email" [title]="item.email"><i class="fas fa-envelope"></i> {{ item.email }}</small>
               </div>
             </td>
             <td class="priority-2" data-label="Project & Branch">
               <div class="project-cell min-w-0">
                 <span class="project-title text-truncate d-block" [title]="item.project_name || '—'">{{ item.project_name || '—' }}</span>
-                <span class="prop-type text-truncate">{{ item.branch_name }} ({{ item.branch_code }})</span>
+                <span class="prop-type text-truncate">{{ item.branch_name || '—' }} <span *ngIf="item.branch_code">({{ item.branch_code }})</span></span>
               </div>
             </td>
             <td data-label="Amount">
@@ -375,19 +363,19 @@
                 class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
                 style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
                 [ngClass]="{
-                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.app_status === 'approved' || item.status === 'approved',
-                  'border-warning text-warning-dark bg-warning-subtle': (item.enrollment_status === 'Pending' || item.app_status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.app_status !== 'approved' && item.enrollment_status !== 'Rejected' && item.app_status !== 'rejected',
+                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.app_status === 'approved' || item.status === 'approved' || item.status === 'active',
+                  'border-warning text-warning-dark bg-warning-subtle': (item.enrollment_status === 'Pending' || item.app_status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.app_status !== 'approved' && item.status !== 'approved' && item.enrollment_status !== 'Rejected' && item.app_status !== 'rejected' && item.status !== 'rejected',
                   'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.app_status === 'rejected' || item.status === 'rejected'
                 }"
-                [value]="item.enrollment_status || (item.app_status === 'approved' ? 'Completed' : (item.app_status === 'rejected' ? 'Rejected' : 'Pending'))"
+                [value]="item.enrollment_status || (item.app_status === 'approved' || item.status === 'approved' ? 'Completed' : (item.app_status === 'rejected' || item.status === 'rejected' ? 'Rejected' : 'Pending'))"
                 (change)="onInvestorInlineStatusChange(item, $event)">
-                <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.app_status !== 'approved' && item.app_status !== 'rejected')">Pending</option>
+                <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.app_status !== 'approved' && item.status !== 'approved' && item.app_status !== 'rejected' && item.status !== 'rejected')">Pending</option>
                 <option value="Completed">&#x2714; Approved</option>
                 <option value="Rejected">&#x2716; Rejected</option>
               </select>
             </td>
             <td class="priority-3" data-label="Date">
-              <small class="date-text">{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
+              <small class="date-text">{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at ? (item.created_at | date:'mediumDate') : (item.submitted_at ? (item.submitted_at | date:'mediumDate') : (item.registered_at ? (item.registered_at | date:'mediumDate') : '—'))) }}</small>
             </td>
             <td class="td-actions text-end" data-label="Actions">
               <div class="action-btn-group">
@@ -510,6 +498,16 @@
 
     <div class="modal-body" *ngIf="editFormData && !modalLoading">
       
+      <!-- In-Modal Alert / Error Banner -->
+      <div class="modal-alert alert alert-danger d-flex align-items-start gap-2 mb-4 p-3 shadow-sm border-danger" *ngIf="formErrorMessage">
+        <i class="fas fa-exclamation-triangle fs-5 text-danger mt-1"></i>
+        <div class="flex-grow-1">
+          <strong class="d-block text-danger mb-1">Form Submission Error</strong>
+          <span class="fs-13 text-dark">{{ formErrorMessage }}</span>
+        </div>
+        <button type="button" class="btn-close btn-close-sm" (click)="formErrorMessage = ''"></button>
+      </div>
+      
       <!-- ================= CUSTOMER ENROLLMENT FORM FIELDS ================= -->
       <div *ngIf="activeCategory === 'customer'" class="form-sections">
         <!-- 1. Property Details -->
@@ -517,24 +515,24 @@
           <h4>1. Property &amp; Project Details</h4>
           <div class="form-grid-3">
             <div class="field">
-              <label>Project Name</label>
-              <input type="text" [(ngModel)]="editFormData.project_name" [disabled]="!isEditMode">
+              <label>Project Name <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.project_name" [disabled]="!isEditMode" placeholder="Project Name">
             </div>
             <div class="field">
-              <label>Property Type</label>
-              <input type="text" [(ngModel)]="editFormData.property_type" [disabled]="!isEditMode">
+              <label>Property Type <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.property_type" [disabled]="!isEditMode" placeholder="Residential Plot / Villa">
             </div>
             <div class="field">
               <label>Plot / Flat No</label>
-              <input type="text" [(ngModel)]="editFormData.plot_flat_no" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.plot_flat_no" [disabled]="!isEditMode" placeholder="Plot / Flat No">
             </div>
             <div class="field">
               <label>Block / Tower</label>
-              <input type="text" [(ngModel)]="editFormData.block_tower" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.block_tower" [disabled]="!isEditMode" placeholder="Block / Sector">
             </div>
             <div class="field">
               <label>Size / Area</label>
-              <input type="text" [(ngModel)]="editFormData.size_area" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.size_area" [disabled]="!isEditMode" placeholder="e.g. 100 Sq. Yd.">
             </div>
             <div class="field">
               <label>Rate (per Sq. Ft./Yd.)</label>
@@ -556,56 +554,71 @@
           <h4>2. Applicant Details</h4>
           <div class="form-grid-3">
             <div class="field">
-              <label>Applicant Name</label>
-              <input type="text" [(ngModel)]="editFormData.applicant_name" [disabled]="!isEditMode">
+              <label>Applicant Name <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.applicant_name" [disabled]="!isEditMode" placeholder="Full Name">
             </div>
             <div class="field">
               <label>Father / Husband Name</label>
-              <input type="text" [(ngModel)]="editFormData.fh_name" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.fh_name" [disabled]="!isEditMode" placeholder="Father or Husband Name">
             </div>
             <div class="field">
-              <label>Date of Birth</label>
-              <input type="date" [(ngModel)]="editFormData.date_of_birth" [disabled]="!isEditMode">
+              <label>Date of Birth <span class="text-danger">*</span></label>
+              <input type="date" [(ngModel)]="editFormData.date_of_birth" [max]="maxDob18Years" (ngModelChange)="clearFormError()" [disabled]="!isEditMode">
+              <small class="field-error text-danger" *ngIf="editFormData.date_of_birth && !isDobEligible(editFormData.date_of_birth).valid">
+                <i class="fas fa-exclamation-circle"></i> {{ isDobEligible(editFormData.date_of_birth).message }}
+              </small>
             </div>
             <div class="field">
-              <label>Gender</label>
-              <input type="text" [(ngModel)]="editFormData.gender" [disabled]="!isEditMode">
+              <label>Gender <span class="text-danger">*</span></label>
+              <select [(ngModel)]="editFormData.gender" [disabled]="!isEditMode">
+                <option value="">Select Gender</option>
+                <option *ngFor="let g of gendersList" [value]="g">{{ g }}</option>
+              </select>
             </div>
             <div class="field">
-              <label>PAN Number</label>
-              <input type="text" [(ngModel)]="editFormData.pan_no" [disabled]="!isEditMode">
+              <label>PAN Number <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.pan_no" (input)="editFormData.pan_no = ($any($event.target).value || '').toUpperCase()" [disabled]="!isEditMode" placeholder="ABCDE1234F" maxlength="10">
+              <small class="field-error text-danger" *ngIf="editFormData.pan_no && !isPanValid(editFormData.pan_no)">
+                Format: 5 letters, 4 numbers, 1 letter
+              </small>
             </div>
             <div class="field">
-              <label>Aadhaar Number</label>
-              <input type="text" [(ngModel)]="editFormData.aadhar_no" [disabled]="!isEditMode">
+              <label>Aadhaar Number <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.aadhar_no" [disabled]="!isEditMode" placeholder="12-digit Aadhaar" maxlength="14">
+              <small class="field-error text-danger" *ngIf="editFormData.aadhar_no && !isAadhaarValid(editFormData.aadhar_no)">
+                Must be 12 digits
+              </small>
             </div>
             <div class="field">
-              <label>Primary Mobile</label>
-              <input type="text" [(ngModel)]="editFormData.mobile_1" [disabled]="!isEditMode">
+              <label>Primary Mobile <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.mobile_1" [disabled]="!isEditMode" placeholder="10-digit mobile" maxlength="10">
+              <small class="field-error text-danger" *ngIf="editFormData.mobile_1 && !isContactValid(editFormData.mobile_1)">
+                Must be 10 digits starting with 6-9
+              </small>
             </div>
             <div class="field">
               <label>Secondary Mobile</label>
-              <input type="text" [(ngModel)]="editFormData.mobile_2" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.mobile_2" [disabled]="!isEditMode" placeholder="Secondary mobile" maxlength="10">
             </div>
             <div class="field">
-              <label>Email Address</label>
-              <input type="text" [(ngModel)]="editFormData.email_1" [disabled]="!isEditMode">
+              <label>Email Address <span class="text-danger">*</span></label>
+              <input type="email" [(ngModel)]="editFormData.email_1" [disabled]="!isEditMode" placeholder="example@email.com">
             </div>
             <div class="field span-2">
-              <label>Present Address</label>
-              <input type="text" [(ngModel)]="editFormData.present_address" [disabled]="!isEditMode">
+              <label>Permanent Address <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.permanent_address" [disabled]="!isEditMode" placeholder="Permanent address">
+            </div>
+            <div class="field">
+              <label>Permanent City &amp; State/PIN <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.permanent_city" [disabled]="!isEditMode" placeholder="City, State, PIN">
+            </div>
+            <div class="field span-2">
+              <label>Present / Local Address</label>
+              <input type="text" [(ngModel)]="editFormData.present_address" [disabled]="!isEditMode" placeholder="Present address">
             </div>
             <div class="field">
               <label>Present City &amp; State/PIN</label>
-              <input type="text" [(ngModel)]="editFormData.present_city" [disabled]="!isEditMode">
-            </div>
-            <div class="field span-2">
-              <label>Permanent Address</label>
-              <input type="text" [(ngModel)]="editFormData.permanent_address" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Permanent City &amp; State/PIN</label>
-              <input type="text" [(ngModel)]="editFormData.permanent_city" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.present_city" [disabled]="!isEditMode" placeholder="City, State, PIN">
             </div>
           </div>
         </div>
@@ -620,27 +633,36 @@
             </div>
             <div class="field">
               <label>Payment Mode</label>
-              <input type="text" [(ngModel)]="editFormData.payment_mode" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.payment_mode" [disabled]="!isEditMode" placeholder="Cheque / NEFT / Online">
             </div>
             <div class="field">
               <label>Txn / Cheque No</label>
-              <input type="text" [(ngModel)]="editFormData.txn_cheque_no" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.txn_cheque_no" [disabled]="!isEditMode" placeholder="Cheque / UTR No">
             </div>
             <div class="field">
-              <label>Account Holder Name</label>
-              <input type="text" [(ngModel)]="editFormData.acc_holder_name" [disabled]="!isEditMode">
+              <label>IFSC Code <span class="text-danger">*</span></label>
+              <div class="input-with-action">
+                <input type="text" [(ngModel)]="editFormData.ifsc_code" (input)="onIfscInput($any($event.target).value)" [disabled]="!isEditMode" placeholder="e.g. SBIN0001234" maxlength="11" style="text-transform: uppercase;">
+                <span *ngIf="ifscLoading" class="input-spinner"><i class="fas fa-spinner fa-spin text-primary"></i></span>
+              </div>
+              <small class="field-success text-success fw-600" *ngIf="ifscStatus && ifscStatus.valid">
+                <i class="fas fa-check-circle"></i> {{ ifscStatus.msg }}
+              </small>
+              <small class="field-error text-danger" *ngIf="ifscStatus && !ifscStatus.valid">
+                <i class="fas fa-exclamation-circle"></i> {{ ifscStatus.msg }}
+              </small>
             </div>
             <div class="field">
-              <label>Bank &amp; Branch</label>
-              <input type="text" [(ngModel)]="editFormData.acc_bank_branch" [disabled]="!isEditMode">
+              <label>Bank &amp; Branch <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.acc_bank_branch" [disabled]="!isEditMode" placeholder="Bank Name & Branch">
             </div>
             <div class="field">
-              <label>Account Number</label>
-              <input type="text" [(ngModel)]="editFormData.acc_number" [disabled]="!isEditMode">
+              <label>Account Number <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.acc_number" [disabled]="!isEditMode" placeholder="Bank Account Number">
             </div>
             <div class="field">
-              <label>IFSC Code</label>
-              <input type="text" [(ngModel)]="editFormData.ifsc_code" [disabled]="!isEditMode">
+              <label>Account Holder Name <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.acc_holder_name" [disabled]="!isEditMode" placeholder="Account Holder Full Name">
             </div>
           </div>
         </div>
@@ -670,142 +692,179 @@
         <!-- 1. Personal Details -->
         <div class="form-section-card">
           <h4>1. Personal Information</h4>
-          <div class="form-grid-3">
-            <div class="field">
-              <label>Full Name</label>
-              <input type="text" [(ngModel)]="editFormData.full_name" [disabled]="!isEditMode">
+          <div class="section-with-photo-layout">
+            <div class="form-grid-3 flex-grow-1">
+              <div class="field">
+                <label>Full Name <span class="text-danger">*</span></label>
+                <input type="text" [(ngModel)]="editFormData.full_name" [disabled]="!isEditMode" placeholder="Enter Full Name">
+              </div>
+              <div class="field">
+                <label>Date of Birth <span class="text-danger">*</span></label>
+                <input type="date" [(ngModel)]="editFormData.dob" [max]="maxDob18Years" (ngModelChange)="clearFormError()" [disabled]="!isEditMode">
+                <small class="field-error text-danger" *ngIf="editFormData.dob && !isDobEligible(editFormData.dob).valid">
+                  <i class="fas fa-exclamation-circle"></i> {{ isDobEligible(editFormData.dob).message }}
+                </small>
+              </div>
+              <div class="field">
+                <label>Gender <span class="text-danger">*</span></label>
+                <select [(ngModel)]="editFormData.gender" [disabled]="!isEditMode">
+                  <option value="">Select Gender</option>
+                  <option *ngFor="let g of gendersList" [value]="g">{{ g }}</option>
+                  <option *ngIf="editFormData.gender && !gendersList.includes(editFormData.gender)" [value]="editFormData.gender">
+                    {{ editFormData.gender }}
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Father's Name</label>
+                <input type="text" [(ngModel)]="editFormData.father_name" [disabled]="!isEditMode" placeholder="Father's Name">
+              </div>
+              <div class="field">
+                <label>Mother's Name</label>
+                <input type="text" [(ngModel)]="editFormData.mother_name" [disabled]="!isEditMode" placeholder="Mother's Name">
+              </div>
+              <div class="field">
+                <label>Spouse's Name</label>
+                <input type="text" [(ngModel)]="editFormData.spouse_name" [disabled]="!isEditMode" placeholder="Spouse's Name">
+              </div>
+              <div class="field">
+                <label>Primary Contact <span class="text-danger">*</span></label>
+                <input type="text" [(ngModel)]="editFormData.contact_1" [disabled]="!isEditMode" placeholder="10-digit mobile number" maxlength="10">
+                <small class="field-error text-danger" *ngIf="editFormData.contact_1 && !isContactValid(editFormData.contact_1)">
+                  Must be 10 digits starting with 6-9
+                </small>
+              </div>
+              <div class="field">
+                <label>Secondary Contact</label>
+                <input type="text" [(ngModel)]="editFormData.contact_2" [disabled]="!isEditMode" placeholder="Secondary mobile" maxlength="10">
+              </div>
+              <div class="field">
+                <label>Email Address <span class="text-danger">*</span></label>
+                <input type="email" [(ngModel)]="editFormData.email" [disabled]="!isEditMode" placeholder="example@email.com">
+              </div>
+              <div class="field">
+                <label>Caste Category</label>
+                <select [(ngModel)]="editFormData.category" [disabled]="!isEditMode">
+                  <option value="">Select Category</option>
+                  <option *ngFor="let c of categoriesList" [value]="c">{{ c }}</option>
+                  <option *ngIf="editFormData.category && !categoriesList.includes(editFormData.category)" [value]="editFormData.category">
+                    {{ editFormData.category }}
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Qualification / Education</label>
+                <select [(ngModel)]="editFormData.education" [disabled]="!isEditMode">
+                  <option value="">Select Qualification</option>
+                  <option *ngFor="let q of qualificationsList" [value]="q">{{ q }}</option>
+                  <option *ngIf="editFormData.education && !qualificationsList.includes(editFormData.education)" [value]="editFormData.education">
+                    {{ editFormData.education }}
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Occupation</label>
+                <select [(ngModel)]="editFormData.occupation" [disabled]="!isEditMode">
+                  <option value="">Select Occupation</option>
+                  <option *ngFor="let o of occupationsList" [value]="o">{{ o }}</option>
+                  <option *ngIf="editFormData.occupation && !occupationsList.includes(editFormData.occupation)" [value]="editFormData.occupation">
+                    {{ editFormData.occupation }}
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Annual Income</label>
+                <select [(ngModel)]="editFormData.annual_income" [disabled]="!isEditMode">
+                  <option value="">Select Annual Income</option>
+                  <option *ngFor="let inc of incomesList" [value]="inc">{{ inc }}</option>
+                  <option *ngIf="editFormData.annual_income && !incomesList.includes(editFormData.annual_income)" [value]="editFormData.annual_income">
+                    {{ editFormData.annual_income }}
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Religion</label>
+                <select [(ngModel)]="editFormData.religion" [disabled]="!isEditMode">
+                  <option value="">Select Religion</option>
+                  <option *ngFor="let r of religionsList" [value]="r">{{ r }}</option>
+                  <option *ngIf="editFormData.religion && !religionsList.includes(editFormData.religion)" [value]="editFormData.religion">
+                    {{ editFormData.religion }}
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Residential Status</label>
+                <select [(ngModel)]="editFormData.residential_status" [disabled]="!isEditMode">
+                  <option value="">Select Status</option>
+                  <option *ngFor="let rs of resStatusesList" [value]="rs">{{ rs }}</option>
+                  <option *ngIf="editFormData.residential_status && !resStatusesList.includes(editFormData.residential_status)" [value]="editFormData.residential_status">
+                    {{ editFormData.residential_status }}
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label>PAN Number <span class="text-danger">*</span></label>
+                <input type="text" [(ngModel)]="editFormData.pan_no" (input)="editFormData.pan_no = ($any($event.target).value || '').toUpperCase()" [disabled]="!isEditMode" placeholder="ABCDE1234F" maxlength="10">
+                <small class="field-error text-danger" *ngIf="editFormData.pan_no && !isPanValid(editFormData.pan_no)">
+                  Format: 5 letters, 4 numbers, 1 letter
+                </small>
+              </div>
+              <div class="field">
+                <label>Aadhaar Number <span class="text-danger">*</span></label>
+                <input type="text" [(ngModel)]="editFormData.aadhar_no" [disabled]="!isEditMode" placeholder="12-digit Aadhaar" maxlength="14">
+                <small class="field-error text-danger" *ngIf="editFormData.aadhar_no && !isAadhaarValid(editFormData.aadhar_no)">
+                  Must be 12 digits
+                </small>
+              </div>
+              <div class="field span-2">
+                <label>Permanent Address <span class="text-danger">*</span></label>
+                <input type="text" [(ngModel)]="editFormData.perm_address" (ngModelChange)="onPermAddressChange()" [disabled]="!isEditMode" placeholder="Permanent street / flat / area">
+              </div>
+              <div class="field">
+                <label>Permanent State <span class="text-danger">*</span></label>
+                <select [(ngModel)]="editFormData.perm_state" (ngModelChange)="onPermAddressChange()" [disabled]="!isEditMode">
+                  <option value="">Select State</option>
+                  <option *ngFor="let st of statesList" [value]="st">{{ st }}</option>
+                  <option *ngIf="editFormData.perm_state && !statesList.includes(editFormData.perm_state)" [value]="editFormData.perm_state">
+                    {{ editFormData.perm_state }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Same as Permanent Address Checkbox -->
+              <div class="field span-3 same-address-check" *ngIf="isEditMode">
+                <label class="form-check-label d-flex align-items-center gap-2 cursor-pointer mb-0">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="sameAsPermAddress" (change)="onSameAddressToggle()">
+                  <span class="fw-bold text-primary"><i class="fas fa-copy"></i> Same as Permanent Address</span>
+                </label>
+              </div>
+
+              <div class="field span-2">
+                <label>Local / Correspondence Address</label>
+                <input type="text" [(ngModel)]="editFormData.local_address" [disabled]="!isEditMode" placeholder="Local correspondence address">
+              </div>
+              <div class="field">
+                <label>Local State</label>
+                <select [(ngModel)]="editFormData.local_state" [disabled]="!isEditMode">
+                  <option value="">Select State</option>
+                  <option *ngFor="let st of statesList" [value]="st">{{ st }}</option>
+                  <option *ngIf="editFormData.local_state && !statesList.includes(editFormData.local_state)" [value]="editFormData.local_state">
+                    {{ editFormData.local_state }}
+                  </option>
+                </select>
+              </div>
             </div>
-            <div class="field">
-              <label>Date of Birth</label>
-              <input type="date" [(ngModel)]="editFormData.dob" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Gender</label>
-              <select [(ngModel)]="editFormData.gender" [disabled]="!isEditMode">
-                <option value="">Select Gender</option>
-                <option *ngFor="let g of gendersList" [value]="g">{{ g }}</option>
-                <option *ngIf="editFormData.gender && !gendersList.includes(editFormData.gender)" [value]="editFormData.gender">
-                  {{ editFormData.gender }}
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Father's Name</label>
-              <input type="text" [(ngModel)]="editFormData.father_name" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Mother's Name</label>
-              <input type="text" [(ngModel)]="editFormData.mother_name" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Spouse's Name</label>
-              <input type="text" [(ngModel)]="editFormData.spouse_name" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Primary Contact</label>
-              <input type="text" [(ngModel)]="editFormData.contact_1" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Secondary Contact</label>
-              <input type="text" [(ngModel)]="editFormData.contact_2" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Email Address</label>
-              <input type="text" [(ngModel)]="editFormData.email" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Caste Category</label>
-              <select [(ngModel)]="editFormData.category" [disabled]="!isEditMode">
-                <option value="">Select Category</option>
-                <option *ngFor="let c of categoriesList" [value]="c">{{ c }}</option>
-                <option *ngIf="editFormData.category && !categoriesList.includes(editFormData.category)" [value]="editFormData.category">
-                  {{ editFormData.category }}
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Qualification / Education</label>
-              <select [(ngModel)]="editFormData.education" [disabled]="!isEditMode">
-                <option value="">Select Qualification</option>
-                <option *ngFor="let q of qualificationsList" [value]="q">{{ q }}</option>
-                <option *ngIf="editFormData.education && !qualificationsList.includes(editFormData.education)" [value]="editFormData.education">
-                  {{ editFormData.education }}
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Occupation</label>
-              <select [(ngModel)]="editFormData.occupation" [disabled]="!isEditMode">
-                <option value="">Select Occupation</option>
-                <option *ngFor="let o of occupationsList" [value]="o">{{ o }}</option>
-                <option *ngIf="editFormData.occupation && !occupationsList.includes(editFormData.occupation)" [value]="editFormData.occupation">
-                  {{ editFormData.occupation }}
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Annual Income</label>
-              <select [(ngModel)]="editFormData.annual_income" [disabled]="!isEditMode">
-                <option value="">Select Annual Income</option>
-                <option *ngFor="let inc of incomesList" [value]="inc">{{ inc }}</option>
-                <option *ngIf="editFormData.annual_income && !incomesList.includes(editFormData.annual_income)" [value]="editFormData.annual_income">
-                  {{ editFormData.annual_income }}
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Religion</label>
-              <select [(ngModel)]="editFormData.religion" [disabled]="!isEditMode">
-                <option value="">Select Religion</option>
-                <option *ngFor="let r of religionsList" [value]="r">{{ r }}</option>
-                <option *ngIf="editFormData.religion && !religionsList.includes(editFormData.religion)" [value]="editFormData.religion">
-                  {{ editFormData.religion }}
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Residential Status</label>
-              <select [(ngModel)]="editFormData.residential_status" [disabled]="!isEditMode">
-                <option value="">Select Status</option>
-                <option *ngFor="let rs of resStatusesList" [value]="rs">{{ rs }}</option>
-                <option *ngIf="editFormData.residential_status && !resStatusesList.includes(editFormData.residential_status)" [value]="editFormData.residential_status">
-                  {{ editFormData.residential_status }}
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label>PAN Number</label>
-              <input type="text" [(ngModel)]="editFormData.pan_no" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Aadhaar Number</label>
-              <input type="text" [(ngModel)]="editFormData.aadhar_no" [disabled]="!isEditMode">
-            </div>
-            <div class="field span-2">
-              <label>Permanent Address</label>
-              <input type="text" [(ngModel)]="editFormData.perm_address" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Permanent State</label>
-              <select [(ngModel)]="editFormData.perm_state" [disabled]="!isEditMode">
-                <option *ngFor="let st of statesList" [value]="st">{{ st }}</option>
-                <option *ngIf="editFormData.perm_state && !statesList.includes(editFormData.perm_state)" [value]="editFormData.perm_state">
-                  {{ editFormData.perm_state }}
-                </option>
-              </select>
-            </div>
-            <div class="field span-2">
-              <label>Local / Correspondence Address</label>
-              <input type="text" [(ngModel)]="editFormData.local_address" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Local State</label>
-              <select [(ngModel)]="editFormData.local_state" [disabled]="!isEditMode">
-                <option *ngFor="let st of statesList" [value]="st">{{ st }}</option>
-                <option *ngIf="editFormData.local_state && !statesList.includes(editFormData.local_state)" [value]="editFormData.local_state">
-                  {{ editFormData.local_state }}
-                </option>
-              </select>
+
+            <!-- Applicant Photo Box -->
+            <div class="photo-upload-container">
+              <label class="photo-label"><i class="fas fa-camera me-1"></i> Applicant Photo</label>
+              <app-photo-upload 
+                placeholderText="APPLICANT PHOTO" 
+                [previewUrl]="existingApplicantPhoto" 
+                [disabled]="!isEditMode" 
+                (fileSelected)="onApplicantPhotoSelected($event)">
+              </app-photo-upload>
+              <small class="text-muted d-block mt-1 text-center" *ngIf="isEditMode" style="font-size: 11px;">Max 100KB (JPG/PNG)</small>
             </div>
           </div>
         </div>
@@ -815,32 +874,41 @@
           <h4>2. Bank &amp; Payout Details</h4>
           <div class="form-grid-3">
             <div class="field">
-              <label>Bank Name</label>
-              <input type="text" [(ngModel)]="editFormData.bank_name" [disabled]="!isEditMode">
+              <label>IFSC Code <span class="text-danger">*</span></label>
+              <div class="input-with-action">
+                <input type="text" [(ngModel)]="editFormData.ifsc" (input)="onIfscInput($any($event.target).value)" [disabled]="!isEditMode" placeholder="e.g. SBIN0001234" maxlength="11" style="text-transform: uppercase;">
+                <span *ngIf="ifscLoading" class="input-spinner"><i class="fas fa-spinner fa-spin text-primary"></i></span>
+              </div>
+              <small class="field-success text-success fw-600" *ngIf="ifscStatus && ifscStatus.valid">
+                <i class="fas fa-check-circle"></i> {{ ifscStatus.msg }}
+              </small>
+              <small class="field-error text-danger" *ngIf="ifscStatus && !ifscStatus.valid">
+                <i class="fas fa-exclamation-circle"></i> {{ ifscStatus.msg }}
+              </small>
             </div>
             <div class="field">
-              <label>Account Holder</label>
-              <input type="text" [(ngModel)]="editFormData.acc_holder" [disabled]="!isEditMode">
+              <label>Bank Name <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.bank_name" [disabled]="!isEditMode" placeholder="Bank Name (Auto-fetched or typed)">
             </div>
             <div class="field">
-              <label>Account Number</label>
-              <input type="text" [(ngModel)]="editFormData.acc_no" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>IFSC Code</label>
-              <input type="text" [(ngModel)]="editFormData.ifsc" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>MICR Code</label>
-              <input type="text" [(ngModel)]="editFormData.micr" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Branch Name</label>
-              <input type="text" [(ngModel)]="editFormData.branch_name" [disabled]="!isEditMode">
+              <label>Branch Name <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.branch_name" [disabled]="!isEditMode" placeholder="Branch Name">
             </div>
             <div class="field">
               <label>Branch Code</label>
-              <input type="text" [(ngModel)]="editFormData.branch_code" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.branch_code" [disabled]="!isEditMode" placeholder="Branch Code">
+            </div>
+            <div class="field">
+              <label>Account Holder Name <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.acc_holder" [disabled]="!isEditMode" placeholder="Account Holder Name">
+            </div>
+            <div class="field">
+              <label>Account Number <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.acc_no" [disabled]="!isEditMode" placeholder="Account Number">
+            </div>
+            <div class="field">
+              <label>MICR Code</label>
+              <input type="text" [(ngModel)]="editFormData.micr" [disabled]="!isEditMode" placeholder="MICR Code">
             </div>
           </div>
         </div>
@@ -848,60 +916,74 @@
         <!-- 3. Nominee & Sponsor -->
         <div class="form-section-card">
           <h4>3. Nominee &amp; Sponsor Details</h4>
-          <div class="form-grid-3">
-            <div class="field">
-              <label>Nominee Name</label>
-              <input type="text" [(ngModel)]="editFormData.nominee_name" [disabled]="!isEditMode">
+          <div class="section-with-photo-layout">
+            <div class="form-grid-3 flex-grow-1">
+              <div class="field">
+                <label>Nominee Name <span class="text-danger">*</span></label>
+                <input type="text" [(ngModel)]="editFormData.nominee_name" [disabled]="!isEditMode" placeholder="Nominee Full Name">
+              </div>
+              <div class="field">
+                <label>Relationship <span class="text-danger">*</span></label>
+                <select [(ngModel)]="editFormData.nominee_relationship" [disabled]="!isEditMode">
+                  <option value="">Select Relationship</option>
+                  <option *ngFor="let rel of relationshipsList" [value]="rel">{{ rel }}</option>
+                  <option *ngIf="editFormData.nominee_relationship && !relationshipsList.includes(editFormData.nominee_relationship)" [value]="editFormData.nominee_relationship">
+                    {{ editFormData.nominee_relationship }}
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Nominee Gender</label>
+                <select [(ngModel)]="editFormData.nominee_gender" [disabled]="!isEditMode">
+                  <option value="">Select Gender</option>
+                  <option *ngFor="let g of gendersList" [value]="g">{{ g }}</option>
+                  <option *ngIf="editFormData.nominee_gender && !gendersList.includes(editFormData.nominee_gender)" [value]="editFormData.nominee_gender">
+                    {{ editFormData.nominee_gender }}
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Nominee Residential Status</label>
+                <select [(ngModel)]="editFormData.nominee_res_status" [disabled]="!isEditMode">
+                  <option value="">Select Status</option>
+                  <option *ngFor="let rs of resStatusesList" [value]="rs">{{ rs }}</option>
+                  <option *ngIf="editFormData.nominee_res_status && !resStatusesList.includes(editFormData.nominee_res_status)" [value]="editFormData.nominee_res_status">
+                    {{ editFormData.nominee_res_status }}
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Nominee Aadhar / PAN</label>
+                <input type="text" [(ngModel)]="editFormData.nominee_aadhar_no" [disabled]="!isEditMode" placeholder="Aadhaar or PAN">
+              </div>
+              <div class="field span-2">
+                <label>Nominee Address</label>
+                <input type="text" [(ngModel)]="editFormData.nominee_address" [disabled]="!isEditMode" placeholder="Nominee Address">
+              </div>
+              <div class="field">
+                <label>Sponsor Code</label>
+                <input type="text" [(ngModel)]="editFormData.sponsor_code" [disabled]="!isEditMode" placeholder="e.g. MMR-ASC-00001">
+              </div>
+              <div class="field">
+                <label>Sponsor Name</label>
+                <input type="text" [(ngModel)]="editFormData.sponsor_name" [disabled]="!isEditMode" placeholder="Sponsor Name">
+              </div>
+              <div class="field">
+                <label>Sponsor Contact</label>
+                <input type="text" [(ngModel)]="editFormData.sponsor_contact" [disabled]="!isEditMode" placeholder="Sponsor Phone">
+              </div>
             </div>
-            <div class="field">
-              <label>Relationship</label>
-              <select [(ngModel)]="editFormData.nominee_relationship" [disabled]="!isEditMode">
-                <option value="">Select Relationship</option>
-                <option *ngFor="let rel of relationshipsList" [value]="rel">{{ rel }}</option>
-                <option *ngIf="editFormData.nominee_relationship && !relationshipsList.includes(editFormData.nominee_relationship)" [value]="editFormData.nominee_relationship">
-                  {{ editFormData.nominee_relationship }}
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Nominee Gender</label>
-              <select [(ngModel)]="editFormData.nominee_gender" [disabled]="!isEditMode">
-                <option value="">Select Gender</option>
-                <option *ngFor="let g of gendersList" [value]="g">{{ g }}</option>
-                <option *ngIf="editFormData.nominee_gender && !gendersList.includes(editFormData.nominee_gender)" [value]="editFormData.nominee_gender">
-                  {{ editFormData.nominee_gender }}
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Nominee Residential Status</label>
-              <select [(ngModel)]="editFormData.nominee_res_status" [disabled]="!isEditMode">
-                <option value="">Select Status</option>
-                <option *ngFor="let rs of resStatusesList" [value]="rs">{{ rs }}</option>
-                <option *ngIf="editFormData.nominee_res_status && !resStatusesList.includes(editFormData.nominee_res_status)" [value]="editFormData.nominee_res_status">
-                  {{ editFormData.nominee_res_status }}
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Nominee Aadhar / PAN</label>
-              <input type="text" [(ngModel)]="editFormData.nominee_aadhar_no" [disabled]="!isEditMode">
-            </div>
-            <div class="field span-2">
-              <label>Nominee Address</label>
-              <input type="text" [(ngModel)]="editFormData.nominee_address" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Sponsor Code</label>
-              <input type="text" [(ngModel)]="editFormData.sponsor_code" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Sponsor Name</label>
-              <input type="text" [(ngModel)]="editFormData.sponsor_name" [disabled]="!isEditMode">
-            </div>
-            <div class="field">
-              <label>Sponsor Contact</label>
-              <input type="text" [(ngModel)]="editFormData.sponsor_contact" [disabled]="!isEditMode">
+
+            <!-- Nominee Photo Box -->
+            <div class="photo-upload-container">
+              <label class="photo-label"><i class="fas fa-camera me-1"></i> Nominee Photo</label>
+              <app-photo-upload 
+                placeholderText="NOMINEE PHOTO" 
+                [previewUrl]="existingNomineePhoto" 
+                [disabled]="!isEditMode" 
+                (fileSelected)="onNomineePhotoSelected($event)">
+              </app-photo-upload>
+              <small class="text-muted d-block mt-1 text-center" *ngIf="isEditMode" style="font-size: 11px;">Max 100KB (JPG/PNG)</small>
             </div>
           </div>
         </div>
@@ -914,64 +996,76 @@
           <h4>1. Investor Profile</h4>
           <div class="form-grid-3">
             <div class="field">
-              <label>First Name</label>
-              <input type="text" [(ngModel)]="editFormData.inv_first_name" [disabled]="!isEditMode">
+              <label>First Name <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.inv_first_name" [disabled]="!isEditMode" placeholder="First Name">
             </div>
             <div class="field">
               <label>Middle Name</label>
-              <input type="text" [(ngModel)]="editFormData.inv_middle_name" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.inv_middle_name" [disabled]="!isEditMode" placeholder="Middle Name">
             </div>
             <div class="field">
               <label>Surname</label>
-              <input type="text" [(ngModel)]="editFormData.inv_surname" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.inv_surname" [disabled]="!isEditMode" placeholder="Surname">
             </div>
             <div class="field">
               <label>Father / Husband Name</label>
-              <input type="text" [(ngModel)]="editFormData.fh_first_name" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.fh_first_name" [disabled]="!isEditMode" placeholder="Father or Husband Name">
             </div>
             <div class="field">
-              <label>Date of Birth</label>
-              <input type="date" [(ngModel)]="editFormData.dob" [disabled]="!isEditMode">
+              <label>Date of Birth <span class="text-danger">*</span></label>
+              <input type="date" [(ngModel)]="editFormData.dob" [max]="maxDob18Years" (ngModelChange)="clearFormError()" [disabled]="!isEditMode">
+              <small class="field-error text-danger" *ngIf="editFormData.dob && !isDobEligible(editFormData.dob).valid">
+                <i class="fas fa-exclamation-circle"></i> {{ isDobEligible(editFormData.dob).message }}
+              </small>
             </div>
             <div class="field">
-              <label>Gender</label>
-              <input type="text" [(ngModel)]="editFormData.gender" [disabled]="!isEditMode">
+              <label>Gender <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.gender" [disabled]="!isEditMode" placeholder="Male / Female">
             </div>
             <div class="field">
-              <label>Mobile Number</label>
-              <input type="text" [(ngModel)]="editFormData.mobile" [disabled]="!isEditMode">
+              <label>Mobile Number <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.mobile" [disabled]="!isEditMode" placeholder="10-digit mobile" maxlength="10">
+              <small class="field-error text-danger" *ngIf="editFormData.mobile && !isContactValid(editFormData.mobile)">
+                Must be 10 digits starting with 6-9
+              </small>
             </div>
             <div class="field">
               <label>Alt Phone</label>
-              <input type="text" [(ngModel)]="editFormData.alt_tel" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.alt_tel" [disabled]="!isEditMode" placeholder="Alt phone" maxlength="10">
             </div>
             <div class="field">
-              <label>Email Address</label>
-              <input type="text" [(ngModel)]="editFormData.email" [disabled]="!isEditMode">
+              <label>Email Address <span class="text-danger">*</span></label>
+              <input type="email" [(ngModel)]="editFormData.email" [disabled]="!isEditMode" placeholder="example@email.com">
             </div>
             <div class="field">
-              <label>PAN Number</label>
-              <input type="text" [(ngModel)]="editFormData.pan" [disabled]="!isEditMode">
+              <label>PAN Number <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.pan" (input)="editFormData.pan = ($any($event.target).value || '').toUpperCase()" [disabled]="!isEditMode" placeholder="ABCDE1234F" maxlength="10">
+              <small class="field-error text-danger" *ngIf="editFormData.pan && !isPanValid(editFormData.pan)">
+                Format: ABCDE1234F
+              </small>
             </div>
             <div class="field">
-              <label>Aadhaar Number</label>
-              <input type="text" [(ngModel)]="editFormData.aadhar" [disabled]="!isEditMode">
+              <label>Aadhaar Number <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.aadhar" [disabled]="!isEditMode" placeholder="12-digit Aadhaar" maxlength="14">
+              <small class="field-error text-danger" *ngIf="editFormData.aadhar && !isAadhaarValid(editFormData.aadhar)">
+                Must be 12 digits
+              </small>
             </div>
             <div class="field span-2">
-              <label>Permanent Address</label>
-              <input type="text" [(ngModel)]="editFormData.address" [disabled]="!isEditMode">
+              <label>Permanent Address <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.address" [disabled]="!isEditMode" placeholder="Permanent address">
             </div>
             <div class="field">
-              <label>Permanent City / State / PIN</label>
-              <input type="text" [(ngModel)]="editFormData.city" [disabled]="!isEditMode">
+              <label>Permanent City / State / PIN <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.city" [disabled]="!isEditMode" placeholder="City, State, PIN">
             </div>
             <div class="field span-2">
               <label>Correspondence Address</label>
-              <input type="text" [(ngModel)]="editFormData.corr_address" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.corr_address" [disabled]="!isEditMode" placeholder="Correspondence address">
             </div>
             <div class="field">
               <label>Correspondence City / State / PIN</label>
-              <input type="text" [(ngModel)]="editFormData.corr_city" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.corr_city" [disabled]="!isEditMode" placeholder="City, State, PIN">
             </div>
           </div>
         </div>
@@ -981,28 +1075,28 @@
           <h4>2. Investment &amp; Scheme Details</h4>
           <div class="form-grid-3">
             <div class="field">
-              <label>Investment Amount (₹)</label>
+              <label>Investment Amount (₹) <span class="text-danger">*</span></label>
               <input type="number" [(ngModel)]="editFormData.amount" [disabled]="!isEditMode">
             </div>
             <div class="field">
               <label>Amount in Words</label>
-              <input type="text" [(ngModel)]="editFormData.amount_words" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.amount_words" [disabled]="!isEditMode" placeholder="e.g. Ten Lakhs Only">
             </div>
             <div class="field">
               <label>Payment Mode</label>
-              <input type="text" [(ngModel)]="editFormData.payment_mode" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.payment_mode" [disabled]="!isEditMode" placeholder="Cheque / NEFT / RTGS">
             </div>
             <div class="field">
               <label>Txn / Cheque No</label>
-              <input type="text" [(ngModel)]="editFormData.txn_no" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.txn_no" [disabled]="!isEditMode" placeholder="Txn / Cheque Ref">
             </div>
             <div class="field">
               <label>Project Name</label>
-              <input type="text" [(ngModel)]="editFormData.project_name" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.project_name" [disabled]="!isEditMode" placeholder="Project Name">
             </div>
             <div class="field">
               <label>Branch Name</label>
-              <input type="text" [(ngModel)]="editFormData.branch_name" [disabled]="!isEditMode">
+              <input type="text" [(ngModel)]="editFormData.branch_name" [disabled]="!isEditMode" placeholder="Branch Name">
             </div>
             <div class="field">
               <label>Payment Realization Status</label>
@@ -1020,16 +1114,25 @@
           <h4>3. Bank &amp; Payout Details</h4>
           <div class="form-grid-3">
             <div class="field">
-              <label>Bank &amp; Branch</label>
-              <input type="text" [(ngModel)]="editFormData.bank_branch" [disabled]="!isEditMode">
+              <label>IFSC Code <span class="text-danger">*</span></label>
+              <div class="input-with-action">
+                <input type="text" [(ngModel)]="editFormData.ifsc_code" (input)="onIfscInput($any($event.target).value)" [disabled]="!isEditMode" placeholder="e.g. SBIN0001234" maxlength="11" style="text-transform: uppercase;">
+                <span *ngIf="ifscLoading" class="input-spinner"><i class="fas fa-spinner fa-spin text-primary"></i></span>
+              </div>
+              <small class="field-success text-success fw-600" *ngIf="ifscStatus && ifscStatus.valid">
+                <i class="fas fa-check-circle"></i> {{ ifscStatus.msg }}
+              </small>
+              <small class="field-error text-danger" *ngIf="ifscStatus && !ifscStatus.valid">
+                <i class="fas fa-exclamation-circle"></i> {{ ifscStatus.msg }}
+              </small>
             </div>
             <div class="field">
-              <label>Account Number</label>
-              <input type="text" [(ngModel)]="editFormData.account_number" [disabled]="!isEditMode">
+              <label>Bank &amp; Branch <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.bank_branch" [disabled]="!isEditMode" placeholder="Bank Name & Branch">
             </div>
             <div class="field">
-              <label>IFSC Code</label>
-              <input type="text" [(ngModel)]="editFormData.ifsc_code" [disabled]="!isEditMode">
+              <label>Account Number <span class="text-danger">*</span></label>
+              <input type="text" [(ngModel)]="editFormData.account_number" [disabled]="!isEditMode" placeholder="Account Number">
             </div>
           </div>
         </div>
@@ -1053,6 +1156,9 @@
     </div>
 
     <div class="modal-footer">
+      <div *ngIf="formErrorMessage" class="modal-footer-error text-danger">
+        <i class="fas fa-exclamation-circle"></i> {{ formErrorMessage }}
+      </div>
       <button class="btn btn-secondary" (click)="closeModal()">Close</button>
       <button *ngIf="!isEditMode" class="btn btn-primary" (click)="isEditMode = true">
         <i class="fas fa-edit"></i> Enable Edit Mode
