@@ -116,7 +116,7 @@
           <th>CONTACT &amp; EMAIL</th>
           <th>SALES &amp; CUSTOMERS</th>
           <th>STATUS</th>
-          <th class="text-center" style="width: 170px;">ACTIONS</th>
+          <th class="text-center" style="width: 205px;">ACTIONS</th>
         </tr>
       </thead>
       <tbody>
@@ -197,25 +197,30 @@
             </span>
           </td>
 
-          <!-- 4 ICON ACTION BUTTONS -->
+          <!-- 5 ACTION BUTTONS -->
           <td class="text-center">
             <div class="action-btn-group justify-content-center">
-              <!-- 1. INFO / PERFORMANCE BUTTON -->
+              <!-- 1. LOGIN AS TEAM MEMBER BUTTON -->
+              <button class="btn-icon-action btn-impersonate-action" (click)="impersonateTeamMember(m)" title="Login as Team Member">
+                <i class="fas fa-sign-in-alt"></i>
+              </button>
+
+              <!-- 2. INFO / PERFORMANCE BUTTON -->
               <button class="btn-icon-action btn-info-action" (click)="openInfoModal(m)" title="View Sales &amp; Performance Info">
                 <i class="fas fa-info-circle"></i>
               </button>
 
-              <!-- 2. EDIT PROFILE / ENROLLMENT FORM BUTTON -->
+              <!-- 3. EDIT PROFILE / ENROLLMENT FORM BUTTON -->
               <button class="btn-icon-action btn-edit-action" (click)="openEditModal(m, false)" title="View &amp; Edit Enrollment Form">
                 <i class="fas fa-user-pen"></i>
               </button>
 
-              <!-- 3. BLOCK / SUSPEND / ACTIVATE BUTTON -->
+              <!-- 4. BLOCK / SUSPEND / ACTIVATE BUTTON -->
               <button class="btn-icon-action btn-toggle-action" [class.btn-unblock]="!['active', 'approved'].includes((m.status || '').toLowerCase())" (click)="toggleStatus(m)" [title]="['active', 'approved'].includes((m.status || '').toLowerCase()) ? 'Suspend / Block Team Member' : 'Activate Team Member'">
                 <i class="fas" [ngClass]="['active', 'approved'].includes((m.status || '').toLowerCase()) ? 'fa-ban' : 'fa-check-circle'"></i>
               </button>
 
-              <!-- 4. DELETE BUTTON -->
+              <!-- 5. DELETE BUTTON -->
               <button class="btn-icon-action btn-delete-action" (click)="deleteTeamMember(m)" title="Delete Team Member">
                 <i class="fas fa-trash-alt"></i>
               </button>

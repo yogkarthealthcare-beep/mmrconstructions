@@ -409,6 +409,42 @@ export class AdminTeamMembersComponent implements OnInit {
     });
   }
 
+  impersonateTeamMember(m: any): void {
+    const targetUserId = m.user_id || m.id;
+    if (!targetUserId) {
+      this.showToast('User ID not found for this team member.');
+      return;
+    }
+    if (!confirm(`Are you sure you want to login as team member ${m.full_name}?`)) return;
+
+    this.actionLoading = true;
+    this.api.post(`/api/admin/impersonate/${targetUserId}`, {}, true).subscribe({
+      next: (res: any) => {
+        this.actionLoading = false;
+        if (res.success && res.data?.token) {
+          const { token, refresh_token, user, redirect_url } = res.data;
+          const userPayload = user || {
+            id: targetUserId,
+            user_id: targetUserId,
+            full_name: m.full_name,
+            mobile_no: m.mobile_no,
+            user_type: 'Team Member',
+            account_status: m.status || 'Active'
+          };
+          const url = `/auth/impersonate-login?token=${encodeURIComponent(token)}&refresh_token=${encodeURIComponent(refresh_token || token)}&user=${encodeURIComponent(JSON.stringify(userPayload))}&type=Team%20Member&redirectUrl=${encodeURIComponent(redirect_url || '/user/dashboard')}`;
+          this.showToast(`Opening session for ${m.full_name}...`);
+          window.open(url, '_blank');
+        } else {
+          this.showToast(res.message || 'Impersonation failed');
+        }
+      },
+      error: (e: any) => {
+        this.actionLoading = false;
+        this.showToast(e?.error?.message || 'Failed to impersonate team member');
+      }
+    });
+  }
+
   // --- EXPORT FUNCTIONALITY ---
   exportTeamMembers(mode: 'current' | 'all', format: 'excel' | 'pdf'): void {
     const headers = ['S.No.', 'Team Member ID', 'Member Name', 'Associate Sponsor', 'Contact Mobile', 'Email ID', 'Plots Sold', 'Total Gaj Sold', 'Status', 'Joined Date'];
