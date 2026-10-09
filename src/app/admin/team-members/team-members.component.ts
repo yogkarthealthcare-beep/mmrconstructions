@@ -101,7 +101,56 @@ export class AdminTeamMembersComponent implements OnInit {
     this.api.adminGetTeamMembers(queryParams).subscribe({
       next: (res: any) => {
         const list = res.data?.items || res.data?.team_members || res.data?.users || (Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : []));
-        this.teamMembers = Array.isArray(list) ? list : [];
+        const members = Array.isArray(list) ? list : [];
+
+        if (members.length === 0) {
+          // Fallback: check associates list for any users with MMR-TM-* member_id or TeamMember user_type
+          this.api.adminGetAssociates({ page: 1, pageSize: 100, limit: 100 }).subscribe({
+            next: (assocRes: any) => {
+              const rawList = assocRes.data?.items || assocRes.data?.users || assocRes.data?.associates || (Array.isArray(assocRes.data) ? assocRes.data : []);
+              if (Array.isArray(rawList)) {
+                const foundTms = rawList.filter((u: any) => {
+                  const memId = String(u.member_id || u.team_member_uid || '').toUpperCase().trim();
+                  const uType = String(u.user_type || '').toLowerCase().trim();
+                  return memId.startsWith('MMR-TM-') || memId.startsWith('TM-') || uType === 'teammember' || uType === 'team member';
+                }).map((u: any) => ({
+                  id: u.user_id || u.id,
+                  team_member_uid: u.member_id || `MMR-TM-${u.user_id}`,
+                  user_id: u.user_id,
+                  full_name: u.full_name,
+                  mobile_no: u.mobile_no,
+                  email_id: u.email,
+                  sponsor_name: u.sponsor_name || 'Direct / Head Office',
+                  sponsor_member_id: u.sponsor_member_id || '',
+                  status: (u.account_status || 'Active').toLowerCase() === 'active' ? 'approved' : 'pending',
+                  account_status: u.account_status || 'Active',
+                  created_at: u.registered_at || u.created_at,
+                  plots_sold_count: 0,
+                  total_gaj_sold: 0
+                }));
+
+                if (foundTms.length > 0) {
+                  this.teamMembers = foundTms;
+                  this.total = foundTms.length;
+                  this.recalculateSummaryLocally();
+                  this.loading = false;
+                  return;
+                }
+              }
+              this.teamMembers = [];
+              this.total = 0;
+              this.loading = false;
+            },
+            error: () => {
+              this.teamMembers = [];
+              this.total = 0;
+              this.loading = false;
+            }
+          });
+          return;
+        }
+
+        this.teamMembers = members;
         this.total = Number(res.data?.total || res.data?.totalRecords || res.total || this.teamMembers.length);
         
         if (res.data?.summary) {
@@ -113,9 +162,48 @@ export class AdminTeamMembersComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Error loading team members:', err);
-        this.teamMembers = [];
-        this.total = 0;
-        this.loading = false;
+        this.api.adminGetAssociates({ page: 1, pageSize: 100, limit: 100 }).subscribe({
+          next: (assocRes: any) => {
+            const rawList = assocRes.data?.items || assocRes.data?.users || assocRes.data?.associates || (Array.isArray(assocRes.data) ? assocRes.data : []);
+            if (Array.isArray(rawList)) {
+              const foundTms = rawList.filter((u: any) => {
+                const memId = String(u.member_id || u.team_member_uid || '').toUpperCase().trim();
+                const uType = String(u.user_type || '').toLowerCase().trim();
+                return memId.startsWith('MMR-TM-') || memId.startsWith('TM-') || uType === 'teammember' || uType === 'team member';
+              }).map((u: any) => ({
+                id: u.user_id || u.id,
+                team_member_uid: u.member_id || `MMR-TM-${u.user_id}`,
+                user_id: u.user_id,
+                full_name: u.full_name,
+                mobile_no: u.mobile_no,
+                email_id: u.email,
+                sponsor_name: u.sponsor_name || 'Direct / Head Office',
+                sponsor_member_id: u.sponsor_member_id || '',
+                status: (u.account_status || 'Active').toLowerCase() === 'active' ? 'approved' : 'pending',
+                account_status: u.account_status || 'Active',
+                created_at: u.registered_at || u.created_at,
+                plots_sold_count: 0,
+                total_gaj_sold: 0
+              }));
+
+              if (foundTms.length > 0) {
+                this.teamMembers = foundTms;
+                this.total = foundTms.length;
+                this.recalculateSummaryLocally();
+                this.loading = false;
+                return;
+              }
+            }
+            this.teamMembers = [];
+            this.total = 0;
+            this.loading = false;
+          },
+          error: () => {
+            this.teamMembers = [];
+            this.total = 0;
+            this.loading = false;
+          }
+        });
       }
     });
   }
