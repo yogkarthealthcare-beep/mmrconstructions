@@ -38,6 +38,11 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./associates/associates.component').then(m => m.AssociatesComponent) 
   },
   { 
+    path: 'team-members', 
+    loadComponent: () => import('./team-members/team-members.component').then(m => m.AdminTeamMembersComponent),
+    title: 'Team Member Directory' 
+  },
+  { 
     path: 'site-gallery', 
     loadComponent: () => import('./site-gallery/site-gallery.component').then(m => m.AdminSiteGalleryComponent),
     title: 'Site Gallery Management'

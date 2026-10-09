@@ -269,10 +269,17 @@ export class ApiService {
   adminGetAssociateEnrollment(id: string) { return this.get(`/api/admin/associate-enrollments/${id}`, {}, true); }
   adminUpdateAssociateEnrollment(id: string, data: any) { return typeof data === 'object' && !(data instanceof FormData) ? this.put(`/api/admin/associate-enrollments/${id}`, data, true) : this.putForm(`/api/admin/associate-enrollments/${id}`, data, true); }
 
-  // ── ADMIN — Team Members & Enrollments ───────────
+  // ── ADMIN — Team Members & Directory ───────────
   adminGetTeamMembers(params: any = {}) { return this.get('/api/admin/team-members', params, true); }
-  adminGetTeamMember(id: number | string) { return this.get(`/api/team-members/${id}`, {}, true); }
-  adminUpdateTeamMemberStatus(id: number | string, data: any) { return this.patch(`/api/team-members/${id}/status`, data, true); }
+  adminGetTeamMember(id: number | string) { return this.get(`/api/admin/team-members/${id}`, {}, true); }
+  adminUpdateTeamMember(id: number | string, data: any) { 
+    return (typeof data === 'object' && !(data instanceof FormData)) 
+      ? this.put(`/api/admin/team-members/${id}`, data, true) 
+      : this.putForm(`/api/admin/team-members/${id}`, data, true); 
+  }
+  adminToggleTeamMemberStatus(id: number | string) { return this.post(`/api/admin/team-members/${id}/toggle-status`, {}, true); }
+  adminUpdateTeamMemberStatus(id: number | string, data: any) { return this.patch(`/api/admin/team-members/${id}/status`, data, true); }
+  adminDeleteTeamMember(id: number | string) { return this.delete(`/api/admin/team-members/${id}`, true); }
 
   // ── ADMIN — Investor Enrollments ──────────────────
   adminGetInvestorEnrollments(params: any = {}) { return this.get('/api/admin/investor-enrollment', params, true); }

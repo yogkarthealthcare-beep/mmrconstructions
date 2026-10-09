@@ -74,6 +74,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       items: [
         { icon: 'fas fa-user-check', label: 'Registrations & KYC', route: '/admin/approvals', badge: '!', red: true },
         { icon: 'fas fa-user-tie', label: 'Associate Directory', route: '/admin/associates' },
+        { icon: 'fas fa-users-gear', label: 'Team Member Directory', route: '/admin/team-members', badge: 'NEW' },
         { icon: 'fas fa-id-card', label: 'Associate Enrollments', route: '/admin/enrollments', queryParams: { tab: 'associate' } },
         { icon: 'fas fa-project-diagram', label: 'Network Tree', route: '/admin/network-tree', badge: 'NEW' },
         { icon: 'fas fa-sitemap', label: 'MLM Network Pages', route: '/admin/mlm-pages' },
