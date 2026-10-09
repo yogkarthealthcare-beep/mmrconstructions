@@ -100,9 +100,9 @@ export class AdminTeamMembersComponent implements OnInit {
 
     this.api.adminGetTeamMembers(queryParams).subscribe({
       next: (res: any) => {
-        const list = res.data?.items || res.data?.team_members || res.data || [];
+        const list = res.data?.items || res.data?.team_members || res.data?.users || (Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : []));
         this.teamMembers = Array.isArray(list) ? list : [];
-        this.total = Number(res.data?.total || res.data?.totalRecords || this.teamMembers.length);
+        this.total = Number(res.data?.total || res.data?.totalRecords || res.total || this.teamMembers.length);
         
         if (res.data?.summary) {
           this.summary = res.data.summary;
@@ -111,7 +111,8 @@ export class AdminTeamMembersComponent implements OnInit {
         }
         this.loading = false;
       },
-      error: () => {
+      error: (err: any) => {
+        console.error('Error loading team members:', err);
         this.teamMembers = [];
         this.total = 0;
         this.loading = false;
@@ -160,26 +161,7 @@ export class AdminTeamMembersComponent implements OnInit {
   }
 
   get filtered(): any[] {
-    return this.teamMembers.filter(m => {
-      const st = (m.status || 'approved').toLowerCase();
-      const matchStatus =
-        this.statusFilter === 'all' ? true :
-        this.statusFilter === 'Active' ? ['active', 'approved'].includes(st) :
-        this.statusFilter === 'Pending' ? ['pending', 'submitted'].includes(st) :
-        this.statusFilter === 'Suspended' ? ['suspended', 'inactive', 'rejected', 'blocked'].includes(st) :
-        st === this.statusFilter.toLowerCase();
-
-      const q = this.search.trim().toLowerCase();
-      const matchSearch = !q ||
-        (m.full_name && m.full_name.toLowerCase().includes(q)) ||
-        (m.team_member_uid && m.team_member_uid.toLowerCase().includes(q)) ||
-        (m.mobile_no && String(m.mobile_no).includes(q)) ||
-        (m.email_id && m.email_id.toLowerCase().includes(q)) ||
-        (m.sponsor_name && m.sponsor_name.toLowerCase().includes(q)) ||
-        (m.sponsor_member_id && m.sponsor_member_id.toLowerCase().includes(q));
-
-      return matchStatus && matchSearch;
-    });
+    return this.teamMembers || [];
   }
 
   getInitials(name: string): string {
