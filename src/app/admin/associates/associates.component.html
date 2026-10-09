@@ -115,15 +115,15 @@
       <table class="table align-middle custom-dash-table stacked-on-mobile mb-0">
         <thead>
           <tr>
-            <th class="th-sno" style="width: 5%;">#</th>
-            <th style="width: 23%;">Associate Profile</th>
-            <th style="width: 18%;">Contact &amp; Mobile</th>
-            <th class="priority-2" style="width: 12%;">Invite Code</th>
-            <th class="priority-2" style="width: 12%;">Rank &amp; Role</th>
-            <th style="width: 10%;">Team</th>
-            <th class="priority-3" style="width: 10%;">Joined</th>
-            <th style="width: 10%;">Status</th>
-            <th class="text-end" style="width: 10%;">Actions</th>
+            <th class="th-sno" style="width: 4%; min-width: 32px;">#</th>
+            <th style="width: 25%; min-width: 170px;">Associate Profile</th>
+            <th style="width: 21%; min-width: 150px;">Contact &amp; Mobile</th>
+            <th class="priority-2" style="width: 11%; min-width: 80px;">Invite Code</th>
+            <th class="priority-2" style="width: 13%; min-width: 90px;">Rank &amp; Role</th>
+            <th style="width: 8%; min-width: 65px;">Team</th>
+            <th class="priority-3" style="width: 10%; min-width: 80px;">Joined</th>
+            <th style="width: 9%; min-width: 75px;">Status</th>
+            <th class="text-end" style="width: 7%; min-width: 75px;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -175,38 +175,10 @@
               </span>
             </td>
             <td class="text-end" data-label="Actions">
-              <div class="dropdown d-inline-block position-relative">
-                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="toggleDropdown(i, $event)">
+              <div class="d-inline-block">
+                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8 btn-action-trigger" [class.active]="activeDropdownAssociate?.user_id === a.user_id" (click)="openActionsMenu(a, $event)">
                   <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
                 </button>
-
-                <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 185px; border-radius: 10px;" *ngIf="activeRowIndex === i" (click)="$event.stopPropagation()">
-                  <button type="button" class="dropdown-item py-1.5 px-3 fw-600 d-flex align-items-center" [class.text-danger]="a.account_status==='Active'" [class.text-success]="a.account_status!=='Active'" (click)="toggleAssociateStatus(a); activeRowIndex = null">
-                    <i [class]="a.account_status==='Active' ? 'fas fa-ban text-danger me-2 width-16' : 'fas fa-check-circle text-success me-2 width-16'"></i>
-                    {{ a.account_status==='Active' ? 'Suspend Associate' : 'Activate / Enable Associate' }}
-                  </button>
-                  <div class="dropdown-divider my-1"></div>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openEditModal(a); activeRowIndex = null">
-                    <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Rank &amp; Status
-                  </button>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" (click)="openDetailModal(a); activeRowIndex = null">
-                    <i class="fas fa-sitemap text-info me-2 width-16"></i> KYC &amp; Network
-                  </button>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="impersonateAssociate(a); activeRowIndex = null">
-                    <i class="fas fa-sign-in-alt text-primary me-2 width-16"></i> Login as User
-                  </button>
-                  <div class="dropdown-divider my-1"></div>
-                  <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + a.mobile_no">
-                    <i class="fas fa-phone text-secondary me-2 width-16"></i> Call Associate
-                  </a>
-                  <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + a.mobile_no" target="_blank">
-                    <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
-                  </a>
-                  <div class="dropdown-divider my-1"></div>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="deleteAssociate(a); activeRowIndex = null">
-                    <i class="fas fa-trash-alt text-danger me-2 width-16"></i> Delete Associate
-                  </button>
-                </div>
               </div>
             </td>
           </tr>
@@ -229,6 +201,51 @@
     (exportAllPdf)="exportAssociates('all', 'pdf')">
   </app-admin-pagination>
 
+</div>
+
+<!-- FLOATING ACTIONS DROPDOWN OVERLAY (Renders outside card/table clipping context) -->
+<div class="floating-actions-overlay"
+     *ngIf="activeDropdownAssociate"
+     [style.top.px]="activeDropdownPos.top"
+     [style.left.px]="activeDropdownPos.left"
+     [class.placement-top]="activeDropdownPos.placement === 'top'"
+     (click)="$event.stopPropagation()">
+  <div class="dropdown-menu show shadow-lg border fs-11 py-1 floating-menu-box">
+    <button type="button" class="dropdown-item py-1.5 px-3 fw-600 d-flex align-items-center"
+            [class.text-danger]="activeDropdownAssociate.account_status==='Active'"
+            [class.text-success]="activeDropdownAssociate.account_status!=='Active'"
+            (click)="toggleAssociateStatus(activeDropdownAssociate); closeActionsMenu()">
+      <i [class]="activeDropdownAssociate.account_status==='Active' ? 'fas fa-ban text-danger me-2 width-16' : 'fas fa-check-circle text-success me-2 width-16'"></i>
+      {{ activeDropdownAssociate.account_status==='Active' ? 'Suspend Associate' : 'Activate / Enable Associate' }}
+    </button>
+    <div class="dropdown-divider my-1"></div>
+    <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center"
+            (click)="openEditModal(activeDropdownAssociate); closeActionsMenu()">
+      <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Rank &amp; Status
+    </button>
+    <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center"
+            (click)="openDetailModal(activeDropdownAssociate); closeActionsMenu()">
+      <i class="fas fa-sitemap text-info me-2 width-16"></i> KYC &amp; Network
+    </button>
+    <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center"
+            (click)="impersonateAssociate(activeDropdownAssociate); closeActionsMenu()">
+      <i class="fas fa-sign-in-alt text-primary me-2 width-16"></i> Login as User
+    </button>
+    <div class="dropdown-divider my-1"></div>
+    <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center"
+       [href]="'tel:' + activeDropdownAssociate.mobile_no">
+      <i class="fas fa-phone text-secondary me-2 width-16"></i> Call Associate
+    </a>
+    <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center"
+       [href]="'https://wa.me/91' + activeDropdownAssociate.mobile_no" target="_blank">
+      <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
+    </a>
+    <div class="dropdown-divider my-1"></div>
+    <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center"
+            (click)="deleteAssociate(activeDropdownAssociate); closeActionsMenu()">
+      <i class="fas fa-trash-alt text-danger me-2 width-16"></i> Delete Associate
+    </button>
+  </div>
 </div>
 
 <!-- ADD NEW ASSOCIATE MODAL -->

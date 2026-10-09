@@ -24,16 +24,63 @@ export class AssociatesComponent implements OnInit {
   search = '';
   statusFilter = 'all';
   associates: any[] = [];
-  activeRowIndex: number | null = null;
+  
+  // Floating Actions Dropdown State
+  activeDropdownAssociate: any = null;
+  activeDropdownButton: HTMLElement | null = null;
+  activeDropdownPos = { top: 0, left: 0, placement: 'bottom' };
 
   @HostListener('document:click')
   closeDropdowns() {
-    this.activeRowIndex = null;
+    this.closeActionsMenu();
   }
 
-  toggleDropdown(index: number, event: MouseEvent) {
+  @HostListener('window:scroll')
+  onWindowScroll() {
+    if (this.activeDropdownAssociate && this.activeDropdownButton) {
+      this.calculateDropdownPosition(this.activeDropdownButton);
+    }
+  }
+
+  openActionsMenu(a: any, event: MouseEvent) {
     event.stopPropagation();
-    this.activeRowIndex = this.activeRowIndex === index ? null : index;
+    if (this.activeDropdownAssociate?.user_id === a.user_id) {
+      this.closeActionsMenu();
+      return;
+    }
+    const button = (event.currentTarget || event.target) as HTMLElement;
+    this.activeDropdownAssociate = a;
+    this.activeDropdownButton = button;
+    this.calculateDropdownPosition(button);
+  }
+
+  calculateDropdownPosition(button: HTMLElement) {
+    const rect = button.getBoundingClientRect();
+    const menuWidth = 205;
+    const menuHeight = 280;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    let placement: 'bottom' | 'top' = 'bottom';
+    let top = rect.bottom + 4;
+
+    if (spaceBelow < menuHeight && spaceAbove >= spaceBelow) {
+      placement = 'top';
+      top = Math.max(10, rect.top - 4);
+    }
+
+    let left = rect.right - menuWidth;
+    if (left < 10) left = 10;
+    if (left + menuWidth > window.innerWidth - 10) {
+      left = window.innerWidth - menuWidth - 10;
+    }
+
+    this.activeDropdownPos = { top, left, placement };
+  }
+
+  closeActionsMenu() {
+    this.activeDropdownAssociate = null;
+    this.activeDropdownButton = null;
   }
   total = 0;
   page = 1;
