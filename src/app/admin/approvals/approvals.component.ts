@@ -180,6 +180,25 @@ export class ApprovalsComponent implements OnInit {
     this.loadAllStats();
   }
 
+  getUserType(u: any): string {
+    if (!u) return 'Customer';
+    const mid = String(u.member_id || '').toUpperCase();
+    const rawType = String(u.user_type || '').toLowerCase();
+    if (mid.startsWith('MMR-TM-') || mid.startsWith('TM-') || rawType === 'team member' || rawType === 'teammember') {
+      return 'Team Member';
+    }
+    if (mid.startsWith('MMR-INV-') || mid.startsWith('INV-') || rawType === 'investor') {
+      return 'Investor';
+    }
+    if (mid.startsWith('MMR-CUS-') || mid.startsWith('CUS-') || rawType === 'customer') {
+      return 'Customer';
+    }
+    if (mid.startsWith('MMR-ASC-') || mid.startsWith('ASC-') || mid.startsWith('MMR0') || rawType === 'associate') {
+      return 'Associate';
+    }
+    return u.user_type || 'Customer';
+  }
+
   get pendingCount(): number {
     return this.pendingUsersList.filter(u => u.account_status === 'Pending').length;
   }
@@ -190,26 +209,33 @@ export class ApprovalsComponent implements OnInit {
 
   get investorCount(): number {
     const list = this.viewMode === 'pending' ? this.pendingUsersList : this.users;
-    return list.filter(u => u.user_type === 'Investor').length;
+    return list.filter(u => this.getUserType(u) === 'Investor').length;
   }
 
   get customerCount(): number {
     const list = this.viewMode === 'pending' ? this.pendingUsersList : this.users;
-    return list.filter(u => u.user_type === 'Customer').length;
+    return list.filter(u => this.getUserType(u) === 'Customer').length;
   }
 
   get associateCount(): number {
     const list = this.viewMode === 'pending' ? this.pendingUsersList : this.users;
-    return list.filter(u => u.user_type === 'Associate').length;
+    return list.filter(u => this.getUserType(u) === 'Associate').length;
+  }
+
+  get teamMemberCount(): number {
+    const list = this.viewMode === 'pending' ? this.pendingUsersList : this.users;
+    return list.filter(u => this.getUserType(u) === 'Team Member').length;
   }
 
   get filtered(): any[] {
     return this.users.filter(u => {
+      const uType = this.getUserType(u).toLowerCase();
       const matchFilter =
         this.filter === 'all' ? true :
-        this.filter === 'customer' ? u.user_type?.toLowerCase() === 'customer' :
-        this.filter === 'associate' ? u.user_type?.toLowerCase() === 'associate' :
-        this.filter === 'investor' ? u.user_type?.toLowerCase() === 'investor' :
+        this.filter === 'customer' ? uType === 'customer' :
+        this.filter === 'associate' ? uType === 'associate' :
+        this.filter === 'teammember' || this.filter === 'team member' ? uType === 'team member' :
+        this.filter === 'investor' ? uType === 'investor' :
         this.filter === 'active' ? u.account_status?.toLowerCase() === 'active' :
         this.filter === 'pending' ? u.account_status?.toLowerCase() === 'pending' :
         this.filter === 'inforequested' ? u.account_status?.toLowerCase() === 'inforequested' :

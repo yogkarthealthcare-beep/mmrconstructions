@@ -103,15 +103,17 @@
       <button class="filter-tab" [class.active]="filter==='all'"           (click)="filter='all'">All Pending ({{ pendingCount }})</button>
       <button class="filter-tab" [class.active]="filter==='customer'"      (click)="filter='customer'">Customers ({{ customerCount }})</button>
       <button class="filter-tab" [class.active]="filter==='associate'"     (click)="filter='associate'">Associates ({{ associateCount }})</button>
+      <button class="filter-tab" [class.active]="filter==='teammember'"    (click)="filter='teammember'">Team Members ({{ teamMemberCount }})</button>
       <button class="filter-tab" [class.active]="filter==='investor'"      (click)="filter='investor'">Investors ({{ investorCount }})</button>
       <button class="filter-tab" [class.active]="filter==='inforequested'" (click)="filter='inforequested'">Info Requested</button>
     </div>
 
     <div class="filter-tabs" *ngIf="viewMode === 'all'">
       <button class="filter-tab" [class.active]="filter==='all'"           (click)="filter='all'">All Users ({{ totalUsersCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='customer'"      (click)="filter='customer'">Customers</button>
-      <button class="filter-tab" [class.active]="filter==='associate'"     (click)="filter='associate'">Associates</button>
-      <button class="filter-tab" [class.active]="filter==='investor'"      (click)="filter='investor'">Investors</button>
+      <button class="filter-tab" [class.active]="filter==='customer'"      (click)="filter='customer'">Customers ({{ customerCount }})</button>
+      <button class="filter-tab" [class.active]="filter==='associate'"     (click)="filter='associate'">Associates ({{ associateCount }})</button>
+      <button class="filter-tab" [class.active]="filter==='teammember'"    (click)="filter='teammember'">Team Members ({{ teamMemberCount }})</button>
+      <button class="filter-tab" [class.active]="filter==='investor'"      (click)="filter='investor'">Investors ({{ investorCount }})</button>
       <button class="filter-tab" [class.active]="filter==='active'"        (click)="filter='active'">Active</button>
       <button class="filter-tab" [class.active]="filter==='pending'"       (click)="filter='pending'">Pending</button>
     </div>
@@ -188,7 +190,7 @@
             <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
             <td>
               <div class="d-flex align-items-center gap-2.5">
-                <div class="user-avatar-circle" [class.bg-blue]="u.user_type==='Customer'" [class.bg-gold]="u.user_type==='Associate'" [class.bg-emerald]="u.user_type==='Investor'">
+                <div class="user-avatar-circle" [class.bg-blue]="getUserType(u)==='Customer'" [class.bg-gold]="getUserType(u)==='Associate'" [class.bg-info]="getUserType(u)==='Team Member'" [class.bg-emerald]="getUserType(u)==='Investor'">
                   {{ getInitials(u.full_name) }}
                 </div>
                 <div>
@@ -203,13 +205,15 @@
             </td>
             <td>
               <span class="badge" 
-                [class.bg-primary-subtle]="u.user_type==='Customer'" 
-                [class.text-primary]="u.user_type==='Customer'" 
-                [class.bg-warning-subtle]="u.user_type==='Associate'" 
-                [class.text-warning-emphasis]="u.user_type==='Associate'"
-                [class.bg-success-subtle]="u.user_type==='Investor'" 
-                [class.text-success]="u.user_type==='Investor'">
-                <i [class]="u.user_type==='Customer' ? 'fas fa-user me-1' : (u.user_type==='Investor' ? 'fas fa-piggy-bank me-1' : 'fas fa-user-tie me-1')"></i>{{ u.user_type }}
+                [class.bg-primary-subtle]="getUserType(u)==='Customer'" 
+                [class.text-primary]="getUserType(u)==='Customer'" 
+                [class.bg-warning-subtle]="getUserType(u)==='Associate'" 
+                [class.text-warning-emphasis]="getUserType(u)==='Associate'"
+                [class.bg-info-subtle]="getUserType(u)==='Team Member'" 
+                [class.text-info-emphasis]="getUserType(u)==='Team Member'"
+                [class.bg-success-subtle]="getUserType(u)==='Investor'" 
+                [class.text-success]="getUserType(u)==='Investor'">
+                <i [class]="getUserType(u)==='Customer' ? 'fas fa-user me-1' : (getUserType(u)==='Investor' ? 'fas fa-piggy-bank me-1' : (getUserType(u)==='Team Member' ? 'fas fa-id-badge me-1' : 'fas fa-user-tie me-1'))"></i>{{ getUserType(u) }}
               </span>
             </td>
             <td>
