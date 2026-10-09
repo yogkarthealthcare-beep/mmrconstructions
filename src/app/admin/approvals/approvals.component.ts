@@ -119,35 +119,39 @@ export class ApprovalsComponent implements OnInit {
     this.loadAllStats();
   }
 
+  private extractUserList(res: any): any[] {
+    if (!res) return [];
+    if (Array.isArray(res.data)) return res.data;
+    if (Array.isArray(res.users)) return res.users;
+    if (Array.isArray(res.data?.rows)) return res.data.rows;
+    if (Array.isArray(res.data?.users)) return res.data.users;
+    if (Array.isArray(res)) return res;
+    return [];
+  }
+
   loadData() {
     this.loading = true;
     if (this.viewMode === 'pending') {
       this.api.adminGetPendingUsers().subscribe({
         next: (res: any) => {
-          if (res.success && res.data) {
-            this.pendingUsersList = Array.isArray(res.data) ? res.data : (res.data.rows || []);
-            this.users = this.pendingUsersList;
-          } else {
-            this.users = [];
-          }
+          this.pendingUsersList = this.extractUserList(res);
+          this.users = this.pendingUsersList;
           this.loading = false;
         },
-        error: () => {
+        error: (err: any) => {
+          console.error('[Approvals] Failed to fetch pending users:', err);
           this.loading = false;
         }
       });
     } else {
       this.api.adminGetUsers({ limit: 100 }).subscribe({
         next: (res: any) => {
-          if (res.success && (res.data || res.users)) {
-            this.allUsersList = Array.isArray(res.data) ? res.data : (res.users || res.data?.rows || []);
-            this.users = this.allUsersList;
-          } else {
-            this.users = [];
-          }
+          this.allUsersList = this.extractUserList(res);
+          this.users = this.allUsersList;
           this.loading = false;
         },
-        error: () => {
+        error: (err: any) => {
+          console.error('[Approvals] Failed to fetch all users:', err);
           this.loading = false;
         }
       });
@@ -158,18 +162,16 @@ export class ApprovalsComponent implements OnInit {
     // Background fetch to keep counter badges updated
     this.api.adminGetPendingUsers().subscribe({
       next: (res: any) => {
-        if (res.success && res.data) {
-          this.pendingUsersList = Array.isArray(res.data) ? res.data : (res.data.rows || []);
-        }
-      }
+        this.pendingUsersList = this.extractUserList(res);
+      },
+      error: () => {}
     });
 
     this.api.adminGetUsers({ limit: 100 }).subscribe({
       next: (res: any) => {
-        if (res.success && (res.data || res.users)) {
-          this.allUsersList = Array.isArray(res.data) ? res.data : (res.users || res.data?.rows || []);
-        }
-      }
+        this.allUsersList = this.extractUserList(res);
+      },
+      error: () => {}
     });
   }
 
