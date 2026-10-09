@@ -97,18 +97,18 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   targetUserId: number | null = null;
   targetSlotNumber: number | null = null;
 
-  // ── 11 Direct Slots Computed ─────────────────────────
+  // ── 10 Direct Slots Computed (11 Total Team with Team Lead) ───
   slots = computed<TeamMemberSlot[]>(() => {
     const members = this.teamMembers() || [];
     const result: TeamMemberSlot[] = [];
     
-    // Map existing members by slot_number (1..11)
+    // Map existing members by slot_number (1..10)
     const slotMap = new Map<number, any>();
     const unslotted: any[] = [];
     
     members.forEach((m: any) => {
       const s = Number(m.slot_number);
-      if (s >= 1 && s <= 11) {
+      if (s >= 1 && s <= 10) {
         slotMap.set(s, m);
       } else {
         unslotted.push(m);
@@ -116,7 +116,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     });
 
     let unslottedIdx = 0;
-    for (let s = 1; s <= 11; s++) {
+    for (let s = 1; s <= 10; s++) {
       let member = slotMap.get(s) || null;
       if (!member && unslottedIdx < unslotted.length) {
         member = unslotted[unslottedIdx++];
@@ -151,7 +151,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   });
 
   isCapacityFull = computed(() => {
-    return this.occupiedSlotsCount() >= 11;
+    return this.occupiedSlotsCount() >= 10;
   });
 
   // Submit gate computed: Checks declaration checkbox specifically

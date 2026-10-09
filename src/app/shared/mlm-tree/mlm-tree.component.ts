@@ -215,7 +215,7 @@ export class MlmTreeComponent implements OnInit {
   private buildTree(profile: any, network: any[]) {
     const root = this.toNode(profile, 1, 0);
 
-    // FIXED 11-SLOT ASSOCIATE SALES TEAM TREE (AUDIENCE === 'ASSOCIATE')
+    // FIXED 10-SLOT ASSOCIATE SALES TEAM TREE (1 ROOT TEAM LEAD + 10 SLOTS = 11 TOTAL)
     if (this.audience === 'associate') {
       root.children = [];
       const teamList = Array.isArray(network) ? network : [];
@@ -229,7 +229,7 @@ export class MlmTreeComponent implements OnInit {
       const unslotted: any[] = [];
       validTeamMembers.forEach((item: any) => {
         const s = Number(item.slot_number);
-        if (s >= 1 && s <= 11) {
+        if (s >= 1 && s <= 10) {
           slotMap.set(s, item);
         } else {
           unslotted.push(item);
@@ -237,7 +237,7 @@ export class MlmTreeComponent implements OnInit {
       });
 
       let unslottedIdx = 0;
-      for (let s = 1; s <= 11; s++) {
+      for (let s = 1; s <= 10; s++) {
         let member = slotMap.get(s);
         if (!member && unslottedIdx < unslotted.length) {
           member = unslotted[unslottedIdx++];
