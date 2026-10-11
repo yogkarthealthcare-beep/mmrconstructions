@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 import { filter } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 interface NavItem {
   icon: string;
@@ -95,7 +96,8 @@ export class UserLayoutComponent implements OnInit {
 
   get isTeamMember(): boolean {
     const type = String(this.userData?.user_type || this.userData?.role || '').toLowerCase();
-    return this.auth.isTeamMember() || type === 'team member' || type.includes('team member');
+    const memId = String(this.userData?.member_id || '').toUpperCase();
+    return this.auth.isTeamMember() || type === 'team member' || type.includes('team member') || type === 'teammember' || memId.startsWith('MMR-TM-') || memId.startsWith('TM-');
   }
 
   get basePrefix(): string {
@@ -142,13 +144,17 @@ export class UserLayoutComponent implements OnInit {
           expanded: true,
           items: [
             { icon: 'fas fa-th-large', label: 'Dashboard Overview', route: `${p}/dashboard` },
+            { icon: 'fas fa-layer-group', label: 'Book a Plot', route: `${p}/book-plot` },
+            { icon: 'fas fa-receipt', label: 'My Sales Pipeline', route: `${p}/sales` },
+            { icon: 'fas fa-users', label: 'Attributed Customers', route: `${p}/customers` },
+            { icon: 'fas fa-bullhorn', label: 'Referral Tools', route: `${p}/referral` },
             { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` }
           ]
         },
         {
-          label: 'SALES & PROPERTIES',
+          label: 'MY PROPERTIES',
           icon: 'fas fa-building',
-          expanded: true,
+          expanded: false,
           items: [
             { icon: 'fas fa-map-marked-alt', label: 'My Booked Properties', route: `${p}/my-plots` },
             { icon: 'fas fa-calendar-check', label: 'EMI Schedule', route: `${p}/emi-history` },
@@ -235,6 +241,7 @@ export class UserLayoutComponent implements OnInit {
         icon: 'fas fa-building',
         expanded: false,
         items: [
+          { icon: 'fas fa-layer-group', label: 'Book a Plot', route: `${p}/book-plot` },
           { icon: 'fas fa-map', label: 'My Booked Plots', route: `${p}/my-plots` },
           { icon: 'fas fa-calendar-check', label: 'EMI Schedule', route: `${p}/emi-history` },
           { icon: 'fas fa-shield-alt', label: 'Buyback Guarantee', route: `${p}/buyback` },
@@ -245,6 +252,8 @@ export class UserLayoutComponent implements OnInit {
         icon: 'fas fa-users',
         expanded: false,
         items: [
+          { icon: 'fas fa-tasks', label: 'Booking Approvals', route: `${p}/approvals`, badge: 'NEW' },
+          { icon: 'fas fa-chart-bar', label: 'Team Sales', route: `${p}/team-sales` },
           { icon: 'fas fa-user-plus', label: 'Team Member Enrollment', route: `${p}/team-member-enrollment` },
           { icon: 'fas fa-hand-holding-usd', label: 'Commission Tracker', route: `${p}/commission` },
           { icon: 'fas fa-sitemap', label: 'My Team Network', route: `${p}/my-team` },

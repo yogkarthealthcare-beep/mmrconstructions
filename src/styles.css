@@ -37,6 +37,30 @@
   --ff-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --ff-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --ff-ui: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ff-erp-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Fluid Typographic Scale Tokens */
+  --text-xs: clamp(0.6875rem, 0.65rem + 0.18vw, 0.75rem);   /* 11px -> 12px */
+  --text-sm: clamp(0.75rem, 0.72rem + 0.15vw, 0.8125rem);   /* 12px -> 13px */
+  --text-base: clamp(0.8125rem, 0.78rem + 0.2vw, 0.875rem); /* 13px -> 14px */
+  --text-md: clamp(0.875rem, 0.82rem + 0.25vw, 0.9375rem);  /* 14px -> 15px */
+  --text-lg: clamp(1rem, 0.95rem + 0.35vw, 1.125rem);       /* 16px -> 18px */
+  --text-xl: clamp(1.15rem, 1.05rem + 0.5vw, 1.35rem);      /* 18.4px -> 21.6px */
+  --text-kpi-val: clamp(1.15rem, 0.95rem + 0.9vw, 1.5rem);
+  --text-kpi-lbl: clamp(0.625rem, 0.6rem + 0.12vw, 0.6875rem);
+
+  /* Unified Spacing & Radius Tokens */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
   --r-sm: 6px;
   --r-md: 10px;
   --r-lg: 16px;
@@ -104,6 +128,7 @@ button {
   font-family: inherit;
 }
 
+/* Public Headings (Default Playfair Display) */
 h1,
 h2,
 h3,
@@ -114,6 +139,25 @@ h6 {
   color: var(--txt-h);
   line-height: 1.2;
   letter-spacing: -0.02em;
+}
+
+/* Dashboard Panel Scoped Headings (Inter sans-serif for Admin, Associate, Investor, Team Member) */
+app-admin-layout,
+app-user-layout,
+app-investor-layout,
+.panel-shell,
+.admin-shell,
+.user-shell,
+.investor-shell {
+  --ff-display: var(--ff-erp-sans);
+}
+
+app-admin-layout h1, app-admin-layout h2, app-admin-layout h3, app-admin-layout h4, app-admin-layout h5, app-admin-layout h6,
+app-user-layout h1, app-user-layout h2, app-user-layout h3, app-user-layout h4, app-user-layout h5, app-user-layout h6,
+app-investor-layout h1, app-investor-layout h2, app-investor-layout h3, app-investor-layout h4, app-investor-layout h5, app-investor-layout h6,
+.panel-shell h1, .panel-shell h2, .panel-shell h3, .panel-shell h4, .panel-shell h5, .panel-shell h6 {
+  font-family: var(--ff-erp-sans);
+  letter-spacing: -0.01em;
 }
 
 p {
@@ -1263,84 +1307,79 @@ button[style*="background: #166534"]:disabled {
 .tag-purple  { background: #ede9fe !important; color: #5b21b6 !important; }
 
 .stat-value {
-  font-size: 1.35rem !important;
-  font-weight: 800 !important;
-  color: #0f172a !important;
-  line-height: 1.15 !important;
-  margin-bottom: 3px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  font-size: var(--text-kpi-val, clamp(1rem, 0.95rem + 0.8vw, 1.35rem));
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.15;
+  margin-bottom: 3px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .stat-label {
-  font-size: 11.5px !important;
-  font-weight: 600 !important;
-  color: #64748b !important;
-  margin-bottom: 8px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  font-size: var(--text-kpi-lbl, clamp(0.625rem, 0.6rem + 0.12vw, 0.72rem));
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 8px;
+  min-width: 0;
 }
 
 .stat-footer {
-  font-size: 10.5px !important;
-  font-weight: 600 !important;
-  padding-top: 6px !important;
-  border-top: 1px solid #f1f5f9 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding-top: 6px;
+  border-top: 1px solid #f1f5f9;
 }
 
 /* ── HORIZONTAL STAT MINI CARDS ─────────────────────────────────── */
 .stat-mini-card {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  padding: 12px 14px !important;
-  min-height: 76px !important;
-  border-radius: 10px !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  text-align: left !important;
-  gap: 12px !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 12px 14px;
+  min-height: 4.75rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stat-mini-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
-  border-color: #cbd5e1 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
 }
 
 .stat-mini-card .icon-wrap {
-  width: 38px !important;
-  height: 38px !important;
-  border-radius: 8px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 16px !important;
-  flex-shrink: 0 !important;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 .stat-mini-lbl {
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  color: #64748b !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  margin-top: 1px !important;
+  font-size: var(--text-kpi-lbl, clamp(0.625rem, 0.6rem + 0.12vw, 0.6875rem));
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 1px;
+  min-width: 0;
 }
 
 .stat-mini-val {
-  font-size: 1.25rem !important;
-  font-weight: 800 !important;
-  white-space: nowrap !important;
-  line-height: 1.1 !important;
+  font-size: var(--text-kpi-val, clamp(1rem, 0.95rem + 0.8vw, 1.45rem));
+  font-weight: 800;
+  line-height: 1.1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .stat-mini-card .fs-11, 

@@ -92,6 +92,16 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./booking-management/booking-management.component').then(m => m.BookingManagementComponent) 
   },
   { 
+    path: 'unattributed-bookings', 
+    loadComponent: () => import('./unattributed-bookings/unattributed-bookings.component').then(m => m.AdminUnattributedBookingsComponent),
+    title: 'Unattributed Bookings Resolution' 
+  },
+  { 
+    path: 'leaderboards', 
+    loadComponent: () => import('./leaderboards/leaderboards.component').then(m => m.AdminLeaderboardsComponent),
+    title: 'Sales Leaderboards' 
+  },
+  { 
     path: 'booking-workflow', 
     loadComponent: () => import('./booking-workflow/booking-workflow.component').then(m => m.BookingWorkflowComponent) 
   },

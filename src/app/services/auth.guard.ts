@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, CanActivateChildFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 /**
  * Universal enrollment guard that ensures the user has completed their enrollment form.
@@ -18,6 +19,13 @@ export const enrollmentGuard: CanActivateFn = (_route, state) => {
   if (!isInvestor && !isUser) {
     const targetLogin = url.startsWith('/investor') ? '/investor/login' : '/login';
     return router.createUrlTree([targetLogin], { queryParams: { returnUrl: state.url } });
+  }
+
+  if (auth.isTeamMember()) {
+    if (url.startsWith('/associate') || url.startsWith('/customer') || url.startsWith('/user')) {
+      return router.createUrlTree(['/team-member/dashboard']);
+    }
+    return true;
   }
 
   const isCompleted = auth.isEnrollmentCompleted();
@@ -45,6 +53,9 @@ export const customerGuard: CanActivateFn = (_route, state) => {
   if (!auth.isUserLoggedIn()) {
     return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   }
+  if (auth.isTeamMember()) {
+    return router.createUrlTree(['/team-member/dashboard']);
+  }
   const url = state.url.toLowerCase();
   const isCompleted = auth.isEnrollmentCompleted();
 
@@ -66,6 +77,9 @@ export const associateGuard: CanActivateFn = (_route, state) => {
   const router = inject(Router);
   if (!auth.isUserLoggedIn()) {
     return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  }
+  if (auth.isTeamMember()) {
+    return router.createUrlTree(['/team-member/dashboard']);
   }
   if (!auth.isAssociate()) {
     const prefix = auth.getUserRolePrefix();
@@ -115,6 +129,9 @@ export const userGuard: CanActivateFn = (_route, state) => {
   if (!auth.isUserLoggedIn()) {
     return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   }
+  if (auth.isTeamMember()) {
+    return router.createUrlTree(['/team-member/dashboard']);
+  }
   const url = state.url.toLowerCase();
   const isCompleted = auth.isEnrollmentCompleted();
   const prefix = auth.getUserRolePrefix();
@@ -130,6 +147,19 @@ export const userGuard: CanActivateFn = (_route, state) => {
     return router.createUrlTree([`${prefix}/enrollment`]);
   }
   return auth.isApprovedUser() ? true : router.createUrlTree(['/login'], { queryParams: { unapproved: 'true' } });
+};
+
+export const teamMemberGuard: CanActivateFn = (_route, state) => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (!auth.isUserLoggedIn()) {
+    return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  }
+  if (!auth.isTeamMember()) {
+    const prefix = auth.getUserRolePrefix();
+    return router.createUrlTree([`${prefix}/dashboard`]);
+  }
+  return true;
 };
 
 export const adminGuard: CanActivateFn = (_route, state) => {

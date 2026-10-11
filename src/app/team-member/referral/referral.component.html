@@ -1,0 +1,43 @@
+<div class="referral-container">
+  <div class="page-header">
+    <h2><i class="fas fa-bullhorn text-success"></i> Customer Referral Tools</h2>
+    <p>Invite customers to register with your referral link. Bookings will automatically attribute to you!</p>
+  </div>
+
+  <div class="referral-card">
+    <!-- Code Box -->
+    <div class="code-display-box">
+      <label>Your Sponsor / Referral Code</label>
+      <div class="invite-code">{{ inviteCode || 'Loading...' }}</div>
+      <small class="text-muted d-block mt-2">Customers can enter this code during quick registration.</small>
+    </div>
+
+    <!-- Referral Link with Copy Button -->
+    <div class="link-copy-group">
+      <label>Direct Referral Registration Link</label>
+      <div class="input-with-button">
+        <input type="text" class="form-control" [value]="referralUrl" readonly #linkInput>
+        <button class="btn btn-outline-success px-4" (click)="copyLink(linkInput)">
+          <i [class]="copied ? 'fas fa-check text-success' : 'fas fa-copy'"></i>
+          <span class="ms-1">{{ copied ? 'Copied!' : 'Copy Link' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 1-Click WhatsApp Share -->
+    <a [href]="whatsappUrl" target="_blank" class="whatsapp-share-btn">
+      <i class="fab fa-whatsapp fa-lg"></i>
+      <span>Share Invitation on WhatsApp</span>
+    </a>
+  </div>
+
+  <!-- Attribution Guide -->
+  <div class="info-bullet-card">
+    <h5><i class="fas fa-lightbulb text-warning me-2"></i> How Customer Referral Works</h5>
+    <ul>
+      <li>When a new client signs up using your referral link, they are permanently linked to your profile as their <strong>attributing Team Member</strong>.</li>
+      <li>All plot reservations initiated by attributed customers will reflect in your <strong>Sales Pipeline</strong> and contribute towards your performance incentives.</li>
+      <li>You can also book plots on their behalf anytime via the <strong>Book a Plot</strong> screen.</li>
+    </ul>
+  </div>
+</div>

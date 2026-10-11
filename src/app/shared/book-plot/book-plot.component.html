@@ -1,0 +1,306 @@
+<div class="booking-container">
+  <!-- Booking Form Card -->
+  <div *ngIf="!bookingSuccess" class="booking-card">
+    <div class="booking-header">
+      <h2>
+        <i class="fas fa-layer-group text-success"></i>
+        Book a Plot
+      </h2>
+      <p>Select purchase attribution, choose your project site & plot, and reserve your unit.</p>
+    </div>
+
+    <!-- 1. Buyer Type Selection (Radio Cards) -->
+    <div *ngIf="isTeamMember || isAssociate" class="form-section">
+      <div class="section-label">
+        <i class="fas fa-user-tag"></i> 1. Purchase Attribution
+      </div>
+      <div class="radio-cards-grid">
+        <label class="radio-card" [class.active]="buyerType === 'SELF'" (click)="setBuyerType('SELF')">
+          <input type="radio" name="buyerType" [checked]="buyerType === 'SELF'">
+          <div class="radio-card-content">
+            <h4>Apne Liye (Self Purchase)</h4>
+            <p>Book this plot under your personal name as the buyer.</p>
+          </div>
+        </label>
+
+        <label class="radio-card" [class.active]="buyerType === 'ON_BEHALF'" (click)="setBuyerType('ON_BEHALF')">
+          <input type="radio" name="buyerType" [checked]="buyerType === 'ON_BEHALF'">
+          <div class="radio-card-content">
+            <h4>Customer Ke Liye (On Behalf)</h4>
+            <p>Book this plot on behalf of an attributed customer.</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- Customer Search Input (Shown when ON_BEHALF) -->
+      <div *ngIf="buyerType === 'ON_BEHALF'" class="customer-search-card">
+        <div class="section-label text-primary">
+          <i class="fas fa-search"></i> Select Registered Customer
+        </div>
+
+        <div *ngIf="!selectedCustomer" class="customer-search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Search by customer name, mobile no, or member ID..."
+            [(ngModel)]="customerSearchQuery"
+            (input)="onCustomerSearchInput()"
+          >
+
+          <!-- Dropdown Results -->
+          <div *ngIf="customerSearchResults.length > 0" class="customer-dropdown">
+            <div
+              *ngFor="let c of customerSearchResults"
+              class="customer-item"
+              (click)="selectCustomer(c)"
+            >
+              <div class="customer-item-info">
+                <strong>{{ c.full_name }}</strong>
+                <span>{{ c.member_id }} &bull; {{ c.mobile_no }}</span>
+              </div>
+              <span class="badge bg-light text-dark">Select</span>
+            </div>
+          </div>
+          <div *ngIf="searchingCustomers" class="p-2 text-muted small">
+            <i class="fas fa-spinner fa-spin me-1"></i> Searching customers...
+          </div>
+        </div>
+
+        <!-- Selected Customer Badge -->
+        <div *ngIf="selectedCustomer" class="selected-customer-badge">
+          <div>
+            <span class="text-success fw-bold me-2"><i class="fas fa-check-circle"></i> Selected Buyer:</span>
+            <strong>{{ selectedCustomer.full_name }}</strong>
+            <span class="text-muted ms-2">({{ selectedCustomer.member_id }} &bull; {{ selectedCustomer.mobile_no }})</span>
+          </div>
+          <button class="btn btn-sm btn-outline-danger" (click)="clearCustomer()">
+            <i class="fas fa-times me-1"></i> Change
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Project Site & Plot Selection -->
+    <div class="form-section mt-4">
+      <div class="section-label">
+        <i class="fas fa-map-marked-alt"></i> 2. Project Site & Unit
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Select Project Site <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="selectedSiteId" (change)="onSiteChange()">
+              <option [ngValue]="null" disabled>-- Choose Site --</option>
+              <option *ngFor="let s of sites" [ngValue]="s.site_id">
+                {{ s.site_name }} ({{ s.location }})
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Select Available Plot <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="selectedPlotId" (change)="onPlotChange()" [disabled]="!selectedSiteId || plotsLoading">
+              <option [ngValue]="null" disabled>
+                {{ plotsLoading ? 'Loading plots...' : '-- Choose Plot --' }}
+              </option>
+              <option *ngFor="let p of availablePlots" [ngValue]="p.plot_id">
+                Plot {{ p.plot_number }} &bull; {{ p.unit_type }} &bull; {{ p.area_gaj || p.area_sqft }} Gaj (₹{{ p.price || p.base_price | number }})
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plot Details Chip -->
+      <div *ngIf="selectedPlot" class="plot-info-chip">
+        <div class="plot-info-item">
+          <span>Plot Unit</span>
+          <strong>Plot {{ selectedPlot.plot_number }}</strong>
+        </div>
+        <div class="plot-info-item">
+          <span>Unit Type</span>
+          <strong>{{ selectedPlot.unit_type }}</strong>
+        </div>
+        <div class="plot-info-item">
+          <span>Area (Gaj)</span>
+          <strong>{{ selectedPlot.area_gaj || selectedPlot.plot_area || '-' }} Gaj</strong>
+        </div>
+        <div class="plot-info-item">
+          <span>Total Base Price</span>
+          <strong>₹{{ (selectedPlot.price || selectedPlot.base_price || 0) | number }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Payment Details & EMI Guard -->
+    <div class="form-section mt-4">
+      <div class="section-label">
+        <i class="fas fa-credit-card"></i> 3. Payment Mode & Booking Amount
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Payment Plan <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="paymentType">
+              <option value="FullPayment">Full Payment</option>
+              <option value="PartPayment">Partial / Advance Payment</option>
+              <option value="EMI" [disabled]="!allowEmiOnBehalf && (isTeamMember || isAssociate || buyerType === 'ON_BEHALF')">
+                EMI Installments {{ (!allowEmiOnBehalf && (isTeamMember || isAssociate || buyerType === 'ON_BEHALF')) ? '(Disabled for on-behalf bookings)' : '' }}
+              </option>
+            </select>
+
+            <!-- EMI Disabled Guard Notice -->
+            <div *ngIf="!allowEmiOnBehalf && (isTeamMember || isAssociate || buyerType === 'ON_BEHALF')" class="emi-guard-notice">
+              <i class="fas fa-shield-alt text-warning"></i>
+              <span><strong>EMI Restricted:</strong> On-behalf bookings must be Full or Partial payment. Installment (EMI) option on-behalf is disabled by company policy.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Advance Booking Amount (₹) <span class="text-danger">*</span></label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="advanceAmount"
+              min="10000"
+              placeholder="e.g. 50000"
+            >
+            <small class="text-muted">Minimum booking token advance is ₹10,000.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-1">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Payment Mode / Method <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="paymentMethod">
+              <option *ngFor="let m of allowedPaymentMethods" [value]="m">{{ m }}</option>
+            </select>
+            <small class="text-muted">Direct transfer to MMR company bank account or online gateway.</small>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Booking Notes / Transaction Ref (Optional)</label>
+            <input type="text" class="form-control" [(ngModel)]="notes" placeholder="e.g. UTR / UPI Ref #12345678, east-facing plot preference...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Strict Company Policy Alert (No Cash / No Cheque) -->
+      <div class="alert alert-warning py-2 px-3 mt-3 mb-0 fs-12 d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle text-warning me-2 fs-14"></i>
+        <div>
+          <strong>Company Policy:</strong> Client se cash/cheque accept nahi kiya jata. Payment sirf company ke authorized bank account (Bank Transfer / NEFT / RTGS / UPI / Payment Gateway) me hi jama hona anivarya hai.
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Review Summary Box -->
+    <div *ngIf="selectedPlot" class="review-summary-card">
+      <h4><i class="fas fa-clipboard-check text-success"></i> Attribution & Booking Preview</h4>
+      <div class="review-row">
+        <span class="label">Buyer Name:</span>
+        <span class="value">{{ buyerType === 'ON_BEHALF' && selectedCustomer ? selectedCustomer.full_name : currentUser?.full_name }} ({{ buyerType === 'ON_BEHALF' ? 'Customer' : 'Self Purchase' }})</span>
+      </div>
+      <div class="review-row">
+        <span class="label">Booked By:</span>
+        <span class="value">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</span>
+      </div>
+      <div class="review-row">
+        <span class="label">Attributed Seller:</span>
+        <span class="value">{{ currentUser?.full_name }}</span>
+      </div>
+      <div class="review-row">
+        <span class="label">Plot & Site:</span>
+        <span class="value">{{ getSelectedSiteName() }} &bull; Plot {{ selectedPlot?.plot_number }}</span>
+      </div>
+      <div class="review-row">
+        <span class="label">Advance Amount:</span>
+        <span class="value text-success">₹{{ (advanceAmount || 0) | number }}</span>
+      </div>
+
+      <!-- Associate Approval Banner -->
+      <div *ngIf="isTeamMember" class="approval-alert-banner tm">
+        <i class="fas fa-info-circle fa-lg"></i>
+        <div>
+          <strong>Associate Approval Required:</strong>
+          As a Team Member, this booking will be submitted with <code>Pending</code> Associate Approval. Your supervising Associate will review and approve this booking.
+        </div>
+      </div>
+      <div *ngIf="isAssociate" class="approval-alert-banner associate">
+        <i class="fas fa-check-circle fa-lg"></i>
+        <div>
+          <strong>Auto-Approved:</strong>
+          As an Associate, this booking will be automatically marked <code>Approved</code>.
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button
+      class="submit-btn"
+      (click)="submitBooking()"
+      [disabled]="isSubmitDisabled() || submitting"
+    >
+      <i *ngIf="submitting" class="fas fa-spinner fa-spin"></i>
+      <i *ngIf="!submitting" class="fas fa-check-circle"></i>
+      <span>{{ submitting ? 'Submitting Booking...' : 'Confirm & Submit Booking' }}</span>
+    </button>
+  </div>
+
+  <!-- Booking Success Confirmation Card -->
+  <div *ngIf="bookingSuccess" class="confirmation-success-card">
+    <div class="success-icon-wrap">
+      <i class="fas fa-check"></i>
+    </div>
+    <h3>Booking Successfully Created!</h3>
+    <p class="text-muted">The plot reservation has been registered in the MMR system.</p>
+
+    <div class="my-4 p-3 bg-light rounded text-start" style="max-width: 500px; margin: 0 auto;">
+      <div class="d-flex justify-content-between py-2 border-bottom">
+        <span class="text-muted">Booking Serial:</span>
+        <strong class="text-success fs-5">{{ confirmedBooking?.booking_serial }}</strong>
+      </div>
+      <div class="d-flex justify-content-between py-2 border-bottom">
+        <span class="text-muted">Buyer:</span>
+        <strong>{{ confirmedBooking?.buyer_name || (buyerType === 'ON_BEHALF' && selectedCustomer ? selectedCustomer.full_name : currentUser?.full_name) }}</strong>
+      </div>
+      <div class="d-flex justify-content-between py-2 border-bottom">
+        <span class="text-muted">Plot Unit:</span>
+        <strong>Plot {{ selectedPlot?.plot_number }}</strong>
+      </div>
+      <div class="d-flex justify-content-between py-2 border-bottom">
+        <span class="text-muted">Associate Approval:</span>
+        <span
+          class="status-badge"
+          [class.pending]="confirmedBooking?.associate_approval_status === 'Pending'"
+          [class.approved]="confirmedBooking?.associate_approval_status === 'Approved'"
+        >
+          {{ confirmedBooking?.associate_approval_status }}
+        </span>
+      </div>
+      <div class="d-flex justify-content-between py-2">
+        <span class="text-muted">Advance Paid:</span>
+        <strong>₹{{ (confirmedBooking?.advance_amount || advanceAmount) | number }}</strong>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3 justify-content-center">
+      <button class="btn btn-outline-success px-4 py-2" (click)="resetForm()">
+        <i class="fas fa-plus me-1"></i> Book Another Plot
+      </button>
+      <button class="btn btn-success px-4 py-2" (click)="navigateToMySales()">
+        <i class="fas fa-list me-1"></i> View My Sales
+      </button>
+    </div>
+  </div>
+</div>

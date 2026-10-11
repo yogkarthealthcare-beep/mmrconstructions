@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
 import { ApiService, BASE_URL } from '../../services/api.service';
+import { BookingAttributionApiService } from '../../services/booking-attribution-api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-booking-management',
@@ -172,7 +174,8 @@ export class BookingManagementComponent implements OnInit {
   constructor(
     private api: ApiService,
     private fb: FormBuilder,
-    private exportService: AdminExportService
+    private exportService: AdminExportService,
+    private attributionApi: BookingAttributionApiService
   ) {}
 
   ngOnInit() {
@@ -1051,6 +1054,85 @@ export class BookingManagementComponent implements OnInit {
         error: () => {}
       });
     }
+  }
+
+  // ==========================================
+  // PHASE 3: ASSOCIATE APPROVAL OVERRIDE
+  // ==========================================
+  overrideApproval(booking: any) {
+    if (!booking) return;
+    const currentStatus = booking.associate_approval_status || 'NotRequired';
+    const serial = booking.booking_serial || ('#' + booking.booking_id);
+    const customer = booking.customer_name || booking.full_name || 'Customer';
+    const bookedBy = booking.booked_by_name || ('User #' + booking.booked_by) || 'N/A';
+
+    Swal.fire({
+      title: 'Override Associate Approval',
+      html: `
+        <div style="text-align: left; font-size: 14px;">
+          <p class="mb-1"><strong>Booking:</strong> <span class="text-success">${serial}</span></p>
+          <p class="mb-1"><strong>Customer:</strong> ${customer}</p>
+          <p class="mb-1"><strong>Booked By:</strong> ${bookedBy}</p>
+          <p class="mb-3"><strong>Current Status:</strong> <span class="badge bg-secondary">${currentStatus}</span></p>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Select New Status:</label>
+            <select id="swal-override-status" class="form-select">
+              <option value="Approved" ${currentStatus === 'Approved' ? 'selected' : ''}>Approved</option>
+              <option value="Rejected" ${currentStatus === 'Rejected' ? 'selected' : ''}>Rejected</option>
+              <option value="NotRequired" ${currentStatus === 'NotRequired' ? 'selected' : ''}>NotRequired</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label fw-bold">Override Reason / Administrative Notes:</label>
+            <textarea id="swal-override-notes" class="form-control" rows="2" placeholder="e.g. Approved via executive directive..."></textarea>
+          </div>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#166534',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: '<i class="fas fa-check-double me-1"></i> Apply Override',
+      preConfirm: () => {
+        const statusElem = document.getElementById('swal-override-status') as HTMLSelectElement;
+        const notesElem = document.getElementById('swal-override-notes') as HTMLTextAreaElement;
+        return {
+          status: statusElem.value as 'Approved' | 'Rejected' | 'NotRequired',
+          notes: notesElem ? notesElem.value.trim() : ''
+        };
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        Swal.fire({
+          title: 'Updating...',
+          text: 'Applying approval override.',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        this.attributionApi.overrideBookingApproval(booking.booking_id, result.value).subscribe({
+          next: () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Override Applied',
+              text: 'Booking approval status has been updated successfully.',
+              confirmButtonColor: '#166534'
+            });
+            this.refreshAfterAction();
+          },
+          error: (err: any) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Override Failed',
+              text: err.message || 'Unable to override booking approval.',
+              confirmButtonColor: '#166534'
+            });
+          }
+        });
+      }
+    });
   }
 
   private showToast(message: string, type: 'success' | 'error' = 'success') {

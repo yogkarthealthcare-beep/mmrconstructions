@@ -174,36 +174,36 @@
       <table class="table align-middle custom-dash-table mb-0">
         <thead>
           <tr>
-            <th class="th-sno">#</th>
-            <th>User Profile</th>
-            <th>Contact &amp; Mobile</th>
-            <th>Type</th>
-            <th>Sponsor</th>
-            <th>Registered</th>
-            <th>Account Status</th>
-            <th>Enrollment / KYC</th>
-            <th class="text-end">Actions</th>
+            <th class="th-sno text-center">#</th>
+            <th class="col-user-profile">User Profile</th>
+            <th class="col-contact">Contact &amp; Mobile</th>
+            <th class="col-type">Type</th>
+            <th class="col-sponsor">Sponsor</th>
+            <th class="col-registered">Registered</th>
+            <th class="col-status text-center">Account Status</th>
+            <th class="col-kyc text-center">Enrollment / KYC</th>
+            <th class="col-actions text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let u of pagedUsers; let i = index">
-            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td>
-              <div class="d-flex align-items-center gap-2.5">
+            <td class="td-sno text-center">{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td class="col-user-profile">
+              <div class="d-flex align-items-center gap-2">
                 <div class="user-avatar-circle" [class.bg-blue]="getUserType(u)==='Customer'" [class.bg-gold]="getUserType(u)==='Associate'" [class.bg-info]="getUserType(u)==='Team Member'" [class.bg-emerald]="getUserType(u)==='Investor'">
                   {{ getInitials(u.full_name) }}
                 </div>
-                <div>
-                  <div class="fw-700 text-dark fs-12">{{ u.full_name }}</div>
-                  <div class="fs-10 text-muted"><i class="fas fa-envelope me-1 text-gold"></i>{{ u.email || 'No email' }}</div>
+                <div class="min-w-0">
+                  <div class="fw-700 text-dark fs-12 user-name text-truncate" [title]="u.full_name">{{ u.full_name }}</div>
+                  <div class="fs-10 text-muted user-email text-truncate" [title]="u.email || ''"><i class="fas fa-envelope me-1 text-gold"></i>{{ u.email || 'No email' }}</div>
                 </div>
               </div>
             </td>
-            <td>
+            <td class="col-contact">
               <div class="fw-700 text-dark fs-12"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ u.mobile_no }}</div>
               <div class="fs-10 text-muted" *ngIf="u.member_id"><span class="badge bg-light text-dark border">ID: {{ u.member_id }}</span></div>
             </td>
-            <td>
+            <td class="col-type">
               <span class="badge" 
                 [class.bg-primary-subtle]="getUserType(u)==='Customer'" 
                 [class.text-primary]="getUserType(u)==='Customer'" 
@@ -216,16 +216,16 @@
                 <i [class]="getUserType(u)==='Customer' ? 'fas fa-user me-1' : (getUserType(u)==='Investor' ? 'fas fa-piggy-bank me-1' : (getUserType(u)==='Team Member' ? 'fas fa-id-badge me-1' : 'fas fa-user-tie me-1'))"></i>{{ getUserType(u) }}
               </span>
             </td>
-            <td>
-              <div class="fs-12 fw-600 text-dark" *ngIf="u.sponsor_name">{{ u.sponsor_name }}</div>
+            <td class="col-sponsor">
+              <div class="fs-12 fw-600 text-dark text-truncate" *ngIf="u.sponsor_name" [title]="u.sponsor_name">{{ u.sponsor_name }}</div>
               <div class="fs-10 text-muted" *ngIf="u.sponsor_code">Code: {{ u.sponsor_code }}</div>
               <span class="fs-11 text-muted" *ngIf="!u.sponsor_name && !u.sponsor_code">Direct / None</span>
             </td>
-            <td>
+            <td class="col-registered">
               <div class="fs-11 text-dark fw-600">{{ u.registered_at | date:'dd MMM yyyy' }}</div>
               <div class="fs-10 text-muted">{{ u.registered_at | date:'hh:mm a' }}</div>
             </td>
-            <td>
+            <td class="col-status text-center">
               <span class="sbadge"
                 [class.sbadge-yellow]="u.account_status==='Pending'"
                 [class.sbadge-blue]="u.account_status==='InfoRequested'"
@@ -234,20 +234,24 @@
                 {{ u.account_status || 'Pending' }}
               </span>
             </td>
-            <td>
+            <td class="col-kyc text-center">
               <span class="sbadge"
                 [class.sbadge-green]="u.enrollment_status==='Completed' || u.enrollment_status==='Submitted'"
                 [class.sbadge-yellow]="u.enrollment_status==='Pending' || !u.enrollment_status">
                 <i class="fas fa-file-alt me-1"></i>{{ u.enrollment_status || 'Pending' }}
               </span>
             </td>
-            <td class="text-end">
-              <div class="dropdown d-inline-block position-relative">
+            <td class="col-actions text-end">
+              <div class="dropdown d-inline-block position-relative" [class.dropup]="isDropup(i)">
                 <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === u.user_id ? null : u.user_id)">
                   <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
                 </button>
 
-                <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 175px; border-radius: 10px;" *ngIf="activeRowId === u.user_id" (click)="$event.stopPropagation()">
+                <div class="dropdown-menu dropdown-menu-end show action-dropdown-menu"
+                     [class.dropdown-menu-up]="isDropup(i)"
+                     [class.dropdown-menu-down]="!isDropup(i)"
+                     *ngIf="activeRowId === u.user_id" 
+                     (click)="$event.stopPropagation()">
                   <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="openDetailModal(u); activeRowId = null">
                     <i class="fas fa-eye text-primary me-2 width-16"></i> View KYC Profile
                   </button>

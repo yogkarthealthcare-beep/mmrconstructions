@@ -1,0 +1,108 @@
+<div class="sales-container">
+  <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <h2><i class="fas fa-receipt text-success"></i> My Sales & Pipeline</h2>
+      <p>View all self purchases and customer bookings attributed to you.</p>
+    </div>
+    <a routerLink="/team-member/book-plot" class="btn btn-success">
+      <i class="fas fa-plus-circle me-1"></i> New Booking
+    </a>
+  </div>
+
+  <!-- Filters & Search Bar -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <span class="text-muted small fw-bold">Sale Type:</span>
+      <button class="filter-btn" [class.active]="saleTypeFilter === 'ALL'" (click)="setSaleType('ALL')">All</button>
+      <button class="filter-btn" [class.active]="saleTypeFilter === 'CUSTOMER_SALE'" (click)="setSaleType('CUSTOMER_SALE')">Customer Sales</button>
+      <button class="filter-btn" [class.active]="saleTypeFilter === 'SELF_PURCHASE'" (click)="setSaleType('SELF_PURCHASE')">Self Purchases</button>
+    </div>
+
+    <div class="filter-group">
+      <span class="text-muted small fw-bold">Approval:</span>
+      <button class="filter-btn" [class.active]="approvalFilter === 'ALL'" (click)="setApproval('ALL')">All</button>
+      <button class="filter-btn" [class.active]="approvalFilter === 'Pending'" (click)="setApproval('Pending')">Pending</button>
+      <button class="filter-btn" [class.active]="approvalFilter === 'Approved'" (click)="setApproval('Approved')">Approved</button>
+      <button class="filter-btn" [class.active]="approvalFilter === 'Rejected'" (click)="setApproval('Rejected')">Rejected</button>
+    </div>
+
+    <div class="search-input-wrap">
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        placeholder="Search serial, buyer, plot..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearchChange()"
+      >
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <i class="fas fa-spinner fa-spin fa-2x text-success"></i>
+    <p class="mt-2 text-muted">Loading your sales records...</p>
+  </div>
+
+  <!-- Sales Table Card -->
+  <div *ngIf="!loading" class="sales-card">
+    <div *ngIf="filteredSales.length === 0" class="text-center py-5 text-muted">
+      <i class="fas fa-inbox fa-3x mb-3 text-secondary"></i>
+      <h5>No matching sales records</h5>
+      <p class="small">Try adjusting your filters or search terms.</p>
+    </div>
+
+    <div *ngIf="filteredSales.length > 0" class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Booking Serial</th>
+            <th>Buyer Name & Mobile</th>
+            <th>Plot / Project Site</th>
+            <th>Area (Gaj)</th>
+            <th>Advance Paid</th>
+            <th>Sale Type</th>
+            <th>Associate Approval</th>
+            <th>Booking Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filteredSales">
+            <td><strong class="text-success">{{ s.booking_serial }}</strong></td>
+            <td>
+              <div>{{ s.customer_name }}</div>
+              <small class="text-muted">{{ s.customer_mobile }}</small>
+            </td>
+            <td>
+              <div>Plot {{ s.plot_number }}</div>
+              <small class="text-muted">{{ s.site_name }}</small>
+            </td>
+            <td><strong>{{ s.plot_size_gaj || '-' }}</strong></td>
+            <td><strong>₹{{ (s.advance_amount || 0) | number }}</strong></td>
+            <td>
+              <span [class]="s.sale_type === 'SELF_PURCHASE' ? 'badge-self' : 'badge-cust'">
+                {{ s.sale_type === 'SELF_PURCHASE' ? 'Self Purchase' : 'Customer Sale' }}
+              </span>
+            </td>
+            <td>
+              <span
+                [class.badge-pending]="s.associate_approval_status === 'Pending'"
+                [class.badge-approved]="s.associate_approval_status === 'Approved'"
+                [class.badge-rejected]="s.associate_approval_status === 'Rejected'"
+              >
+                {{ s.associate_approval_status }}
+              </span>
+              <span *ngIf="s.is_overdue" class="overdue-pill" title="Pending for more than 48 hours">
+                <i class="fas fa-exclamation-triangle"></i> Overdue
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">{{ s.booking_status }}</span>
+            </td>
+            <td><small class="text-muted">{{ s.created_at | date:'dd MMM yyyy' }}</small></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

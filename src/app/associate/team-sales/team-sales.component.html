@@ -1,0 +1,91 @@
+<div class="team-sales-container">
+  <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <h2><i class="fas fa-sitemap text-success"></i> Team Sales Performance</h2>
+      <p>Detailed sales breakdown across all Team Members under your network.</p>
+    </div>
+    <button class="btn btn-outline-success" (click)="exportCsv()" [disabled]="exporting">
+      <i *ngIf="exporting" class="fas fa-spinner fa-spin me-1"></i>
+      <i *ngIf="!exporting" class="fas fa-file-csv me-1"></i>
+      <span>{{ exporting ? 'Exporting...' : 'Export Team Sales CSV' }}</span>
+    </button>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="filter-bar">
+    <div class="search-input-wrap">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Search team member, booking, or customer..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearchChange()"
+      >
+    </div>
+    <div class="text-muted small">
+      Total Records: <strong>{{ filteredSales.length }}</strong>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <i class="fas fa-spinner fa-spin fa-2x text-success"></i>
+    <p class="mt-2 text-muted">Loading team sales records...</p>
+  </div>
+
+  <!-- Table Card -->
+  <div *ngIf="!loading" class="team-sales-card">
+    <div *ngIf="filteredSales.length === 0" class="text-center py-5 text-muted">
+      <i class="fas fa-chart-pie fa-3x mb-3 text-secondary"></i>
+      <h5>No team sales records found</h5>
+      <p class="small">Sales booked by your attributed team members will appear here.</p>
+    </div>
+
+    <div *ngIf="filteredSales.length > 0" class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Booking Serial</th>
+            <th>Team Member</th>
+            <th>Buyer / Customer</th>
+            <th>Plot / Site</th>
+            <th>Area (Gaj)</th>
+            <th>Advance Paid</th>
+            <th>Approval Status</th>
+            <th>Booking Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filteredSales">
+            <td><strong class="text-success">{{ s.booking_serial }}</strong></td>
+            <td>
+              <div class="fw-bold">{{ s.team_member_name || s.sold_by_name || 'Team Member' }}</div>
+              <small class="text-muted">{{ s.team_member_id || s.sold_by_member_id }}</small>
+            </td>
+            <td>
+              <div>{{ s.customer_name }}</div>
+              <small class="text-muted">{{ s.customer_mobile }}</small>
+            </td>
+            <td>
+              <div>Plot {{ s.plot_number }}</div>
+              <small class="text-muted">{{ s.site_name }}</small>
+            </td>
+            <td><strong>{{ s.plot_size_gaj || '-' }}</strong></td>
+            <td><strong>₹{{ (s.advance_amount || 0) | number }}</strong></td>
+            <td>
+              <span
+                [class.badge-approved]="s.associate_approval_status === 'Approved'"
+                [class.badge-pending]="s.associate_approval_status === 'Pending'"
+                [class.badge-rejected]="s.associate_approval_status === 'Rejected'"
+              >
+                {{ s.associate_approval_status }}
+              </span>
+            </td>
+            <td><small class="text-muted">{{ s.created_at | date:'dd MMM yyyy' }}</small></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

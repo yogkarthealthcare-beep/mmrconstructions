@@ -55,6 +55,21 @@ export const ASSOCIATE_ROUTES: Routes = [
     loadComponent: () => import('../user/my-team/my-team.component').then(m => m.MyTeamComponent) 
   },
   { 
+    path: 'approvals', 
+    loadComponent: () => import('./approvals/approvals.component').then(m => m.AssociateApprovalsComponent),
+    title: 'Team Booking Approvals'
+  },
+  { 
+    path: 'team-sales', 
+    loadComponent: () => import('./team-sales/team-sales.component').then(m => m.AssociateTeamSalesComponent),
+    title: 'Team Sales Performance'
+  },
+  { 
+    path: 'book-plot', 
+    loadComponent: () => import('../shared/book-plot/book-plot.component').then(m => m.BookPlotComponent),
+    title: 'Book a Plot'
+  },
+  { 
     path: 'network-tree', 
     loadComponent: () => import('../shared/mlm-tree/mlm-tree.component').then(m => m.MlmTreeComponent), 
     data: { audience: 'associate' }, 

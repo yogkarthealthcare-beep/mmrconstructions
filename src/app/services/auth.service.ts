@@ -440,7 +440,22 @@ export class AuthService {
     const user = this.getUser();
     if (!user) return false;
     const type = String(user.user_type || user.role || '').toLowerCase().trim();
-    return type === 'team member' || type.includes('team member') || type === 'teammember';
+    const acting = String(user.acting_panel || '').toLowerCase().trim();
+    return type === 'team member' || type === 'teammember' || acting === 'team-member';
+  }
+
+  getHomeRouteForRole(role: string, actingPanel?: string): string {
+    const panel = (actingPanel || '').toLowerCase().trim();
+    if (panel === 'team-member') return '/team-member/dashboard';
+
+    const normalized = (role || '').toLowerCase().trim();
+    if (normalized === 'admin' || normalized === 'superadmin') return '/admin/dashboard';
+    if (normalized === 'team member' || normalized === 'teammember') {
+      return '/team-member/dashboard';
+    }
+    if (normalized === 'associate') return '/associate/dashboard';
+    if (normalized === 'investor') return '/investor/dashboard';
+    return '/customer/dashboard';
   }
 
   isAssociate(): boolean {
@@ -602,10 +617,10 @@ export class AuthService {
 
   getUserRolePrefix(): string {
     if (this.isInvestorLoggedIn()) return '/investor';
+    if (this.isTeamMember()) return '/team-member';
+    if (this.isAssociate()) return '/associate';
     const user = this.getUser();
     const type = String(user?.user_type || user?.role || '').toLowerCase();
-    if (type.includes('team member') || type === 'team member' || type === 'teammember') return '/team-member';
-    if (type.includes('associate')) return '/associate';
     if (type.includes('investor')) return '/investor';
     return '/customer';
   }

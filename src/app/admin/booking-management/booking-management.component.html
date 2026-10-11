@@ -176,6 +176,8 @@
               <th>Plot &amp; Site</th>
               <th>Advance Paid</th>
               <th>Remaining</th>
+              <th>Attribution</th>
+              <th>Associate Approval</th>
               <th>Status</th>
               <th class="text-end">Action</th>
             </tr>
@@ -245,6 +247,35 @@
                 </div>
               </td>
 
+              <!-- Attribution Details -->
+              <td>
+                <div class="attribution-cell" style="font-size: 12px; line-height: 1.4;">
+                  <div><span class="text-muted">Booked:</span> <strong class="text-dark">{{ b.booked_by_name || ('User #' + b.booked_by) || '-' }}</strong></div>
+                  <div *ngIf="b.sold_by_name || b.sold_by"><span class="text-muted">Sold By:</span> {{ b.sold_by_name || ('User #' + b.sold_by) }}</div>
+                  <div *ngIf="b.associate_name || b.associate"><span class="text-muted">Associate:</span> <span class="badge bg-light text-dark border px-1">{{ b.associate_name || ('User #' + b.associate) }}</span></div>
+                </div>
+              </td>
+
+              <!-- Associate Approval Status & Overdue Badge -->
+              <td>
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                  <span class="badge" [ngClass]="{
+                    'bg-success-subtle text-success border border-success': b.associate_approval_status === 'Approved',
+                    'bg-warning-subtle text-warning-emphasis border border-warning': b.associate_approval_status === 'Pending',
+                    'bg-danger-subtle text-danger border border-danger': b.associate_approval_status === 'Rejected',
+                    'bg-light text-muted border': !b.associate_approval_status || b.associate_approval_status === 'NotRequired'
+                  }">
+                    {{ b.associate_approval_status || 'Not Required' }}
+                  </span>
+                  <span *ngIf="b.is_overdue && b.associate_approval_status === 'Pending'" class="badge bg-danger text-white" title="Approval Overdue (> 48h)">
+                    <i class="fas fa-clock"></i> Overdue
+                  </span>
+                  <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-1 ms-1" (click)="overrideApproval(b); $event.stopPropagation()" title="Admin Override Approval">
+                    <i class="fas fa-shield-alt"></i>
+                  </button>
+                </div>
+              </td>
+
               <!-- Status -->
               <td>
                 <span class="erp-badge" [ngClass]="{
@@ -266,7 +297,7 @@
             </tr>
 
             <tr *ngIf="!pagedBookings.length">
-              <td colspan="8" class="empty-table-state">
+              <td colspan="10" class="empty-table-state">
                 <div class="empty-state-wrap">
                   <div class="empty-icon"><i class="fas fa-inbox"></i></div>
                   <h5>No Booking Applications Found</h5>
@@ -407,6 +438,43 @@
               <div class="info-cell">
                 <span class="info-cell-label">Plot Status</span>
                 <strong class="info-cell-val badge-status-text">{{ selected.plot?.plot_status || 'Booked' }}</strong>
+              </div>
+            </div>
+
+            <div class="detail-card-section mt-3">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h6 class="section-title mb-0"><i class="fas fa-network-wired me-1.5 text-gold"></i> Attribution &amp; Hierarchy</h6>
+                <button type="button" class="btn btn-outline-warning btn-xs" (click)="overrideApproval(selected)">
+                  <i class="fas fa-shield-alt me-1"></i> Override Approval
+                </button>
+              </div>
+              <div class="detail-info-grid">
+                <div class="info-cell">
+                  <span class="info-cell-label">Booked By (Creator)</span>
+                  <strong class="info-cell-val">{{ selected.booked_by_name || ('User #' + selected.booked_by) || '-' }}</strong>
+                </div>
+                <div class="info-cell">
+                  <span class="info-cell-label">Sold By (Team Member)</span>
+                  <strong class="info-cell-val">{{ selected.sold_by_name || ('User #' + selected.sold_by) || '-' }}</strong>
+                </div>
+                <div class="info-cell">
+                  <span class="info-cell-label">Direct Associate</span>
+                  <strong class="info-cell-val">{{ selected.associate_name || ('User #' + selected.associate) || '-' }}</strong>
+                </div>
+                <div class="info-cell">
+                  <span class="info-cell-label">Associate Approval</span>
+                  <div>
+                    <span class="badge" [ngClass]="{
+                      'bg-success': selected.associate_approval_status === 'Approved',
+                      'bg-warning text-dark': selected.associate_approval_status === 'Pending',
+                      'bg-danger': selected.associate_approval_status === 'Rejected',
+                      'bg-secondary': !selected.associate_approval_status || selected.associate_approval_status === 'NotRequired'
+                    }">
+                      {{ selected.associate_approval_status || 'Not Required' }}
+                    </span>
+                    <span *ngIf="selected.is_overdue && selected.associate_approval_status === 'Pending'" class="badge bg-danger ms-1">Overdue</span>
+                  </div>
+                </div>
               </div>
             </div>
 

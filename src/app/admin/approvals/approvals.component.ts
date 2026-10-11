@@ -70,6 +70,10 @@ export class ApprovalsComponent implements OnInit {
     this.page = 1;
   }
 
+  isDropup(index: number): boolean {
+    return this.pagedUsers.length <= 4 || index >= this.pagedUsers.length - 2;
+  }
+
   setMode(mode: 'pending' | 'all') {
     this.viewMode = mode;
     this.filter = 'all';

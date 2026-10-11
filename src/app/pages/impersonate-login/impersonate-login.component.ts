@@ -57,15 +57,27 @@ export class ImpersonateLoginComponent implements OnInit {
         }
       }
 
-      if (!parsedUser) {
-        // Fallback minimal user object if not passed in query
-        parsedUser = {
-          user_type: userType || 'Customer',
-          account_status: 'Active'
-        };
+      if (!parsedUser || !parsedUser.user_id) {
+        this.loading = false;
+        this.errorMessage = 'Login as failed: Impersonation payload missing valid user account profile.';
+        return;
       }
 
-      if (userType === 'Investor' || parsedUser.user_type === 'Investor') {
+      const rawType = String(userType || parsedUser?.user_type || '').toLowerCase();
+      const isTmActing = (redirectUrl && redirectUrl.includes('team-member')) || rawType.includes('team member') || rawType === 'teammember' || parsedUser?.acting_panel === 'team-member';
+
+      if (isTmActing) {
+        if (parsedUser && !parsedUser.acting_panel && rawType !== 'team member' && rawType !== 'teammember') {
+          parsedUser.acting_panel = 'team-member';
+        }
+        this.authService.setUserSession({
+          token,
+          refresh_token: refreshToken,
+          user: parsedUser
+        });
+        const target = redirectUrl || '/team-member/dashboard';
+        this.router.navigateByUrl(target);
+      } else if (userType === 'Investor' || parsedUser.user_type === 'Investor') {
         this.authService.setInvestorSession({
           token,
           refresh_token: refreshToken,
@@ -79,7 +91,8 @@ export class ImpersonateLoginComponent implements OnInit {
           refresh_token: refreshToken,
           user: parsedUser
         });
-        const target = redirectUrl || (parsedUser.user_type === 'Associate' ? '/associate/dashboard' : '/user/dashboard');
+        const defaultTarget = this.authService.getHomeRouteForRole(parsedUser.user_type, parsedUser.acting_panel);
+        const target = redirectUrl || defaultTarget;
         this.router.navigateByUrl(target);
       }
     });

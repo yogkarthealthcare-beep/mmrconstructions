@@ -1,0 +1,338 @@
+<div class="unattributed-page">
+  <!-- Page Header -->
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="page-title"><i class="fas fa-user-tag text-success me-2"></i> Unattributed Customers</h2>
+      <p class="text-muted mb-0">Review customers registered without an active Associate/Team Member sponsor and assign attribution with audit justification.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-success" (click)="openBulkModal()">
+        <i class="fas fa-file-csv me-1"></i> Bulk CSV Resolution
+      </button>
+      <button class="btn btn-light border" (click)="loadCustomers()">
+        <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Summary Badges -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="kpi-card total">
+        <div class="kpi-icon"><i class="fas fa-users"></i></div>
+        <div>
+          <div class="kpi-label">Total Unattributed</div>
+          <div class="kpi-value">{{ stats.total_unattributed | number }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="kpi-card warning">
+        <div class="kpi-icon"><i class="fas fa-question-circle"></i></div>
+        <div>
+          <div class="kpi-label">Legacy Ambiguous</div>
+          <div class="kpi-value text-warning">{{ stats.legacy_ambiguous_count | number }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="kpi-card info">
+        <div class="kpi-icon"><i class="fas fa-building"></i></div>
+        <div>
+          <div class="kpi-label">Company Direct</div>
+          <div class="kpi-value text-primary">{{ stats.direct_signup_count | number }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs & Filter Bar -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <!-- Tabs -->
+        <ul class="nav nav-pills custom-tabs mb-0">
+          <li class="nav-item">
+            <button class="nav-link" [class.active]="activeTab === 'ALL'" (click)="setTab('ALL')">
+              All Unattributed ({{ stats.total_unattributed }})
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" [class.active]="activeTab === 'LEGACY_AMBIGUOUS'" (click)="setTab('LEGACY_AMBIGUOUS')">
+              Legacy Ambiguous ({{ stats.legacy_ambiguous_count }})
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" [class.active]="activeTab === 'COMPANY_DIRECT'" (click)="setTab('COMPANY_DIRECT')">
+              Company Direct ({{ stats.direct_signup_count }})
+            </button>
+          </li>
+        </ul>
+
+        <!-- Search Input -->
+        <div class="input-group search-box" style="max-width: 320px;">
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="onSearch()"
+            placeholder="Search customer, member ID, mobile..."
+          >
+          <button class="btn btn-outline-secondary" type="button" (click)="onSearch()">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customers Table Card -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <div *ngIf="loading" class="text-center py-5">
+        <i class="fas fa-spinner fa-spin fa-2x text-success"></i>
+        <p class="mt-2 text-muted">Loading unattributed customers...</p>
+      </div>
+
+      <div *ngIf="!loading && customers.length === 0" class="text-center py-5">
+        <i class="fas fa-user-check fa-3x text-muted opacity-50 mb-3"></i>
+        <h5>No Unattributed Customers Found</h5>
+        <p class="text-muted">All registered customers in this view have an attributed sponsor or match your filter.</p>
+      </div>
+
+      <div *ngIf="!loading && customers.length > 0" class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Customer</th>
+              <th>Member ID</th>
+              <th>Mobile</th>
+              <th>Registered At</th>
+              <th>Classification</th>
+              <th>Total Bookings</th>
+              <th>Total Sales (₹)</th>
+              <th class="text-end pe-4">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of customers">
+              <td>
+                <div class="fw-bold text-dark">{{ c.full_name }}</div>
+                <small class="text-muted">UID #{{ c.user_id }}</small>
+              </td>
+              <td><code>{{ c.member_id }}</code></td>
+              <td>{{ c.mobile_no || '-' }}</td>
+              <td>{{ c.registered_at | date:'dd MMM yyyy, hh:mm a' }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="c.unattributed_type === 'LEGACY_AMBIGUOUS' ? 'bg-warning text-dark' : 'bg-primary'"
+                >
+                  {{ c.unattributed_type === 'LEGACY_AMBIGUOUS' ? 'Legacy Ambiguous' : 'Company Direct' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">{{ c.total_bookings_count || 0 }} Bookings</span>
+              </td>
+              <td>
+                <strong>₹{{ (c.total_sales_volume || 0) | number }}</strong>
+              </td>
+              <td class="text-end pe-4">
+                <button class="btn btn-sm btn-outline-success" (click)="openAssignModal(c)">
+                  <i class="fas fa-user-plus me-1"></i> Assign Referrer
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Single Referrer Assignment Modal -->
+  <div class="modal fade show d-block" *ngIf="selectedCustomer" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i> Assign Referrer</h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeAssignModal()"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="alert alert-light border mb-3">
+            <div class="fw-bold">{{ selectedCustomer.full_name }}</div>
+            <div class="small text-muted">Member ID: {{ selectedCustomer.member_id }} &bull; Current: {{ selectedCustomer.unattributed_type }}</div>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label fw-bold">Search Associate or Team Member <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="assignReferrerSearch"
+                (input)="onReferrerSearch()"
+                placeholder="Type name or member ID (e.g. MMR-ASC-0001)..."
+              >
+              <span class="input-group-text" *ngIf="searchingReferrers">
+                <i class="fas fa-spinner fa-spin text-success"></i>
+              </span>
+            </div>
+
+            <!-- Search Dropdown Results -->
+            <ul class="list-group mt-1 shadow-sm" *ngIf="assignReferrerResults.length > 0">
+              <li
+                *ngFor="let r of assignReferrerResults"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                style="cursor: pointer;"
+                (click)="selectReferrer(r)"
+              >
+                <div>
+                  <strong>{{ r.full_name }}</strong>
+                  <div class="small text-muted">{{ r.user_type }} &bull; {{ r.member_id }}</div>
+                </div>
+                <span class="badge bg-success">Select</span>
+              </li>
+            </ul>
+          </div>
+
+          <div *ngIf="selectedReferrer" class="alert alert-success py-2 px-3 mb-3">
+            <i class="fas fa-check-circle me-1"></i> Selected: <strong>{{ selectedReferrer.full_name }}</strong> ({{ selectedReferrer.member_id }} - {{ selectedReferrer.user_type }})
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label fw-bold">Audit Reason / Justification <span class="text-danger">*</span></label>
+            <textarea
+              class="form-control"
+              rows="3"
+              [(ngModel)]="assignReason"
+              placeholder="Mandatory explanation for audit compliance (e.g., Customer enrolled by Associate Rajesh via offline seminar)..."
+            ></textarea>
+            <small class="text-muted">Reason is mandatory and permanently logged into the system audit trail.</small>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" (click)="closeAssignModal()">Cancel</button>
+          <button
+            type="button"
+            class="btn btn-success"
+            (click)="confirmAssignReferrer()"
+            [disabled]="submitting || !selectedReferrer || !assignReason.trim()"
+          >
+            <i class="fas fa-check me-1" *ngIf="!submitting"></i>
+            <i class="fas fa-spinner fa-spin me-1" *ngIf="submitting"></i>
+            Assign Referrer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk CSV Resolution Modal with Dry-Run Preview -->
+  <div class="modal fade show d-block" *ngIf="showBulkModal" style="background: rgba(0,0,0,0.6);">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title"><i class="fas fa-file-csv me-2 text-warning"></i> Bulk Referral Resolution via CSV</h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeBulkModal()"></button>
+        </div>
+        <div class="modal-body p-4">
+          <!-- Step 1: Upload & Instructions -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">1. Upload CSV File</label>
+              <input type="file" class="form-control" accept=".csv" (change)="onCsvFileChange($event)">
+              <small class="text-muted">Columns: <code>customer_member_id, referrer_member_id, reason_note</code></small>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">2. Mandatory Audit Reason</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="bulkReason"
+                placeholder="e.g. Migration resolution batch approved by management..."
+              >
+            </div>
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="bulkOverrideCheck" [(ngModel)]="bulkOverride">
+            <label class="form-check-label text-muted" for="bulkOverrideCheck">
+              Allow override for customers who already have an attributed referrer
+            </label>
+          </div>
+
+          <!-- Actions: Dry Run -->
+          <div class="d-flex gap-2 mb-3">
+            <button
+              class="btn btn-primary"
+              (click)="runDryRunPreview()"
+              [disabled]="bulkExecuting || !bulkParsedRows.length || !bulkReason.trim()"
+            >
+              <i class="fas fa-play me-1" *ngIf="!bulkExecuting"></i>
+              <i class="fas fa-spinner fa-spin me-1" *ngIf="bulkExecuting"></i>
+              Run Dry-Run Preview ({{ bulkParsedRows.length }} rows)
+            </button>
+          </div>
+
+          <!-- Dry-Run Results Preview Table -->
+          <div *ngIf="bulkDryRunResults" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="fw-bold mb-0">
+                Dry-Run Preview:
+                <span class="text-success ms-2">{{ bulkDryRunResults.success_count || 0 }} Valid</span> &bull;
+                <span class="text-danger ms-2">{{ bulkDryRunResults.error_count || 0 }} Errors</span>
+              </h6>
+              <button class="btn btn-sm btn-outline-secondary" (click)="downloadDryRunResultsCsv()">
+                <i class="fas fa-download me-1"></i> Download Preview CSV
+              </button>
+            </div>
+
+            <div class="table-responsive border rounded" style="max-height: 280px;">
+              <table class="table table-sm table-striped mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Customer Member ID</th>
+                    <th>Referrer Member ID</th>
+                    <th>Status</th>
+                    <th>Message / Error Code</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let err of bulkDryRunResults.errors; let i = index" class="table-danger">
+                    <td>{{ i + 1 }}</td>
+                    <td><code>{{ err.customer_member_id || '-' }}</code></td>
+                    <td><code>{{ err.referrer_member_id || '-' }}</code></td>
+                    <td><span class="badge bg-danger">ERROR</span></td>
+                    <td class="text-danger fw-bold">{{ err.error }} ({{ err.error_code }})</td>
+                  </tr>
+                  <tr *ngFor="let res of bulkDryRunResults.results; let i = index" class="table-success">
+                    <td>{{ i + 1 }}</td>
+                    <td><code>{{ res.customer_member_id }}</code></td>
+                    <td><code>{{ res.referrer_member_id }}</code></td>
+                    <td><span class="badge bg-success">VALID</span></td>
+                    <td class="text-success">{{ res.reason }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" (click)="closeBulkModal()">Close</button>
+          <button
+            type="button"
+            class="btn btn-success"
+            (click)="executeRealBulkResolution()"
+            [disabled]="bulkExecuting || !bulkDryRunResults || bulkDryRunResults.success_count === 0"
+          >
+            <i class="fas fa-check-double me-1" *ngIf="!bulkExecuting"></i>
+            <i class="fas fa-spinner fa-spin me-1" *ngIf="bulkExecuting"></i>
+            Apply &amp; Confirm Real Resolution ({{ bulkDryRunResults?.success_count || 0 }})
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

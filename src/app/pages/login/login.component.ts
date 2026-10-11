@@ -99,23 +99,13 @@ export class LoginComponent implements OnInit {
             this.auth.setUserSession(res.data || res);
           }
 
-          let targetDashboard = '/customer/dashboard';
-          let targetEnrollment = '/customer/enrollment';
-
-          if (userType.includes('team member') || userType === 'team member') {
-            targetDashboard = '/team-member/dashboard';
-            targetEnrollment = '/team-member/dashboard';
-          } else if (userType.includes('associate')) {
-            targetDashboard = '/associate/dashboard';
+          let targetDashboard = this.auth.getHomeRouteForRole(userType);
+          let targetEnrollment = targetDashboard;
+          if (userType.includes('associate')) {
             targetEnrollment = '/associate/enrollment';
           } else if (userType.includes('investor')) {
-            targetDashboard = '/investor/dashboard';
             targetEnrollment = '/investor/enrollment';
-          } else if (userType.includes('admin')) {
-            targetDashboard = '/admin/dashboard';
-            targetEnrollment = '/admin/dashboard';
-          } else {
-            targetDashboard = '/customer/dashboard';
+          } else if (!userType.includes('team member') && !userType.includes('admin')) {
             targetEnrollment = '/customer/enrollment';
           }
 

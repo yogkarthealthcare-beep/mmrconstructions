@@ -1,0 +1,98 @@
+<div class="leaderboards-container">
+  <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <h2><i class="fas fa-trophy text-warning"></i> Sales Leaderboards</h2>
+      <p>Performance rankings and volume leaderboards for Associates and Team Members.</p>
+    </div>
+    <button class="btn btn-outline-success" (click)="exportCsv()" [disabled]="exporting">
+      <i *ngIf="exporting" class="fas fa-spinner fa-spin me-1"></i>
+      <i *ngIf="!exporting" class="fas fa-file-csv me-1"></i>
+      <span>{{ exporting ? 'Exporting...' : 'Export Leaderboard CSV' }}</span>
+    </button>
+  </div>
+
+  <!-- Controls Bar: Category Switcher & Period Selector -->
+  <div class="controls-bar">
+    <div class="tab-switcher">
+      <button class="tab-pill" [class.active]="activeType === 'team-members'" (click)="setType('team-members')">
+        <i class="fas fa-id-badge"></i>
+        <span>Team Members</span>
+      </button>
+      <button class="tab-pill" [class.active]="activeType === 'associates'" (click)="setType('associates')">
+        <i class="fas fa-user-tie"></i>
+        <span>Associates</span>
+      </button>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <label class="text-muted small fw-bold mb-0">Period:</label>
+      <select class="form-select form-select-sm" style="width: 140px;" [(ngModel)]="activePeriod" (change)="loadLeaderboard()">
+        <option value="all">All Time</option>
+        <option value="month">This Month</option>
+        <option value="quarter">This Quarter</option>
+        <option value="year">This Year</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <i class="fas fa-spinner fa-spin fa-2x text-success"></i>
+    <p class="mt-2 text-muted">Calculating leaderboard rankings...</p>
+  </div>
+
+  <!-- Leaderboard Table Card -->
+  <div *ngIf="!loading" class="leaderboard-card">
+    <div *ngIf="entries.length === 0" class="text-center py-5 text-muted">
+      <i class="fas fa-medal fa-3x mb-3 text-secondary"></i>
+      <h5>No leaderboard entries found</h5>
+      <p class="small">Sales recorded in this period will appear in rankings.</p>
+    </div>
+
+    <div *ngIf="entries.length > 0" class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 70px;">Rank</th>
+            <th>Member Details</th>
+            <th>Member ID</th>
+            <th>Mobile</th>
+            <th>Total Gaj Sold</th>
+            <th>Plots Sold</th>
+            <th class="text-end">Total Revenue / Volume</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of entries; let idx = index">
+            <td>
+              <span
+                class="rank-pill"
+                [class.rank-1]="(e.rank || idx + 1) === 1"
+                [class.rank-2]="(e.rank || idx + 1) === 2"
+                [class.rank-3]="(e.rank || idx + 1) === 3"
+                [class.rank-other]="(e.rank || idx + 1) > 3"
+              >
+                {{ e.rank || idx + 1 }}
+              </span>
+            </td>
+            <td>
+              <div class="fw-bold text-dark">{{ e.full_name }}</div>
+            </td>
+            <td><code class="text-success">{{ e.member_id }}</code></td>
+            <td>{{ e.mobile_no || '-' }}</td>
+            <td>
+              <strong class="text-dark">{{ (e.total_gaj_sold || 0) | number }}</strong>
+              <small class="text-muted ms-1">Gaj</small>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">{{ e.plots_sold_count || 0 }} Units</span>
+            </td>
+            <td class="text-end">
+              <strong class="text-success">₹{{ (e.total_sales_value || 0) | number }}</strong>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -654,5 +654,13 @@ export class ApiService {
   adminResolveMissingPayment(id: number | string, data: any) { return this.patch(`/api/admin/missing-payments/${id}/resolve`, data, true); }
   adminGetReconciliationDashboard() { return this.get('/api/admin/reconciliation/dashboard', {}, true); }
   adminRunPaymentMigration() { return this.post('/api/admin/reconciliation/run-migration', {}, true); }
+
+  // Leads & Auth Helpers
+  createBookPlotLead(data: any): Observable<any> {
+    return this.post('/api/book-plot/leads', data);
+  }
+  changePassword(data: any): Observable<any> {
+    return this.post('/api/auth/change-password', data);
+  }
 }
 

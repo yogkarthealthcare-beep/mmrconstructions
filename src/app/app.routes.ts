@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './shared/guards/admin.guard';
-import { enrollmentGuard, customerGuard, associateGuard, investorGuard, userGuard } from './services/auth.guard';
+import { enrollmentGuard, customerGuard, associateGuard, investorGuard, userGuard, teamMemberGuard } from './services/auth.guard';
 
 export const routes: Routes = [
   // Public Pages (Lazy Loaded)
@@ -228,9 +228,9 @@ export const routes: Routes = [
   {
     path: 'team-member',
     loadComponent: () => import('./user/layout/layout.component').then(m => m.UserLayoutComponent),
-    canActivate: [userGuard],
+    canActivate: [teamMemberGuard],
     canActivateChild: [enrollmentGuard],
-    loadChildren: () => import('./user/user.routes').then(m => m.USER_ROUTES)
+    loadChildren: () => import('./team-member/team-member.routes').then(m => m.TEAM_MEMBER_ROUTES)
   },
 
   // Feature Tree: Investor (Lazy Loaded Layout & Routes)

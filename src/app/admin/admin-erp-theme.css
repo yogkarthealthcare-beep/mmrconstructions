@@ -96,11 +96,14 @@
 .panel-shell .stat-mini-card,
 .panel-shell .kpi-card,
 .panel-shell .stats-card {
+  container-type: inline-size;
+  container-name: admin-kpi;
+  width: 100%;
   border-radius: 12px !important;
   padding: 12px 14px !important;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
   border: 1px solid #e2e8f0 !important;
-  min-height: 86px !important;
+  min-height: 5.375rem !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
@@ -120,24 +123,43 @@
 .panel-shell .stat-mini-val,
 .panel-shell .kpi-value,
 .panel-shell .stat-val {
-  font-size: 1.45rem !important;
+  font-family: var(--ff-erp-sans, 'Inter', system-ui, sans-serif) !important;
+  font-size: clamp(1rem, 0.95rem + 0.8vw, 1.45rem);
+  font-size: clamp(1rem, 7cqi + 0.35rem, 1.45rem);
   font-weight: 800 !important;
   color: #0f172a !important;
   line-height: 1.15 !important;
   margin: 3px 0 5px 0 !important;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
   letter-spacing: -0.02em !important;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .panel-shell .stat-mini-lbl,
 .panel-shell .kpi-label,
 .panel-shell .stat-label {
-  font-size: 10.5px !important;
+  font-size: clamp(0.625rem, 0.6rem + 0.12vw, 0.6875rem);
+  font-size: clamp(0.625rem, 3.5cqi + 0.2rem, 0.6875rem);
   color: #64748b !important;
   font-weight: 700 !important;
   line-height: 1.2 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.35px !important;
+  min-width: 0;
+}
+
+@container admin-kpi (max-width: 180px) {
+  .panel-shell .stat-mini-val,
+  .panel-shell .kpi-value,
+  .panel-shell .stat-val {
+    font-size: clamp(0.95rem, 8cqi, 1.15rem);
+  }
+  .panel-shell .stat-mini-lbl,
+  .panel-shell .kpi-label,
+  .panel-shell .stat-label {
+    font-size: clamp(0.55rem, 4cqi, 0.65rem);
+  }
 }
 
 .panel-shell .stat-mini-card .icon-wrap,

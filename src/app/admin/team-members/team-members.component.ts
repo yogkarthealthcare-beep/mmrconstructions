@@ -423,19 +423,17 @@ export class AdminTeamMembersComponent implements OnInit {
         this.actionLoading = false;
         if (res.success && res.data?.token) {
           const { token, refresh_token, user, redirect_url } = res.data;
-          const userPayload = user || {
-            id: targetUserId,
-            user_id: targetUserId,
-            full_name: m.full_name,
-            mobile_no: m.mobile_no,
-            user_type: 'Team Member',
-            account_status: m.status || 'Active'
-          };
-          const url = `/auth/impersonate-login?token=${encodeURIComponent(token)}&refresh_token=${encodeURIComponent(refresh_token || token)}&user=${encodeURIComponent(JSON.stringify(userPayload))}&type=Team%20Member&redirectUrl=${encodeURIComponent(redirect_url || '/user/dashboard')}`;
+          if (!user || !user.user_id) {
+            this.showToast('Login as failed: Server response did not return a valid user profile.');
+            return;
+          }
+          const targetRedirect = redirect_url || '/team-member/dashboard';
+          const actingType = user.acting_panel === 'team-member' ? 'Team Member' : (user.user_type || 'Team Member');
+          const url = `/auth/impersonate-login?token=${encodeURIComponent(token)}&refresh_token=${encodeURIComponent(refresh_token || token)}&user=${encodeURIComponent(JSON.stringify(user))}&type=${encodeURIComponent(actingType)}&redirectUrl=${encodeURIComponent(targetRedirect)}`;
           this.showToast(`Opening session for ${m.full_name}...`);
           window.open(url, '_blank');
         } else {
-          this.showToast(res.message || 'Impersonation failed');
+          this.showToast(res.message || 'Login as failed');
         }
       },
       error: (e: any) => {

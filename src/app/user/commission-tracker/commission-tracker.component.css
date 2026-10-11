@@ -30,17 +30,38 @@
   pointer-events: none;
 }
 
+.summary-item {
+  container-type: inline-size;
+  container-name: comm-stat;
+  width: 100%;
+}
+
 .summary-val {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.65rem;
+  font-family: var(--ff-erp-sans, inherit);
+  font-size: clamp(1.05rem, 0.95rem + 0.9vw, 1.55rem);
+  font-size: clamp(1.05rem, 7cqi + 0.35rem, 1.55rem);
   font-weight: 700;
   line-height: 1.2;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .summary-lbl {
-  font-size: 12px;
+  font-size: clamp(0.65rem, 0.68rem + 0.1vw, 0.75rem);
+  font-size: clamp(0.65rem, 3.5cqi + 0.2rem, 0.75rem);
   color: rgba(255, 255, 255, .7);
   margin-top: 4px;
+  min-width: 0;
+}
+
+@container comm-stat (max-width: 170px) {
+  .summary-val {
+    font-size: clamp(0.95rem, 8cqi, 1.15rem);
+  }
+  .summary-lbl {
+    font-size: 0.65rem;
+  }
 }
 
 .text-gold { color: #c9a84c !important; }
