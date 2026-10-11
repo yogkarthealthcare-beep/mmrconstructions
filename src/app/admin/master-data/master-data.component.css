@@ -426,8 +426,8 @@
   right: 0;
   background: inherit;
   z-index: 5;
-  width: 90px;
-  min-width: 90px;
+  width: 115px;
+  min-width: 115px;
   box-shadow: -3px 0 6px rgba(0, 0, 0, 0.03);
 }
 
@@ -441,9 +441,68 @@
 }
 
 .btn-action {
-  padding: 3px 8px !important;
+  padding: 3px 7px !important;
   font-size: 11px !important;
 }
+
+/* Active Editing Row Highlight & In-Table Expand Details */
+.master-row.row-being-edited {
+  background-color: #ecfdf5 !important;
+}
+
+.master-row.row-being-edited td {
+  color: #065f46 !important;
+  font-weight: 600;
+}
+
+.master-row.row-expanded {
+  background-color: #f1f5f9;
+}
+
+.expanded-detail-tr {
+  background-color: #f8fafc;
+}
+
+.inline-row-details-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  margin: 8px 14px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.inline-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.detail-cell-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.detail-cell-pk {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.detail-col-name {
+  font-size: 10px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.detail-col-val {
+  font-size: 12px;
+  color: #0f172a;
+  word-break: break-all;
+  margin-top: 2px;
+}
+
 
 /* Pill Badges */
 .pill-badge {
@@ -502,27 +561,44 @@
   color: #ffffff;
 }
 
-/* ── 7. MODALS ───────────────────────────────────────────────────────────── */
+/* ── 7. MODALS (STRICT ISOLATION & HIGH Z-INDEX) ─────────────────────────── */
 .modal-backdrop-custom {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 1050;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 99998 !important;
 }
 
 .modal-dialog-custom {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 750px;
-  z-index: 1055;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 90% !important;
+  max-width: 750px !important;
+  z-index: 99999 !important;
 }
+
+/* While any modal is active, completely lock down background table to eliminate bleed-through */
+.table-dimmed-behind {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.table-dimmed-behind tr,
+.table-dimmed-behind tr:focus-within,
+.table-dimmed-behind td,
+.table-dimmed-behind td:focus-within,
+.table-dimmed-behind th,
+.table-dimmed-behind .col-actions {
+  z-index: 1 !important;
+  position: static !important;
+}
+
 
 .modal-sm-custom {
   max-width: 440px !important;

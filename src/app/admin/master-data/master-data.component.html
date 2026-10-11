@@ -168,7 +168,7 @@
   </div>
 
   <!-- ── 4. DATA EXPLORER & TOOLBAR ────────────────────────────────────── -->
-  <div class="data-explorer-card shadow-sm">
+  <div class="data-explorer-card shadow-sm" [class.table-dimmed-behind]="isEditModalOpen || isDeleteModalOpen">
     
     <!-- Explorer Toolbar -->
     <div class="explorer-toolbar">
@@ -233,7 +233,6 @@
         <button 
           type="button" 
           class="btn btn-sm btn-outline-secondary refresh-btn" 
-          title="Refresh Data" 
           (click)="loadTableData(selectedTable, currentPage)">
           <i class="fas fa-sync-alt" [class.fa-spin]="loadingData"></i>
         </button>
@@ -285,46 +284,90 @@
           </tr>
 
           <!-- Data Rows -->
-          <tr *ngFor="let row of records; let idx = index" class="master-row">
-            <td class="col-seq text-muted fs-11">
-              {{ (currentPage - 1) * pageSize + idx + 1 }}
-            </td>
+          <ng-container *ngFor="let row of records; let idx = index">
+            <tr 
+              class="master-row"
+              [class.row-being-edited]="editingRow && editingRow[primaryKey] === row[primaryKey]"
+              [class.row-expanded]="expandedRowId === row[primaryKey]">
+              <td class="col-seq text-muted fs-11">
+                {{ (currentPage - 1) * pageSize + idx + 1 }}
+              </td>
 
-            <td *ngFor="let col of columns" class="col-cell" [class.col-pk-cell]="col.isPk">
-              <!-- Pill Badge for roles/statuses -->
-              <span 
-                *ngIf="isPill(col.name) && row[col.name]" 
-                class="badge pill-badge" 
-                [ngClass]="getPillClass(row[col.name])">
-                {{ row[col.name] }}
-              </span>
+              <td *ngFor="let col of columns" class="col-cell" [class.col-pk-cell]="col.isPk">
+                <!-- Pill Badge for roles/statuses -->
+                <span 
+                  *ngIf="isPill(col.name) && row[col.name]" 
+                  class="badge pill-badge" 
+                  [ngClass]="getPillClass(row[col.name])">
+                  {{ row[col.name] }}
+                </span>
 
-              <!-- Standard Value -->
-              <span *ngIf="!isPill(col.name)" [title]="row[col.name] || ''">
-                {{ formatCell(row, col) }}
-              </span>
-            </td>
+                <!-- Standard Value (No OS-level native title tooltip) -->
+                <span *ngIf="!isPill(col.name)">
+                  {{ formatCell(row, col) }}
+                </span>
+              </td>
 
-            <!-- Action Buttons: Modify & Delete -->
-            <td class="col-actions text-end">
-              <div class="btn-group btn-group-sm">
-                <button 
-                  type="button" 
-                  class="btn btn-outline-primary btn-action" 
-                  title="Modify / Edit Row" 
-                  (click)="openEditModal(row)">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button 
-                  type="button" 
-                  class="btn btn-outline-danger btn-action" 
-                  title="Permanently Delete Row" 
-                  (click)="confirmDelete(row)">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
+              <!-- Action Buttons: Inline Expand, Modify & Delete -->
+              <td class="col-actions text-end">
+                <div class="btn-group btn-group-sm">
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-secondary btn-action" 
+                    [class.active]="expandedRowId === row[primaryKey]"
+                    (click)="toggleRowExpand(row)">
+                    <i class="fas" [class.fa-chevron-down]="expandedRowId !== row[primaryKey]" [class.fa-chevron-up]="expandedRowId === row[primaryKey]"></i>
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-primary btn-action" 
+                    (click)="openEditModal(row)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-danger btn-action" 
+                    (click)="confirmDelete(row)">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- In-Table Expanded Detail Row (Read & Inspect within Table) -->
+            <tr *ngIf="expandedRowId === row[primaryKey]" class="expanded-detail-tr animate-fade">
+              <td [attr.colspan]="columns.length + 2" class="p-0">
+                <div class="inline-row-details-card">
+                  <div class="d-flex align-items-center justify-content-between p-3 pb-2 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="badge bg-emerald font-mono fs-11">
+                        {{ primaryKey }}: {{ row[primaryKey] }}
+                      </span>
+                      <span class="fs-12 text-muted">
+                        In-Table Record Inspector • Table: <strong class="font-mono text-dark">{{ selectedTable }}</strong>
+                      </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 fs-11" (click)="openEditModal(row)">
+                        <i class="fas fa-edit me-1"></i> Modify Record
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 fs-11" (click)="expandedRowId = null">
+                        <i class="fas fa-times me-1"></i> Close
+                      </button>
+                    </div>
+                  </div>
+                  <div class="inline-details-grid p-3">
+                    <div *ngFor="let col of columns" class="detail-cell-box" [class.detail-cell-pk]="col.isPk">
+                      <div class="detail-col-name font-mono">{{ col.name }}</div>
+                      <div class="detail-col-val" [class.font-mono]="col.isPk || isPill(col.name)">
+                        {{ row[col.name] !== null && row[col.name] !== undefined && row[col.name] !== '' ? row[col.name] : '-' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
         </tbody>
       </table>
     </div>
@@ -440,7 +483,7 @@
                     class="form-control modern-input input-is-locked font-mono" 
                     [value]="editingRow[col.name]" 
                     disabled>
-                  <div class="lock-adornment" title="Primary key cannot be modified">
+                  <div class="lock-adornment">
                     <i class="fas fa-lock text-muted"></i>
                   </div>
                 </div>

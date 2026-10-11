@@ -2161,5 +2161,43 @@ table td .btn-action {
   z-index: 1000000 !important;
 }
 
+/* ==========================================================================
+   GLOBAL MODAL STACKING & BACKDROP ISOLATION FIX
+   Ensure all modals, custom dialogs, and backdrops cleanly layer above
+   all table rows, sticky action columns, and :focus-within elements (z-index 1060).
+   ========================================================================== */
+.modal-backdrop,
+.modal-backdrop-custom,
+.custom-modal-backdrop,
+.investor-modal-backdrop,
+.site-image-modal-backdrop {
+  z-index: 99998 !important;
+  position: fixed !important;
+  inset: 0 !important;
+}
+
+.modal,
+.modal-dialog,
+.modal-dialog-custom,
+.custom-modal-dialog,
+.modal-edit-dialog,
+.modal-dialog-large {
+  z-index: 99999 !important;
+}
+
+/* While a modal is open, ensure table rows cannot create an overlapping stacking layer */
+body.has-active-modal .panel-shell tr,
+body.has-active-modal .panel-shell td,
+body.has-active-modal .panel-shell th,
+body.has-active-modal .panel-shell .col-actions,
+body.modal-open .panel-shell tr,
+body.modal-open .panel-shell td,
+body.modal-open .panel-shell th,
+body.modal-open .panel-shell .col-actions {
+  z-index: 1 !important;
+  position: static !important;
+}
+
+
 
 

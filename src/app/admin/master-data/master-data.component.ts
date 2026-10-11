@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -44,7 +44,7 @@ export interface EntityConfig {
   templateUrl: './master-data.component.html',
   styleUrls: ['./master-data.component.css']
 })
-export class MasterDataComponent implements OnInit {
+export class MasterDataComponent implements OnInit, OnDestroy {
   // Loading & Error States
   loadingTables = false;
   loadingData = false;
@@ -52,6 +52,10 @@ export class MasterDataComponent implements OnInit {
   deletingRow = false;
   errorMessage = '';
   successMessage = '';
+
+  // In-table row inspection
+  expandedRowId: any = null;
+
 
   // ── 4 CORE ENTITIES + ALL TABLES CONFIGURATION ──────────────────
   entities: EntityConfig[] = [
@@ -337,8 +341,22 @@ export class MasterDataComponent implements OnInit {
     this.loadTableData(this.selectedTable, page);
   }
 
+  // ── IN-TABLE ROW INSPECTION (EXPAND ROW INSIDE TABLE) ───────────
+  toggleRowExpand(row: any): void {
+    const pkVal = row[this.primaryKey];
+    if (this.expandedRowId === pkVal) {
+      this.expandedRowId = null;
+    } else {
+      this.expandedRowId = pkVal;
+    }
+  }
+
   // ── 4. MODIFY / EDIT ROW ─────────────────────────────────────────
   openEditModal(row: any): void {
+    // Release focus immediately to eliminate table row :focus-within stacking bug
+    (document.activeElement as HTMLElement)?.blur();
+    document.body.classList.add('has-active-modal');
+
     this.editingRow = row;
     this.editFormData = {};
 
@@ -357,6 +375,7 @@ export class MasterDataComponent implements OnInit {
   }
 
   closeEditModal(): void {
+    document.body.classList.remove('has-active-modal');
     this.isEditModalOpen = false;
     this.editingRow = null;
     this.editFormData = {};
@@ -387,6 +406,10 @@ export class MasterDataComponent implements OnInit {
 
   // ── 5. DELETE ROW ────────────────────────────────────────────────
   confirmDelete(row: any): void {
+    // Release focus immediately
+    (document.activeElement as HTMLElement)?.blur();
+    document.body.classList.add('has-active-modal');
+
     const pkVal = row[this.primaryKey];
     this.deletingRecordId = pkVal;
     this.forceCascadeDelete = false;
@@ -396,6 +419,7 @@ export class MasterDataComponent implements OnInit {
   }
 
   closeDeleteModal(): void {
+    document.body.classList.remove('has-active-modal');
     this.isDeleteModalOpen = false;
     this.deletingRecordId = null;
     this.deletingRecordSummary = '';
@@ -419,6 +443,11 @@ export class MasterDataComponent implements OnInit {
       }
     });
   }
+
+  ngOnDestroy(): void {
+    document.body.classList.remove('has-active-modal');
+  }
+
 
   // Helper for UI notifications
   showToast(type: 'success' | 'danger', msg: string): void {
