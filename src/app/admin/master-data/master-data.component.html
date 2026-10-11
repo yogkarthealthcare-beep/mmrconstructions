@@ -1,0 +1,388 @@
+<div class="master-data-container">
+
+  <!-- ── 1. HERO HEADER BANNER ────────────────────────────────────────── -->
+  <div class="master-hero-banner">
+    <div class="hero-content">
+      <div class="hero-icon-wrapper">
+        <i class="fas fa-database hero-main-icon"></i>
+      </div>
+      <div>
+        <h1 class="hero-title">Master Data Management</h1>
+        <p class="hero-subtitle">
+          Direct operational database console — view, search, modify, and delete records across all platform tables.
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="hero-stats-group">
+      <div class="hero-stat-card">
+        <span class="stat-label">TOTAL TABLES</span>
+        <span class="stat-value">{{ tables.length }}</span>
+      </div>
+      <div class="hero-stat-card active-stat">
+        <span class="stat-label">ACTIVE TABLE</span>
+        <span class="stat-value text-emerald font-mono">{{ selectedTable }}</span>
+      </div>
+      <div class="hero-stat-card">
+        <span class="stat-label">RECORDS IN TABLE</span>
+        <span class="stat-value text-accent">{{ totalRecords | number }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. ALERT TOASTS ──────────────────────────────────────────────── -->
+  <div *ngIf="successMessage" class="alert-banner alert-success animate-fade">
+    <i class="fas fa-check-circle me-2"></i>
+    <span>{{ successMessage }}</span>
+    <button type="button" class="btn-close ms-auto" (click)="successMessage = ''"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert-banner alert-danger animate-fade">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <span>{{ errorMessage }}</span>
+    <button type="button" class="btn-close ms-auto" (click)="errorMessage = ''"></button>
+  </div>
+
+  <!-- ── 3. TABLES SELECTOR & CATEGORIES BAR ─────────────────────────── -->
+  <div class="table-selector-card">
+    <div class="selector-header">
+      <div class="category-tabs">
+        <button 
+          *ngFor="let cat of categories" 
+          type="button"
+          class="cat-tab-btn" 
+          [class.active]="selectedCategory === cat"
+          (click)="selectedCategory = cat">
+          {{ cat }}
+        </button>
+      </div>
+
+      <!-- Quick Search for Table Name -->
+      <div class="table-search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          class="form-control form-control-sm table-search-input" 
+          placeholder="Filter table names..." 
+          [(ngModel)]="tableFilterQuery">
+      </div>
+    </div>
+
+    <!-- Table Chips Grid -->
+    <div class="table-chips-scroll" *ngIf="!loadingTables">
+      <button 
+        *ngFor="let t of filteredTables" 
+        type="button" 
+        class="table-chip" 
+        [class.selected]="selectedTable === t.tableName"
+        (click)="selectTable(t.tableName)">
+        <i class="fas fa-table chip-icon"></i>
+        <span class="chip-name">{{ t.tableName }}</span>
+        <span class="chip-badge">{{ t.rowCount | number }}</span>
+      </button>
+
+      <div *ngIf="filteredTables.length === 0" class="no-tables-match">
+        No tables match "{{ tableFilterQuery }}" in category "{{ selectedCategory }}".
+      </div>
+    </div>
+
+    <div *ngIf="loadingTables" class="tables-loading-skeleton">
+      <div class="spinner-border spinner-border-sm text-emerald me-2" role="status"></div>
+      <span>Loading database catalog...</span>
+    </div>
+  </div>
+
+  <!-- ── 4. DATA EXPLORER & TOOLBAR ────────────────────────────────────── -->
+  <div class="data-explorer-card">
+    
+    <!-- Explorer Toolbar -->
+    <div class="explorer-toolbar">
+      <div class="toolbar-left">
+        <h3 class="active-table-title">
+          <i class="fas fa-layer-group text-emerald me-2"></i>
+          <span class="font-mono text-dark">{{ selectedTable }}</span>
+          <span class="badge bg-light text-muted border ms-2 font-mono fs-11">
+            PK: {{ primaryKey }}
+          </span>
+          <span class="badge bg-light text-muted border ms-1 font-mono fs-11">
+            {{ columns.length }} Columns
+          </span>
+        </h3>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- Search Input -->
+        <div class="input-group input-group-sm search-group">
+          <span class="input-group-text bg-white border-end-0">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+          <input 
+            type="text" 
+            class="form-control border-start-0 border-end-0" 
+            placeholder="Search in all columns..." 
+            [(ngModel)]="searchQuery" 
+            (keyup.enter)="onSearch()">
+          <button 
+            *ngIf="searchQuery" 
+            class="btn btn-outline-secondary border-start-0" 
+            type="button" 
+            (click)="clearSearch()">
+            <i class="fas fa-times"></i>
+          </button>
+          <button 
+            class="btn btn-emerald" 
+            type="button" 
+            (click)="onSearch()">
+            Search
+          </button>
+        </div>
+
+        <!-- Page Size Select -->
+        <div class="page-size-wrapper">
+          <label class="fs-12 text-muted me-1">Rows:</label>
+          <select 
+            class="form-select form-select-sm page-size-select" 
+            [ngModel]="pageSize" 
+            (ngModelChange)="changePageSize($event)">
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+        </div>
+
+        <!-- Refresh Button -->
+        <button 
+          type="button" 
+          class="btn btn-sm btn-outline-secondary refresh-btn" 
+          title="Refresh Data" 
+          (click)="loadTableData(selectedTable, currentPage)">
+          <i class="fas fa-sync-alt" [class.fa-spin]="loadingData"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── 5. RECORDS DATA TABLE ──────────────────────────────────────── -->
+    <div class="table-responsive master-grid-container">
+      <table class="table master-grid mb-0">
+        <thead>
+          <tr>
+            <th class="col-seq">#</th>
+            <th 
+              *ngFor="let col of columns" 
+              class="col-header" 
+              [class.col-pk]="col.isPk"
+              (click)="toggleSort(col.name)">
+              <div class="header-inner">
+                <span class="col-name">{{ col.name }}</span>
+                <span *ngIf="col.isPk" class="pk-tag">PK</span>
+                <i 
+                  *ngIf="sortBy === col.name" 
+                  class="fas sort-icon" 
+                  [class.fa-sort-up]="sortOrder === 'ASC'" 
+                  [class.fa-sort-down]="sortOrder === 'DESC'"></i>
+              </div>
+            </th>
+            <th class="col-actions text-end">ACTIONS</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <!-- Loading State -->
+          <tr *ngIf="loadingData">
+            <td [attr.colspan]="columns.length + 2" class="text-center py-5">
+              <div class="spinner-border text-emerald" role="status"></div>
+              <p class="mt-2 text-muted fs-13">Loading records from {{ selectedTable }}...</p>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="!loadingData && records.length === 0">
+            <td [attr.colspan]="columns.length + 2" class="text-center py-5 text-muted">
+              <i class="fas fa-folder-open fs-28 mb-2 d-block text-muted opacity-50"></i>
+              No records found in table <strong>{{ selectedTable }}</strong>.
+              <span *ngIf="searchQuery"> (Filtered by "{{ searchQuery }}")</span>
+            </td>
+          </tr>
+
+          <!-- Data Rows -->
+          <tr *ngFor="let row of records; let idx = index" class="master-row">
+            <td class="col-seq text-muted fs-11">
+              {{ (currentPage - 1) * pageSize + idx + 1 }}
+            </td>
+
+            <td *ngFor="let col of columns" class="col-cell" [class.col-pk-cell]="col.isPk">
+              <!-- Pill Badge for roles/statuses -->
+              <span 
+                *ngIf="isPill(col.name) && row[col.name]" 
+                class="badge pill-badge" 
+                [ngClass]="getPillClass(row[col.name])">
+                {{ row[col.name] }}
+              </span>
+
+              <!-- Standard Value -->
+              <span *ngIf="!isPill(col.name)" [title]="row[col.name] || ''">
+                {{ formatCell(row, col) }}
+              </span>
+            </td>
+
+            <!-- Action Buttons: Modify & Delete -->
+            <td class="col-actions text-end">
+              <div class="btn-group btn-group-sm">
+                <button 
+                  type="button" 
+                  class="btn btn-outline-primary btn-action" 
+                  title="Modify / Edit Row" 
+                  (click)="openEditModal(row)">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-outline-danger btn-action" 
+                  title="Permanently Delete Row" 
+                  (click)="confirmDelete(row)">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── 6. PAGINATION CONTROLS ─────────────────────────────────────── -->
+    <div class="explorer-footer" *ngIf="!loadingData && totalRecords > 0">
+      <div class="footer-info">
+        Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong> to 
+        <strong>{{ (currentPage * pageSize) > totalRecords ? totalRecords : (currentPage * pageSize) }}</strong> 
+        of <strong>{{ totalRecords | number }}</strong> total rows
+      </div>
+
+      <div class="pagination-wrapper">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <button class="page-link" type="button" (click)="goToPage(currentPage - 1)">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+          </li>
+
+          <li class="page-item active">
+            <span class="page-link">{{ currentPage }} / {{ totalPages }}</span>
+          </li>
+
+          <li class="page-item" [class.disabled]="currentPage >= totalPages">
+            <button class="page-link" type="button" (click)="goToPage(currentPage + 1)">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 7. EDIT / MODIFY MODAL ──────────────────────────────────────── -->
+  <div class="modal-backdrop-custom" *ngIf="isEditModalOpen" (click)="closeEditModal()"></div>
+  <div class="modal-dialog-custom animate-zoom" *ngIf="isEditModalOpen">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-emerald text-white py-3">
+        <h5 class="modal-title fs-15 fw-bold mb-0">
+          <i class="fas fa-edit me-2"></i>Modify Record #{{ editingRow ? editingRow[primaryKey] : '' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeEditModal()"></button>
+      </div>
+
+      <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+        <div class="alert alert-info py-2 px-3 fs-12 mb-3">
+          <i class="fas fa-info-circle me-1"></i>
+          Editing row in table <strong>{{ selectedTable }}</strong>. Primary key is locked for data integrity.
+        </div>
+
+        <form (ngSubmit)="saveEdit()">
+          <div class="row g-3">
+            <div *ngFor="let col of columns" class="col-md-6">
+              <label class="form-label fs-12 fw-bold text-dark mb-1">
+                {{ col.name }}
+                <span *ngIf="col.isPk" class="badge bg-secondary ms-1 fs-10">PRIMARY KEY</span>
+                <span class="text-muted fs-11 fw-normal ms-1">({{ col.type }})</span>
+              </label>
+
+              <!-- Read-only Primary Key -->
+              <input 
+                *ngIf="col.isPk" 
+                type="text" 
+                class="form-control form-control-sm bg-light text-muted font-mono" 
+                [value]="editingRow[col.name]" 
+                disabled>
+
+              <!-- Editable Columns -->
+              <input 
+                *ngIf="!col.isPk" 
+                type="text" 
+                class="form-control form-control-sm font-mono" 
+                [(ngModel)]="editFormData[col.name]" 
+                [name]="col.name">
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer bg-light py-2 px-4 border-top">
+        <button type="button" class="btn btn-sm btn-secondary" (click)="closeEditModal()">Cancel</button>
+        <button 
+          type="button" 
+          class="btn btn-sm btn-emerald px-3 fw-bold" 
+          [disabled]="savingRow" 
+          (click)="saveEdit()">
+          <i class="fas fa-save me-1" *ngIf="!savingRow"></i>
+          <span *ngIf="savingRow" class="spinner-border spinner-border-sm me-1"></span>
+          {{ savingRow ? 'Saving Changes...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 8. DELETE CONFIRMATION MODAL ────────────────────────────────── -->
+  <div class="modal-backdrop-custom" *ngIf="isDeleteModalOpen" (click)="closeDeleteModal()"></div>
+  <div class="modal-dialog-custom modal-sm-custom animate-zoom" *ngIf="isDeleteModalOpen">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-danger text-white py-3">
+        <h5 class="modal-title fs-15 fw-bold mb-0">
+          <i class="fas fa-trash-alt me-2"></i>Confirm Delete Record
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDeleteModal()"></button>
+      </div>
+
+      <div class="modal-body p-4 text-center">
+        <div class="delete-icon-wrapper mb-3">
+          <i class="fas fa-exclamation-triangle text-danger fs-36"></i>
+        </div>
+        <h5 class="fs-16 fw-bold text-dark mb-2">Are you sure?</h5>
+        <p class="fs-13 text-muted mb-3">
+          You are about to permanently delete this row from <strong>{{ selectedTable }}</strong>:
+        </p>
+        <div class="p-2 bg-light rounded font-mono fs-12 text-dark mb-3 border">
+          {{ deletingRecordSummary }}
+        </div>
+        <p class="fs-11 text-danger mb-0">
+          <i class="fas fa-info-circle me-1"></i>
+          This action cannot be undone. Associated foreign key records might prevent deletion if locked.
+        </p>
+      </div>
+
+      <div class="modal-footer bg-light py-2 px-4 border-top justify-content-between">
+        <button type="button" class="btn btn-sm btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button 
+          type="button" 
+          class="btn btn-sm btn-danger px-3 fw-bold" 
+          [disabled]="deletingRow" 
+          (click)="executeDelete()">
+          <i class="fas fa-trash-alt me-1" *ngIf="!deletingRow"></i>
+          <span *ngIf="deletingRow" class="spinner-border spinner-border-sm me-1"></span>
+          {{ deletingRow ? 'Deleting...' : 'Yes, Delete Record' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

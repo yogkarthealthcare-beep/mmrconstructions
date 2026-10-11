@@ -662,5 +662,19 @@ export class ApiService {
   changePassword(data: any): Observable<any> {
     return this.post('/api/auth/change-password', data);
   }
+
+  // ── MASTER DATA MANAGEMENT ────────────────────────
+  adminGetMasterTables(): Observable<any> {
+    return this.get('/api/admin/master-data/tables', {}, true);
+  }
+  adminGetMasterTableRecords(tableName: string, params: any = {}): Observable<any> {
+    return this.get(`/api/admin/master-data/tables/${tableName}`, params, true);
+  }
+  adminUpdateMasterRecord(tableName: string, id: any, data: any): Observable<any> {
+    return this.put(`/api/admin/master-data/tables/${tableName}/${id}`, { data }, true);
+  }
+  adminDeleteMasterRecord(tableName: string, id: any): Observable<any> {
+    return this.delete(`/api/admin/master-data/tables/${tableName}/${id}`, true);
+  }
 }
 

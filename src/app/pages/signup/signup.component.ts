@@ -391,7 +391,7 @@ export class SignupComponent implements OnInit {
 
     this.loading = true;
     const payload = {
-      user_type:           this.userType === 'Team Member' ? 'Associate' : this.userType,
+      user_type:           this.userType,
       full_name:           this.form.full_name.trim(),
       email:               this.form.email.toLowerCase().trim(),
       mobile_no:           this.form.mobile_no,

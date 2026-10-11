@@ -228,6 +228,11 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./change-password/change-password.component').then(m => m.ChangePasswordComponent) 
   },
   { 
+    path: 'master-data', 
+    loadComponent: () => import('./master-data/master-data.component').then(m => m.MasterDataComponent),
+    title: 'Master Data Management — MMR Admin'
+  },
+  { 
     path: 'test-otp', 
     loadComponent: () => import('./test-otp/test-otp.component').then(m => m.TestOtpComponent),
     title: 'Test OTP — MMR Admin'

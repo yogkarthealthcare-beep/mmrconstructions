@@ -148,6 +148,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-sliders-h', label: 'General Settings', route: '/admin/settings' },
         { icon: 'fas fa-shield-alt', label: 'Control', route: '/admin/control' },
         { icon: 'fas fa-key', label: 'Change Password', route: '/admin/change-password' },
+        { icon: 'fas fa-database', label: 'Master Data', route: '/admin/master-data', badge: 'MASTER' },
         { icon: 'fas fa-sms', label: 'Test OTP', route: '/admin/test-otp' },
       ]
     }
