@@ -359,63 +359,158 @@
     </div>
   </div>
 
-  <!-- ── 7. EDIT / MODIFY MODAL ──────────────────────────────────────── -->
+  <!-- ── 7. EDIT / MODIFY MODAL (PREMIUM REDESIGN) ──────────────────── -->
   <div class="modal-backdrop-custom" *ngIf="isEditModalOpen" (click)="closeEditModal()"></div>
-  <div class="modal-dialog-custom animate-zoom" *ngIf="isEditModalOpen">
-    <div class="modal-content shadow-lg border-0">
-      <div class="modal-header bg-emerald text-white py-3">
-        <h5 class="modal-title fs-15 fw-bold mb-0">
-          <i class="fas fa-edit me-2"></i>Modify Record #{{ editingRow ? editingRow[primaryKey] : '' }}
-        </h5>
-        <button type="button" class="btn-close btn-close-white" (click)="closeEditModal()"></button>
+  <div class="modal-dialog-custom modal-edit-dialog animate-zoom" *ngIf="isEditModalOpen">
+    <div class="modal-content shadow-2xl border-0 rounded-2xl overflow-hidden">
+      
+      <!-- Modal Header with Emerald Gradient & Glass Icon -->
+      <div class="modal-header-premium py-3 px-4">
+        <div class="d-flex align-items-center gap-3">
+          <div class="modal-title-icon-wrapper">
+            <i class="fas fa-pen-to-square"></i>
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <h5 class="modal-title-premium mb-0">
+                Modify Record #{{ editingRow ? editingRow[primaryKey] : '' }}
+              </h5>
+              <span class="badge badge-table-pill font-mono">
+                {{ selectedTable }}
+              </span>
+            </div>
+            <p class="modal-subtitle-premium mb-0">
+              Live database row editor • All non-primary attributes can be updated safely
+            </p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-premium" (click)="closeEditModal()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
 
-      <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
-        <div class="alert alert-info py-2 px-3 fs-12 mb-3">
-          <i class="fas fa-info-circle me-1"></i>
-          Editing row in table <strong>{{ selectedTable }}</strong>. Primary key is locked for data integrity.
+      <!-- Modal Body with Styled Scroll -->
+      <div class="modal-body-premium p-4">
+        <!-- Direct Live Editor Notice Banner -->
+        <div class="edit-modal-banner mb-4">
+          <div class="banner-icon-col">
+            <i class="fas fa-shield-halved text-emerald fs-20"></i>
+          </div>
+          <div class="banner-text-col">
+            <div class="banner-headline">Direct Database Transaction Editor</div>
+            <div class="banner-subtext">
+              Editing values in table <strong>{{ selectedTable }}</strong>. The primary key 
+              <span class="font-mono text-dark fw-bold">({{ primaryKey }})</span> is locked to preserve relational integrity.
+            </div>
+          </div>
         </div>
 
+        <!-- Dynamic Form Fields in Responsive Grid -->
         <form (ngSubmit)="saveEdit()">
           <div class="row g-3">
-            <div *ngFor="let col of columns" class="col-md-6">
-              <label class="form-label fs-12 fw-bold text-dark mb-1">
-                {{ col.name }}
-                <span *ngIf="col.isPk" class="badge bg-secondary ms-1 fs-10">PRIMARY KEY</span>
-                <span class="text-muted fs-11 fw-normal ms-1">({{ col.type }})</span>
-              </label>
+            <div 
+              *ngFor="let col of columns" 
+              class="col-md-6"
+              [class.col-md-12]="isTextArea(col.name, col.type)">
+              
+              <div class="form-field-card" [class.field-locked]="col.isPk">
+                <!-- Field Header Line: Human Title, Technical Name, and Type Pill -->
+                <div class="field-meta-header">
+                  <div class="field-title-box">
+                    <label class="field-label-text">
+                      {{ formatColLabel(col.name) }}
+                    </label>
+                    <span class="field-tech-tag font-mono">{{ col.name }}</span>
+                  </div>
 
-              <!-- Read-only Primary Key -->
-              <input 
-                *ngIf="col.isPk" 
-                type="text" 
-                class="form-control form-control-sm bg-light text-muted font-mono" 
-                [value]="editingRow[col.name]" 
-                disabled>
+                  <div class="field-pill-box">
+                    <span *ngIf="col.isPk" class="badge-pk-pill">
+                      <i class="fas fa-lock me-1"></i> LOCKED (PK)
+                    </span>
+                    <span *ngIf="!col.isPk" class="type-badge-pill" [ngClass]="getTypeBadgeClass(col.type)">
+                      {{ getSimplifiedType(col.type) }}
+                    </span>
+                  </div>
+                </div>
 
-              <!-- Editable Columns -->
-              <input 
-                *ngIf="!col.isPk" 
-                type="text" 
-                class="form-control form-control-sm font-mono" 
-                [(ngModel)]="editFormData[col.name]" 
-                [name]="col.name">
+                <!-- 1. Read-only Primary Key with Lock Adornment -->
+                <div *ngIf="col.isPk" class="input-lock-group">
+                  <input 
+                    type="text" 
+                    class="form-control modern-input input-is-locked font-mono" 
+                    [value]="editingRow[col.name]" 
+                    disabled>
+                  <div class="lock-adornment" title="Primary key cannot be modified">
+                    <i class="fas fa-lock text-muted"></i>
+                  </div>
+                </div>
+
+                <!-- 2. Dropdown Select for known role/status columns -->
+                <select 
+                  *ngIf="!col.isPk && isSelectField(col.name)" 
+                  class="form-select modern-input modern-select" 
+                  [(ngModel)]="editFormData[col.name]" 
+                  [name]="col.name">
+                  <option *ngFor="let opt of getSelectOptions(col.name)" [value]="opt">{{ opt }}</option>
+                </select>
+
+                <!-- 3. Textarea for long text / JSON / Address -->
+                <textarea 
+                  *ngIf="!col.isPk && !isSelectField(col.name) && isTextArea(col.name, col.type)" 
+                  class="form-control modern-input modern-textarea" 
+                  rows="2" 
+                  [(ngModel)]="editFormData[col.name]" 
+                  [name]="col.name"
+                  [placeholder]="'Enter ' + formatColLabel(col.name)"></textarea>
+
+                <!-- 4. Boolean toggle/select -->
+                <select 
+                  *ngIf="!col.isPk && !isSelectField(col.name) && !isTextArea(col.name, col.type) && col.type.toLowerCase().includes('bool')" 
+                  class="form-select modern-input modern-select" 
+                  [(ngModel)]="editFormData[col.name]" 
+                  [name]="col.name">
+                  <option [ngValue]="true">✓ True / Active</option>
+                  <option [ngValue]="false">✗ False / Inactive</option>
+                </select>
+
+                <!-- 5. Standard Text / Date / Number Input -->
+                <input 
+                  *ngIf="!col.isPk && !isSelectField(col.name) && !isTextArea(col.name, col.type) && !col.type.toLowerCase().includes('bool')" 
+                  type="text" 
+                  class="form-control modern-input" 
+                  [(ngModel)]="editFormData[col.name]" 
+                  [name]="col.name"
+                  [placeholder]="'Enter ' + formatColLabel(col.name)">
+              </div>
+
             </div>
           </div>
         </form>
       </div>
 
-      <div class="modal-footer bg-light py-2 px-4 border-top">
-        <button type="button" class="btn btn-sm btn-secondary" (click)="closeEditModal()">Cancel</button>
-        <button 
-          type="button" 
-          class="btn btn-sm btn-emerald px-3 fw-bold" 
-          [disabled]="savingRow" 
-          (click)="saveEdit()">
-          <i class="fas fa-save me-1" *ngIf="!savingRow"></i>
-          <span *ngIf="savingRow" class="spinner-border spinner-border-sm me-1"></span>
-          {{ savingRow ? 'Saving Changes...' : 'Save Changes' }}
-        </button>
+      <!-- Modal Footer with Status Indicator & Actions -->
+      <div class="modal-footer-premium py-3 px-4">
+        <div class="footer-status-indicator">
+          <span class="status-pulse-dot"></span>
+          <span class="text-muted fs-12">
+            Table: <strong class="font-mono text-dark">{{ selectedTable }}</strong> • Live DB Sync
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-modern-cancel" (click)="closeEditModal()">
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-modern-save" 
+            [disabled]="savingRow" 
+            (click)="saveEdit()">
+            <i class="fas fa-save me-1.5" *ngIf="!savingRow"></i>
+            <span *ngIf="savingRow" class="spinner-border spinner-border-sm me-1.5"></span>
+            {{ savingRow ? 'Saving Changes...' : 'Save Changes' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -423,38 +518,43 @@
   <!-- ── 8. DELETE CONFIRMATION MODAL ────────────────────────────────── -->
   <div class="modal-backdrop-custom" *ngIf="isDeleteModalOpen" (click)="closeDeleteModal()"></div>
   <div class="modal-dialog-custom modal-sm-custom animate-zoom" *ngIf="isDeleteModalOpen">
-    <div class="modal-content shadow-lg border-0">
-      <div class="modal-header bg-danger text-white py-3">
-        <h5 class="modal-title fs-15 fw-bold mb-0">
-          <i class="fas fa-trash-alt me-2"></i>Confirm Delete Record
-        </h5>
-        <button type="button" class="btn-close btn-close-white" (click)="closeDeleteModal()"></button>
+    <div class="modal-content shadow-2xl border-0 rounded-2xl overflow-hidden">
+      <div class="modal-header-danger py-3 px-4">
+        <div class="d-flex align-items-center gap-2">
+          <div class="danger-header-icon">
+            <i class="fas fa-trash-alt"></i>
+          </div>
+          <h5 class="modal-title-danger mb-0">Confirm Delete Record</h5>
+        </div>
+        <button type="button" class="btn-close-premium" (click)="closeDeleteModal()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
 
       <div class="modal-body p-4 text-center">
         <div class="delete-icon-wrapper mb-3">
-          <i class="fas fa-exclamation-triangle text-danger fs-36"></i>
+          <i class="fas fa-exclamation-triangle text-danger fs-32"></i>
         </div>
-        <h5 class="fs-16 fw-bold text-dark mb-2">Are you sure?</h5>
+        <h5 class="fs-16 fw-bold text-dark mb-2">Delete this record permanently?</h5>
         <p class="fs-13 text-muted mb-3">
-          You are about to permanently delete this row from <strong>{{ selectedTable }}</strong>:
+          You are about to remove this row from table <strong>{{ selectedTable }}</strong>:
         </p>
-        <div class="p-2 bg-light rounded font-mono fs-12 text-dark mb-3 border">
+        <div class="p-2.5 bg-light rounded-lg font-mono fs-12 text-dark mb-3 border">
           {{ deletingRecordSummary }}
         </div>
 
-        <!-- Optional Cascade / Force Delete Option -->
-        <div class="form-check text-start p-3 bg-light rounded border border-danger-subtle mb-3">
+        <!-- Cascade / Force Delete Option -->
+        <div class="form-check text-start p-3 bg-red-50 rounded-lg border border-danger-subtle mb-3">
           <input 
             class="form-check-input" 
             type="checkbox" 
             id="cascadeDeleteCheck" 
             [(ngModel)]="forceCascadeDelete">
           <label class="form-check-label fs-12 fw-bold text-danger cursor-pointer" for="cascadeDeleteCheck">
-            <i class="fas fa-link-slash me-1"></i> Force Cascade Delete (Clean related records in child tables)
+            <i class="fas fa-link-slash me-1"></i> Force Cascade Delete (Clean related child records)
           </label>
           <div class="fs-11 text-muted mt-1 ps-1">
-            Check this to automatically remove linked foreign key records if this user/row is referenced elsewhere.
+            Check this if normal delete is blocked by foreign key constraints (e.g. test registrations).
           </div>
         </div>
 
@@ -464,11 +564,11 @@
         </p>
       </div>
 
-      <div class="modal-footer bg-light py-2 px-4 border-top justify-content-between">
-        <button type="button" class="btn btn-sm btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+      <div class="modal-footer bg-light py-2.5 px-4 border-top justify-content-between">
+        <button type="button" class="btn btn-sm btn-outline-secondary px-3" (click)="closeDeleteModal()">Cancel</button>
         <button 
           type="button" 
-          class="btn btn-sm btn-danger px-3 fw-bold" 
+          class="btn btn-sm btn-danger px-3.5 fw-bold" 
           [disabled]="deletingRow" 
           (click)="executeDelete()">
           <i class="fas fa-trash-alt me-1" *ngIf="!deletingRow"></i>

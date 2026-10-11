@@ -453,4 +453,67 @@ export class MasterDataComponent implements OnInit {
     if (s.includes('reject') || s.includes('suspend') || s.includes('block') || s.includes('false')) return 'pill-danger';
     return 'pill-info';
   }
+
+  // ── FORM HELPERS FOR EDIT MODAL ──────────────────────────────────
+  formatColLabel(name: string): string {
+    if (!name) return '';
+    const acronyms: Record<string, string> = {
+      id: 'ID',
+      uid: 'UID',
+      pk: 'PK',
+      kyc: 'KYC',
+      dob: 'DOB',
+      pan: 'PAN',
+      ifsc: 'IFSC',
+      url: 'URL',
+      emi: 'EMI',
+      otp: 'OTP'
+    };
+    return name
+      .split('_')
+      .map(part => acronyms[part.toLowerCase()] || (part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()))
+      .join(' ');
+  }
+
+  getSimplifiedType(rawType: string): string {
+    const t = (rawType || '').toLowerCase();
+    if (t.includes('int')) return 'Integer';
+    if (t.includes('numeric') || t.includes('decimal') || t.includes('double') || t.includes('real')) return 'Decimal';
+    if (t.includes('timestamp')) return 'DateTime';
+    if (t === 'date') return 'Date';
+    if (t.includes('bool')) return 'Boolean';
+    if (t.includes('json')) return 'JSON';
+    if (t.includes('char') || t.includes('text')) return 'Text';
+    if (t.includes('user-defined')) return 'Custom';
+    return rawType || 'Text';
+  }
+
+  getTypeBadgeClass(rawType: string): string {
+    const t = (rawType || '').toLowerCase();
+    if (t.includes('int') || t.includes('numeric')) return 'type-number';
+    if (t.includes('time') || t.includes('date')) return 'type-date';
+    if (t.includes('bool')) return 'type-bool';
+    if (t.includes('json')) return 'type-json';
+    return 'type-text';
+  }
+
+  isTextArea(colName: string, rawType: string): boolean {
+    const n = (colName || '').toLowerCase();
+    const t = (rawType || '').toLowerCase();
+    return t.includes('json') || n.includes('address') || n.includes('description') || n.includes('remarks') || n.includes('notes') || n.includes('details');
+  }
+
+  isSelectField(colName: string): boolean {
+    const n = (colName || '').toLowerCase();
+    return ['user_type', 'gender', 'status', 'user_role', 'role'].includes(n);
+  }
+
+  getSelectOptions(colName: string): string[] {
+    const n = (colName || '').toLowerCase();
+    if (n === 'gender') return ['Male', 'Female', 'Other'];
+    if (n === 'user_type') return ['Associate', 'Team Member', 'Customer', 'Investor', 'Admin', 'SuperAdmin'];
+    if (n === 'user_role') return ['Associate', 'Team Member', 'Customer', 'Investor', 'Admin'];
+    if (n === 'status') return ['Active', 'Pending', 'Approved', 'Rejected', 'Hold', 'Inactive'];
+    return [];
+  }
 }
