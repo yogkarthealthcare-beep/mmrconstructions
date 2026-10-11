@@ -9,7 +9,7 @@
       <div>
         <h1 class="hero-title">Master Data Management</h1>
         <p class="hero-subtitle">
-          Direct operational database console — view, search, modify, and delete records across all platform tables.
+          Direct operational console — view, search, modify, and delete records for Investors, Associates, Customers, and Team Members.
         </p>
       </div>
     </div>
@@ -17,16 +17,16 @@
     <!-- Quick Stats -->
     <div class="hero-stats-group">
       <div class="hero-stat-card">
-        <span class="stat-label">TOTAL TABLES</span>
-        <span class="stat-value">{{ tables.length }}</span>
+        <span class="stat-label">ACTIVE MODULE</span>
+        <span class="stat-value text-accent font-semibold">{{ activeEntity.title }}</span>
       </div>
       <div class="hero-stat-card active-stat">
         <span class="stat-label">ACTIVE TABLE</span>
         <span class="stat-value text-emerald font-mono">{{ selectedTable }}</span>
       </div>
       <div class="hero-stat-card">
-        <span class="stat-label">RECORDS IN TABLE</span>
-        <span class="stat-value text-accent">{{ totalRecords | number }}</span>
+        <span class="stat-label">RECORDS FOUND</span>
+        <span class="stat-value text-white">{{ totalRecords | number }}</span>
       </div>
     </div>
   </div>
@@ -44,57 +44,131 @@
     <button type="button" class="btn-close ms-auto" (click)="errorMessage = ''"></button>
   </div>
 
-  <!-- ── 3. TABLES SELECTOR & CATEGORIES BAR ─────────────────────────── -->
-  <div class="table-selector-card">
-    <div class="selector-header">
-      <div class="category-tabs">
-        <button 
-          *ngFor="let cat of categories" 
-          type="button"
-          class="cat-tab-btn" 
-          [class.active]="selectedCategory === cat"
-          (click)="selectedCategory = cat">
-          {{ cat }}
-        </button>
+  <!-- ── 3. 4-PART ENTITY SELECTOR (INVESTOR, ASSOCIATE, CUSTOMER, TEAM MEMBER) ── -->
+  <div class="entity-selector-card shadow-sm">
+    <div class="entity-header-row">
+      <div class="entity-dropdown-group">
+        <label class="entity-select-label">
+          <i class="fas fa-filter text-emerald me-1"></i> SELECT ENTITY / MODULE:
+        </label>
+        <div class="dropdown-select-wrapper">
+          <select 
+            class="form-select form-select-lg entity-dropdown-select" 
+            [ngModel]="selectedEntity" 
+            (ngModelChange)="onEntityChange($event)">
+            <option *ngFor="let ent of entities" [value]="ent.key">
+              {{ ent.title }} ({{ ent.hindiTitle }})
+            </option>
+          </select>
+        </div>
       </div>
 
-      <!-- Quick Search for Table Name -->
-      <div class="table-search-input-wrapper">
-        <i class="fas fa-search search-icon"></i>
-        <input 
-          type="text" 
-          class="form-control form-control-sm table-search-input" 
-          placeholder="Filter table names..." 
-          [(ngModel)]="tableFilterQuery">
+      <!-- Quick Entity Pills for Instant 1-Click Access -->
+      <div class="entity-quick-pills">
+        <button 
+          *ngFor="let ent of entities" 
+          type="button" 
+          class="entity-pill-btn" 
+          [class.active]="selectedEntity === ent.key"
+          (click)="onEntityChange(ent.key)">
+          <i [class]="ent.icon + ' me-1.5'"></i>
+          <span class="pill-en">{{ ent.title }}</span>
+          <span class="pill-hi text-muted">({{ ent.hindiTitle }})</span>
+        </button>
       </div>
     </div>
 
-    <!-- Table Chips Grid -->
-    <div class="table-chips-scroll" *ngIf="!loadingTables">
-      <button 
-        *ngFor="let t of filteredTables" 
-        type="button" 
-        class="table-chip" 
-        [class.selected]="selectedTable === t.tableName"
-        (click)="selectTable(t.tableName)">
-        <i class="fas fa-table chip-icon"></i>
-        <span class="chip-name">{{ t.tableName }}</span>
-        <span class="chip-badge">{{ t.rowCount | number }}</span>
-      </button>
+    <!-- Active Entity Summary & Description -->
+    <div class="entity-meta-box">
+      <div class="entity-meta-left">
+        <span class="badge entity-active-badge">
+          <i [class]="activeEntity.icon + ' me-1'"></i> {{ activeEntity.title }} / {{ activeEntity.hindiTitle }}
+        </span>
+        <span class="entity-desc-text">{{ activeEntity.description }}</span>
+      </div>
+      <div class="entity-meta-right" *ngIf="activeEntity.key !== 'all'">
+        <span class="text-muted fs-12">
+          <i class="fas fa-layer-group me-1"></i> {{ activeEntity.tables.length }} Related Tables Available
+        </span>
+      </div>
+    </div>
 
-      <div *ngIf="filteredTables.length === 0" class="no-tables-match">
-        No tables match "{{ tableFilterQuery }}" in category "{{ selectedCategory }}".
+    <!-- ── RELATED TABLES STRIP FOR SELECTED ENTITY ──────────────────── -->
+    <div class="related-tables-section" *ngIf="activeEntity.key !== 'all'">
+      <div class="section-sub-label">
+        <i class="fas fa-table-list text-emerald me-1"></i> RELATED TABLES FOR {{ activeEntity.title | uppercase }}:
+      </div>
+      <div class="related-chips-grid">
+        <button 
+          *ngFor="let t of activeEntity.tables" 
+          type="button" 
+          class="table-chip related-chip" 
+          [class.selected]="selectedTable === t.tableName"
+          (click)="selectTable(t.tableName)">
+          <div class="chip-content">
+            <div class="chip-title-line">
+              <i [class]="t.icon + ' chip-icon'"></i>
+              <strong class="chip-custom-label">{{ t.label }}</strong>
+            </div>
+            <div class="chip-sub-name font-mono">{{ t.tableName }}</div>
+          </div>
+          <span class="chip-badge" *ngIf="getTableRowCount(t.tableName) !== null">
+            {{ getTableRowCount(t.tableName) | number }}
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── ALL TABLES CATALOG (IF 'ALL' SELECTED) ─────────────────────── -->
+    <div class="all-tables-section" *ngIf="activeEntity.key === 'all'">
+      <div class="selector-header">
+        <div class="category-tabs">
+          <button 
+            *ngFor="let cat of categories" 
+            type="button"
+            class="cat-tab-btn" 
+            [class.active]="selectedCategory === cat"
+            (click)="selectedCategory = cat">
+            {{ cat }}
+          </button>
+        </div>
+
+        <div class="table-search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            class="form-control form-control-sm table-search-input" 
+            placeholder="Filter table names..." 
+            [(ngModel)]="tableFilterQuery">
+        </div>
+      </div>
+
+      <div class="table-chips-scroll" *ngIf="!loadingTables">
+        <button 
+          *ngFor="let t of filteredTables" 
+          type="button" 
+          class="table-chip" 
+          [class.selected]="selectedTable === t.tableName"
+          (click)="selectTable(t.tableName)">
+          <i class="fas fa-table chip-icon"></i>
+          <span class="chip-name">{{ t.tableName }}</span>
+          <span class="chip-badge">{{ t.rowCount | number }}</span>
+        </button>
+
+        <div *ngIf="filteredTables.length === 0" class="no-tables-match">
+          No tables match "{{ tableFilterQuery }}" in category "{{ selectedCategory }}".
+        </div>
       </div>
     </div>
 
     <div *ngIf="loadingTables" class="tables-loading-skeleton">
       <div class="spinner-border spinner-border-sm text-emerald me-2" role="status"></div>
-      <span>Loading database catalog...</span>
+      <span>Loading database tables catalog...</span>
     </div>
   </div>
 
   <!-- ── 4. DATA EXPLORER & TOOLBAR ────────────────────────────────────── -->
-  <div class="data-explorer-card">
+  <div class="data-explorer-card shadow-sm">
     
     <!-- Explorer Toolbar -->
     <div class="explorer-toolbar">
@@ -107,6 +181,9 @@
           </span>
           <span class="badge bg-light text-muted border ms-1 font-mono fs-11">
             {{ columns.length }} Columns
+          </span>
+          <span *ngIf="selectedEntity !== 'all' && activeEntity.userType" class="badge bg-emerald-subtle text-emerald border ms-2 fs-11">
+            <i class="fas fa-user-tag me-1"></i> Filtered: {{ activeEntity.title }}
           </span>
         </h3>
       </div>
@@ -203,6 +280,7 @@
               <i class="fas fa-folder-open fs-28 mb-2 d-block text-muted opacity-50"></i>
               No records found in table <strong>{{ selectedTable }}</strong>.
               <span *ngIf="searchQuery"> (Filtered by "{{ searchQuery }}")</span>
+              <span *ngIf="selectedEntity !== 'all' && activeEntity.userType"> (Entity: {{ activeEntity.title }})</span>
             </td>
           </tr>
 
@@ -364,9 +442,25 @@
         <div class="p-2 bg-light rounded font-mono fs-12 text-dark mb-3 border">
           {{ deletingRecordSummary }}
         </div>
+
+        <!-- Optional Cascade / Force Delete Option -->
+        <div class="form-check text-start p-3 bg-light rounded border border-danger-subtle mb-3">
+          <input 
+            class="form-check-input" 
+            type="checkbox" 
+            id="cascadeDeleteCheck" 
+            [(ngModel)]="forceCascadeDelete">
+          <label class="form-check-label fs-12 fw-bold text-danger cursor-pointer" for="cascadeDeleteCheck">
+            <i class="fas fa-link-slash me-1"></i> Force Cascade Delete (Clean related records in child tables)
+          </label>
+          <div class="fs-11 text-muted mt-1 ps-1">
+            Check this to automatically remove linked foreign key records if this user/row is referenced elsewhere.
+          </div>
+        </div>
+
         <p class="fs-11 text-danger mb-0">
           <i class="fas fa-info-circle me-1"></i>
-          This action cannot be undone. Associated foreign key records might prevent deletion if locked.
+          This action is permanent and cannot be undone.
         </p>
       </div>
 

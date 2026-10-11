@@ -18,6 +18,25 @@ export interface TableColumn {
   default: string | null;
 }
 
+export interface EntityTableDef {
+  tableName: string;
+  label: string;
+  description: string;
+  icon: string;
+}
+
+export interface EntityConfig {
+  key: string;
+  title: string;
+  hindiTitle: string;
+  icon: string;
+  badgeClass: string;
+  description: string;
+  userType?: string;
+  primaryTable: string;
+  tables: EntityTableDef[];
+}
+
 @Component({
   selector: 'app-master-data',
   standalone: true,
@@ -33,6 +52,103 @@ export class MasterDataComponent implements OnInit {
   deletingRow = false;
   errorMessage = '';
   successMessage = '';
+
+  // ── 4 CORE ENTITIES + ALL TABLES CONFIGURATION ──────────────────
+  entities: EntityConfig[] = [
+    {
+      key: 'associate',
+      title: 'Associate',
+      hindiTitle: 'एसोसिएट',
+      icon: 'fas fa-handshake',
+      badgeClass: 'badge-associate',
+      description: 'Manage associate registrations, sponsorships, KYC, nominee, bank accounts, and payout requests.',
+      userType: 'associate',
+      primaryTable: 'users',
+      tables: [
+        { tableName: 'users', label: 'Associates Accounts', description: 'Filtered users with Associate role', icon: 'fas fa-user-group' },
+        { tableName: 'associate_enrollment', label: 'KYC & Enrollment', description: 'Personal, KYC, and document verification records', icon: 'fas fa-id-card' },
+        { tableName: 'associate_sponsor', label: 'Sponsors & Tree', description: 'Associate sponsor links and tree placements', icon: 'fas fa-sitemap' },
+        { tableName: 'associate_nominee', label: 'Nominees', description: 'Registered nominee details', icon: 'fas fa-users' },
+        { tableName: 'associate_bank_details', label: 'Bank Accounts', description: 'Verified bank accounts and IFSC details', icon: 'fas fa-building-columns' },
+        { tableName: 'associate_address', label: 'Addresses', description: 'Permanent and correspondence addresses', icon: 'fas fa-location-dot' },
+        { tableName: 'associate_referral_links', label: 'Referral Links', description: 'Active and legacy referral codes', icon: 'fas fa-link' },
+        { tableName: 'associate_ranks', label: 'Ranks & Levels', description: 'Rank promotions and badges', icon: 'fas fa-award' },
+        { tableName: 'associate_payout_requests', label: 'Payout Requests', description: 'Withdrawal and commission payouts', icon: 'fas fa-receipt' },
+        { tableName: 'referral_registrations', label: 'Referral Signups', description: 'Direct referral registration tracking', icon: 'fas fa-user-plus' },
+        { tableName: 'user_wallets', label: 'Associate Wallets', description: 'E-wallet balance and commissions', icon: 'fas fa-wallet' }
+      ]
+    },
+    {
+      key: 'team_member',
+      title: 'Team Member',
+      hindiTitle: 'टीम मेंबर',
+      icon: 'fas fa-users-gear',
+      badgeClass: 'badge-teammember',
+      description: 'Manage team member registry (UID MMR-TM-0001), parent associate slot allocations, and user accounts.',
+      userType: 'team_member',
+      primaryTable: 'team_members',
+      tables: [
+        { tableName: 'team_members', label: 'Team Members Registry', description: 'Core team members table with UID, associate ID & status', icon: 'fas fa-id-badge' },
+        { tableName: 'users', label: 'Team Member Accounts', description: 'Filtered users with Team Member role', icon: 'fas fa-users-gear' },
+        { tableName: 'user_wallets', label: 'Team Member Wallets', description: 'Team member wallet ledger and transactions', icon: 'fas fa-wallet' },
+        { tableName: 'bookings', label: 'Member Bookings', description: 'Bookings sold or attributed to team members', icon: 'fas fa-clipboard-check' }
+      ]
+    },
+    {
+      key: 'customer',
+      title: 'Customer',
+      hindiTitle: 'कस्टमर',
+      icon: 'fas fa-user-check',
+      badgeClass: 'badge-customer',
+      description: 'Manage plot buyers, customer profiles, KYC submissions, bookings, receipts, invoices, and EMI schedules.',
+      userType: 'customer',
+      primaryTable: 'users',
+      tables: [
+        { tableName: 'users', label: 'Customer Accounts', description: 'Filtered users with Customer role', icon: 'fas fa-user' },
+        { tableName: 'customer_enrollment_submissions', label: 'Customer KYC', description: 'Customer KYC forms and identity proof', icon: 'fas fa-file-lines' },
+        { tableName: 'customer_nominees', label: 'Customer Nominees', description: 'Nominees declared for plot ownership', icon: 'fas fa-users' },
+        { tableName: 'bookings', label: 'Plot Bookings', description: 'Customer plot reservations and sales', icon: 'fas fa-map-location-dot' },
+        { tableName: 'receipts', label: 'Receipts', description: 'Issued payment receipts', icon: 'fas fa-receipt' },
+        { tableName: 'invoices', label: 'Invoices', description: 'Customer billing invoices', icon: 'fas fa-file-invoice-dollar' },
+        { tableName: 'emi_schedules', label: 'EMI Schedules', description: 'Monthly EMI installment plans', icon: 'fas fa-calendar-check' },
+        { tableName: 'inquiries', label: 'Inquiries', description: 'General customer inquiries and requests', icon: 'fas fa-circle-question' },
+        { tableName: 'book_plot_leads', label: 'Plot Leads', description: 'Direct website plot booking inquiries', icon: 'fas fa-bullhorn' }
+      ]
+    },
+    {
+      key: 'investor',
+      title: 'Investor',
+      hindiTitle: 'इन्वेस्टर',
+      icon: 'fas fa-piggy-bank',
+      badgeClass: 'badge-investor',
+      description: 'Manage investor master profiles, credentials, deposits, transaction ledgers, withdrawal requests, and legal documents.',
+      userType: 'investor',
+      primaryTable: 'investors',
+      tables: [
+        { tableName: 'investors', label: 'Investors Master', description: 'Core investor profiles and investment tiers', icon: 'fas fa-briefcase' },
+        { tableName: 'investor_users', label: 'Investor Logins', description: 'Investor portal credentials and authentication', icon: 'fas fa-key' },
+        { tableName: 'users', label: 'Investor Accounts (Users)', description: 'Filtered platform users with Investor role', icon: 'fas fa-user-tie' },
+        { tableName: 'investor_enrollments', label: 'Enrollments', description: 'Investor application submissions', icon: 'fas fa-file-signature' },
+        { tableName: 'investor_transactions', label: 'Transactions Ledger', description: 'Financial credits and debits', icon: 'fas fa-money-check-dollar' },
+        { tableName: 'investor_deposits', label: 'Deposits', description: 'Capital deposits received', icon: 'fas fa-wallet' },
+        { tableName: 'investor_withdrawals', label: 'Withdrawals', description: 'Returns and fund withdrawal requests', icon: 'fas fa-hand-holding-dollar' },
+        { tableName: 'investor_documents', label: 'Documents & KYC', description: 'Agreements, PAN, and KYC proofs', icon: 'fas fa-file-contract' },
+        { tableName: 'investor_notifications', label: 'Notifications', description: 'Investor alerts and logs', icon: 'fas fa-bell' }
+      ]
+    },
+    {
+      key: 'all',
+      title: 'All Database Tables',
+      hindiTitle: 'सभी डेटाबेस टेबल्स',
+      icon: 'fas fa-database',
+      badgeClass: 'badge-all',
+      description: 'Complete direct database console across all public database tables with category filtering.',
+      primaryTable: 'users',
+      tables: []
+    }
+  ];
+
+  selectedEntity = 'associate';
 
   // Tables List & Categorization
   tables: MasterTableInfo[] = [];
@@ -64,11 +180,38 @@ export class MasterDataComponent implements OnInit {
   isDeleteModalOpen = false;
   deletingRecordId: any = null;
   deletingRecordSummary = '';
+  forceCascadeDelete = false;
 
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.loadTablesList();
+  }
+
+  // ── ENTITY SELECTION ─────────────────────────────────────────────
+  get activeEntity(): EntityConfig {
+    return this.entities.find(e => e.key === this.selectedEntity) || this.entities[0];
+  }
+
+  onEntityChange(newKey: string): void {
+    this.selectedEntity = newKey;
+    this.searchQuery = '';
+    this.sortBy = '';
+    this.sortOrder = 'DESC';
+    this.currentPage = 1;
+
+    const ent = this.activeEntity;
+    if (ent.key !== 'all' && ent.tables.length > 0) {
+      this.selectedTable = ent.primaryTable;
+    } else if (!this.selectedTable) {
+      this.selectedTable = 'users';
+    }
+    this.loadTableData(this.selectedTable, 1);
+  }
+
+  getTableRowCount(tableName: string): number | null {
+    const found = this.tables.find(t => t.tableName === tableName);
+    return found ? found.rowCount : null;
   }
 
   // ── 1. LOAD TABLES LIST ──────────────────────────────────────────
@@ -82,22 +225,24 @@ export class MasterDataComponent implements OnInit {
           this.tables = res.data.tables || [];
           this.categories = ['ALL', ...(res.data.categories || [])];
 
-          // Auto-select 'users' or first table if available
-          if (this.tables.length > 0) {
+          // Auto-select initial table for currently selected entity
+          if (this.activeEntity.tables.length > 0) {
+            this.selectedTable = this.activeEntity.primaryTable;
+          } else if (this.tables.length > 0) {
             const hasUsers = this.tables.some(t => t.tableName === 'users');
             this.selectedTable = hasUsers ? 'users' : this.tables[0].tableName;
-            this.loadTableData(this.selectedTable, 1);
           }
+          this.loadTableData(this.selectedTable, 1);
         }
       },
       error: (err: any) => {
         this.loadingTables = false;
-        this.errorMessage = err?.error?.message || 'Failed to load master tables list.';
+        this.errorMessage = err?.error?.message || 'Failed to load master tables catalog.';
       }
     });
   }
 
-  // Filtered tables based on Category and Search text
+  // Filtered tables based on Category and Search text (for "All Tables" view)
   get filteredTables(): MasterTableInfo[] {
     return this.tables.filter(t => {
       const matchCat = this.selectedCategory === 'ALL' || t.category === this.selectedCategory;
@@ -133,6 +278,11 @@ export class MasterDataComponent implements OnInit {
     if (this.sortBy) {
       params.sortBy = this.sortBy;
       params.sortOrder = this.sortOrder;
+    }
+
+    // Apply userType filtering if viewing within an entity
+    if (this.selectedEntity !== 'all' && this.activeEntity.userType) {
+      params.userType = this.activeEntity.userType;
     }
 
     this.api.adminGetMasterTableRecords(tableName, params).subscribe({
@@ -239,7 +389,8 @@ export class MasterDataComponent implements OnInit {
   confirmDelete(row: any): void {
     const pkVal = row[this.primaryKey];
     this.deletingRecordId = pkVal;
-    const nameCol = row['full_name'] || row['name'] || row['email'] || row['mobile_no'] || row['member_id'] || '';
+    this.forceCascadeDelete = false;
+    const nameCol = row['full_name'] || row['name'] || row['email'] || row['mobile_no'] || row['member_id'] || row['team_member_uid'] || '';
     this.deletingRecordSummary = `${this.primaryKey} = ${pkVal}${nameCol ? ' (' + nameCol + ')' : ''}`;
     this.isDeleteModalOpen = true;
   }
@@ -248,13 +399,14 @@ export class MasterDataComponent implements OnInit {
     this.isDeleteModalOpen = false;
     this.deletingRecordId = null;
     this.deletingRecordSummary = '';
+    this.forceCascadeDelete = false;
   }
 
   executeDelete(): void {
     if (!this.deletingRecordId || !this.selectedTable) return;
     this.deletingRow = true;
 
-    this.api.adminDeleteMasterRecord(this.selectedTable, this.deletingRecordId).subscribe({
+    this.api.adminDeleteMasterRecord(this.selectedTable, this.deletingRecordId, this.forceCascadeDelete).subscribe({
       next: (res: any) => {
         this.deletingRow = false;
         this.closeDeleteModal();

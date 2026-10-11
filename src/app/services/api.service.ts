@@ -673,8 +673,9 @@ export class ApiService {
   adminUpdateMasterRecord(tableName: string, id: any, data: any): Observable<any> {
     return this.put(`/api/admin/master-data/tables/${tableName}/${id}`, { data }, true);
   }
-  adminDeleteMasterRecord(tableName: string, id: any): Observable<any> {
-    return this.delete(`/api/admin/master-data/tables/${tableName}/${id}`, true);
+  adminDeleteMasterRecord(tableName: string, id: any, cascade: boolean = false): Observable<any> {
+    const query = cascade ? '?cascade=true' : '';
+    return this.delete(`/api/admin/master-data/tables/${tableName}/${id}${query}`, true);
   }
 }
 
