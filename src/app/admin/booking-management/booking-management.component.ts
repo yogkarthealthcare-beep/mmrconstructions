@@ -45,7 +45,14 @@ export class BookingManagementComponent implements OnInit {
   activeQuickFilter: 'ALL' | 'PENDING' | 'WAITLISTED' | 'CONFIRMED' | 'REFUND_DUE' | 'OFFLINE' | 'CANCELLED' = 'ALL';
 
   // Detail Drawer Active Tab
-  activeDetailTab: 'overview' | 'proofs' | 'emi' | 'appointment' | 'queue' = 'overview';
+  activeDetailTab: 'overview' | 'proofs' | 'emi_simulator' | 'emi' | 'appointment' | 'queue' = 'overview';
+
+  // EMI & Invoicing Simulator State
+  emiStatusLoading = false;
+  emiGenerating = false;
+  emiPaying = false;
+  emiStatusData: any = null;
+  lastCommissionResult: any = null;
 
   // Booking Filter Form
   filterForm = this.fb.group({
@@ -1134,6 +1141,147 @@ export class BookingManagementComponent implements OnInit {
           }
         });
       }
+    });
+  }
+
+  // ==========================================
+  // EMI & INVOICING SIMULATOR METHODS
+  // ==========================================
+  openEmiSimulatorTab() {
+    this.activeDetailTab = 'emi_simulator';
+    this.loadBookingEmiStatus();
+  }
+
+  loadBookingEmiStatus() {
+    if (!this.selected?.booking_id) return;
+    this.emiStatusLoading = true;
+    this.api.adminGetBookingEmiStatus(this.selected.booking_id).subscribe({
+      next: (res: any) => {
+        this.emiStatusLoading = false;
+        if (res?.success) {
+          this.emiStatusData = res.data;
+        }
+      },
+      error: (err: any) => {
+        this.emiStatusLoading = false;
+        this.showToast(err?.error?.message || 'Failed to load EMI status', 'error');
+      }
+    });
+  }
+
+  generateNextEmi() {
+    if (!this.selected?.booking_id || this.emiGenerating) return;
+    this.emiGenerating = true;
+    this.api.adminGenerateNextEmi(this.selected.booking_id).subscribe({
+      next: (res: any) => {
+        this.emiGenerating = false;
+        if (res?.success) {
+          const data = res.data;
+          if (data?.already_generated) {
+            Swal.fire({
+              title: 'Already Generated',
+              text: res.message || 'Current month EMI invoice is already generated. Cannot duplicate.',
+              icon: 'info',
+              confirmButtonColor: '#0f766e'
+            });
+          } else {
+            Swal.fire({
+              title: 'EMI & Invoice Generated!',
+              html: `
+                <div style="text-align: left; font-size: 14px;">
+                  <p class="mb-1"><strong>Installment:</strong> Month ${data?.installment_no} (${data?.month_label})</p>
+                  <p class="mb-1"><strong>Invoice Number:</strong> <span class="badge bg-success">${data?.invoice_number}</span></p>
+                  <p class="mb-1"><strong>Due Amount:</strong> ₹${Number(data?.emi_amount || 0).toLocaleString('en-IN')}</p>
+                  <p class="mb-0"><strong>Status:</strong> <span class="badge bg-warning text-dark">Pending Payment</span></p>
+                </div>
+              `,
+              icon: 'success',
+              confirmButtonColor: '#0f766e'
+            });
+          }
+          this.loadBookingEmiStatus();
+          this.loadBookings();
+        }
+      },
+      error: (err: any) => {
+        this.emiGenerating = false;
+        Swal.fire({
+          title: 'Generation Failed',
+          text: err?.error?.message || 'Unable to generate next EMI invoice.',
+          icon: 'error',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    });
+  }
+
+  simulatePayEmi(installmentNo?: number) {
+    if (!this.selected?.booking_id || this.emiPaying) return;
+    const inst = installmentNo || this.emiStatusData?.current_active_pending?.installment_no;
+    if (!inst) {
+      this.showToast('No active pending EMI to pay.', 'error');
+      return;
+    }
+
+    Swal.fire({
+      title: `Confirm EMI Payment (Month ${inst})?`,
+      html: `
+        <div style="text-align: left; font-size: 13.5px;">
+          <p class="mb-2">Mark installment #${inst} as <strong>Paid</strong>, update remaining balance, and trigger the <strong>10% Commission Distribution</strong>?</p>
+          <ul class="text-muted ps-3 mb-0">
+            <li>50% pool credited directly to Seller</li>
+            <li>50% pool distributed equally to eligible Team hierarchy</li>
+          </ul>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '<i class="fas fa-check me-1"></i> Yes, Process Payment',
+      confirmButtonColor: '#16a34a',
+      cancelButtonColor: '#64748b'
+    }).then((decision) => {
+      if (!decision.isConfirmed) return;
+      this.emiPaying = true;
+      this.api.adminSimulatePayEmi(this.selected.booking_id, {
+        installment_no: inst,
+        payment_mode: 'Online Simulation'
+      }).subscribe({
+        next: (res: any) => {
+          this.emiPaying = false;
+          if (res?.success) {
+            const c = res.data?.commission;
+            this.lastCommissionResult = c;
+            Swal.fire({
+              title: 'Payment & Commission Processed!',
+              html: `
+                <div style="text-align: left; font-size: 13px;">
+                  <p class="text-success fw-bold mb-2">${res.message}</p>
+                  <div class="p-2.5 border rounded bg-light mb-2">
+                    <h6 class="mb-1.5 text-dark fs-12 fw-bold"><i class="fas fa-coins text-warning me-1"></i> Commission Distribution (10% Pool):</h6>
+                    <div><strong>Total Commission:</strong> ₹${Number(c?.total_distributed || 0).toLocaleString('en-IN')}</div>
+                    <div><strong>Direct Seller (50%):</strong> ₹${Number(c?.seller_commission || 0).toLocaleString('en-IN')}</div>
+                    <div><strong>Team Hierarchy (${c?.team_members_count || 0} slots):</strong> ₹${Number((c?.total_distributed || 0) - (c?.seller_commission || 0)).toLocaleString('en-IN')}</div>
+                    <div class="text-muted"><strong>Undistributed Pool:</strong> ₹${Number(c?.undistributed_amount || 0).toLocaleString('en-IN')}</div>
+                  </div>
+                </div>
+              `,
+              icon: 'success',
+              confirmButtonColor: '#16a34a'
+            });
+            this.loadBookingEmiStatus();
+            this.loadBookings();
+          }
+        },
+        error: (err: any) => {
+          this.emiPaying = false;
+          Swal.fire({
+            title: 'Payment Simulation Failed',
+            text: err?.error?.message || 'Payment simulation failed.',
+            icon: 'error',
+            confirmButtonColor: '#dc2626'
+          });
+        }
+      });
     });
   }
 

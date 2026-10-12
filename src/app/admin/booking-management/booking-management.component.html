@@ -385,6 +385,10 @@
             <i class="fas fa-receipt me-1"></i> Ledger &amp; Payments
             <span class="drawer-tab-badge" *ngIf="selected.payments?.length">{{ selected.payments.length }}</span>
           </button>
+          <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'emi_simulator'" (click)="openEmiSimulatorTab()">
+            <i class="fas fa-file-invoice-dollar me-1 text-warning"></i> EMI &amp; Invoices
+            <span class="badge bg-emerald text-white ms-1" *ngIf="selected.payment_type === 'EMI' || selected.plan_snapshot">EMI Plan</span>
+          </button>
           <button type="button" class="drawer-tab-btn" [class.active]="activeDetailTab === 'queue'" (click)="activeDetailTab = 'queue'">
             <i class="fas fa-list-ol me-1"></i> Queue &amp; Waitlist
             <span class="drawer-tab-badge" *ngIf="selected.other_bookings_on_plot?.length">{{ selected.other_bookings_on_plot.length }}</span>
@@ -592,6 +596,198 @@
                       <i class="fas fa-download"></i>
                     </a>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: EMI & INVOICE GENERATOR SIMULATOR -->
+          <div class="tab-pane-content" *ngIf="activeDetailTab === 'emi_simulator'">
+            <!-- Loading -->
+            <div *ngIf="emiStatusLoading" class="panel-loading py-5 text-center">
+              <i class="fas fa-circle-notch fa-spin fs-24 text-gold"></i>
+              <p class="mt-2 text-muted fs-12 mb-0">Loading EMI Schedule &amp; Invoices...</p>
+            </div>
+
+            <div *ngIf="!emiStatusLoading && emiStatusData" class="d-flex flex-column gap-3">
+              <!-- Financial Metric Cards -->
+              <div class="detail-card-section">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <h6 class="section-title mb-0"><i class="fas fa-chart-pie me-1.5 text-emerald"></i> EMI Financial Dossier</h6>
+                  <span class="badge" [ngClass]="emiStatusData.is_fully_paid ? 'bg-success' : 'bg-primary'">
+                    {{ emiStatusData.is_fully_paid ? 'Plot Fully Paid' : 'Installment Plan Active' }}
+                  </span>
+                </div>
+
+                <div class="detail-info-grid">
+                  <div class="info-cell">
+                    <span class="info-cell-label">Total Plot Price</span>
+                    <strong class="info-cell-val text-dark">₹{{ emiStatusData.total_plot_price | number:'1.0-0' }}</strong>
+                  </div>
+                  <div class="info-cell">
+                    <span class="info-cell-label">Advance / Down Payment</span>
+                    <strong class="info-cell-val text-muted">₹{{ emiStatusData.down_payment | number:'1.0-0' }}</strong>
+                  </div>
+                  <div class="info-cell">
+                    <span class="info-cell-label">Total Paid Till Date</span>
+                    <strong class="info-cell-val text-emerald">₹{{ emiStatusData.total_paid_amount | number:'1.0-0' }}</strong>
+                  </div>
+                  <div class="info-cell">
+                    <span class="info-cell-label">Remaining Due Balance</span>
+                    <strong class="info-cell-val text-danger">₹{{ emiStatusData.remaining_balance | number:'1.0-0' }}</strong>
+                  </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mt-3">
+                  <div class="d-flex justify-content-between fs-11 text-muted mb-1">
+                    <span>Payment Completion Progress</span>
+                    <span>{{ emiStatusData.paid_installments_count }} of {{ emiStatusData.total_installments }} EMIs Paid ({{ ((emiStatusData.total_paid_amount / (emiStatusData.total_plot_price || 1)) * 100) | number:'1.0-1' }}%)</span>
+                  </div>
+                  <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         [style.width.%]="(emiStatusData.total_paid_amount / (emiStatusData.total_plot_price || 1)) * 100">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- GENERATOR SIMULATOR CONTROLS -->
+              <div class="detail-card-section bg-light border p-3 rounded">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                  <div>
+                    <h6 class="section-title mb-0 text-dark">
+                      <i class="fas fa-bolt text-warning me-1.5"></i> Sequential EMI Generation Engine
+                    </h6>
+                    <small class="text-muted fs-11">
+                      Simulate month-end automatic invoice generation. Repetitive clicks will <strong>never duplicate</strong> the current month's invoice.
+                    </small>
+                  </div>
+                  <button type="button" 
+                          class="btn btn-warning btn-sm fw-bold shadow-sm"
+                          (click)="generateNextEmi()" 
+                          [disabled]="emiGenerating || emiStatusData.is_fully_paid || !emiStatusData.next_to_generate">
+                    <i class="fas" [ngClass]="emiGenerating ? 'fa-spinner fa-spin' : 'fa-calendar-plus'"></i>
+                    {{ emiGenerating ? 'Generating Invoice...' : 'Generate Next Month EMI' }}
+                  </button>
+                </div>
+
+                <div class="p-2.5 rounded bg-white border d-flex align-items-center justify-content-between flex-wrap gap-2 fs-12 mt-2">
+                  <div>
+                    <span class="text-muted me-1">Next Pending Invoicing:</span>
+                    <strong class="text-dark" *ngIf="emiStatusData.next_to_generate">
+                      Month {{ emiStatusData.next_to_generate.installment_no }} ({{ emiStatusData.next_to_generate.month_label }}) — ₹{{ emiStatusData.next_to_generate.emi_amount | number:'1.0-0' }}
+                    </strong>
+                    <strong class="text-success" *ngIf="!emiStatusData.next_to_generate">
+                      All installments have already been invoiced!
+                    </strong>
+                  </div>
+                  <div class="text-muted fs-11">
+                    <span class="badge bg-secondary me-1">Invoiced: {{ emiStatusData.invoiced_installments_count }} / {{ emiStatusData.total_installments }}</span>
+                    <span class="badge bg-success">Paid: {{ emiStatusData.paid_installments_count }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ACTIVE PENDING DEMAND / SIMULATE PAYMENT -->
+              <div class="detail-card-section border-warning p-3 rounded bg-amber-50" *ngIf="emiStatusData.current_active_pending">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <div>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="badge bg-warning text-dark fw-bold">Active Demand Due</span>
+                      <strong class="fs-13 text-dark">
+                        Month {{ emiStatusData.current_active_pending.installment_no }} ({{ emiStatusData.current_active_pending.month_label }})
+                      </strong>
+                      <span class="badge bg-primary text-white">Invoice #{{ emiStatusData.current_active_pending.invoice_number }}</span>
+                    </div>
+                    <div class="fs-12 text-muted mt-1">
+                      Due Date: <strong>{{ emiStatusData.current_active_pending.due_date | date:'dd MMM yyyy' }}</strong>
+                      <span class="mx-1.5">·</span>
+                      Amount Due: <strong class="text-dark">₹{{ emiStatusData.current_active_pending.emi_amount | number:'1.0-0' }}</strong>
+                    </div>
+                  </div>
+                  <button type="button" 
+                          class="btn btn-success btn-sm fw-bold shadow-sm"
+                          (click)="simulatePayEmi(emiStatusData.current_active_pending.installment_no)"
+                          [disabled]="emiPaying">
+                    <i class="fas" [ngClass]="emiPaying ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
+                    {{ emiPaying ? 'Processing Payment...' : 'Confirm / Simulate EMI Payment' }}
+                  </button>
+                </div>
+                <div class="fs-11 text-muted mt-2 pt-2 border-top">
+                  <i class="fas fa-info-circle text-info me-1"></i>
+                  Paying this EMI reduces the customer's remaining due, updates their dashboard in real time, and triggers the <strong>10% Commission Distribution</strong> (50% Direct Seller / 50% Team Member slots).
+                </div>
+              </div>
+
+              <!-- COMMISSION RESULT FEEDBACK -->
+              <div class="detail-card-section p-3 rounded bg-emerald-50 border-emerald" *ngIf="lastCommissionResult">
+                <h6 class="fs-12 fw-bold text-emerald mb-1">
+                  <i class="fas fa-coins text-warning me-1"></i> Commission Disbursal Breakdown:
+                </h6>
+                <div class="d-flex flex-wrap gap-3 fs-12 mt-1">
+                  <div>Direct Seller (50%): <strong class="text-dark">₹{{ lastCommissionResult.seller_commission | number:'1.0-0' }}</strong></div>
+                  <div>Team Slots ({{ lastCommissionResult.team_members_count }} slots): <strong class="text-dark">₹{{ (lastCommissionResult.total_distributed - lastCommissionResult.seller_commission) | number:'1.0-0' }}</strong></div>
+                  <div>Undistributed Company: <strong class="text-muted">₹{{ lastCommissionResult.undistributed_amount | number:'1.0-0' }}</strong></div>
+                </div>
+              </div>
+
+              <!-- FULL SCHEDULE TABLE -->
+              <div class="detail-card-section">
+                <h6 class="section-title mb-2"><i class="fas fa-list-check me-1.5 text-gold"></i> Installments &amp; Invoices Schedule</h6>
+                <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+                  <table class="table table-sm erp-mini-table align-middle">
+                    <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 2;">
+                      <tr>
+                        <th>#</th>
+                        <th>Month &amp; Due Date</th>
+                        <th>EMI Amount</th>
+                        <th>Invoice</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let emi of emiStatusData.schedule" 
+                          [class.table-warning]="emi.is_generated && emi.emi_status !== 'Paid'">
+                        <td><strong>{{ emi.installment_no }}</strong></td>
+                        <td>
+                          <div>{{ emi.month_label }}</div>
+                          <small class="text-muted fs-10">{{ emi.due_date | date:'dd MMM yyyy' }}</small>
+                        </td>
+                        <td class="fw-bold">₹{{ emi.emi_amount | number:'1.0-0' }}</td>
+                        <td>
+                          <span *ngIf="emi.is_generated" class="badge bg-light text-primary border">
+                            {{ emi.invoice_number }}
+                          </span>
+                          <span *ngIf="!emi.is_generated" class="text-muted fs-11 fst-italic">
+                            Not Generated
+                          </span>
+                        </td>
+                        <td>
+                          <span class="badge" [ngClass]="{
+                            'bg-success': emi.emi_status === 'Paid',
+                            'bg-warning text-dark': emi.is_generated && emi.emi_status !== 'Paid',
+                            'bg-secondary': !emi.is_generated
+                          }">
+                            {{ emi.emi_status === 'Paid' ? 'Paid' : (emi.is_generated ? 'Pending' : 'Upcoming') }}
+                          </span>
+                          <div *ngIf="emi.paid_date" class="fs-10 text-success mt-0.5">
+                            Paid: {{ emi.paid_date | date:'dd MMM yyyy' }}
+                          </div>
+                        </td>
+                        <td class="text-end">
+                          <button *ngIf="emi.is_generated && emi.emi_status !== 'Paid'" 
+                                  class="btn btn-xs btn-outline-success"
+                                  (click)="simulatePayEmi(emi.installment_no)"
+                                  [disabled]="emiPaying"
+                                  title="Pay this Installment">
+                            <i class="fas fa-credit-card me-1"></i> Pay
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>

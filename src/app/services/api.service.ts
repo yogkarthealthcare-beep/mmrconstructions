@@ -700,5 +700,16 @@ export class ApiService {
     const query = cascade ? '?cascade=true' : '';
     return this.delete(`/api/admin/master-data/tables/${tableName}/${id}${query}`, true);
   }
+
+  // ── EMI & INVOICE GENERATION SIMULATOR (Admin) ────────────
+  adminGetBookingEmiStatus(bookingId: number | string): Observable<any> {
+    return this.get(`/api/admin/bookings/${bookingId}/emi-status`, {}, true);
+  }
+  adminGenerateNextEmi(bookingId: number | string): Observable<any> {
+    return this.post(`/api/admin/bookings/${bookingId}/generate-next-emi`, {}, true);
+  }
+  adminSimulatePayEmi(bookingId: number | string, data: any = {}): Observable<any> {
+    return this.post(`/api/admin/bookings/${bookingId}/pay-emi-simulate`, data, true);
+  }
 }
 
