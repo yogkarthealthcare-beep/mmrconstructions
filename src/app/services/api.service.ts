@@ -694,13 +694,5 @@ export class ApiService {
     const query = cascade ? '?cascade=true' : '';
     return this.delete(`/api/admin/master-data/tables/${tableName}/${id}${query}`, true);
   }
-
-  // ── MMR COMMISSION PLAN MANAGEMENT ────────────────
-  adminGetCommissionPlan(): Observable<any> {
-    return this.get('/api/admin/commission-plan', {}, true);
-  }
-  adminUpdateCommissionPlan(data: any): Observable<any> {
-    return this.put('/api/admin/commission-plan', data, true);
-  }
 }
 
