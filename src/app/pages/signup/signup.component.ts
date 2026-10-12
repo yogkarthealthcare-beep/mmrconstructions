@@ -252,10 +252,10 @@ export class SignupComponent implements OnInit {
           delete this.v['sponsor_invite_code'];
         } else {
           this.sponsorValid = false;
-          this.v['sponsor_invite_code'] = '✕ Sponsor not available';
+          this.v['sponsor_invite_code'] = res?.message || '✕ Sponsor not available';
         }
       },
-      error: () => {
+      error: (err: any) => {
         this.sponsorChecking = false;
         if (cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
           this.sponsorValid = true;
@@ -264,7 +264,7 @@ export class SignupComponent implements OnInit {
           delete this.v['sponsor_invite_code'];
         } else {
           this.sponsorValid = false;
-          this.v['sponsor_invite_code'] = '✕ Sponsor not available';
+          this.v['sponsor_invite_code'] = err?.error?.message || '✕ Sponsor not available';
         }
       }
     });
