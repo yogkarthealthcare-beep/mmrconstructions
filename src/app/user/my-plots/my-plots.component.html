@@ -340,12 +340,23 @@
 
       <!-- Action Footer -->
       <div class="p-3 bg-light border-top d-flex gap-2 flex-wrap">
-        <button class="btn btn-outline-green btn-xs flex-fill" (click)="openPaymentModal(b)" *ngIf="b.unpaidAmount > 0">
-          <i class="fas fa-money-bill-wave me-1"></i> Submit Payment Proof
-        </button>
-        <a [routerLink]="[basePrefix, 'emi-history']" class="btn btn-outline-secondary btn-xs flex-fill text-center">
-          <i class="fas fa-list-ol me-1"></i> View EMI Schedule
+        <a [routerLink]="['/invoice', b.invoice_number || b.booking_serial || b.booking_id]" 
+           target="_blank" 
+           class="btn btn-outline-success btn-xs flex-fill text-center fw-bold"
+           title="View & Download Official Invoice / Bill">
+          <i class="fas fa-file-invoice me-1"></i> View Invoice / Bill
         </a>
+
+        <button class="btn btn-outline-primary btn-xs flex-fill text-center fw-bold"
+                (click)="openInstallmentModal(b)"
+                title="View Detailed Installment Schedule">
+          <i class="fas fa-calendar-check me-1"></i> Installments ({{ b.paidInstallmentsCount }}/{{ b.totalInstallments || 0 }})
+        </button>
+
+        <button class="btn btn-outline-green btn-xs flex-fill" (click)="openPaymentModal(b)" *ngIf="b.unpaidAmount > 0">
+          <i class="fas fa-money-bill-wave me-1"></i> Submit Payment
+        </button>
+
         <button *ngIf="(b.computedStatus === 'Confirmed' || b.computedStatus === 'Active') && !b.isBuybackPending && !b.isBuybackApproved" 
                 class="btn btn-gold btn-xs flex-fill" 
                 (click)="buybackModal = b">
@@ -510,4 +521,159 @@
     </div>
   </div>
 </div>
+
+<!-- INSTALLMENT SCHEDULE (EMI TRACKER) MODAL -->
+<div *ngIf="selectedInstallmentBooking" class="modal-backdrop-custom">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border max-w-750">
+    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+          <span class="badge bg-success text-white fs-12 fw-700">
+            <i class="fas fa-map-pin me-1"></i>Plot {{ selectedInstallmentBooking.plot_number }}
+          </span>
+          <span class="badge bg-light text-dark border fs-12 fw-600 font-mono">
+            {{ selectedInstallmentBooking.booking_serial || ('BK-' + selectedInstallmentBooking.booking_id) }}
+          </span>
+        </div>
+        <h5 class="fw-800 text-dark mb-0 font-display">Installment Schedule &amp; EMI Tracker</h5>
+        <div class="fs-12 text-muted mt-1">
+          <i class="fas fa-city text-gold me-1"></i>{{ selectedInstallmentBooking.site_name }} &bull; Plan: <strong>{{ selectedInstallmentBooking.payment_type || 'EMI Schedule' }}</strong>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="closeInstallmentModal()"></button>
+    </div>
+
+    <!-- Financial Breakdown Tiles -->
+    <div class="row g-2 mb-3 text-center">
+      <div class="col-6 col-sm-3">
+        <div class="p-2 rounded-3 bg-light border">
+          <div class="fs-10 text-uppercase text-muted fw-700">Total Price</div>
+          <div class="fs-13 fw-800 text-dark">₹{{ selectedInstallmentBooking.totalPrice | number }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="p-2 rounded-3 bg-light border">
+          <div class="fs-10 text-uppercase text-muted fw-700">Advance Paid</div>
+          <div class="fs-13 fw-800 text-primary">₹{{ selectedInstallmentBooking.advancePaid | number }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="p-2 rounded-3 bg-light border">
+          <div class="fs-10 text-uppercase text-success fw-700">Total Cleared</div>
+          <div class="fs-13 fw-800 text-success">₹{{ selectedInstallmentBooking.confirmedPaid | number }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="p-2 rounded-3 bg-light border">
+          <div class="fs-10 text-uppercase text-danger fw-700">Remaining Due</div>
+          <div class="fs-13 fw-800 text-danger">₹{{ selectedInstallmentBooking.unpaidAmount | number }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Color Legend -->
+    <div class="p-2 px-3 rounded-3 mb-3 bg-light border d-flex align-items-center justify-content-between flex-wrap gap-2 fs-11">
+      <div class="d-flex align-items-center gap-3">
+        <span><strong>Status Legend:</strong></span>
+        <span class="d-inline-flex align-items-center gap-1">
+          <span class="badge bg-success">&nbsp;</span>
+          <strong class="text-success">Green: Paid &amp; Completed</strong>
+        </span>
+        <span class="d-inline-flex align-items-center gap-1">
+          <span class="badge bg-secondary">&nbsp;</span>
+          <span class="text-muted">Gray: Due / Upcoming</span>
+        </span>
+      </div>
+      <a [routerLink]="['/invoice', selectedInstallmentBooking.invoice_number || selectedInstallmentBooking.booking_serial || selectedInstallmentBooking.booking_id]"
+         target="_blank"
+         class="btn btn-xs btn-outline-success fw-bold">
+        <i class="fas fa-file-invoice me-1"></i> Full Booking Invoice
+      </a>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loadingInstallments" class="text-center py-4">
+      <i class="fas fa-spinner fa-spin fa-2x text-success"></i>
+      <p class="fs-12 text-muted mt-2 mb-0">Loading scheduled installments...</p>
+    </div>
+
+    <!-- Installment Records Table / List -->
+    <div *ngIf="!loadingInstallments" class="table-responsive max-h-350 overflow-y-auto mb-3 border rounded-3">
+      <table class="table table-hover align-middle mb-0 font-sm">
+        <thead class="table-light sticky-top">
+          <tr>
+            <th class="text-center" style="width: 70px;">Inst. #</th>
+            <th>Due Date</th>
+            <th class="text-end">EMI Amount</th>
+            <th>Paid Date / Mode</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Invoice / Bill</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="installmentSchedules.length === 0">
+            <td colspan="6" class="text-center py-4 text-muted">
+              <i class="fas fa-info-circle text-gold fs-4 mb-2 d-block"></i>
+              No active EMI schedules found for this booking.
+            </td>
+          </tr>
+          <tr *ngFor="let emi of installmentSchedules" 
+              [style.background-color]="emi.emi_status === 'Paid' ? '#dcfce7' : '#f8fafc'">
+            <!-- Installment Number -->
+            <td class="text-center fw-bold">
+              <span class="badge" [class.bg-success]="emi.emi_status === 'Paid'" [class.bg-secondary]="emi.emi_status !== 'Paid'">
+                #{{ emi.installment_no }}
+              </span>
+            </td>
+            <!-- Due Date -->
+            <td>
+              <span class="fs-12 fw-600 text-dark">{{ emi.due_date | date:'dd MMM yyyy' }}</span>
+            </td>
+            <!-- EMI Amount -->
+            <td class="text-end fw-bold">
+              <span class="fs-13 text-dark">₹{{ emi.emi_amount | number }}</span>
+            </td>
+            <!-- Paid Date -->
+            <td>
+              <span *ngIf="emi.paid_date" class="text-success fw-bold fs-12">
+                <i class="fas fa-check-circle me-1"></i>{{ emi.paid_date | date:'dd MMM yyyy' }}
+              </span>
+              <span *ngIf="!emi.paid_date" class="text-muted fs-11">—</span>
+            </td>
+            <!-- Status Badge: Green if Paid, Gray if Due -->
+            <td class="text-center">
+              <span *ngIf="emi.emi_status === 'Paid'" class="badge bg-success text-white px-2 py-1">
+                <i class="fas fa-check me-1"></i> Paid
+              </span>
+              <span *ngIf="emi.emi_status !== 'Paid'" class="badge bg-secondary text-light px-2 py-1">
+                Due
+              </span>
+            </td>
+            <!-- Invoice / Receipt Button -->
+            <td class="text-center">
+              <a *ngIf="emi.emi_status === 'Paid'"
+                 [routerLink]="['/invoice', emi.invoice_number || ('EMI-' + emi.emi_id)]"
+                 target="_blank"
+                 class="btn btn-xs btn-success"
+                 title="Download / View Installment Bill">
+                <i class="fas fa-file-invoice me-1"></i> Bill
+              </a>
+              <button *ngIf="emi.emi_status !== 'Paid'"
+                      class="btn btn-xs btn-outline-secondary"
+                      (click)="closeInstallmentModal(); openPaymentModal(selectedInstallmentBooking)"
+                      title="Upload Payment Proof">
+                <i class="fas fa-upload me-1"></i> Pay
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-end">
+      <button type="button" class="btn btn-secondary btn-sm px-4" (click)="closeInstallmentModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 

@@ -54,6 +54,7 @@
             <th>Advance Paid</th>
             <th>Approval Status</th>
             <th>Booking Date</th>
+            <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -83,6 +84,14 @@
               </span>
             </td>
             <td><small class="text-muted">{{ s.created_at | date:'dd MMM yyyy' }}</small></td>
+            <td class="text-end">
+              <a [routerLink]="['/invoice', s.booking_serial || s.booking_id]" 
+                 target="_blank" 
+                 class="btn btn-xs btn-outline-success fw-bold"
+                 title="View & Download Bill">
+                <i class="fas fa-file-invoice me-1"></i> Invoice
+              </a>
+            </td>
           </tr>
         </tbody>
       </table>

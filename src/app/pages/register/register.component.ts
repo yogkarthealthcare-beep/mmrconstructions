@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import {
@@ -25,7 +25,7 @@ type Step = 1 | 2 | 3 | 4;
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   // ── Mode ────────────────────────────────────────
   mode: RegMode = 'quick';  // quick = 3-step | full = 8-step
 
@@ -73,8 +73,26 @@ export class RegisterComponent {
   constructor(
     private api: ApiService,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
+
+  ngOnInit() {
+    const params = this.route.snapshot.queryParams;
+    const rawRef = params['ref'] ?? params['sponsor'] ?? params['sponsor_invite_code'];
+    let cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
+    if (!cleanRef && typeof localStorage !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('mmr_referral_code');
+        if (stored) cleanRef = stored.replace(/\*/g, '').trim().toUpperCase();
+      } catch {}
+    }
+    if (cleanRef) {
+      this.qForm.sponsor_invite_code = cleanRef;
+      this.fForm.sponsor_invite_code = cleanRef;
+      try { localStorage.setItem('mmr_referral_code', cleanRef); } catch {}
+    }
+  }
 
   // ══════════════════════════════════════
   //  QUICK REGISTRATION

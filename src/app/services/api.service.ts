@@ -200,6 +200,7 @@ export class ApiService {
   // ── Bookings ─────────────────────────────────────
   getBookings()                 { return this.get('/api/bookings'); }
   getBooking(id: number)        { return this.get(`/api/bookings/${id}`); }
+  getBookingDetail(id: number)  { return this.get(`/api/bookings/${id}/detail`); }
   createBooking(data: any)      { return this.post('/api/bookings', data); }
   getBookingCompliance()        { return this.get('/api/booking/compliance'); }
   getBookingWorkflowConfig()    { return this.get('/api/booking/config'); }
@@ -365,6 +366,22 @@ export class ApiService {
   }
   adminRejectComm(id: number, reason: string) {
     return this.post(`/api/admin/commissions/${id}/reject`, { reason }, true);
+  }
+  adminGetCommissionPlan() { return this.get('/api/admin/commission-plan', {}, true); }
+  adminUpdateCommissionPlan(data: any) { return this.put('/api/admin/commission-plan', data, true); }
+  adminPreviewCommissionPlan(data: any) { return this.post('/api/admin/commission-plan/preview', data, true); }
+
+  // ── INSTALLMENT PLANS & PART-WISE (M2) ─────────────
+  getInstallmentPlans() { return this.get('/api/installment-plans'); }
+  previewInstallmentPlan(data: { plot_id?: number; plan_id: number; custom_price?: number }) {
+    return this.post('/api/installment-plans/preview', data);
+  }
+  adminGetInstallmentPlans() { return this.get('/api/admin/installment-plans', {}, true); }
+  adminCreateInstallmentPlan(data: any) { return this.post('/api/admin/installment-plans', data, true); }
+  adminUpdateInstallmentPlan(id: number, data: any) { return this.put(`/api/admin/installment-plans/${id}`, data, true); }
+  adminGetPaymentPlanSettings() { return this.get('/api/admin/payment-plan-settings', {}, true); }
+  adminUpdatePaymentPlanSettings(data: { part_wise_deadline_months: number; reason: string }) {
+    return this.put('/api/admin/payment-plan-settings', data, true);
   }
 
   // ── ADMIN — Notifications ─────────────────────────
@@ -676,6 +693,14 @@ export class ApiService {
   adminDeleteMasterRecord(tableName: string, id: any, cascade: boolean = false): Observable<any> {
     const query = cascade ? '?cascade=true' : '';
     return this.delete(`/api/admin/master-data/tables/${tableName}/${id}${query}`, true);
+  }
+
+  // ── MMR COMMISSION PLAN MANAGEMENT ────────────────
+  adminGetCommissionPlan(): Observable<any> {
+    return this.get('/api/admin/commission-plan', {}, true);
+  }
+  adminUpdateCommissionPlan(data: any): Observable<any> {
+    return this.put('/api/admin/commission-plan', data, true);
   }
 }
 

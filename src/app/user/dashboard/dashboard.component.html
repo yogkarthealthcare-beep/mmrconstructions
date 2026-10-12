@@ -72,6 +72,31 @@
     </div>
   </div>
 
+  <!-- OVERDUE PART-WISE BOOKINGS ALERT BANNER (TOP OF DASHBOARD) -->
+  <div *ngIf="overduePartWiseBookings.length > 0" class="alert alert-warning border border-warning shadow-sm rounded-12 p-3 mb-3" style="background: #fffbeb;">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-wrap bg-amber text-orange rounded-circle p-2 fs-16 d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-0.5">
+            <span class="badge bg-warning text-dark fw-800 fs-10 px-2 py-0.5" style="background:#fef08a !important; color:#854d0e !important;">
+              PART-WISE DEADLINE EXPIRED
+            </span>
+            <strong class="fs-13 text-dark">Action Required: Part-Wise Payment Deadline Overdue</strong>
+          </div>
+          <p class="fs-11 text-muted mb-0">
+            Aapki {{ overduePartWiseBookings.length }} plot booking(s) par part-wise payment ki nirdharit samay-seema samapt ho chuki hai. Kripya bache huye bakaya rashi ko turant jama karein. (Note: Booking cancellation nahi hui hai).
+          </p>
+        </div>
+      </div>
+      <button type="button" class="btn btn-warning btn-xs fw-800 text-dark px-3 py-1.5 shadow-xs" (click)="portfolioTab = 'active'">
+        <i class="fas fa-eye me-1"></i> View Overdue Plots
+      </button>
+    </div>
+  </div>
+
   <!-- WELCOME HEADER HERO BANNER -->
   <div class="dash-welcome-hero mb-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3" style="position:relative; z-index:2;">
@@ -375,8 +400,36 @@
                   </div>
                 </div>
 
-                <!-- Next Due & Overdue Indicators -->
-                <div class="d-flex justify-content-between align-items-center bg-light p-2.5 rounded-8 border mb-3 fs-11">
+                <!-- M2 PART-WISE YELLOW CARD (IF PART-WISE BOOKING) -->
+                <div *ngIf="prop.is_part_wise" class="part-wise-yellow-card p-2.5 rounded-8 mb-3" 
+                     [ngClass]="prop.part_wise_overdue ? 'bg-amber-subtle border-amber-overdue' : 'bg-warning-subtle border-warning'">
+                  <div class="d-flex align-items-center justify-content-between mb-1.5 flex-wrap gap-1">
+                    <span class="badge fs-10 fw-800" [ngClass]="prop.part_wise_overdue ? 'bg-danger text-white' : 'bg-warning text-dark'">
+                      <i class="fas" [ngClass]="prop.part_wise_overdue ? 'fa-exclamation-circle' : 'fa-hourglass-half'"></i>
+                      {{ prop.part_wise_overdue ? 'OVERDUE PART-WISE' : 'PART-WISE PAYMENT PLAN' }}
+                    </span>
+                    <span class="fs-10 fw-700" [ngClass]="prop.part_wise_overdue ? 'text-danger' : 'text-dark'">
+                      Deadline: {{ prop.part_wise_deadline_at ? (prop.part_wise_deadline_at | date:'dd MMM yyyy') : '3 Months' }}
+                    </span>
+                  </div>
+                  
+                  <div class="d-flex justify-content-between align-items-center fs-11 text-dark mb-1">
+                    <span>Days Remaining:</span>
+                    <strong [ngClass]="prop.part_wise_overdue ? 'text-danger fw-900' : 'text-success'">
+                      {{ prop.part_wise_overdue ? ('Past Deadline by ' + (-prop.part_wise_days_remaining) + ' days') : (prop.part_wise_days_remaining + ' days left') }}
+                    </strong>
+                  </div>
+
+                  <div class="fs-10 text-muted border-top pt-1 mt-1" *ngIf="prop.part_wise_overdue">
+                    <i class="fas fa-info-circle text-danger me-1"></i> Part-wise deadline has elapsed. Please clear outstanding balance of <strong>₹{{ prop.unpaid_balance | number }}</strong>.
+                  </div>
+                  <div class="fs-10 text-muted border-top pt-1 mt-1" *ngIf="!prop.part_wise_overdue && prop.unpaid_balance > 0">
+                    <i class="fas fa-check-circle text-success me-1"></i> Pay remaining <strong>₹{{ prop.unpaid_balance | number }}</strong> before deadline to complete full purchase.
+                  </div>
+                </div>
+
+                <!-- Next Due & Overdue Indicators (FOR REGULAR EMI BOOKINGS) -->
+                <div *ngIf="!prop.is_part_wise" class="d-flex justify-content-between align-items-center bg-light p-2.5 rounded-8 border mb-3 fs-11">
                   <div class="min-w-0">
                     <span class="text-muted d-block fs-10 fw-600 mb-0.5">Next EMI Due:</span>
                     <span class="fw-700 text-dark fs-11 text-truncate d-block">

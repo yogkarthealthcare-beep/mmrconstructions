@@ -267,7 +267,8 @@ export class ReferralComponent implements OnInit {
 
   get referralLink(): string {
     const code = this.invitationCode;
-    return code ? `https://mmrconstructions.in/register?ref=${code}` : 'https://mmrconstructions.in/register';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mmrconstructions.in';
+    return code ? `${origin}/register?ref=${encodeURIComponent(code)}` : `${origin}/register`;
   }
 
   copyCode() {

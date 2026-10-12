@@ -290,9 +290,17 @@
 
               <!-- Action -->
               <td class="text-end" (click)="$event.stopPropagation()">
-                <button class="btn btn-view-inspect btn-sm" (click)="selectBooking(b)">
-                  <i class="fas fa-eye me-1"></i> View
-                </button>
+                <div class="d-inline-flex gap-1 align-items-center">
+                  <a [routerLink]="['/invoice', b.booking_serial || b.booking_id]" 
+                     target="_blank" 
+                     class="btn btn-outline-success btn-sm"
+                     title="View & Download Official Invoice / Bill">
+                    <i class="fas fa-file-invoice me-1"></i> Bill
+                  </a>
+                  <button class="btn btn-view-inspect btn-sm" (click)="selectBooking(b)">
+                    <i class="fas fa-eye me-1"></i> View
+                  </button>
+                </div>
               </td>
             </tr>
 
@@ -348,7 +356,15 @@
             </div>
           </div>
         </div>
-        <button type="button" class="btn-close-modal text-white fs-20" (click)="closeDetail()" title="Close details">&times;</button>
+        <div class="d-flex align-items-center gap-2">
+          <a [routerLink]="['/invoice', selected.booking_serial || selected.booking_id]" 
+             target="_blank" 
+             class="btn btn-warning btn-sm fw-bold text-dark"
+             title="View Official Tax Invoice / Bill">
+            <i class="fas fa-file-invoice-dollar me-1"></i> View / Print Invoice
+          </a>
+          <button type="button" class="btn-close-modal text-white fs-20" (click)="closeDetail()" title="Close details">&times;</button>
+        </div>
       </div>
 
       <!-- Loading Spinner inside Modal -->
@@ -438,6 +454,19 @@
               <div class="info-cell">
                 <span class="info-cell-label">Plot Status</span>
                 <strong class="info-cell-val badge-status-text">{{ selected.plot?.plot_status || 'Booked' }}</strong>
+              </div>
+              <div class="info-cell" *ngIf="selected.part_wise_deadline_at || selected.payment_type === 'PartWise' || selected.payment_type === 'Partial'">
+                <span class="info-cell-label">Part-Wise Deadline</span>
+                <strong class="info-cell-val text-warning">
+                  <i class="fas fa-hourglass-half me-1"></i>
+                  {{ selected.part_wise_deadline_at ? (selected.part_wise_deadline_at | date:'dd MMM yyyy') : '3 Months from Confirmation' }}
+                </strong>
+              </div>
+              <div class="info-cell" *ngIf="selected.plan_snapshot">
+                <span class="info-cell-label">Installment Plan</span>
+                <strong class="info-cell-val text-primary">
+                  {{ selected.plan_snapshot.tenure_months }}M ({{ selected.plan_snapshot.interest_percent }}% Int, {{ selected.plan_snapshot.down_payment_percent }}% DP)
+                </strong>
               </div>
             </div>
 

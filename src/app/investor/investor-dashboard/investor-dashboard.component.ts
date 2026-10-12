@@ -23,7 +23,8 @@ export class InvestorDashboardComponent implements OnInit {
 
   get referralLink() {
     const code = this.referralCode;
-    return code ? `https://mmrconstructions.in/register?ref=${code}` : 'https://mmrconstructions.in/register';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mmrconstructions.in';
+    return code ? `${origin}/register?ref=${encodeURIComponent(code)}` : `${origin}/register`;
   }
 
   constructor(private api: ApiService) {}

@@ -30,7 +30,13 @@ export interface PropertyDossier {
   all_emis: any[];
   pending_amount?: number;
   overdue_amount?: number;
+  payment_type?: string;
+  is_part_wise?: boolean;
+  part_wise_deadline_at?: string;
+  part_wise_overdue?: boolean;
+  part_wise_days_remaining?: number;
 }
+
 
 @Component({
   selector: 'app-user-dashboard',
@@ -296,6 +302,26 @@ export class UserDashboardComponent implements OnInit {
         paymentStatus = 'Partially Paid';
       }
 
+      // M2: Part-Wise Payment Plan & 3-Month Deadline Calculation
+      const paymentType = b.payment_type || b.payment_mode || 'Full';
+      const isPartWise = (paymentType === 'PartWise' || paymentType === 'Partial');
+      let partWiseOverdue = false;
+      let partWiseDaysRemaining = 0;
+      let partWiseDeadlineAt = b.part_wise_deadline_at || null;
+
+      if (isPartWise) {
+        if (!partWiseDeadlineAt && (b.booking_date || b.created_at)) {
+          const d = new Date(b.booking_date || b.created_at);
+          d.setMonth(d.getMonth() + 3);
+          partWiseDeadlineAt = d.toISOString();
+        }
+        if (partWiseDeadlineAt) {
+          const diffMs = new Date(partWiseDeadlineAt).getTime() - Date.now();
+          partWiseDaysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+          partWiseOverdue = (diffMs < 0 && unpaidBalance > 0);
+        }
+      }
+
       return {
         booking_id: Number(b.booking_id || b.id),
         booking_serial: b.booking_serial || `MMR-PLT-${b.plot_id || b.id}`,
@@ -317,9 +343,18 @@ export class UserDashboardComponent implements OnInit {
         payment_status: paymentStatus,
         next_emi: nextEmi || null,
         all_emis: plotEmis,
-        overdue_amount: overdueAmount
+        overdue_amount: overdueAmount,
+        payment_type: paymentType,
+        is_part_wise: isPartWise,
+        part_wise_deadline_at: partWiseDeadlineAt,
+        part_wise_overdue: partWiseOverdue,
+        part_wise_days_remaining: partWiseDaysRemaining
       };
     });
+  }
+
+  get overduePartWiseBookings(): PropertyDossier[] {
+    return this.propertyDossiers.filter(p => p.is_part_wise && p.part_wise_overdue && p.unpaid_balance > 0);
   }
 
   getPlotTitle(prop: any): string {
@@ -461,7 +496,12 @@ export class UserDashboardComponent implements OnInit {
         total_emis: allEmis.length,
         paid_emis: paidEmis.length,
         partially_paid_emis: partiallyPaidEmis.length,
-        pending_emis: pendingEmis.length
+        pending_emis: pendingEmis.length,
+        payment_type: prop.payment_type,
+        is_part_wise: prop.is_part_wise,
+        part_wise_deadline_at: prop.part_wise_deadline_at,
+        part_wise_overdue: prop.part_wise_overdue,
+        part_wise_days_remaining: prop.part_wise_days_remaining
       },
       payment_history: paymentHistory,
       emi_schedule: allEmis,

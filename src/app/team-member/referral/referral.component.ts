@@ -30,11 +30,18 @@ export class TeamMemberReferralComponent implements OnInit {
     this.api.getProfile().subscribe({
       next: (res: any) => {
         const p = res?.data || res?.user || {};
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mmrconstructions.in';
         if (p.invitation_code) {
           this.inviteCode = p.invitation_code;
+        } else if (p.member_id) {
+          this.inviteCode = p.member_id;
         }
+
         if (p.referral_link) {
-          this.referralUrl = p.referral_link;
+          // Adapt backend domain to active origin (e.g. localhost or live domain)
+          this.referralUrl = p.referral_link.replace(/^https?:\/\/[^/]+/i, origin);
+        } else if (this.inviteCode) {
+          this.referralUrl = `${origin}/register?ref=${encodeURIComponent(this.inviteCode)}`;
         }
         this.buildWhatsappUrl();
       },
@@ -43,11 +50,11 @@ export class TeamMemberReferralComponent implements OnInit {
   }
 
   private initReferralDetails(): void {
-    const code = this.currentUser?.invitation_code || this.currentUser?.member_id || '';
+    const code = this.currentUser?.invitation_code || this.currentUser?.member_id || this.currentUser?.team_member_uid || '';
     this.inviteCode = code;
 
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mmrconstructions.in';
-    this.referralUrl = `${origin}/register/customer?ref=${code}`;
+    this.referralUrl = code ? `${origin}/register?ref=${encodeURIComponent(code)}` : `${origin}/register`;
     this.buildWhatsappUrl();
   }
 

@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 
 @Component({
@@ -11,7 +11,7 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './investor-signup.component.html',
   styleUrls: ['./investor-signup.component.css']
 })
-export class InvestorSignupComponent {
+export class InvestorSignupComponent implements OnInit {
   form = {
     full_name: '',
     mobile_number: '',
@@ -28,14 +28,35 @@ export class InvestorSignupComponent {
     bank_name: '',
     account_number: '',
     ifsc_code: '',
-    nominee_name: ''
+    nominee_name: '',
+    sponsor_invite_code: ''
   };
 
   loading = false;
   errorMessage = '';
   successMessage = '';
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    const params = this.route.snapshot.queryParams;
+    const rawRef = params['ref'] ?? params['sponsor'] ?? params['sponsor_invite_code'];
+    let cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
+    if (!cleanRef && typeof localStorage !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('mmr_referral_code');
+        if (stored) cleanRef = stored.replace(/\*/g, '').trim().toUpperCase();
+      } catch {}
+    }
+    if (cleanRef) {
+      this.form.sponsor_invite_code = cleanRef;
+      try { localStorage.setItem('mmr_referral_code', cleanRef); } catch {}
+    }
+  }
 
   signup() {
     if (!this.form.full_name.trim() || !this.form.mobile_number.trim() || !this.form.email.trim() || !this.form.password) {

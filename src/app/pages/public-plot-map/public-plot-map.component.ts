@@ -69,11 +69,15 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
   // Booking Modal State
   showBookingModal = false;
   bookingSubmitting = false;
+  activeInstallmentPlans: any[] = [];
+  selectedPlan: any = null;
+  selectedPlanPreview: any = null;
   bookingForm = {
     customer_name: '',
     mobile_no: '',
     email: '',
     payment_type: 'EMI' as 'EMI' | 'FullPayment' | 'DownPayment',
+    installment_plan_id: null as number | null,
     advance_amount: 51000,
     notes: ''
   };
@@ -125,6 +129,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     } catch {}
 
     this.loadPlotMap(true);
+    this.loadInstallmentPlans();
     this.setupPolling();
   }
 
@@ -723,20 +728,92 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     this.openBookingModal(plot);
   }
 
+  loadInstallmentPlans(): void {
+    this.api.getInstallmentPlans().subscribe({
+      next: (res: any) => {
+        if (res?.success && Array.isArray(res.data)) {
+          this.activeInstallmentPlans = res.data;
+        }
+      },
+      error: () => {}
+    });
+  }
+
   openBookingModal(plot: PublicPlot): void {
     const user = this.auth.getUser() || {};
     const basePrice = Number(plot.price || 0);
-    const minAdvance = Math.max(51000, Math.round(basePrice * 0.1));
+
+    const defaultPlan = this.activeInstallmentPlans.length > 0 ? this.activeInstallmentPlans[0] : null;
+    this.selectedPlan = defaultPlan;
+
+    let minAdvance = Math.max(51000, Math.round(basePrice * 0.1));
+    if (defaultPlan && defaultPlan.down_payment_percent) {
+      minAdvance = Math.round(basePrice * (Number(defaultPlan.down_payment_percent) / 100));
+    }
 
     this.bookingForm = {
       customer_name: user.full_name || '',
       mobile_no: user.mobile_no || '',
       email: user.email || '',
       payment_type: 'EMI',
+      installment_plan_id: defaultPlan ? defaultPlan.id : null,
       advance_amount: minAdvance,
       notes: ''
     };
+    this.updatePlanCalculation();
     this.showBookingModal = true;
+  }
+
+  onPlanSelect(planId: any): void {
+    const p = this.activeInstallmentPlans.find(x => x.id === Number(planId));
+    if (p) {
+      this.selectedPlan = p;
+      this.bookingForm.installment_plan_id = p.id;
+      const basePrice = Number(this.selectedPlot?.price || 0);
+      if (basePrice > 0 && p.down_payment_percent) {
+        this.bookingForm.advance_amount = Math.round(basePrice * (Number(p.down_payment_percent) / 100));
+      }
+      this.updatePlanCalculation();
+    }
+  }
+
+  onPaymentTypeChange(): void {
+    const basePrice = Number(this.selectedPlot?.price || 0);
+    if (this.bookingForm.payment_type === 'EMI') {
+      if (this.selectedPlan) {
+        this.bookingForm.advance_amount = Math.round(basePrice * (Number(this.selectedPlan.down_payment_percent || 20) / 100));
+      }
+    } else if (this.bookingForm.payment_type === 'DownPayment') {
+      this.bookingForm.advance_amount = Math.round(basePrice * 0.25);
+    } else {
+      this.bookingForm.advance_amount = basePrice;
+    }
+    this.updatePlanCalculation();
+  }
+
+  updatePlanCalculation(): void {
+    if (this.bookingForm.payment_type !== 'EMI' || !this.selectedPlan || !this.selectedPlot) {
+      this.selectedPlanPreview = null;
+      return;
+    }
+    const price = Number(this.selectedPlot.price || 0);
+    const tenure = Number(this.selectedPlan.tenure_months || 12);
+    const interestRate = Number(this.selectedPlan.interest_percent || 0);
+    const dpAmount = Number(this.bookingForm.advance_amount || 0);
+    const interestAmount = Math.round((price * interestRate) / 100);
+    const remainingPrincipal = Math.max(0, price - dpAmount);
+    const monthlyEmi = Math.round((remainingPrincipal + interestAmount) / tenure);
+
+    this.selectedPlanPreview = {
+      price,
+      tenure,
+      interestRate,
+      interestAmount,
+      dpAmount,
+      remainingPrincipal,
+      totalPayable: price + interestAmount,
+      monthlyEmi
+    };
   }
 
   closeBookingModal(): void {
@@ -762,7 +839,8 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
 
     const payload = {
       plot_id: this.selectedPlot.plot_id,
-      payment_type: this.bookingForm.payment_type,
+      payment_type: this.bookingForm.payment_type === 'DownPayment' ? 'PartWise' : this.bookingForm.payment_type,
+      installment_plan_id: this.bookingForm.payment_type === 'EMI' ? (this.bookingForm.installment_plan_id || undefined) : undefined,
       advance_amount: Number(this.bookingForm.advance_amount),
       notes: this.bookingForm.notes || undefined
     };

@@ -113,11 +113,26 @@
         </tr>
         <tr>
           <td class="text-success fw-bold">Amount Paid Till Date</td>
-          <td class="text-end text-success fw-bold">₹{{ (invoice.paid_amount || 0) | number }}</td>
+          <td class="text-end text-success fw-bold">₹{{ ((isOneTime ? (invoice.grand_total || data.total_plot_price || invoice.paid_amount) : invoice.paid_amount) || 0) | number }}</td>
         </tr>
         <tr>
-          <td class="text-warning fw-bold">Remaining Balance Amount</td>
-          <td class="text-end text-warning fw-bold">₹{{ (invoice.balance_amount || 0) | number }}</td>
+          <td [class.text-success]="isOneTime" [class.text-warning]="!isOneTime" class="fw-bold">
+            Remaining Balance Amount
+            <span *ngIf="isOneTime" class="badge bg-success ms-1 fs-11">PAID IN FULL</span>
+          </td>
+          <td class="text-end fw-bold" [class.text-success]="isOneTime" [class.text-danger]="!isOneTime && (invoice.balance_amount || 0) > 0">
+            <span *ngIf="isOneTime">₹0 (Nil)</span>
+            <span *ngIf="!isOneTime">₹{{ (invoice.balance_amount || 0) | number }}</span>
+          </td>
+        </tr>
+        <!-- Next Due Date / Remaining Payment Deadline (Shown for Part-Wise Payment) -->
+        <tr *ngIf="isPartPayment && nextDueDate && (invoice.balance_amount || 0) > 0" class="table-warning bg-warning-subtle">
+          <td class="text-danger fw-bold">
+            <i class="fas fa-calendar-alt me-1"></i> Next Due Date / Remaining Payment Deadline
+          </td>
+          <td class="text-end text-danger fw-bold">
+            {{ nextDueDate | date:'dd MMM yyyy' }}
+          </td>
         </tr>
       </tbody>
     </table>
@@ -126,9 +141,16 @@
     <div class="row-flex align-items-center mb-3">
       <div class="pay-info flex-fill">
         <div class="invoice-grid grid-2">
-          <div><span>Payment Method</span><strong>{{ invoice.payment_method || 'Online' }}</strong></div>
-          <div><span>Payment Status</span><strong class="text-success">{{ invoice.payment_status }}</strong></div>
-          <div><span>Order Status</span><strong class="text-dark">{{ invoice.order_status }}</strong></div>
+          <div>
+            <span>Payment Method</span>
+            <strong *ngIf="isOneTime" class="text-success">One Time / Full Payment</strong>
+            <strong *ngIf="isPartPayment" class="text-warning">Part-wise Payment</strong>
+            <strong *ngIf="isEmi && !isOneTime && !isPartPayment" class="text-primary">Installment / EMI Plan</strong>
+            <strong *ngIf="!isOneTime && !isPartPayment && !isEmi">{{ invoice.payment_method || 'Online' }}</strong>
+          </div>
+          <div><span>Payment Status</span><strong class="text-success">{{ isOneTime ? 'Paid in Full' : invoice.payment_status }}</strong></div>
+          <div *ngIf="isIndividualEmi"><span>Installment No.</span><strong class="text-primary">Installment #{{ data.installment_no }} of {{ data.tenure_months || 60 }}</strong></div>
+          <div *ngIf="!isIndividualEmi"><span>Order Status</span><strong class="text-dark">{{ invoice.order_status }}</strong></div>
           <div><span>Transaction ID</span><strong class="font-mono">{{ data.transaction_id || '-' }}</strong></div>
         </div>
       </div>
@@ -141,6 +163,64 @@
         <div *ngIf="barcode" class="barcode-img mt-1">
           <img [src]="barcode" alt="Invoice Barcode" style="max-height: 40px; width: 140px;" />
         </div>
+      </div>
+    </div>
+
+    <!-- Section: Installment Schedule Breakdown (If plot is on EMI plan) -->
+    <div *ngIf="emiSchedules && emiSchedules.length > 0" class="mb-4">
+      <div class="section-title d-flex justify-content-between align-items-center" [style.color]="settings?.theme_color || '#14532d'">
+        <span><i class="fas fa-calendar-check me-1"></i> INSTALLMENT SCHEDULE (EMI TRACKER)</span>
+        <span class="fs-12 fw-normal text-muted">
+          Tenure: <strong>{{ data.tenure_months || emiSchedules.length }} Months</strong> ({{ ((data.tenure_months || emiSchedules.length)/12) | number:'1.0-0' }} Years)
+        </span>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm font-sm mb-2 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="text-center" style="width: 70px;">Inst. #</th>
+              <th>Due Date</th>
+              <th class="text-end">EMI Amount</th>
+              <th>Paid Date / Mode</th>
+              <th class="text-center">Status</th>
+              <th class="text-center no-print">Receipt / Bill</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emi of emiSchedules" 
+                [class.table-success]="emi.emi_status === 'Paid'"
+                [style.background-color]="emi.emi_status === 'Paid' ? '#dcfce7' : '#f8fafc'">
+              <td class="text-center fw-bold">#{{ emi.installment_no }}</td>
+              <td>{{ emi.due_date | date:'dd MMM yyyy' }}</td>
+              <td class="text-end fw-bold">₹{{ emi.emi_amount | number }}</td>
+              <td>
+                <span *ngIf="emi.paid_date" class="text-success fw-bold">
+                  <i class="fas fa-check-circle me-1"></i>{{ emi.paid_date | date:'dd MMM yyyy' }}
+                </span>
+                <span *ngIf="!emi.paid_date" class="text-muted">—</span>
+              </td>
+              <td class="text-center">
+                <!-- Color coding: Green if Paid, Gray if Due -->
+                <span *ngIf="emi.emi_status === 'Paid'" class="badge bg-success text-white">
+                  <i class="fas fa-check me-1"></i> Paid
+                </span>
+                <span *ngIf="emi.emi_status !== 'Paid'" class="badge bg-secondary text-light">
+                  Due
+                </span>
+              </td>
+              <td class="text-center no-print">
+                <a *ngIf="emi.emi_status === 'Paid'" 
+                   [routerLink]="['/invoice', emi.invoice_number || ('EMI-' + emi.emi_id)]" 
+                   target="_blank"
+                   class="btn btn-xs btn-outline-success">
+                  <i class="fas fa-receipt me-1"></i> Bill
+                </a>
+                <span *ngIf="emi.emi_status !== 'Paid'" class="text-muted fs-11">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 

@@ -282,11 +282,11 @@
           <td>
             <span class="sbadge" 
                   [class.sbadge-green]="e.emi_status==='Paid'" 
-                  [class.sbadge-yellow]="e.emi_status==='Pending'||e.emi_status==='ProofSubmitted'" 
+                  [class.sbadge-gray]="e.emi_status==='Pending'||e.emi_status==='ProofSubmitted'" 
                   [class.sbadge-red]="e.emi_status==='Overdue' || (e.overdue_days > 0 && e.emi_status !== 'Paid')">
               <i *ngIf="e.emi_status==='Paid'" class="fas fa-check me-1"></i>
               <i *ngIf="e.emi_status==='ProofSubmitted'" class="fas fa-clock me-1"></i>
-              {{ e.emi_status === 'ProofSubmitted' ? 'Under Verification' : (e.overdue_days > 0 && e.emi_status !== 'Paid' ? 'Overdue (' + e.overdue_days + 'd)' : e.emi_status) }}
+              {{ e.emi_status === 'ProofSubmitted' ? 'Under Verification' : (e.overdue_days > 0 && e.emi_status !== 'Paid' ? 'Overdue (' + e.overdue_days + 'd)' : (e.emi_status === 'Paid' ? 'Paid' : 'Due')) }}
             </span>
           </td>
           <td>

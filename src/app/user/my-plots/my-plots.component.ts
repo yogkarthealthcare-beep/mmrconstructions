@@ -52,11 +52,44 @@ export class MyPlotsComponent implements OnInit {
     proof_file: null as File | null
   };
 
+  // Installment Schedule Modal
+  selectedInstallmentBooking: any = null;
+  installmentSchedules: any[] = [];
+  loadingInstallments = false;
+
   constructor(
     private api: ApiService,
     private auth: AuthService,
     private router: Router
   ) {}
+
+  openInstallmentModal(booking: any) {
+    this.selectedInstallmentBooking = booking;
+    this.loadingInstallments = true;
+    this.installmentSchedules = [];
+
+    this.api.getEmiSchedule(booking.booking_id).subscribe({
+      next: (res: any) => {
+        this.loadingInstallments = false;
+        if (res?.success && Array.isArray(res.data)) {
+          this.installmentSchedules = res.data;
+        } else if (Array.isArray(res)) {
+          this.installmentSchedules = res;
+        } else {
+          this.installmentSchedules = booking.plotEmis || [];
+        }
+      },
+      error: () => {
+        this.loadingInstallments = false;
+        this.installmentSchedules = booking.plotEmis || [];
+      }
+    });
+  }
+
+  closeInstallmentModal() {
+    this.selectedInstallmentBooking = null;
+    this.installmentSchedules = [];
+  }
 
   ngOnInit() {
     this.loadAllData();

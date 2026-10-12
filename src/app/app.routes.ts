@@ -188,6 +188,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/booking-invoice/booking-invoice.component').then(m => m.BookingInvoiceComponent),
     title: 'Invoice — MMR Construction'
   },
+  { 
+    path: 'booking/:id/invoice', 
+    loadComponent: () => import('./pages/booking-invoice/booking-invoice.component').then(m => m.BookingInvoiceComponent),
+    title: 'Invoice — MMR Construction'
+  },
 
   // Feature Tree: Admin (Lazy Loaded Layout & Routes)
   {

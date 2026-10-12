@@ -331,7 +331,7 @@ export class EmiHistoryComponent implements OnInit {
 
   // ── Invoice Actions ───────────────────────────────────
   viewInvoice(emi: any) {
-    const invId = emi.invoice_number || emi.invoice_id || emi.booking_id;
+    const invId = emi.invoice_number || ('EMI-' + emi.emi_id) || emi.booking_id;
     if (invId) {
       this.router.navigate(['/invoice', invId]);
     } else {

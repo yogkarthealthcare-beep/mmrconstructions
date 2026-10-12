@@ -7,6 +7,7 @@ import { BookingAttributionApiService } from '../../services/booking-attribution
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
+import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -16,6 +17,7 @@ import Swal from 'sweetalert2';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    RouterLink,
     AdminPaginationComponent,
     AdminTableContainerComponent
   ],

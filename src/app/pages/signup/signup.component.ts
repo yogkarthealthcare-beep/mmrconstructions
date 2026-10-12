@@ -105,15 +105,12 @@ export class SignupComponent implements OnInit {
 
   // ── Step 1: Role Selection Navigation ──
   selectRole(role: UserRole) {
-    if (role === 'Customer') {
-      this.router.navigate(['/register/customer']);
-    } else if (role === 'Investor') {
-      this.router.navigate(['/register/investor']);
-    } else if (role === 'Associate') {
-      this.router.navigate(['/register/associate']);
-    } else if (role === 'Team Member') {
-      this.router.navigate(['/register/team-member']);
-    }
+    let path = '/register/customer';
+    if (role === 'Investor') path = '/register/investor';
+    else if (role === 'Associate') path = '/register/associate';
+    else if (role === 'Team Member') path = '/register/team-member';
+
+    this.router.navigate([path], { queryParamsHandling: 'preserve' });
   }
 
   private setupRole(role: UserRole) {
@@ -129,7 +126,7 @@ export class SignupComponent implements OnInit {
     this.roleSelected = false;
     this.error = '';
     this.resetForm();
-    this.router.navigate(['/register']);
+    this.router.navigate(['/register'], { queryParamsHandling: 'preserve' });
   }
 
   resetForm() {
@@ -150,32 +147,43 @@ export class SignupComponent implements OnInit {
   }
 
   private initSponsor() {
+    const params = this.route.snapshot.queryParams;
+    const rawRef = params['ref'] ?? params['sponsor'] ?? params['sponsor_invite_code'];
+    let cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
+
+    if (!cleanRef && typeof localStorage !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('mmr_referral_code');
+        if (stored) {
+          cleanRef = stored.replace(/\*/g, '').trim().toUpperCase();
+        }
+      } catch {}
+    }
+
+    if (cleanRef) {
+      // Priority to URL or stored referral code across ALL roles (Customer, Associate, Investor, Team Member)
+      this.form.sponsor_invite_code = cleanRef;
+      this.referralLocked = true;
+      try {
+        localStorage.setItem('mmr_referral_code', cleanRef);
+      } catch {}
+      this.api.trackReferralCode(cleanRef).subscribe({ error: () => {} });
+      this.verifySponsor(cleanRef);
+      return;
+    }
+
+    // Direct registration without referral
+    this.referralLocked = false;
     if (this.userType === 'Team Member') {
-      // Team Member: Sponsor ID MUST BE INITIALLY EMPTY. No auto-fill, no default fallback.
+      // Team Member: Sponsor ID is required but no referral link was provided -> leave empty for manual entry
       this.form.sponsor_invite_code = '';
-      this.referralLocked = false;
       this.sponsorValid = false;
       this.sponsorName = '';
       this.sponsorCodeFormatted = '';
       delete this.v['sponsor_invite_code'];
-      return;
-    }
-
-    const params = this.route.snapshot.queryParams;
-    const rawRef = params['ref'] ?? params['sponsor'] ?? params['sponsor_invite_code'];
-    const cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
-
-    if (cleanRef) {
-      // Condition 1: URL has a valid non-empty ref -> Priority to URL referral
-      this.form.sponsor_invite_code = cleanRef;
-      this.referralLocked = true;
-      localStorage.setItem('mmr_referral_code', cleanRef);
-      this.api.trackReferralCode(cleanRef).subscribe({ error: () => {} });
-      this.verifySponsor(cleanRef);
     } else {
-      // Default fallback for Customer / Investor / Associate
+      // Default fallback corporate sponsor for Customer / Investor / Associate
       this.form.sponsor_invite_code = 'MMR0001';
-      this.referralLocked = false;
       this.verifySponsor('MMR0001');
     }
   }
@@ -194,8 +202,7 @@ export class SignupComponent implements OnInit {
       } else if (this.userType === 'Customer') {
         delete this.v['sponsor_invite_code'];
       } else {
-        this.form.sponsor_invite_code = 'MMR0001';
-        this.verifySponsor('MMR0001');
+        this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
       }
     } else {
       this.verifySponsor(clean);
@@ -214,6 +221,13 @@ export class SignupComponent implements OnInit {
         this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
         return;
       }
+      if (this.userType === 'Customer') {
+        this.sponsorChecking = false;
+        this.sponsorValid = false;
+        this.sponsorName = '';
+        delete this.v['sponsor_invite_code'];
+        return;
+      }
       cleanCode = 'MMR0001';
       this.form.sponsor_invite_code = 'MMR0001';
     }
@@ -228,7 +242,7 @@ export class SignupComponent implements OnInit {
         this.sponsorChecking = false;
         if (res?.success && res?.data?.valid) {
           this.sponsorValid = true;
-          this.sponsorName = res.data.full_name || ((cleanCode === 'MMR0001' || cleanCode === 'MMR3001') ? 'Suraj Kumar Verma' : 'Verified Associate');
+          this.sponsorName = res.data.full_name || ((cleanCode === 'MMR0001' || cleanCode === 'MMR3001') ? 'Suraj Kumar Verma' : 'Verified Sponsor');
           this.sponsorCodeFormatted = res.data.invitation_code || res.data.member_id || cleanCode;
         } else if (cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
           // Default Sponsor Fallback Guarantee
@@ -376,6 +390,9 @@ export class SignupComponent implements OnInit {
     const code = this.form.sponsor_invite_code.replace(/\*/g, '').trim().toUpperCase();
     if (this.userType === 'Team Member') {
       return code; // Never fallback to default for Team Member
+    }
+    if (this.userType === 'Customer') {
+      return code; // Return referral code if present, or empty for direct signup
     }
     return code || 'MMR0001'; // Default sponsor fallback for other roles
   }

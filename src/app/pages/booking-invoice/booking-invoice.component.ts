@@ -52,6 +52,33 @@ export class BookingInvoiceComponent implements OnInit {
     return this.invoice?.invoice_data || this.invoice || {};
   }
 
+  get isOneTime(): boolean {
+    const payType = String(this.data?.payment_type || this.data?.payment_method || this.invoice?.payment_method || '').toLowerCase();
+    return Boolean(this.data?.is_one_time || payType.includes('full') || payType.includes('onetime') || payType.includes('one time'));
+  }
+
+  get isPartPayment(): boolean {
+    const payType = String(this.data?.payment_type || this.data?.payment_method || this.invoice?.payment_method || '').toLowerCase();
+    return Boolean(this.data?.is_part_wise || payType.includes('part') || (!this.isOneTime && !this.isEmi && Number(this.invoice?.balance_amount || this.data?.balance_amount || 0) > 0));
+  }
+
+  get isEmi(): boolean {
+    const payType = String(this.data?.payment_type || this.data?.payment_method || this.invoice?.payment_method || this.data?.invoice_type || '').toLowerCase();
+    return Boolean(this.data?.is_emi || payType.includes('emi') || payType.includes('installment') || (this.emiSchedules && this.emiSchedules.length > 0));
+  }
+
+  get emiSchedules(): any[] {
+    return this.invoice?.emi_schedules || this.data?.emi_schedules || [];
+  }
+
+  get isIndividualEmi(): boolean {
+    return Boolean(this.data?.emi_id || this.data?.installment_no || (this.data?.invoice_type && String(this.data.invoice_type).includes('EMI')));
+  }
+
+  get nextDueDate(): any {
+    return this.data?.part_wise_deadline_at || this.invoice?.part_wise_deadline_at || this.data?.due_date || this.invoice?.next_due_date || null;
+  }
+
   print() {
     window.print();
   }
