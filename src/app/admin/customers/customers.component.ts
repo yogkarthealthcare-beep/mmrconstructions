@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { AdminExportService } from '../../services/admin-export.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import Swal from 'sweetalert2';
 import { USER_TYPES } from '../../constants/user-types.constant';
 
@@ -120,6 +120,7 @@ export class CustomersComponent implements OnInit {
     private api: ApiService,
     private auth: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     public exportService: AdminExportService
   ) {}
 
@@ -211,6 +212,10 @@ export class CustomersComponent implements OnInit {
   }
 
   ngOnInit() {
+    const q = this.route.snapshot.queryParams['q'] || this.route.snapshot.queryParams['search'];
+    if (q) {
+      this.search = String(q).trim();
+    }
     this.load();
   }
 

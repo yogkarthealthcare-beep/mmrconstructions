@@ -1,6 +1,7 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { AdminExportService } from '../../services/admin-export.service';
@@ -77,10 +78,15 @@ export class AdminTeamMembersComponent implements OnInit {
   constructor(
     private api: ApiService,
     private auth: AuthService,
+    private route: ActivatedRoute,
     public exportService: AdminExportService
   ) {}
 
   ngOnInit(): void {
+    const q = this.route.snapshot.queryParams['q'] || this.route.snapshot.queryParams['search'];
+    if (q) {
+      this.search = String(q).trim();
+    }
     this.load();
   }
 

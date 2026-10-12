@@ -684,22 +684,98 @@ export class MlmTreeComponent implements OnInit {
     this.doubleClickConfirmModal.node = null;
   }
 
-  confirmImpersonateLogin() {
-    const node = this.doubleClickConfirmModal.node || this.contextMenu.node;
+  confirmImpersonateLogin(targetNode?: MlmNode | null) {
+    const node = targetNode || this.doubleClickConfirmModal.node || this.contextMenu.node;
     this.closeConfirmModal();
     this.closeContextMenu();
 
-    if (node) {
-      this.toast = `Coming in Phase 3: Secure Login as ${node.name} (${node.memberCode})`;
+    if (!node) return;
+
+    if (node.userId === 'ADMIN' || node.id === 'ADMIN' || node.memberCode === 'MMR-0') {
+      this.toast = 'Cannot impersonate the System Administrator.';
+      return;
     }
+
+    if (this.isFreeOrDisabled(node) && node.status !== 'Active') {
+      this.toast = `Cannot login as ${node.name}: Account status is ${node.status}.`;
+      return;
+    }
+
+    // Synchronously open a new tab to avoid popup blocker
+    let newTab: Window | null = null;
+    try {
+      newTab = window.open('about:blank', '_blank');
+      if (newTab) {
+        newTab.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Connecting to ${node.name}'s Portal...</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc; color: #1e293b; }
+              .card { background: white; padding: 2.5rem; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); text-align: center; max-width: 420px; width: 90%; }
+              .spinner { width: 44px; height: 44px; border: 4px solid #e2e8f0; border-top-color: #059669; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1.25rem; }
+              @keyframes spin { to { transform: rotate(360deg); } }
+              h3 { margin: 0 0 0.5rem; font-size: 1.15rem; font-weight: 700; color: #0f172a; }
+              p { margin: 0; font-size: 0.875rem; color: #64748b; }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <div class="spinner"></div>
+              <h3>Authorizing Portal Access</h3>
+              <p>Establishing secure impersonation session for <strong>${node.name}</strong> (${node.memberCode}). Please wait...</p>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+    } catch {
+      newTab = null;
+    }
+
+    this.toast = `Generating secure session for ${node.name}...`;
+
+    this.api.adminIssueImpersonateTicket({
+      user_id: node.userId,
+      user_type: node.userType || 'Associate'
+    }).subscribe({
+      next: (res: any) => {
+        if (res.success && res.data?.ticket) {
+          const ticket = res.data.ticket;
+          this.toast = `Session authorized for ${node.name}. Opening dashboard in new tab...`;
+          const targetUrl = `/auth/impersonate-login?ticket=${encodeURIComponent(ticket)}`;
+          if (newTab && !newTab.closed) {
+            newTab.location.href = targetUrl;
+          } else {
+            window.open(targetUrl, '_blank');
+          }
+        } else {
+          if (newTab && !newTab.closed) newTab.close();
+          this.toast = res.message || 'Failed to authorize impersonation session.';
+        }
+      },
+      error: (err: any) => {
+        if (newTab && !newTab.closed) newTab.close();
+        const msg = err?.error?.message || err?.message || 'Authorization failed. Target account may be inactive or unauthorized.';
+        this.toast = `Login failed: ${msg}`;
+      }
+    });
   }
 
   openInDirectory(node: MlmNode) {
     this.closeContextMenu();
-    if (node.userType === 'Team Member') {
-      this.router.navigate(['/admin/team-members'], { queryParams: { q: node.memberCode } });
+    const type = String(node.userType || '').toLowerCase().trim();
+    const query = node.memberCode || node.name || '';
+    if (type.includes('team member') || type === 'teammember') {
+      this.router.navigate(['/admin/team-members'], { queryParams: { q: query } });
+    } else if (type === 'customer') {
+      this.router.navigate(['/admin/customers'], { queryParams: { q: query } });
+    } else if (type === 'investor') {
+      this.router.navigate(['/admin/investor-enrollments'], { queryParams: { q: query } });
     } else {
-      this.router.navigate(['/admin/associates'], { queryParams: { q: node.memberCode } });
+      this.router.navigate(['/admin/associates'], { queryParams: { q: query } });
     }
   }
 

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-impersonate-login',
@@ -19,6 +20,9 @@ import { AuthService } from '../../services/auth.service';
         </div>
         <div *ngIf="errorMessage" class="alert alert-danger mb-0">
           <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+          <div class="mt-3">
+            <button class="btn btn-sm btn-outline-danger" (click)="closeOrReturn()">Close Tab</button>
+          </div>
         </div>
       </div>
     </div>
@@ -31,11 +35,43 @@ export class ImpersonateLoginComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private api: ApiService
   ) {}
+
+  closeOrReturn(): void {
+    if (typeof window !== 'undefined' && window.opener) {
+      window.close();
+    } else {
+      this.router.navigate(['/']);
+    }
+  }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
+      const ticket = params['ticket'];
+
+      // ── HIGH-SECURITY PATH: Single-use Ticket Exchange ───────────
+      if (ticket) {
+        this.api.consumeImpersonateTicket(ticket).subscribe({
+          next: (res: any) => {
+            if (res.success && res.data?.token) {
+              const { token, refresh_token, user, redirect_url } = res.data;
+              this.establishSession(token, refresh_token || token, user, redirect_url);
+            } else {
+              this.loading = false;
+              this.errorMessage = res.message || 'Failed to exchange impersonation ticket.';
+            }
+          },
+          error: (err: any) => {
+            this.loading = false;
+            this.errorMessage = err?.error?.message || 'Invalid, expired, or already-used impersonation ticket.';
+          }
+        });
+        return;
+      }
+
+      // ── LEGACY PATH: Direct parameters (Backward Compatibility) ──
       const token = params['token'];
       const refreshToken = params['refresh_token'] || token;
       const userStr = params['user'];
@@ -44,7 +80,7 @@ export class ImpersonateLoginComponent implements OnInit {
 
       if (!token) {
         this.loading = false;
-        this.errorMessage = 'Invalid or missing authentication token.';
+        this.errorMessage = 'Invalid or missing authentication ticket / token.';
         return;
       }
 
@@ -63,38 +99,45 @@ export class ImpersonateLoginComponent implements OnInit {
         return;
       }
 
-      const rawType = String(userType || parsedUser?.user_type || '').toLowerCase();
-      const isTmActing = (redirectUrl && redirectUrl.includes('team-member')) || rawType.includes('team member') || rawType === 'teammember' || parsedUser?.acting_panel === 'team-member';
-
-      if (isTmActing) {
-        if (parsedUser && !parsedUser.acting_panel && rawType !== 'team member' && rawType !== 'teammember') {
-          parsedUser.acting_panel = 'team-member';
-        }
-        this.authService.setUserSession({
-          token,
-          refresh_token: refreshToken,
-          user: parsedUser
-        });
-        const target = redirectUrl || '/team-member/dashboard';
-        this.router.navigateByUrl(target);
-      } else if (userType === 'Investor' || parsedUser.user_type === 'Investor') {
-        this.authService.setInvestorSession({
-          token,
-          refresh_token: refreshToken,
-          user: parsedUser
-        });
-        const target = redirectUrl || '/investor/dashboard';
-        this.router.navigateByUrl(target);
-      } else {
-        this.authService.setUserSession({
-          token,
-          refresh_token: refreshToken,
-          user: parsedUser
-        });
-        const defaultTarget = this.authService.getHomeRouteForRole(parsedUser.user_type, parsedUser.acting_panel);
-        const target = redirectUrl || defaultTarget;
-        this.router.navigateByUrl(target);
-      }
+      this.establishSession(token, refreshToken, parsedUser, redirectUrl, userType);
     });
+  }
+
+  private establishSession(token: string, refreshToken: string, user: any, redirectUrl?: string, explicitType?: string): void {
+    const rawType = String(explicitType || user?.user_type || '').toLowerCase();
+    const isTmActing = (redirectUrl && redirectUrl.includes('team-member')) ||
+      rawType.includes('team member') ||
+      rawType === 'teammember' ||
+      user?.acting_panel === 'team-member';
+
+    if (isTmActing) {
+      if (user && !user.acting_panel && rawType !== 'team member' && rawType !== 'teammember') {
+        user.acting_panel = 'team-member';
+      }
+      this.authService.setUserSession({
+        token,
+        refresh_token: refreshToken,
+        user
+      });
+      const target = redirectUrl || '/team-member/dashboard';
+      this.router.navigateByUrl(target, { replaceUrl: true });
+    } else if (rawType === 'investor' || user.user_type === 'Investor') {
+      this.authService.setInvestorSession({
+        token,
+        refresh_token: refreshToken,
+        user
+      });
+      const target = redirectUrl || '/investor/dashboard';
+      this.router.navigateByUrl(target, { replaceUrl: true });
+    } else {
+      this.authService.setUserSession({
+        token,
+        refresh_token: refreshToken,
+        user
+      });
+      const defaultTarget = this.authService.getHomeRouteForRole(user.user_type, user.acting_panel);
+      const target = redirectUrl || defaultTarget;
+      this.router.navigateByUrl(target, { replaceUrl: true });
+    }
   }
 }

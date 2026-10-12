@@ -1,6 +1,7 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
@@ -121,6 +122,7 @@ export class AssociatesComponent implements OnInit {
   constructor(
     private api: ApiService,
     private auth: AuthService,
+    private route: ActivatedRoute,
     public exportService: AdminExportService
   ) {}
 
@@ -265,6 +267,10 @@ export class AssociatesComponent implements OnInit {
   }
 
   ngOnInit() {
+    const q = this.route.snapshot.queryParams['q'] || this.route.snapshot.queryParams['search'];
+    if (q) {
+      this.search = String(q).trim();
+    }
     this.load();
   }
 

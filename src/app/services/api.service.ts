@@ -625,6 +625,12 @@ export class ApiService {
   adminGetNetworkTreePath(userId: string | number) {
     return this.get('/api/admin/network-tree/path', { user_id: userId }, true);
   }
+  adminIssueImpersonateTicket(data: { user_id: string | number; user_type?: string }) {
+    return this.post('/api/admin/impersonate-ticket', data, true);
+  }
+  consumeImpersonateTicket(ticket: string) {
+    return this.post('/api/auth/consume-impersonate-ticket', { ticket }, false);
+  }
   initiateAddFund(amountOrPayload: any, gatewayName?: string) {
     const payload = (typeof amountOrPayload === 'object' && amountOrPayload !== null)
       ? amountOrPayload
