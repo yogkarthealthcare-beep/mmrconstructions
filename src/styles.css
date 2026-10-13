@@ -2694,4 +2694,276 @@ select.inv-select:focus {
   .navbar .nav-actions .btn-green {
     display: none !important;
   }
-}
+}
+
+/* ==========================================================================
+   MMR CONSTRUCTIONS — ARCHITECTURAL MOBILE-FIRST REFACTORING ENGINE
+   Target Viewport: 360px - 414px (Compact Mobile Screens & Standard Phones)
+   Strict Constraints:
+   1. Preserves Core Brand Colors (#062b18 Forest Green, #c9a84c Gold, #10b981)
+   2. Zero Overlaps (flex-shrink: 0 on all icons, gap: 8px)
+   3. 100% Viewport Containment (overflow-x: hidden on page shells)
+   4. Strict 8pt Spatial Rhythm (8px, 12px, 16px, 24px, 32px)
+   ========================================================================== */
+
+@media (max-width: 576px) {
+
+  /* ── 1. GLOBAL VIEWPORT CONTAINMENT & 8PT GUTTERS ── */
+  html,
+  body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    position: relative;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .mmr-container,
+  .container,
+  .container-fluid,
+  .about-container,
+  .panel-shell,
+  .panel-main,
+  .panel-content,
+  main {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Universal 16px (1rem) Mobile Gutter */
+  .mmr-container,
+  .about-container,
+  .panel-content {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    width: 100% !important;
+  }
+
+  /* 32px Structured Vertical Rhythm Between Sections */
+  section,
+  .section-pad,
+  .regional-powerhouse-section,
+  .features-section,
+  .about-section {
+    padding-top: 32px !important;
+    padding-bottom: 32px !important;
+  }
+
+  /* ── 2. FLUID TYPOGRAPHIC SCALE & SAFE BREAK-WORD ── */
+  h1, h2, h3, h4, h5, h6,
+  p, span, a, label, li, td, th {
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+  }
+
+  /* H1 (Hero & Main Page Headers) */
+  h1,
+  .hero-main-title,
+  .city-hero-h1,
+  .blog-hero h1,
+  .article-header h1,
+  .about-section-heading {
+    font-size: clamp(1.45rem, 5.5vw, 1.85rem) !important;
+    line-height: 1.22 !important;
+    letter-spacing: -0.02em !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* H2 (Section Subheaders) */
+  h2,
+  .section-title,
+  .section-heading h2,
+  .article-body h2,
+  .cta-heading {
+    font-size: clamp(1.2rem, 4.5vw, 1.4rem) !important;
+    line-height: 1.25 !important;
+    margin-bottom: 10px !important;
+  }
+
+  /* H3 & Card Titles */
+  h3,
+  .card-title,
+  .blog-card h2,
+  .site-card-title,
+  .featured-name,
+  .sub-name {
+    font-size: clamp(1.0rem, 3.8vw, 1.15rem) !important;
+    line-height: 1.3 !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Standard Body Text */
+  p,
+  .card-content p,
+  .article-body p,
+  .section-subtext,
+  .lead-text {
+    font-size: 15px !important; /* 0.9375rem */
+    line-height: 1.6 !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Meta / Helpers / Badges / Sub-labels */
+  .post-meta,
+  .article-meta,
+  .badge,
+  .stat-pill,
+  .site-stat-chip,
+  .eyebrow,
+  .gold-section-tag {
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ── 3. ZERO OVERLAPS: ICON & TEXT INLINE-FLEX ALIGNMENT ── */
+  button,
+  .btn,
+  .nav-link,
+  .dropdown-item,
+  .list-group-item,
+  .badge,
+  .stat-mini-card,
+  .kpi-card,
+  .action-btn-group > * {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  /* Force icons never to compress, shrink or collide */
+  i,
+  svg,
+  .fa,
+  .fas,
+  .fab,
+  .far,
+  .icon-wrap i {
+    flex-shrink: 0 !important;
+    min-width: 14px !important;
+  }
+
+  /* Badges Float Cleanly Without Overlapping Titles */
+  .badge,
+  .status-badge,
+  .site-stat-chip {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    margin: 2px 0 !important;
+  }
+
+  /* ── 4. TOUCH-TARGET STANDARDS (MINIMUM 44PX) ── */
+  button.btn,
+  a.btn,
+  .form-control,
+  .form-select,
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="date"],
+  input[type="search"],
+  select {
+    min-height: 44px !important;
+    height: 44px !important;
+    font-size: 16px !important; /* Crucial: Prevents iOS Safari auto-zooming */
+    box-sizing: border-box !important;
+  }
+
+  /* Compact secondary row actions (inside tables/lists) */
+  .btn-sm,
+  .btn-xs,
+  .btn-action,
+  .table-action-btn {
+    min-height: 38px !important;
+    height: 38px !important;
+    padding: 0 12px !important;
+    font-size: 13px !important;
+  }
+
+  /* ── 5. TOUCH-FRIENDLY TABLE SCROLL WRAPPER & STICKY COLUMN ── */
+  .table-responsive,
+  .table-responsive-touch,
+  .admin-table-scroll-container,
+  .admin-table-scroll {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 10px !important;
+    border: 1px solid #e2e8f0 !important;
+    /* Progressive visual scroll shadow */
+    background: 
+      linear-gradient(to right, #ffffff 30%, rgba(255, 255, 255, 0)),
+      linear-gradient(to right, rgba(255, 255, 255, 0), #ffffff 70%) 100% 0,
+      radial-gradient(farthest-side at 0 50%, rgba(6, 43, 24, 0.18), rgba(0,0,0,0)),
+      radial-gradient(farthest-side at 100% 50%, rgba(6, 43, 24, 0.18), rgba(0,0,0,0)) 100% 0 !important;
+    background-repeat: no-repeat !important;
+    background-color: #ffffff !important;
+    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100% !important;
+    background-attachment: local, local, scroll, scroll !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Freeze Primary Identifier Column (S.No or Name) */
+  .table-responsive table th:first-child,
+  .table-responsive table td:first-child,
+  .admin-table-scroll-container table th:first-child,
+  .admin-table-scroll-container table td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 3 !important;
+    background: #f8fafc !important;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  /* ── 6. MOBILE CARD VIEW ALTERNATIVE (.table-card-mobile) ── */
+  .table-card-mobile thead {
+    display: none !important;
+  }
+
+  .table-card-mobile,
+  .table-card-mobile tbody,
+  .table-card-mobile tr {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .table-card-mobile tr {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px !important;
+    padding: 12px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03) !important;
+  }
+
+  .table-card-mobile td {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 6px 0 !important;
+    border: none !important;
+    border-bottom: 1px dashed #f1f5f9 !important;
+    font-size: 13px !important;
+    text-align: right !important;
+  }
+
+  .table-card-mobile td:last-child {
+    border-bottom: none !important;
+    padding-top: 8px !important;
+  }
+
+  .table-card-mobile td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #64748b;
+    font-size: 11px;
+    text-transform: uppercase;
+    text-align: left;
+    margin-right: 8px;
+  }
+}
+
