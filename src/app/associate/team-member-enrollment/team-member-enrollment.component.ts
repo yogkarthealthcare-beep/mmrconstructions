@@ -29,6 +29,7 @@ interface SignaturePadController {
   clear: () => void;
   isEmpty: () => boolean;
   dataUrl: () => string;
+  markDrawn: () => void;
 }
 
 @Component({
@@ -155,11 +156,31 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     return this.occupiedSlotsCount() >= 10;
   });
 
-  // Submit gate computed: Checks declaration checkbox specifically
+  availableSlots = computed(() => {
+    return this.slots().filter(s => s.status === 'empty');
+  });
+
+  isSlotAvailable(num: number): boolean {
+    return this.availableSlots().some(s => s.slotNumber === num);
+  }
+
+  getFirstAvailableSlot(): number | null {
+    const emptySlot = this.slots().find(s => s.status === 'empty');
+    return emptySlot ? emptySlot.slotNumber : (this.slots().length > 0 ? 1 : null);
+  }
+
+  onSlotSelected(slotNum: any): void {
+    const num = Number(slotNum);
+    if (num >= 1 && num <= 10) {
+      this.targetSlotNumber = num;
+    }
+  }
+
+  declarationAcceptedSignal = signal<boolean>(false);
+
+  // Submit gate computed: Reactively updates when declarationAcceptedSignal, submitting, or isCapacityFull changes
   canSubmit = computed(() => {
-    if (!this.enrollmentForm) return false;
-    const declaration = this.enrollmentForm.get('declarationAccepted')?.value;
-    return Boolean(declaration) && !this.submitting() && !this.isCapacityFull();
+    return this.declarationAcceptedSignal() && !this.submitting() && !this.isCapacityFull();
   });
 
   constructor(
@@ -171,6 +192,18 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    // Purge any stale test user data from local/session storage
+    try {
+      const stored = localStorage.getItem('mmr_last_registered_user');
+      if (stored && (stored.includes('Golu') || stored.includes('golu'))) {
+        localStorage.removeItem('mmr_last_registered_user');
+      }
+      const sStored = sessionStorage.getItem('mmr_last_registered_user');
+      if (sStored && (sStored.includes('Golu') || sStored.includes('golu'))) {
+        sessionStorage.removeItem('mmr_last_registered_user');
+      }
+    } catch {}
+
     const user = this.auth.getUser();
     this.associateId = Number(user?.user_id || user?.id || 0);
     this.associateName = user?.full_name || '';
@@ -181,22 +214,21 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
 
     // Check for query parameters passed from quick registration
     this.route.queryParams.subscribe(params => {
-      if (params['user_id']) {
-        this.targetUserId = Number(params['user_id']);
-      }
-      if (params['slot_number']) {
-        this.targetSlotNumber = Number(params['slot_number']);
-      }
-      if (params['applicant_name']) {
-        this.enrollmentForm.patchValue({ fullName: params['applicant_name'] });
-      }
-      if (params['mobile'] || params['mobile_no']) {
-        this.enrollmentForm.patchValue({ mobileNo: params['mobile'] || params['mobile_no'] });
-      }
-      if (params['email']) {
-        this.enrollmentForm.patchValue({ emailId: params['email'] });
-      }
       if (params['user_id'] || params['applicant_name']) {
+        const slot = params['slot_number'] ? Number(params['slot_number']) : undefined;
+        this.cleanFormForNewEnrollment(slot);
+        if (params['user_id']) {
+          this.targetUserId = Number(params['user_id']);
+        }
+        if (params['applicant_name']) {
+          this.enrollmentForm.patchValue({ fullName: params['applicant_name'] });
+        }
+        if (params['mobile'] || params['mobile_no']) {
+          this.enrollmentForm.patchValue({ mobileNo: params['mobile'] || params['mobile_no'] });
+        }
+        if (params['email']) {
+          this.enrollmentForm.patchValue({ emailId: params['email'] });
+        }
         this.activeTab = 'enroll';
         setTimeout(() => this.initSignaturePads(), 150);
       }
@@ -233,32 +265,14 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     this.enrollmentForm.get('dateOfBirth')?.valueChanges.subscribe(val => {
       this.calculatedAge.set(calculateAgeFromDob(val));
     });
+
+    this.enrollmentForm.get('declarationAccepted')?.valueChanges.subscribe(val => {
+      this.declarationAcceptedSignal.set(Boolean(val));
+    });
+    this.declarationAcceptedSignal.set(Boolean(this.enrollmentForm.get('declarationAccepted')?.value));
   }
 
   fetchPrefillData(): void {
-    let lastReg: any = null;
-    try {
-      const saved = sessionStorage.getItem('mmr_last_registered_user') || localStorage.getItem('mmr_last_registered_user');
-      if (saved) lastReg = JSON.parse(saved);
-    } catch {}
-
-    const sessionUser = this.auth.getUser();
-
-    // Default pre-fill candidate details from registration or session if empty
-    const defaultName = lastReg?.full_name || sessionUser?.full_name || '';
-    const defaultMobile = lastReg?.mobile_no || sessionUser?.mobile_no || sessionUser?.phone || sessionUser?.contact_no || '';
-    const defaultEmail = lastReg?.email || sessionUser?.email || '';
-
-    if (!this.enrollmentForm.get('fullName')?.value && defaultName) {
-      this.enrollmentForm.patchValue({ fullName: defaultName });
-    }
-    if (!this.enrollmentForm.get('mobileNo')?.value && defaultMobile) {
-      this.enrollmentForm.patchValue({ mobileNo: defaultMobile });
-    }
-    if (!this.enrollmentForm.get('emailId')?.value && defaultEmail) {
-      this.enrollmentForm.patchValue({ emailId: defaultEmail });
-    }
-
     if (!this.associateId) return;
     this.loadingPrefill.set(true);
 
@@ -267,17 +281,12 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
         this.loadingPrefill.set(false);
         if (res?.success && res?.data) {
           const d = res.data;
-          this.associateName = d.associateName || this.associateName;
-          
+          if (d.associateName) {
+            this.associateName = d.associateName;
+          }
           this.enrollmentForm.patchValue({
             associateId: d.associateId || this.associateId,
-            associateName: this.associateName,
-            mobileNo: this.enrollmentForm.get('mobileNo')?.value || d.mobileNo || defaultMobile || '',
-            emailId: this.enrollmentForm.get('emailId')?.value || d.emailId || defaultEmail || '',
-            bankName: this.enrollmentForm.get('bankName')?.value || d.bankName || '',
-            branchName: this.enrollmentForm.get('branchName')?.value || d.branchName || '',
-            accountNo: this.enrollmentForm.get('accountNo')?.value || d.accountNo || '',
-            ifscCode: this.enrollmentForm.get('ifscCode')?.value || d.ifscCode || ''
+            associateName: this.associateName
           });
         }
       },
@@ -286,6 +295,45 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
         console.warn('Could not load associate prefill:', err);
       }
     });
+  }
+
+  cleanFormForNewEnrollment(slotNum?: number): void {
+    if (slotNum !== undefined && slotNum !== null) {
+      this.targetSlotNumber = slotNum;
+    }
+    this.targetUserId = null;
+    this.enrollmentForm.reset({
+      associateId: this.associateId,
+      associateName: this.associateName,
+      fullName: '',
+      fatherHusbandName: '',
+      dateOfBirth: '',
+      gender: 'Male',
+      aadharNo: '',
+      panNo: '',
+      mobileNo: '',
+      emailId: '',
+      fullAddress: '',
+      nomineeName: '',
+      nomineeRelation: '',
+      nomineeAgeDob: '',
+      nomineeContactNo: '',
+      bankName: '',
+      branchName: '',
+      accountNo: '',
+      ifscCode: '',
+      declarationAccepted: false
+    });
+    this.enrollmentForm.markAsPristine();
+    this.enrollmentForm.markAsUntouched();
+    this.photoFile = null;
+    this.photoPreviewUrl = null;
+    this.clearApplicantSignature();
+    this.clearAssociateSignature();
+    this.ifscVerified.set(false);
+    this.ifscBankInfo.set('');
+    this.calculatedAge.set('');
+    this.declarationAcceptedSignal.set(false);
   }
 
   ngAfterViewInit(): void {
@@ -303,7 +351,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       Swal.fire({
         icon: 'warning',
         title: 'Maximum Capacity Reached',
-        text: 'You have already enrolled 11 direct Team Members (maximum 11 slots allowed).',
+        text: 'You have already enrolled 10 direct Team Members (maximum 10 slots allowed).',
         confirmButtonColor: '#0b5345'
       });
       return;
@@ -312,6 +360,9 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     if (tab === 'list' || tab === 'slots') {
       this.loadTeamMembersList();
     } else if (tab === 'enroll') {
+      if (!this.targetSlotNumber) {
+        this.targetSlotNumber = this.getFirstAvailableSlot();
+      }
       setTimeout(() => this.initSignaturePads(), 150);
     }
   }
@@ -320,15 +371,13 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     if (this.isCapacityFull()) {
       Swal.fire({
         icon: 'warning',
-        title: 'All 11 Slots Occupied',
-        text: 'This Associate has reached the maximum capacity of 11 direct Team Members. Slot 12 is not permitted.',
+        title: 'All 10 Slots Occupied',
+        text: 'This Associate has reached the maximum capacity of 10 direct Team Members. Additional enrollments are not permitted.',
         confirmButtonColor: '#0b5345'
       });
       return;
     }
-    if (slotNum) {
-      this.targetSlotNumber = slotNum;
-    }
+    this.cleanFormForNewEnrollment(slotNum);
     this.setTab('enroll');
   }
 
@@ -408,17 +457,28 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const val = validateImageUpload(file, 'signature');
-    if (!val.valid) {
-      Swal.fire('Invalid Signature (अमान्य सिग्नेचर)', val.message, 'warning');
+    if (!file.type.startsWith('image/')) {
+      Swal.fire('Invalid File', 'Please select a valid image file (JPG, PNG, WEBP).', 'warning');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire('File Too Large', 'Signature image must be under 5 MB.', 'warning');
       event.target.value = '';
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (e: any) => {
-      this.uploadedApplicantSigUrl = e.target.result;
-      this.drawUploadedImageToCanvas(this.applicantSigCanvasRef?.nativeElement, this.uploadedApplicantSigUrl);
+      const rawData = e.target.result;
+      this.drawUploadedImageToCanvas(
+        this.applicantSigCanvasRef?.nativeElement, 
+        rawData,
+        this.applicantSigPad,
+        (optimizedDataUrl) => {
+          this.uploadedApplicantSigUrl = optimizedDataUrl;
+        }
+      );
     };
     reader.readAsDataURL(file);
   }
@@ -427,32 +487,74 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const val = validateImageUpload(file, 'signature');
-    if (!val.valid) {
-      Swal.fire('Invalid Signature (अमान्य सिग्नेचर)', val.message, 'warning');
+    if (!file.type.startsWith('image/')) {
+      Swal.fire('Invalid File', 'Please select a valid image file (JPG, PNG, WEBP).', 'warning');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire('File Too Large', 'Signature image must be under 5 MB.', 'warning');
       event.target.value = '';
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (e: any) => {
-      this.uploadedAssociateSigUrl = e.target.result;
-      this.drawUploadedImageToCanvas(this.associateSigCanvasRef?.nativeElement, this.uploadedAssociateSigUrl);
+      const rawData = e.target.result;
+      this.drawUploadedImageToCanvas(
+        this.associateSigCanvasRef?.nativeElement, 
+        rawData,
+        this.associateSigPad,
+        (optimizedDataUrl) => {
+          this.uploadedAssociateSigUrl = optimizedDataUrl;
+        }
+      );
     };
     reader.readAsDataURL(file);
   }
 
-  private drawUploadedImageToCanvas(canvas: HTMLCanvasElement | undefined, dataUrl: string | null): void {
+  private drawUploadedImageToCanvas(
+    canvas: HTMLCanvasElement | undefined, 
+    dataUrl: string | null,
+    padController?: SignaturePadController | null,
+    onComplete?: (optimizedDataUrl: string) => void
+  ): void {
     if (!canvas || !dataUrl) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const img = new Image();
     img.onload = () => {
       const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      if (!canvas.width || canvas.width === 0 || (rect.width > 0 && Math.abs(canvas.width - rect.width * dpr) > 2)) {
+        canvas.width = (rect.width || 360) * dpr;
+        canvas.height = (rect.height || 140) * dpr;
+        ctx.scale(dpr, dpr);
+      }
       const w = canvas.width / dpr;
       const h = canvas.height / dpr;
       ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(img, 0, 0, w, h);
+
+      // Fit image inside canvas while maintaining aspect ratio and centering
+      const padding = 10;
+      const maxW = w - padding * 2;
+      const maxH = h - padding * 2;
+      const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+      const drawW = img.width * scale;
+      const drawH = img.height * scale;
+      const drawX = (w - drawW) / 2;
+      const drawY = (h - drawH) / 2;
+
+      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+      if (padController) {
+        padController.markDrawn();
+      }
+
+      const optimized = canvas.toDataURL('image/png');
+      if (onComplete) {
+        onComplete(optimized);
+      }
     };
     img.src = dataUrl;
   }
@@ -474,7 +576,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   private createSignaturePad(canvas: HTMLCanvasElement): SignaturePadController {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      return { clear: () => {}, isEmpty: () => true, dataUrl: () => '' };
+      return { clear: () => {}, isEmpty: () => true, dataUrl: () => '', markDrawn: () => {} };
     }
 
     // High-DPI canvas scaling
@@ -546,6 +648,9 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       dataUrl: () => {
         if (!hasDrawn) return '';
         return canvas.toDataURL('image/png');
+      },
+      markDrawn: () => {
+        hasDrawn = true;
       }
     };
   }
@@ -555,6 +660,8 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     if (this.applicantSigPad) {
       this.applicantSigPad.clear();
     }
+    const input = document.getElementById('applicantSigFileInput') as HTMLInputElement;
+    if (input) input.value = '';
   }
 
   clearAssociateSignature(): void {
@@ -562,24 +669,55 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     if (this.associateSigPad) {
       this.associateSigPad.clear();
     }
+    const input = document.getElementById('associateSigFileInput') as HTMLInputElement;
+    if (input) input.value = '';
   }
 
   onSubmit(): void {
-    if (this.enrollmentForm.invalid || !this.photoFile) {
+    if (!this.declarationAcceptedSignal()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Declaration Required (घोषणा आवश्यक है)',
+        text: 'Please accept the Declaration & Code of Conduct checkbox to proceed (कृपया नीचे दिए गए घोषणा चेकबॉक्स को स्वीकार करें).',
+        confirmButtonColor: '#0b5345'
+      });
+      setTimeout(() => {
+        const declEl = document.querySelector('.declaration-gate-box, #declarationCheck') as HTMLElement;
+        if (declEl) {
+          declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const chk = declEl.querySelector('input[type="checkbox"]') as HTMLElement;
+          if (chk) chk.focus();
+        }
+      }, 100);
+      return;
+    }
+
+    if (!this.photoFile) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Photo Required (फोटो आवश्यक है)',
+        text: 'Please upload member passport/profile photo (कृपया सदस्य की पासपोर्ट फोटो अपलोड करें).',
+        confirmButtonColor: '#0b5345'
+      });
+      setTimeout(() => {
+        const photoBox = document.querySelector('.photo-upload-container, .photo-preview-box') as HTMLElement;
+        if (photoBox) {
+          photoBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return;
+    }
+
+    if (this.enrollmentForm.invalid) {
       this.enrollmentForm.markAllAsTouched();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Incomplete Form (अधूरा फॉर्म)',
+        text: 'Please check and fill all mandatory fields marked with an asterisk (*).',
+        confirmButtonColor: '#0b5345'
+      });
 
       setTimeout(() => {
-        // 1. Check if photo is missing
-        if (!this.photoFile) {
-          const photoBox = document.querySelector('.photo-upload-container, .photo-preview-box') as HTMLElement;
-          if (photoBox) {
-            photoBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            photoBox.focus();
-            return;
-          }
-        }
-
-        // 2. Focus first invalid input/select/textarea
         const invalidControl = document.querySelector(
           '.form-input.ng-invalid.ng-touched, .form-select.ng-invalid.ng-touched, .form-textarea.ng-invalid.ng-touched, input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName], input.ng-invalid, select.ng-invalid, textarea.ng-invalid'
         ) as HTMLElement;
@@ -588,20 +726,6 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
           if (typeof invalidControl.focus === 'function') {
             invalidControl.focus();
           }
-          return;
-        }
-      }, 100);
-      return;
-    }
-
-    const declaration = this.enrollmentForm.get('declarationAccepted')?.value;
-    if (!declaration) {
-      setTimeout(() => {
-        const declEl = document.querySelector('.declaration-card, .checkbox-label') as HTMLElement;
-        if (declEl) {
-          declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          const chk = declEl.querySelector('input[type="checkbox"]') as HTMLElement;
-          if (chk) chk.focus();
         }
       }, 100);
       return;
@@ -695,19 +819,9 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   resetForm(): void {
-    this.enrollmentForm.reset({
-      associateId: this.associateId,
-      associateName: this.associateName,
-      gender: 'Male',
-      declarationAccepted: false
-    });
-    this.photoFile = null;
-    this.photoPreviewUrl = null;
-    this.clearApplicantSignature();
-    this.clearAssociateSignature();
-    this.ifscVerified.set(false);
-    this.ifscBankInfo.set('');
-    this.fetchPrefillData();
+    this.cleanFormForNewEnrollment();
+    this.targetSlotNumber = null;
+    this.targetUserId = null;
   }
 
   loadTeamMembersList(): void {

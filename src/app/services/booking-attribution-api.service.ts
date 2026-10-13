@@ -86,10 +86,16 @@ export class BookingAttributionApiService {
    * Search bookable customers for on-behalf bookings.
    * Calls GET /api/my-bookable-customers?search=...
    */
-  getMyBookableCustomers(search = ''): Observable<BookableCustomer[]> {
+  getMyBookableCustomers(search = '', filters: { team_member_id?: number | string; type?: string } = {}): Observable<BookableCustomer[]> {
     let params = new HttpParams();
     if (search.trim()) {
       params = params.set('search', search.trim());
+    }
+    if (filters.team_member_id) {
+      params = params.set('team_member_id', String(filters.team_member_id));
+    }
+    if (filters.type) {
+      params = params.set('type', String(filters.type));
     }
 
     return this.http.get<any>(`${BASE_URL}/api/my-bookable-customers`, {

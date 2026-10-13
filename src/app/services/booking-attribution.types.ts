@@ -11,9 +11,16 @@ export interface BookableCustomer {
   full_name: string;
   email?: string;
   mobile_no: string;
+  masked_mobile?: string;
   member_id: string;
   account_status?: string;
+  is_verified?: boolean;
+  kyc_status?: string;
   registered_at?: string;
+  relationship?: 'DIRECT' | 'TEAM_MEMBER' | string;
+  referrer_user_id?: number;
+  referrer_name?: string;
+  referrer_member_id?: string;
 }
 
 export interface BookingAttribution {

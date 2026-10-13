@@ -75,6 +75,9 @@ export class ApiService {
     const normalized = clean.startsWith('/') ? clean : `/${clean}`;
     return `${base}${normalized}`;
   }
+  url(path: string | null | undefined): string {
+    return this.getFileUrl(path);
+  }
   postForm(path: string, form: FormData, admin = false): Observable<any> {
     return this.http.post(`${BASE_URL}${path}`, form, { headers: this.headers(admin, path) });
   }
@@ -122,11 +125,6 @@ export class ApiService {
   getDocuments()            { return this.get('/api/profile/documents'); }
   uploadDoc(form: FormData) { return this.postForm('/api/profile/upload-doc', form); }
   getCompanyDocuments()     { return this.get('/api/company-documents'); }
-  url(path: string): string {
-    if (!path) return '';
-    if (/^https?:\/\//i.test(path)) return path;
-    return `${BASE_URL}${path.startsWith('/') ? path : '/' + path}`;
-  }
 
   lookupIfsc(ifscCode: string): Observable<any> {
     const cleanIfsc = String(ifscCode).trim().toUpperCase();

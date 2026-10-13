@@ -228,8 +228,8 @@
     <div class="capacity-warning-banner mb-3" *ngIf="isCapacityFull()">
       <i class="fas fa-ban fs-4"></i>
       <div>
-        <strong>Enrollment Closed: Maximum Limit Reached (11/11 Slots)</strong>
-        <p class="mb-0 fs-12">All 11 Direct Team Member slots under your associate account are currently occupied. Cannot enroll a 12th member.</p>
+        <strong>Enrollment Closed: Maximum Limit Reached (10/10 Slots)</strong>
+        <p class="mb-0 fs-12">All 10 Direct Team Member slots under your associate account are currently occupied. Cannot enroll an additional member.</p>
       </div>
     </div>
 
@@ -247,6 +247,42 @@
         </div>
 
         <div class="form-grid-layout">
+          <!-- Assigned Slot Target Card -->
+          <div class="grid-col-12" *ngIf="targetSlotNumber">
+            <div class="slot-target-card">
+              <div class="slot-target-left">
+                <div class="slot-badge-icon">
+                  <i class="fas fa-th-large"></i>
+                </div>
+                <div>
+                  <h4 class="slot-target-title">
+                    Enrolling into Slot #{{ targetSlotNumber }}
+                    <span class="slot-status-pill">Selected Slot</span>
+                  </h4>
+                  <p class="slot-target-subtitle">
+                    New applicant will be registered as a direct Team Member in <strong>Slot #{{ targetSlotNumber }}</strong> under Associate <strong>{{ associateName || 'Associate' }}</strong>.
+                  </p>
+                </div>
+              </div>
+              <div class="slot-target-select-wrap">
+                <label for="slotSelectDropdown" class="slot-select-label">Change Slot:</label>
+                <select 
+                  id="slotSelectDropdown"
+                  class="slot-select-dropdown" 
+                  [ngModel]="targetSlotNumber" 
+                  (ngModelChange)="onSlotSelected($event)"
+                  [ngModelOptions]="{standalone: true}"
+                >
+                  <option *ngFor="let s of availableSlots()" [value]="s.slotNumber">
+                    Slot #{{ s.slotNumber }} (Available)
+                  </option>
+                  <option *ngIf="targetSlotNumber && !isSlotAvailable(targetSlotNumber)" [value]="targetSlotNumber">
+                    Slot #{{ targetSlotNumber }} (Selected)
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
           <!-- Associate Read-only Box -->
           <div class="grid-col-6">
             <div class="form-group readonly-group">
@@ -707,7 +743,7 @@
         </div>
 
         <!-- Mandatory Declaration Checkbox (SUBMIT-GATE) -->
-        <div class="declaration-gate-box" [class.checked]="enrollmentForm.get('declarationAccepted')?.value">
+        <div class="declaration-gate-box" [class.checked]="declarationAcceptedSignal()">
           <label class="checkbox-container">
             <input 
               type="checkbox" 
@@ -729,9 +765,15 @@
             <div class="sig-pad-header">
               <label><i class="fas fa-signature text-gold"></i> Applicant Digital Signature</label>
               <div class="d-flex align-items-center gap-2">
-                <label class="btn-clear-sig mb-0" style="cursor: pointer;">
-                  <i class="fas fa-upload text-gold"></i> Upload (<= 50KB)
-                  <input type="file" (change)="onApplicantSigUpload($event)" accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display: none;">
+                <label class="btn-clear-sig mb-0" style="cursor: pointer;" for="applicantSigFileInput">
+                  <i class="fas fa-upload text-gold"></i> Upload Signature (JPG/PNG)
+                  <input 
+                    type="file" 
+                    id="applicantSigFileInput"
+                    (change)="onApplicantSigUpload($event)" 
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" 
+                    style="display: none;"
+                  >
                 </label>
                 <button type="button" class="btn-clear-sig" (click)="clearApplicantSignature()">
                   <i class="fas fa-eraser"></i> Clear Pad
@@ -741,7 +783,7 @@
             <div class="canvas-wrapper">
               <canvas #applicantSigCanvas id="applicantSigCanvas" class="sig-canvas"></canvas>
             </div>
-            <span class="sig-hint">Draw signature inside the box or upload image (JPG/PNG <= 50 KB)</span>
+            <span class="sig-hint">Draw signature inside the box or upload image (JPG/PNG/WEBP)</span>
           </div>
 
           <!-- Associate Signature Pad -->
@@ -749,9 +791,15 @@
             <div class="sig-pad-header">
               <label><i class="fas fa-file-signature text-gold"></i> Sponsoring Associate Signature</label>
               <div class="d-flex align-items-center gap-2">
-                <label class="btn-clear-sig mb-0" style="cursor: pointer;">
-                  <i class="fas fa-upload text-gold"></i> Upload (<= 50KB)
-                  <input type="file" (change)="onAssociateSigUpload($event)" accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display: none;">
+                <label class="btn-clear-sig mb-0" style="cursor: pointer;" for="associateSigFileInput">
+                  <i class="fas fa-upload text-gold"></i> Upload Signature (JPG/PNG)
+                  <input 
+                    type="file" 
+                    id="associateSigFileInput"
+                    (change)="onAssociateSigUpload($event)" 
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" 
+                    style="display: none;"
+                  >
                 </label>
                 <button type="button" class="btn-clear-sig" (click)="clearAssociateSignature()">
                   <i class="fas fa-eraser"></i> Clear Pad
@@ -761,7 +809,7 @@
             <div class="canvas-wrapper">
               <canvas #associateSigCanvas id="associateSigCanvas" class="sig-canvas"></canvas>
             </div>
-            <span class="sig-hint">Sponsoring Associate signature (Draw or upload JPG/PNG <= 50 KB)</span>
+            <span class="sig-hint">Sponsoring Associate signature (Draw or upload JPG/PNG/WEBP)</span>
           </div>
         </div>
 
@@ -780,15 +828,15 @@
             <button 
               type="submit" 
               class="btn btn-primary btn-submit"
-              [disabled]="!canSubmit()"
+              [disabled]="submitting() || isCapacityFull() || !canSubmit()"
               [class.disabled-gate]="!canSubmit()"
-              [title]="!enrollmentForm.get('declarationAccepted')?.value ? 'Please accept the declaration checkbox above to enable submit' : ''"
+              [title]="!declarationAcceptedSignal() ? 'Please accept the declaration checkbox above to enable submit' : ''"
             >
               <span *ngIf="submitting()" class="spinner-border spinner-border-sm me-2"></span>
               <i *ngIf="!submitting()" class="fas fa-paper-plane me-2"></i>
               <span>{{ submitting() ? 'Submitting Enrollment...' : 'Submit Team Member Enrollment' }}</span>
             </button>
-            <small *ngIf="!enrollmentForm.get('declarationAccepted')?.value" class="gate-hint">
+            <small *ngIf="!declarationAcceptedSignal()" class="gate-hint">
               <i class="fas fa-lock"></i> Check the declaration box above to enable submission
             </small>
           </div>
