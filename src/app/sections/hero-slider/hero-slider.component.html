@@ -1,4 +1,8 @@
-<section id="home" class="hero">
+<section id="home" class="hero"
+  (touchstart)="onTouchStart($event)"
+  (touchend)="onTouchEnd($event)"
+  (mouseenter)="pauseTimer()"
+  (mouseleave)="resumeTimer()">
   <div class="slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
     <div class="slide-bg" [style.background-image]="'url(' + slide.bg + ')'"></div>
     <div class="slide-overlay"></div>
@@ -35,8 +39,8 @@
   </div>
 
   <div class="slider-arrows">
-    <button type="button" class="s-arrow" (click)="prev()" aria-label="Previous slide"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
-    <button type="button" class="s-arrow" (click)="next()" aria-label="Next slide"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+    <button type="button" class="s-arrow s-arrow-prev" (click)="prev()" aria-label="Previous slide"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+    <button type="button" class="s-arrow s-arrow-next" (click)="next()" aria-label="Next slide"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
   </div>
 
   <div class="slider-dots" role="tablist" aria-label="Slider navigation">

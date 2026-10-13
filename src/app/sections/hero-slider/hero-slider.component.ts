@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 
 interface SlideBtn {
@@ -28,7 +28,7 @@ interface SlideItem {
 @Component({
   selector: 'app-hero-slider',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './hero-slider.component.html',
   styleUrls: ['./hero-slider.component.css']
 })
@@ -218,11 +218,52 @@ export class HeroSliderComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(targetRoute);
   }
 
-  startTimer() { this.timer = setInterval(() => this.next(), 5500); }
-  resetTimer() { clearInterval(this.timer); this.startTimer(); }
+  startTimer() { 
+    if (this.timer) clearInterval(this.timer);
+    this.timer = setInterval(() => this.next(), 5500); 
+  }
+  pauseTimer() { 
+    if (this.timer) clearInterval(this.timer); 
+  }
+  resumeTimer() { 
+    this.startTimer(); 
+  }
+  resetTimer() { 
+    if (this.timer) clearInterval(this.timer); 
+    this.startTimer(); 
+  }
   goTo(i: number) { this.currentSlide = i; this.resetTimer(); }
   prev() { this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length; this.resetTimer(); }
   next() { this.currentSlide = (this.currentSlide + 1) % this.slides.length; this.resetTimer(); }
+
+  // Touch Swipe Handling for Mobile & Tablet
+  private touchStartX = 0;
+  private touchEndX = 0;
+
+  onTouchStart(e: TouchEvent) {
+    if (e.touches && e.touches.length > 0) {
+      this.touchStartX = e.touches[0].clientX;
+    }
+  }
+
+  onTouchEnd(e: TouchEvent) {
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      this.touchEndX = e.changedTouches[0].clientX;
+      this.handleSwipe();
+    }
+  }
+
+  private handleSwipe() {
+    const diff = this.touchStartX - this.touchEndX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        this.next();
+      } else {
+        this.prev();
+      }
+    }
+  }
+
   scrollTo(id: string) {
     const cleanId = id.replace(/^#+/, '');
     const el = document.getElementById(cleanId);

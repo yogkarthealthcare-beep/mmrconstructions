@@ -3,24 +3,64 @@
 
 <app-hero-slider *ngIf="showHeroSlider"></app-hero-slider>
 
-<!-- Trust Strip -->
-<div class="trust-strip" *ngIf="sectionVisibility['information'] !== false">
+<!-- Mobile Quick Action Cards: Login & Register with MMR Logo (Mobile Only) -->
+<div class="mobile-auth-cards-section d-block d-md-none">
   <div class="mmr-container">
-    <div class="d-flex align-items-center justify-content-center flex-wrap gap-3 gap-md-4">
-      <div class="item"><i class="fas fa-certificate"></i> Govt. Registered</div>
-      <div class="trust-sep d-none d-md-block"></div>
-      <div class="item"><i class="fas fa-university"></i> Bank Finance</div>
-      <div class="trust-sep d-none d-md-block"></div>
-      <div class="item"><i class="fas fa-award"></i> 10 Years of Trust</div>
-      <div class="trust-sep d-none d-md-block"></div>
-      <div class="item"><i class="fas fa-mobile-alt"></i> Android App</div>
-      <div class="trust-sep d-none d-md-block"></div>
-      <div class="item"><i class="fas fa-file-invoice-dollar"></i> PDF Vouchers</div>
+    <div class="row g-2">
+      <div class="col-6">
+        <a routerLink="/login" class="mobile-auth-card mobile-login-card">
+          <div class="auth-card-head">
+            <img src="assets/mmr-logo.png" alt="MMR Construction" class="auth-card-logo">
+            <span class="auth-card-badge login-badge"><i class="fas fa-sign-in-alt me-1"></i>Login</span>
+          </div>
+          <div class="auth-card-body">
+            <div class="auth-card-title">Member Portal</div>
+            <div class="auth-card-desc">Customer & Associate &rarr;</div>
+          </div>
+        </a>
+      </div>
+      <div class="col-6">
+        <a routerLink="/register" class="mobile-auth-card mobile-register-card">
+          <div class="auth-card-head">
+            <img src="assets/mmr-logo.png" alt="MMR Construction" class="auth-card-logo">
+            <span class="auth-card-badge register-badge"><i class="fas fa-user-plus me-1"></i>Register</span>
+          </div>
+          <div class="auth-card-body">
+            <div class="auth-card-title">New Registration</div>
+            <div class="auth-card-desc">Book Plots &amp; Earn &rarr;</div>
+          </div>
+        </a>
+      </div>
     </div>
   </div>
 </div>
 
-<app-sites *ngIf="sectionVisibility['sites'] !== false"></app-sites>
+<!-- Home Flow: Sites upper, Trust Strip lower on mobile; Desktop retains Trust Strip first then Sites -->
+<div class="home-flow-container">
+  <!-- Sites Section -->
+  <div class="home-flow-sites">
+    <app-sites *ngIf="sectionVisibility['sites'] !== false"></app-sites>
+  </div>
+
+  <!-- Information Section (Trust Strip) -->
+  <div class="home-flow-info" *ngIf="sectionVisibility['information'] !== false">
+    <div class="trust-strip">
+      <div class="mmr-container">
+        <div class="trust-strip-inner d-flex align-items-center justify-content-center flex-nowrap gap-2 gap-sm-3 gap-md-4">
+          <div class="item d-none d-md-flex"><i class="fas fa-certificate"></i> Govt. Registered</div>
+          <div class="trust-sep d-none d-md-block"></div>
+          <div class="item"><i class="fas fa-university"></i> Bank Finance</div>
+          <div class="trust-sep"></div>
+          <div class="item"><i class="fas fa-award"></i> 10 Years of Trust</div>
+          <div class="trust-sep"></div>
+          <div class="item"><i class="fas fa-mobile-alt"></i> Android App</div>
+          <div class="trust-sep d-none d-md-block"></div>
+          <div class="item d-none d-md-flex"><i class="fas fa-file-invoice-dollar"></i> PDF Vouchers</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <app-investors *ngIf="sectionVisibility['investors'] !== false"></app-investors>
 
 <!-- Why Choose Us -->

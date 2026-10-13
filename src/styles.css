@@ -1017,6 +1017,7 @@ button[style*="background: #166534"]:disabled {
   font-weight: 600;
   color: var(--txt-h);
   transition: var(--t-fast);
+  white-space: nowrap;
 }
 
 .trust-strip .item i {
@@ -1029,12 +1030,52 @@ button[style*="background: #166534"]:disabled {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .trust-sep {
   width: 1px;
   height: 22px;
   background: var(--bdr);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .trust-strip {
+    padding: 10px 0;
+    overflow: hidden;
+  }
+  .trust-strip-inner {
+    flex-wrap: nowrap !important;
+    justify-content: space-evenly !important;
+    width: 100%;
+  }
+  .trust-strip .item {
+    font-size: 11.5px;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .trust-strip .item i {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+  .trust-sep {
+    height: 16px;
+    margin: 0 2px;
+  }
+}
+
+@media (max-width: 360px) {
+  .trust-strip .item {
+    font-size: 10.5px;
+    gap: 4px;
+  }
+  .trust-strip .item i {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
 }
 
 /* Footer */
@@ -2642,4 +2683,15 @@ select.inv-select:focus {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Mobile Header Clean: Hide header login/register on mobile & tablet, keep hamburger menu */
+@media (max-width: 991px) {
+  .navbar .header-login-btn,
+  .navbar .header-register-btn,
+  .navbar .nav-actions a.btn,
+  .navbar .nav-actions .btn-outline-green,
+  .navbar .nav-actions .btn-green {
+    display: none !important;
+  }
 }

@@ -194,6 +194,59 @@ export const routes: Routes = [
     title: 'Invoice — MMR Construction'
   },
 
+  // Multi-City Local SEO Landing Pages (7 Target Regional Corridors)
+  {
+    path: 'property-dealer-in-kanpur',
+    loadComponent: () => import('./pages/city-landing/city-landing.component').then(m => m.CityLandingComponent),
+    data: { cityKey: 'kanpur' },
+    title: 'Best Property Dealer in Kanpur | MMR Constructions'
+  },
+  {
+    path: 'property-dealer-in-unnao',
+    loadComponent: () => import('./pages/city-landing/city-landing.component').then(m => m.CityLandingComponent),
+    data: { cityKey: 'unnao' },
+    title: 'Top Property Dealer in Unnao | MMR Constructions'
+  },
+  {
+    path: 'property-dealer-in-lucknow',
+    loadComponent: () => import('./pages/city-landing/city-landing.component').then(m => m.CityLandingComponent),
+    data: { cityKey: 'lucknow' },
+    title: 'Leading Property Dealer in Lucknow | MMR Constructions'
+  },
+  {
+    path: 'property-dealer-in-kanpur-dehat',
+    loadComponent: () => import('./pages/city-landing/city-landing.component').then(m => m.CityLandingComponent),
+    data: { cityKey: 'kanpur-dehat' },
+    title: 'Property Dealer in Kanpur Dehat | MMR Constructions'
+  },
+  {
+    path: 'property-dealer-in-fatehpur',
+    loadComponent: () => import('./pages/city-landing/city-landing.component').then(m => m.CityLandingComponent),
+    data: { cityKey: 'fatehpur' },
+    title: 'Top Property Dealer in Fatehpur | MMR Constructions'
+  },
+  {
+    path: 'property-dealer-in-raebareli',
+    loadComponent: () => import('./pages/city-landing/city-landing.component').then(m => m.CityLandingComponent),
+    data: { cityKey: 'raebareli' },
+    title: 'Best Property Dealer in Raebareli | MMR Constructions'
+  },
+  {
+    path: 'property-dealer-in-kannauj',
+    loadComponent: () => import('./pages/city-landing/city-landing.component').then(m => m.CityLandingComponent),
+    data: { cityKey: 'kannauj' },
+    title: 'Property Dealer in Kannauj | MMR Constructions'
+  },
+
+  // Legacy/Alternate SEO Redirects to Canonical Clean Routes
+  { path: 'property-in-kanpur', redirectTo: 'property-dealer-in-kanpur', pathMatch: 'full' },
+  { path: 'property-in-unnao', redirectTo: 'property-dealer-in-unnao', pathMatch: 'full' },
+  { path: 'property-in-lucknow', redirectTo: 'property-dealer-in-lucknow', pathMatch: 'full' },
+  { path: 'property-in-kanpur-dehat', redirectTo: 'property-dealer-in-kanpur-dehat', pathMatch: 'full' },
+  { path: 'property-in-fatehpur', redirectTo: 'property-dealer-in-fatehpur', pathMatch: 'full' },
+  { path: 'property-in-raebareli', redirectTo: 'property-dealer-in-raebareli', pathMatch: 'full' },
+  { path: 'property-in-kannauj', redirectTo: 'property-dealer-in-kannauj', pathMatch: 'full' },
+
   // Feature Tree: Admin (Lazy Loaded Layout & Routes)
   {
     path: 'admin',

@@ -301,3 +301,120 @@
     min-width: 45%;
   }
 }
+
+/* ── HOME SECTIONS FLOW: Mobile vs Desktop Ordering ──── */
+.home-flow-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Desktop default: Trust Strip first, then Sites */
+.home-flow-info {
+  order: 1;
+}
+.home-flow-sites {
+  order: 2;
+}
+
+/* Mobile View ONLY (<= 768px): Sites section upper, Trust Strip niche */
+@media (max-width: 768px) {
+  .home-flow-sites {
+    order: 1 !important;
+  }
+  .home-flow-info {
+    order: 2 !important;
+  }
+}
+
+/* ── MOBILE QUICK ACTION CARDS (Login & Register with MMR Logo) ── */
+.mobile-auth-cards-section {
+  padding: 10px 0 2px;
+  background: var(--bg-section2, #f8fafc);
+}
+
+.mobile-auth-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  min-height: 82px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-auth-card:active {
+  transform: scale(0.98);
+}
+
+.mobile-login-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+  border: 1px solid rgba(26, 92, 58, 0.22);
+}
+
+.mobile-register-card {
+  background: linear-gradient(135deg, #fefce8 0%, #ffffff 100%);
+  border: 1px solid rgba(201, 168, 76, 0.35);
+}
+
+.auth-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.auth-card-logo {
+  height: 24px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.12));
+}
+
+.auth-card-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.login-badge {
+  background: rgba(26, 92, 58, 0.12);
+  color: #1a5c3a;
+  border: 1px solid rgba(26, 92, 58, 0.25);
+}
+
+.register-badge {
+  background: rgba(201, 168, 76, 0.18);
+  color: #8c6b1e;
+  border: 1px solid rgba(201, 168, 76, 0.35);
+}
+
+.auth-card-title {
+  font-family: var(--ff-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+
+.auth-card-desc {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1.25;
+}
+
+.mobile-login-card:hover .auth-card-desc {
+  color: #1a5c3a;
+}
+.mobile-register-card:hover .auth-card-desc {
+  color: #8c6b1e;
+}

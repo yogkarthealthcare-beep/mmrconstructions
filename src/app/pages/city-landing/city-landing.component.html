@@ -1,158 +1,430 @@
 <app-navbar></app-navbar>
 
-<main>
-  <section class="city-hero">
-    <div class="container">
+<main class="city-landing-page">
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       1. HERO HEADER SECTION (Luxury Forest Green Gradient + Badge)
+       ══════════════════════════════════════════════════════════════════════════ -->
+  <section class="city-hero-section">
+    <div class="mmr-container">
       <nav class="city-breadcrumb" aria-label="breadcrumb">
-        <a routerLink="/">Home</a><span>�</span><span>{{ pageIntent.label }} in {{ cityData.city }}</span>
+        <a routerLink="/"><i class="fas fa-home me-1"></i>Home</a>
+        <span class="sep">&rsaquo;</span>
+        <span class="curr">Property Dealer in {{ cityData.city }}</span>
       </nav>
-      <h1 class="city-h1">
-        {{ pageIntent.h1(cityData.city) }}
-      </h1>
-      <p class="city-sub" *ngIf="isUnnao; else regularIntro">
-        {{ pageIntent.contentLead(cityData.city) }} Local guidance is available across Shuklaganj, Gangaghat, Safipur, Bangarmau, PD Nagar, Civil Lines and Unnao City.
-      </p>
-      <ng-template #regularIntro><p class="city-sub">{{ cityData.description }}</p></ng-template>
-      <div class="city-cta-row">
-        <a [href]="isUnnao ? 'tel:+919511119879' : '/#contact'" class="btn btn-green btn-lg">
-          <i class="fas fa-phone-alt me-2"></i>{{ isUnnao ? 'Call 9511119879' : 'Free Enquiry' }}
-        </a>
-        <a routerLink="/" fragment="emi" class="btn btn-outline-green btn-lg"><i class="fas fa-calculator me-2"></i>EMI Calculator</a>
-      </div>
-    </div>
-  </section>
 
-  <section class="city-section">
-    <div class="container">
-      <h2 class="city-h2">{{ isUnnao ? 'Why Choose an Unnao Top Property Dealer?' : ('Why Invest in ' + cityData.city + '?') }}</h2>
-      <p class="city-p">{{ cityData.description }}</p>
-      <ul class="city-highlights">
-        <li *ngFor="let item of cityData.highlights"><i class="fas fa-check-circle"></i>{{ item }}</li>
-      </ul>
-    </div>
-  </section>
-
-  <ng-container *ngIf="isUnnao; else genericCityContent">
-    <section class="city-section city-alt">
-      <div class="container">
-        <h2 class="city-h2">Unnao Best Property Dealer for Every Property Requirement</h2>
-        <p class="city-p">
-          Choosing an <strong>Unnao Property Dealer</strong> is easier when advice is local, transparent and based on actual site conditions.
-          MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED supports buyers looking for <strong>Unnao Property</strong>, whether the requirement is
-          a home plot, shop-facing commercial plot, completed house, agricultural land or long-term investment.
-        </p>
-        <p class="city-p">
-          Buyers often search for an <strong>Unnao Property Dealers List</strong>, an <strong>Unnao Top Property Dealer</strong> or
-          <strong>Unnao Property Brokers</strong> before arranging a visit. Online research helps, but title documents, approach roads,
-          nearby development and exact plot boundaries should also be checked on the ground.
-        </p>
-        <div class="city-type-grid">
-          <article><i class="fas fa-house"></i><h3>Residential Plots in Unnao</h3><p>Explore residential plots for building a family home in connected and developing localities.</p></article>
-          <article><i class="fas fa-store"></i><h3>Commercial Plots in Unnao</h3><p>Consider road-facing and market-connected locations for shops, offices and commercial use.</p></article>
-          <article><i class="fas fa-city"></i><h3>House for Sale in Unnao</h3><p>Ask about current ready-house and resale enquiries in Unnao City and nearby residential areas.</p></article>
-          <article><i class="fas fa-seedling"></i><h3>Agricultural Land for Sale in Unnao</h3><p>Review land use, title, road access and intended purpose before purchasing agricultural land.</p></article>
-          <article><i class="fas fa-chart-line"></i><h3>Investment Opportunities in Unnao</h3><p>Compare connectivity, planned development, entry budget and long-term holding potential.</p></article>
-          <article><i class="fas fa-indian-rupee-sign"></i><h3>Plot in Unnao Under 5 Lakh</h3><p>Budget inventory may be available in selected developing locations; availability and final pricing change regularly.</p></article>
-        </div>
-      </div>
-    </section>
-
-    <section class="city-section">
-      <div class="container">
-        <h2 class="city-h2">Unnao Property Rates by Major Local Area</h2>
-        <p class="city-p">
-          <strong>Unnao Property Rates</strong> change with road width, land use, registry status, plot dimensions, construction,
-          corner location and distance from established markets. This table explains the locality profile; call
-          <a href="tel:+919511119879">9511119879</a> for a current property-specific quotation.
-        </p>
-        <div class="table-responsive rate-table">
-          <table>
-            <thead><tr><th>Unnao Area</th><th>Property Profile</th><th>Rate Guidance</th></tr></thead>
-            <tbody><tr *ngFor="let item of unnaoAreas"><td><strong>{{ item.area }}</strong></td><td>{{ item.profile }}</td><td>{{ item.rate }}</td></tr></tbody>
-          </table>
-        </div>
-        <p class="city-note">Rate guidance is not a fixed price list. Verify the exact property, ownership documents and current quotation before payment.</p>
-      </div>
-    </section>
-
-    <section class="city-section city-alt">
-      <div class="container">
-        <h2 class="city-h2">How to Compare Property in Unnao</h2>
-        <div class="city-two-col">
-          <div>
-            <h3 class="city-h3">Local Property Dealer Support</h3>
-            <p class="city-p">A local team can coordinate site visits, explain the neighbourhood, identify approach roads and help buyers understand available documents.</p>
-            <h3 class="city-h3">Online Property Portal Research</h3>
-            <p class="city-p"><strong>Magicbricks Unnao</strong> and other portals can help compare advertised options. Every listing should still be independently verified before booking.</p>
+      <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+          <div class="city-hero-badge">
+            <span class="badge-icon"><i class="fas fa-shield-alt"></i></span>
+            <span class="badge-txt">100% VERIFIED &bull; DAKHIL KHARIJ &bull; 15+ YEARS TRUST</span>
           </div>
-          <div class="contact-panel">
-            <span>Unnao Property Dealer Contact Number</span>
-            <strong>9511119879</strong>
-            <p>Discuss your preferred location, property type, plot size and budget, then schedule a site visit.</p>
-            <a href="tel:+919511119879" class="btn btn-green">Call Property Team</a>
+
+          <h1 class="city-hero-h1">
+            {{ cityData.h1 }}
+          </h1>
+
+          <p class="city-hero-sub">
+            {{ cityData.heroSub }}
+          </p>
+
+          <div class="city-hero-locales">
+            <span class="locales-label"><i class="fas fa-map-marker-alt text-gold me-1"></i>Key Locales:</span>
+            <div class="locale-tags">
+              <span class="locale-pill" *ngFor="let loc of cityData.primaryLocales">
+                {{ loc }}
+              </span>
+            </div>
+          </div>
+
+          <div class="city-hero-ctas">
+            <a href="tel:+919511119879" class="btn btn-gold btn-lg">
+              <i class="fas fa-phone-alt me-2"></i>Call +91 95111 19879
+            </a>
+            <a href="#book-visit" class="btn btn-outline-white btn-lg">
+              <i class="fas fa-calendar-check me-2"></i>Schedule Site Visit
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Stats Pill Card on Right -->
+        <div class="col-lg-5">
+          <div class="hero-stats-box">
+            <div class="stats-box-header">
+              <div class="box-logo">
+                <img src="assets/mmr-logo.png" alt="MMR Constructions Logo" />
+              </div>
+              <div>
+                <h3 class="box-title">MMR Constructions</h3>
+                <span class="box-sub">Central UP Township Developers</span>
+              </div>
+            </div>
+
+            <div class="stats-box-grid">
+              <div class="stat-item">
+                <span class="stat-num">500+</span>
+                <span class="stat-lbl">Happy Owners</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-num">100%</span>
+                <span class="stat-lbl">Clear Registry</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-num">₹3,000</span>
+                <span class="stat-lbl">Starting EMI</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-num">7 Cities</span>
+                <span class="stat-lbl">Central UP Network</span>
+              </div>
+            </div>
+
+            <div class="stats-box-footer">
+              <div class="cin-badge">
+                <i class="fas fa-certificate text-gold me-1"></i>CIN: U68200UP2025PTC229203
+              </div>
+              <div class="gst-badge">GSTIN: 09AATCM6753A1Z5</div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="city-section">
-      <div class="container">
-        <h2 class="city-h2">Popular Unnao Property Searches</h2>
-        <div class="seo-tag-list"><span *ngFor="let tag of cityData.tags">{{ tag }}</span></div>
-        <h3 class="city-h3 internal-title">Explore More Unnao Property Guides</h3>
-        <div class="internal-link-list"><a *ngFor="let link of unnaoInternalLinks" [routerLink]="link.route">{{ link.label }}</a></div>
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       2. SECTION 1: Verified Residential Plots & Commercial Spaces in {City}
+       ══════════════════════════════════════════════════════════════════════════ -->
+  <section class="city-section py-5 bg-white">
+    <div class="mmr-container">
+      <div class="section-title-wrap text-center mb-5">
+        <div class="gold-pill">&mdash; VERIFIED INVENTORY &mdash;</div>
+        <h2 class="section-h2">
+          Verified Residential Plots &amp; Commercial Spaces in {{ cityData.city }}
+        </h2>
+        <p class="section-sub text-muted">
+          Explore curated real estate options designed for comfortable family living and high capital appreciation.
+        </p>
       </div>
-    </section>
 
-    <section class="city-section city-alt">
-      <div class="container">
-        <h2 class="city-h2">About Our Unnao Property Services</h2>
-        <div class="gbp-card">
-          <h3>{{ googleBusinessProfile.title }}</h3>
-          <p>{{ googleBusinessProfile.description }}</p>
-          <div class="seo-tag-list"><span *ngFor="let service of googleBusinessProfile.services">{{ service }}</span></div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3" *ngFor="let space of cityData.propertySpaces">
+          <div class="property-space-card">
+            <div class="space-card-top">
+              <div class="space-icon-box">
+                <i [class]="space.icon"></i>
+              </div>
+              <span class="space-badge">{{ space.tag }}</span>
+            </div>
+            <h3 class="space-title">{{ space.title }}</h3>
+            <p class="space-desc">{{ space.desc }}</p>
+            <div class="space-cta">
+              <a href="#book-visit" class="space-link">
+                Enquire Now <i class="fas fa-arrow-right ms-1"></i>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
-  </ng-container>
+    </div>
+  </section>
 
-  <ng-template #genericCityContent>
-    <section class="city-section city-alt">
-      <div class="container">
-        <h2 class="city-h2">Residential Plots in {{ cityData.city }}</h2>
-        <p class="city-p">Explore current plot inventory, location details, payment plans and site-visit options with MMR Construction.</p>
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       3. SECTION 2: Transparent Registry, Legal Due-Diligence & Possession
+       ══════════════════════════════════════════════════════════════════════════ -->
+  <section class="city-section py-5 bg-light-green">
+    <div class="mmr-container">
+      <div class="section-title-wrap text-center mb-5">
+        <div class="gold-pill">&mdash; LEGAL CLARITY &mdash;</div>
+        <h2 class="section-h2">
+          Transparent Registry, Legal Due-Diligence &amp; Possession
+        </h2>
+        <p class="section-sub text-muted">
+          Zero compromise on paperwork. Every plot sold by MMR Constructions follows rigorous statutory compliance.
+        </p>
       </div>
-    </section>
-  </ng-template>
 
-  <section class="city-section">
-    <div class="container">
-      <h2 class="city-h2">Explore Other Locations</h2>
-      <div class="city-link-grid">
-        <a routerLink="/property-in-lucknow" class="city-link-card"><i class="fas fa-map-marker-alt"></i><strong>Property in Lucknow</strong><span>Explore available opportunities</span></a>
-        <a routerLink="/property-in-kanpur" class="city-link-card"><i class="fas fa-map-marker-alt"></i><strong>Property in Kanpur</strong><span>Explore available opportunities</span></a>
-        <a routerLink="/property-dealer-in-unnao" class="city-link-card" [class.active]="isUnnao"><i class="fas fa-map-marker-alt"></i><strong>Property in Unnao</strong><span>Plots, houses and land enquiries</span></a>
+      <div class="row g-4">
+        <div class="col-md-6" *ngFor="let legal of cityData.legalHighlights">
+          <div class="legal-card">
+            <div class="legal-icon">
+              <i [class]="legal.icon"></i>
+            </div>
+            <div class="legal-body">
+              <h3 class="legal-title">{{ legal.title }}</h3>
+              <p class="legal-desc">{{ legal.desc }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trust Bar -->
+      <div class="legal-trust-banner mt-5">
+        <div class="row align-items-center g-3">
+          <div class="col-lg-8">
+            <div class="d-flex align-items-center gap-3">
+              <div class="trust-shield">
+                <i class="fas fa-file-contract"></i>
+              </div>
+              <div>
+                <h4 class="trust-h4">Direct Developer Transparency Guarantee</h4>
+                <p class="trust-p mb-0">
+                  No hidden fees, no unapproved encumbrances. All documents are vetted by senior real estate advocates prior to registry.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4 text-lg-end">
+            <a href="tel:+919511119879" class="btn btn-gold">
+              <i class="fas fa-phone-alt me-2"></i>Consult Legal Team
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="city-section city-alt">
-    <div class="container">
-      <h2 class="city-h2">{{ isUnnao ? 'Unnao Property Dealer FAQs' : (cityData.city + ' Property FAQs') }}</h2>
-      <div class="city-faq">
-        <details *ngFor="let faq of cityData.faqs" class="city-faq-item">
-          <summary class="city-faq-q">{{ faq.q }}</summary>
-          <p class="city-faq-a">{{ faq.a }}</p>
-        </details>
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       4. SECTION 3: Why Choose MMR Constructions in {City}
+       ══════════════════════════════════════════════════════════════════════════ -->
+  <section class="city-section py-5 bg-white">
+    <div class="mmr-container">
+      <div class="section-title-wrap text-center mb-5">
+        <div class="gold-pill">&mdash; OUR ADVANTAGE &mdash;</div>
+        <h2 class="section-h2">
+          Why Choose MMR Constructions in {{ cityData.city }}
+        </h2>
+        <p class="section-sub text-muted">
+          Trusted by families and seasoned investors alike across the Central Uttar Pradesh growth corridor.
+        </p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3" *ngFor="let why of cityData.whyUsPoints">
+          <div class="why-us-card text-center">
+            <div class="why-stat-badge">{{ why.stat }}</div>
+            <div class="why-icon-box mx-auto my-3">
+              <i [class]="why.icon"></i>
+            </div>
+            <h3 class="why-title">{{ why.title }}</h3>
+            <p class="why-desc">{{ why.desc }}</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="city-cta-section">
-    <div class="container text-center">
-      <h2>{{ isUnnao ? 'Contact an Unnao Property Dealer Today' : ('Explore Property in ' + cityData.city) }}</h2>
-      <p>{{ isUnnao ? 'Talk to MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED about your property requirement.' : 'Request current availability and schedule a site visit.' }}</p>
-      <a [href]="isUnnao ? 'tel:+919511119879' : '/#contact'" class="btn btn-gold btn-lg"><i class="fas fa-phone-alt me-2"></i>{{ isUnnao ? 'Call 9511119879' : 'Contact Now' }}</a>
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       5. SECTION 4: Book an Online Appointment / Schedule Site Visit (Lead Form)
+       ══════════════════════════════════════════════════════════════════════════ -->
+  <section id="book-visit" class="city-section py-5 lead-capture-section">
+    <div class="mmr-container">
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="lead-form-card shadow-lg">
+            <div class="row g-0">
+              <!-- Left Promotional Column -->
+              <div class="col-lg-5 lead-form-sidebar">
+                <div class="sidebar-inner p-4 p-md-5">
+                  <div class="sidebar-tag">&mdash; FREE SITE VISIT CAB &mdash;</div>
+                  <h3 class="sidebar-h3">
+                    Book an Online Appointment / Schedule Site Visit
+                  </h3>
+                  <p class="sidebar-p">
+                    Plan your site visit to our active townships in <strong>{{ cityData.city }}</strong>. Complimentary pickup and drop service is available for you and your family.
+                  </p>
+
+                  <ul class="sidebar-checklist">
+                    <li><i class="fas fa-check-circle text-gold me-2"></i>Direct consultation with senior advisor</li>
+                    <li><i class="fas fa-check-circle text-gold me-2"></i>Inspect live boundary demarcation</li>
+                    <li><i class="fas fa-check-circle text-gold me-2"></i>Review original revenue registry papers</li>
+                    <li><i class="fas fa-check-circle text-gold me-2"></i>Customized EMI calculation on spot</li>
+                  </ul>
+
+                  <div class="sidebar-contact-call mt-4 pt-3 border-top border-white-20">
+                    <span class="fs-12 text-white-70">Immediate Query? Call Us Directly:</span>
+                    <a href="tel:+919511119879" class="phone-link text-white fw-bold d-block fs-16 mt-1">
+                      <i class="fas fa-phone-alt text-gold me-2"></i>+91 95111 19879
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Interactive Form Column -->
+              <div class="col-lg-7 lead-form-body p-4 p-md-5 bg-white">
+                <div class="form-header mb-4">
+                  <h3 class="form-title">Schedule Your {{ cityData.city }} Site Visit</h3>
+                  <p class="form-sub text-muted">Fill out the quick form below. Our property manager will confirm your visit timing within 15 minutes.</p>
+                </div>
+
+                <!-- Success Confirmation Message -->
+                <div *ngIf="submitted" class="alert alert-success d-flex align-items-center gap-3 p-3 rounded-12 mb-4">
+                  <i class="fas fa-check-circle fs-2 text-success"></i>
+                  <div>
+                    <h5 class="alert-heading fw-bold mb-1">Thank You! Appointment Booked.</h5>
+                    <p class="mb-0 fs-13">Our senior property consultant for {{ cityData.city }} will call you shortly to confirm your site visit cab schedule.</p>
+                  </div>
+                </div>
+
+                <!-- Error Alert -->
+                <div *ngIf="errorMessage" class="alert alert-danger p-3 rounded-12 mb-4">
+                  <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+                </div>
+
+                <form (ngSubmit)="onSubmitLead()" #leadCaptureForm="ngForm" *ngIf="!submitted">
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <label class="form-label fw-bold fs-13">Your Full Name <span class="text-danger">*</span></label>
+                      <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-user text-muted"></i></span>
+                        <input
+                          type="text"
+                          class="form-control border-start-0"
+                          name="fullName"
+                          [(ngModel)]="leadForm.fullName"
+                          required
+                          placeholder="e.g. Ramesh Chandra Verma"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold fs-13">Phone Number <span class="text-danger">*</span></label>
+                      <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-phone text-muted"></i></span>
+                        <input
+                          type="tel"
+                          class="form-control border-start-0"
+                          name="mobile"
+                          [(ngModel)]="leadForm.mobile"
+                          required
+                          maxlength="10"
+                          placeholder="10-digit mobile number"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold fs-13">Preferred Location</label>
+                      <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-map-marker-alt text-muted"></i></span>
+                        <input
+                          type="text"
+                          class="form-control border-start-0"
+                          name="preferredLocation"
+                          [(ngModel)]="leadForm.preferredLocation"
+                          placeholder="e.g. {{ cityData.primaryLocales[0] || cityData.city }}"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <label class="form-label fw-bold fs-13">Property Type</label>
+                      <select class="form-select" name="propertyType" [(ngModel)]="leadForm.propertyType">
+                        <option value="Residential Plot">Residential Plot (100 - 500 Sq. Yd.)</option>
+                        <option value="Commercial Space">Commercial Space / Showroom Land</option>
+                        <option value="Gated Township Plot">Gated Township Community Plot</option>
+                        <option value="Highway Frontage Land">Highway Frontage Investment Plot</option>
+                      </select>
+                    </div>
+
+                    <div class="col-12">
+                      <label class="form-label fw-bold fs-13">Message / Preferred Date (Optional)</label>
+                      <textarea
+                        class="form-control"
+                        rows="2"
+                        name="message"
+                        [(ngModel)]="leadForm.message"
+                        placeholder="Mention your budget or preferred day for the site inspection..."
+                      ></textarea>
+                    </div>
+
+                    <div class="col-12 mt-3">
+                      <button
+                        type="submit"
+                        class="btn btn-gold btn-lg w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
+                        [disabled]="submitting"
+                      >
+                        <i class="fas fa-calendar-check" *ngIf="!submitting"></i>
+                        <i class="fas fa-spinner fa-spin" *ngIf="submitting"></i>
+                        <span>{{ submitting ? 'Submitting...' : 'Book Site Visit' }}</span>
+                      </button>
+                    </div>
+
+                    <div class="col-12 text-center mt-2">
+                      <small class="text-muted fs-11">
+                        <i class="fas fa-lock me-1"></i>Your information is safe with us. We never share your data.
+                      </small>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       6. SECTION 5: Local FAQ Section with Schema Integration
+       ══════════════════════════════════════════════════════════════════════════ -->
+  <section class="city-section py-5 bg-light-green">
+    <div class="mmr-container">
+      <div class="section-title-wrap text-center mb-5">
+        <div class="gold-pill">&mdash; FREQUENTLY ASKED QUESTIONS &mdash;</div>
+        <h2 class="section-h2">
+          {{ cityData.city }} Real Estate &amp; Property FAQs
+        </h2>
+        <p class="section-sub text-muted">
+          Got questions about buying plots, registry procedures, or payment plans in {{ cityData.city }}? Here are clear answers.
+        </p>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-9">
+          <div class="city-faqs-accordion">
+            <details class="faq-accordion-item" *ngFor="let f of cityData.faqs; let i = index" [open]="i === 0">
+              <summary class="faq-question">
+                <span class="faq-q-text">{{ f.q }}</span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+              </summary>
+              <div class="faq-answer">
+                <p>{{ f.a }}</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       7. MULTI-CITY LOCAL CROSS-LINKING DIRECTORY (Internal Link Powerhouse)
+       ══════════════════════════════════════════════════════════════════════════ -->
+  <section class="city-section py-5 bg-white">
+    <div class="mmr-container">
+      <div class="section-title-wrap text-center mb-4">
+        <div class="gold-pill">&mdash; CENTRAL UP REGIONAL NETWORK &mdash;</div>
+        <h2 class="section-h2">
+          Explore Our Regional Property Locations
+        </h2>
+        <p class="section-sub text-muted">
+          MMR Constructions powers verified land and township developments across 7 key districts in Central Uttar Pradesh.
+        </p>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-6 col-md-4 col-lg" *ngFor="let cKey of ['kanpur', 'unnao', 'lucknow', 'kanpur-dehat', 'fatehpur', 'raebareli', 'kannauj']">
+          <a
+            [routerLink]="'/' + cities[cKey].slug"
+            class="city-network-card"
+            [class.active-city]="activeCityKey === cKey"
+          >
+            <div class="city-card-pin"><i class="fas fa-map-marker-alt"></i></div>
+            <h4 class="city-card-name">{{ cities[cKey].city }}</h4>
+            <span class="city-card-link">Explore Plots &rarr;</span>
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 </main>
