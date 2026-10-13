@@ -28,7 +28,7 @@ export class SignupComponent implements OnInit {
     mobile_no: '',
     password: '',
     confirmPassword: '',
-    sponsor_invite_code: '',
+    sponsor_invite_code: 'MMR-ASC-0001',
     terms_accepted: false
   };
 
@@ -136,7 +136,7 @@ export class SignupComponent implements OnInit {
       mobile_no: '',
       password: '',
       confirmPassword: '',
-      sponsor_invite_code: '',
+      sponsor_invite_code: 'MMR-ASC-0001',
       terms_accepted: false
     };
     this.sponsorValid = false;
@@ -144,6 +144,7 @@ export class SignupComponent implements OnInit {
     this.sponsorCodeFormatted = '';
     this.referralLocked = false;
     this.v = {};
+    this.verifySponsor('MMR-ASC-0001');
   }
 
   private initSponsor() {
@@ -172,20 +173,10 @@ export class SignupComponent implements OnInit {
       return;
     }
 
-    // Direct registration without referral
+    // Direct registration without referral: Default to MMR-ASC-0001
     this.referralLocked = false;
-    if (this.userType === 'Team Member') {
-      // Team Member: Sponsor ID is required but no referral link was provided -> leave empty for manual entry
-      this.form.sponsor_invite_code = '';
-      this.sponsorValid = false;
-      this.sponsorName = '';
-      this.sponsorCodeFormatted = '';
-      delete this.v['sponsor_invite_code'];
-    } else {
-      // Default fallback corporate sponsor for Customer / Investor / Associate
-      this.form.sponsor_invite_code = 'MMR0001';
-      this.verifySponsor('MMR0001');
-    }
+    this.form.sponsor_invite_code = 'MMR-ASC-0001';
+    this.verifySponsor('MMR-ASC-0001');
   }
 
   // ── Sponsor Live Validation & Role Rules ──
@@ -214,22 +205,8 @@ export class SignupComponent implements OnInit {
     let cleanCode = (rawCode || '').replace(/\*/g, '').trim().toUpperCase();
 
     if (!cleanCode) {
-      if (this.userType === 'Team Member') {
-        this.sponsorChecking = false;
-        this.sponsorValid = false;
-        this.sponsorName = '';
-        this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
-        return;
-      }
-      if (this.userType === 'Customer') {
-        this.sponsorChecking = false;
-        this.sponsorValid = false;
-        this.sponsorName = '';
-        delete this.v['sponsor_invite_code'];
-        return;
-      }
-      cleanCode = 'MMR0001';
-      this.form.sponsor_invite_code = 'MMR0001';
+      cleanCode = 'MMR-ASC-0001';
+      this.form.sponsor_invite_code = 'MMR-ASC-0001';
     }
 
     this.sponsorChecking = true;
@@ -242,13 +219,13 @@ export class SignupComponent implements OnInit {
         this.sponsorChecking = false;
         if (res?.success && res?.data?.valid) {
           this.sponsorValid = true;
-          this.sponsorName = res.data.full_name || ((cleanCode === 'MMR0001' || cleanCode === 'MMR3001') ? 'Suraj Kumar Verma' : 'Verified Sponsor');
+          this.sponsorName = res.data.full_name || 'Suraj Kumar Verma';
           this.sponsorCodeFormatted = res.data.invitation_code || res.data.member_id || cleanCode;
-        } else if (cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
+        } else if (cleanCode === 'MMR-ASC-0001' || cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
           // Default Sponsor Fallback Guarantee
           this.sponsorValid = true;
           this.sponsorName = 'Suraj Kumar Verma (Default Sponsor)';
-          this.sponsorCodeFormatted = 'MMR0001';
+          this.sponsorCodeFormatted = 'MMR-ASC-0001';
           delete this.v['sponsor_invite_code'];
         } else {
           this.sponsorValid = false;
@@ -257,10 +234,10 @@ export class SignupComponent implements OnInit {
       },
       error: (err: any) => {
         this.sponsorChecking = false;
-        if (cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
+        if (cleanCode === 'MMR-ASC-0001' || cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
           this.sponsorValid = true;
           this.sponsorName = 'Suraj Kumar Verma (Default Sponsor)';
-          this.sponsorCodeFormatted = 'MMR0001';
+          this.sponsorCodeFormatted = 'MMR-ASC-0001';
           delete this.v['sponsor_invite_code'];
         } else {
           this.sponsorValid = false;

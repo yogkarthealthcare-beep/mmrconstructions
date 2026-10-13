@@ -42,7 +42,7 @@ export class RegisterComponent implements OnInit {
     password: '',
     confirmPassword: '',
     email: '',
-    sponsor_invite_code: '',
+    sponsor_invite_code: 'MMR-ASC-0001',
     terms_accepted: false,
   };
   otpSent      = false;
@@ -66,7 +66,7 @@ export class RegisterComponent implements OnInit {
     perm_address_line1: '', perm_city: '', perm_state: DEFAULT_STATE, perm_country: DEFAULT_COUNTRY, perm_pin: '',
     account_number: '', ifsc_code: '', bank_name: '', branch_name: '',
     nominee_name: '', nominee_dob: '', nominee_relationship: '',
-    sponsor_invite_code: '', terms_accepted: false,
+    sponsor_invite_code: 'MMR-ASC-0001', terms_accepted: false,
   };
   fOtp = ['','','','','',''];
 
@@ -91,6 +91,9 @@ export class RegisterComponent implements OnInit {
       this.qForm.sponsor_invite_code = cleanRef;
       this.fForm.sponsor_invite_code = cleanRef;
       try { localStorage.setItem('mmr_referral_code', cleanRef); } catch {}
+    } else {
+      this.qForm.sponsor_invite_code = 'MMR-ASC-0001';
+      this.fForm.sponsor_invite_code = 'MMR-ASC-0001';
     }
   }
 
@@ -139,7 +142,7 @@ export class RegisterComponent implements OnInit {
     this.loading = true; this.error = '';
 
     // Build minimal payload as FormData (API expects multipart for register)
-    const sponsorCode = (this.qForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR0001';
+    const sponsorCode = (this.qForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR-ASC-0001';
     const fd = new FormData();
     fd.append('user_type',       this.qForm.user_type);
     fd.append('full_name',       this.qForm.mobile_no); // temp — user fills later
@@ -289,7 +292,7 @@ export class RegisterComponent implements OnInit {
     }
 
     this.loading = true; this.error = '';
-    const sponsorCode = (this.fForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR0001';
+    const sponsorCode = (this.fForm.sponsor_invite_code || '').trim().toUpperCase() || 'MMR-ASC-0001';
     const fd = new FormData();
     Object.keys(this.fForm).forEach(k => {
       if (this.fForm[k] !== null && this.fForm[k] !== undefined && this.fForm[k] !== false)
