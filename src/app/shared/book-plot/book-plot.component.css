@@ -1187,3 +1187,217 @@
   justify-content: flex-end;
   gap: 10px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   5. REDESIGNED FULL-WIDTH MAP & BOOKING DRAWER / SLIDE
+   ═══════════════════════════════════════════════════════════════════ */
+
+.booking-workspace-map-only {
+  display: block;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.booking-workspace-map-only .site-image-panel {
+  width: 100%;
+  min-height: calc(100vh - 220px);
+  border-radius: 14px;
+}
+
+/* Drawer Backdrop Overlay */
+.booking-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 1040;
+  animation: drawerFadeIn 0.2s ease-out;
+}
+
+@keyframes drawerFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Right-Side Slide Drawer */
+.booking-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(500px, 100vw);
+  height: 100vh;
+  background: #ffffff;
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.2);
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.booking-drawer.open {
+  transform: translateX(0);
+}
+
+@media (max-width: 768px) {
+  .booking-drawer {
+    top: auto;
+    bottom: 0;
+    width: 100vw;
+    height: auto;
+    max-height: 88vh;
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%);
+  }
+  .booking-drawer.open {
+    transform: translateY(0);
+  }
+}
+
+/* Drawer Header */
+.drawer-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  background: linear-gradient(135deg, #f8fafc, #ffffff);
+  flex-shrink: 0;
+}
+
+.drawer-plot-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+.drawer-plot-specs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-close-drawer {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.15s ease;
+}
+
+.btn-close-drawer:hover {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #fca5a5;
+  transform: scale(1.05);
+}
+
+/* Drawer Body */
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.form-label-tag {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #475569;
+  letter-spacing: 0.5px;
+}
+
+/* Booking For Segmented Selector */
+.booking-for-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.for-option-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.for-option-btn:hover {
+  color: #0f172a;
+}
+
+.for-option-btn.active {
+  background: #ffffff;
+  color: #166534;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Booking Summary Card */
+.booking-summary-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-top: 14px;
+}
+
+.summary-heading {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #334155;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  font-size: 13px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.summary-val {
+  color: #0f172a;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Drawer Footer */
+.drawer-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
+  background: #ffffff;
+  flex-shrink: 0;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03);
+}
+

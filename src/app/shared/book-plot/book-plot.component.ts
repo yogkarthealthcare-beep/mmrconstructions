@@ -27,8 +27,14 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   currentUser: any = null;
   buyerType: 'SELF' | 'ON_BEHALF' = 'ON_BEHALF';
 
+  // Redesigned Drawer Booking state for Associate
+  isDrawerOpen = false;
+  bookingForMode: 'TEAM_MEMBER' | 'SELF_DIRECT' = 'TEAM_MEMBER';
+  selectedSelfOrDirectKey = '';
+  agreedAmount: number | null = null;
+
   // Associate 3-Way Booking Mode
-  bookingTargetMode: AssociateBookingMode = 'DIRECT_CUSTOMER';
+  bookingTargetMode: AssociateBookingMode = 'TEAM_MEMBER_CUSTOMER';
 
   // Team Member Dropdown state (for Associate)
   teamMembers: any[] = [];
@@ -122,13 +128,18 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
     // Default booking mode
     if (this.isAssociate) {
-      this.bookingTargetMode = 'DIRECT_CUSTOMER';
+      this.bookingForMode = 'TEAM_MEMBER';
+      this.bookingTargetMode = 'TEAM_MEMBER_CUSTOMER';
       this.buyerType = 'ON_BEHALF';
       this.loadTeamMembers();
+      this.loadMyCustomers();
     } else if (this.isTeamMember) {
+      this.bookingForMode = 'TEAM_MEMBER';
       this.bookingTargetMode = 'DIRECT_CUSTOMER';
       this.buyerType = 'ON_BEHALF';
+      this.loadMyCustomers();
     } else {
+      this.bookingForMode = 'SELF_DIRECT';
       this.bookingTargetMode = 'SELF';
       this.buyerType = 'SELF';
     }
@@ -173,8 +184,62 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     return !this.isTeamMember && (this.auth.isAssociate() || this.router.url.includes('/associate'));
   }
 
-  // ── Mode Switching (3 Ways to Book for Associate) ──
+  // ── Redesigned 2-Way Mode Switching for Associate Booking Drawer ──
 
+  setBookingForMode(mode: 'TEAM_MEMBER' | 'SELF_DIRECT'): void {
+    this.bookingForMode = mode;
+    this.selectedTeamMemberId = null;
+    this.selectedTeamMember = null;
+    this.teamMemberCustomers = [];
+    this.selectedCustomer = null;
+    this.selectedSelfOrDirectKey = '';
+
+    if (mode === 'SELF_DIRECT') {
+      this.bookingTargetMode = 'SELF';
+      this.buyerType = 'SELF';
+      if (this.myCustomers.length === 0) {
+        this.loadMyCustomers();
+      }
+    } else {
+      this.bookingTargetMode = 'TEAM_MEMBER_CUSTOMER';
+      this.buyerType = 'ON_BEHALF';
+      if (this.teamMembers.length === 0) {
+        this.loadTeamMembers();
+      }
+    }
+  }
+
+  onSelfOrDirectEntityChange(key: string): void {
+    this.selectedSelfOrDirectKey = key;
+    if (key === 'SELF') {
+      this.buyerType = 'SELF';
+      this.bookingTargetMode = 'SELF';
+      this.selectedCustomer = null;
+    } else if (key && key.startsWith('CUS_')) {
+      const custId = Number(key.replace('CUS_', ''));
+      const cust = this.myCustomers.find(c => Number(c.user_id) === custId);
+      if (cust) {
+        this.buyerType = 'ON_BEHALF';
+        this.bookingTargetMode = 'DIRECT_CUSTOMER';
+        this.selectedCustomer = cust;
+      } else {
+        this.buyerType = 'ON_BEHALF';
+        this.selectedCustomer = null;
+      }
+    } else {
+      this.selectedCustomer = null;
+    }
+  }
+
+  openDrawer(): void {
+    this.isDrawerOpen = true;
+  }
+
+  closeDrawer(): void {
+    this.isDrawerOpen = false;
+  }
+
+  // Legacy mode switching helper
   setBookingTargetMode(mode: AssociateBookingMode): void {
     this.bookingTargetMode = mode;
     this.selectedCustomer = null;
@@ -451,6 +516,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.selectedPlotId = null;
     this.selectedPlot = null;
     this.selectedPlotDetail = null;
+    this.isDrawerOpen = false;
     this.resetView();
 
     if (this.selectedSiteId) {
@@ -556,8 +622,9 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
     if (this.isBookable(plot)) {
       const price = Number(plot.price || plot.base_price || 0);
-      if (price > 0) {
-        this.advanceAmount = Math.max(10000, Math.round(price * 0.1));
+      if (price > 0 && !this.agreedAmount) {
+        this.agreedAmount = Math.max(10000, Math.round(price * 0.1));
+        this.advanceAmount = this.agreedAmount;
       }
     }
 
@@ -573,18 +640,24 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
   onPlotClick(plot: any, event?: Event): void {
     if (event) event.stopPropagation();
-    this.selectPlot(plot);
 
     if (!this.isBookable(plot)) {
+      this.selectedPlot = plot;
+      this.selectedPlotId = plot.plot_id;
+      this.isDrawerOpen = false;
       const statusLabel = this.plotLabel(plot.plot_status || plot.status);
       Swal.fire({
         icon: 'info',
         title: `Plot ${plot.plot_number} (${statusLabel})`,
-        text: `Yeh plot filhal ${statusLabel} hai. Booking ke liye kripya Available (Green) plot select karein.`,
+        text: `Plot ${plot.plot_number} is currently ${statusLabel}. Booking is only allowed on Available (Green) plots.`,
         confirmButtonColor: '#166534',
         timer: 3500
       });
+      return;
     }
+
+    this.selectPlot(plot);
+    this.isDrawerOpen = true;
   }
 
   trackPlot(_index: number, plot: any): any {
@@ -746,8 +819,20 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   isSubmitDisabled(): boolean {
     if (!this.selectedPlotId || !this.selectedPlot) return true;
     if (!this.isBookable(this.selectedPlot)) return true;
-    if (this.buyerType === 'ON_BEHALF' && !this.selectedCustomer) return true;
-    if (!this.advanceAmount || this.advanceAmount < 10000) return true;
+    const amount = Number(this.agreedAmount);
+    if (!amount || isNaN(amount) || amount < 10000) return true;
+
+    if (this.isAssociate) {
+      if (this.bookingForMode === 'TEAM_MEMBER') {
+        if (!this.selectedTeamMemberId || !this.selectedCustomer) return true;
+      } else if (this.bookingForMode === 'SELF_DIRECT') {
+        if (!this.selectedSelfOrDirectKey) return true;
+        if (this.buyerType === 'ON_BEHALF' && !this.selectedCustomer) return true;
+      }
+    } else if (this.isTeamMember) {
+      if (!this.selectedCustomer) return true;
+    }
+
     if ((this.isTeamMember || this.isAssociate || this.buyerType === 'ON_BEHALF') && this.paymentType === 'EMI' && !this.allowEmiOnBehalf) {
       return true;
     }
@@ -758,20 +843,23 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     if (this.isSubmitDisabled()) return;
 
     this.submitting = true;
+    const finalAmount = Number(this.agreedAmount || this.advanceAmount || 10000);
+    this.advanceAmount = finalAmount;
 
     const payload: any = {
       plot_id: this.selectedPlot.plot_id,
       site_id: this.selectedSiteId,
       payment_type: this.paymentType,
       payment_method: this.paymentMethod,
-      advance_amount: Number(this.advanceAmount),
+      advance_amount: finalAmount,
+      booking_amount: finalAmount,
       buyer_type: this.buyerType,
       notes: this.notes.trim() || undefined
     };
 
     if (this.buyerType === 'ON_BEHALF' && this.selectedCustomer) {
       payload.customer_id = this.selectedCustomer.user_id;
-      if (this.bookingTargetMode === 'TEAM_MEMBER_CUSTOMER' && this.selectedTeamMemberId) {
+      if (this.isAssociate && this.bookingForMode === 'TEAM_MEMBER' && this.selectedTeamMemberId) {
         payload.team_member_user_id = this.selectedTeamMemberId;
       }
     }
@@ -781,6 +869,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
         this.submitting = false;
         this.bookingSuccess = true;
         this.confirmedBooking = res?.data || res?.booking || res || {};
+        this.isDrawerOpen = false;
 
         const nextStatus = this.isAssociate ? 'Booked' : 'Processing';
         this.plots = this.plots.map(p =>
@@ -794,7 +883,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
         Swal.fire({
           icon: 'success',
-          title: 'Plot Booking Submitted!',
+          title: 'Plot Booking Confirmed!',
           text: `Booking Serial: ${this.confirmedBooking?.booking_serial || 'Generated'} for ${this.buyerType === 'ON_BEHALF' ? this.selectedCustomer?.full_name : this.currentUser?.full_name}`,
           confirmButtonColor: '#166534'
         });
@@ -804,7 +893,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
         Swal.fire({
           icon: 'error',
           title: 'Booking Submission Failed',
-          text: err.message || 'Unable to submit booking. Please check details and try again.',
+          text: err.message || err.error?.message || 'Unable to submit booking. Please check details and try again.',
           confirmButtonColor: '#166534'
         });
       }
@@ -817,8 +906,15 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.selectedPlotId = null;
     this.selectedPlot = null;
     this.selectedPlotDetail = null;
+    this.isDrawerOpen = false;
+    this.agreedAmount = null;
     this.advanceAmount = 50000;
     this.notes = '';
+    this.selectedTeamMemberId = null;
+    this.selectedTeamMember = null;
+    this.teamMemberCustomers = [];
+    this.selectedCustomer = null;
+    this.selectedSelfOrDirectKey = '';
     if (this.selectedSiteId) {
       this.loadSiteMap(this.selectedSiteId);
     }

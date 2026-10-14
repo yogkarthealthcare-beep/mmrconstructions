@@ -4,12 +4,12 @@
     <div class="topbar-content">
       <div class="topbar-title-wrap">
         <span class="topbar-kicker">
-          <i class="fas fa-drafting-compass me-1"></i> Interactive CAD Layout & Plot Booking
+          <i class="fas fa-drafting-compass me-1"></i> Interactive CAD Layout &amp; Plot Booking
         </span>
         <h1>{{ site?.site_name || 'Select Project Site' }}</h1>
         <p class="topbar-location">
           <i class="fas fa-map-marker-alt text-warning me-1"></i>
-          {{ site?.full_address || site?.city || 'Choose a project site to inspect CAD layout & book units' }}
+          {{ site?.full_address || site?.city || 'Choose a project site to inspect CAD layout &amp; book units' }}
         </p>
       </div>
 
@@ -54,367 +54,8 @@
     </div>
   </header>
 
-  <!-- 1. Customer Attribution Card (3 Ways for Associate / Dedicated Party for Team Member) -->
-  <section *ngIf="!bookingSuccess" class="customer-attribution-card">
-    <div class="attribution-card-header">
-      <div class="d-flex align-items-center gap-2">
-        <div class="step-circle">1</div>
-        <div>
-          <h3 class="mb-0">{{ isTeamMember ? 'Party / Customer Attribution (पार्टी/कस्टमर चयन)' : 'Customer Attribution (कस्टमर चयन)' }}</h3>
-          <p class="text-muted fs-13 mb-0">
-            {{ isAssociate
-                ? 'एसोसिएट 3 तरीकों से प्लॉट बुक कर सकता है: डायरेक्ट कस्टमर, टीम मेंबर के कस्टमर, या अपने लिए।'
-                : 'टीम मेंबर केवल अपनी पार्टी यानी अपने रजिस्टर्ड कस्टमर्स के लिए ही प्लॉट बुक कर सकता है।' }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Quick Add Customer Button -->
-      <button
-        *ngIf="bookingTargetMode !== 'SELF'"
-        type="button"
-        class="btn btn-primary add-customer-btn"
-        (click)="openAddCustomerModal()">
-        <i class="fas fa-user-plus me-1"></i>
-        ➕ {{ isTeamMember ? 'Add New Customer / नई पार्टी जोड़ें' : (bookingTargetMode === 'TEAM_MEMBER_CUSTOMER' && selectedTeamMember ? ('Add Customer under ' + selectedTeamMember.full_name) : 'Add New Customer') }}
-      </button>
-    </div>
-
-    <!-- Dedicated Team Member Panel Banner -->
-    <div *ngIf="isTeamMember" class="team-member-role-banner mt-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="tm-role-icon"><i class="fas fa-id-badge"></i></div>
-        <div>
-          <span class="badge bg-success-subtle text-success border border-success-subtle fs-11">Team Member Party Booking Panel</span>
-          <h5 class="mb-1 text-dark">Book for Your Customer / Party (अपनी पार्टी के लिए प्लॉट बुक करें)</h5>
-          <p class="text-muted fs-12 mb-0">
-            आप केवल अपनी पार्टी यानी अपने रजिस्टर्ड कस्टमर्स के लिए ही प्लॉट बुक कर सकते हैं। अगर आपकी पार्टी का अकाउंट पहले से बना है तो नीचे से सेलेक्ट करें, या नया कस्टमर अकाउंट बनाने के लिए ऊपर <strong>"➕ Add New Customer / नई पार्टी जोड़ें"</strong> पर क्लिक करें।
-          </p>
-        </div>
-      </div>
-      <div class="tm-agent-pill">
-        <small class="text-muted">Attributed Team Member:</small>
-        <strong>{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
-      </div>
-    </div>
-
-    <!-- 3-Way Mode Selection Tabs for Associate -->
-    <div class="three-modes-grid" *ngIf="isAssociate">
-      <!-- Mode 1: Direct Customer -->
-      <div
-        class="mode-card"
-        [class.active]="bookingTargetMode === 'DIRECT_CUSTOMER'"
-        (click)="setBookingTargetMode('DIRECT_CUSTOMER')">
-        <div class="mode-icon-box direct">
-          <i class="fas fa-user-friends"></i>
-        </div>
-        <div class="mode-card-text">
-          <h4>1. Direct Customer (डायरेक्ट कस्टमर)</h4>
-          <p>Apne direct referral customer ke liye plot book karein.</p>
-        </div>
-        <div class="mode-radio-circle">
-          <i class="fas fa-check" *ngIf="bookingTargetMode === 'DIRECT_CUSTOMER'"></i>
-        </div>
-      </div>
-
-      <!-- Mode 2: Team Member's Customer -->
-      <div
-        class="mode-card"
-        [class.active]="bookingTargetMode === 'TEAM_MEMBER_CUSTOMER'"
-        (click)="setBookingTargetMode('TEAM_MEMBER_CUSTOMER')">
-        <div class="mode-icon-box team">
-          <i class="fas fa-users-cog"></i>
-        </div>
-        <div class="mode-card-text">
-          <h4>2. Team Member's Customer (टीम मेंबर के कस्टमर)</h4>
-          <p>Team Member select karein aur unke customer ke liye book karein.</p>
-        </div>
-        <div class="mode-radio-circle">
-          <i class="fas fa-check" *ngIf="bookingTargetMode === 'TEAM_MEMBER_CUSTOMER'"></i>
-        </div>
-      </div>
-
-      <!-- Mode 3: Self Purchase -->
-      <div
-        class="mode-card"
-        [class.active]="bookingTargetMode === 'SELF'"
-        (click)="setBookingTargetMode('SELF')">
-        <div class="mode-icon-box self">
-          <i class="fas fa-user-check"></i>
-        </div>
-        <div class="mode-card-text">
-          <h4>3. Apne Liye (Self Purchase)</h4>
-          <p>Associate ke personal account par plot book karein.</p>
-        </div>
-        <div class="mode-radio-circle">
-          <i class="fas fa-check" *ngIf="bookingTargetMode === 'SELF'"></i>
-        </div>
-      </div>
-    </div>
-
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <!-- CASE A: Direct Customer Selector -->
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <div *ngIf="bookingTargetMode === 'DIRECT_CUSTOMER'" class="customer-picker-area mt-3">
-      <div *ngIf="!selectedCustomer" class="customer-unselected-box">
-        <div class="alert alert-warning py-2 px-3 mb-3 d-flex align-items-center gap-2 fs-13">
-          <i class="fas fa-info-circle text-warning fs-5"></i>
-          <div>
-            <strong>{{ isTeamMember ? 'पार्टी / कस्टमर चयन:' : 'Direct Customer चयन:' }}</strong>
-            नीचे {{ isTeamMember ? 'अपनी पार्टी के कस्टमर' : 'अपने डायरेक्ट कस्टमर' }} को सर्च करें या सेलेक्ट करें। अगर नया कस्टमर है तो ऊपर <strong>"➕ {{ isTeamMember ? 'Add New Customer / नई पार्टी जोड़ें' : 'Add New Customer' }}"</strong> पर क्लिक करके अकाउंट बनाएं।
-          </div>
-        </div>
-
-        <div class="customer-search-wrapper">
-          <i class="fas fa-search search-icon"></i>
-          <input
-            type="text"
-            class="form-control customer-search-input"
-            [placeholder]="isTeamMember ? 'Search your customer / party by Name, Mobile No, or Member ID...' : 'Search your direct customers by Name, Mobile No, or Member ID...'"
-            [(ngModel)]="customerSearchQuery"
-            (input)="onCustomerSearchInput()"
-          >
-
-          <!-- Autocomplete Dropdown -->
-          <div *ngIf="customerSearchResults.length > 0" class="customer-search-dropdown">
-            <div
-              *ngFor="let c of customerSearchResults"
-              class="customer-dropdown-item"
-              (click)="selectCustomer(c)">
-              <div class="customer-avatar-small"><i class="fas fa-user"></i></div>
-              <div class="customer-dropdown-info">
-                <strong>{{ c.full_name }}</strong>
-                <span>{{ c.member_id }} &bull; {{ c.mobile_no }}</span>
-              </div>
-              <button class="btn btn-sm btn-outline-success">Select</button>
-            </div>
-          </div>
-
-          <div *ngIf="searchingCustomers" class="p-2 text-muted small">
-            <i class="fas fa-spinner fa-spin me-1"></i> Searching customers...
-          </div>
-        </div>
-
-        <!-- Quick Select Chips for Direct Customers / Party -->
-        <div class="recent-customers-chips" *ngIf="myCustomers.length > 0 && customerSearchResults.length === 0">
-          <span class="fs-12 text-muted fw-bold me-2"><i class="fas fa-user-check me-1"></i> {{ isTeamMember ? 'Aapki Party / Registered Customers:' : 'Direct Customers:' }}</span>
-          <div class="chips-container">
-            <button
-              type="button"
-              class="customer-chip"
-              *ngFor="let c of myCustomers | slice:0:10"
-              (click)="selectCustomer(c)"
-              title="Click to select this customer">
-              <i class="fas fa-user-circle me-1"></i>
-              <strong>{{ c.full_name }}</strong>
-              <small>({{ c.mobile_no }})</small>
-            </button>
-          </div>
-        </div>
-
-        <div *ngIf="myCustomers.length === 0 && !loadingCustomers" class="no-customers-notice">
-          <i class="fas fa-user-slash text-muted me-2"></i>
-          <span *ngIf="isTeamMember">Aapke under abhi koi customer / party registered nahi hai. Naya customer jodne ke liye upar <strong>"&#10133; Add New Customer / नई पार्टी जोड़ें"</strong> par click karein.</span>
-          <span *ngIf="!isTeamMember">Aapke under koi direct customer registered nahi hai. Naya customer jodne ke liye upar <strong>"&#10133; Add New Customer"</strong> par click karein.</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <!-- CASE B: Team Member's Customer (Cascading 2 Dropdowns) -->
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <div *ngIf="bookingTargetMode === 'TEAM_MEMBER_CUSTOMER'" class="team-member-cascading-area mt-3">
-      <div class="alert alert-info py-2 px-3 mb-3 fs-13 d-flex align-items-center gap-2">
-        <i class="fas fa-sitemap fs-5 text-primary"></i>
-        <div>
-          <strong>टीम मेंबर के कस्टमर के लिए बुकिंग:</strong> पहले ड्रॉपडाउन में अपने टीम मेंबर को चुनें, फिर दूसरे ड्रॉपडाउन में उसके रजिस्टर्ड कस्टमर को चुनें।
-        </div>
-      </div>
-
-      <div class="row g-3">
-        <!-- Dropdown 1: Select Team Member -->
-        <div class="col-md-6">
-          <div class="form-group">
-            <label class="form-label fw-bold fs-13">
-              <i class="fas fa-user-tie text-primary me-1"></i> 1. Select Team Member (टीम मेंबर चुनें) <span class="text-danger">*</span>
-            </label>
-            <select
-              class="form-select custom-select-lg"
-              [(ngModel)]="selectedTeamMemberId"
-              (change)="onTeamMemberChange()">
-              <option [ngValue]="null" disabled>-- Choose Downline Team Member --</option>
-              <option *ngFor="let tm of teamMembers" [ngValue]="tm.user_id">
-                {{ tm.full_name }} (Member ID: {{ tm.member_id }})
-              </option>
-            </select>
-            <div *ngIf="loadingTeamMembers" class="text-muted small mt-1">
-              <i class="fas fa-spinner fa-spin me-1"></i> Loading team members...
-            </div>
-            <div *ngIf="teamMembers.length === 0 && !loadingTeamMembers" class="text-warning small mt-1">
-              Aapke downline me koi active Team Member nahi mila.
-            </div>
-          </div>
-        </div>
-
-        <!-- Dropdown 2: Select Customer of Selected Team Member -->
-        <div class="col-md-6">
-          <div class="form-group">
-            <label class="form-label fw-bold fs-13">
-              <i class="fas fa-user text-success me-1"></i> 2. Select Customer (कस्टमर चुनें) <span class="text-danger">*</span>
-            </label>
-            <select
-              class="form-select custom-select-lg"
-              [disabled]="!selectedTeamMemberId || loadingTeamMemberCustomers"
-              [ngModel]="selectedCustomer?.user_id"
-              (ngModelChange)="onSelectTeamMemberCustomer($event)">
-              <option [ngValue]="undefined" disabled>
-                {{ !selectedTeamMemberId
-                    ? '-- Pehle Team Member Chunein --'
-                    : (loadingTeamMemberCustomers ? 'Loading customers...' : (teamMemberCustomers.length === 0 ? 'No customers under this Team Member' : '-- Choose Customer --')) }}
-              </option>
-              <option *ngFor="let c of teamMemberCustomers" [ngValue]="c.user_id">
-                {{ c.full_name }} ({{ c.member_id }} &bull; {{ c.mobile_no }})
-              </option>
-            </select>
-
-            <div *ngIf="loadingTeamMemberCustomers" class="text-muted small mt-1">
-              <i class="fas fa-spinner fa-spin me-1"></i> Loading customers for {{ selectedTeamMember?.full_name }}...
-            </div>
-
-            <!-- Notice if Team Member has no customer -->
-            <div *ngIf="selectedTeamMemberId && teamMemberCustomers.length === 0 && !loadingTeamMemberCustomers" class="d-flex align-items-center justify-content-between p-2 mt-2 bg-light rounded border fs-12">
-              <span class="text-muted">Is Team Member ke under abhi koi customer nahi hai.</span>
-              <button type="button" class="btn btn-sm btn-outline-success" (click)="openAddCustomerModal()">
-                <i class="fas fa-plus me-1"></i> Add Customer
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Selected Team Member Info Card Banner -->
-      <div *ngIf="selectedTeamMember" class="team-member-info-banner mt-3">
-        <div class="d-flex align-items-center gap-2">
-          <div class="tm-avatar"><i class="fas fa-user-tie"></i></div>
-          <div>
-            <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-11">Attributed Seller (Team Member)</span>
-            <div class="fw-bold text-dark fs-14">{{ selectedTeamMember.full_name }}</div>
-            <div class="text-muted fs-12">Member ID: <strong>{{ selectedTeamMember.member_id }}</strong> &bull; Mobile: {{ selectedTeamMember.mobile_no }}</div>
-          </div>
-        </div>
-        <div class="text-end">
-          <span class="fs-12 text-muted">Supervising Associate:</span>
-          <div class="fw-bold text-success fs-13">{{ currentUser?.full_name }}</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <!-- CASE C: Self Purchase Notice -->
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <div *ngIf="bookingTargetMode === 'SELF'" class="self-purchase-notice alert alert-info mb-0 py-2 fs-13 mt-3">
-      <i class="fas fa-info-circle me-2"></i>
-      Yeh plot aapke personal account (<strong>{{ currentUser?.full_name }}</strong> &bull; {{ currentUser?.member_id }}) ke name par book kiya jayega.
-    </div>
-
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <!-- SELECTED BUYER CUSTOMER CONFIRMATION CARD -->
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <div *ngIf="selectedCustomer && bookingTargetMode !== 'SELF'" class="selected-customer-card mt-3">
-      <div class="selected-customer-left">
-        <div class="customer-badge-icon">
-          <i class="fas fa-user-check"></i>
-        </div>
-        <div>
-          <div class="customer-badge-tag">
-            <i class="fas fa-check-circle me-1"></i> Selected Buyer ({{ isTeamMember ? 'Party / Customer' : 'कस्टमर' }})
-          </div>
-          <h4 class="customer-name-heading">{{ selectedCustomer.full_name }}</h4>
-          <div class="customer-meta-line">
-            <span><i class="fas fa-id-card me-1"></i> {{ selectedCustomer.member_id }}</span>
-            <span><i class="fas fa-phone me-1"></i> {{ selectedCustomer.mobile_no }}</span>
-            <span class="badge bg-success-subtle text-success border border-success-subtle" *ngIf="isTeamMember">
-              <i class="fas fa-user-check me-1"></i> Registered Party of {{ currentUser?.full_name }}
-            </span>
-            <span class="badge bg-success-subtle text-success border border-success-subtle" *ngIf="!isTeamMember && bookingTargetMode === 'DIRECT_CUSTOMER'">
-              <i class="fas fa-link me-1"></i> Direct Customer
-            </span>
-            <span class="badge bg-primary-subtle text-primary border border-primary-subtle" *ngIf="!isTeamMember && bookingTargetMode === 'TEAM_MEMBER_CUSTOMER'">
-              <i class="fas fa-sitemap me-1"></i> Under {{ selectedTeamMember?.full_name || 'Team Member' }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div class="selected-customer-actions">
-        <button type="button" class="btn btn-sm btn-outline-danger" (click)="clearCustomer()">
-          <i class="fas fa-times me-1"></i> Change Customer
-        </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openAddCustomerModal()">
-          <i class="fas fa-user-plus me-1"></i> Add Another
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. Workspace: Plot Inventory + CAD Visualizer + Manual Booking Form -->
-  <main *ngIf="!bookingSuccess" class="booking-workspace">
-    <!-- Panel 1: Left Plot Inventory & Quick Search -->
-    <aside class="plot-inventory-panel">
-      <div class="inventory-head">
-        <div>
-          <h3><i class="fas fa-th-list me-1 text-success"></i> Plot Inventory</h3>
-          <p>{{ filteredPlots.length }} of {{ plots.length }} units</p>
-        </div>
-        <span class="available-badge">{{ availableCount }} Available</span>
-      </div>
-
-      <!-- Inventory Filters -->
-      <div class="inventory-filters">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="search" [(ngModel)]="plotSearchTerm" placeholder="Plot number...">
-        </div>
-        <select [(ngModel)]="plotStatusFilter" class="form-select status-select">
-          <option value="All">All Statuses</option>
-          <option value="Available">Available (Green)</option>
-          <option value="Processing">In-Process (Yellow)</option>
-          <option value="Booked">Booked/Sold (Red)</option>
-        </select>
-      </div>
-
-      <!-- Plot Cards Grid -->
-      <div class="plot-cards-list" *ngIf="filteredPlots.length > 0; else noPlotsFound">
-        <div
-          *ngFor="let plot of filteredPlots; trackBy: trackPlot"
-          class="plot-list-card"
-          [class.active]="selectedPlot?.plot_id === plot.plot_id"
-          [class.available]="normalizedStatus(plot.plot_status) === 'Available'"
-          [class.processing]="normalizedStatus(plot.plot_status) === 'Processing' || normalizedStatus(plot.plot_status) === 'Reserved'"
-          [class.booked]="normalizedStatus(plot.plot_status) === 'Booked' || normalizedStatus(plot.plot_status) === 'Sold'"
-          (click)="onPlotClick(plot, $event)">
-          <div class="plot-card-top">
-            <strong>Plot {{ plot.plot_number }}</strong>
-            <span class="plot-status-pill" [style.color]="plotColor(plot)">
-              {{ plotLabel(plot.plot_status) }}
-            </span>
-          </div>
-          <div class="plot-card-meta">
-            <span><i class="fas fa-ruler-combined me-1"></i> {{ plot.plot_area || plot.size_label || '-' }} Gaj</span>
-            <b>₹{{ (plot.base_price || plot.price || 0) | number }}</b>
-          </div>
-        </div>
-      </div>
-
-      <ng-template #noPlotsFound>
-        <div class="empty-inventory">
-          <i class="fas fa-search-minus fa-2x text-muted mb-2"></i>
-          <p class="text-muted fs-13 mb-0">Koi plot match nahi hua.</p>
-        </div>
-      </ng-template>
-    </aside>
-
-    <!-- Panel 2: Interactive CAD Map Canvas (Center Stage) -->
+  <!-- 1. Full-Width Map-Focused Workspace -->
+  <main *ngIf="!bookingSuccess" class="booking-workspace-map-only">
     <section
       #siteImageStage
       class="site-image-panel"
@@ -467,7 +108,7 @@
 
           <!-- SVG Plot Polygon Overlays -->
           <g class="plot-overlay-svg">
-            <g *ngFor="let plot of filteredPlots; trackBy: trackPlot">
+            <g *ngFor="let plot of plots; trackBy: trackPlot">
               <polygon
                 *ngIf="polygonPoints(plot)"
                 [attr.points]="polygonPoints(plot)"
@@ -489,7 +130,7 @@
         <div *ngIf="!siteMapUrl && !plotsLoading" class="no-map-fallback">
           <i class="fas fa-map-marked-alt fa-3x text-muted mb-2"></i>
           <h4>CAD Layout Map Not Uploaded</h4>
-          <p class="text-muted">Is project site ke liye CAD layout map image abhi available nahi hai. Aap inventory list se plot select karke manual booking kar sakte hain.</p>
+          <p class="text-muted">Is project site ke liye CAD layout map image abhi available nahi hai.</p>
         </div>
       </div>
 
@@ -503,193 +144,430 @@
         <div class="tooltip-price">₹{{ (hoverPlot.base_price || hoverPlot.price || 0) | number }}</div>
       </div>
     </section>
+  </main>
 
-    <!-- Panel 3: Right Manual Booking Form & Summary -->
-    <aside class="manual-booking-panel">
-      <!-- State 1: No Plot Selected -->
-      <div *ngIf="!selectedPlot" class="no-plot-selected-card">
-        <div class="pulse-icon-box">
-          <i class="fas fa-mouse-pointer text-success"></i>
-        </div>
-        <h4>Plot Select Karein</h4>
-        <p class="text-muted fs-13">
-          CAD Map par kisi bhi <strong>Available (Green)</strong> plot par click karein ya baayein (left) inventory list se chunein.
-        </p>
-      </div>
+  <!-- 2. Booking Drawer Backdrop -->
+  <div
+    class="booking-drawer-backdrop"
+    *ngIf="isDrawerOpen"
+    (click)="closeDrawer()">
+  </div>
 
-      <!-- State 2: Plot Selected (Display Details & Form) -->
-      <div *ngIf="selectedPlot" class="plot-selected-form-card">
-        <div class="selected-plot-header">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <span class="fs-12 text-uppercase fw-bold text-muted">Selected Unit</span>
-              <h3 class="mb-0 text-dark">Plot {{ selectedPlot.plot_number }}</h3>
-            </div>
-            <span
-              class="badge px-2.5 py-1.5 fs-12 fw-bold"
-              [class.bg-success-subtle]="isBookable(selectedPlot)"
-              [class.text-success]="isBookable(selectedPlot)"
-              [class.bg-danger-subtle]="!isBookable(selectedPlot)"
-              [class.text-danger]="!isBookable(selectedPlot)"
-            >
-              {{ plotLabel(selectedPlot.plot_status) }}
+  <!-- 3. Booking Drawer / Slide Panel -->
+  <aside class="booking-drawer" [class.open]="isDrawerOpen" *ngIf="!bookingSuccess">
+    <!-- Drawer Header -->
+    <div class="drawer-header">
+      <div class="d-flex justify-content-between align-items-start w-100">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success-subtle text-success border border-success-subtle fs-12 fw-bold">
+              <i class="fas fa-check-circle me-1"></i> Available Unit
             </span>
+            <span class="text-muted fs-12">{{ site?.site_name }}</span>
           </div>
-
-          <!-- Unit Specs Grid -->
-          <div class="unit-specs-grid mt-2">
-            <div class="spec-item">
-              <span class="spec-label">Area (Gaj)</span>
-              <strong>{{ selectedPlot.plot_area || selectedPlot.size_label || '-' }} Gaj</strong>
-            </div>
-            <div class="spec-item">
-              <span class="spec-label">Base Price</span>
-              <strong class="text-success">₹{{ (selectedPlot.base_price || selectedPlot.price || 0) | number }}</strong>
-            </div>
-            <div class="spec-item" *ngIf="selectedPlotDetail?.unit_type">
-              <span class="spec-label">Unit Type</span>
-              <strong>{{ selectedPlotDetail.unit_type }}</strong>
-            </div>
-            <div class="spec-item" *ngIf="selectedPlotDetail?.plot_category">
-              <span class="spec-label">Category</span>
-              <strong>{{ selectedPlotDetail.plot_category }}</strong>
-            </div>
+          <h2 class="drawer-plot-title mb-0">Plot {{ selectedPlot?.plot_number }}</h2>
+          <div class="drawer-plot-specs text-muted fs-12 mt-1">
+            <span><i class="fas fa-ruler-combined me-1"></i> {{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj</span>
+            <span class="mx-2">•</span>
+            <span class="text-success fw-bold"><i class="fas fa-tag me-1"></i> Base Price: ₹{{ (selectedPlot?.base_price || selectedPlot?.price || 0) | number }}</span>
           </div>
         </div>
 
-        <!-- Warning if Selected Plot is NOT Available -->
-        <div *ngIf="!isBookable(selectedPlot)" class="alert alert-danger py-2 px-3 mt-3 mb-0 fs-13">
-          <i class="fas fa-ban me-1"></i>
-          <strong>Yeh plot available nahi hai:</strong> Status: {{ plotLabel(selectedPlot.plot_status) }}. Booking ke liye kripya green color ka vacant plot chunein.
+        <button
+          type="button"
+          class="btn-close-drawer"
+          (click)="closeDrawer()"
+          title="Close Drawer">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Drawer Body (Scrollable) -->
+    <div class="drawer-body">
+      <!-- ── Associate Booking Workflow ── -->
+      <ng-container *ngIf="isAssociate">
+        <!-- Exactly One Booking For Selector with 2 Options: Team Member vs Self / Direct -->
+        <div class="booking-for-section mb-4">
+          <label class="form-label-tag mb-2">Booking For <span class="text-danger">*</span></label>
+          <div class="booking-for-selector">
+            <button
+              type="button"
+              class="for-option-btn"
+              [class.active]="bookingForMode === 'TEAM_MEMBER'"
+              (click)="setBookingForMode('TEAM_MEMBER')">
+              <i class="fas fa-users-cog me-1.5"></i>
+              <span>Team Member</span>
+            </button>
+            <button
+              type="button"
+              class="for-option-btn"
+              [class.active]="bookingForMode === 'SELF_DIRECT'"
+              (click)="setBookingForMode('SELF_DIRECT')">
+              <i class="fas fa-user-check me-1.5"></i>
+              <span>Self / Direct</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Manual Booking Form (Visible only if plot is Available) -->
-        <div *ngIf="isBookable(selectedPlot)" class="manual-form-body mt-3">
+        <!-- ───────────────────────────────────────────────────────────── -->
+        <!-- WORKFLOW A: Team Member Booking                               -->
+        <!-- ───────────────────────────────────────────────────────────── -->
+        <div *ngIf="bookingForMode === 'TEAM_MEMBER'" class="workflow-content">
+          <!-- Field 1: Select Team Member -->
+          <div class="form-group mb-3">
+            <label class="form-label fw-bold fs-13">
+              <i class="fas fa-user-tie text-primary me-1"></i> 1. Select Team Member <span class="text-danger">*</span>
+            </label>
+            <select
+              class="form-select custom-select-lg"
+              [(ngModel)]="selectedTeamMemberId"
+              (change)="onTeamMemberChange()">
+              <option [ngValue]="null" disabled>-- Choose Team Member --</option>
+              <option *ngFor="let tm of teamMembers" [ngValue]="tm.user_id">
+                {{ tm.member_id }} — {{ tm.full_name }} ({{ tm.mobile_no || 'Mobile N/A' }})
+              </option>
+            </select>
+            <div *ngIf="loadingTeamMembers" class="text-muted small mt-1">
+              <i class="fas fa-spinner fa-spin me-1"></i> Loading authorized team members...
+            </div>
+            <div *ngIf="teamMembers.length === 0 && !loadingTeamMembers" class="alert alert-warning py-2 px-3 mt-2 fs-12 mb-0">
+              <i class="fas fa-exclamation-triangle me-1"></i> No active Team Members found in your downline team.
+            </div>
+          </div>
+
+          <!-- Field 2: Select Customer of Selected Team Member -->
+          <div class="form-group mb-3" *ngIf="selectedTeamMemberId">
+            <label class="form-label fw-bold fs-13">
+              <i class="fas fa-user text-success me-1"></i> 2. Select Customer <span class="text-danger">*</span>
+            </label>
+            <select
+              class="form-select custom-select-lg"
+              [disabled]="loadingTeamMemberCustomers"
+              [ngModel]="selectedCustomer?.user_id"
+              (ngModelChange)="onSelectTeamMemberCustomer($event)">
+              <option [ngValue]="undefined" disabled>
+                {{ loadingTeamMemberCustomers ? 'Loading customers...' : (teamMemberCustomers.length === 0 ? '-- No customers under this Team Member --' : '-- Choose Customer --') }}
+              </option>
+              <option *ngFor="let c of teamMemberCustomers" [ngValue]="c.user_id">
+                {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
+              </option>
+            </select>
+            <div *ngIf="loadingTeamMemberCustomers" class="text-muted small mt-1">
+              <i class="fas fa-spinner fa-spin me-1"></i> Loading customers for {{ selectedTeamMember?.full_name }}...
+            </div>
+            <div *ngIf="selectedTeamMemberId && teamMemberCustomers.length === 0 && !loadingTeamMemberCustomers" class="alert alert-warning py-2 px-3 mt-2 fs-12 mb-0">
+              <i class="fas fa-info-circle me-1"></i> No eligible Customers registered under <strong>{{ selectedTeamMember?.full_name }}</strong>. Booking cannot proceed until a customer is added under this Team Member.
+            </div>
+          </div>
+
+          <!-- Field 3: Agreed Plot Amount -->
+          <div class="form-group mb-3">
+            <label class="form-label fw-bold fs-13">
+              <i class="fas fa-rupee-sign text-success me-1"></i> 3. Agreed Plot Amount (₹) <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text fw-bold">₹</span>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="agreedAmount"
+                placeholder="Enter agreed plot amount (e.g. 50000)"
+                min="10000"
+              />
+            </div>
+            <small class="text-muted fs-11">Enter the actual amount agreed upon with the customer (Min ₹10,000).</small>
+          </div>
+
+          <!-- Payment Plan & Payment Method & Notes -->
           <div class="form-group mb-3">
             <label class="form-label fs-13 fw-bold">Payment Plan <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="paymentType">
               <option value="PartPayment">Partial / Advance Token Payment</option>
               <option value="FullPayment">Full Payment</option>
-              <option value="EMI" [disabled]="!allowEmiOnBehalf && (isTeamMember || isAssociate || buyerType === 'ON_BEHALF')">
-                EMI Installments {{ (!allowEmiOnBehalf && (isTeamMember || isAssociate || buyerType === 'ON_BEHALF')) ? '(Disabled for on-behalf)' : '' }}
+              <option value="EMI" [disabled]="!allowEmiOnBehalf">
+                EMI Installments {{ !allowEmiOnBehalf ? '(Disabled for on-behalf)' : '' }}
               </option>
             </select>
-            <div *ngIf="!allowEmiOnBehalf && paymentType === 'EMI'" class="text-danger small mt-1">
-              <i class="fas fa-shield-alt me-1"></i> EMI on-behalf booking is restricted by company policy.
-            </div>
           </div>
 
           <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Advance Booking Amount (₹) <span class="text-danger">*</span></label>
-            <input
-              type="number"
-              class="form-control"
-              [(ngModel)]="advanceAmount"
-              min="10000"
-              placeholder="e.g. 50000"
-            >
-            <div class="d-flex justify-content-between text-muted fs-11 mt-1">
-              <span>Minimum token advance: ₹10,000</span>
-              <span>10% Token: ₹{{ ((selectedPlot.base_price || selectedPlot.price || 0) * 0.1) | number:'1.0-0' }}</span>
-            </div>
-          </div>
-
-          <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Payment Mode / Method <span class="text-danger">*</span></label>
+            <label class="form-label fs-13 fw-bold">Payment Method <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="paymentMethod">
               <option *ngFor="let m of allowedPaymentMethods" [value]="m">{{ m }}</option>
             </select>
-            <small class="text-muted fs-11">Authorized payment to MMR official bank account.</small>
           </div>
 
           <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Booking Notes / UTR / Remarks</label>
+            <label class="form-label fs-13 fw-bold">Booking Notes / Remarks</label>
             <input
               type="text"
               class="form-control"
               [(ngModel)]="notes"
               placeholder="e.g. Bank Transfer Ref / UTR / Client notes..."
-            >
+            />
           </div>
 
-          <!-- MMR Company Bank Policy Reminder -->
-          <div class="alert alert-warning py-2 px-3 mb-3 fs-11 d-flex align-items-center">
-            <i class="fas fa-shield-alt text-warning fs-5 me-2"></i>
-            <div>
-              <strong>Company Compliance:</strong> Client se cash accept nahi kiya jata. Payment MMR Constructions ke authorized company bank account me hi jama hona anivarya hai.
-            </div>
-          </div>
-
-          <!-- Attribution Summary Preview -->
-          <div class="booking-preview-card mb-3">
-            <h5 class="fs-12 text-uppercase fw-bold text-muted mb-2">
-              <i class="fas fa-clipboard-check text-success me-1"></i> Attribution Summary
+          <!-- Field 4: Booking Summary -->
+          <div class="booking-summary-card mb-3">
+            <h5 class="summary-heading">
+              <i class="fas fa-clipboard-check text-success me-1"></i> Booking Summary
             </h5>
-            <div class="preview-row">
-              <span>Buyer ({{ isTeamMember ? 'Party / Customer' : 'Customer' }}):</span>
-              <strong>{{ buyerType === 'ON_BEHALF' && selectedCustomer ? selectedCustomer.full_name : currentUser?.full_name }}</strong>
+            <div class="summary-row">
+              <span class="summary-label">Site:</span>
+              <strong class="summary-val">{{ site?.site_name }} (ID: {{ site?.site_id }})</strong>
             </div>
-            <div class="preview-row" *ngIf="buyerType === 'ON_BEHALF' && selectedCustomer">
-              <span>Customer Mobile:</span>
-              <strong>{{ selectedCustomer.mobile_no }}</strong>
+            <div class="summary-row">
+              <span class="summary-label">Selected Plot:</span>
+              <strong class="summary-val text-dark">Plot {{ selectedPlot?.plot_number }} ({{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj)</strong>
             </div>
-
-            <!-- Team Member Actor View -->
-            <ng-container *ngIf="isTeamMember">
-              <div class="preview-row">
-                <span>Attributed Seller (Team Member):</span>
-                <strong class="text-success">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
-              </div>
-              <div class="preview-row">
-                <span>Associate Routing:</span>
-                <span class="badge bg-warning text-dark border border-warning-subtle">Pending Associate Approval</span>
-              </div>
-            </ng-container>
-
-            <!-- Associate Actor View -->
-            <ng-container *ngIf="isAssociate">
-              <div class="preview-row" *ngIf="bookingTargetMode === 'TEAM_MEMBER_CUSTOMER' && selectedTeamMember">
-                <span>Attributed Seller (Team Member):</span>
-                <strong class="text-primary">{{ selectedTeamMember.full_name }} ({{ selectedTeamMember.member_id }})</strong>
-              </div>
-              <div class="preview-row">
-                <span>Supervising Associate:</span>
-                <strong class="text-primary">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
-              </div>
-              <div class="preview-row">
-                <span>Approval Status:</span>
-                <span class="badge bg-success">Auto-Approved (Created by Associate)</span>
-              </div>
-            </ng-container>
-
-            <div class="preview-row">
-              <span>Advance Payable:</span>
-              <strong class="text-success fs-15">₹{{ (advanceAmount || 0) | number }}</strong>
+            <div class="summary-row">
+              <span class="summary-label">Booking For:</span>
+              <span class="badge bg-primary">Team Member</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Logged-in Associate:</span>
+              <strong class="summary-val">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
+            </div>
+            <div class="summary-row" *ngIf="selectedTeamMember">
+              <span class="summary-label">Selected Team Member:</span>
+              <strong class="summary-val text-primary">{{ selectedTeamMember.full_name }} ({{ selectedTeamMember.member_id }})</strong>
+            </div>
+            <div class="summary-row" *ngIf="selectedCustomer">
+              <span class="summary-label">Selected Customer:</span>
+              <strong class="summary-val text-success">{{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})</strong>
+            </div>
+            <div class="summary-row" *ngIf="agreedAmount">
+              <span class="summary-label">Agreed Plot Amount:</span>
+              <strong class="summary-val text-success fs-15">₹{{ agreedAmount | number }}</strong>
             </div>
           </div>
-
-          <!-- Customer Gate Warning if missing -->
-          <div *ngIf="buyerType === 'ON_BEHALF' && !selectedCustomer" class="alert alert-danger py-2 px-3 mb-3 fs-12">
-            <i class="fas fa-exclamation-circle me-1"></i>
-            <strong>Customer Not Selected:</strong> Pehle upar se customer select karein ya naya customer add karein.
-          </div>
-
-          <!-- Confirm & Book Button -->
-          <button
-            type="button"
-            class="btn btn-success w-100 py-2.5 fs-14 fw-bold submit-booking-btn shadow-sm"
-            [disabled]="isSubmitDisabled() || submitting"
-            (click)="submitBooking()">
-            <i *ngIf="submitting" class="fas fa-spinner fa-spin me-2"></i>
-            <i *ngIf="!submitting" class="fas fa-check-circle me-2"></i>
-            <span>{{ submitting ? 'Submitting Booking...' : 'Confirm & Book Plot' }}</span>
-          </button>
         </div>
-      </div>
-    </aside>
-  </main>
 
-  <!-- 3. Booking Success Confirmation View -->
+        <!-- ───────────────────────────────────────────────────────────── -->
+        <!-- WORKFLOW B: Self / Direct Booking                             -->
+        <!-- ───────────────────────────────────────────────────────────── -->
+        <div *ngIf="bookingForMode === 'SELF_DIRECT'" class="workflow-content">
+          <!-- Field 1: Customer / Booking Entity Dropdown -->
+          <div class="form-group mb-3">
+            <label class="form-label fw-bold fs-13">
+              <i class="fas fa-address-book text-success me-1"></i> 1. Select Customer / Booking Entity <span class="text-danger">*</span>
+            </label>
+            <select
+              class="form-select custom-select-lg"
+              [ngModel]="selectedSelfOrDirectKey"
+              (ngModelChange)="onSelfOrDirectEntityChange($event)">
+              <option value="" disabled>-- Select Associate (Self) or Direct Customer --</option>
+              <option value="SELF">
+                ★ [Self] {{ currentUser?.member_id }} — {{ currentUser?.full_name }} (Associate)
+              </option>
+              <optgroup label="Direct Customers" *ngIf="myCustomers.length > 0">
+                <option *ngFor="let c of myCustomers" [value]="'CUS_' + c.user_id">
+                  {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
+                </option>
+              </optgroup>
+            </select>
+            <small class="text-muted fs-11">Choose either your own Associate record (Self) or one of your direct customers.</small>
+            <div *ngIf="myCustomers.length === 0 && !loadingCustomers" class="text-muted small mt-1">
+              No direct customers registered yet. You can select your own Associate account for Self booking.
+            </div>
+          </div>
+
+          <!-- Field 2: Agreed Plot Amount -->
+          <div class="form-group mb-3">
+            <label class="form-label fw-bold fs-13">
+              <i class="fas fa-rupee-sign text-success me-1"></i> 2. Agreed Plot Amount (₹) <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text fw-bold">₹</span>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="agreedAmount"
+                placeholder="Enter agreed plot amount (e.g. 50000)"
+                min="10000"
+              />
+            </div>
+            <small class="text-muted fs-11">Enter the actual amount agreed upon for this booking (Min ₹10,000).</small>
+          </div>
+
+          <!-- Payment Plan & Method & Notes -->
+          <div class="form-group mb-3">
+            <label class="form-label fs-13 fw-bold">Payment Plan <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="paymentType">
+              <option value="PartPayment">Partial / Advance Token Payment</option>
+              <option value="FullPayment">Full Payment</option>
+              <option value="EMI" [disabled]="buyerType === 'ON_BEHALF' && !allowEmiOnBehalf">
+                EMI Installments {{ (buyerType === 'ON_BEHALF' && !allowEmiOnBehalf) ? '(Disabled for on-behalf)' : '' }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label fs-13 fw-bold">Payment Method <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="paymentMethod">
+              <option *ngFor="let m of allowedPaymentMethods" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label fs-13 fw-bold">Booking Notes / Remarks</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="notes"
+              placeholder="e.g. Bank Transfer Ref / UTR / Client notes..."
+            />
+          </div>
+
+          <!-- Field 3: Booking Summary -->
+          <div class="booking-summary-card mb-3">
+            <h5 class="summary-heading">
+              <i class="fas fa-clipboard-check text-success me-1"></i> Booking Summary
+            </h5>
+            <div class="summary-row">
+              <span class="summary-label">Site:</span>
+              <strong class="summary-val">{{ site?.site_name }} (ID: {{ site?.site_id }})</strong>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Selected Plot:</span>
+              <strong class="summary-val text-dark">Plot {{ selectedPlot?.plot_number }} ({{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj)</strong>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Booking For:</span>
+              <span class="badge bg-success">Self / Direct</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Logged-in Associate:</span>
+              <strong class="summary-val">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
+            </div>
+            <div class="summary-row" *ngIf="selectedSelfOrDirectKey">
+              <span class="summary-label">Selected Buyer Entity:</span>
+              <strong class="summary-val" [class.text-primary]="buyerType === 'SELF'" [class.text-success]="buyerType === 'ON_BEHALF'">
+                {{ buyerType === 'SELF' ? (currentUser?.full_name + ' [Self / Associate]') : (selectedCustomer?.full_name + ' [' + selectedCustomer?.member_id + ']') }}
+              </strong>
+            </div>
+            <div class="summary-row" *ngIf="agreedAmount">
+              <span class="summary-label">Agreed Plot Amount:</span>
+              <strong class="summary-val text-success fs-15">₹{{ agreedAmount | number }}</strong>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── Team Member Panel (/team-member/book-plot) ── -->
+      <ng-container *ngIf="isTeamMember">
+        <div class="workflow-content">
+          <div class="form-group mb-3">
+            <label class="form-label fw-bold fs-13">
+              <i class="fas fa-user-check text-success me-1"></i> Select Customer / Party <span class="text-danger">*</span>
+            </label>
+            <select
+              class="form-select custom-select-lg"
+              [ngModel]="selectedCustomer?.user_id"
+              (ngModelChange)="onSelectTeamMemberCustomer($event)">
+              <option [ngValue]="undefined" disabled>-- Choose Your Customer / Party --</option>
+              <option *ngFor="let c of myCustomers" [ngValue]="c.user_id">
+                {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
+              </option>
+            </select>
+            <div *ngIf="loadingCustomers" class="text-muted small mt-1">
+              <i class="fas fa-spinner fa-spin me-1"></i> Loading your registered customers...
+            </div>
+            <div *ngIf="myCustomers.length === 0 && !loadingCustomers" class="alert alert-warning py-2 px-3 mt-2 fs-12 mb-0">
+              <i class="fas fa-info-circle me-1"></i> No registered customers found under your account.
+            </div>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label fw-bold fs-13">
+              <i class="fas fa-rupee-sign text-success me-1"></i> Agreed Plot Amount (₹) <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text fw-bold">₹</span>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="agreedAmount"
+                placeholder="Enter agreed plot amount (e.g. 50000)"
+                min="10000"
+              />
+            </div>
+            <small class="text-muted fs-11">Enter the actual amount agreed upon with the customer (Min ₹10,000).</small>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label fs-13 fw-bold">Payment Plan <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="paymentType">
+              <option value="PartPayment">Partial / Advance Token Payment</option>
+              <option value="FullPayment">Full Payment</option>
+              <option value="EMI" [disabled]="!allowEmiOnBehalf">
+                EMI Installments {{ !allowEmiOnBehalf ? '(Disabled for on-behalf)' : '' }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label fs-13 fw-bold">Payment Method <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="paymentMethod">
+              <option *ngFor="let m of allowedPaymentMethods" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label fs-13 fw-bold">Booking Notes / Remarks</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="notes"
+              placeholder="e.g. Bank Transfer Ref / UTR / Client notes..."
+            />
+          </div>
+
+          <div class="booking-summary-card mb-3">
+            <h5 class="summary-heading">
+              <i class="fas fa-clipboard-check text-success me-1"></i> Booking Summary
+            </h5>
+            <div class="summary-row">
+              <span class="summary-label">Site:</span>
+              <strong class="summary-val">{{ site?.site_name }} (ID: {{ site?.site_id }})</strong>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Selected Plot:</span>
+              <strong class="summary-val text-dark">Plot {{ selectedPlot?.plot_number }}</strong>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Attributed Team Member:</span>
+              <strong class="summary-val text-primary">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
+            </div>
+            <div class="summary-row" *ngIf="selectedCustomer">
+              <span class="summary-label">Customer / Party:</span>
+              <strong class="summary-val text-success">{{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})</strong>
+            </div>
+            <div class="summary-row" *ngIf="agreedAmount">
+              <span class="summary-label">Agreed Plot Amount:</span>
+              <strong class="summary-val text-success fs-15">₹{{ agreedAmount | number }}</strong>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Drawer Footer (Sticky Button) -->
+    <div class="drawer-footer">
+      <button
+        type="button"
+        class="btn btn-success w-100 py-2.5 fs-14 fw-bold submit-booking-btn shadow-sm"
+        [disabled]="isSubmitDisabled() || submitting"
+        (click)="submitBooking()">
+        <i *ngIf="submitting" class="fas fa-spinner fa-spin me-2"></i>
+        <i *ngIf="!submitting" class="fas fa-check-circle me-2"></i>
+        <span>{{ submitting ? 'Submitting Booking...' : 'Confirm Booking' }}</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- 4. Booking Success Confirmation View -->
   <section *ngIf="bookingSuccess" class="booking-success-view">
     <div class="success-card">
       <div class="success-icon-ring">
@@ -711,7 +589,7 @@
           <span class="text-muted">Customer Contact:</span>
           <strong>{{ selectedCustomer?.mobile_no }}</strong>
         </div>
-        <div class="detail-row" *ngIf="bookingTargetMode === 'TEAM_MEMBER_CUSTOMER' && selectedTeamMember">
+        <div class="detail-row" *ngIf="bookingForMode === 'TEAM_MEMBER' && selectedTeamMember">
           <span class="text-muted">Attributed Team Member:</span>
           <strong>{{ selectedTeamMember.full_name }} ({{ selectedTeamMember.member_id }})</strong>
         </div>
@@ -720,17 +598,17 @@
           <strong>{{ site?.site_name }} &bull; Plot {{ selectedPlot?.plot_number }}</strong>
         </div>
         <div class="detail-row">
-          <span class="text-muted">Advance Token Amount:</span>
-          <strong class="text-success">₹{{ (confirmedBooking?.advance_amount || advanceAmount) | number }}</strong>
+          <span class="text-muted">Agreed Plot Amount:</span>
+          <strong class="text-success">₹{{ (confirmedBooking?.advance_amount || agreedAmount || advanceAmount) | number }}</strong>
         </div>
         <div class="detail-row">
           <span class="text-muted">Associate Approval:</span>
           <span
             class="badge"
             [class.bg-warning]="confirmedBooking?.associate_approval_status === 'Pending'"
-            [class.bg-success]="confirmedBooking?.associate_approval_status === 'Approved'"
+            [class.bg-success]="confirmedBooking?.associate_approval_status === 'Approved' || isAssociate"
           >
-            {{ confirmedBooking?.associate_approval_status || (isTeamMember ? 'Pending' : 'Approved') }}
+            {{ confirmedBooking?.associate_approval_status || (isAssociate ? 'Auto-Approved' : 'Pending') }}
           </span>
         </div>
       </div>
@@ -745,114 +623,4 @@
       </div>
     </div>
   </section>
-
-  <!-- 4. Add New Customer Modal (Direct Attributed Onboarding) -->
-  <div *ngIf="showAddCustomerModal" class="custom-modal-backdrop" (click)="closeAddCustomerModal()">
-    <div class="custom-modal-dialog" (click)="$event.stopPropagation()">
-      <div class="custom-modal-header">
-        <div>
-          <h4 class="mb-0">
-            <i class="fas fa-user-plus text-success me-2"></i>
-            {{ bookingTargetMode === 'TEAM_MEMBER_CUSTOMER' && selectedTeamMember
-                ? ('Add Customer under ' + selectedTeamMember.full_name)
-                : 'Add New Direct Customer' }}
-          </h4>
-          <p class="text-muted fs-12 mb-0">Customer add hone ke baad turant booking ke liye select ho jayega.</p>
-        </div>
-        <button type="button" class="btn-close" (click)="closeAddCustomerModal()" aria-label="Close"></button>
-      </div>
-
-      <div class="custom-modal-body">
-        <div class="form-group mb-3">
-          <label class="form-label fs-13 fw-bold">Customer Full Name <span class="text-danger">*</span></label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="fas fa-user text-muted"></i></span>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="e.g. Ramesh Kumar Sharma"
-              [(ngModel)]="newCustomer.full_name"
-              required
-            >
-          </div>
-        </div>
-
-        <div class="form-group mb-3">
-          <label class="form-label fs-13 fw-bold">Mobile Number <span class="text-danger">*</span></label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="fas fa-phone text-muted"></i></span>
-            <input
-              type="tel"
-              class="form-control"
-              placeholder="10-digit mobile number"
-              maxlength="10"
-              [(ngModel)]="newCustomer.mobile_no"
-              required
-            >
-          </div>
-          <small class="text-muted fs-11">OTP & SMS notifications is number par bheje jayenge.</small>
-        </div>
-
-        <div class="form-group mb-3">
-          <label class="form-label fs-13 fw-bold">Email Address (Optional)</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="fas fa-envelope text-muted"></i></span>
-            <input
-              type="email"
-              class="form-control"
-              placeholder="e.g. ramesh@example.com (auto-generated if empty)"
-              [(ngModel)]="newCustomer.email"
-            >
-          </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-md-6">
-            <label class="form-label fs-13 fw-bold">Password (Optional)</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Default: Mmr@last4digits"
-                [(ngModel)]="newCustomer.password"
-              >
-            </div>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fs-13 fw-bold">City / Location (Optional)</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="fas fa-map-marker-alt text-muted"></i></span>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="e.g. Lucknow, Kanpur"
-                [(ngModel)]="newCustomer.city"
-              >
-            </div>
-          </div>
-        </div>
-
-        <!-- Attributed Sponsor Badge in Modal -->
-        <div class="p-2 bg-light rounded border fs-12 text-muted">
-          <i class="fas fa-info-circle text-success me-1"></i>
-          <strong>Attributed Sponsor:</strong>
-          {{ bookingTargetMode === 'TEAM_MEMBER_CUSTOMER' && selectedTeamMember
-              ? (selectedTeamMember.full_name + ' (' + selectedTeamMember.member_id + ')')
-              : (currentUser?.full_name + ' (' + currentUser?.member_id + ')') }}
-        </div>
-      </div>
-
-      <div class="custom-modal-footer">
-        <button type="button" class="btn btn-secondary px-3" (click)="closeAddCustomerModal()" [disabled]="addingCustomer">
-          Cancel
-        </button>
-        <button type="button" class="btn btn-success px-4" (click)="submitAddCustomer()" [disabled]="addingCustomer">
-          <i *ngIf="addingCustomer" class="fas fa-spinner fa-spin me-2"></i>
-          <i *ngIf="!addingCustomer" class="fas fa-save me-2"></i>
-          <span>{{ addingCustomer ? 'Adding Customer...' : 'Save & Select Customer' }}</span>
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
