@@ -150,21 +150,13 @@ export class SignupComponent implements OnInit {
   private initSponsor() {
     const params = this.route.snapshot.queryParams;
     const rawRef = params['ref'] ?? params['sponsor'] ?? params['sponsor_invite_code'];
-    let cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
+    const cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
 
-    if (!cleanRef && typeof localStorage !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('mmr_referral_code');
-        if (stored) {
-          cleanRef = stored.replace(/\*/g, '').trim().toUpperCase();
-        }
-      } catch {}
-    }
+    this.referralLocked = false;
 
     if (cleanRef) {
-      // Priority to URL or stored referral code across ALL roles (Customer, Associate, Investor, Team Member)
+      // Referral link explicitly provided in URL
       this.form.sponsor_invite_code = cleanRef;
-      this.referralLocked = true;
       try {
         localStorage.setItem('mmr_referral_code', cleanRef);
       } catch {}
@@ -173,8 +165,11 @@ export class SignupComponent implements OnInit {
       return;
     }
 
-    // Direct registration without referral: Default to MMR-ASC-0001
-    this.referralLocked = false;
+    // Fresh page load without referral link in URL:
+    // Ignore any stale cache/localStorage and default to MMR-ASC-0001
+    try {
+      localStorage.removeItem('mmr_referral_code');
+    } catch {}
     this.form.sponsor_invite_code = 'MMR-ASC-0001';
     this.verifySponsor('MMR-ASC-0001');
   }
@@ -188,12 +183,10 @@ export class SignupComponent implements OnInit {
       this.sponsorValid = false;
       this.sponsorName = '';
       this.sponsorCodeFormatted = '';
-      if (this.userType === 'Team Member') {
-        this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
-      } else if (this.userType === 'Customer') {
+      if (this.userType === 'Customer') {
         delete this.v['sponsor_invite_code'];
       } else {
-        this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
+        this.v['sponsor_invite_code'] = 'Sponsor Associate ID is required.';
       }
     } else {
       this.verifySponsor(clean);
@@ -209,6 +202,17 @@ export class SignupComponent implements OnInit {
       this.form.sponsor_invite_code = 'MMR-ASC-0001';
     }
 
+    // Role check: Team Member cannot sponsor Associate or Team Member registrations
+    if ((this.userType === 'Associate' || this.userType === 'Team Member') &&
+        (cleanCode.startsWith('MMR-TM-') || cleanCode.startsWith('TM-'))) {
+      this.sponsorChecking = false;
+      this.sponsorValid = false;
+      this.sponsorName = '';
+      this.sponsorCodeFormatted = '';
+      this.v['sponsor_invite_code'] = 'Team Member cannot sponsor this registration. Sponsor must be an Associate (e.g. MMR-ASC-0001).';
+      return;
+    }
+
     this.sponsorChecking = true;
     this.sponsorValid = false;
     this.sponsorName = '';
@@ -218,6 +222,14 @@ export class SignupComponent implements OnInit {
       next: (res: any) => {
         this.sponsorChecking = false;
         if (res?.success && res?.data?.valid) {
+          const sponsorType = String(res.data.user_type || '').toLowerCase();
+          if ((this.userType === 'Associate' || this.userType === 'Team Member') && sponsorType === 'team member') {
+            this.sponsorValid = false;
+            this.sponsorName = '';
+            this.sponsorCodeFormatted = '';
+            this.v['sponsor_invite_code'] = 'Team Member cannot sponsor this registration. Sponsor must be an Associate (e.g. MMR-ASC-0001).';
+            return;
+          }
           this.sponsorValid = true;
           this.sponsorName = res.data.full_name || 'Suraj Kumar Verma';
           this.sponsorCodeFormatted = res.data.invitation_code || res.data.member_id || cleanCode;
@@ -337,21 +349,23 @@ export class SignupComponent implements OnInit {
     if (this.userType === 'Customer') {
       // Optional for Customer. If provided, must be valid.
       if (cleanSponsor && !this.sponsorValid) {
-        this.v['sponsor_invite_code'] = '✕ Sponsor not available';
+        this.v['sponsor_invite_code'] = this.v['sponsor_invite_code'] || '✕ Sponsor not available';
       }
-    } else if (this.userType === 'Team Member') {
-      // Mandatory for Team Member (Strictly Required, No default pre-fill)
+    } else if (this.userType === 'Associate' || this.userType === 'Team Member') {
+      // Mandatory Associate sponsor for Associate and Team Member registrations
       if (!cleanSponsor) {
-        this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
+        this.v['sponsor_invite_code'] = 'Sponsor Associate ID is required.';
+      } else if (cleanSponsor.startsWith('MMR-TM-') || cleanSponsor.startsWith('TM-')) {
+        this.v['sponsor_invite_code'] = 'Team Member cannot sponsor this registration. Sponsor must be an Associate (e.g. MMR-ASC-0001).';
       } else if (!this.sponsorValid) {
-        this.v['sponsor_invite_code'] = '✕ Sponsor not available';
+        this.v['sponsor_invite_code'] = this.v['sponsor_invite_code'] || '✕ Sponsor not available';
       }
     } else {
-      // Mandatory for Investor & Associate
+      // Mandatory for Investor
       if (!cleanSponsor) {
         this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
       } else if (!this.sponsorValid) {
-        this.v['sponsor_invite_code'] = '✕ Sponsor not available';
+        this.v['sponsor_invite_code'] = this.v['sponsor_invite_code'] || '✕ Sponsor not available';
       }
     }
 
@@ -365,13 +379,7 @@ export class SignupComponent implements OnInit {
 
   private getEffectiveSponsorCode(): string {
     const code = this.form.sponsor_invite_code.replace(/\*/g, '').trim().toUpperCase();
-    if (this.userType === 'Team Member') {
-      return code; // Never fallback to default for Team Member
-    }
-    if (this.userType === 'Customer') {
-      return code; // Return referral code if present, or empty for direct signup
-    }
-    return code || 'MMR0001'; // Default sponsor fallback for other roles
+    return code || 'MMR-ASC-0001';
   }
 
   submit() {

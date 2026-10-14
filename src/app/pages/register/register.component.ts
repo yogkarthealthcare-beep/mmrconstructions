@@ -80,18 +80,13 @@ export class RegisterComponent implements OnInit {
   ngOnInit() {
     const params = this.route.snapshot.queryParams;
     const rawRef = params['ref'] ?? params['sponsor'] ?? params['sponsor_invite_code'];
-    let cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
-    if (!cleanRef && typeof localStorage !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('mmr_referral_code');
-        if (stored) cleanRef = stored.replace(/\*/g, '').trim().toUpperCase();
-      } catch {}
-    }
+    const cleanRef = (typeof rawRef === 'string') ? rawRef.replace(/\*/g, '').trim().toUpperCase() : '';
     if (cleanRef) {
       this.qForm.sponsor_invite_code = cleanRef;
       this.fForm.sponsor_invite_code = cleanRef;
       try { localStorage.setItem('mmr_referral_code', cleanRef); } catch {}
     } else {
+      try { localStorage.removeItem('mmr_referral_code'); } catch {}
       this.qForm.sponsor_invite_code = 'MMR-ASC-0001';
       this.fForm.sponsor_invite_code = 'MMR-ASC-0001';
     }

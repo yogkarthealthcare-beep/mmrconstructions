@@ -84,46 +84,40 @@ export class VerifiedBadgeComponent {
     if (!this.user && (this.isVerified === undefined || this.isVerified === null)) return false;
     const u = this.user || {};
 
-    // Check enrollment status (must be strictly 'approved' or 'completed')
-    const status = String(
+    // 1. Direct explicit boolean / 1-or-0 check on input property
+    if (this.isVerified !== undefined && this.isVerified !== null) {
+      if (this.isVerified === false || this.isVerified === 0 || String(this.isVerified) === '0' || String(this.isVerified).toLowerCase() === 'false') {
+        return false;
+      }
+      if (this.isVerified === true || this.isVerified === 1 || String(this.isVerified) === '1' || String(this.isVerified).toLowerCase() === 'true') {
+        return true;
+      }
+    }
+
+    // 2. Direct is_verified / isVerified on user object (1 = verified, 0 = unverified)
+    const rawUserFlag = u.is_verified !== undefined && u.is_verified !== null
+      ? u.is_verified
+      : (u.isVerified !== undefined && u.isVerified !== null ? u.isVerified : null);
+
+    if (rawUserFlag !== null) {
+      if (rawUserFlag === false || rawUserFlag === 0 || String(rawUserFlag) === '0' || String(rawUserFlag).toLowerCase() === 'false') {
+        return false;
+      }
+      if (rawUserFlag === true || rawUserFlag === 1 || String(rawUserFlag) === '1' || String(rawUserFlag).toLowerCase() === 'true') {
+        return true;
+      }
+    }
+
+    // 3. Fallback: check enrollment-specific status strictly (never account status or u.status)
+    const enrollStatus = String(
       u.enrollment_status ||
       u.enrollmentStatus ||
       u.enrollment_form_status ||
       u.app_status ||
       u.appStatus ||
-      u.status ||
       ''
     ).toLowerCase().trim();
 
-    const isExplicitlyApproved = status === 'approved' || status === 'completed';
-
-    // Explicit false always hides badge
-    if (this.isVerified === false || u.is_verified === false || u.isVerified === false) {
-      return false;
-    }
-
-    // If status is present, it MUST be approved/completed
-    if (status && !isExplicitlyApproved) {
-      return false;
-    }
-
-    // If enrollment id is present, status must still be approved
-    const hasEnrollmentId = Boolean(
-      u.customer_enrollment_id ||
-      u.associate_enrollment_id ||
-      u.investor_enrollment_id ||
-      u.submission_id
-    );
-
-    if (hasEnrollmentId && !isExplicitlyApproved) {
-      return false;
-    }
-
-    // When is_verified flag is true and status is approved
-    if (this.isVerified === true || u.is_verified === true || u.isVerified === true) {
-      return isExplicitlyApproved;
-    }
-
-    return isExplicitlyApproved;
+    return enrollStatus === 'approved' || enrollStatus === 'completed';
   }
 }

@@ -378,13 +378,12 @@
                 <input
                   type="text"
                   class="form-control-custom"
-                  [placeholder]="userType === 'Customer' ? 'Sponsor ID (Optional)' : (userType === 'Team Member' ? 'Enter Sponsor ID / Member ID' : 'Enter mandatory Sponsor ID')"
+                  [placeholder]="userType === 'Customer' ? 'Sponsor ID (Optional)' : (userType === 'Team Member' ? 'Enter Sponsor Associate ID (e.g. MMR-ASC-0001)' : 'Enter Sponsor ID (e.g. MMR-ASC-0001)')"
                   [(ngModel)]="form.sponsor_invite_code"
                   (ngModelChange)="onSponsorCodeInput($event)"
                   (blur)="verifySponsor()"
                   name="sponsor_invite_code"
                   autocomplete="off"
-                  [readonly]="referralLocked && userType !== 'Team Member'"
                   [class.is-invalid]="v['sponsor_invite_code']"
                 />
               </div>

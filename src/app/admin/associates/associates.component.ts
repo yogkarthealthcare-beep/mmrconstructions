@@ -372,18 +372,21 @@ export class AssociatesComponent implements OnInit {
                                 (mob ? enrollMap.get(mob) : null) || 
                                 (email ? enrollMap.get(email) : null);
           
-          const rawStatus = String(matchedEnroll?.status || a.enrollment_status || '').toLowerCase().trim();
-          const isApproved = rawStatus === 'approved' || rawStatus === 'completed';
+          // is_verified is strictly true if 1/true in users registration table or matched approved enrollment
+          const isVer = (a.is_verified === true || a.is_verified === 1 || String(a.is_verified).toLowerCase() === 'true' || String(a.is_verified) === '1') ||
+                        (matchedEnroll && (String(matchedEnroll.status).toLowerCase() === 'approved' || String(matchedEnroll.status).toLowerCase() === 'completed'));
+
+          const enrollStatus = isVer ? 'Completed' : (String(a.enrollment_status || matchedEnroll?.status || '').toLowerCase() === 'submitted' ? 'Submitted' : 'Pending');
 
           return {
             ...a,
             account_status: a.account_status || 'Active',
-            enrollment_status: isApproved ? 'Completed' : (rawStatus === 'submitted' ? 'Submitted' : (rawStatus === 'rejected' ? 'Rejected' : 'Pending')),
-            is_verified: isApproved,
-            isVerified: isApproved,
-            is_enrolled: isApproved,
-            isEnrolled: isApproved,
-            associate_enrollment_id: matchedEnroll ? (matchedEnroll.id || matchedEnroll.associate_id) : a.associate_enrollment_id || null
+            enrollment_status: enrollStatus,
+            is_verified: Boolean(isVer),
+            isVerified: Boolean(isVer),
+            is_enrolled: Boolean(isVer),
+            isEnrolled: Boolean(isVer),
+            associate_enrollment_id: isVer ? (matchedEnroll ? (matchedEnroll.id || matchedEnroll.associate_id) : a.associate_enrollment_id || null) : null
           };
         });
 
