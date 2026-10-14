@@ -75,7 +75,7 @@ import { CommonModule } from '@angular/common';
 })
 export class VerifiedBadgeComponent {
   @Input() user?: any;
-  @Input() isVerified?: boolean;
+  @Input() isVerified?: boolean | number | string | any;
   @Input() size: 'xs' | 'sm' | 'md' | 'lg' = 'sm';
   @Input() tooltip: string = 'Verified - Enrollment Form Approved';
   @Input() showLabel: boolean = false;
