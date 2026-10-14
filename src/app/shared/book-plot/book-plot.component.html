@@ -481,27 +481,6 @@
                 (click)="onPlotClick(plot, $event)">
                 <title>{{ plotTooltip(plot) }}</title>
               </polygon>
-
-              <!-- Plot Number Label in Polygon Center -->
-              <text
-                *ngIf="polygonPoints(plot)"
-                [attr.x]="labelPoint(plot).x"
-                [attr.y]="shouldShowSoldOut(plot) ? (labelPoint(plot).y - 0.7) : labelPoint(plot).y">
-                {{ plot.plot_number }}
-              </text>
-
-              <!-- Sold Out Badge Overlay -->
-              <text
-                *ngIf="polygonPoints(plot) && shouldShowSoldOut(plot)"
-                class="sold-out-tag"
-                [attr.x]="labelPoint(plot).x"
-                [attr.y]="labelPoint(plot).y + 0.9"
-                font-size="1.1"
-                fill="#e11d48"
-                font-weight="800"
-                text-anchor="middle">
-                SOLD
-              </text>
             </g>
           </g>
         </svg>
