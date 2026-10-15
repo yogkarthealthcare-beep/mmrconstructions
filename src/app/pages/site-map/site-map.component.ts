@@ -61,11 +61,8 @@ export class SiteMapComponent implements OnInit, OnDestroy {
 
   readonly statusItems = [
     { status: 'Available', label: 'Available', color: '#16a34a' },
-    { status: 'Booked', label: 'Booked', color: '#facc15' },
-    { status: 'Processing', label: 'Processing', color: '#f97316' },
-    { status: 'Sold', label: 'Sold', color: '#dc2626' },
-    { status: 'Reserved', label: 'Reserved', color: '#2563eb' },
-    { status: 'Cancelled', label: 'Cancelled', color: '#6b7280' },
+    { status: 'Processing', label: 'In Progress (Pink)', color: '#ec4899' },
+    { status: 'Booked', label: 'Booked / Sold (Red)', color: '#dc2626' },
   ];
 
   constructor(
@@ -599,7 +596,10 @@ export class SiteMapComponent implements OnInit, OnDestroy {
   }
 
   private pointsForPlot(plot: any): MapPoint[] {
-    const raw = plot?.polygon_coordinates || plot?.polygon?.coordinates || plot?.coordinates || [];
+    let raw = plot?.polygon_coordinates || plot?.polygon?.coordinates || plot?.coordinates || [];
+    if (typeof raw === 'string') {
+      try { raw = JSON.parse(raw); } catch (_) { raw = []; }
+    }
     if (Array.isArray(raw) && raw.length) {
       return raw.map((point: any) => Array.isArray(point)
         ? { x: Number(point[0]), y: Number(point[1]) }

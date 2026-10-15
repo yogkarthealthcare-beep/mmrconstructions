@@ -528,10 +528,10 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
 
   // ── Plot Styling Helpers ────────────────────────────────────────────
   getPlotColor(plot: AdminSalesPlot): string {
-    if (plot.status === 'Sold') return '#ef4444'; // Red
-    if (plot.status === 'Booked') return '#3b82f6'; // Blue
-    if (plot.status === 'InProcess') return '#f59e0b'; // Amber
-    return '#10b981'; // Green (Vacant)
+    const s = String(plot?.status || '').toLowerCase();
+    if (s === 'sold' || s === 'booked') return '#dc2626'; // Red
+    if (s === 'inprocess' || s === 'processing' || s === 'hold' || s === 'reserved') return '#ec4899'; // Pink
+    return '#16a34a'; // Green (Vacant)
   }
 
   getPlotFillOpacity(plot: AdminSalesPlot): number {
@@ -543,10 +543,10 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
   getPlotStroke(plot: AdminSalesPlot): string {
     if (this.selectedPlot && this.selectedPlot.plot_id === plot.plot_id) return '#1e40af';
     if (this.hoveredPlot && this.hoveredPlot.plot_id === plot.plot_id) return '#0f172a';
-    if (plot.status === 'Sold') return '#b91c1c';
-    if (plot.status === 'Booked') return '#1d4ed8';
-    if (plot.status === 'InProcess') return '#d97706';
-    return '#047857';
+    const s = String(plot?.status || '').toLowerCase();
+    if (s === 'sold' || s === 'booked') return '#dc2626';
+    if (s === 'inprocess' || s === 'processing' || s === 'hold' || s === 'reserved') return '#db2777';
+    return '#16a34a';
   }
 
   getPlotStrokeWidth(plot: AdminSalesPlot): number {

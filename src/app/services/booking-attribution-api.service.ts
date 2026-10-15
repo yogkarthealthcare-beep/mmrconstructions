@@ -141,10 +141,16 @@ export class BookingAttributionApiService {
    */
   createAttributedBooking(payload: {
     plot_id: number;
+    site_id?: number;
     payment_type: string;
+    payment_method?: string;
+    payment_option?: string;
     advance_amount: number;
+    booking_amount?: number;
     buyer_type: 'SELF' | 'ON_BEHALF';
     customer_id?: number;
+    team_member_user_id?: number;
+    installment_plan_id?: number | null;
     notes?: string;
   }, isAssociateRoute = false): Observable<any> {
     const endpoint = isAssociateRoute ? `${BASE_URL}/api/associate/bookings` : `${BASE_URL}/api/bookings`;

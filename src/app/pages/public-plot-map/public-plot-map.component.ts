@@ -413,12 +413,12 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
   // ── Plot Styling Helpers ────────────────────────────────────────────
   getPlotColor(plot: PublicPlot): { fill: string; stroke: string; strokeWidth: number } {
     if (plot.public_status === 'SOLD_OUT') {
-      return { fill: 'rgba(244, 63, 94, 0.40)', stroke: '#e11d48', strokeWidth: 2 };
+      return { fill: 'rgba(220, 38, 38, 0.45)', stroke: '#dc2626', strokeWidth: 2 };
     }
     if (plot.public_status === 'IN_PROCESS') {
-      return { fill: 'rgba(250, 204, 21, 0.48)', stroke: '#ca8a04', strokeWidth: 2 };
+      return { fill: 'rgba(236, 72, 153, 0.40)', stroke: '#db2777', strokeWidth: 2 };
     }
-    return { fill: 'rgba(34, 197, 94, 0.38)', stroke: '#16a34a', strokeWidth: 2 };
+    return { fill: 'rgba(34, 197, 94, 0.35)', stroke: '#16a34a', strokeWidth: 2 };
   }
 
   getSoldLabel(plot: PublicPlot): string {

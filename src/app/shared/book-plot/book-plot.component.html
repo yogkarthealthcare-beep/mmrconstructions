@@ -37,7 +37,7 @@
       </div>
       <div class="stat-badge processing">
         <strong>{{ processingCount }}</strong>
-        <span>In-Process (Yellow)</span>
+        <span>In-Process (Pink)</span>
       </div>
       <div class="stat-badge booked">
         <strong>{{ bookedCount }}</strong>
@@ -213,6 +213,7 @@
         <!-- ───────────────────────────────────────────────────────────── -->
         <!-- WORKFLOW A: Team Member Booking                               -->
         <!-- ───────────────────────────────────────────────────────────── -->
+        <!-- WORKFLOW A: Team Member Booking -->
         <div *ngIf="bookingForMode === 'TEAM_MEMBER'" class="workflow-content">
           <!-- Field 1: Select Team Member -->
           <div class="form-group mb-3">
@@ -270,97 +271,9 @@
               <i class="fas fa-spinner fa-spin me-1"></i> Loading customers for {{ selectedTeamMember?.full_name }}...
             </div>
           </div>
-
-          <!-- Field 3: Agreed Plot Amount -->
-          <div class="form-group mb-3">
-            <label class="form-label fw-bold fs-13">
-              <i class="fas fa-rupee-sign text-success me-1"></i> 3. Agreed Plot Amount (₹) <span class="text-danger">*</span>
-            </label>
-            <div class="input-group">
-              <span class="input-group-text fw-bold">₹</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="agreedAmount"
-                placeholder="Enter agreed plot amount (e.g. 50000)"
-                min="10000"
-              />
-            </div>
-            <small class="text-muted fs-11">Enter the actual amount agreed upon with the customer (Min ₹10,000).</small>
-          </div>
-
-          <!-- Payment Plan & Payment Method & Notes -->
-          <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Payment Plan <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="paymentType">
-              <option value="PartPayment">Partial / Advance Token Payment</option>
-              <option value="FullPayment">Full Payment</option>
-              <option value="EMI" [disabled]="!allowEmiOnBehalf">
-                EMI Installments {{ !allowEmiOnBehalf ? '(Disabled for on-behalf)' : '' }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Payment Method <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="paymentMethod">
-              <option *ngFor="let m of allowedPaymentMethods" [value]="m">{{ m }}</option>
-            </select>
-          </div>
-
-          <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Booking Notes / Remarks</label>
-            <input
-              type="text"
-              class="form-control"
-              [(ngModel)]="notes"
-              placeholder="e.g. Bank Transfer Ref / UTR / Client notes..."
-            />
-          </div>
-
-          <!-- Field 4: Booking Summary -->
-          <div class="booking-summary-card mb-3">
-            <h5 class="summary-heading">
-              <i class="fas fa-clipboard-check text-success me-1"></i> Booking Summary
-            </h5>
-            <div class="summary-row">
-              <span class="summary-label">Site:</span>
-              <strong class="summary-val">{{ site?.site_name }} (ID: {{ site?.site_id }})</strong>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Selected Plot:</span>
-              <strong class="summary-val text-dark">Plot {{ selectedPlot?.plot_number }} ({{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj)</strong>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Booking For:</span>
-              <span class="badge bg-primary">Team Member</span>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Logged-in Associate:</span>
-              <strong class="summary-val">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
-            </div>
-            <div class="summary-row" *ngIf="selectedTeamMember">
-              <span class="summary-label">Selected Team Member:</span>
-              <strong class="summary-val text-primary">{{ selectedTeamMember.full_name }} ({{ selectedTeamMember.member_id }})</strong>
-            </div>
-            <div class="summary-row" *ngIf="selectedCustomer">
-              <span class="summary-label">Selected Buyer:</span>
-              <strong class="summary-val text-success">
-                {{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})
-                <span class="badge bg-info-subtle text-info ms-1" *ngIf="selectedBuyerKey?.startsWith('TM_')">Team Member (Self)</span>
-                <span class="badge bg-success-subtle text-success ms-1" *ngIf="selectedBuyerKey?.startsWith('CUS_')">Customer</span>
-              </strong>
-            </div>
-            <div class="summary-row" *ngIf="agreedAmount">
-              <span class="summary-label">Agreed Plot Amount:</span>
-              <strong class="summary-val text-success fs-15">₹{{ agreedAmount | number }}</strong>
-            </div>
-          </div>
         </div>
 
-        <!-- ───────────────────────────────────────────────────────────── -->
-        <!-- WORKFLOW B: Self / Direct Booking                             -->
-        <!-- ───────────────────────────────────────────────────────────── -->
+        <!-- WORKFLOW B: Self / Direct Booking -->
         <div *ngIf="bookingForMode === 'SELF_DIRECT'" class="workflow-content">
           <!-- Field 1: Customer / Booking Entity Dropdown -->
           <div class="form-group mb-3">
@@ -384,86 +297,6 @@
             <small class="text-muted fs-11">Choose either your own Associate record (Self) or one of your direct customers.</small>
             <div *ngIf="myCustomers.length === 0 && !loadingCustomers" class="text-muted small mt-1">
               No direct customers registered yet. You can select your own Associate account for Self booking.
-            </div>
-          </div>
-
-          <!-- Field 2: Agreed Plot Amount -->
-          <div class="form-group mb-3">
-            <label class="form-label fw-bold fs-13">
-              <i class="fas fa-rupee-sign text-success me-1"></i> 2. Agreed Plot Amount (₹) <span class="text-danger">*</span>
-            </label>
-            <div class="input-group">
-              <span class="input-group-text fw-bold">₹</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="agreedAmount"
-                placeholder="Enter agreed plot amount (e.g. 50000)"
-                min="10000"
-              />
-            </div>
-            <small class="text-muted fs-11">Enter the actual amount agreed upon for this booking (Min ₹10,000).</small>
-          </div>
-
-          <!-- Payment Plan & Method & Notes -->
-          <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Payment Plan <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="paymentType">
-              <option value="PartPayment">Partial / Advance Token Payment</option>
-              <option value="FullPayment">Full Payment</option>
-              <option value="EMI" [disabled]="buyerType === 'ON_BEHALF' && !allowEmiOnBehalf">
-                EMI Installments {{ (buyerType === 'ON_BEHALF' && !allowEmiOnBehalf) ? '(Disabled for on-behalf)' : '' }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Payment Method <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="paymentMethod">
-              <option *ngFor="let m of allowedPaymentMethods" [value]="m">{{ m }}</option>
-            </select>
-          </div>
-
-          <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Booking Notes / Remarks</label>
-            <input
-              type="text"
-              class="form-control"
-              [(ngModel)]="notes"
-              placeholder="e.g. Bank Transfer Ref / UTR / Client notes..."
-            />
-          </div>
-
-          <!-- Field 3: Booking Summary -->
-          <div class="booking-summary-card mb-3">
-            <h5 class="summary-heading">
-              <i class="fas fa-clipboard-check text-success me-1"></i> Booking Summary
-            </h5>
-            <div class="summary-row">
-              <span class="summary-label">Site:</span>
-              <strong class="summary-val">{{ site?.site_name }} (ID: {{ site?.site_id }})</strong>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Selected Plot:</span>
-              <strong class="summary-val text-dark">Plot {{ selectedPlot?.plot_number }} ({{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj)</strong>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Booking For:</span>
-              <span class="badge bg-success">Self / Direct</span>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Logged-in Associate:</span>
-              <strong class="summary-val">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
-            </div>
-            <div class="summary-row" *ngIf="selectedSelfOrDirectKey">
-              <span class="summary-label">Selected Buyer Entity:</span>
-              <strong class="summary-val" [class.text-primary]="buyerType === 'SELF'" [class.text-success]="buyerType === 'ON_BEHALF'">
-                {{ buyerType === 'SELF' ? (currentUser?.full_name + ' [Self / Associate]') : (selectedCustomer?.full_name + ' [' + selectedCustomer?.member_id + ']') }}
-              </strong>
-            </div>
-            <div class="summary-row" *ngIf="agreedAmount">
-              <span class="summary-label">Agreed Plot Amount:</span>
-              <strong class="summary-val text-success fs-15">₹{{ agreedAmount | number }}</strong>
             </div>
           </div>
         </div>
@@ -492,79 +325,260 @@
               <i class="fas fa-info-circle me-1"></i> No registered customers found under your account.
             </div>
           </div>
+        </div>
+      </ng-container>
 
-          <div class="form-group mb-3">
-            <label class="form-label fw-bold fs-13">
-              <i class="fas fa-rupee-sign text-success me-1"></i> Agreed Plot Amount (₹) <span class="text-danger">*</span>
-            </label>
-            <div class="input-group">
-              <span class="input-group-text fw-bold">₹</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="agreedAmount"
-                placeholder="Enter agreed plot amount (e.g. 50000)"
-                min="10000"
-              />
+      <!-- ── Unified Payment Section (3 Modes: One-Time, Part-Wise, EMI) ── -->
+      <div class="form-section-card p-3 mb-3" *ngIf="selectedPlot">
+        <div class="section-title-tag mb-2">
+          <i class="fas fa-wallet text-success me-1"></i> 3. Payment Option & Methods <span class="text-danger">*</span>
+        </div>
+
+        <!-- 3 Interactive Payment Cards -->
+        <div class="row g-2 mb-3">
+          <!-- Option 1: One-Time Payment -->
+          <div class="col-12 col-md-4">
+            <div
+              class="payment-option-card h-100"
+              [class.selected]="paymentMode === 'ONE_TIME'"
+              (click)="setPaymentMode('ONE_TIME')">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="fw-800 fs-13 text-dark">One-Time Payment</span>
+                <input type="radio" [checked]="paymentMode === 'ONE_TIME'" name="drawer_pay_mode" />
+              </div>
+              <div class="fs-11 text-muted">Full plot payment in a single settlement transaction.</div>
+              <div class="badge bg-success-subtle text-success fs-10 mt-2 align-self-start">100% Settle</div>
             </div>
-            <small class="text-muted fs-11">Enter the actual amount agreed upon with the customer (Min ₹10,000).</small>
           </div>
 
-          <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Payment Plan <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="paymentType">
-              <option value="PartPayment">Partial / Advance Token Payment</option>
-              <option value="FullPayment">Full Payment</option>
-              <option value="EMI" [disabled]="!allowEmiOnBehalf">
-                EMI Installments {{ !allowEmiOnBehalf ? '(Disabled for on-behalf)' : '' }}
-              </option>
-            </select>
+          <!-- Option 2: Part-Wise Payment -->
+          <div class="col-12 col-md-4">
+            <div
+              class="payment-option-card h-100"
+              [class.selected]="paymentMode === 'PART_WISE'"
+              (click)="setPaymentMode('PART_WISE')">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="fw-800 fs-13 text-dark">Part-Wise Payment</span>
+                <input type="radio" [checked]="paymentMode === 'PART_WISE'" name="drawer_pay_mode" />
+              </div>
+              <div class="fs-11 text-muted">Flexible advance token with 0% interest on balance amount.</div>
+              <div class="badge bg-warning-subtle text-dark fs-10 mt-2 fw-700 align-self-start">0% Interest Charge</div>
+            </div>
           </div>
 
-          <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Payment Method <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="paymentMethod">
-              <option *ngFor="let m of allowedPaymentMethods" [value]="m">{{ m }}</option>
-            </select>
-          </div>
-
-          <div class="form-group mb-3">
-            <label class="form-label fs-13 fw-bold">Booking Notes / Remarks</label>
-            <input
-              type="text"
-              class="form-control"
-              [(ngModel)]="notes"
-              placeholder="e.g. Bank Transfer Ref / UTR / Client notes..."
-            />
-          </div>
-
-          <div class="booking-summary-card mb-3">
-            <h5 class="summary-heading">
-              <i class="fas fa-clipboard-check text-success me-1"></i> Booking Summary
-            </h5>
-            <div class="summary-row">
-              <span class="summary-label">Site:</span>
-              <strong class="summary-val">{{ site?.site_name }} (ID: {{ site?.site_id }})</strong>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Selected Plot:</span>
-              <strong class="summary-val text-dark">Plot {{ selectedPlot?.plot_number }}</strong>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Attributed Team Member:</span>
-              <strong class="summary-val text-primary">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
-            </div>
-            <div class="summary-row" *ngIf="selectedCustomer">
-              <span class="summary-label">Customer / Party:</span>
-              <strong class="summary-val text-success">{{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})</strong>
-            </div>
-            <div class="summary-row" *ngIf="agreedAmount">
-              <span class="summary-label">Agreed Plot Amount:</span>
-              <strong class="summary-val text-success fs-15">₹{{ agreedAmount | number }}</strong>
+          <!-- Option 3: Installment (EMI) -->
+          <div class="col-12 col-md-4">
+            <div
+              class="payment-option-card h-100"
+              [class.selected]="paymentMode === 'EMI'"
+              (click)="setPaymentMode('EMI')">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="fw-800 fs-13 text-dark">Installment (EMI)</span>
+                <input type="radio" [checked]="paymentMode === 'EMI'" name="drawer_pay_mode" />
+              </div>
+              <div class="fs-11 text-muted">Structured monthly tenure plans (12 - 60 Months).</div>
+              <div class="badge bg-primary-subtle text-primary fs-10 mt-2 fw-700 align-self-start">Custom Tenure Plans</div>
             </div>
           </div>
         </div>
-      </ng-container>
+
+        <!-- EMI Plan Selector (when EMI selected) -->
+        <div class="emi-plan-selector-box p-2.5 mb-3 rounded-8" *ngIf="paymentMode === 'EMI'">
+          <label class="form-label fs-12 fw-700 text-dark mb-1">
+            <i class="fas fa-calendar-alt text-primary me-1"></i> Select EMI Tenure Plan <span class="text-danger">*</span>
+          </label>
+          <select
+            class="form-select form-select-sm"
+            [(ngModel)]="selectedInstallmentPlanId"
+            (ngModelChange)="onPlanChange($event)">
+            <option [ngValue]="null" disabled>-- Choose Tenure Plan --</option>
+            <option *ngFor="let plan of activeInstallmentPlans" [ngValue]="plan.id || plan.plan_id">
+              {{ plan.plan_name }} ({{ plan.tenure_months }} Months) — Min DP: {{ plan.down_payment_percent || 20 }}% | {{ plan.annual_interest_rate || 0 }}% Int.
+            </option>
+          </select>
+          <div *ngIf="activeInstallmentPlans.length === 0" class="text-muted small mt-1">
+            <i class="fas fa-spinner fa-spin me-1"></i> Loading active EMI tenure plans...
+          </div>
+
+          <div class="emi-preview-strip mt-2 p-2 rounded bg-white border" *ngIf="installmentPreview">
+            <div class="row g-1 text-center fs-11">
+              <div class="col-4">
+                <span class="text-muted text-uppercase">Tenure</span>
+                <div class="fw-bold text-dark">{{ installmentPreview.tenure_months }} Months</div>
+              </div>
+              <div class="col-4">
+                <span class="text-muted text-uppercase">Monthly EMI</span>
+                <div class="fw-bold text-primary">₹{{ installmentPreview.monthly_emi | number }} / mo</div>
+              </div>
+              <div class="col-4">
+                <span class="text-muted text-uppercase">Down Payment</span>
+                <div class="fw-bold text-success">₹{{ installmentPreview.down_payment | number }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Amount Input -->
+        <div class="form-group mb-3">
+          <label class="form-label fw-bold fs-13 text-dark">
+            <i class="fas fa-rupee-sign text-success me-1"></i>
+            {{ paymentMode === 'ONE_TIME' ? 'Total Payment Amount (₹)' : (paymentMode === 'EMI' ? 'Down Payment Amount (₹)' : 'Initial / Advance Booking Amount (₹)') }}
+            <span class="text-danger">*</span>
+          </label>
+          <div class="input-group">
+            <span class="input-group-text fw-bold">₹</span>
+            <input
+              type="number"
+              class="form-control fw-bold"
+              [(ngModel)]="agreedAmount"
+              (ngModelChange)="onAgreedAmountChange()"
+              [placeholder]="paymentMode === 'ONE_TIME' ? 'Full Plot Value' : 'Enter amount (min 10000)'"
+              min="10000"
+              [max]="totalPlotPrice"
+            />
+          </div>
+          <div class="quick-amount-chips mt-1.5 d-flex gap-1.5 flex-wrap">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-xs py-0.5 px-2 fs-10"
+              *ngIf="totalPlotPrice > 0"
+              (click)="setCustomAmount(Math.round(totalPlotPrice * 0.1))">
+              10% (₹{{ Math.round(totalPlotPrice * 0.1) | number }})
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-xs py-0.5 px-2 fs-10"
+              *ngIf="totalPlotPrice > 0"
+              (click)="setCustomAmount(Math.round(totalPlotPrice * 0.25))">
+              25% (₹{{ Math.round(totalPlotPrice * 0.25) | number }})
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-xs py-0.5 px-2 fs-10"
+              *ngIf="totalPlotPrice > 0"
+              (click)="setCustomAmount(totalPlotPrice)">
+              100% Full (₹{{ totalPlotPrice | number }})
+            </button>
+          </div>
+        </div>
+
+        <!-- Payment Method Selector -->
+        <div class="form-group mb-3">
+          <label class="form-label fs-13 fw-bold text-dark">
+            <i class="fas fa-credit-card text-primary me-1"></i> Payment Method <span class="text-danger">*</span>
+          </label>
+          <select class="form-select" [(ngModel)]="paymentMethod">
+            <option *ngFor="let m of allowedPaymentMethods" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+
+        <!-- Authorized Company Bank Accounts & Strictly No Cash Notice -->
+        <div class="company-bank-card p-2.5 mb-3 rounded-8">
+          <div class="d-flex align-items-center justify-content-between mb-1.5">
+            <span class="fs-11 text-uppercase fw-bold text-dark">
+              <i class="fas fa-university text-success me-1"></i> Authorized Company Bank Account
+            </span>
+            <span class="badge bg-success-subtle text-success fs-10">Verified Current A/C</span>
+          </div>
+          <div class="bank-details-grid fs-11 text-muted">
+            <div><strong>A/C Name:</strong> MMR CONSTRUCTIONS PRIVATE LIMITED</div>
+            <div><strong>Bank Name:</strong> HDFC Bank Ltd.</div>
+            <div><strong>A/C Number:</strong> 50200088921832</div>
+            <div><strong>IFSC Code:</strong> HDFC0001234</div>
+          </div>
+          <div class="alert alert-danger py-1.5 px-2 fs-11 mt-2 mb-0 d-flex align-items-center">
+            <i class="fas fa-ban me-1.5 fs-13 text-danger"></i>
+            <span><strong>Strictly No Cash Policy:</strong> Client se cash accept nahi kiya jata. Payment sirf authorized bank transfer / UPI se karein.</span>
+          </div>
+        </div>
+
+        <!-- Booking Notes / Remarks -->
+        <div class="form-group mb-3">
+          <label class="form-label fs-13 fw-bold text-dark">Booking Remarks / Reference</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="notes"
+            placeholder="e.g. Bank Transfer Ref / UTR / Client notes..."
+          />
+        </div>
+
+        <!-- LIVE DYNAMIC PAYMENT SUMMARY BOX -->
+        <div class="live-payment-summary-box p-3 rounded-8 mb-3" *ngIf="selectedPlot">
+          <div class="fs-11 text-uppercase fw-700 text-dark mb-2">
+            <i class="fas fa-calculator text-success me-1"></i> Live Payment Calculation Summary
+          </div>
+          <div class="row g-2 text-center text-md-start">
+            <div class="col-4">
+              <span class="fs-11 text-muted text-uppercase">Total Plot Value</span>
+              <div class="fw-800 text-dark fs-14">₹{{ totalPlotPrice | number }}</div>
+            </div>
+            <div class="col-4">
+              <span class="fs-11 text-muted text-uppercase">Paid / Advance</span>
+              <div class="fw-800 text-success fs-14">₹{{ (agreedAmount || advanceAmount || 0) | number }}</div>
+            </div>
+            <div class="col-4">
+              <span class="fs-11 text-muted text-uppercase">Remaining Balance</span>
+              <div class="fw-800 text-danger fs-14">₹{{ remainingBalance | number }}</div>
+            </div>
+          </div>
+          <div class="fs-11 text-success fw-600 mt-2 text-center text-md-start" *ngIf="paymentMode !== 'EMI'">
+            <i class="fas fa-check-circle me-1"></i>
+            <strong>Formula:</strong> Unpaid Balance = Total Plot Value (₹{{ totalPlotPrice | number }}) − Total Paid (₹{{ (agreedAmount || advanceAmount || 0) | number }}) | Interest = <strong>₹0</strong>
+          </div>
+          <div class="fs-11 text-primary fw-600 mt-2 text-center text-md-start" *ngIf="paymentMode === 'EMI' && installmentPreview">
+            <i class="fas fa-info-circle me-1"></i>
+            <strong>EMI Plan:</strong> {{ installmentPreview.tenure_months }} Months &#64; ₹{{ installmentPreview.monthly_emi | number }}/month (Interest: {{ installmentPreview.interest_rate }}%)
+          </div>
+        </div>
+
+        <!-- Field: Booking Summary -->
+        <div class="booking-summary-card mb-3">
+          <h5 class="summary-heading">
+            <i class="fas fa-clipboard-check text-success me-1"></i> Booking Summary
+          </h5>
+          <div class="summary-row">
+            <span class="summary-label">Site:</span>
+            <strong class="summary-val">{{ site?.site_name }} (ID: {{ site?.site_id }})</strong>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Selected Plot:</span>
+            <strong class="summary-val text-dark">Plot {{ selectedPlot?.plot_number }} ({{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj)</strong>
+          </div>
+          <div class="summary-row" *ngIf="isAssociate">
+            <span class="summary-label">Booking For:</span>
+            <span class="badge" [class.bg-primary]="bookingForMode === 'TEAM_MEMBER'" [class.bg-success]="bookingForMode === 'SELF_DIRECT'">
+              {{ bookingForMode === 'TEAM_MEMBER' ? 'Team Member' : 'Self / Direct' }}
+            </span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Logged-in User:</span>
+            <strong class="summary-val">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
+          </div>
+          <div class="summary-row" *ngIf="isAssociate && bookingForMode === 'TEAM_MEMBER' && selectedTeamMember">
+            <span class="summary-label">Selected Team Member:</span>
+            <strong class="summary-val text-primary">{{ selectedTeamMember.full_name }} ({{ selectedTeamMember.member_id }})</strong>
+          </div>
+          <div class="summary-row" *ngIf="selectedCustomer">
+            <span class="summary-label">Selected Buyer:</span>
+            <strong class="summary-val text-success">
+              {{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})
+              <span class="badge bg-info-subtle text-info ms-1" *ngIf="selectedBuyerKey?.startsWith('TM_')">Team Member (Self)</span>
+              <span class="badge bg-success-subtle text-success ms-1" *ngIf="selectedBuyerKey?.startsWith('CUS_')">Customer</span>
+            </strong>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Payment Mode:</span>
+            <span class="badge bg-dark">
+              {{ paymentMode === 'ONE_TIME' ? 'One-Time (100% Settle)' : (paymentMode === 'EMI' ? 'Installment (EMI)' : 'Part-Wise (0% Interest)') }}
+            </span>
+          </div>
+          <div class="summary-row" *ngIf="agreedAmount || advanceAmount">
+            <span class="summary-label">Advance / Paid Amount:</span>
+            <strong class="summary-val text-success fs-15">₹{{ (agreedAmount || advanceAmount) | number }}</strong>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Drawer Footer (Sticky Button) -->

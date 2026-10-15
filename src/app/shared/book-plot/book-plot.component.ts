@@ -92,14 +92,15 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   plotSearchTerm = '';
   plotStatusFilter = 'All';
 
-  // Status items legend
+  // Status items legend (Pink = In Progress, Red = Booked/Sold, Green = Available)
   readonly statusItems = [
     { status: 'Available', label: 'Available (उपलब्ध)', color: '#16a34a' },
-    { status: 'Processing', label: 'In-Process (प्रोसेसिंग)', color: '#ca8a04' },
-    { status: 'Booked', label: 'Booked / Sold (बुक्ड)', color: '#e11d48' }
+    { status: 'Processing', label: 'In-Process (पिंक / प्रोसेसिंग)', color: '#ec4899' },
+    { status: 'Booked', label: 'Booked / Sold (रेड / बुक्ड)', color: '#dc2626' }
   ];
 
-  // Booking fields
+  // 3-Mode Payment System: One-Time, Part-Wise, EMI
+  paymentMode: 'ONE_TIME' | 'PART_WISE' | 'EMI' = 'PART_WISE';
   paymentType: 'FullPayment' | 'PartPayment' | 'EMI' = 'PartPayment';
   paymentMethod: string = 'Bank Transfer / NEFT / RTGS';
   allowedPaymentMethods: string[] = [
@@ -107,9 +108,23 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     'UPI / QR Code',
     'Online Payment Gateway'
   ];
-  allowEmiOnBehalf: boolean = false;
+  allowEmiOnBehalf: boolean = true;
   advanceAmount: number = 50000;
   notes: string = '';
+
+  // EMI installment plans state
+  activeInstallmentPlans: any[] = [];
+  selectedInstallmentPlanId: number | null = null;
+  selectedPlan: any = null;
+  installmentPreview: {
+    monthly_emi: number;
+    tenure_months: number;
+    interest_rate: number;
+    down_payment: number;
+    total_repayable: number;
+  } | null = null;
+
+  readonly Math = Math;
 
   // Submission state
   submitting = false;
@@ -171,8 +186,9 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       this.executeCustomerSearch(term);
     });
 
-    // Load project sites
+    // Load project sites & installment plans
     this.loadSites();
+    this.loadInstallmentPlans();
   }
 
   ngOnDestroy(): void {
@@ -665,17 +681,128 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
   // ── Plot Selection & Details ────────────────────────
 
+  get totalPlotPrice(): number {
+    if (!this.selectedPlot) return 0;
+    return Number(this.selectedPlot.base_price || this.selectedPlot.price || (Number(this.selectedPlot.plot_area || 0) * 1000) || 0);
+  }
+
+  get remainingBalance(): number {
+    const total = this.totalPlotPrice;
+    const paid = Number(this.agreedAmount || this.advanceAmount || 0);
+    return Math.max(0, total - paid);
+  }
+
+  setPaymentMode(mode: 'ONE_TIME' | 'PART_WISE' | 'EMI'): void {
+    this.paymentMode = mode;
+    const price = this.totalPlotPrice;
+
+    if (mode === 'ONE_TIME') {
+      this.paymentType = 'FullPayment';
+      this.agreedAmount = price > 0 ? price : 50000;
+      this.advanceAmount = this.agreedAmount;
+      this.installmentPreview = null;
+    } else if (mode === 'PART_WISE') {
+      this.paymentType = 'PartPayment';
+      const dp = Number(this.selectedPlot?.down_payment || Math.round(price * 0.25));
+      this.agreedAmount = dp > 0 ? dp : Math.max(10000, Math.round(price * 0.25));
+      this.advanceAmount = this.agreedAmount;
+      this.installmentPreview = null;
+    } else if (mode === 'EMI') {
+      this.paymentType = 'EMI';
+      if (this.activeInstallmentPlans.length === 0) {
+        this.loadInstallmentPlans();
+      } else if (!this.selectedInstallmentPlanId && this.activeInstallmentPlans.length > 0) {
+        this.selectInstallmentPlan(this.activeInstallmentPlans[0]);
+      } else {
+        this.updateInstallmentPreview();
+      }
+    }
+  }
+
+  loadInstallmentPlans(): void {
+    this.api.getInstallmentPlans().subscribe({
+      next: (res: any) => {
+        const plans = res?.data || res || [];
+        this.activeInstallmentPlans = Array.isArray(plans) ? plans.filter((p: any) => p.is_active !== false) : [];
+        if (this.activeInstallmentPlans.length > 0 && !this.selectedInstallmentPlanId) {
+          this.selectInstallmentPlan(this.activeInstallmentPlans[0]);
+        }
+      },
+      error: (err) => console.error('Failed to load installment plans:', err)
+    });
+  }
+
+  selectInstallmentPlan(plan: any): void {
+    if (!plan) return;
+    this.selectedPlan = plan;
+    this.selectedInstallmentPlanId = plan.id || plan.plan_id;
+
+    const price = this.totalPlotPrice;
+    const dpPercent = Number(plan.down_payment_percent || 20);
+    const minDp = Math.max(10000, Math.round(price * (dpPercent / 100)));
+    this.agreedAmount = minDp;
+    this.advanceAmount = minDp;
+
+    this.updateInstallmentPreview();
+  }
+
+  onPlanChange(planId: any): void {
+    const plan = this.activeInstallmentPlans.find(p => Number(p.id || p.plan_id) === Number(planId));
+    if (plan) {
+      this.selectInstallmentPlan(plan);
+    }
+  }
+
+  updateInstallmentPreview(): void {
+    if (this.paymentMode !== 'EMI' || !this.selectedPlan) {
+      this.installmentPreview = null;
+      return;
+    }
+    const price = this.totalPlotPrice;
+    const paid = Number(this.agreedAmount || this.advanceAmount || 0);
+    const principal = Math.max(0, price - paid);
+    const tenure = Number(this.selectedPlan.tenure_months || 12);
+    const annualRate = Number(this.selectedPlan.annual_interest_rate || 0);
+
+    let monthlyEmi = 0;
+    let totalRepayable = 0;
+
+    if (annualRate > 0) {
+      const r = (annualRate / 100) / 12;
+      monthlyEmi = Math.round((principal * r * Math.pow(1 + r, tenure)) / (Math.pow(1 + r, tenure) - 1));
+      totalRepayable = (monthlyEmi * tenure) + paid;
+    } else {
+      monthlyEmi = tenure > 0 ? Math.round(principal / tenure) : 0;
+      totalRepayable = price;
+    }
+
+    this.installmentPreview = {
+      monthly_emi: monthlyEmi,
+      tenure_months: tenure,
+      interest_rate: annualRate,
+      down_payment: paid,
+      total_repayable: totalRepayable
+    };
+  }
+
+  onAgreedAmountChange(): void {
+    this.advanceAmount = Number(this.agreedAmount || 0);
+    this.updateInstallmentPreview();
+  }
+
+  setCustomAmount(amt: number): void {
+    this.agreedAmount = amt;
+    this.advanceAmount = amt;
+    this.updateInstallmentPreview();
+  }
+
   selectPlot(plot: any): void {
     this.selectedPlotId = plot.plot_id;
     this.selectedPlot = plot;
     this.selectedPlotDetail = null;
 
     if (this.isBookable(plot)) {
-      const price = Number(plot.price || plot.base_price || 0);
-      if (price > 0 && !this.agreedAmount) {
-        this.agreedAmount = Math.max(10000, Math.round(price * 0.1));
-        this.advanceAmount = this.agreedAmount;
-      }
+      this.setPaymentMode(this.paymentMode);
     }
 
     this.api.getPlot(plot.plot_id).subscribe({
@@ -717,7 +844,10 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   // ── CAD SVG Geometry & Rendering ────────────────────
 
   pointsForPlot(plot: any): MapPoint[] {
-    const raw = plot?.polygon_coordinates || plot?.polygon?.coordinates || plot?.coordinates || [];
+    let raw = plot?.polygon_coordinates || plot?.polygon?.coordinates || plot?.coordinates || [];
+    if (typeof raw === 'string') {
+      try { raw = JSON.parse(raw); } catch (_) { raw = []; }
+    }
     if (Array.isArray(raw) && raw.length) {
       return raw.map((point: any) => Array.isArray(point)
         ? { x: Number(point[0]), y: Number(point[1]) }
@@ -869,7 +999,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   isSubmitDisabled(): boolean {
     if (!this.selectedPlotId || !this.selectedPlot) return true;
     if (!this.isBookable(this.selectedPlot)) return true;
-    const amount = Number(this.agreedAmount);
+    const amount = Number(this.agreedAmount || this.advanceAmount);
     if (!amount || isNaN(amount) || amount < 10000) return true;
 
     if (this.isAssociate) {
@@ -881,6 +1011,10 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       }
     } else if (this.isTeamMember) {
       if (!this.selectedCustomer) return true;
+    }
+
+    if (this.paymentMode === 'EMI' && !this.selectedInstallmentPlanId) {
+      return true;
     }
 
     if ((this.isTeamMember || this.isAssociate || this.buyerType === 'ON_BEHALF') && this.paymentType === 'EMI' && !this.allowEmiOnBehalf) {
@@ -900,6 +1034,8 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       plot_id: this.selectedPlot.plot_id,
       site_id: this.selectedSiteId,
       payment_type: this.paymentType,
+      payment_option: this.paymentMode === 'ONE_TIME' ? 'OneTime' : (this.paymentMode === 'EMI' ? 'EMI' : 'PartWise'),
+      installment_plan_id: this.paymentMode === 'EMI' ? this.selectedInstallmentPlanId : undefined,
       payment_method: this.paymentMethod,
       advance_amount: finalAmount,
       booking_amount: finalAmount,
@@ -921,7 +1057,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
         this.confirmedBooking = res?.data || res?.booking || res || {};
         this.isDrawerOpen = false;
 
-        const nextStatus = this.isAssociate ? 'Booked' : 'Processing';
+        const nextStatus = this.paymentMode === 'ONE_TIME' ? 'Booked' : 'Processing';
         this.plots = this.plots.map(p =>
           p.plot_id === this.selectedPlot.plot_id
             ? { ...p, plot_status: nextStatus }
