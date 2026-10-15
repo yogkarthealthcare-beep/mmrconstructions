@@ -41,6 +41,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   loadingTeamMembers = false;
   selectedTeamMemberId: number | null = null;
   selectedTeamMember: any = null;
+  selectedBuyerKey = '';
 
   // Customers state
   myCustomers: BookableCustomer[] = [];
@@ -127,10 +128,14 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.currentUser = this.auth.getUser();
 
     // Default booking mode
+    const qTeamMemberId = this.route.snapshot.queryParamMap.get('teamMemberId');
     if (this.isAssociate) {
       this.bookingForMode = 'TEAM_MEMBER';
       this.bookingTargetMode = 'TEAM_MEMBER_CUSTOMER';
       this.buyerType = 'ON_BEHALF';
+      if (qTeamMemberId) {
+        this.selectedTeamMemberId = Number(qTeamMemberId);
+      }
       this.loadTeamMembers();
       this.loadMyCustomers();
     } else if (this.isTeamMember) {
@@ -192,6 +197,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.selectedTeamMember = null;
     this.teamMemberCustomers = [];
     this.selectedCustomer = null;
+    this.selectedBuyerKey = '';
     this.selectedSelfOrDirectKey = '';
 
     if (mode === 'SELF_DIRECT') {
@@ -273,6 +279,15 @@ export class BookPlotComponent implements OnInit, OnDestroy {
         const data = res?.data || res?.team_members || res || [];
         this.teamMembers = Array.isArray(data) ? data : [];
         this.loadingTeamMembers = false;
+        if (this.selectedTeamMemberId) {
+          this.selectedTeamMember = this.teamMembers.find(
+            tm => Number(tm.user_id) === Number(this.selectedTeamMemberId)
+          ) || null;
+          if (this.selectedTeamMember) {
+            this.onBuyerKeyChange('TM_' + this.selectedTeamMember.user_id);
+            this.loadCustomersForTeamMember(this.selectedTeamMemberId);
+          }
+        }
       },
       error: (err) => {
         console.error('Failed to load associate team members:', err);
@@ -284,6 +299,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
   onTeamMemberChange(): void {
     this.selectedCustomer = null;
+    this.selectedBuyerKey = '';
     this.teamMemberCustomers = [];
 
     if (!this.selectedTeamMemberId) {
@@ -295,8 +311,45 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       tm => Number(tm.user_id) === Number(this.selectedTeamMemberId)
     ) || null;
 
-    if (this.selectedTeamMemberId) {
+    if (this.selectedTeamMember) {
+      this.onBuyerKeyChange('TM_' + this.selectedTeamMember.user_id);
       this.loadCustomersForTeamMember(this.selectedTeamMemberId);
+    }
+  }
+
+  onBuyerKeyChange(key: string): void {
+    this.selectedBuyerKey = key;
+    if (!key) {
+      this.selectedCustomer = null;
+      return;
+    }
+    if (key.startsWith('TM_')) {
+      const tmId = Number(key.replace('TM_', ''));
+      const tm = this.teamMembers.find(t => Number(t.user_id) === tmId) || this.selectedTeamMember;
+      if (tm) {
+        this.buyerType = 'ON_BEHALF';
+        this.selectedCustomer = {
+          user_id: tm.user_id,
+          member_id: tm.member_id || `MMR-TM-${tm.user_id}`,
+          full_name: tm.full_name,
+          mobile_no: tm.mobile_no || tm.mobile || '',
+          email: tm.email || tm.email_id || '',
+          account_status: tm.account_status || 'Active',
+          is_verified: true,
+          kyc_status: 'Approved',
+          relationship: 'TEAM_MEMBER_SELF',
+          referrer_user_id: this.currentUser?.user_id,
+          referrer_name: this.currentUser?.full_name,
+          referrer_member_id: this.currentUser?.member_id
+        } as any;
+      }
+    } else if (key.startsWith('CUS_')) {
+      const custId = Number(key.replace('CUS_', ''));
+      const cust = this.teamMemberCustomers.find(c => Number(c.user_id) === custId);
+      if (cust) {
+        this.buyerType = 'ON_BEHALF';
+        this.selectedCustomer = cust;
+      }
     }
   }
 
@@ -315,10 +368,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   }
 
   onSelectTeamMemberCustomer(customerId: number | string): void {
-    const cust = this.teamMemberCustomers.find(c => Number(c.user_id) === Number(customerId));
-    if (cust) {
-      this.selectedCustomer = cust;
-    }
+    this.onBuyerKeyChange('CUS_' + customerId);
   }
 
   // ── Direct Customer Management ──────────────────────
@@ -912,6 +962,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.notes = '';
     this.selectedTeamMemberId = null;
     this.selectedTeamMember = null;
+    this.selectedBuyerKey = '';
     this.teamMemberCustomers = [];
     this.selectedCustomer = null;
     this.selectedSelfOrDirectKey = '';

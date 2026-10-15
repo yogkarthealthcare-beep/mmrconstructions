@@ -732,26 +732,15 @@ Login URL: https://mmrconstructions.in/login`;
   // MODAL 2: PLOT BOOKING WORKFLOW
   // ═══════════════════════════════════════════════════════════════
   openBookingModal(preselectedMember?: any): void {
-    this.bookingError = '';
-    this.bookingSuccessData = null;
-    this.selectedPlot = null;
-    this.plotsList = [];
-    this.selectedSiteId = null;
-    this.selectedPlotId = null;
-
-    this.bookingForm = {
-      team_member_user_id: preselectedMember ? preselectedMember.user_id : (this.teamMembers[0]?.user_id || null),
-      site_id: null,
-      plot_id: null,
-      payment_option: 'PartWise',
-      booking_amount: 0,
-      payment_method: 'Bank Transfer / UPI',
-      notes: ''
-    };
-
-    this.selectedTeamMember = preselectedMember || this.teamMembers[0] || null;
-    this.showBookingModal = true;
-    this.loadSites();
+    const isTm = this.auth.isTeamMember();
+    const routePrefix = isTm ? '/team-member' : '/associate';
+    const queryParams: any = {};
+    if (preselectedMember) {
+      queryParams.teamMemberId = preselectedMember.user_id || preselectedMember.id;
+      if (preselectedMember.member_id) queryParams.memberId = preselectedMember.member_id;
+      if (preselectedMember.full_name) queryParams.memberName = preselectedMember.full_name;
+    }
+    this.router.navigate([`${routePrefix}/book-plot`], { queryParams });
   }
 
   closeBookingModal(): void {

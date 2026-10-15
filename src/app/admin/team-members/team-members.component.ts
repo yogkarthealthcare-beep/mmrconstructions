@@ -7,13 +7,14 @@ import { AuthService } from '../../services/auth.service';
 import { AdminExportService } from '../../services/admin-export.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 import Swal from 'sweetalert2';
 import { USER_TYPES } from '../../constants/user-types.constant';
 
 @Component({
   selector: 'app-admin-team-members',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent],
+  imports: [CommonModule, FormsModule, AdminPaginationComponent, AdminTableContainerComponent, VerifiedBadgeComponent],
   templateUrl: './team-members.component.html',
   styleUrls: ['./team-members.component.css']
 })

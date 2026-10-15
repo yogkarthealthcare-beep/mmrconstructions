@@ -84,6 +84,20 @@ export class VerifiedBadgeComponent {
     if (!this.user && (this.isVerified === undefined || this.isVerified === null)) return false;
     const u = this.user || {};
 
+    const enrollStatus = String(
+      u.enrollment_status ||
+      u.enrollmentStatus ||
+      u.enrollment_form_status ||
+      u.app_status ||
+      u.appStatus ||
+      ''
+    ).toLowerCase().trim();
+
+    // Fail closed: enrollment_status '0' means enrollment form has not been completed
+    if ((enrollStatus === '0' || enrollStatus === 'not_enrolled') && !u.is_final_submitted) {
+      return false;
+    }
+
     // 1. Direct explicit boolean / 1-or-0 check on input property
     if (this.isVerified !== undefined && this.isVerified !== null) {
       if (this.isVerified === false || this.isVerified === 0 || String(this.isVerified) === '0' || String(this.isVerified).toLowerCase() === 'false') {
@@ -108,15 +122,10 @@ export class VerifiedBadgeComponent {
       }
     }
 
-    // 3. Fallback: check enrollment-specific status strictly (never account status or u.status)
-    const enrollStatus = String(
-      u.enrollment_status ||
-      u.enrollmentStatus ||
-      u.enrollment_form_status ||
-      u.app_status ||
-      u.appStatus ||
-      ''
-    ).toLowerCase().trim();
+    // 3. Fallback: check enrollment-specific submission or approval
+    if (u.is_final_submitted === true || String(u.is_final_submitted) === 'true' || u.is_final_submitted === 1) {
+      return true;
+    }
 
     return enrollStatus === 'approved' || enrollStatus === 'completed';
   }

@@ -133,7 +133,8 @@
               </div>
               <div>
                 <div class="fw-700 text-dark fs-13 d-flex align-items-center gap-1">
-                  {{ m.full_name }}
+                  <span>{{ m.full_name }}</span>
+                  <app-verified-badge [user]="m" [isVerified]="m.is_verified" size="xs"></app-verified-badge>
                   <span *ngIf="m.slot_number" class="badge-slot">Slot #{{ m.slot_number }}</span>
                 </div>
                 <div class="text-muted fs-11">
@@ -270,7 +271,10 @@
             </div>
             <div>
               <div class="modal-hero-badge"><i class="fas fa-id-card me-1"></i>TEAM MEMBER PERFORMANCE OVERVIEW</div>
-              <h3 class="modal-hero-title mb-0">{{ selectedMember?.full_name }}</h3>
+              <h3 class="modal-hero-title mb-0 d-flex align-items-center gap-1.5">
+                <span>{{ selectedMember?.full_name }}</span>
+                <app-verified-badge [user]="selectedMember" [isVerified]="selectedMember?.is_verified" size="sm"></app-verified-badge>
+              </h3>
               <div class="modal-hero-sub">
                 <span><i class="fas fa-id-badge text-gold me-1"></i><strong>{{ selectedMember?.team_member_uid }}</strong></span>
                 <span class="mx-2">•</span>

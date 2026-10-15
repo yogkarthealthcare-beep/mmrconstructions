@@ -236,28 +236,38 @@
             </div>
           </div>
 
-          <!-- Field 2: Select Customer of Selected Team Member -->
+          <!-- Field 2: Select Buyer (Team Member Themselves OR Customer under Team Member) -->
           <div class="form-group mb-3" *ngIf="selectedTeamMemberId">
-            <label class="form-label fw-bold fs-13">
-              <i class="fas fa-user text-success me-1"></i> 2. Select Customer <span class="text-danger">*</span>
-            </label>
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <label class="form-label fw-bold fs-13 mb-0">
+                <i class="fas fa-user-check text-success me-1"></i> 2. Select Buyer (Team Member / Customer) <span class="text-danger">*</span>
+              </label>
+              <button type="button" class="btn btn-link btn-xs text-success p-0 fw-600 text-decoration-none" (click)="openAddCustomerModal()">
+                <i class="fas fa-user-plus me-1"></i> + New Customer
+              </button>
+            </div>
             <select
               class="form-select custom-select-lg"
               [disabled]="loadingTeamMemberCustomers"
-              [ngModel]="selectedCustomer?.user_id"
-              (ngModelChange)="onSelectTeamMemberCustomer($event)">
-              <option [ngValue]="undefined" disabled>
-                {{ loadingTeamMemberCustomers ? 'Loading customers...' : (teamMemberCustomers.length === 0 ? '-- No customers under this Team Member --' : '-- Choose Customer --') }}
-              </option>
-              <option *ngFor="let c of teamMemberCustomers" [ngValue]="c.user_id">
-                {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
-              </option>
+              [ngModel]="selectedBuyerKey"
+              (ngModelChange)="onBuyerKeyChange($event)">
+              <option value="" disabled>-- Choose Buyer --</option>
+              <optgroup label="Team Member (Book for Self)">
+                <option [value]="'TM_' + selectedTeamMember?.user_id">
+                  ⭐ {{ selectedTeamMember?.full_name }} (Self - {{ selectedTeamMember?.member_id }})
+                </option>
+              </optgroup>
+              <optgroup label="Customers (Registered under this Team Member)" *ngIf="teamMemberCustomers.length > 0">
+                <option *ngFor="let c of teamMemberCustomers" [value]="'CUS_' + c.user_id">
+                  👤 {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
+                </option>
+              </optgroup>
+              <optgroup label="Customers" *ngIf="teamMemberCustomers.length === 0 && !loadingTeamMemberCustomers">
+                <option value="" disabled>No customers registered under this Team Member yet</option>
+              </optgroup>
             </select>
             <div *ngIf="loadingTeamMemberCustomers" class="text-muted small mt-1">
               <i class="fas fa-spinner fa-spin me-1"></i> Loading customers for {{ selectedTeamMember?.full_name }}...
-            </div>
-            <div *ngIf="selectedTeamMemberId && teamMemberCustomers.length === 0 && !loadingTeamMemberCustomers" class="alert alert-warning py-2 px-3 mt-2 fs-12 mb-0">
-              <i class="fas fa-info-circle me-1"></i> No eligible Customers registered under <strong>{{ selectedTeamMember?.full_name }}</strong>. Booking cannot proceed until a customer is added under this Team Member.
             </div>
           </div>
 
@@ -334,8 +344,12 @@
               <strong class="summary-val text-primary">{{ selectedTeamMember.full_name }} ({{ selectedTeamMember.member_id }})</strong>
             </div>
             <div class="summary-row" *ngIf="selectedCustomer">
-              <span class="summary-label">Selected Customer:</span>
-              <strong class="summary-val text-success">{{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})</strong>
+              <span class="summary-label">Selected Buyer:</span>
+              <strong class="summary-val text-success">
+                {{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})
+                <span class="badge bg-info-subtle text-info ms-1" *ngIf="selectedBuyerKey?.startsWith('TM_')">Team Member (Self)</span>
+                <span class="badge bg-success-subtle text-success ms-1" *ngIf="selectedBuyerKey?.startsWith('CUS_')">Customer</span>
+              </strong>
             </div>
             <div class="summary-row" *ngIf="agreedAmount">
               <span class="summary-label">Agreed Plot Amount:</span>
@@ -587,7 +601,7 @@
         </div>
         <div class="detail-row" *ngIf="selectedCustomer?.mobile_no">
           <span class="text-muted">Customer Contact:</span>
-          <strong>{{ selectedCustomer.mobile_no }}</strong>
+          <strong>{{ selectedCustomer?.mobile_no }}</strong>
         </div>
         <div class="detail-row" *ngIf="bookingForMode === 'TEAM_MEMBER' && selectedTeamMember">
           <span class="text-muted">Attributed Team Member:</span>

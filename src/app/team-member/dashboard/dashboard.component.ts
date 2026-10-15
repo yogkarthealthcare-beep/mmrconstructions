@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { BookingAttributionApiService } from '../../services/booking-attribution-api.service';
 import { SalesTrackerSummary, CustomerSalesRow } from '../../services/booking-attribution.types';
+import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 
 @Component({
   selector: 'app-team-member-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, VerifiedBadgeComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
