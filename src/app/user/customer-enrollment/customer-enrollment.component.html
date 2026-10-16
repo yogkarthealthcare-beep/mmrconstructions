@@ -362,15 +362,49 @@
       </div>
     </section>
 
-    <!-- ============ 7. ASSOCIATE DETAILS ============ -->
+    <!-- ============ 7. SPONSOR / ASSOCIATE DETAILS ============ -->
     <section class="block">
-      <h2>7. Associate / Channel Partner Details</h2>
-      <div class="row2">
-        <div class="field"><label>Associate Name <span class="text-danger">*</span></label><input type="text" formControlName="associateName"></div>
-        <div class="field"><label>Associate ID <span class="text-danger">*</span></label><input type="text" formControlName="associateId"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <h2 style="margin: 0;">7. Sponsor / Associate Details (प्रायोजक विवरण)</h2>
+        <span *ngIf="sponsorBadgeText" class="badge-sponsor-tag">
+          <i class="fas fa-user-check"></i> {{ sponsorBadgeText }}
+        </span>
       </div>
-      <div class="field"><label>Mobile Number <span class="text-danger">*</span></label><input type="tel" formControlName="associateMobile" maxlength="10" placeholder="10-digit Mobile No."></div>
-      <div class="field"><label>Signature <span class="text-danger">*</span></label><input type="text" formControlName="associateSignatureName" placeholder="Type name as signature"></div>
+
+      <div class="sponsor-auto-note" style="margin-bottom: 14px; font-size: 13px; color: #475569; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 9px 12px; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-info-circle text-success" style="font-size: 16px;"></i>
+        <span>Sponsor details are automatically fetched from your referral link/record (Associate or Customer). You may also search by ID or Mobile Number.</span>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Sponsor / Associate Name <span class="text-danger">*</span></label>
+          <input type="text" formControlName="associateName" placeholder="Sponsor Full Name">
+        </div>
+        <div class="field">
+          <label>Sponsor / Associate ID <span class="text-danger">*</span></label>
+          <input type="text" formControlName="associateId" (input)="onAssociateIdChange($event)" placeholder="e.g. MMR-ASC-00001 or MMR-CUS-00001">
+          <div *ngIf="sponsorLookupLoading" style="font-size: 11px; color: #0284c7; margin-top: 4px;">
+            <i class="fas fa-spinner fa-spin"></i> Checking sponsor details...
+          </div>
+          <div *ngIf="sponsorLookupError" style="font-size: 11px; color: #dc2626; margin-top: 4px;">
+            <i class="fas fa-exclamation-circle"></i> {{ sponsorLookupError }}
+          </div>
+          <div *ngIf="sponsorBadgeText && !sponsorLookupLoading && !sponsorLookupError" style="font-size: 11px; color: #16a34a; margin-top: 4px;">
+            <i class="fas fa-check-circle"></i> Verified {{ sponsorBadgeText }}
+          </div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Mobile Number <span class="text-danger">*</span></label>
+          <input type="tel" formControlName="associateMobile" maxlength="10" placeholder="10-digit Mobile No.">
+        </div>
+        <div class="field">
+          <label>Signature (Name) <span class="text-danger">*</span></label>
+          <input type="text" formControlName="associateSignatureName" placeholder="Type sponsor name as signature">
+        </div>
+      </div>
     </section>
 
     <!-- ============ TERMS ============ -->

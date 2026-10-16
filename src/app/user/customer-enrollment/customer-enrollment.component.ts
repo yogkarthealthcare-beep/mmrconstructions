@@ -57,6 +57,12 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   ifscError = '';
   private ifscCache = new Map<string, any>();
 
+  sponsorLookupLoading = false;
+  sponsorBadgeText = '';
+  sponsorLookupError = '';
+  sponsorType = '';
+  private sponsorLookupTimeout: any = null;
+
   constructor(
     private fb: FormBuilder,
     private api: ApiService,
@@ -487,6 +493,10 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     this.enrollmentForm.get('formDate')?.disable();
     this.enrollmentForm.get('age')?.disable();
     this.enrollmentForm.get('coAge')?.disable();
+
+    if (!this.enrollmentForm.get('associateName')?.value || !this.enrollmentForm.get('associateId')?.value) {
+      this.prefillProfile();
+    }
   }
 
   onFinalSubmit() {
@@ -764,6 +774,39 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       });
     }
 
+    const hasExistingAssoc = Boolean(enroll.associate_name && String(enroll.associate_name).trim());
+    const assocIdVal = enroll.associate_id || '';
+
+    if (hasExistingAssoc) {
+      const sType = assocIdVal.startsWith('MMR-CUS') ? 'Customer' : (assocIdVal.startsWith('MMR-TM') ? 'Team Member' : 'Associate');
+      this.sponsorType = sType;
+      this.sponsorBadgeText = `${sType}: ${enroll.associate_name} (${assocIdVal})`;
+    } else {
+      // Auto-fetch and fill sponsor details if existing submission record had blank associate fields
+      this.api.getProfile().subscribe({
+        next: (pRes: any) => {
+          if (pRes?.success && pRes.data) {
+            const pu = pRes.data;
+            const sName = pu.associate_name || pu.sponsor_name || 'Suraj Kumar Verma';
+            const sId = pu.associate_id || pu.sponsor_id || 'MMR0001';
+            const sMobile = pu.associate_mobile || pu.sponsor_contact || '7071951011';
+            const sSig = pu.associate_signature_name || sName;
+            const sType = pu.sponsor_user_type || (sId.startsWith('MMR-CUS') ? 'Customer' : (sId.startsWith('MMR-TM') ? 'Team Member' : 'Associate'));
+
+            this.sponsorType = sType;
+            this.sponsorBadgeText = `${sType}: ${sName} (${sId})`;
+
+            this.enrollmentForm.patchValue({
+              associateName: sName,
+              associateId: sId,
+              associateMobile: sMobile,
+              associateSignatureName: sSig
+            });
+          }
+        }
+      });
+    }
+
     this.enrollmentForm.disable();
     this.auth.setEnrollmentCompleted();
   }
@@ -780,6 +823,10 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     const initialMobile = sessionUser.mobile_no || sessionUser.mobile || sessionUser.phone || regUser.mobile_no || '';
     const initialEmail = sessionUser.email || regUser.email || '';
 
+    const initialSponsorName = sessionUser.sponsor_name || regUser.sponsor_name || '';
+    const initialSponsorId = sessionUser.sponsor_code || sessionUser.sponsor_id || regUser.sponsor_code || '';
+    const initialSponsorMobile = sessionUser.sponsor_contact || sessionUser.sponsor_mobile || regUser.sponsor_mobile || '';
+
     if (initialName || initialMobile || initialEmail) {
       this.enrollmentForm.patchValue({
         applicantName: this.enrollmentForm.get('applicantName')?.value || initialName,
@@ -789,12 +836,34 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       });
     }
 
+    if (initialSponsorName || initialSponsorId) {
+      this.enrollmentForm.patchValue({
+        associateName: this.enrollmentForm.get('associateName')?.value || initialSponsorName,
+        associateId: this.enrollmentForm.get('associateId')?.value || initialSponsorId,
+        associateMobile: this.enrollmentForm.get('associateMobile')?.value || initialSponsorMobile,
+        associateSignatureName: this.enrollmentForm.get('associateSignatureName')?.value || initialSponsorName
+      });
+      const sType = initialSponsorId.startsWith('MMR-CUS') ? 'Customer' : (initialSponsorId.startsWith('MMR-TM') ? 'Team Member' : 'Associate');
+      this.sponsorType = sType;
+      this.sponsorBadgeText = `${sType}: ${initialSponsorName} (${initialSponsorId})`;
+    }
+
     this.api.getProfile().subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
           const u = res.data;
           const pin = u.pincode || u.pin_code || '';
           const state = u.state || 'Uttar Pradesh';
+
+          const resolvedSponsorName = u.associate_name || u.sponsor_name || initialSponsorName || 'Suraj Kumar Verma';
+          const resolvedSponsorId = u.associate_id || u.sponsor_id || initialSponsorId || 'MMR0001';
+          const resolvedSponsorMobile = u.associate_mobile || u.sponsor_contact || initialSponsorMobile || '7071951011';
+          const resolvedSponsorSig = u.associate_signature_name || resolvedSponsorName;
+          const sponsorUserType = u.sponsor_user_type || (resolvedSponsorId.startsWith('MMR-CUS') ? 'Customer' : (resolvedSponsorId.startsWith('MMR-TM') ? 'Team Member' : 'Associate'));
+
+          this.sponsorType = sponsorUserType;
+          this.sponsorBadgeText = `${sponsorUserType}: ${resolvedSponsorName} (${resolvedSponsorId})`;
+
           this.enrollmentForm.patchValue({
             applicantName: u.full_name || sessionUser.full_name || sessionUser.name || regUser.full_name || this.enrollmentForm.get('applicantName')?.value || '',
             dob: formatDateToDDMMYYYY(u.date_of_birth),
@@ -819,7 +888,11 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
             permanentStatePin: pin ? `${state} - ${pin}` : state,
             accHolderName: u.account_holder_name || u.full_name || sessionUser.full_name || regUser.full_name || this.enrollmentForm.get('accHolderName')?.value || '',
             accNumber: u.account_number || '',
-            ifscCode: u.ifsc_code || ''
+            ifscCode: u.ifsc_code || '',
+            associateName: this.enrollmentForm.get('associateName')?.value || resolvedSponsorName,
+            associateId: this.enrollmentForm.get('associateId')?.value || resolvedSponsorId,
+            associateMobile: this.enrollmentForm.get('associateMobile')?.value || resolvedSponsorMobile,
+            associateSignatureName: this.enrollmentForm.get('associateSignatureName')?.value || resolvedSponsorSig
           });
 
           // Trigger IFSC lookup if code is already present
@@ -830,6 +903,46 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
       },
       error: () => {}
     });
+  }
+
+  onAssociateIdChange(event: any) {
+    const rawVal = (event?.target?.value || '').trim();
+    if (this.sponsorLookupTimeout) {
+      clearTimeout(this.sponsorLookupTimeout);
+    }
+    this.sponsorLookupError = '';
+
+    if (!rawVal || rawVal.length < 3) {
+      this.sponsorBadgeText = '';
+      return;
+    }
+
+    this.sponsorLookupTimeout = setTimeout(() => {
+      this.sponsorLookupLoading = true;
+      this.api.lookupSponsor(rawVal).subscribe({
+        next: (res: any) => {
+          this.sponsorLookupLoading = false;
+          if (res?.success && res.data) {
+            const sp = res.data;
+            this.sponsorType = sp.user_type || 'Associate';
+            this.sponsorBadgeText = `${this.sponsorType}: ${sp.name} (${sp.id})`;
+            this.sponsorLookupError = '';
+
+            this.enrollmentForm.patchValue({
+              associateName: sp.name,
+              associateId: sp.id,
+              associateMobile: sp.mobile || this.enrollmentForm.get('associateMobile')?.value,
+              associateSignatureName: this.enrollmentForm.get('associateSignatureName')?.value || sp.name
+            });
+          }
+        },
+        error: (err: any) => {
+          this.sponsorLookupLoading = false;
+          this.sponsorBadgeText = '';
+          this.sponsorLookupError = err.error?.message || 'Sponsor not found for this ID/code.';
+        }
+      });
+    }, 400);
   }
 
   onIfscInput(event: any) {

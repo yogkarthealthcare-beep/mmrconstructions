@@ -257,6 +257,7 @@ export class ApiService {
   // ── Customer Enrollment ───────────────────────────
   submitCustomerEnrollment(data: any) { return this.post('/api/customer-enrollment', data); }
   getMyCustomerEnrollments()          { return this.get('/api/customer-enrollment/me'); }
+  lookupSponsor(code: string)         { return this.get(`/api/customer-enrollment/sponsor-lookup/${encodeURIComponent(code)}`); }
   adminGetCustomerEnrollments(params: any = {}) { return this.get('/api/admin/customer-enrollments', params, true); }
   adminGetCustomerEnrollment(id: string) { return this.get(`/api/customer-enrollment/${id}`, {}, true); }
   adminUpdateCustomerEnrollment(id: string, data: any) { return this.put(`/api/admin/customer-enrollments/${id}`, data, true); }
