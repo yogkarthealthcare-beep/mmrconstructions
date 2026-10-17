@@ -257,6 +257,11 @@ export class CustomersComponent implements OnInit {
     this.load();
   }
 
+  clearSearch() {
+    this.search = '';
+    this.onSearch();
+  }
+
   get activeCount(): number {
     return this.customers.filter(c => c.account_status === 'Active').length;
   }

@@ -1,203 +1,238 @@
 <!-- Toast Notification -->
-<div *ngIf="toast" class="toast-popup" style="position:fixed;top:76px;right:24px;z-index:9999;animation:slideIn .25s ease;">
-  <i class="fas fa-check-circle text-emerald me-2"></i> {{ toast }}
+<div *ngIf="toast" class="toast-popup">
+  <i class="fas fa-check-circle text-emerald me-1.5"></i> {{ toast }}
 </div>
 
-<!-- TOP HERO EXECUTIVE BANNER -->
-<div class="admin-hero-card mb-2">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
-    <div>
-      <div class="admin-hero-badge"><i class="fas fa-users-cog me-1"></i>CUSTOMER DIRECTORY CONTROL</div>
-      <h2 class="admin-hero-title mb-1">Customer Management</h2>
-      <p class="admin-hero-sub mb-0">View all registered plot buyers, manage account statuses &amp; create new customer accounts.</p>
-    </div>
+<div class="panel-shell">
+  <!-- TOP HERO EXECUTIVE BANNER -->
+  <div class="admin-hero-card mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+      <div>
+        <div class="admin-hero-badge"><i class="fas fa-users-cog me-1"></i>CUSTOMER DIRECTORY CONTROL</div>
+        <h2 class="admin-hero-title mb-0.5">Customer Management</h2>
+        <p class="admin-hero-sub mb-0">View all registered plot buyers, manage account statuses &amp; create new customer accounts.</p>
+      </div>
 
-    <div class="d-flex align-items-center gap-2 ms-auto">
-      <button class="btn btn-outline-light btn-xs" (click)="load()">
-        <i class="fas fa-sync me-1"></i> Refresh List
-      </button>
-      <button class="btn btn-gold btn-xs" (click)="openAddModal()">
-        <i class="fas fa-user-plus me-1"></i> Add New Customer
-      </button>
+      <div class="d-flex align-items-center gap-1.5 ms-auto flex-wrap">
+        <button class="btn btn-outline-light btn-xs" (click)="load()" [disabled]="loading" title="Refresh customer list">
+          <i class="fas fa-sync" [class.fa-spin]="loading"></i>
+          <span class="d-none d-sm-inline ms-1">Refresh</span>
+        </button>
+        <button class="btn btn-gold btn-xs shadow-xs" (click)="openAddModal()" title="Register a new customer account">
+          <i class="fas fa-user-plus me-1"></i> Add Customer
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- 4 STAT SUMMARY MINI CARDS -->
-<div class="row g-2 mb-2">
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-customers h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Total Customers</span>
-        <div class="icon-wrap bg-blue text-primary">
-          <i class="fas fa-users"></i>
+  <!-- 4 COMPACT HORIZONTAL KPI CARDS (~48-52px height) -->
+  <div class="kpi-grid mb-3">
+    <div class="kpi-card s-blue">
+      <div class="kpi-content">
+        <div class="kpi-label">Total Customers</div>
+        <div class="kpi-value">{{ total }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-users"></i></div>
+    </div>
+
+    <div class="kpi-card s-green cursor-pointer" (click)="statusFilter='Active'; onSearch()" title="Click to filter Active">
+      <div class="kpi-content">
+        <div class="kpi-label">Active Buyers</div>
+        <div class="kpi-value">{{ activeCount }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+    </div>
+
+    <div class="kpi-card s-orange cursor-pointer" (click)="statusFilter='Pending'; onSearch()" title="Click to filter Pending">
+      <div class="kpi-content">
+        <div class="kpi-label">Pending Verification</div>
+        <div class="kpi-value">{{ pendingCount }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+    </div>
+
+    <div class="kpi-card s-red cursor-pointer" (click)="statusFilter='Suspended'; onSearch()" title="Click to filter Suspended">
+      <div class="kpi-content">
+        <div class="kpi-label">Suspended Accounts</div>
+        <div class="kpi-value">{{ suspendedCount }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-user-slash"></i></div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR CARD (FILTER & SEARCH) -->
+  <div class="filter-card mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="tabs-nav">
+        <button type="button" class="tab-btn" [class.active]="statusFilter==='all'" (click)="statusFilter='all'; onSearch()">
+          All Customers <span class="tab-badge">{{ total }}</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="statusFilter==='Active'" (click)="statusFilter='Active'; onSearch()">
+          Active <span class="tab-badge" *ngIf="activeCount">{{ activeCount }}</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="statusFilter==='Pending'" (click)="statusFilter='Pending'; onSearch()">
+          Pending <span class="tab-badge" *ngIf="pendingCount">{{ pendingCount }}</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="statusFilter==='Suspended'" (click)="statusFilter='Suspended'; onSearch()">
+          Suspended <span class="tab-badge" *ngIf="suspendedCount">{{ suspendedCount }}</span>
+        </button>
+      </div>
+
+      <div class="filter-tools ms-auto d-flex align-items-center gap-2">
+        <div class="f-input-wrap search-field-box">
+          <i class="fas fa-search f-input-icon"></i>
+          <input
+            type="text"
+            class="f-input f-input-search"
+            [(ngModel)]="search"
+            (input)="onSearch()"
+            placeholder="Search name, phone, city...">
+          <button
+            type="button"
+            class="f-clear-btn"
+            *ngIf="search"
+            (click)="clearSearch()"
+            title="Clear search">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
       </div>
-      <div class="stat-mini-val">{{ total }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-address-book text-primary me-1"></i>Directory Accounts</div>
     </div>
   </div>
 
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-plots h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Active Buyers</span>
-        <div class="icon-wrap bg-emerald-light text-emerald">
-          <i class="fas fa-user-check"></i>
-        </div>
-      </div>
-      <div class="stat-mini-val">{{ activeCount }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-check-circle text-emerald me-1"></i>Verified Profiles</div>
-    </div>
+  <!-- LOADING STATE -->
+  <div class="panel-card text-center py-4 mb-3" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fs-3 text-gold mb-1.5"></i>
+    <p class="text-muted fs-11.5 mb-0">Loading customer directory...</p>
   </div>
 
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-approvals h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Pending Verification</span>
-        <div class="icon-wrap bg-amber text-orange">
-          <i class="fas fa-clock"></i>
-        </div>
-      </div>
-      <div class="stat-mini-val">{{ pendingCount }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-hourglass-half text-orange me-1"></i>Needs Approval</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-emi h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Suspended Accounts</span>
-        <div class="icon-wrap bg-rose text-danger">
-          <i class="fas fa-user-slash"></i>
-        </div>
-      </div>
-      <div class="stat-mini-val">{{ suspendedCount }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-ban text-danger me-1"></i>Blocked / On Hold</div>
-    </div>
-  </div>
-</div>
-
-<!-- TOOLBAR CARD -->
-<div class="panel-card p-3 mb-2">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div class="filter-tabs">
-      <button class="filter-tab" [class.active]="statusFilter==='all'"       (click)="statusFilter='all'; onSearch()">All Customers ({{ total }})</button>
-      <button class="filter-tab" [class.active]="statusFilter==='Active'"    (click)="statusFilter='Active'; onSearch()">Active</button>
-      <button class="filter-tab" [class.active]="statusFilter==='Pending'"   (click)="statusFilter='Pending'; onSearch()">Pending</button>
-      <button class="filter-tab" [class.active]="statusFilter==='Suspended'" (click)="statusFilter='Suspended'; onSearch()">Suspended</button>
+  <!-- MAIN DATA TABLE CARD -->
+  <div class="panel-card mb-3" *ngIf="!loading">
+    
+    <div *ngIf="filtered.length === 0" class="text-center py-5">
+      <i class="fas fa-users-slash text-muted fs-1 mb-2"></i>
+      <h6 class="fw-700 text-dark mb-1 fs-13">No Customers Found</h6>
+      <p class="text-muted fs-11.5 mb-0">No registered customers match your current search query or filter.</p>
     </div>
 
-    <div class="search-box position-relative ms-auto" style="min-width: 240px;">
-      <i class="fas fa-search search-icon"></i>
-      <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" (input)="onSearch()" placeholder="Search name, phone, city...">
-    </div>
-  </div>
-</div>
-
-<!-- LOADING STATE -->
-<div class="panel-card text-center py-5 mb-2" *ngIf="loading">
-  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
-  <p class="text-muted fs-12 mt-2 mb-0">Loading customer directory...</p>
-</div>
-
-<!-- MAIN DATA TABLE CARD -->
-<div class="panel-card mb-3" *ngIf="!loading">
-  
-  <div *ngIf="filtered.length === 0" class="text-center py-5">
-    <i class="fas fa-users-slash text-muted fs-1 mb-2"></i>
-    <h6 class="fw-700 text-dark mb-1">No Customers Found</h6>
-    <p class="text-muted fs-12 mb-0">No registered customers match your current search query.</p>
-  </div>
-
-  <div class="table-responsive" *ngIf="filtered.length > 0">
-    <table class="table align-middle custom-dash-table mb-0">
-      <thead>
-        <tr>
-          <th class="th-sno text-center">#</th>
-          <th class="th-profile">CUSTOMER PROFILE</th>
-          <th class="th-contact">CONTACT &amp; MOBILE</th>
-          <th class="th-location">LOCATION</th>
-          <th class="th-registered">REGISTERED</th>
-          <th class="th-status text-center">STATUS</th>
-          <th class="th-actions text-end">ACTIONS</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let c of filtered; let i = index"
-            (click)="onRowClick(c, $event)">
-          <td class="td-sno text-center">{{ (page - 1) * pageSize + i + 1 }}</td>
-          <td class="td-profile">
-            <div class="d-flex align-items-center gap-2">
-              <div class="user-avatar-circle bg-blue">
-                {{ getInitials(c.full_name) }}
-              </div>
-              <div class="min-w-0 flex-fill">
-                <div class="d-flex align-items-center gap-1">
-                  <span class="user-name text-truncate" [title]="c.full_name">{{ c.full_name }}</span>
-                  <app-verified-badge [user]="c" size="xs"></app-verified-badge>
+    <div class="table-responsive" *ngIf="filtered.length > 0">
+      <table class="custom-dash-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th class="th-sno">#</th>
+            <th>Customer Profile</th>
+            <th>Contact &amp; Mobile</th>
+            <th>Location</th>
+            <th>Registered</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of filtered; let i = index" (click)="onRowClick(c, $event)">
+            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar-circle">
+                  {{ getInitials(c.full_name) }}
                 </div>
-                <div class="member-id-text text-truncate mt-0.5">
-                  <i class="fas fa-id-card text-gold me-1"></i>Member ID: {{ c.member_id || '—' }}
+                <div class="min-w-0">
+                  <div class="d-flex align-items-center gap-1">
+                    <span class="user-name text-truncate" [title]="c.full_name">{{ c.full_name }}</span>
+                    <app-verified-badge [user]="c" size="xs"></app-verified-badge>
+                  </div>
+                  <div class="member-id-text text-truncate">
+                    <i class="fas fa-id-card text-gold me-1"></i>{{ c.member_id || 'ID: #' + c.user_id }}
+                  </div>
                 </div>
               </div>
-            </div>
-          </td>
-          <td class="td-contact">
-            <div class="phone-text d-flex align-items-center">
-              <i class="fas fa-phone-alt me-1 text-dark fs-10"></i>
-              <span>{{ c.mobile_no }}</span>
-            </div>
-            <div class="email-text d-flex align-items-center mt-0.5" [title]="c.email || ''">
-              <i class="fas fa-envelope me-1 text-gold fs-10"></i>
-              <span class="text-truncate">{{ c.email || 'No email' }}</span>
-            </div>
-          </td>
-          <td class="td-location" [title]="getLocation(c)">
-            <div class="location-text text-truncate" *ngIf="getLocation(c) !== 'Not specified'">{{ getShortLocation(c) }}</div>
-            <span class="location-empty" *ngIf="getLocation(c) === 'Not specified'">Not specified</span>
-          </td>
-          <td class="td-registered">
-            <div class="reg-date">{{ c.registered_at | date:'dd MMM yyyy' }}</div>
-            <div class="reg-time">{{ c.registered_at | date:'hh:mm a' }}</div>
-          </td>
-          <td class="td-status text-center">
-            <span class="sbadge"
-              [class.sbadge-green]="c.account_status==='Active'"
-              [class.sbadge-yellow]="c.account_status==='Pending'"
-              [class.sbadge-red]="c.account_status!=='Active' && c.account_status!=='Pending'">
-              {{ (c.account_status || 'Active') | uppercase }}
-            </span>
-          </td>
-          <td class="td-actions text-end">
-            <button type="button" class="btn-action-trigger" 
-                    [class.active]="activeDropdownCustomer?.user_id === c.user_id"
-                    (click)="toggleActionsMenu(c, $event)">
-              <i class="fas fa-ellipsis-v text-muted me-1 fs-11"></i>
-              <span>Actions</span>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+            </td>
+            <td>
+              <div class="phone-text d-flex align-items-center">
+                <i class="fas fa-phone-alt me-1 text-muted fs-9.5"></i>
+                <a [href]="'tel:' + c.mobile_no" class="text-dark text-decoration-none fw-600">{{ c.mobile_no }}</a>
+                <a [href]="'https://wa.me/91' + c.mobile_no" target="_blank" class="ms-1.5 text-success" title="Chat on WhatsApp">
+                  <i class="fab fa-whatsapp"></i>
+                </a>
+              </div>
+              <div class="email-text d-flex align-items-center" [title]="c.email || ''">
+                <i class="fas fa-envelope me-1 text-gold fs-9.5"></i>
+                <span class="text-truncate text-muted">{{ c.email || 'No email' }}</span>
+              </div>
+            </td>
+            <td [title]="getLocation(c)">
+              <div class="location-text text-truncate" *ngIf="getLocation(c) !== 'Not specified'">{{ getShortLocation(c) }}</div>
+              <span class="location-empty" *ngIf="getLocation(c) === 'Not specified'">Not specified</span>
+            </td>
+            <td>
+              <div class="reg-date">{{ c.registered_at | date:'dd MMM yyyy' }}</div>
+              <div class="reg-time text-muted">{{ c.registered_at | date:'hh:mm a' }}</div>
+            </td>
+            <td>
+              <span class="chip"
+                [class.chip-ok]="c.account_status==='Active'"
+                [class.chip-warn]="c.account_status==='Pending'"
+                [class.chip-err]="c.account_status!=='Active' && c.account_status!=='Pending'">
+                {{ (c.account_status || 'Active') | uppercase }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="d-inline-flex align-items-center gap-1">
+                <!-- 24px Quick Action Buttons -->
+                <button
+                  type="button"
+                  class="ibtn ibtn-view"
+                  title="View Profile &amp; KYC"
+                  (click)="openDetailModal(c); $event.stopPropagation()">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button
+                  type="button"
+                  class="ibtn ibtn-edit"
+                  title="Edit Customer"
+                  (click)="openEditModal(c); $event.stopPropagation()">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button
+                  type="button"
+                  class="ibtn ibtn-impersonate"
+                  title="Login as Customer"
+                  (click)="loginAsCustomer(c); $event.stopPropagation()">
+                  <i class="fas fa-sign-in-alt"></i>
+                </button>
+                <!-- Ellipsis Menu for Full Operations -->
+                <button
+                  type="button"
+                  class="ibtn btn-action-trigger" 
+                  [class.active]="activeDropdownCustomer?.user_id === c.user_id"
+                  (click)="toggleActionsMenu(c, $event)"
+                  title="More actions">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-  <!-- Pagination & 2-Mode Export -->
-  <app-admin-pagination
-    *ngIf="total > 0"
-    [totalItems]="total"
-    [pageSize]="pageSize"
-    [currentPage]="page"
-    (pageChange)="onPageChange($event)"
-    (pageSizeChange)="onPageSizeChange($event)"
-    (exportCurrentExcel)="exportCustomers('current', 'excel')"
-    (exportAllExcel)="exportCustomers('all', 'excel')"
-    (exportCurrentPdf)="exportCustomers('current', 'pdf')"
-    (exportAllPdf)="exportCustomers('all', 'pdf')">
-  </app-admin-pagination>
+    <!-- Pagination & 2-Mode Export -->
+    <app-admin-pagination
+      *ngIf="total > 0"
+      [totalItems]="total"
+      [pageSize]="pageSize"
+      [currentPage]="page"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (exportCurrentExcel)="exportCustomers('current', 'excel')"
+      (exportAllExcel)="exportCustomers('all', 'excel')"
+      (exportCurrentPdf)="exportCustomers('current', 'pdf')"
+      (exportAllPdf)="exportCustomers('all', 'pdf')">
+    </app-admin-pagination>
+  </div>
 </div>
 
-<!-- FLOATING ACTIONS DROPDOWN OVERLAY (Renders outside table/card clipping context) -->
+<!-- FLOATING ACTIONS DROPDOWN OVERLAY -->
 <div class="floating-actions-overlay"
      *ngIf="activeDropdownCustomer"
      [style.top.px]="activeDropdownPos.top"
@@ -205,37 +240,37 @@
      [class.placement-top]="activeDropdownPos.placement === 'top'"
      (click)="$event.stopPropagation()">
   <div class="dropdown-menu show shadow-lg border fs-11 py-1 floating-menu-box">
-    <button type="button" class="dropdown-item py-1.5 px-3 fw-600 d-flex align-items-center"
+    <button type="button" class="dropdown-item py-1 px-2.5 fw-600 d-flex align-items-center"
             [class.text-danger]="activeDropdownCustomer.account_status==='Active'"
             [class.text-success]="activeDropdownCustomer.account_status!=='Active'"
             (click)="toggleCustomerStatus(activeDropdownCustomer); closeActionsMenu()">
       <i [class]="activeDropdownCustomer.account_status==='Active' ? 'fas fa-ban text-danger me-2 width-16' : 'fas fa-check-circle text-success me-2 width-16'"></i>
-      {{ activeDropdownCustomer.account_status==='Active' ? 'Suspend Customer' : 'Activate / Enable Customer' }}
+      {{ activeDropdownCustomer.account_status==='Active' ? 'Suspend Customer' : 'Activate Customer' }}
     </button>
     <div class="dropdown-divider my-1"></div>
-    <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center"
+    <button type="button" class="dropdown-item py-1 px-2.5 text-dark fw-600 d-flex align-items-center"
             (click)="openDetailModal(activeDropdownCustomer); closeActionsMenu()">
-      <i class="fas fa-eye text-primary me-2 width-16"></i> View Profile
+      <i class="fas fa-eye text-primary me-2 width-16"></i> View Profile &amp; KYC
     </button>
-    <button type="button" class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center"
+    <button type="button" class="dropdown-item py-1 px-2.5 text-dark fw-600 d-flex align-items-center"
             (click)="openEditModal(activeDropdownCustomer); closeActionsMenu()">
-      <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Details &amp; Status
+      <i class="fas fa-pencil-alt text-warning me-2 width-16"></i> Edit Details
     </button>
-    <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center"
+    <button type="button" class="dropdown-item py-1 px-2.5 text-primary fw-600 d-flex align-items-center"
             (click)="loginAsCustomer(activeDropdownCustomer); closeActionsMenu()">
       <i class="fas fa-sign-in-alt text-success me-2 width-16"></i> Login as Customer
     </button>
     <div class="dropdown-divider my-1"></div>
-    <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center"
+    <a class="dropdown-item py-1 px-2.5 text-dark fw-600 d-flex align-items-center"
        [href]="'tel:' + activeDropdownCustomer.mobile_no">
       <i class="fas fa-phone text-secondary me-2 width-16"></i> Call Phone
     </a>
-    <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center"
+    <a class="dropdown-item py-1 px-2.5 text-success fw-600 d-flex align-items-center"
        [href]="'https://wa.me/91' + activeDropdownCustomer.mobile_no" target="_blank">
       <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
     </a>
     <div class="dropdown-divider my-1"></div>
-    <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center"
+    <button type="button" class="dropdown-item py-1 px-2.5 text-danger fw-600 d-flex align-items-center"
             (click)="deleteCustomer(activeDropdownCustomer); closeActionsMenu()">
       <i class="fas fa-trash-alt text-danger me-2 width-16"></i> Delete Customer
     </button>
@@ -246,32 +281,32 @@
 <div class="modal-backdrop fade show" *ngIf="showAddModal"></div>
 <div class="modal d-block fade show" tabIndex="-1" *ngIf="showAddModal" (click)="closeModals()">
   <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-content border-0 rounded-14 shadow-lg">
-      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700 text-white"><i class="fas fa-user-plus text-gold me-2"></i>Create New Customer Account</h5>
+    <div class="modal-content border-0 rounded-10 shadow-lg">
+      <div class="modal-header bg-dark-emerald text-white rounded-top-10 py-2.5 px-3">
+        <h5 class="modal-title fs-13 fw-700 text-white"><i class="fas fa-user-plus text-gold me-2"></i>Create New Customer Account</h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
       </div>
 
-      <div class="modal-body p-4">
-        <div class="row g-3">
+      <div class="modal-body p-3">
+        <div class="row g-2.5">
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Full Name *</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.full_name" placeholder="e.g. Ramesh Kumar">
+            <label class="modal-label">Full Name *</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.full_name" placeholder="e.g. Ramesh Kumar">
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Mobile Number *</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.mobile_no" placeholder="10-digit phone number">
+            <label class="modal-label">Mobile Number *</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.mobile_no" placeholder="10-digit phone number">
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Email Address *</label>
-            <input type="email" class="form-control form-control-sm" [(ngModel)]="customerForm.email" placeholder="customer@example.com">
+            <label class="modal-label">Email Address *</label>
+            <input type="email" class="modal-input" [(ngModel)]="customerForm.email" placeholder="customer@example.com">
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Account Status</label>
-            <select class="form-select form-select-sm" [(ngModel)]="customerForm.account_status">
+            <label class="modal-label">Account Status</label>
+            <select class="modal-select" [(ngModel)]="customerForm.account_status">
               <option value="Active">Active</option>
               <option value="Pending">Pending</option>
               <option value="Suspended">Suspended</option>
@@ -279,46 +314,46 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark d-flex justify-content-between align-items-center">
+            <label class="modal-label d-flex justify-content-between align-items-center">
               <span>Account Password</span>
-              <small class="text-muted fw-normal fs-10">(Default: <code>password123</code>)</small>
+              <small class="text-muted fw-normal fs-9.5">(Default: password123)</small>
             </label>
             <div class="input-group input-group-sm">
-              <input [type]="showNewPass ? 'text' : 'password'" class="form-control form-control-sm" [(ngModel)]="customerForm.password" placeholder="Custom password or leave empty for default">
-              <button type="button" class="btn btn-outline-secondary" (click)="showNewPass = !showNewPass" title="Toggle visibility">
+              <input [type]="showNewPass ? 'text' : 'password'" class="modal-input" [(ngModel)]="customerForm.password" placeholder="Custom password or leave empty">
+              <button type="button" class="btn btn-outline-secondary btn-xs" (click)="showNewPass = !showNewPass" title="Toggle visibility">
                 <i [class]="showNewPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
               </button>
             </div>
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Confirm Password</label>
-            <input [type]="showNewPass ? 'text' : 'password'" class="form-control form-control-sm" [(ngModel)]="customerForm.confirm_password" placeholder="Confirm password">
+            <label class="modal-label">Confirm Password</label>
+            <input [type]="showNewPass ? 'text' : 'password'" class="modal-input" [(ngModel)]="customerForm.confirm_password" placeholder="Confirm password">
           </div>
 
           <div class="col-12">
-            <label class="form-label fs-11 fw-700 text-dark">Address Line</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.address" placeholder="House no, Street name...">
+            <label class="modal-label">Address Line</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.address" placeholder="House no, Street name...">
           </div>
 
           <div class="col-md-4">
-            <label class="form-label fs-11 fw-700 text-dark">City</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.city" placeholder="Kanpur / Lucknow">
+            <label class="modal-label">City</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.city" placeholder="Kanpur / Lucknow">
           </div>
 
           <div class="col-md-4">
-            <label class="form-label fs-11 fw-700 text-dark">State</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.state" placeholder="Uttar Pradesh">
+            <label class="modal-label">State</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.state" placeholder="Uttar Pradesh">
           </div>
 
           <div class="col-md-4">
-            <label class="form-label fs-11 fw-700 text-dark">Pin Code</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.pin_code" placeholder="208001">
+            <label class="modal-label">Pin Code</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.pin_code" placeholder="208001">
           </div>
         </div>
       </div>
 
-      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+      <div class="modal-footer bg-light rounded-bottom-10 py-2 px-3">
         <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Cancel</button>
         <button type="button" class="btn btn-emerald btn-xs" (click)="saveNewCustomer()" [disabled]="actionLoading">
           <i class="fas fa-save me-1"></i> Save Customer
@@ -332,32 +367,32 @@
 <div class="modal-backdrop fade show" *ngIf="showEditModal"></div>
 <div class="modal d-block fade show" tabIndex="-1" *ngIf="showEditModal" (click)="closeModals()">
   <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-content border-0 rounded-14 shadow-lg">
-      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700 text-white"><i class="fas fa-edit text-gold me-2"></i>Edit Customer Details</h5>
+    <div class="modal-content border-0 rounded-10 shadow-lg">
+      <div class="modal-header bg-dark-emerald text-white rounded-top-10 py-2.5 px-3">
+        <h5 class="modal-title fs-13 fw-700 text-white"><i class="fas fa-edit text-gold me-2"></i>Edit Customer Details</h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
       </div>
 
-      <div class="modal-body p-4">
-        <div class="row g-3">
+      <div class="modal-body p-3">
+        <div class="row g-2.5">
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Full Name *</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.full_name">
+            <label class="modal-label">Full Name *</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.full_name">
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Mobile Number *</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.mobile_no">
+            <label class="modal-label">Mobile Number *</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.mobile_no">
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Email Address *</label>
-            <input type="email" class="form-control form-control-sm" [(ngModel)]="customerForm.email">
+            <label class="modal-label">Email Address *</label>
+            <input type="email" class="modal-input" [(ngModel)]="customerForm.email">
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fs-11 fw-700 text-dark">Account Status</label>
-            <select class="form-select form-select-sm" [(ngModel)]="customerForm.account_status">
+            <label class="modal-label">Account Status</label>
+            <select class="modal-select" [(ngModel)]="customerForm.account_status">
               <option value="Active">Active</option>
               <option value="Pending">Pending</option>
               <option value="Suspended">Suspended</option>
@@ -366,48 +401,48 @@
           </div>
 
           <div class="col-12">
-            <label class="form-label fs-11 fw-700 text-dark">Address Line</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.address">
+            <label class="modal-label">Address Line</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.address">
           </div>
 
           <div class="col-md-4">
-            <label class="form-label fs-11 fw-700 text-dark">City</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.city">
+            <label class="modal-label">City</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.city">
           </div>
 
           <div class="col-md-4">
-            <label class="form-label fs-11 fw-700 text-dark">State</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.state">
+            <label class="modal-label">State</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.state">
           </div>
 
           <div class="col-md-4">
-            <label class="form-label fs-11 fw-700 text-dark">Pin Code</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="customerForm.pin_code">
+            <label class="modal-label">Pin Code</label>
+            <input type="text" class="modal-input" [(ngModel)]="customerForm.pin_code">
           </div>
 
           <!-- CHANGE PASSWORD SECTION -->
-          <div class="col-12 mt-3">
-            <div class="p-3 bg-light rounded-10 border">
+          <div class="col-12 mt-1">
+            <div class="p-2.5 bg-light rounded-6 border">
               <div class="d-flex align-items-center justify-content-between cursor-pointer" (click)="customerForm.showChangePassword = !customerForm.showChangePassword">
-                <span class="fs-12 fw-700 text-dark">
+                <span class="fs-11 fw-700 text-dark">
                   <i class="fas fa-key text-gold me-1.5"></i> Change Password
                 </span>
-                <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2 fs-10">
-                  {{ customerForm.showChangePassword ? 'Cancel / Hide' : 'Change Password' }}
+                <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2 fs-9.5">
+                  {{ customerForm.showChangePassword ? 'Cancel' : 'Change Password' }}
                 </button>
               </div>
 
-              <div class="row g-2 mt-2" *ngIf="customerForm.showChangePassword">
+              <div class="row g-2 mt-1" *ngIf="customerForm.showChangePassword">
                 <div class="col-md-6">
-                  <label class="form-label fs-11 fw-700 text-dark mb-1">New Password</label>
-                  <input type="password" class="form-control form-control-sm" [(ngModel)]="customerForm.new_password" placeholder="Enter new password (min 6 chars)">
+                  <label class="modal-label mb-1">New Password</label>
+                  <input type="password" class="modal-input" [(ngModel)]="customerForm.new_password" placeholder="Min 6 chars">
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fs-11 fw-700 text-dark mb-1">Confirm Password</label>
-                  <input type="password" class="form-control form-control-sm" [(ngModel)]="customerForm.confirm_password" placeholder="Confirm new password">
+                  <label class="modal-label mb-1">Confirm Password</label>
+                  <input type="password" class="modal-input" [(ngModel)]="customerForm.confirm_password" placeholder="Confirm password">
                 </div>
                 <div class="col-12" *ngIf="customerForm.new_password && customerForm.confirm_password && customerForm.new_password !== customerForm.confirm_password">
-                  <small class="text-danger fs-11"><i class="fas fa-exclamation-circle me-1"></i> Passwords do not match.</small>
+                  <small class="text-danger fs-10"><i class="fas fa-exclamation-circle me-1"></i> Passwords do not match.</small>
                 </div>
               </div>
             </div>
@@ -415,10 +450,10 @@
         </div>
       </div>
 
-      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+      <div class="modal-footer bg-light rounded-bottom-10 py-2 px-3">
         <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Cancel</button>
         <button type="button" class="btn btn-emerald btn-xs" (click)="updateCustomer()" [disabled]="actionLoading">
-          <i class="fas fa-check me-1"></i> Update Changes
+          <i class="fas fa-check me-1"></i> Update Customer
         </button>
       </div>
     </div>
@@ -429,63 +464,63 @@
 <div class="modal-backdrop fade show" *ngIf="showDetailModal"></div>
 <div class="modal d-block fade show" tabIndex="-1" *ngIf="showDetailModal" (click)="closeModals()">
   <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-content border-0 rounded-14 shadow-lg">
-      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700 text-white"><i class="fas fa-id-card text-gold me-2"></i>Customer Profile &amp; KYC Overview</h5>
+    <div class="modal-content border-0 rounded-10 shadow-lg">
+      <div class="modal-header bg-dark-emerald text-white rounded-top-10 py-2.5 px-3">
+        <h5 class="modal-title fs-13 fw-700 text-white"><i class="fas fa-id-card text-gold me-2"></i>Customer Profile &amp; KYC Overview</h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
       </div>
 
-      <div class="modal-body p-4 position-relative">
+      <div class="modal-body p-3 position-relative">
         <div class="text-center py-4" *ngIf="detailLoading">
           <i class="fas fa-spinner fa-spin fs-3 text-gold"></i>
-          <p class="text-muted fs-12 mt-2 mb-0">Loading complete customer record...</p>
+          <p class="text-muted fs-11 mt-1.5 mb-0">Loading complete customer record...</p>
         </div>
 
-        <ng-container *ngIf="!detailLoading &amp;&amp; selectedCustomer">
+        <ng-container *ngIf="!detailLoading && selectedCustomer">
           
-          <div class="row g-3 mb-3">
+          <div class="row g-2.5 mb-2.5">
             <div class="col-md-6">
-              <div class="p-3 bg-light rounded-10 border">
-                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-user text-primary me-2"></i>Personal Info</h6>
-                <div class="fs-12 mb-1"><strong>Member ID:</strong> {{ selectedCustomer.member_id || '—' }}</div>
-                <div class="fs-12 mb-1 d-flex align-items-center gap-1">
+              <div class="p-2.5 bg-light rounded-6 border h-100">
+                <h6 class="fw-700 text-dark fs-11 mb-1.5"><i class="fas fa-user text-primary me-1.5"></i>Personal Info</h6>
+                <div class="fs-11 mb-1"><strong>Member ID:</strong> {{ selectedCustomer.member_id || '—' }}</div>
+                <div class="fs-11 mb-1 d-flex align-items-center gap-1">
                   <strong>Name:</strong> <span>{{ selectedCustomer.full_name }}</span>
                   <app-verified-badge [user]="selectedCustomer" size="xs"></app-verified-badge>
                 </div>
-                <div class="fs-12 mb-1"><strong>Mobile:</strong> {{ selectedCustomer.mobile_no }}</div>
-                <div class="fs-12 mb-1"><strong>Email:</strong> {{ selectedCustomer.email || '—' }}</div>
-                <div class="fs-12"><strong>Status:</strong> <span class="badge bg-success">{{ selectedCustomer.account_status }}</span></div>
+                <div class="fs-11 mb-1"><strong>Mobile:</strong> {{ selectedCustomer.mobile_no }}</div>
+                <div class="fs-11 mb-1"><strong>Email:</strong> {{ selectedCustomer.email || '—' }}</div>
+                <div class="fs-11"><strong>Status:</strong> <span class="chip chip-ok ms-1">{{ selectedCustomer.account_status }}</span></div>
               </div>
             </div>
 
             <div class="col-md-6">
-              <div class="p-3 bg-light rounded-10 border">
-                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-map-marker-alt text-emerald me-2"></i>Address Info</h6>
-                <div class="fs-12 mb-1"><strong>Line 1:</strong> {{ selectedCustomer.address?.address_line1 || selectedCustomer.address_line1 || selectedCustomer.address || selectedCustomer.permanent_address || selectedCustomer.present_address || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>City:</strong> {{ selectedCustomer.city || selectedCustomer.address?.city || selectedCustomer.permanent_city || selectedCustomer.present_city || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>State:</strong> {{ selectedCustomer.state || selectedCustomer.address?.state || selectedCustomer.permanent_state_pin || selectedCustomer.present_state_pin || '—' }}</div>
-                <div class="fs-12"><strong>Pincode:</strong> {{ selectedCustomer.pin_code || selectedCustomer.address?.pin_code || selectedCustomer.pincode || selectedCustomer.permanent_state_pin || '—' }}</div>
+              <div class="p-2.5 bg-light rounded-6 border h-100">
+                <h6 class="fw-700 text-dark fs-11 mb-1.5"><i class="fas fa-map-marker-alt text-emerald me-1.5"></i>Address Info</h6>
+                <div class="fs-11 mb-1"><strong>Line 1:</strong> {{ selectedCustomer.address?.address_line1 || selectedCustomer.address_line1 || selectedCustomer.address || selectedCustomer.permanent_address || selectedCustomer.present_address || '—' }}</div>
+                <div class="fs-11 mb-1"><strong>City:</strong> {{ selectedCustomer.city || selectedCustomer.address?.city || selectedCustomer.permanent_city || selectedCustomer.present_city || '—' }}</div>
+                <div class="fs-11 mb-1"><strong>State:</strong> {{ selectedCustomer.state || selectedCustomer.address?.state || selectedCustomer.permanent_state_pin || selectedCustomer.present_state_pin || '—' }}</div>
+                <div class="fs-11"><strong>Pincode:</strong> {{ selectedCustomer.pin_code || selectedCustomer.address?.pin_code || selectedCustomer.pincode || selectedCustomer.permanent_state_pin || '—' }}</div>
               </div>
             </div>
           </div>
 
-          <div class="row g-3 mb-3">
+          <div class="row g-2.5">
             <div class="col-md-6">
-              <div class="p-3 bg-light rounded-10 border">
-                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-university text-warning me-2"></i>Bank Account</h6>
-                <div class="fs-12 mb-1"><strong>Holder:</strong> {{ selectedCustomer.bank?.account_holder_name || selectedCustomer.bank?.acc_holder_name || selectedCustomer.acc_holder_name || selectedCustomer.full_name || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Bank:</strong> {{ selectedCustomer.bank?.bank_name || selectedCustomer.bank?.branch_name || selectedCustomer.bank?.acc_bank_branch || selectedCustomer.acc_bank_branch || selectedCustomer.drawn_bank_branch || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Account #:</strong> {{ selectedCustomer.bank?.account_number || selectedCustomer.bank?.acc_number || selectedCustomer.acc_number || '—' }}</div>
-                <div class="fs-12"><strong>IFSC:</strong> {{ selectedCustomer.bank?.ifsc_code || selectedCustomer.ifsc_code || '—' }}</div>
+              <div class="p-2.5 bg-light rounded-6 border h-100">
+                <h6 class="fw-700 text-dark fs-11 mb-1.5"><i class="fas fa-university text-warning me-1.5"></i>Bank Account</h6>
+                <div class="fs-11 mb-1"><strong>Holder:</strong> {{ selectedCustomer.bank?.account_holder_name || selectedCustomer.bank?.acc_holder_name || selectedCustomer.acc_holder_name || selectedCustomer.full_name || '—' }}</div>
+                <div class="fs-11 mb-1"><strong>Bank:</strong> {{ selectedCustomer.bank?.bank_name || selectedCustomer.bank?.branch_name || selectedCustomer.bank?.acc_bank_branch || selectedCustomer.acc_bank_branch || selectedCustomer.drawn_bank_branch || '—' }}</div>
+                <div class="fs-11 mb-1"><strong>Account #:</strong> {{ selectedCustomer.bank?.account_number || selectedCustomer.bank?.acc_number || selectedCustomer.acc_number || '—' }}</div>
+                <div class="fs-11"><strong>IFSC:</strong> {{ selectedCustomer.bank?.ifsc_code || selectedCustomer.ifsc_code || '—' }}</div>
               </div>
             </div>
 
             <div class="col-md-6">
-              <div class="p-3 bg-light rounded-10 border">
-                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-user-shield text-purple me-2"></i>Nominee Details</h6>
-                <div class="fs-12 mb-1"><strong>Name:</strong> {{ selectedCustomer.nominee?.nominee_name || selectedCustomer.nominee_name || selectedCustomer.co_applicant_name || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Relation:</strong> {{ selectedCustomer.nominee?.relationship || selectedCustomer.nominee?.relation || selectedCustomer.nominee_relationship || selectedCustomer.co_relation || '—' }}</div>
-                <div class="fs-12"><strong>Mobile:</strong> {{ selectedCustomer.nominee?.nominee_mobile || selectedCustomer.nominee?.mobile || selectedCustomer.co_mobile || selectedCustomer.nominee_mobile || '—' }}</div>
+              <div class="p-2.5 bg-light rounded-6 border h-100">
+                <h6 class="fw-700 text-dark fs-11 mb-1.5"><i class="fas fa-user-shield text-purple me-1.5"></i>Nominee Details</h6>
+                <div class="fs-11 mb-1"><strong>Name:</strong> {{ selectedCustomer.nominee?.nominee_name || selectedCustomer.nominee_name || selectedCustomer.co_applicant_name || '—' }}</div>
+                <div class="fs-11 mb-1"><strong>Relation:</strong> {{ selectedCustomer.nominee?.relationship || selectedCustomer.nominee?.relation || selectedCustomer.nominee_relationship || selectedCustomer.co_relation || '—' }}</div>
+                <div class="fs-11"><strong>Mobile:</strong> {{ selectedCustomer.nominee?.nominee_mobile || selectedCustomer.nominee?.mobile || selectedCustomer.co_mobile || selectedCustomer.nominee_mobile || '—' }}</div>
               </div>
             </div>
           </div>
@@ -493,13 +528,12 @@
         </ng-container>
       </div>
 
-      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+      <div class="modal-footer bg-light rounded-bottom-10 py-2 px-3">
         <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Close</button>
-        <button type="button" class="btn btn-warning btn-xs" (click)="openEditModal(selectedCustomer)">
+        <button type="button" class="btn btn-gold btn-xs" (click)="openEditModal(selectedCustomer)">
           <i class="fas fa-pencil-alt me-1"></i> Edit Customer
         </button>
       </div>
     </div>
   </div>
 </div>
-
