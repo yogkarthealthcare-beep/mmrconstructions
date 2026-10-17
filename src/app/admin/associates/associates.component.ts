@@ -406,6 +406,11 @@ export class AssociatesComponent implements OnInit {
     this.load();
   }
 
+  clearSearch() {
+    this.search = '';
+    this.onSearch();
+  }
+
   get activeCount(): number {
     return this.associates.filter(a => (a.account_status || 'Active').toLowerCase() === 'active').length;
   }
