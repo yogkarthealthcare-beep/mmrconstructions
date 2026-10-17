@@ -75,4 +75,21 @@ export class AdminLeaderboardsComponent implements OnInit {
       }
     });
   }
+
+  get topPerformer(): string {
+    return this.entries[0]?.full_name || '—';
+  }
+
+  get totalGajSold(): number {
+    return Math.round(this.entries.reduce((sum, e) => sum + Number(e.total_gaj_sold || 0), 0) * 100) / 100;
+  }
+
+  get totalSalesRevenue(): number {
+    return this.entries.reduce((sum, e) => sum + Number(e.total_sales_value || 0), 0);
+  }
+
+  getInitials(name: string): string {
+    if (!name) return 'LB';
+    return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  }
 }
