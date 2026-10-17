@@ -1,270 +1,273 @@
 <!-- Toast Notification -->
-<div *ngIf="toast" class="toast-popup" style="position:fixed;top:76px;right:24px;z-index:9999;animation:slideIn .25s ease;">
-  <i class="fas fa-check-circle text-emerald me-2"></i> {{ toast }}
+<div *ngIf="toast" class="toast-popup">
+  <i class="fas fa-check-circle text-emerald me-1.5"></i> {{ toast }}
 </div>
 
-<!-- TOP HERO EXECUTIVE BANNER -->
-<div class="admin-hero-card mb-2">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
-    <div>
-      <div class="admin-hero-badge"><i class="fas fa-users-gear me-1"></i>TEAM MEMBER &amp; DOWNLINE DIRECTORY</div>
-      <h2 class="admin-hero-title mb-1">Team Member Management</h2>
-      <p class="admin-hero-sub mb-0">Manage associate downline team members, track plot sales, customer additions, EMI collections &amp; profiles.</p>
-    </div>
+<div class="panel-shell">
+  <!-- TOP HERO EXECUTIVE BANNER -->
+  <div class="admin-hero-card mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+      <div>
+        <div class="admin-hero-badge"><i class="fas fa-users-gear me-1"></i>TEAM MEMBER &amp; DOWNLINE DIRECTORY</div>
+        <h2 class="admin-hero-title mb-0.5">Team Member Management</h2>
+        <p class="admin-hero-sub mb-0">Manage associate downline team members, track plot sales, customer additions, EMI collections &amp; profiles.</p>
+      </div>
 
-    <div class="d-flex align-items-center gap-2 ms-auto">
-      <button class="btn btn-outline-light btn-xs" (click)="load()">
-        <i class="fas fa-sync me-1"></i> Refresh List
-      </button>
-      <button class="btn btn-gold btn-xs" (click)="exportTeamMembers('all', 'excel')">
-        <i class="fas fa-file-excel me-1"></i> Export Excel
-      </button>
-      <button class="btn btn-outline-light btn-xs" (click)="exportTeamMembers('all', 'pdf')">
-        <i class="fas fa-file-pdf me-1"></i> Export PDF
-      </button>
+      <div class="d-flex align-items-center gap-1.5 ms-auto flex-wrap">
+        <button class="btn btn-outline-light btn-xs" (click)="load()" [disabled]="loading" title="Refresh directory">
+          <i class="fas fa-sync" [class.fa-spin]="loading"></i>
+          <span class="d-none d-sm-inline ms-1">Refresh</span>
+        </button>
+        <button class="btn btn-gold btn-xs shadow-xs" (click)="exportTeamMembers('all', 'excel')" [disabled]="actionLoading" title="Export Excel report">
+          <i class="fas fa-file-excel me-1"></i> Excel
+        </button>
+        <button class="btn btn-outline-light btn-xs" (click)="exportTeamMembers('all', 'pdf')" [disabled]="actionLoading" title="Export PDF report">
+          <i class="fas fa-file-pdf me-1"></i> PDF
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- 4 STAT SUMMARY MINI CARDS -->
-<div class="row g-2 mb-2">
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-team h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Total Team Members</span>
-        <div class="icon-wrap bg-primary-light text-primary">
-          <i class="fas fa-users"></i>
+  <!-- 4 COMPACT HORIZONTAL KPI CARDS (~48-52px height) -->
+  <div class="kpi-grid mb-3">
+    <div class="kpi-card s-blue">
+      <div class="kpi-content">
+        <div class="kpi-label">Total Team Members</div>
+        <div class="kpi-value">{{ total }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-users"></i></div>
+    </div>
+
+    <div class="kpi-card s-green cursor-pointer" (click)="statusFilter='Active'; onSearch()" title="Click to filter Active">
+      <div class="kpi-content">
+        <div class="kpi-label">Active Members</div>
+        <div class="kpi-value">{{ activeCount }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+    </div>
+
+    <div class="kpi-card s-orange cursor-pointer" (click)="statusFilter='Pending'; onSearch()" title="Click to filter Pending">
+      <div class="kpi-content">
+        <div class="kpi-label">Pending Approvals</div>
+        <div class="kpi-value">{{ pendingCount }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-hourglass-half"></i></div>
+    </div>
+
+    <div class="kpi-card s-gold">
+      <div class="kpi-content">
+        <div class="kpi-label">Total Sales Volume</div>
+        <div class="kpi-value">{{ totalSalesGaj }} <span class="kpi-unit">Gaj</span></div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR CARD (FILTER & SEARCH) -->
+  <div class="filter-card mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="tabs-nav">
+        <button type="button" class="tab-btn" [class.active]="statusFilter==='all'" (click)="statusFilter='all'; onSearch()">
+          All Members <span class="tab-badge">{{ total }}</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="statusFilter==='Active'" (click)="statusFilter='Active'; onSearch()">
+          Active <span class="tab-badge" *ngIf="activeCount">{{ activeCount }}</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="statusFilter==='Pending'" (click)="statusFilter='Pending'; onSearch()">
+          Pending <span class="tab-badge" *ngIf="pendingCount">{{ pendingCount }}</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="statusFilter==='Suspended'" (click)="statusFilter='Suspended'; onSearch()">
+          Suspended <span class="tab-badge" *ngIf="suspendedCount">{{ suspendedCount }}</span>
+        </button>
+      </div>
+
+      <div class="filter-tools ms-auto d-flex align-items-center gap-2">
+        <div class="f-input-wrap search-field-box">
+          <i class="fas fa-search f-input-icon"></i>
+          <input
+            type="text"
+            class="f-input f-input-search"
+            [(ngModel)]="search"
+            (input)="onSearch()"
+            placeholder="Search TM UID, name, phone, associate...">
+          <button
+            type="button"
+            class="f-clear-btn"
+            *ngIf="search"
+            (click)="clearSearch()"
+            title="Clear search">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
       </div>
-      <div class="stat-mini-val">{{ total }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-sitemap text-primary me-1"></i>Downline Network</div>
     </div>
   </div>
 
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-active h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Active Members</span>
-        <div class="icon-wrap bg-emerald-light text-emerald">
-          <i class="fas fa-user-check"></i>
-        </div>
-      </div>
-      <div class="stat-mini-val">{{ activeCount }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-check-circle text-emerald me-1"></i>Approved &amp; Active</div>
-    </div>
+  <!-- LOADING STATE -->
+  <div class="panel-card text-center py-4 mb-3" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fs-3 text-gold mb-1.5"></i>
+    <p class="text-muted fs-11.5 mb-0">Loading team member directory...</p>
   </div>
 
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-pending h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Pending Approvals</span>
-        <div class="icon-wrap bg-amber text-orange">
-          <i class="fas fa-hourglass-half"></i>
-        </div>
-      </div>
-      <div class="stat-mini-val">{{ pendingCount }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-clock text-orange me-1"></i>Awaiting Approval</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-sales h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Total Team Sales</span>
-        <div class="icon-wrap bg-gold-light text-gold-dark">
-          <i class="fas fa-chart-line"></i>
-        </div>
-      </div>
-      <div class="stat-mini-val">{{ totalSalesGaj }} <span class="fs-12 fw-normal text-muted">Gaj</span></div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-layer-group text-gold-dark me-1"></i>Plot Land Volume</div>
-    </div>
-  </div>
-</div>
-
-<!-- TOOLBAR CARD -->
-<div class="panel-card p-3 mb-2">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div class="filter-tabs">
-      <button class="filter-tab" [class.active]="statusFilter==='all'"       (click)="statusFilter='all'; onSearch()">All Members ({{ total }})</button>
-      <button class="filter-tab" [class.active]="statusFilter==='Active'"    (click)="statusFilter='Active'; onSearch()">Active</button>
-      <button class="filter-tab" [class.active]="statusFilter==='Pending'"   (click)="statusFilter='Pending'; onSearch()">Pending</button>
-      <button class="filter-tab" [class.active]="statusFilter==='Suspended'" (click)="statusFilter='Suspended'; onSearch()">Suspended</button>
+  <!-- MAIN DATA TABLE CARD -->
+  <div class="panel-card mb-3" *ngIf="!loading">
+    <div *ngIf="filtered.length === 0" class="text-center py-5">
+      <i class="fas fa-users-slash text-muted fs-1 mb-2"></i>
+      <h6 class="fw-700 text-dark mb-1 fs-13">No Team Members Found</h6>
+      <p class="text-muted fs-11.5 mb-0">Try adjusting search filters or check associate downlines.</p>
     </div>
 
-    <div class="search-box position-relative ms-auto" style="min-width: 280px;">
-      <i class="fas fa-search search-icon"></i>
-      <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" (input)="onSearch()" placeholder="Search TM UID, name, phone, associate...">
-    </div>
-  </div>
-</div>
+    <app-admin-table-container [title]="'Team Member Directory'" [count]="total" *ngIf="filtered.length > 0">
+      <div class="table-responsive">
+        <table class="custom-dash-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th class="th-sno">#</th>
+              <th>Team Member Profile</th>
+              <th>Sponsor Associate</th>
+              <th>Contact &amp; Email</th>
+              <th>Sales &amp; Customers</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of filtered; let i = index">
+              <!-- S.No -->
+              <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
 
-<!-- LOADING STATE -->
-<div class="panel-card text-center py-5 mb-2" *ngIf="loading">
-  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
-  <p class="text-muted fs-12 mt-2 mb-0">Loading team member directory...</p>
-</div>
-
-<!-- TABLE CONTAINER -->
-<app-admin-table-container *ngIf="!loading">
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0 custom-admin-table">
-      <thead>
-        <tr>
-          <th style="width: 45px;">#</th>
-          <th>TEAM MEMBER PROFILE</th>
-          <th>SPONSOR ASSOCIATE</th>
-          <th>CONTACT &amp; EMAIL</th>
-          <th>SALES &amp; CUSTOMERS</th>
-          <th>STATUS</th>
-          <th class="text-center" style="width: 205px;">ACTIONS</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let m of filtered; let i = index">
-          <!-- # Index -->
-          <td class="text-muted fs-12 fw-600">{{ (page - 1) * pageSize + i + 1 }}</td>
-
-          <!-- Team Member Profile -->
-          <td>
-            <div class="d-flex align-items-center gap-2">
-              <div class="member-avatar">
-                <img *ngIf="m.photo_url" [src]="m.photo_url" alt="{{ m.full_name }}" class="avatar-img" (error)="m.photo_url = null">
-                <span *ngIf="!m.photo_url" class="avatar-placeholder">{{ getInitials(m.full_name) }}</span>
-              </div>
-              <div>
-                <div class="fw-700 text-dark fs-13 d-flex align-items-center gap-1">
-                  <span>{{ m.full_name }}</span>
-                  <app-verified-badge [user]="m" [isVerified]="m.is_verified" size="xs"></app-verified-badge>
-                  <span *ngIf="m.slot_number" class="badge-slot">Slot #{{ m.slot_number }}</span>
+              <!-- Profile -->
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="member-avatar">
+                    <img *ngIf="m.photo_url" [src]="m.photo_url" alt="{{ m.full_name }}" class="avatar-img" (error)="m.photo_url = null">
+                    <span *ngIf="!m.photo_url" class="avatar-placeholder">{{ getInitials(m.full_name) }}</span>
+                  </div>
+                  <div>
+                    <div class="fw-700 text-dark fs-12 d-flex align-items-center gap-1">
+                      <span>{{ m.full_name }}</span>
+                      <app-verified-badge [user]="m" [isVerified]="m.is_verified" size="xs"></app-verified-badge>
+                      <span *ngIf="m.slot_number" class="badge-slot">Slot #{{ m.slot_number }}</span>
+                    </div>
+                    <div class="text-muted fs-10.5 d-flex align-items-center gap-1.5 flex-wrap">
+                      <span class="code-badge text-gold-dark"><i class="fas fa-id-badge text-gold me-1"></i>{{ m.team_member_uid || 'TM-' + m.id }}</span>
+                      <span *ngIf="m.created_at" class="text-muted">Joined: {{ m.created_at | date:'dd MMM yyyy' }}</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="text-muted fs-11">
-                  <i class="fas fa-id-badge text-gold me-1"></i>
-                  <span class="fw-600 text-gold-dark">{{ m.team_member_uid || 'TM-' + m.id }}</span>
-                  <span *ngIf="m.created_at" class="ms-2 text-muted">Joined: {{ m.created_at | date:'dd MMM yyyy' }}</span>
+              </td>
+
+              <!-- Sponsor Associate -->
+              <td>
+                <div class="fw-600 text-dark fs-11.5">
+                  {{ m.sponsor_name || m.assoc_full_name || m.associate_name || 'Direct / Head Office' }}
                 </div>
-              </div>
-            </div>
-          </td>
+                <div class="text-muted fs-10.5" *ngIf="m.sponsor_member_id || m.assoc_member_id">
+                  <span class="chip-sponsor"><i class="fas fa-user-tie me-1"></i>{{ m.sponsor_member_id || m.assoc_member_id }}</span>
+                </div>
+              </td>
 
-          <!-- Sponsor Associate -->
-          <td>
-            <div class="fw-600 text-dark fs-12">
-              {{ m.sponsor_name || m.assoc_full_name || m.associate_name || 'Direct / Head Office' }}
-            </div>
-            <div class="text-muted fs-11" *ngIf="m.sponsor_member_id || m.assoc_member_id">
-              <i class="fas fa-user-tie text-primary me-1"></i>
-              <span>{{ m.sponsor_member_id || m.assoc_member_id }}</span>
-            </div>
-          </td>
+              <!-- Contact & Email -->
+              <td>
+                <div class="fs-11.5 fw-600 text-dark d-flex align-items-center gap-1">
+                  <a [href]="'tel:' + m.mobile_no" class="text-dark text-decoration-none" title="Call">
+                    <i class="fas fa-phone-alt text-emerald me-1"></i>{{ m.mobile_no || '—' }}
+                  </a>
+                  <a *ngIf="m.mobile_no" [href]="'https://wa.me/91' + m.mobile_no" target="_blank" class="text-emerald ms-1" title="WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                  </a>
+                </div>
+                <div class="text-muted fs-10.5 text-truncate" style="max-width: 170px;" [title]="m.email_id || ''">
+                  <i class="fas fa-envelope text-muted me-1"></i>{{ m.email_id || '—' }}
+                </div>
+              </td>
 
-          <!-- Contact & Email -->
-          <td>
-            <div class="fs-12 fw-600 text-dark d-flex align-items-center gap-1">
-              <a [href]="'tel:' + m.mobile_no" class="text-dark text-decoration-none" title="Call">
-                <i class="fas fa-phone-alt text-emerald me-1"></i>{{ m.mobile_no || '—' }}
-              </a>
-              <a *ngIf="m.mobile_no" [href]="'https://wa.me/91' + m.mobile_no" target="_blank" class="text-emerald ms-1" title="WhatsApp">
-                <i class="fab fa-whatsapp"></i>
-              </a>
-            </div>
-            <div class="text-muted fs-11 text-truncate" style="max-width: 180px;">
-              <i class="fas fa-envelope text-muted me-1"></i>{{ m.email_id || '—' }}
-            </div>
-          </td>
+              <!-- Sales & Customers -->
+              <td>
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                  <span class="chip-metric bg-plots" title="Plots Sold">
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ m.plots_sold_count || 0 }} Plots
+                  </span>
+                  <span class="chip-metric bg-gaj" title="Total Gaj Sold">
+                    <i class="fas fa-vector-square me-1"></i>{{ m.total_gaj_sold || 0 }} Gaj
+                  </span>
+                  <span class="chip-metric bg-cust" title="Customers Enrolled">
+                    <i class="fas fa-user-friends me-1"></i>{{ m.customers_count || 0 }} Cust
+                  </span>
+                </div>
+              </td>
 
-          <!-- Performance (Plots, Gaj, Customers) -->
-          <td>
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-              <span class="badge-metric bg-plots" title="Plots Sold">
-                <i class="fas fa-map-marker-alt me-1"></i>{{ m.plots_sold_count || 0 }} Plots
-              </span>
-              <span class="badge-metric bg-gaj" title="Total Gaj Sold">
-                <i class="fas fa-vector-square me-1"></i>{{ m.total_gaj_sold || 0 }} Gaj
-              </span>
-              <span class="badge-metric bg-cust" title="Customers Enrolled">
-                <i class="fas fa-user-friends me-1"></i>{{ m.customers_count || 0 }} Cust
-              </span>
-            </div>
-          </td>
+              <!-- Status -->
+              <td>
+                <span class="chip" [ngClass]="{
+                  'chip-ok': ['active', 'approved'].includes((m.status || '').toLowerCase()),
+                  'chip-warn': ['pending', 'submitted'].includes((m.status || '').toLowerCase()),
+                  'chip-err': ['suspended', 'inactive', 'rejected', 'blocked'].includes((m.status || '').toLowerCase())
+                }">
+                  {{ (m.status || 'Active') | uppercase }}
+                </span>
+              </td>
 
-          <!-- Status -->
-          <td>
-            <span class="badge-status" [ngClass]="{
-              'status-active': ['active', 'approved'].includes((m.status || '').toLowerCase()),
-              'status-pending': ['pending', 'submitted'].includes((m.status || '').toLowerCase()),
-              'status-suspended': ['suspended', 'inactive', 'rejected', 'blocked'].includes((m.status || '').toLowerCase())
-            }">
-              {{ (m.status || 'Active') | uppercase }}
-            </span>
-          </td>
+              <!-- Actions (24px square buttons) -->
+              <td class="text-end">
+                <div class="actions-cell justify-content-end">
+                  <!-- 1. Impersonate Login -->
+                  <button type="button" class="ibtn ibtn-impersonate" (click)="impersonateTeamMember(m)" title="Login as Team Member">
+                    <i class="fas fa-sign-in-alt"></i>
+                  </button>
 
-          <!-- 5 ACTION BUTTONS -->
-          <td class="text-center">
-            <div class="action-btn-group justify-content-center">
-              <!-- 1. LOGIN AS TEAM MEMBER BUTTON -->
-              <button class="btn-icon-action btn-impersonate-action" (click)="impersonateTeamMember(m)" title="Login as Team Member">
-                <i class="fas fa-sign-in-alt"></i>
-              </button>
+                  <!-- 2. Info / Dossier -->
+                  <button type="button" class="ibtn ibtn-view" (click)="openInfoModal(m)" title="View Sales &amp; Performance Info">
+                    <i class="fas fa-info-circle"></i>
+                  </button>
 
-              <!-- 2. INFO / PERFORMANCE BUTTON -->
-              <button class="btn-icon-action btn-info-action" (click)="openInfoModal(m)" title="View Sales &amp; Performance Info">
-                <i class="fas fa-info-circle"></i>
-              </button>
+                  <!-- 3. Edit Form -->
+                  <button type="button" class="ibtn ibtn-edit" (click)="openEditModal(m, false)" title="View &amp; Edit Enrollment Form">
+                    <i class="fas fa-user-pen"></i>
+                  </button>
 
-              <!-- 3. EDIT PROFILE / ENROLLMENT FORM BUTTON -->
-              <button class="btn-icon-action btn-edit-action" (click)="openEditModal(m, false)" title="View &amp; Edit Enrollment Form">
-                <i class="fas fa-user-pen"></i>
-              </button>
+                  <!-- 4. Toggle Status / Block -->
+                  <button type="button" class="ibtn" [ngClass]="['active', 'approved'].includes((m.status || '').toLowerCase()) ? 'ibtn-ban' : 'ibtn-approve'" (click)="toggleStatus(m)" [title]="['active', 'approved'].includes((m.status || '').toLowerCase()) ? 'Suspend / Block Team Member' : 'Activate Team Member'">
+                    <i class="fas" [ngClass]="['active', 'approved'].includes((m.status || '').toLowerCase()) ? 'fa-ban' : 'fa-check-circle'"></i>
+                  </button>
 
-              <!-- 4. BLOCK / SUSPEND / ACTIVATE BUTTON -->
-              <button class="btn-icon-action btn-toggle-action" [class.btn-unblock]="!['active', 'approved'].includes((m.status || '').toLowerCase())" (click)="toggleStatus(m)" [title]="['active', 'approved'].includes((m.status || '').toLowerCase()) ? 'Suspend / Block Team Member' : 'Activate Team Member'">
-                <i class="fas" [ngClass]="['active', 'approved'].includes((m.status || '').toLowerCase()) ? 'fa-ban' : 'fa-check-circle'"></i>
-              </button>
+                  <!-- 5. Delete -->
+                  <button type="button" class="ibtn ibtn-del" (click)="deleteTeamMember(m)" title="Delete Team Member">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-              <!-- 5. DELETE BUTTON -->
-              <button class="btn-icon-action btn-delete-action" (click)="deleteTeamMember(m)" title="Delete Team Member">
-                <i class="fas fa-trash-alt"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <!-- EMPTY STATE -->
-        <tr *ngIf="filtered.length === 0">
-          <td colspan="7" class="text-center py-5 text-muted">
-            <i class="fas fa-users-slash fs-2 mb-2 text-muted"></i>
-            <p class="fs-13 fw-600 mb-0">No team members found</p>
-            <p class="fs-11 text-muted mb-0">Try adjusting search filters or check associate downlines.</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+      <!-- PAGINATION -->
+      <div class="pagination-footer border-top d-flex align-items-center justify-content-between flex-wrap gap-2 px-3 py-2" *ngIf="total > 0">
+        <div class="fs-11 text-muted">
+          Showing <strong>{{ (page - 1) * pageSize + 1 }}</strong> to <strong>{{ Math.min(page * pageSize, total) }}</strong> of <strong>{{ total }}</strong> team members
+        </div>
+        <app-admin-pagination
+          [totalItems]="total"
+          [pageSize]="pageSize"
+          [currentPage]="page"
+          (pageChange)="onPageChange($event)">
+        </app-admin-pagination>
+      </div>
+    </app-admin-table-container>
   </div>
-
-  <!-- PAGINATION -->
-  <div class="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2" *ngIf="total > 0">
-    <div class="fs-12 text-muted">
-      Showing <strong>{{ (page - 1) * pageSize + 1 }}</strong> to <strong>{{ Math.min(page * pageSize, total) }}</strong> of <strong>{{ total }}</strong> team members
-    </div>
-    <app-admin-pagination
-      [totalItems]="total"
-      [pageSize]="pageSize"
-      [currentPage]="page"
-      (pageChange)="onPageChange($event)">
-    </app-admin-pagination>
-  </div>
-</app-admin-table-container>
+</div>
 
 <!-- ========================================== -->
 <!-- 1. INFO & SALES PERFORMANCE POP-UP MODAL   -->
 <!-- ========================================== -->
-<div class="custom-modal-backdrop" *ngIf="showInfoModal" (click)="closeModals()">
-  <div class="custom-modal-dialog modal-lg" (click)="$event.stopPropagation()">
+<div class="modal-backdrop-custom" *ngIf="showInfoModal" (click)="closeModals()">
+  <div class="modal-dialog-custom modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-content-card">
       <!-- Modal Header -->
-      <div class="modal-header-hero">
+      <div class="modal-header-compact">
         <div class="d-flex align-items-center justify-content-between w-100">
-          <div class="d-flex align-items-center gap-3">
+          <div class="d-flex align-items-center gap-2.5">
             <div class="modal-avatar">
               <img *ngIf="selectedMember?.photo_url" [src]="selectedMember.photo_url" alt="{{ selectedMember.full_name }}">
               <span *ngIf="!selectedMember?.photo_url">{{ getInitials(selectedMember?.full_name) }}</span>
@@ -273,103 +276,115 @@
               <div class="modal-hero-badge"><i class="fas fa-id-card me-1"></i>TEAM MEMBER PERFORMANCE OVERVIEW</div>
               <h3 class="modal-hero-title mb-0 d-flex align-items-center gap-1.5">
                 <span>{{ selectedMember?.full_name }}</span>
-                <app-verified-badge [user]="selectedMember" [isVerified]="selectedMember?.is_verified" size="sm"></app-verified-badge>
+                <app-verified-badge [user]="selectedMember" [isVerified]="selectedMember?.is_verified" size="xs"></app-verified-badge>
               </h3>
               <div class="modal-hero-sub">
                 <span><i class="fas fa-id-badge text-gold me-1"></i><strong>{{ selectedMember?.team_member_uid }}</strong></span>
-                <span class="mx-2">•</span>
+                <span class="mx-1.5">•</span>
                 <span><i class="fas fa-user-tie text-emerald me-1"></i>Sponsor: <strong>{{ selectedMember?.sponsor_name || selectedMember?.associate_name || '—' }}</strong> ({{ selectedMember?.sponsor_member_id || 'MMR' }})</span>
               </div>
             </div>
           </div>
-          <button class="btn-close-modal" (click)="closeModals()">&times;</button>
+          <button class="modal-close-btn" (click)="closeModals()" title="Close">&times;</button>
         </div>
       </div>
 
       <!-- Modal Body -->
-      <div class="modal-body p-4">
+      <div class="modal-body-compact">
         <!-- 6 KEY PERFORMANCE STAT CARDS -->
-        <div class="row g-2 mb-4">
+        <div class="row g-2 mb-3">
           <!-- Plots Sold -->
           <div class="col-6 col-md-4">
             <div class="metric-card bg-light-blue">
-              <div class="metric-icon text-primary"><i class="fas fa-map-marked-alt"></i></div>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="metric-lbl">Plots Sold</div>
+                <div class="metric-icon text-primary"><i class="fas fa-map-marked-alt"></i></div>
+              </div>
               <div class="metric-val">{{ selectedMember?.plots_sold_count || selectedMember?.bookings?.length || 0 }}</div>
-              <div class="metric-lbl">Total Plots Sold</div>
             </div>
           </div>
 
           <!-- Total Gaj Sold -->
           <div class="col-6 col-md-4">
             <div class="metric-card bg-light-gold">
-              <div class="metric-icon text-gold-dark"><i class="fas fa-ruler-combined"></i></div>
-              <div class="metric-val">{{ selectedMember?.total_gaj_sold || 0 }} <span class="fs-12">Gaj</span></div>
-              <div class="metric-lbl">Total Area Sold</div>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="metric-lbl">Total Area Sold</div>
+                <div class="metric-icon text-gold-dark"><i class="fas fa-ruler-combined"></i></div>
+              </div>
+              <div class="metric-val">{{ selectedMember?.total_gaj_sold || 0 }} <span class="fs-10.5 fw-normal">Gaj</span></div>
             </div>
           </div>
 
           <!-- Total Commission Earned -->
           <div class="col-6 col-md-4">
             <div class="metric-card bg-light-green">
-              <div class="metric-icon text-emerald"><i class="fas fa-coins"></i></div>
-              <div class="metric-val">₹{{ selectedMember?.total_commission_earned || 0 | number }}</div>
-              <div class="metric-lbl">Total Commission Earned</div>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="metric-lbl">Commission Earned</div>
+                <div class="metric-icon text-emerald"><i class="fas fa-coins"></i></div>
+              </div>
+              <div class="metric-val">₹{{ (selectedMember?.total_commission_earned || 0) | number }}</div>
             </div>
           </div>
 
           <!-- New Customers Added -->
           <div class="col-6 col-md-4">
             <div class="metric-card bg-light-purple">
-              <div class="metric-icon text-purple"><i class="fas fa-user-plus"></i></div>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="metric-lbl">Customers Enrolled</div>
+                <div class="metric-icon text-purple"><i class="fas fa-user-plus"></i></div>
+              </div>
               <div class="metric-val">{{ selectedMember?.customers_count || selectedMember?.customers?.length || 0 }}</div>
-              <div class="metric-lbl">New Customers Enrolled</div>
             </div>
           </div>
 
           <!-- Pending EMIs & Amount -->
           <div class="col-6 col-md-4">
             <div class="metric-card bg-light-orange">
-              <div class="metric-icon text-orange"><i class="fas fa-clock"></i></div>
-              <div class="metric-val">{{ selectedMember?.pending_emi_count || selectedMember?.pending_emis?.length || 0 }} <span class="fs-12 fw-normal">(₹{{ (selectedMember?.pending_emi_amount || 0) | number }})</span></div>
-              <div class="metric-lbl">Pending EMIs Due</div>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="metric-lbl">Pending EMIs Due</div>
+                <div class="metric-icon text-orange"><i class="fas fa-clock"></i></div>
+              </div>
+              <div class="metric-val">{{ selectedMember?.pending_emi_count || selectedMember?.pending_emis?.length || 0 }} <span class="fs-10.5 fw-normal">(₹{{ (selectedMember?.pending_emi_amount || 0) | number }})</span></div>
             </div>
           </div>
 
           <!-- Monthly & Yearly Sales -->
           <div class="col-6 col-md-4">
             <div class="metric-card bg-light-cyan">
-              <div class="metric-icon text-cyan"><i class="fas fa-calendar-alt"></i></div>
-              <div class="metric-val">{{ selectedMember?.monthly_sales_gaj || 0 }} <span class="fs-12">Gaj / Mo</span></div>
-              <div class="metric-lbl">Monthly Sale (Yearly: {{ selectedMember?.yearly_sales_gaj || selectedMember?.total_gaj_sold || 0 }} Gaj)</div>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="metric-lbl">Monthly Sales</div>
+                <div class="metric-icon text-cyan"><i class="fas fa-calendar-alt"></i></div>
+              </div>
+              <div class="metric-val">{{ selectedMember?.monthly_sales_gaj || 0 }} <span class="fs-10.5 fw-normal">Gaj/mo</span></div>
             </div>
           </div>
         </div>
 
-        <!-- TABS FOR SUB-DETAILS -->
-        <div class="d-flex gap-2 border-bottom pb-2 mb-3">
-          <button class="tab-btn" [class.active]="activeInfoTab === 'summary'" (click)="activeInfoTab = 'summary'">
+        <!-- PILL TABS FOR SUB-DETAILS -->
+        <div class="modal-tabs mb-2.5">
+          <button type="button" class="modal-tab-btn" [class.active]="activeInfoTab === 'summary'" (click)="activeInfoTab = 'summary'">
             <i class="fas fa-user-circle me-1"></i>Personal &amp; Bank Summary
           </button>
-          <button class="tab-btn" [class.active]="activeInfoTab === 'bookings'" (click)="activeInfoTab = 'bookings'">
+          <button type="button" class="modal-tab-btn" [class.active]="activeInfoTab === 'bookings'" (click)="activeInfoTab = 'bookings'">
             <i class="fas fa-shopping-cart me-1"></i>Bookings Sold ({{ selectedMember?.bookings?.length || 0 }})
           </button>
-          <button class="tab-btn" [class.active]="activeInfoTab === 'customers'" (click)="activeInfoTab = 'customers'">
+          <button type="button" class="modal-tab-btn" [class.active]="activeInfoTab === 'customers'" (click)="activeInfoTab = 'customers'">
             <i class="fas fa-users me-1"></i>Customers ({{ selectedMember?.customers?.length || 0 }})
           </button>
-          <button class="tab-btn" [class.active]="activeInfoTab === 'emis'" (click)="activeInfoTab = 'emis'">
+          <button type="button" class="modal-tab-btn" [class.active]="activeInfoTab === 'emis'" (click)="activeInfoTab = 'emis'">
             <i class="fas fa-receipt me-1"></i>Pending EMIs ({{ selectedMember?.pending_emis?.length || 0 }})
           </button>
         </div>
 
         <!-- TAB 1: SUMMARY -->
         <div *ngIf="activeInfoTab === 'summary'">
-          <div class="row g-3">
+          <div class="row g-2">
             <div class="col-md-6">
               <div class="info-group-box">
-                <h6 class="info-box-title"><i class="fas fa-user text-primary me-2"></i>Personal Information</h6>
+                <h6 class="info-box-title"><i class="fas fa-user text-primary me-1.5"></i>Personal Information</h6>
                 <div class="info-row"><span class="info-lbl">Full Name:</span><span class="info-val">{{ selectedMember?.full_name }}</span></div>
-                <div class="info-row"><span class="info-lbl">Father / Husband Name:</span><span class="info-val">{{ selectedMember?.father_husband_name || '—' }}</span></div>
-                <div class="info-row"><span class="info-lbl">Date of Birth / Gender:</span><span class="info-val">{{ selectedMember?.date_of_birth ? (selectedMember.date_of_birth | date:'dd MMM yyyy') : '—' }} ({{ selectedMember?.gender || '—' }})</span></div>
+                <div class="info-row"><span class="info-lbl">Father / Husband:</span><span class="info-val">{{ selectedMember?.father_husband_name || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">DOB / Gender:</span><span class="info-val">{{ selectedMember?.date_of_birth ? (selectedMember.date_of_birth | date:'dd MMM yyyy') : '—' }} ({{ selectedMember?.gender || '—' }})</span></div>
                 <div class="info-row"><span class="info-lbl">Mobile / WhatsApp:</span><span class="info-val">{{ selectedMember?.mobile_no }}</span></div>
                 <div class="info-row"><span class="info-lbl">Email Address:</span><span class="info-val">{{ selectedMember?.email_id || '—' }}</span></div>
                 <div class="info-row"><span class="info-lbl">Address:</span><span class="info-val">{{ selectedMember?.full_address || '—' }}</span></div>
@@ -378,7 +393,7 @@
 
             <div class="col-md-6">
               <div class="info-group-box">
-                <h6 class="info-box-title"><i class="fas fa-university text-emerald me-2"></i>Bank &amp; Nominee Details</h6>
+                <h6 class="info-box-title"><i class="fas fa-university text-emerald me-1.5"></i>Bank &amp; Nominee Details</h6>
                 <div class="info-row"><span class="info-lbl">Bank Name:</span><span class="info-val">{{ selectedMember?.bank_name || '—' }}</span></div>
                 <div class="info-row"><span class="info-lbl">Branch:</span><span class="info-val">{{ selectedMember?.branch_name || '—' }}</span></div>
                 <div class="info-row"><span class="info-lbl">Account Number:</span><span class="info-val">{{ selectedMember?.account_no || '—' }}</span></div>
@@ -393,13 +408,13 @@
         <!-- TAB 2: BOOKINGS SOLD -->
         <div *ngIf="activeInfoTab === 'bookings'">
           <div class="table-responsive" *ngIf="selectedMember?.bookings?.length > 0">
-            <table class="table table-sm table-bordered align-middle fs-12">
+            <table class="table table-sm table-bordered align-middle fs-11.5 mb-0">
               <thead class="bg-light">
                 <tr>
                   <th>Booking Serial</th>
                   <th>Plot No &amp; Site</th>
                   <th>Customer Name</th>
-                  <th>Plot Size (Gaj)</th>
+                  <th>Plot Size</th>
                   <th>Total Price</th>
                   <th>Status</th>
                 </tr>
@@ -411,12 +426,12 @@
                   <td>{{ b.customer_name || 'Customer' }} ({{ b.customer_mobile || '—' }})</td>
                   <td class="fw-600">{{ b.plot_size_gaj || 0 }} Gaj</td>
                   <td>₹{{ (b.total_plot_price || 0) | number }}</td>
-                  <td><span class="badge bg-emerald-light text-emerald px-2 py-1">{{ b.booking_status }}</span></td>
+                  <td><span class="chip chip-ok">{{ b.booking_status }}</span></td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <div *ngIf="!selectedMember?.bookings || selectedMember?.bookings?.length === 0" class="text-center py-4 text-muted fs-12">
+          <div *ngIf="!selectedMember?.bookings || selectedMember?.bookings?.length === 0" class="text-center py-4 text-muted fs-11.5">
             No bookings recorded yet for this team member.
           </div>
         </div>
@@ -424,7 +439,7 @@
         <!-- TAB 3: CUSTOMERS -->
         <div *ngIf="activeInfoTab === 'customers'">
           <div class="table-responsive" *ngIf="selectedMember?.customers?.length > 0">
-            <table class="table table-sm table-bordered align-middle fs-12">
+            <table class="table table-sm table-bordered align-middle fs-11.5 mb-0">
               <thead class="bg-light">
                 <tr>
                   <th>Customer ID</th>
@@ -445,7 +460,7 @@
               </tbody>
             </table>
           </div>
-          <div *ngIf="!selectedMember?.customers || selectedMember?.customers?.length === 0" class="text-center py-4 text-muted fs-12">
+          <div *ngIf="!selectedMember?.customers || selectedMember?.customers?.length === 0" class="text-center py-4 text-muted fs-11.5">
             No customers registered under this team member yet.
           </div>
         </div>
@@ -453,7 +468,7 @@
         <!-- TAB 4: PENDING EMIS -->
         <div *ngIf="activeInfoTab === 'emis'">
           <div class="table-responsive" *ngIf="selectedMember?.pending_emis?.length > 0">
-            <table class="table table-sm table-bordered align-middle fs-12">
+            <table class="table table-sm table-bordered align-middle fs-11.5 mb-0">
               <thead class="bg-light">
                 <tr>
                   <th>Booking</th>
@@ -473,23 +488,23 @@
                   <td>#{{ e.installment_number }}</td>
                   <td>{{ e.due_date | date:'dd MMM yyyy' }}</td>
                   <td class="fw-700 text-danger">₹{{ (e.total_due || e.emi_amount) | number }}</td>
-                  <td><span class="badge bg-amber text-orange">{{ e.emi_status }}</span></td>
+                  <td><span class="chip chip-warn">{{ e.emi_status }}</span></td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <div *ngIf="!selectedMember?.pending_emis || selectedMember?.pending_emis?.length === 0" class="text-center py-4 text-muted fs-12">
+          <div *ngIf="!selectedMember?.pending_emis || selectedMember?.pending_emis?.length === 0" class="text-center py-4 text-muted fs-11.5">
             All customer EMIs are up to date. No pending EMIs!
           </div>
         </div>
       </div>
 
       <!-- Modal Footer -->
-      <div class="modal-footer p-3 border-top d-flex justify-content-between">
-        <button class="btn btn-outline-primary btn-sm" (click)="openEditModal(selectedMember, true)">
+      <div class="modal-footer-compact border-top d-flex justify-content-between p-2.5">
+        <button type="button" class="btn btn-outline-primary btn-xs" (click)="openEditModal(selectedMember, true)">
           <i class="fas fa-edit me-1"></i> Edit Profile &amp; Enrollment Details
         </button>
-        <button class="btn btn-secondary btn-sm" (click)="closeModals()">Close</button>
+        <button type="button" class="btn btn-secondary btn-xs" (click)="closeModals()">Close</button>
       </div>
     </div>
   </div>
@@ -498,11 +513,11 @@
 <!-- ========================================================= -->
 <!-- 2. EDIT PROFILE & ENROLLMENT FORM MODAL (DISABLED/ENABLED) -->
 <!-- ========================================================= -->
-<div class="custom-modal-backdrop" *ngIf="showEditModal" (click)="closeModals()">
-  <div class="custom-modal-dialog modal-lg" (click)="$event.stopPropagation()">
+<div class="modal-backdrop-custom" *ngIf="showEditModal" (click)="closeModals()">
+  <div class="modal-dialog-custom modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-content-card">
       <!-- Header -->
-      <div class="modal-header-hero">
+      <div class="modal-header-compact">
         <div class="d-flex align-items-center justify-content-between w-100">
           <div>
             <div class="modal-hero-badge"><i class="fas fa-user-edit me-1"></i>TEAM MEMBER ENROLLMENT &amp; PROFILE</div>
@@ -511,45 +526,45 @@
           </div>
           <div class="d-flex align-items-center gap-2">
             <!-- Edit Toggle Button -->
-            <button class="btn btn-sm" [ngClass]="isEditMode ? 'btn-success' : 'btn-gold'" (click)="toggleEditMode()">
+            <button type="button" class="btn btn-xs" [ngClass]="isEditMode ? 'btn-success' : 'btn-gold'" (click)="toggleEditMode()">
               <i class="fas" [ngClass]="isEditMode ? 'fa-lock-open' : 'fa-edit'"></i>
               {{ isEditMode ? 'Editing Enabled' : 'Enable Edit Mode' }}
             </button>
-            <button class="btn-close-modal" (click)="closeModals()">&times;</button>
+            <button class="modal-close-btn" (click)="closeModals()" title="Close">&times;</button>
           </div>
         </div>
       </div>
 
       <!-- Form Body -->
-      <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+      <div class="modal-body-compact" style="max-height: 72vh; overflow-y: auto;">
         <!-- Banner Alert if disabled -->
-        <div *ngIf="!isEditMode" class="alert alert-info py-2 px-3 fs-12 mb-3 d-flex align-items-center justify-content-between">
-          <span><i class="fas fa-eye me-2"></i>This enrollment form is currently in <strong>View-Only (Disabled)</strong> mode. Click <strong>"Enable Edit Mode"</strong> at top right to make changes.</span>
+        <div *ngIf="!isEditMode" class="alert-compact alert-info-compact mb-2.5 d-flex align-items-center justify-content-between">
+          <span><i class="fas fa-eye me-1.5"></i>This form is in <strong>View-Only</strong> mode. Click <strong>"Enable Edit Mode"</strong> at top right to edit.</span>
         </div>
 
-        <div *ngIf="isEditMode" class="alert alert-warning py-2 px-3 fs-12 mb-3 d-flex align-items-center justify-content-between">
-          <span><i class="fas fa-pen me-2"></i><strong>Edit Mode is Active.</strong> You can now modify the details and click Save Changes below.</span>
+        <div *ngIf="isEditMode" class="alert-compact alert-warning-compact mb-2.5 d-flex align-items-center justify-content-between">
+          <span><i class="fas fa-pen me-1.5"></i><strong>Edit Mode is Active.</strong> Modify fields below and click Save Changes.</span>
         </div>
 
         <form (ngSubmit)="saveTeamMember()">
           <!-- Section 1: Personal Details -->
-          <div class="form-section-title mb-2"><i class="fas fa-user me-2 text-primary"></i>Personal Information</div>
-          <div class="row g-2 mb-3">
+          <div class="form-section-title mb-2"><i class="fas fa-user me-1.5 text-primary"></i>Personal Information</div>
+          <div class="row g-2 mb-2.5">
             <div class="col-md-6">
               <label class="form-label-custom">Full Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.full_name" name="full_name" [disabled]="!isEditMode" required>
+              <input type="text" class="f-input" [(ngModel)]="editForm.full_name" name="full_name" [disabled]="!isEditMode" required>
             </div>
             <div class="col-md-6">
               <label class="form-label-custom">Father / Husband Name</label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.father_husband_name" name="father_husband_name" [disabled]="!isEditMode">
+              <input type="text" class="f-input" [(ngModel)]="editForm.father_husband_name" name="father_husband_name" [disabled]="!isEditMode">
             </div>
             <div class="col-md-4">
               <label class="form-label-custom">Date of Birth</label>
-              <input type="date" class="form-control form-control-sm" [(ngModel)]="editForm.date_of_birth" name="date_of_birth" [disabled]="!isEditMode">
+              <input type="date" class="f-input" [(ngModel)]="editForm.date_of_birth" name="date_of_birth" [disabled]="!isEditMode">
             </div>
             <div class="col-md-4">
               <label class="form-label-custom">Gender</label>
-              <select class="form-select form-select-sm" [(ngModel)]="editForm.gender" name="gender" [disabled]="!isEditMode">
+              <select class="f-input" [(ngModel)]="editForm.gender" name="gender" [disabled]="!isEditMode">
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
@@ -557,7 +572,7 @@
             </div>
             <div class="col-md-4">
               <label class="form-label-custom">Status</label>
-              <select class="form-select form-select-sm" [(ngModel)]="editForm.status" name="status" [disabled]="!isEditMode">
+              <select class="f-input" [(ngModel)]="editForm.status" name="status" [disabled]="!isEditMode">
                 <option value="approved">Approved / Active</option>
                 <option value="pending">Pending</option>
                 <option value="suspended">Suspended / Inactive</option>
@@ -567,77 +582,77 @@
           </div>
 
           <!-- Section 2: Contact & KYC -->
-          <div class="form-section-title mb-2"><i class="fas fa-address-card me-2 text-gold-dark"></i>Contact &amp; KYC Numbers</div>
-          <div class="row g-2 mb-3">
+          <div class="form-section-title mb-2"><i class="fas fa-address-card me-1.5 text-gold-dark"></i>Contact &amp; KYC Numbers</div>
+          <div class="row g-2 mb-2.5">
             <div class="col-md-4">
               <label class="form-label-custom">Mobile Number <span class="text-danger">*</span></label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.mobile_no" name="mobile_no" [disabled]="!isEditMode" required>
+              <input type="text" class="f-input" [(ngModel)]="editForm.mobile_no" name="mobile_no" [disabled]="!isEditMode" required>
             </div>
             <div class="col-md-4">
               <label class="form-label-custom">Email ID</label>
-              <input type="email" class="form-control form-control-sm" [(ngModel)]="editForm.email_id" name="email_id" [disabled]="!isEditMode">
+              <input type="email" class="f-input" [(ngModel)]="editForm.email_id" name="email_id" [disabled]="!isEditMode">
             </div>
             <div class="col-md-4">
               <label class="form-label-custom">PAN Number</label>
-              <input type="text" class="form-control form-control-sm text-uppercase" [(ngModel)]="editForm.pan_no" name="pan_no" [disabled]="!isEditMode">
+              <input type="text" class="f-input text-uppercase" [(ngModel)]="editForm.pan_no" name="pan_no" [disabled]="!isEditMode">
             </div>
             <div class="col-md-4">
               <label class="form-label-custom">Aadhar Number</label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.aadhar_no" name="aadhar_no" [disabled]="!isEditMode">
+              <input type="text" class="f-input" [(ngModel)]="editForm.aadhar_no" name="aadhar_no" [disabled]="!isEditMode">
             </div>
             <div class="col-md-8">
               <label class="form-label-custom">Full Address</label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.full_address" name="full_address" [disabled]="!isEditMode">
+              <input type="text" class="f-input" [(ngModel)]="editForm.full_address" name="full_address" [disabled]="!isEditMode">
             </div>
           </div>
 
           <!-- Section 3: Bank Details -->
-          <div class="form-section-title mb-2"><i class="fas fa-university me-2 text-emerald"></i>Banking Details</div>
-          <div class="row g-2 mb-3">
+          <div class="form-section-title mb-2"><i class="fas fa-university me-1.5 text-emerald"></i>Banking Details</div>
+          <div class="row g-2 mb-2.5">
             <div class="col-md-6">
               <label class="form-label-custom">Bank Name</label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.bank_name" name="bank_name" [disabled]="!isEditMode">
+              <input type="text" class="f-input" [(ngModel)]="editForm.bank_name" name="bank_name" [disabled]="!isEditMode">
             </div>
             <div class="col-md-6">
               <label class="form-label-custom">Branch Name</label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.branch_name" name="branch_name" [disabled]="!isEditMode">
+              <input type="text" class="f-input" [(ngModel)]="editForm.branch_name" name="branch_name" [disabled]="!isEditMode">
             </div>
             <div class="col-md-6">
               <label class="form-label-custom">Account Number</label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.account_no" name="account_no" [disabled]="!isEditMode">
+              <input type="text" class="f-input" [(ngModel)]="editForm.account_no" name="account_no" [disabled]="!isEditMode">
             </div>
             <div class="col-md-6">
               <label class="form-label-custom">IFSC Code</label>
-              <input type="text" class="form-control form-control-sm text-uppercase" [(ngModel)]="editForm.ifsc_code" name="ifsc_code" [disabled]="!isEditMode">
+              <input type="text" class="f-input text-uppercase" [(ngModel)]="editForm.ifsc_code" name="ifsc_code" [disabled]="!isEditMode">
             </div>
           </div>
 
           <!-- Section 4: Nominee Information -->
-          <div class="form-section-title mb-2"><i class="fas fa-user-shield me-2 text-purple"></i>Nominee Information</div>
-          <div class="row g-2 mb-3">
+          <div class="form-section-title mb-2"><i class="fas fa-user-shield me-1.5 text-purple"></i>Nominee Information</div>
+          <div class="row g-2 mb-2.5">
             <div class="col-md-4">
               <label class="form-label-custom">Nominee Name</label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.nominee_name" name="nominee_name" [disabled]="!isEditMode">
+              <input type="text" class="f-input" [(ngModel)]="editForm.nominee_name" name="nominee_name" [disabled]="!isEditMode">
             </div>
             <div class="col-md-4">
               <label class="form-label-custom">Nominee Relationship</label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.nominee_relation" name="nominee_relation" [disabled]="!isEditMode">
+              <input type="text" class="f-input" [(ngModel)]="editForm.nominee_relation" name="nominee_relation" [disabled]="!isEditMode">
             </div>
             <div class="col-md-4">
               <label class="form-label-custom">Nominee Contact No</label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editForm.nominee_contact_no" name="nominee_contact_no" [disabled]="!isEditMode">
+              <input type="text" class="f-input" [(ngModel)]="editForm.nominee_contact_no" name="nominee_contact_no" [disabled]="!isEditMode">
             </div>
           </div>
 
           <!-- Section 5: Uploaded Images / Photos -->
-          <div class="form-section-title mb-2"><i class="fas fa-images me-2 text-cyan"></i>Uploaded Documents &amp; Signatures</div>
-          <div class="row g-3 mb-3">
+          <div class="form-section-title mb-2"><i class="fas fa-images me-1.5 text-cyan"></i>Uploaded Documents &amp; Signatures</div>
+          <div class="row g-2 mb-2.5">
             <!-- Applicant Photo -->
             <div class="col-md-4 text-center">
               <label class="form-label-custom d-block">Applicant Photo</label>
               <div class="doc-preview-box">
                 <img *ngIf="editForm.photo_url" [src]="editForm.photo_url" alt="Photo" class="doc-img">
-                <span *ngIf="!editForm.photo_url" class="text-muted fs-11">No Photo Uploaded</span>
+                <span *ngIf="!editForm.photo_url" class="text-muted fs-10.5">No Photo</span>
               </div>
             </div>
 
@@ -646,7 +661,7 @@
               <label class="form-label-custom d-block">Applicant Signature</label>
               <div class="doc-preview-box">
                 <img *ngIf="editForm.applicant_signature_url" [src]="editForm.applicant_signature_url" alt="Applicant Signature" class="doc-img">
-                <span *ngIf="!editForm.applicant_signature_url" class="text-muted fs-11">No Signature Uploaded</span>
+                <span *ngIf="!editForm.applicant_signature_url" class="text-muted fs-10.5">No Signature</span>
               </div>
             </div>
 
@@ -655,15 +670,15 @@
               <label class="form-label-custom d-block">Associate Sponsor Signature</label>
               <div class="doc-preview-box">
                 <img *ngIf="editForm.associate_signature_url" [src]="editForm.associate_signature_url" alt="Associate Signature" class="doc-img">
-                <span *ngIf="!editForm.associate_signature_url" class="text-muted fs-11">No Signature Uploaded</span>
+                <span *ngIf="!editForm.associate_signature_url" class="text-muted fs-10.5">No Signature</span>
               </div>
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="modal-footer p-0 pt-3 border-top d-flex justify-content-between">
-            <button type="button" class="btn btn-secondary btn-sm" (click)="closeModals()">Cancel</button>
-            <button type="submit" class="btn btn-gold btn-sm px-4" *ngIf="isEditMode" [disabled]="actionLoading">
+          <div class="modal-footer-compact border-top d-flex justify-content-between p-2 pt-3">
+            <button type="button" class="btn btn-secondary btn-xs" (click)="closeModals()">Cancel</button>
+            <button type="submit" class="btn btn-gold btn-xs px-3" *ngIf="isEditMode" [disabled]="actionLoading">
               <i class="fas fa-spinner fa-spin me-1" *ngIf="actionLoading"></i>
               <i class="fas fa-save me-1" *ngIf="!actionLoading"></i> Save Changes
             </button>

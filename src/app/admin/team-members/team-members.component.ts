@@ -229,6 +229,11 @@ export class AdminTeamMembersComponent implements OnInit {
     this.load();
   }
 
+  clearSearch(): void {
+    this.search = '';
+    this.onSearch();
+  }
+
   onPageChange(p: number): void {
     this.page = p;
     this.load();
