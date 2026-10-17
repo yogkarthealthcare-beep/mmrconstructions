@@ -1,305 +1,339 @@
 <div class="withdrawal-page-container">
-  <!-- PAGE HEADER CARD -->
-  <div class="pg-header-card">
-    <div class="header-main-content">
-      <div class="header-badge-icon">
-        <i class="fas fa-hand-holding-usd"></i>
-      </div>
-      <div class="header-text-wrap">
-        <h1 class="pg-title">Withdrawal Requests Command Center</h1>
-        <p class="pg-sub">Review, approve, release, or reject payout requests for Associates, Investors, and Customers.</p>
-      </div>
+  <!-- PAGE HEADER BANNER -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div class="header-left min-w-0">
+      <div class="banner-badge"><i class="fas fa-shield-alt me-1 text-gold"></i> Payout Engine Active</div>
+      <h1 class="page-title text-white mb-0">
+        <i class="fas fa-hand-holding-usd text-gold me-2"></i> Withdrawal Requests Command Center
+      </h1>
+      <p class="page-subtitle text-white mb-0">
+        Review, approve, release, or reject payout requests for Associates, Investors, and Customers.
+      </p>
     </div>
-
-    <div class="header-tag-wrap">
-      <span class="security-tag">
-        <i class="fas fa-shield-alt"></i> PAYOUT ENGINE ACTIVE
-      </span>
+    <div class="header-actions d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-header-refresh" (click)="loadRequests()" [disabled]="loading" title="Refresh">
+        <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
+        <span>Refresh</span>
+      </button>
     </div>
   </div>
 
   <!-- QUICK METRICS BAR -->
-  <div class="metrics-row" *ngIf="!loading">
-
+  <div class="kpi-grid mb-3" *ngIf="!loading">
     <!-- Metric 1: Pending Requests -->
-    <div class="metric-card card-amber">
-      <div>
-        <div class="metric-label">Pending Requests</div>
-        <div class="metric-value text-amber">₹{{ pendingTotal | number:'1.2-2' }}</div>
-        <div class="metric-subtext"><i class="fas fa-clock me-1 text-warning"></i>{{ pendingCount }} requests waiting</div>
+    <div class="kpi-card s-orange">
+      <div class="kpi-content">
+        <span class="kpi-label">Pending Requests</span>
+        <h4 class="kpi-value text-amber">₹{{ pendingTotal | number:'1.2-2' }}</h4>
+        <span class="kpi-subtext">{{ pendingCount }} requests waiting</span>
       </div>
-      <div class="metric-icon-wrap icon-amber">
+      <div class="kpi-icon-wrap kpi-amber">
         <i class="fas fa-hourglass-half"></i>
       </div>
     </div>
 
     <!-- Metric 2: Approved (Ready for Release) -->
-    <div class="metric-card card-blue">
-      <div>
-        <div class="metric-label">Approved (Ready)</div>
-        <div class="metric-value text-primary">₹{{ approvedTotal | number:'1.2-2' }}</div>
-        <div class="metric-subtext"><i class="fas fa-check-double me-1 text-primary"></i>{{ approvedCount }} requests approved</div>
+    <div class="kpi-card s-blue">
+      <div class="kpi-content">
+        <span class="kpi-label">Approved (Ready)</span>
+        <h4 class="kpi-value text-primary">₹{{ approvedTotal | number:'1.2-2' }}</h4>
+        <span class="kpi-subtext">{{ approvedCount }} requests approved</span>
       </div>
-      <div class="metric-icon-wrap icon-blue">
+      <div class="kpi-icon-wrap kpi-blue">
         <i class="fas fa-check-double"></i>
       </div>
     </div>
 
     <!-- Metric 3: Released Payouts -->
-    <div class="metric-card card-emerald">
-      <div>
-        <div class="metric-label">Released Payouts</div>
-        <div class="metric-value text-success">₹{{ releasedTotal | number:'1.2-2' }}</div>
-        <div class="metric-subtext"><i class="fas fa-hand-holding-usd me-1 text-success"></i>{{ releasedCount }} payouts completed</div>
+    <div class="kpi-card s-green">
+      <div class="kpi-content">
+        <span class="kpi-label">Released Payouts</span>
+        <h4 class="kpi-value text-emerald">₹{{ releasedTotal | number:'1.2-2' }}</h4>
+        <span class="kpi-subtext">{{ releasedCount }} payouts completed</span>
       </div>
-      <div class="metric-icon-wrap icon-emerald">
+      <div class="kpi-icon-wrap kpi-emerald">
         <i class="fas fa-hand-holding-usd"></i>
       </div>
     </div>
-
   </div>
 
   <!-- FILTER FORM CARD -->
-  <div class="filter-card-modern">
-    <form [formGroup]="filterForm" class="row g-2 align-items-end">
-
-      <!-- Status Filter -->
-      <div class="col-md-2 col-sm-6">
-        <label class="f-label-sm">Status</label>
-        <select formControlName="status" class="f-select-compact" (change)="loadRequests()">
-          <option value="">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="released">Released</option>
-          <option value="rejected">Rejected</option>
-          <option value="failed">Failed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </div>
-
-      <!-- Role Filter -->
-      <div class="col-md-2 col-sm-6">
-        <label class="f-label-sm">Role</label>
-        <select formControlName="user_role" class="f-select-compact" (change)="loadRequests()">
-          <option value="">All Roles</option>
-          <option value="Associate">Associate</option>
-          <option value="Investor">Investor</option>
-          <option value="Customer">Customer</option>
-        </select>
-      </div>
-
-      <!-- Search Input -->
-      <div class="col-md-3 col-sm-12">
-        <label class="f-label-sm">Search User</label>
-        <div class="search-box-compact">
-          <i class="fas fa-search"></i>
+  <div class="filter-card card shadow-sm border-0 mb-3">
+    <div class="card-body p-2">
+      <form [formGroup]="filterForm" class="d-flex flex-wrap align-items-center gap-2">
+        <!-- Search Input -->
+        <div class="search-box flex-grow-1" style="min-width: 200px;">
+          <i class="fas fa-search search-icon"></i>
           <input
             type="text"
             formControlName="search"
-            class="search-input-compact"
-            placeholder="Name, email, mobile..."
+            class="form-control f-input-search"
+            placeholder="Search Name, email, mobile..."
             (input)="onSearchInput()"
           />
+          <button
+            *ngIf="filterForm.get('search')?.value"
+            type="button"
+            class="btn-clear-search"
+            (click)="filterForm.patchValue({ search: '' }); onSearchInput()"
+            title="Clear"
+          >
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-      </div>
 
-      <!-- Start Date -->
-      <div class="col-md-2 col-sm-6">
-        <label class="f-label-sm">Start Date</label>
-        <input type="date" formControlName="start_date" class="f-select-compact" (change)="loadRequests()" />
-      </div>
+        <!-- Status Filter -->
+        <div class="filter-select-wrap">
+          <select formControlName="status" class="form-select sel-sm" (change)="loadRequests()">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="released">Released</option>
+            <option value="rejected">Rejected</option>
+            <option value="failed">Failed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
 
-      <!-- End Date -->
-      <div class="col-md-2 col-sm-6">
-        <label class="f-label-sm">End Date</label>
-        <input type="date" formControlName="end_date" class="f-select-compact" (change)="loadRequests()" />
-      </div>
+        <!-- Role Filter -->
+        <div class="filter-select-wrap">
+          <select formControlName="user_role" class="form-select sel-sm" (change)="loadRequests()">
+            <option value="">All Roles</option>
+            <option value="Associate">Associate</option>
+            <option value="Investor">Investor</option>
+            <option value="Customer">Customer</option>
+          </select>
+        </div>
 
-      <!-- Reset Filter Button -->
-      <div class="col-md-1 col-sm-12 text-end">
-        <button type="button" class="btn-reset-filter w-100" (click)="resetFilters()" title="Reset Filters">
-          <i class="fas fa-redo-alt me-1"></i> Reset
-        </button>
-      </div>
+        <!-- Start Date -->
+        <div class="filter-date-wrap">
+          <input type="date" formControlName="start_date" class="form-control sel-sm" (change)="loadRequests()" title="Start Date" />
+        </div>
 
-    </form>
+        <!-- End Date -->
+        <div class="filter-date-wrap">
+          <input type="date" formControlName="end_date" class="form-control sel-sm" (change)="loadRequests()" title="End Date" />
+        </div>
+
+        <!-- Reset Filter Button -->
+        <div class="ms-auto d-flex align-items-center gap-1.5">
+          <button type="button" class="btn btn-secondary btn-xs px-2.5" (click)="resetFilters()" title="Reset Filters">
+            <i class="fas fa-undo me-1"></i> Reset
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- LOADING STATE -->
-  <div *ngIf="loading" class="py-5 text-center bg-white rounded-4 border border-1 border-light shadow-sm mb-4">
-    <i class="fas fa-circle-notch fa-spin fa-2x text-emerald"></i>
-    <span class="d-block mt-2 text-muted fw-semibold fs-13">Fetching withdrawal requests data...</span>
+  <div *ngIf="loading" class="py-4 text-center bg-white rounded-3 border mb-3">
+    <i class="fas fa-spinner fa-spin fa-2x text-emerald"></i>
+    <span class="d-block mt-2 text-muted fs-xs">Fetching withdrawal requests data...</span>
   </div>
 
   <!-- ERROR ALERT -->
-  <div *ngIf="!loading && errorMsg" class="alert alert-danger d-flex align-items-center gap-2 mb-4 rounded-3">
+  <div *ngIf="!loading && errorMsg" class="alert alert-danger d-flex align-items-center gap-2 mb-3">
     <i class="fas fa-exclamation-circle fs-5"></i>
     <span>{{ errorMsg }}</span>
   </div>
 
-  <!-- DATA TABLE WRAP -->
-  <div class="data-table-wrap-compact" *ngIf="!loading && !errorMsg">
-    <div class="data-table-head-bar">
-      <h5 class="mb-0">
-        <i class="fas fa-list-check me-1"></i> Payout Submissions ({{ requests.length }})
-      </h5>
-    </div>
+  <!-- DATA TABLE CARD -->
+  <div class="table-card card shadow-sm border-0" *ngIf="!loading && !errorMsg">
+    <div class="card-body p-0">
+      <!-- EMPTY STATE -->
+      <div *ngIf="requests.length === 0" class="py-5 text-center">
+        <div class="empty-icon-wrap mb-2">
+          <i class="fas fa-inbox fa-2x text-emerald opacity-75"></i>
+        </div>
+        <h6 class="fw-bold text-dark mb-1">No Withdrawal Requests Found</h6>
+        <p class="text-muted fs-xs mb-0">No payout requests match the selected filters or date range.</p>
+      </div>
 
-    <app-admin-table-container
-      *ngIf="requests.length > 0"
-      title="Payout Submissions"
-      [count]="requests.length"
-      (export)="exportData('all', 'excel')">
-      <div class="table-responsive">
-        <table class="table-withdrawal">
+      <!-- Table Component -->
+      <app-admin-table-container
+        *ngIf="requests.length > 0"
+        title="Payout Submissions"
+        [count]="requests.length"
+        (export)="exportData('all', 'excel')"
+      >
+        <table class="table tbl table-hover align-middle mb-0">
           <thead>
             <tr>
-              <th class="ps-4 th-sno">#</th>
-              <th>Request ID</th>
-              <th>User Details</th>
-              <th>Role</th>
-              <th class="text-end">Amount</th>
-              <th>Bank / UPI Details</th>
-              <th>Status</th>
-              <th>Requested Date</th>
-              <th class="text-end pe-4">Actions</th>
+              <th class="fit">#</th>
+              <th class="fit">Request ID</th>
+              <th class="grow">User Details</th>
+              <th class="fit">Role</th>
+              <th class="fit text-end num">Amount (₹)</th>
+              <th class="fit">Bank / UPI Details</th>
+              <th class="fit text-center">Status</th>
+              <th class="fit hide-md">Requested Date</th>
+              <th class="fit text-end pe-3">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let r of pagedRequests; let i = index">
-              <td class="ps-4 fw-semibold text-muted fs-13 td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-              <td>
-                <span class="font-monospace text-muted fs-12 fw-bold text-truncate d-block" [title]="'#' + r.id">#{{ r.id.slice(0, 8) }}</span>
+              <!-- # -->
+              <td class="fit fw-bold text-muted">
+                {{ (page - 1) * pageSize + i + 1 }}
               </td>
-              <td>
-                <div class="d-flex align-items-center gap-2" style="overflow: hidden;">
-                  <div class="user-avatar-chip">
+
+              <!-- Request ID -->
+              <td class="fit">
+                <code class="member-id-badge" [title]="'#' + r.id">#{{ r.id.slice(0, 8) }}</code>
+              </td>
+
+              <!-- User Details -->
+              <td class="grow">
+                <div class="person">
+                  <div class="avatar" [ngClass]="{
+                    'bg-amber-soft text-warning': r.user_role === 'Associate',
+                    'bg-blue-soft text-primary': r.user_role === 'Investor',
+                    'bg-emerald-soft text-emerald': r.user_role === 'Customer' || !r.user_role
+                  }">
                     {{ getInitials(r.user_name) }}
                   </div>
-                  <div style="min-width: 0;">
-                    <div class="user-name-title text-truncate" [title]="r.user_name || 'Valued User'">{{ r.user_name || 'Valued User' }}</div>
-                    <div class="user-contact-sub text-truncate" [title]="r.user_mobile || r.user_email || '—'">{{ r.user_mobile || r.user_email || '—' }}</div>
+                  <div class="person-info min-w-0">
+                    <span class="person-name text-truncate" [title]="r.user_name || 'Valued User'">
+                      {{ r.user_name || 'Valued User' }}
+                    </span>
+                    <span class="sub text-muted text-truncate" [title]="r.user_mobile || r.user_email || '—'">
+                      {{ r.user_mobile || r.user_email || '—' }}
+                    </span>
                   </div>
                 </div>
               </td>
-              <td>
-                <span class="role-badge-pill" [ngClass]="{
-                  'role-associate': r.user_role === 'Associate',
-                  'role-investor': r.user_role === 'Investor',
-                  'role-customer': r.user_role === 'Customer' || !r.user_role
+
+              <!-- Role -->
+              <td class="fit">
+                <span class="badge" [ngClass]="{
+                  'bg-warning text-dark': r.user_role === 'Associate',
+                  'bg-primary text-white': r.user_role === 'Investor',
+                  'bg-success text-white': r.user_role === 'Customer' || !r.user_role
                 }">
                   {{ r.user_role || 'User' }}
                 </span>
               </td>
-              <td class="text-end text-nowrap">
-                <span class="fw-bold text-danger fs-14">− ₹{{ r.amount | number:'1.2-2' }}</span>
-              </td>
-              <td style="position: relative;">
-                <div class="dropdown">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle fs-12 py-1 px-2" type="button" (click)="toggleDropdown(r, $event)">
-                    <i class="fas fa-eye me-1"></i> View Details
-                  </button>
-                  <div class="dropdown-menu p-3 shadow-sm" [class.show]="r.showDropdown" style="min-width: 250px; position: absolute; z-index: 1000; left: 0; top: 100%; display: block;" *ngIf="r.showDropdown">
-                    <h6 class="dropdown-header px-0 text-dark fw-bold border-bottom pb-2 mb-2"><i class="fas fa-university me-1 text-muted"></i>{{ r.bank_name || 'Bank' }}</h6>
-                    
-                    <div class="d-flex justify-content-between align-items-center mb-2 fs-12">
-                      <span class="text-muted">A/C: <span class="fw-semibold text-dark">{{ r.bank_account_number || '-' }}</span></span>
-                      <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.bank_account_number)" title="Copy A/C"><i class="far fa-copy"></i></button>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between align-items-center mb-2 fs-12">
-                      <span class="text-muted">IFSC: <span class="fw-semibold text-dark">{{ r.ifsc_code || '-' }}</span></span>
-                      <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.ifsc_code)" title="Copy IFSC"><i class="far fa-copy"></i></button>
-                    </div>
 
-                    <div *ngIf="r.upi_id" class="d-flex justify-content-between align-items-center mb-2 fs-12 border-top pt-2 mt-2">
-                      <span class="text-primary fw-semibold"><i class="fas fa-mobile-alt me-1"></i>UPI: {{ r.upi_id }}</span>
-                      <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.upi_id)" title="Copy UPI"><i class="far fa-copy"></i></button>
+              <!-- Amount -->
+              <td class="fit text-end num font-monospace fw-bold text-danger">
+                − ₹{{ r.amount | number:'1.2-2' }}
+              </td>
+
+              <!-- Bank / UPI Details -->
+              <td class="fit position-relative">
+                <div class="dropdown">
+                  <button type="button" class="btn btn-outline-secondary btn-xs py-0.5 px-2" (click)="toggleDropdown(r, $event)">
+                    <i class="fas fa-university me-1 text-emerald"></i>
+                    <span>{{ r.bank_name || 'Bank Details' }}</span>
+                    <i class="fas fa-chevron-down ms-1 fs-9"></i>
+                  </button>
+                  <div class="dropdown-menu p-2.5 shadow-sm" [class.show]="r.showDropdown" *ngIf="r.showDropdown" style="min-width: 240px; position: absolute; z-index: 1000; left: 0; top: 100%; display: block;">
+                    <div class="fw-bold text-dark border-bottom pb-1.5 mb-2 fs-11">
+                      <i class="fas fa-university me-1 text-emerald"></i>{{ r.bank_name || 'Bank Account' }}
                     </div>
-                    
-                    <div *ngIf="r.payout_reference_id" class="d-flex justify-content-between align-items-center mb-0 fs-12 border-top pt-2 mt-2">
+                    <div class="d-flex justify-content-between align-items-center mb-1.5 fs-11">
+                      <span class="text-muted">A/C: <strong class="text-dark">{{ r.bank_account_number || '-' }}</strong></span>
+                      <button type="button" class="btn btn-xs btn-light py-0 px-1 text-muted" (click)="copyText(r.bank_account_number)" title="Copy A/C"><i class="far fa-copy"></i></button>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-1.5 fs-11">
+                      <span class="text-muted">IFSC: <strong class="text-dark">{{ r.ifsc_code || '-' }}</strong></span>
+                      <button type="button" class="btn btn-xs btn-light py-0 px-1 text-muted" (click)="copyText(r.ifsc_code)" title="Copy IFSC"><i class="far fa-copy"></i></button>
+                    </div>
+                    <div *ngIf="r.upi_id" class="d-flex justify-content-between align-items-center mb-1.5 fs-11 border-top pt-1.5 mt-1.5">
+                      <span class="text-primary fw-semibold"><i class="fas fa-mobile-alt me-1"></i>{{ r.upi_id }}</span>
+                      <button type="button" class="btn btn-xs btn-light py-0 px-1 text-muted" (click)="copyText(r.upi_id)" title="Copy UPI"><i class="far fa-copy"></i></button>
+                    </div>
+                    <div *ngIf="r.payout_reference_id" class="d-flex justify-content-between align-items-center mb-0 fs-11 border-top pt-1.5 mt-1.5">
                       <span class="text-success fw-bold"><i class="fas fa-hashtag me-1"></i>Ref: {{ r.payout_reference_id }}</span>
-                      <button class="btn btn-sm btn-light py-0 px-2 text-muted" (click)="copyText(r.payout_reference_id)" title="Copy Ref"><i class="far fa-copy"></i></button>
+                      <button type="button" class="btn btn-xs btn-light py-0 px-1 text-muted" (click)="copyText(r.payout_reference_id)" title="Copy Ref"><i class="far fa-copy"></i></button>
                     </div>
                   </div>
                 </div>
               </td>
-              <td>
-                <span class="status-badge" [ngClass]="{
-                  'status-pending': r.status === 'pending',
-                  'status-approved': r.status === 'approved',
-                  'status-released': r.status === 'released',
-                  'status-rejected': r.status === 'rejected',
-                  'status-failed': r.status === 'failed',
-                  'status-cancelled': r.status === 'cancelled'
+
+              <!-- Status -->
+              <td class="fit text-center">
+                <span class="chip" [ngClass]="{
+                  'chip-warn': r.status === 'pending',
+                  'chip-blue': r.status === 'approved',
+                  'chip-ok': r.status === 'released',
+                  'chip-err': r.status === 'rejected' || r.status === 'failed' || r.status === 'cancelled'
                 }">
-                  {{ r.status | uppercase }}
+                  <i class="fas" [ngClass]="{
+                    'fa-clock': r.status === 'pending',
+                    'fa-check-double': r.status === 'approved',
+                    'fa-check-circle': r.status === 'released',
+                    'fa-times-circle': r.status === 'rejected' || r.status === 'failed' || r.status === 'cancelled'
+                  }"></i>
+                  <span>{{ r.status | uppercase }}</span>
                 </span>
               </td>
-              <td class="text-nowrap">
-                <div class="fs-12 fw-semibold text-dark">{{ r.created_at | date:'dd MMM yyyy' }}</div>
-                <div class="fs-11 text-muted">{{ r.created_at | date:'hh:mm a' }}</div>
-              </td>
-              <td class="text-center text-nowrap pe-4">
-                <div class="d-flex align-items-center justify-content-center gap-1">
 
-                  <!-- Quick Approve Button -->
+              <!-- Date -->
+              <td class="fit hide-md text-nowrap">
+                <div class="text-dark fw-semibold fs-11">{{ r.created_at | date:'dd MMM yyyy' }}</div>
+                <div class="text-muted fs-10">{{ r.created_at | date:'hh:mm a' }}</div>
+              </td>
+
+              <!-- Actions -->
+              <td class="fit text-end pe-3 text-nowrap">
+                <div class="d-inline-flex align-items-center gap-1">
+                  <!-- Quick Approve -->
                   <button
                     *ngIf="r.status === 'pending'"
-                    class="action-btn-micro btn-approve-emerald"
+                    type="button"
+                    class="btn btn-emerald btn-xs"
                     (click)="openApprove(r)"
-                    title="Approve Request">
-                    <i class="fas fa-check"></i> Approve
+                    title="Approve Request"
+                  >
+                    <i class="fas fa-check me-0.5"></i> Approve
                   </button>
 
-                  <!-- Quick Release Button -->
+                  <!-- Quick Release -->
                   <button
                     *ngIf="r.status === 'approved' || r.status === 'pending'"
-                    class="action-btn-micro btn-release-blue"
+                    type="button"
+                    class="btn btn-primary btn-xs"
                     (click)="openRelease(r)"
-                    title="Release Funds">
-                    <i class="fas fa-paper-plane"></i> Release
+                    title="Release Funds"
+                  >
+                    <i class="fas fa-paper-plane me-0.5"></i> Release
                   </button>
 
-                  <!-- Quick Reject Button -->
+                  <!-- Quick Reject -->
                   <button
                     *ngIf="r.status === 'pending' || r.status === 'approved'"
-                    class="action-btn-micro btn-reject-red"
+                    type="button"
+                    class="btn btn-outline-danger btn-xs"
                     (click)="openReject(r)"
-                    title="Reject Request">
-                    <i class="fas fa-times"></i> Reject
+                    title="Reject Request"
+                  >
+                    <i class="fas fa-times me-0.5"></i> Reject
                   </button>
 
                   <!-- View Details Link -->
-                  <a [routerLink]="['/admin/withdrawal-requests', r.id]" class="btn-icon-only" title="View Details">
+                  <a [routerLink]="['/admin/withdrawal-requests', r.id]" class="ibtn view" title="View Details">
                     <i class="fas fa-eye"></i>
                   </a>
-
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
+      </app-admin-table-container>
+
+      <!-- Pagination -->
+      <div *ngIf="!loading && !errorMsg && requests.length > 0" class="p-2 border-top bg-light">
+        <app-admin-pagination
+          [totalItems]="requests.length"
+          [page]="page"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+          (export)="exportData($event.mode, $event.format)"
+        ></app-admin-pagination>
       </div>
-    </app-admin-table-container>
-
-    <!-- EMPTY STATE -->
-    <div *ngIf="requests.length === 0" class="py-5 text-center">
-      <i class="fas fa-inbox fa-3x text-muted mb-3 opacity-40"></i>
-      <h6 class="fw-bold text-dark">No Withdrawal Requests Found</h6>
-      <p class="text-muted fs-13">No payout requests match the selected filters or date range.</p>
     </div>
-
-    <!-- Unified Pagination -->
-    <app-admin-pagination
-      *ngIf="requests.length > 0"
-      [totalItems]="requests.length"
-      [page]="page"
-      [pageSize]="pageSize"
-      (pageChange)="onPageChange($event)"
-      (pageSizeChange)="onPageSizeChange($event)"
-      (export)="exportData($event.mode, $event.format)">
-    </app-admin-pagination>
   </div>
 
   <!-- APPROVAL MODAL DIALOG -->
@@ -319,33 +353,42 @@
   </app-withdrawal-release-dialog>
 
   <!-- REJECTION MODAL DIALOG -->
-  <div class="confirm-dialog-overlay" *ngIf="rejectOpen" (click)="rejectOpen = false">
-    <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
-      <div class="cd-header">
-        <h5 class="m-0 text-danger"><i class="fas fa-times-circle me-2"></i>Reject Withdrawal Request</h5>
-        <button type="button" class="btn-close" (click)="rejectOpen = false"></button>
-      </div>
-      <div class="cd-body">
-        <p class="mb-3 fs-13 text-secondary">
-          Are you sure you want to reject this payout request for <strong class="text-danger">₹{{ selectedRequest?.amount | number:'1.2-2' }}</strong>? The held balance will be returned to the user's available wallet balance.
-        </p>
-        <div class="mb-2">
-          <label class="f-label-sm">Rejection Reason *</label>
-          <textarea
-            [(ngModel)]="rejectionReason"
-            class="form-control form-control-sm"
-            rows="3"
-            placeholder="Provide rejection reason (e.g. Bank name mismatch, invalid IFSC code)..."
-          ></textarea>
+  <div class="erp-modal-backdrop" *ngIf="rejectOpen" (click)="rejectOpen = false">
+    <div class="erp-modal-dialog" (click)="$event.stopPropagation()">
+      <div class="erp-modal-content">
+        <div class="erp-modal-header bg-danger text-white">
+          <div class="d-flex align-items-center gap-2">
+            <div class="modal-icon-badge"><i class="fas fa-times-circle text-white"></i></div>
+            <div>
+              <h5 class="erp-modal-title mb-0">Reject Withdrawal Request</h5>
+              <div class="erp-modal-subtitle text-white-50">Return held balance to user wallet with audit log</div>
+            </div>
+          </div>
+          <button type="button" class="btn-modal-close" (click)="rejectOpen = false">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-      </div>
-      <div class="cd-footer">
-        <button type="button" class="btn btn-sm btn-outline-secondary px-3" (click)="rejectOpen = false">Cancel</button>
-        <button type="button" class="btn btn-sm btn-danger px-3 fw-bold" (click)="submitReject()" [disabled]="!rejectionReason.trim()">
-          Confirm Rejection
-        </button>
+        <div class="erp-modal-body">
+          <p class="mb-3 fs-12 text-secondary">
+            Are you sure you want to reject this payout request for <strong class="text-danger">₹{{ selectedRequest?.amount | number:'1.2-2' }}</strong>? The held balance will be returned to the user's available wallet balance.
+          </p>
+          <div class="form-group mb-0">
+            <label class="form-label fw-bold">Rejection Reason *</label>
+            <textarea
+              [(ngModel)]="rejectionReason"
+              class="form-control"
+              rows="3"
+              placeholder="Provide rejection reason (e.g. Bank name mismatch, invalid IFSC code)..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="erp-modal-footer">
+          <button type="button" class="btn btn-secondary btn-xs" (click)="rejectOpen = false">Cancel</button>
+          <button type="button" class="btn btn-danger btn-xs fw-bold" (click)="submitReject()" [disabled]="!rejectionReason.trim()">
+            Confirm Rejection
+          </button>
+        </div>
       </div>
     </div>
   </div>
-
 </div>
