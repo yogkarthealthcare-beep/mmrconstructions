@@ -1,25 +1,26 @@
-<div class="analytics-container">
+<div class="panel-shell">
   <!-- TOP HERO EXECUTIVE BANNER -->
-  <div class="admin-hero-card mb-2">
+  <div class="admin-hero-card mb-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
       <div>
-        <div class="admin-hero-badge"><i class="fas fa-chart-line me-1"></i>WEBSITE TRAFFIC &amp; VISITOR ANALYTICS</div>
-        <h2 class="admin-hero-title mb-1">Website Analytics</h2>
+        <div class="admin-hero-badge"><i class="fas fa-chart-line me-1"></i>WEBSITE TRAFFIC &amp; AUDIENCE ANALYTICS</div>
+        <h2 class="admin-hero-title mb-0.5">Website Analytics</h2>
         <p class="admin-hero-sub mb-0">Track real-time visitors, traffic sources, top viewed pages, user engagement &amp; device distribution.</p>
       </div>
 
-      <div class="d-flex align-items-center gap-2 ms-auto">
+      <div class="d-flex align-items-center gap-1.5 ms-auto flex-wrap">
         <!-- Live Visitor Indicator Pill -->
-        <div class="live-pill shadow-sm" title="Active online visitors right now">
+        <div class="live-pill" title="Active online visitors right now">
           <span class="live-pulse"></span>
-          <span class="live-count fw-800 me-1">● {{ data?.liveVisitors || 0 }}</span> Users Online
+          <span class="live-count me-1">● {{ data?.liveVisitors || 0 }}</span> Online
         </div>
 
-        <button type="button" class="btn btn-outline-light btn-xs fw-700" (click)="refreshData()" [disabled]="loading">
-          <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Refresh
+        <button type="button" class="btn btn-outline-light btn-xs" (click)="refreshData()" [disabled]="loading" title="Refresh analytics data">
+          <i class="fas fa-sync" [class.fa-spin]="loading"></i>
+          <span class="d-none d-sm-inline ms-1">Refresh</span>
         </button>
 
-        <button type="button" class="btn btn-gold btn-xs fw-800" (click)="exportCsv()">
+        <button type="button" class="btn btn-gold btn-xs shadow-xs" (click)="exportCsv()" title="Export analytics CSV">
           <i class="fas fa-file-csv me-1"></i> Export Report
         </button>
       </div>
@@ -27,163 +28,140 @@
   </div>
 
   <!-- DATE RANGE & SITE FILTER TOOLBAR CARD -->
-  <div class="panel-card p-3 mb-2">
-    <div class="date-filter-toolbar d-flex align-items-center justify-content-between flex-wrap gap-2">
-      <div class="date-preset-section d-flex align-items-center flex-wrap gap-2">
-        <label class="fs-10 fw-800 text-dark text-uppercase me-1 mb-0" style="white-space: nowrap;"><i class="fas fa-calendar-alt text-gold me-1"></i>Date Range:</label>
-        <div class="preset-buttons-wrap btn-group btn-group-sm flex-wrap">
-          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === 'today'" (click)="selectedPreset = 'today'; onPresetChange()">Today</button>
-          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === 'yesterday'" (click)="selectedPreset = 'yesterday'; onPresetChange()">Yesterday</button>
-          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === '7d'" (click)="selectedPreset = '7d'; onPresetChange()">Last 7 Days</button>
-          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === '30d'" (click)="selectedPreset = '30d'; onPresetChange()">Last 30 Days</button>
-          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === 'this_month'" (click)="selectedPreset = 'this_month'; onPresetChange()">Last 90 Days</button>
-          <button type="button" class="btn btn-outline-secondary btn-xs fw-700 py-1 px-2" [class.active]="selectedPreset === 'custom'" (click)="selectedPreset = 'custom'">Custom Range</button>
-        </div>
-
-        <!-- Custom Date Range Picker -->
-        <div class="custom-range-picker d-inline-flex align-items-center gap-1" *ngIf="selectedPreset === 'custom'">
-          <input type="date" class="form-control form-control-sm fw-700 fs-11 py-0 px-2" [(ngModel)]="customStartDate" style="height: 28px;">
-          <span class="fs-10 fw-700 text-muted">to</span>
-          <input type="date" class="form-control form-control-sm fw-700 fs-11 py-0 px-2" [(ngModel)]="customEndDate" style="height: 28px;">
-          <button type="button" class="btn btn-emerald btn-xs fw-800" (click)="loadAnalytics()" style="height: 28px; padding: 2px 8px;">Apply</button>
-        </div>
+  <div class="filter-card mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <!-- Date Presets as Horizontal Scrollable Pill Tabs -->
+      <div class="tabs-nav">
+        <button type="button" class="tab-btn" [class.active]="selectedPreset === 'today'" (click)="selectedPreset = 'today'; onPresetChange()">Today</button>
+        <button type="button" class="tab-btn" [class.active]="selectedPreset === 'yesterday'" (click)="selectedPreset = 'yesterday'; onPresetChange()">Yesterday</button>
+        <button type="button" class="tab-btn" [class.active]="selectedPreset === '7d'" (click)="selectedPreset = '7d'; onPresetChange()">Last 7 Days</button>
+        <button type="button" class="tab-btn" [class.active]="selectedPreset === '30d'" (click)="selectedPreset = '30d'; onPresetChange()">Last 30 Days</button>
+        <button type="button" class="tab-btn" [class.active]="selectedPreset === 'this_month'" (click)="selectedPreset = 'this_month'; onPresetChange()">Last 90 Days</button>
+        <button type="button" class="tab-btn" [class.active]="selectedPreset === 'custom'" (click)="selectedPreset = 'custom'">Custom Range</button>
       </div>
 
-      <div class="project-filter-section d-flex align-items-center gap-2 ms-auto">
-        <label class="fs-10 fw-800 text-dark text-uppercase mb-0 me-1" style="white-space: nowrap;"><i class="fas fa-building text-primary me-1"></i>Filter Project:</label>
-        <select class="form-select form-select-sm fw-800 fs-11 text-dark py-0" [(ngModel)]="selectedSiteId" (change)="onSiteFilterChange()" style="height: 28px; width: auto; min-width: 160px;">
-          <option value="">All Projects &amp; Sites</option>
-          <option *ngFor="let s of sitesList" [value]="s.site_id">{{ s.site_name }}</option>
-        </select>
+      <!-- Custom Date Picker if selected -->
+      <div class="custom-range-box d-flex align-items-center gap-1.5" *ngIf="selectedPreset === 'custom'">
+        <input type="date" class="f-input" [(ngModel)]="customStartDate" style="width: 125px;">
+        <span class="fs-10 text-muted fw-700">to</span>
+        <input type="date" class="f-input" [(ngModel)]="customEndDate" style="width: 125px;">
+        <button type="button" class="btn btn-emerald btn-xs" (click)="loadAnalytics()">Apply</button>
+      </div>
+
+      <!-- Project / Site Filter -->
+      <div class="filter-tools ms-auto d-flex align-items-center gap-1.5">
+        <label class="fs-10.5 fw-700 text-muted mb-0"><i class="fas fa-building text-gold me-1"></i>Project:</label>
+        <div class="f-select-wrap">
+          <select class="f-select" [(ngModel)]="selectedSiteId" (change)="onSiteFilterChange()">
+            <option value="">All Projects &amp; Sites</option>
+            <option *ngFor="let s of sitesList" [value]="s.site_id">{{ s.site_name }}</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- LOADING STATE -->
-  <div class="panel-card text-center py-5 mb-2" *ngIf="loading">
-    <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
-    <p class="text-muted fs-12 mt-2 mb-0 fw-700">Calculating real-time website analytics data...</p>
+  <div class="panel-card text-center py-4 mb-3" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fs-3 text-gold mb-1.5"></i>
+    <p class="text-muted fs-11.5 mb-0">Calculating real-time website analytics data...</p>
   </div>
 
   <!-- ERROR STATE -->
-  <div class="alert alert-danger p-3 mb-2 rounded-10 d-flex align-items-center justify-content-between" *ngIf="error && !loading">
-    <div class="fs-12 fw-700"><i class="fas fa-exclamation-triangle me-2"></i> {{ error }}</div>
-    <button type="button" class="btn btn-sm btn-outline-danger fw-700 py-0" (click)="loadAnalytics()">Retry</button>
+  <div class="alert alert-danger p-2 mb-3 rounded d-flex align-items-center justify-content-between fs-11.5" *ngIf="error && !loading">
+    <div><i class="fas fa-exclamation-triangle me-1.5"></i> {{ error }}</div>
+    <button type="button" class="btn btn-xs btn-outline-danger" (click)="loadAnalytics()">Retry</button>
   </div>
 
   <!-- MAIN ANALYTICS DASHBOARD CONTENT -->
   <ng-container *ngIf="!loading && data">
 
-    <!-- 1. 8 SUMMARY METRIC CARDS GRID -->
-    <div class="row g-2 mb-2">
+    <!-- 1. 8 COMPACT HORIZONTAL SUMMARY METRIC CARDS (~48-52px height) -->
+    <div class="kpi-grid-8 mb-3">
       <!-- Total Visitors -->
-      <div class="col-6 col-md-3 col-xl-1-5">
-        <div class="stat-mini-card box-customers h-100">
-          <div class="d-flex align-items-start justify-content-between mb-1 w-100">
-            <span class="stat-mini-lbl">Total Visitors</span>
-            <div class="icon-wrap bg-blue text-primary ms-1"><i class="fas fa-globe"></i></div>
-          </div>
-          <div class="stat-mini-val">{{ formatNumber(totalVisitors) }}</div>
-          <div class="fs-10 text-emerald fw-800"><i class="fas fa-arrow-up me-1"></i>+14.2% vs prev range</div>
+      <div class="kpi-card s-blue">
+        <div class="kpi-content">
+          <div class="kpi-label">Total Visitors</div>
+          <div class="kpi-value">{{ formatNumber(totalVisitors) }}</div>
         </div>
+        <div class="kpi-icon"><i class="fas fa-globe"></i></div>
       </div>
 
       <!-- Unique Visitors -->
-      <div class="col-6 col-md-3 col-xl-1-5">
-        <div class="stat-mini-card box-plots h-100">
-          <div class="d-flex align-items-start justify-content-between mb-1 w-100">
-            <span class="stat-mini-lbl">Unique Visitors</span>
-            <div class="icon-wrap bg-emerald-light text-emerald ms-1"><i class="fas fa-user-check"></i></div>
-          </div>
-          <div class="stat-mini-val">{{ formatNumber(uniqueVisitors) }}</div>
-          <div class="fs-10 text-muted fw-700">Distinct IP / Browser Sessions</div>
+      <div class="kpi-card s-green">
+        <div class="kpi-content">
+          <div class="kpi-label">Unique Visitors</div>
+          <div class="kpi-value">{{ formatNumber(uniqueVisitors) }}</div>
         </div>
+        <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
       </div>
 
       <!-- Total Page Views -->
-      <div class="col-6 col-md-3 col-xl-1-5">
-        <div class="stat-mini-card box-approvals h-100">
-          <div class="d-flex align-items-start justify-content-between mb-1 w-100">
-            <span class="stat-mini-lbl">Total Page Views</span>
-            <div class="icon-wrap bg-amber text-orange ms-1"><i class="fas fa-file-alt"></i></div>
-          </div>
-          <div class="stat-mini-val">{{ formatNumber(totalPageViews) }}</div>
-          <div class="fs-10 text-orange fw-800"><i class="fas fa-eye me-1"></i>Page Impressions</div>
+      <div class="kpi-card s-orange">
+        <div class="kpi-content">
+          <div class="kpi-label">Page Views</div>
+          <div class="kpi-value">{{ formatNumber(totalPageViews) }}</div>
         </div>
+        <div class="kpi-icon"><i class="fas fa-file-alt"></i></div>
       </div>
 
-      <!-- Sessions -->
-      <div class="col-6 col-md-3 col-xl-1-5">
-        <div class="stat-mini-card box-enquiries h-100">
-          <div class="d-flex align-items-start justify-content-between mb-1 w-100">
-            <span class="stat-mini-lbl">Total Sessions</span>
-            <div class="icon-wrap bg-purple-light text-purple ms-1"><i class="fas fa-network-wired"></i></div>
-          </div>
-          <div class="stat-mini-val">{{ formatNumber(totalSessions) }}</div>
-          <div class="fs-10 text-purple fw-800">User Browsing Sessions</div>
+      <!-- Total Sessions -->
+      <div class="kpi-card s-purple">
+        <div class="kpi-content">
+          <div class="kpi-label">Total Sessions</div>
+          <div class="kpi-value">{{ formatNumber(totalSessions) }}</div>
         </div>
+        <div class="kpi-icon"><i class="fas fa-network-wired"></i></div>
       </div>
 
       <!-- Avg Session Duration -->
-      <div class="col-6 col-md-3 col-xl-1-5">
-        <div class="stat-mini-card box-customers h-100">
-          <div class="d-flex align-items-start justify-content-between mb-1 w-100">
-            <span class="stat-mini-lbl">Avg. Session Duration</span>
-            <div class="icon-wrap bg-blue text-primary ms-1"><i class="fas fa-stopwatch"></i></div>
-          </div>
-          <div class="stat-mini-val">{{ avgSessionDuration }}</div>
-          <div class="fs-10 text-primary fw-800">Time Spent On Site</div>
+      <div class="kpi-card s-blue">
+        <div class="kpi-content">
+          <div class="kpi-label">Avg. Duration</div>
+          <div class="kpi-value">{{ avgSessionDuration }}</div>
         </div>
+        <div class="kpi-icon"><i class="fas fa-stopwatch"></i></div>
       </div>
 
       <!-- Bounce Rate -->
-      <div class="col-6 col-md-3 col-xl-1-5">
-        <div class="stat-mini-card box-approvals h-100">
-          <div class="d-flex align-items-start justify-content-between mb-1 w-100">
-            <span class="stat-mini-lbl">Bounce Rate</span>
-            <div class="icon-wrap bg-amber text-orange ms-1"><i class="fas fa-sign-out-alt"></i></div>
-          </div>
-          <div class="stat-mini-val">{{ bounceRate }}</div>
-          <div class="fs-10 text-emerald fw-800"><i class="fas fa-arrow-down me-1"></i>Low Bounce (Good)</div>
+      <div class="kpi-card s-green">
+        <div class="kpi-content">
+          <div class="kpi-label">Bounce Rate</div>
+          <div class="kpi-value">{{ bounceRate }}</div>
         </div>
+        <div class="kpi-icon"><i class="fas fa-sign-out-alt"></i></div>
       </div>
 
       <!-- New Visitors -->
-      <div class="col-6 col-md-3 col-xl-1-5">
-        <div class="stat-mini-card box-plots h-100">
-          <div class="d-flex align-items-start justify-content-between mb-1 w-100">
-            <span class="stat-mini-lbl">New Visitors</span>
-            <div class="icon-wrap bg-emerald-light text-emerald ms-1"><i class="fas fa-user-plus"></i></div>
-          </div>
-          <div class="stat-mini-val">{{ formatNumber(newVisitors) }}</div>
-          <div class="fs-10 text-emerald fw-800">64% First Time Visitors</div>
+      <div class="kpi-card s-gold">
+        <div class="kpi-content">
+          <div class="kpi-label">New Visitors</div>
+          <div class="kpi-value">{{ formatNumber(newVisitors) }}</div>
         </div>
+        <div class="kpi-icon"><i class="fas fa-user-plus"></i></div>
       </div>
 
       <!-- Returning Visitors -->
-      <div class="col-6 col-md-3 col-xl-1-5">
-        <div class="stat-mini-card box-enquiries h-100">
-          <div class="d-flex align-items-start justify-content-between mb-1 w-100">
-            <span class="stat-mini-lbl">Returning Visitors</span>
-            <div class="icon-wrap bg-purple-light text-purple ms-1"><i class="fas fa-redo-alt"></i></div>
-          </div>
-          <div class="stat-mini-val">{{ formatNumber(returningVisitors) }}</div>
-          <div class="fs-10 text-purple fw-800">36% Repeat Audience</div>
+      <div class="kpi-card s-purple">
+        <div class="kpi-content">
+          <div class="kpi-label">Returning</div>
+          <div class="kpi-value">{{ formatNumber(returningVisitors) }}</div>
         </div>
+        <div class="kpi-icon"><i class="fas fa-redo-alt"></i></div>
       </div>
     </div>
 
     <!-- 2. WEBSITE TRAFFIC OVERVIEW GRAPH CARD -->
-    <div class="panel-card p-3 mb-2">
-      <div class="traffic-card-header d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
-        <div class="traffic-title-group">
-          <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-chart-area text-gold me-1.5"></i>Website Traffic Overview &amp; Trends</h6>
-          <span class="fs-10 text-muted fw-700 traffic-subtitle">Daily breakdown of Visitors, Sessions &amp; Page Views over selected date range</span>
+    <div class="panel-card p-3 mb-3">
+      <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2.5 flex-wrap gap-2">
+        <div>
+          <h6 class="card-title-compact mb-0"><i class="fas fa-chart-area text-gold me-1.5"></i>Website Traffic Overview &amp; Trends</h6>
+          <span class="fs-10 text-muted">Daily breakdown of Visitors, Sessions &amp; Page Views over selected date range</span>
         </div>
-        <div class="traffic-legend-group d-flex align-items-center gap-3 fs-10 fw-800">
-          <span class="text-primary d-inline-flex align-items-center"><i class="fas fa-circle me-1"></i>Visitors</span>
-          <span class="text-emerald d-inline-flex align-items-center"><i class="fas fa-circle me-1"></i>Sessions</span>
-          <span class="text-warning d-inline-flex align-items-center"><i class="fas fa-circle me-1"></i>Page Views</span>
+        <div class="d-flex align-items-center gap-3 fs-10 fw-700">
+          <span class="text-primary d-inline-flex align-items-center"><i class="fas fa-circle me-1 fs-9"></i>Visitors</span>
+          <span class="text-emerald d-inline-flex align-items-center"><i class="fas fa-circle me-1 fs-9"></i>Sessions</span>
+          <span class="text-warning d-inline-flex align-items-center"><i class="fas fa-circle me-1 fs-9"></i>Page Views</span>
         </div>
       </div>
 
@@ -192,11 +170,11 @@
         <svg viewBox="0 0 1000 160" preserveAspectRatio="none" class="w-100 h-100">
           <defs>
             <linearGradient id="gradVisitors" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2563eb" stop-opacity="0.35"/>
+              <stop offset="0%" stop-color="#2563eb" stop-opacity="0.30"/>
               <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"/>
             </linearGradient>
             <linearGradient id="gradSessions" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#10b981" stop-opacity="0.30"/>
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.25"/>
               <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
             </linearGradient>
           </defs>
@@ -211,123 +189,120 @@
           <path d="M 0 150 Q 150 70, 300 110 T 600 55 T 900 100 L 1000 75 L 1000 150 Z" fill="url(#gradSessions)"/>
 
           <!-- Trend Lines -->
-          <path d="M 0 150 Q 150 40, 300 90 T 600 30 T 900 80 L 1000 50" fill="none" stroke="#2563eb" stroke-width="3"/>
-          <path d="M 0 150 Q 150 70, 300 110 T 600 55 T 900 100 L 1000 75" fill="none" stroke="#10b981" stroke-width="2.5"/>
-          <path d="M 0 150 Q 150 20, 300 60 T 600 15 T 900 50 L 1000 30" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,3"/>
+          <path d="M 0 150 Q 150 40, 300 90 T 600 30 T 900 80 L 1000 50" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+          <path d="M 0 150 Q 150 70, 300 110 T 600 55 T 900 100 L 1000 75" fill="none" stroke="#10b981" stroke-width="2"/>
+          <path d="M 0 150 Q 150 20, 300 60 T 600 15 T 900 50 L 1000 30" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="3,3"/>
         </svg>
 
-        <div class="d-flex justify-content-between fs-10 fw-800 text-muted mt-1 px-1">
+        <div class="d-flex justify-content-between fs-10 fw-700 text-muted mt-1 px-1">
           <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
         </div>
       </div>
     </div>
 
     <!-- 3. TOP VISITED PAGES & VISITOR ENGAGEMENT ROW -->
-    <div class="row g-2 mb-2">
+    <div class="row g-2 mb-3">
       <!-- MOST VISITED PAGES TABLE (TOP PAGES) -->
       <div class="col-md-8">
-        <div class="panel-card p-3">
+        <div class="panel-card p-3 h-100">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 border-bottom pb-2 mb-2">
-            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-fire text-danger me-1.5"></i>Most Visited Pages (Top Pages)</h6>
-            <span class="badge bg-light text-dark border fs-10 fw-800">Sorted by Total Views</span>
+            <h6 class="card-title-compact mb-0"><i class="fas fa-fire text-danger me-1.5"></i>Most Visited Pages (Top Pages)</h6>
+            <span class="chip chip-ok">Sorted by Views</span>
           </div>
           <app-admin-table-container [title]="'Most Visited Pages'" [count]="topPagesProcessed.length">
             <div class="table-responsive">
-              <table class="table align-middle custom-dash-table mb-0">
+              <table class="custom-dash-table align-middle mb-0">
                 <thead>
                   <tr>
                     <th class="th-sno">#</th>
-                    <th class="fw-800 fs-10">Page Name</th>
-                    <th class="fw-800 fs-10">Page URL</th>
-                    <th class="fw-800 fs-10 text-end">Total Views</th>
-                    <th class="fw-800 fs-10 text-end">Unique Visitors</th>
-                    <th class="fw-800 fs-10 text-end">Avg. Time</th>
-                    <th class="fw-800 fs-10 text-end">% Share</th>
+                    <th>Page Name</th>
+                    <th>Page URL</th>
+                    <th class="text-end">Total Views</th>
+                    <th class="text-end">Unique</th>
+                    <th class="text-end">Avg. Time</th>
+                    <th class="text-end">% Share</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let p of topPagesPaginated; let i = index">
                     <td class="td-sno">{{ (topPagesPage - 1) * topPagesPageSize + i + 1 }}</td>
                     <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-gold text-dark fw-800 fs-10">#{{ p.rank }}</span>
-                        <strong class="text-dark fs-11 fw-800 text-truncate" style="max-width: 200px;">{{ p.name }}</strong>
+                      <div class="d-flex align-items-center gap-1.5">
+                        <span class="badge-rank">#{{ p.rank }}</span>
+                        <strong class="text-dark fs-11 text-truncate" style="max-width: 180px;">{{ p.name }}</strong>
                       </div>
                     </td>
-                    <td><code class="text-primary fs-10 fw-700">{{ p.url }}</code></td>
-                    <td class="text-end fw-800 text-dark fs-11">{{ formatNumber(p.views) }}</td>
-                    <td class="text-end fw-700 text-muted fs-11">{{ formatNumber(p.uniqueVisitors) }}</td>
-                    <td class="text-end fw-800 text-emerald fs-11">{{ p.avgTime }}</td>
+                    <td><code class="code-badge text-primary">{{ p.url }}</code></td>
+                    <td class="text-end fw-700 text-dark fs-11">{{ formatNumber(p.views) }}</td>
+                    <td class="text-end fw-600 text-muted fs-11">{{ formatNumber(p.uniqueVisitors) }}</td>
+                    <td class="text-end fw-700 text-emerald fs-11">{{ p.avgTime }}</td>
                     <td class="text-end">
                       <div class="d-flex align-items-center justify-content-end gap-1.5">
-                        <span class="fw-800 fs-10 text-dark">{{ p.pct }}%</span>
-                        <div class="progress flex-grow-1" style="height: 5px; width: 45px; background: #e2e8f0;">
+                        <span class="fw-700 fs-10 text-dark">{{ p.pct }}%</span>
+                        <div class="progress flex-grow-1" style="height: 4px; width: 40px; background: #e2e8f0;">
                           <div class="progress-bar bg-primary" [style.width.%]="p.pct"></div>
                         </div>
                       </div>
                     </td>
                   </tr>
                   <tr *ngIf="topPagesProcessed.length === 0">
-                    <td colspan="7" class="text-center text-muted py-3 fs-10 fw-700">No live page views recorded for this period</td>
+                    <td colspan="7" class="text-center text-muted py-3 fs-11">No live page views recorded for this period</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </app-admin-table-container>
 
-          <!-- Pagination & 2-Mode Export -->
-          <app-admin-pagination
-            *ngIf="topPagesProcessed.length > 0"
-            [totalItems]="topPagesProcessed.length"
-            [pageSize]="topPagesPageSize"
-            [currentPage]="topPagesPage"
-            (pageChange)="topPagesPage = $event"
-            (pageSizeChange)="topPagesPageSize = $event; topPagesPage = 1"
-            (exportCurrentExcel)="exportTopPages('current', 'excel')"
-            (exportAllExcel)="exportTopPages('all', 'excel')"
-            (exportCurrentPdf)="exportTopPages('current', 'pdf')"
-            (exportAllPdf)="exportTopPages('all', 'pdf')">
-          </app-admin-pagination>
+          <!-- Pagination -->
+          <div class="border-top pt-2 mt-2" *ngIf="topPagesProcessed.length > 0">
+            <app-admin-pagination
+              [totalItems]="topPagesProcessed.length"
+              [pageSize]="topPagesPageSize"
+              [currentPage]="topPagesPage"
+              (pageChange)="topPagesPage = $event"
+              (pageSizeChange)="topPagesPageSize = $event; topPagesPage = 1">
+            </app-admin-pagination>
+          </div>
         </div>
       </div>
 
       <!-- VISITOR ENGAGEMENT METRICS CARD -->
       <div class="col-md-4">
-        <div class="panel-card p-3">
+        <div class="panel-card p-3 h-100">
           <div class="border-bottom pb-2 mb-2">
-            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-user-clock text-primary me-1.5"></i>Visitor Engagement</h6>
-            <span class="fs-10 text-muted fw-700">User behavior &amp; session depth</span>
+            <h6 class="card-title-compact mb-0"><i class="fas fa-user-clock text-primary me-1.5"></i>Visitor Engagement</h6>
+            <span class="fs-10 text-muted">User behavior &amp; session depth</span>
           </div>
 
           <div class="d-flex flex-column gap-2">
             <div class="p-2 bg-light rounded border d-flex align-items-center justify-content-between">
               <div>
-                <div class="fs-9.5 fw-800 text-muted text-uppercase">Avg. Session Duration</div>
-                <div class="fs-11 fw-800 text-dark">{{ avgSessionDuration }}</div>
+                <div class="fs-9.5 fw-700 text-muted text-uppercase">Avg. Session Duration</div>
+                <div class="fs-12 fw-800 text-dark">{{ avgSessionDuration }}</div>
               </div>
               <div class="icon-wrap bg-blue text-primary" style="width: 26px; height: 26px; font-size: 11px;"><i class="fas fa-clock"></i></div>
             </div>
 
             <div class="p-2 bg-light rounded border d-flex align-items-center justify-content-between">
               <div>
-                <div class="fs-9.5 fw-800 text-muted text-uppercase">Avg. Time On Page</div>
-                <div class="fs-11 fw-800 text-dark">{{ totalVisitors > 0 ? '1m 18s' : '0s' }}</div>
+                <div class="fs-9.5 fw-700 text-muted text-uppercase">Avg. Time On Page</div>
+                <div class="fs-12 fw-800 text-dark">{{ totalVisitors > 0 ? '1m 18s' : '0s' }}</div>
               </div>
               <div class="icon-wrap bg-emerald-light text-emerald" style="width: 26px; height: 26px; font-size: 11px;"><i class="fas fa-hourglass-half"></i></div>
             </div>
 
             <div class="p-2 bg-light rounded border d-flex align-items-center justify-content-between">
               <div>
-                <div class="fs-9.5 fw-800 text-muted text-uppercase">Pages Per Session</div>
-                <div class="fs-11 fw-800 text-dark">{{ totalVisitors > 0 ? '2.4 Pages' : '0 Pages' }}</div>
+                <div class="fs-9.5 fw-700 text-muted text-uppercase">Pages Per Session</div>
+                <div class="fs-12 fw-800 text-dark">{{ totalVisitors > 0 ? '2.4 Pages' : '0 Pages' }}</div>
               </div>
               <div class="icon-wrap bg-amber text-orange" style="width: 26px; height: 26px; font-size: 11px;"><i class="fas fa-layer-group"></i></div>
             </div>
 
             <div class="p-2 bg-light rounded border d-flex align-items-center justify-content-between">
               <div>
-                <div class="fs-9.5 fw-800 text-muted text-uppercase">Bounce Rate</div>
-                <div class="fs-11 fw-800 text-emerald">{{ bounceRate }}</div>
+                <div class="fs-9.5 fw-700 text-muted text-uppercase">Bounce Rate</div>
+                <div class="fs-12 fw-800 text-emerald">{{ bounceRate }}</div>
               </div>
               <div class="icon-wrap bg-purple-light text-purple" style="width: 26px; height: 26px; font-size: 11px;"><i class="fas fa-sign-out-alt"></i></div>
             </div>
@@ -337,26 +312,26 @@
     </div>
 
     <!-- 4. TRAFFIC SOURCES & SOURCE DETAILS ROW -->
-    <div class="row g-2 mb-2">
+    <div class="row g-2 mb-3">
       <!-- WHERE VISITORS COME FROM (TRAFFIC SOURCES) -->
       <div class="col-md-6">
-        <div class="panel-card p-3">
+        <div class="panel-card p-3 h-100">
           <div class="border-bottom pb-2 mb-2">
-            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-share-alt text-emerald me-1.5"></i>Where Visitors Come From (Traffic Sources)</h6>
-            <span class="fs-10 text-muted fw-700">Channels driving traffic to MMR Construction</span>
+            <h6 class="card-title-compact mb-0"><i class="fas fa-share-alt text-emerald me-1.5"></i>Where Visitors Come From (Traffic Sources)</h6>
+            <span class="fs-10 text-muted">Channels driving traffic to MMR Construction</span>
           </div>
 
           <div class="d-flex flex-column gap-1.5">
-            <div *ngFor="let s of trafficSourcesList" class="p-1.5 px-2 bg-light rounded border">
-              <div class="d-flex align-items-center justify-content-between mb-0.5">
-                <span class="fs-10 fw-800 text-dark"><i class="fas fa-link text-gold me-1 fs-9.5"></i>{{ s.source }}</span>
-                <span class="fs-10 fw-800 text-emerald">{{ s.pct }}% ({{ formatNumber(s.visitors) }} Visitors)</span>
+            <div *ngFor="let s of trafficSourcesList" class="p-2 bg-light rounded border">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="fs-11 fw-700 text-dark"><i class="fas fa-link text-gold me-1 fs-10"></i>{{ s.source }}</span>
+                <span class="fs-10.5 fw-700 text-emerald">{{ s.pct }}% ({{ formatNumber(s.visitors) }} Visitors)</span>
               </div>
-              <div class="progress" style="height: 5px; background: #e2e8f0;">
+              <div class="progress" style="height: 4px; background: #e2e8f0;">
                 <div class="progress-bar bg-emerald" [style.width.%]="s.pct"></div>
               </div>
             </div>
-            <div *ngIf="trafficSourcesList.length === 0" class="text-center text-muted py-3 fs-10 fw-700">
+            <div *ngIf="trafficSourcesList.length === 0" class="text-center text-muted py-3 fs-11">
               No live traffic source records for this period
             </div>
           </div>
@@ -365,80 +340,77 @@
 
       <!-- TRAFFIC SOURCE DETAILS TABLE -->
       <div class="col-md-6">
-        <div class="panel-card p-3">
+        <div class="panel-card p-3 h-100">
           <div class="border-bottom pb-2 mb-2">
-            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-table text-primary me-1.5"></i>Source Performance Breakdown</h6>
-            <span class="fs-10 text-muted fw-700">Detailed metrics per referral channel</span>
+            <h6 class="card-title-compact mb-0"><i class="fas fa-table text-primary me-1.5"></i>Source Performance Breakdown</h6>
+            <span class="fs-10 text-muted">Detailed metrics per referral channel</span>
           </div>
 
           <app-admin-table-container [title]="'Source Performance Breakdown'" [count]="trafficSourcesList.length">
             <div class="table-responsive">
-              <table class="table align-middle custom-dash-table mb-0">
+              <table class="custom-dash-table align-middle mb-0">
                 <thead>
                   <tr>
                     <th class="th-sno">#</th>
-                    <th class="fw-800 fs-9.5">Source</th>
-                    <th class="fw-800 fs-9.5 text-end">Visitors</th>
-                    <th class="fw-800 fs-9.5 text-end">Sessions</th>
-                    <th class="fw-800 fs-9.5 text-end">Page Views</th>
-                    <th class="fw-800 fs-9.5 text-end">Avg. Duration</th>
+                    <th>Source</th>
+                    <th class="text-end">Visitors</th>
+                    <th class="text-end">Sessions</th>
+                    <th class="text-end">Page Views</th>
+                    <th class="text-end">Avg. Duration</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let s of trafficSourcesPaginated; let i = index">
                     <td class="td-sno">{{ (sourcesPage - 1) * sourcesPageSize + i + 1 }}</td>
-                    <td class="fw-800 text-dark fs-10">{{ s.source }}</td>
-                    <td class="text-end fw-800 text-primary fs-10">{{ formatNumber(s.visitors) }}</td>
-                    <td class="text-end fw-700 text-muted fs-10">{{ formatNumber(s.sessions) }}</td>
-                    <td class="text-end fw-800 text-dark fs-10">{{ formatNumber(s.pageViews) }}</td>
-                    <td class="text-end fw-800 text-emerald fs-10">{{ s.avgDuration }}</td>
+                    <td class="fw-700 text-dark fs-11">{{ s.source }}</td>
+                    <td class="text-end fw-700 text-primary fs-11">{{ formatNumber(s.visitors) }}</td>
+                    <td class="text-end fw-600 text-muted fs-11">{{ formatNumber(s.sessions) }}</td>
+                    <td class="text-end fw-700 text-dark fs-11">{{ formatNumber(s.pageViews) }}</td>
+                    <td class="text-end fw-700 text-emerald fs-11">{{ s.avgDuration }}</td>
                   </tr>
                   <tr *ngIf="trafficSourcesList.length === 0">
-                    <td colspan="6" class="text-center text-muted py-3 fs-10 fw-700">No source breakdown data available</td>
+                    <td colspan="6" class="text-center text-muted py-3 fs-11">No source breakdown data available</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </app-admin-table-container>
 
-          <!-- Pagination & 2-Mode Export -->
-          <app-admin-pagination
-            *ngIf="trafficSourcesList.length > 0"
-            [totalItems]="trafficSourcesList.length"
-            [pageSize]="sourcesPageSize"
-            [currentPage]="sourcesPage"
-            (pageChange)="sourcesPage = $event"
-            (pageSizeChange)="sourcesPageSize = $event; sourcesPage = 1"
-            (exportCurrentExcel)="exportTrafficSources('current', 'excel')"
-            (exportAllExcel)="exportTrafficSources('all', 'excel')"
-            (exportCurrentPdf)="exportTrafficSources('current', 'pdf')"
-            (exportAllPdf)="exportTrafficSources('all', 'pdf')">
-          </app-admin-pagination>
+          <!-- Pagination -->
+          <div class="border-top pt-2 mt-2" *ngIf="trafficSourcesList.length > 0">
+            <app-admin-pagination
+              [totalItems]="trafficSourcesList.length"
+              [pageSize]="sourcesPageSize"
+              [currentPage]="sourcesPage"
+              (pageChange)="sourcesPage = $event"
+              (pageSizeChange)="sourcesPageSize = $event; sourcesPage = 1">
+            </app-admin-pagination>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- 5. DEVICE ANALYTICS, GEOGRAPHIC ANALYTICS & LIVE VISITORS ROW -->
-    <div class="row g-2 mb-2">
+    <div class="row g-2 mb-3">
       <!-- DEVICE ANALYTICS -->
       <div class="col-md-4">
-        <div class="panel-card p-3">
-          <div class="border-bottom pb-2 mb-3">
-            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-laptop-mobile text-primary me-1.5"></i>Device Analytics</h6>
-            <span class="fs-10 text-muted fw-700">Visitors by screen &amp; device type</span>
+        <div class="panel-card p-3 h-100">
+          <div class="border-bottom pb-2 mb-2">
+            <h6 class="card-title-compact mb-0"><i class="fas fa-laptop text-primary me-1.5"></i>Device Analytics</h6>
+            <span class="fs-10 text-muted">Visitors by screen &amp; device type</span>
           </div>
 
-          <div class="d-flex flex-column gap-2.5">
-            <div *ngFor="let d of deviceListProcessed" class="p-2.5 bg-light rounded border">
-              <div class="d-flex align-items-center justify-content-between mb-1.5">
-                <span class="fs-11 fw-800 text-dark"><i [class]="d.icon + ' me-1.5'" [style.color]="d.color"></i>{{ d.device }}</span>
+          <div class="d-flex flex-column gap-2">
+            <div *ngFor="let d of deviceListProcessed" class="p-2 bg-light rounded border">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="fs-11 fw-700 text-dark"><i [class]="d.icon + ' me-1.5'" [style.color]="d.color"></i>{{ d.device }}</span>
                 <span class="fs-11 fw-800 text-dark">{{ d.pct }}% ({{ formatNumber(d.count) }})</span>
               </div>
-              <div class="progress" style="height: 6px; background: #e2e8f0;">
+              <div class="progress" style="height: 5px; background: #e2e8f0;">
                 <div class="progress-bar" [style.background-color]="d.color" [style.width.%]="d.pct"></div>
               </div>
             </div>
-            <div *ngIf="deviceListProcessed.length === 0" class="text-center text-muted py-3 fs-10 fw-700">
+            <div *ngIf="deviceListProcessed.length === 0" class="text-center text-muted py-3 fs-11">
               No live device tracking data available
             </div>
           </div>
@@ -447,31 +419,31 @@
 
       <!-- GEOGRAPHIC ANALYTICS -->
       <div class="col-md-4">
-        <div class="panel-card p-3">
+        <div class="panel-card p-3 h-100">
           <div class="border-bottom pb-2 mb-2">
-            <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-map-marked-alt text-amber me-1.5"></i>Geographic Location Analytics</h6>
-            <span class="fs-10 text-muted fw-700">Visitors by Country, State &amp; City</span>
+            <h6 class="card-title-compact mb-0"><i class="fas fa-map-marked-alt text-warning me-1.5"></i>Geographic Location Analytics</h6>
+            <span class="fs-10 text-muted">Visitors by Country, State &amp; City</span>
           </div>
 
           <div class="table-responsive">
-            <table class="table align-middle custom-dash-table mb-0">
+            <table class="custom-dash-table align-middle mb-0">
               <thead>
                 <tr>
-                  <th class="fw-800 fs-10">City / State</th>
-                  <th class="fw-800 fs-10">Country</th>
-                  <th class="fw-800 fs-10 text-end">Visitors</th>
-                  <th class="fw-800 fs-10 text-end">Share</th>
+                  <th>City / State</th>
+                  <th>Country</th>
+                  <th class="text-end">Visitors</th>
+                  <th class="text-end">Share</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let loc of locationsListProcessed">
-                  <td class="fw-800 text-dark fs-11"><i class="fas fa-map-marker-alt text-danger me-1 fs-10"></i>{{ loc.city }}, {{ loc.state }}</td>
-                  <td class="fs-10 fw-700 text-muted">{{ loc.country }}</td>
-                  <td class="text-end fw-800 text-dark fs-11">{{ formatNumber(loc.count) }}</td>
-                  <td class="text-end fw-800 text-emerald fs-11">{{ loc.pct }}%</td>
+                  <td class="fw-700 text-dark fs-11"><i class="fas fa-map-marker-alt text-danger me-1 fs-10"></i>{{ loc.city }}, {{ loc.state }}</td>
+                  <td class="fs-10 text-muted">{{ loc.country }}</td>
+                  <td class="text-end fw-700 text-dark fs-11">{{ formatNumber(loc.count) }}</td>
+                  <td class="text-end fw-700 text-emerald fs-11">{{ loc.pct }}%</td>
                 </tr>
                 <tr *ngIf="locationsListProcessed.length === 0">
-                  <td colspan="4" class="text-center text-muted py-3 fs-10 fw-700">No location tracking data available</td>
+                  <td colspan="4" class="text-center text-muted py-3 fs-11">No location tracking data available</td>
                 </tr>
               </tbody>
             </table>
@@ -481,22 +453,22 @@
 
       <!-- LIVE / REAL-TIME VISITORS BOX -->
       <div class="col-md-4">
-        <div class="panel-card p-3 border-gold" style="border-left: 4px solid #c9a84c !important;">
-          <div class="border-bottom pb-2 mb-3">
+        <div class="panel-card p-3 h-100" style="border-left: 3px solid #ca8a04 !important;">
+          <div class="border-bottom pb-2 mb-2">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-              <h6 class="fw-800 text-dark mb-0 fs-11 text-uppercase tracking-wide"><i class="fas fa-dot-circle text-danger me-1.5"></i>Real-Time Online Visitors</h6>
-              <span class="badge bg-emerald text-white fw-800 fs-10">Live Active Now</span>
+              <h6 class="card-title-compact mb-0"><i class="fas fa-dot-circle text-danger me-1.5"></i>Real-Time Online Visitors</h6>
+              <span class="chip chip-ok">Live Now</span>
             </div>
-            <div class="fs-18 fw-800 text-dark mt-1"><span class="text-emerald">● {{ data?.liveVisitors || 0 }}</span> Active Users Online</div>
+            <div class="fs-16 fw-800 text-dark mt-1"><span class="text-emerald">● {{ data?.liveVisitors || 0 }}</span> Active Users Online</div>
           </div>
 
-          <div class="fs-10 fw-800 text-dark text-uppercase mb-2">Active Page Distribution:</div>
+          <div class="fs-10 fw-700 text-dark text-uppercase mb-1.5">Active Page Distribution:</div>
           <div class="d-flex flex-column gap-1.5">
-            <div *ngFor="let rp of realTimeActivePages" class="p-2 bg-light rounded border d-flex align-items-center justify-content-between">
-              <span class="fs-11 fw-800 text-dark text-truncate me-2" style="max-width: 170px;">{{ rp.page }}</span>
-              <span class="badge bg-dark text-white fw-800 fs-10">{{ rp.activeCount }} Users</span>
+            <div *ngFor="let rp of realTimeActivePages" class="p-1.5 px-2 bg-light rounded border d-flex align-items-center justify-content-between">
+              <span class="fs-11 fw-700 text-dark text-truncate me-2" style="max-width: 170px;">{{ rp.page }}</span>
+              <span class="code-badge">{{ rp.activeCount }} Users</span>
             </div>
-            <div *ngIf="realTimeActivePages.length === 0" class="text-center text-muted py-3 fs-10 fw-700">
+            <div *ngIf="realTimeActivePages.length === 0" class="text-center text-muted py-3 fs-11">
               No online visitors active right now
             </div>
           </div>
@@ -506,4 +478,3 @@
 
   </ng-container>
 </div>
-
