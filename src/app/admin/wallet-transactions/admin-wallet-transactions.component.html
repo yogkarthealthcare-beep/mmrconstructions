@@ -1,0 +1,290 @@
+<div class="wallet-transactions-page">
+  <!-- Page Header Banner -->
+  <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div class="header-left min-w-0">
+      <div class="banner-badge"><i class="fas fa-coins me-1 text-gold"></i> Financial Ledger &amp; Audit</div>
+      <h1 class="page-title text-white mb-0">
+        <i class="fas fa-wallet text-gold me-2"></i> Wallet Transactions &amp; Add Fund Ledger
+      </h1>
+      <p class="page-subtitle text-white mb-0">
+        Complete audit trail of all wallet top-ups, payouts, commissions, and manual entries across the system.
+      </p>
+    </div>
+    <div class="header-actions d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-header-refresh" (click)="loadTransactions()" [disabled]="loading" title="Refresh">
+        <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
+        <span>Refresh</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Metric Summary Badges -->
+  <div class="kpi-grid mb-3">
+    <!-- Card 1: Total Funds Added -->
+    <div class="kpi-card s-green">
+      <div class="kpi-content">
+        <span class="kpi-label">Total Funds Added</span>
+        <h4 class="kpi-value text-emerald">₹{{ totalAddedFund | number:'1.2-2' }}</h4>
+        <span class="kpi-subtext">Approved Inflows</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-emerald">
+        <i class="fas fa-arrow-down"></i>
+      </div>
+    </div>
+
+    <!-- Card 2: Total Withdrawals -->
+    <div class="kpi-card s-red">
+      <div class="kpi-content">
+        <span class="kpi-label">Total Withdrawals</span>
+        <h4 class="kpi-value text-danger">₹{{ totalWithdrawnFund | number:'1.2-2' }}</h4>
+        <span class="kpi-subtext">Approved Outflows</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-red">
+        <i class="fas fa-arrow-up"></i>
+      </div>
+    </div>
+
+    <!-- Card 3: Total Records -->
+    <div class="kpi-card s-blue">
+      <div class="kpi-content">
+        <span class="kpi-label">Total Records</span>
+        <h4 class="kpi-value text-primary">{{ transactions.length }}</h4>
+        <span class="kpi-subtext">Logged Transactions</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-blue">
+        <i class="fas fa-exchange-alt"></i>
+      </div>
+    </div>
+
+    <!-- Card 4: Success Rate -->
+    <div class="kpi-card s-orange">
+      <div class="kpi-content">
+        <span class="kpi-label">Success Rate</span>
+        <h4 class="kpi-value text-amber">{{ successRate }}%</h4>
+        <span class="kpi-subtext">Completed Volume</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-amber">
+        <i class="fas fa-check-circle"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Panel -->
+  <div class="filter-card card shadow-sm border-0 mb-3">
+    <div class="card-body p-2">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <!-- Search -->
+        <div class="search-box flex-grow-1" style="min-width: 200px;">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control f-input-search"
+            placeholder="Search Name, Order ID, Txn ID..."
+            [(ngModel)]="search"
+            (keyup.enter)="loadTransactions()"
+          />
+          <button
+            *ngIf="search"
+            type="button"
+            class="btn-clear-search"
+            (click)="search = ''; loadTransactions()"
+            title="Clear"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Type Select -->
+        <div class="filter-select-wrap">
+          <select class="form-select sel-sm" [(ngModel)]="transaction_type" (change)="loadTransactions()">
+            <option value="">All Types</option>
+            <option value="credit">Credit (Topup)</option>
+            <option value="debit">Debit (Payout)</option>
+          </select>
+        </div>
+
+        <!-- Source Select -->
+        <div class="filter-select-wrap">
+          <select class="form-select sel-sm" [(ngModel)]="source" (change)="loadTransactions()">
+            <option value="">All Sources</option>
+            <option value="Add Fund">Add Fund</option>
+            <option value="Withdrawal">Withdrawal</option>
+            <option value="Commission">Commission</option>
+          </select>
+        </div>
+
+        <!-- Status Select -->
+        <div class="filter-select-wrap">
+          <select class="form-select sel-sm" [(ngModel)]="status" (change)="loadTransactions()">
+            <option value="">All Statuses</option>
+            <option value="success">Success</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <!-- User Role Select -->
+        <div class="filter-select-wrap">
+          <select class="form-select sel-sm" [(ngModel)]="user_role" (change)="loadTransactions()">
+            <option value="">All Roles</option>
+            <option value="Associate">Associate</option>
+            <option value="Customer">Customer</option>
+          </select>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex align-items-center gap-1.5 ms-auto">
+          <button type="button" class="btn btn-emerald btn-xs px-2.5" (click)="loadTransactions()" title="Search">
+            <i class="fas fa-search me-1"></i> Search
+          </button>
+          <button
+            *ngIf="search || transaction_type || source || status || user_role"
+            type="button"
+            class="btn btn-secondary btn-xs px-2"
+            (click)="clearFilters()"
+            title="Reset Filters"
+          >
+            <i class="fas fa-undo me-1"></i> Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions Table Card -->
+  <div class="table-card card shadow-sm border-0">
+    <div class="card-body p-0">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="text-center py-4">
+        <i class="fas fa-spinner fa-spin fa-2x text-emerald"></i>
+        <p class="mt-2 mb-0 text-muted fs-xs">Loading wallet transaction logs...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="!loading && errorMsg" class="alert alert-danger m-3 d-flex align-items-center">
+        <i class="fas fa-exclamation-circle me-2"></i> {{ errorMsg }}
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && !errorMsg && transactions.length === 0" class="text-center py-5">
+        <div class="empty-icon-wrap mb-2">
+          <i class="fas fa-receipt fa-2x text-emerald opacity-75"></i>
+        </div>
+        <h6 class="fw-bold text-dark mb-1">No Wallet Transactions Found</h6>
+        <p class="text-muted fs-xs mb-0">No records matched your search filters.</p>
+      </div>
+
+      <!-- Transactions Table -->
+      <app-admin-table-container
+        *ngIf="!loading && !errorMsg && transactions.length > 0"
+        title="Wallet Transactions"
+        [count]="transactions.length"
+        (export)="exportData('all', 'excel')"
+      >
+        <table class="table tbl table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th class="fit">#</th>
+              <th class="grow">User Details</th>
+              <th class="grow">Transaction Details</th>
+              <th class="fit text-end num">Amount (₹)</th>
+              <th class="fit text-end num hide-md">Balance After</th>
+              <th class="fit text-center">Status</th>
+              <th class="fit hide-lg">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of pagedTransactions; let i = index">
+              <!-- # Serial -->
+              <td class="fit fw-bold text-muted">
+                {{ (page - 1) * pageSize + i + 1 }}
+              </td>
+
+              <!-- User Details -->
+              <td class="grow">
+                <div class="person">
+                  <div class="avatar" [ngClass]="t.user_role === 'Associate' ? 'bg-amber-soft text-warning' : 'bg-blue-soft text-primary'">
+                    {{ getInitials(t.user_name) }}
+                  </div>
+                  <div class="person-info min-w-0">
+                    <span class="person-name text-truncate">{{ t.user_name || 'User #' + t.user_id }}</span>
+                    <span class="sub text-muted text-truncate">{{ t.user_mobile || t.user_email || '—' }}</span>
+                  </div>
+                  <span class="badge ms-1" [ngClass]="t.user_role === 'Associate' ? 'bg-warning text-dark' : 'bg-primary text-white'">
+                    {{ t.user_role }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Transaction Details -->
+              <td class="grow">
+                <div class="d-flex flex-column min-w-0">
+                  <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                    <code class="member-id-badge">{{ t.payment_order_id || t.id }}</code>
+                    <span class="chip" [ngClass]="isCredit(t) ? 'chip-ok' : 'chip-err'">
+                      <i class="fas" [ngClass]="isCredit(t) ? 'fa-arrow-down' : 'fa-arrow-up'"></i>
+                      <span>{{ (t.transaction_type || (isCredit(t) ? 'credit' : 'debit')) | uppercase }}</span>
+                    </span>
+                    <span class="badge bg-light text-dark border">{{ t.source }}</span>
+                    <span class="badge bg-light text-muted border text-capitalize" *ngIf="t.payment_gateway">{{ t.payment_gateway }}</span>
+                  </div>
+                  <div class="text-muted fs-10 mt-0.5" *ngIf="t.payment_transaction_id">
+                    Txn: <span class="font-monospace text-dark">{{ t.payment_transaction_id }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Amount -->
+              <td class="fit text-end num font-monospace fw-bold" [class.text-success]="isCredit(t)" [class.text-danger]="!isCredit(t)">
+                {{ isCredit(t) ? '+' : '−' }} ₹{{ (t.amount < 0 ? -t.amount : t.amount) | number:'1.2-2' }}
+              </td>
+
+              <!-- Balance After -->
+              <td class="fit text-end num font-monospace hide-md text-dark fw-bold">
+                ₹{{ t.balance_after | number:'1.2-2' }}
+              </td>
+
+              <!-- Status -->
+              <td class="fit text-center">
+                <span
+                  class="chip"
+                  [ngClass]="{
+                    'chip-ok': t.status === 'success',
+                    'chip-warn': t.status === 'pending',
+                    'chip-err': t.status === 'failed' || t.status === 'cancelled'
+                  }"
+                >
+                  <i class="fas" [ngClass]="{
+                    'fa-check-circle': t.status === 'success',
+                    'fa-clock': t.status === 'pending',
+                    'fa-times-circle': t.status === 'failed' || t.status === 'cancelled'
+                  }"></i>
+                  <span>{{ t.status | uppercase }}</span>
+                </span>
+              </td>
+
+              <!-- Date -->
+              <td class="fit hide-lg text-nowrap">
+                <div class="text-dark fw-semibold fs-11">{{ t.created_at | date:'dd MMM yyyy' }}</div>
+                <div class="text-muted fs-10">{{ t.created_at | date:'hh:mm a' }}</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </app-admin-table-container>
+
+      <!-- Unified Pagination -->
+      <div *ngIf="!loading && !errorMsg && transactions.length > 0" class="p-2 border-top bg-light">
+        <app-admin-pagination
+          [totalItems]="transactions.length"
+          [page]="page"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+          (export)="exportData($event.mode, $event.format)"
+        ></app-admin-pagination>
+      </div>
+    </div>
+  </div>
+</div>
