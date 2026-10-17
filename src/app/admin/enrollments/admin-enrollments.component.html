@@ -1,154 +1,116 @@
 <div class="enrollments-page">
-  <!-- Top Header Section -->
-  <div class="page-header">
-    <div class="header-left">
-      <div class="header-icon">
-        <i class="fas fa-id-card"></i>
-      </div>
-      <div>
-        <h1 class="page-title">Enrollment Management</h1>
-        <p class="page-subtitle">Centralized review, verification, and administrative management for all enrollments</p>
-      </div>
+  <!-- Top Hero Header Section -->
+  <div class="admin-hero-card d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+    <div>
+      <div class="admin-hero-badge"><i class="fas fa-id-card me-1"></i> Centralized Enrollment Roster</div>
+      <h1 class="admin-hero-title mb-0">Enrollments Management</h1>
+      <p class="admin-hero-sub mb-0">Centralized review, verification, and administrative management across all enrollment categories</p>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-outline" (click)="loadData(); loadStats()">
-        <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Refresh
+    <div class="d-flex align-items-center gap-1">
+      <button class="btn btn-outline-light btn-xs" (click)="loadData(); loadStats()" title="Refresh Records">
+        <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Refresh
       </button>
     </div>
   </div>
 
-  <!-- Current Category Card (Only the active section's card is displayed) -->
-  <div class="category-cards-grid">
-    <!-- Customer Card -->
-    <div class="category-card active" *ngIf="activeCategory === 'customer'">
-      <div class="card-icon-wrap customer-icon">
-        <i class="fas fa-users"></i>
-      </div>
-      <div class="card-info">
-        <h3>Customer Enrollments</h3>
-        <span class="card-sub">Property Buyers & Plots</span>
-        <div class="card-stats-row">
-          <div class="stat-pill total">
-            <span class="label">Total</span>
-            <span class="val">{{ stats.customer.total }}</span>
-          </div>
-          <div class="stat-pill completed">
-            <span class="label">Approved</span>
-            <span class="val">{{ stats.customer.completed }}</span>
-          </div>
-          <div class="stat-pill pending">
-            <span class="label">Pending</span>
-            <span class="val">{{ stats.customer.pending }}</span>
-          </div>
+  <!-- Horizontal Scrollable Pill Tabs Navigation -->
+  <div class="tabs-nav mb-2">
+    <button class="tab-btn" [class.active]="activeCategory === 'customer'" (click)="setCategory('customer')">
+      <i class="fas fa-users"></i> Customer Enrollments
+      <span class="badge rounded-pill bg-light text-dark ms-1">{{ stats.customer.total }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeCategory === 'associate'" (click)="setCategory('associate')">
+      <i class="fas fa-user-tie"></i> Associate Enrollments
+      <span class="badge rounded-pill bg-light text-dark ms-1">{{ stats.associate.total }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeCategory === 'investor'" (click)="setCategory('investor')">
+      <i class="fas fa-file-invoice-dollar"></i> Investor Enrollments
+      <span class="badge rounded-pill bg-light text-dark ms-1">{{ stats.investor.total }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeCategory === 'team_member'" (click)="setCategory('team_member')">
+      <i class="fas fa-users-cog"></i> Team Members
+      <span class="badge rounded-pill bg-light text-dark ms-1">{{ stats.team_member.total }}</span>
+    </button>
+  </div>
+
+  <!-- 3 Compact KPI Cards for Current Category -->
+  <div class="row g-2 mb-2">
+    <div class="col-4 col-md-4">
+      <div class="kpi-card s-blue">
+        <div class="kpi-content">
+          <span class="kpi-label">Total {{ activeCategory === 'customer' ? 'Customers' : (activeCategory === 'associate' ? 'Associates' : (activeCategory === 'investor' ? 'Investors' : 'Team Members')) }}</span>
+          <span class="kpi-value">{{ stats[activeCategory].total }}</span>
+          <span class="kpi-subtext">Registered in Roster</span>
+        </div>
+        <div class="kpi-icon-wrap kpi-blue">
+          <i class="fas" [ngClass]="{
+            'fa-users': activeCategory === 'customer',
+            'fa-user-tie': activeCategory === 'associate',
+            'fa-file-invoice-dollar': activeCategory === 'investor',
+            'fa-users-cog': activeCategory === 'team_member'
+          }"></i>
         </div>
       </div>
     </div>
-
-    <!-- Associate Card -->
-    <div class="category-card active" *ngIf="activeCategory === 'associate'">
-      <div class="card-icon-wrap associate-icon">
-        <i class="fas fa-user-tie"></i>
-      </div>
-      <div class="card-info">
-        <h3>Associate Enrollments</h3>
-        <span class="card-sub">Business Partners & Agents</span>
-        <div class="card-stats-row">
-          <div class="stat-pill total">
-            <span class="label">Total</span>
-            <span class="val">{{ stats.associate.total }}</span>
-          </div>
-          <div class="stat-pill completed">
-            <span class="label">Approved</span>
-            <span class="val">{{ stats.associate.completed }}</span>
-          </div>
-          <div class="stat-pill pending">
-            <span class="label">Pending</span>
-            <span class="val">{{ stats.associate.pending }}</span>
-          </div>
+    <div class="col-4 col-md-4">
+      <div class="kpi-card s-green">
+        <div class="kpi-content">
+          <span class="kpi-label">Approved &amp; Active</span>
+          <span class="kpi-value">{{ stats[activeCategory].completed }}</span>
+          <span class="kpi-subtext">Verified Records</span>
+        </div>
+        <div class="kpi-icon-wrap kpi-emerald">
+          <i class="fas fa-check-circle"></i>
         </div>
       </div>
     </div>
-
-    <!-- Investor Card -->
-    <div class="category-card active" *ngIf="activeCategory === 'investor'">
-      <div class="card-icon-wrap investor-icon">
-        <i class="fas fa-file-invoice-dollar"></i>
-      </div>
-      <div class="card-info">
-        <h3>Investor Enrollments</h3>
-        <span class="card-sub">Fixed & Growth Investors</span>
-        <div class="card-stats-row">
-          <div class="stat-pill total">
-            <span class="label">Total</span>
-            <span class="val">{{ stats.investor.total }}</span>
-          </div>
-          <div class="stat-pill completed">
-            <span class="label">Approved</span>
-            <span class="val">{{ stats.investor.completed }}</span>
-          </div>
-          <div class="stat-pill pending">
-            <span class="label">Pending</span>
-            <span class="val">{{ stats.investor.pending }}</span>
-          </div>
+    <div class="col-4 col-md-4">
+      <div class="kpi-card s-orange">
+        <div class="kpi-content">
+          <span class="kpi-label">Pending Verification</span>
+          <span class="kpi-value">{{ stats[activeCategory].pending }}</span>
+          <span class="kpi-subtext">Awaiting Review</span>
         </div>
-      </div>
-    </div>
-
-    <!-- Team Member Card -->
-    <div class="category-card active" *ngIf="activeCategory === 'team_member'">
-      <div class="card-icon-wrap team-member-icon">
-        <i class="fas fa-users-cog"></i>
-      </div>
-      <div class="card-info">
-        <h3>Team Members</h3>
-        <span class="card-sub">Direct Team Roster (10 Slots)</span>
-        <div class="card-stats-row">
-          <div class="stat-pill total">
-            <span class="label">Total</span>
-            <span class="val">{{ stats.team_member.total }}</span>
-          </div>
-          <div class="stat-pill completed">
-            <span class="label">Active</span>
-            <span class="val">{{ stats.team_member.completed }}</span>
-          </div>
-          <div class="stat-pill pending">
-            <span class="label">Pending</span>
-            <span class="val">{{ stats.team_member.pending }}</span>
-          </div>
+        <div class="kpi-icon-wrap kpi-amber">
+          <i class="fas fa-clock"></i>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Search & Filter Controls -->
-  <div class="filter-panel">
-    <div class="search-box">
-      <i class="fas fa-search search-icon"></i>
-      <input 
-        type="text" 
-        [(ngModel)]="searchQuery" 
-        (keyup.enter)="onSearch()"
-        placeholder="Search by Name, Application No, Sponsor ID, Phone, Email..." 
-      />
-      <button *ngIf="searchQuery" class="clear-btn" (click)="searchQuery = ''; onSearch()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
+  <!-- Compact Filter Bar with Search -->
+  <div class="filter-card mb-2">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <div class="search-box flex-grow-1 min-w-200">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          class="f-input-search"
+          [(ngModel)]="searchQuery" 
+          (keyup.enter)="onSearch()"
+          placeholder="Search by Name, Application No, Sponsor ID, Phone, Email..." 
+        />
+        <button *ngIf="searchQuery" class="btn-clear-search" (click)="searchQuery = ''; onSearch()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
 
-    <div class="filter-group">
-      <select [(ngModel)]="statusFilter" (change)="onSearch()">
-        <option value="">All Statuses</option>
-        <option value="Completed">Approved Only</option>
-        <option value="Pending">Pending Only</option>
-      </select>
+      <div class="filter-select-wrap">
+        <select class="sel-sm" [(ngModel)]="statusFilter" (change)="onSearch()">
+          <option value="">All Statuses</option>
+          <option value="Completed">Approved Only</option>
+          <option value="Pending">Pending Only</option>
+        </select>
+      </div>
 
-      <button class="btn btn-primary" (click)="onSearch()">
-        <i class="fas fa-filter"></i> Apply
-      </button>
-
-      <button class="btn btn-secondary" (click)="resetFilter()">
-        <i class="fas fa-undo"></i> Reset
-      </button>
+      <div class="d-flex align-items-center gap-1 filter-btns">
+        <button class="btn btn-emerald btn-xs" (click)="onSearch()">
+          <i class="fas fa-filter me-1"></i> Apply
+        </button>
+        <button class="btn btn-outline-secondary btn-xs" (click)="resetFilter()">
+          <i class="fas fa-undo me-1"></i> Reset
+        </button>
+      </div>
     </div>
   </div>
 
@@ -206,30 +168,28 @@
               <span class="amount-val fw-700 text-dark">₹{{ (item.basic_sale_price || 0) + (item.plc_dev_charges || 0) | number }}</span>
             </td>
             <td data-label="Enrollment Status">
-              <select
-                class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
-                style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
-                [ngClass]="{
-                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.application_status === 'Approved',
-                  'border-warning text-warning-dark bg-warning-subtle': (item.enrollment_status === 'Pending' || item.application_status === 'Pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.application_status !== 'Approved' && item.enrollment_status !== 'Rejected' && item.application_status !== 'Rejected',
-                  'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.application_status === 'Rejected'
-                }"
-                [value]="item.enrollment_status || (item.application_status === 'Approved' ? 'Completed' : (item.application_status === 'Rejected' ? 'Rejected' : 'Pending'))"
-                (change)="onCustomerInlineStatusChange(item, $event)">
-                <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.application_status !== 'Approved' && item.application_status !== 'Rejected')">Pending</option>
-                <option value="Completed">&#x2714; Approved</option>
-                <option value="Rejected">&#x2716; Rejected</option>
-              </select>
+              <span class="chip" [ngClass]="{
+                'chip-ok': item.enrollment_status === 'Completed' || item.application_status === 'Approved',
+                'chip-warn': item.enrollment_status === 'Pending' || item.application_status === 'Pending' || (!item.enrollment_status && item.application_status !== 'Approved' && item.application_status !== 'Rejected'),
+                'chip-err': item.enrollment_status === 'Rejected' || item.application_status === 'Rejected'
+              }">
+                <i class="fas" [ngClass]="{
+                  'fa-check-circle': item.enrollment_status === 'Completed' || item.application_status === 'Approved',
+                  'fa-clock': item.enrollment_status === 'Pending' || item.application_status === 'Pending' || (!item.enrollment_status && item.application_status !== 'Approved' && item.application_status !== 'Rejected'),
+                  'fa-times-circle': item.enrollment_status === 'Rejected' || item.application_status === 'Rejected'
+                }"></i>
+                {{ item.enrollment_status || item.application_status || 'Pending' }}
+              </span>
             </td>
             <td class="td-actions text-end" data-label="Actions">
               <div class="action-btn-group">
-                <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
-                  <i class="fas fa-eye"></i> <span>View</span>
+                <button class="ibtn view" (click)="openModal(item, false)" title="View Form">
+                  <i class="fas fa-eye"></i>
                 </button>
-                <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
-                  <i class="fas fa-edit"></i> <span>Edit</span>
+                <button class="ibtn edit" (click)="openModal(item, true)" title="Edit & Update">
+                  <i class="fas fa-edit"></i>
                 </button>
-                <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
+                <button *ngIf="item.enrollment_status === 'Completed' || item.application_status === 'Approved'" class="ibtn download" (click)="downloadPdf(item)" title="Download PDF">
                   <i class="fas fa-file-pdf"></i>
                 </button>
               </div>
@@ -278,33 +238,31 @@
               <small class="d-block text-muted text-truncate">{{ item.state || item.perm_state || 'Uttar Pradesh' }}</small>
             </td>
             <td data-label="Enrollment Status">
-              <select
-                class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
-                style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
-                [ngClass]="{
-                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.status === 'approved' || item.app_status === 'approved',
-                  'border-warning text-warning-dark bg-warning-subtle': (item.enrollment_status === 'Pending' || item.status === 'pending' || item.app_status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.status !== 'approved' && item.app_status !== 'approved' && item.enrollment_status !== 'Rejected' && item.status !== 'rejected' && item.app_status !== 'rejected',
-                  'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.status === 'rejected' || item.app_status === 'rejected'
-                }"
-                [value]="item.enrollment_status || (item.status === 'approved' || item.app_status === 'approved' ? 'Completed' : (item.status === 'rejected' || item.app_status === 'rejected' ? 'Rejected' : 'Pending'))"
-                (change)="onAssociateInlineStatusChange(item, $event)">
-                <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.status !== 'approved' && item.app_status !== 'approved' && item.status !== 'rejected' && item.app_status !== 'rejected')">Pending</option>
-                <option value="Completed">&#x2714; Approved</option>
-                <option value="Rejected">&#x2716; Rejected</option>
-              </select>
+              <span class="chip" [ngClass]="{
+                'chip-ok': item.enrollment_status === 'Completed' || item.status === 'approved' || item.app_status === 'approved',
+                'chip-warn': (item.enrollment_status === 'Pending' || item.status === 'pending' || item.app_status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.status !== 'approved' && item.app_status !== 'approved' && item.enrollment_status !== 'Rejected' && item.status !== 'rejected' && item.app_status !== 'rejected',
+                'chip-err': item.enrollment_status === 'Rejected' || item.status === 'rejected' || item.app_status === 'rejected'
+              }">
+                <i class="fas" [ngClass]="{
+                  'fa-check-circle': item.enrollment_status === 'Completed' || item.status === 'approved' || item.app_status === 'approved',
+                  'fa-clock': (item.enrollment_status === 'Pending' || item.status === 'pending' || item.app_status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.status !== 'approved' && item.app_status !== 'approved' && item.enrollment_status !== 'Rejected' && item.status !== 'rejected' && item.app_status !== 'rejected',
+                  'fa-times-circle': item.enrollment_status === 'Rejected' || item.status === 'rejected' || item.app_status === 'rejected'
+                }"></i>
+                {{ item.enrollment_status || (item.status === 'approved' || item.app_status === 'approved' ? 'Approved' : (item.status === 'rejected' || item.app_status === 'rejected' ? 'Rejected' : 'Pending')) }}
+              </span>
             </td>
             <td class="priority-3" data-label="Submitted At">
               <small class="date-text">{{ item.created_at ? (item.created_at | date:'mediumDate') : (item.sign_date ? (item.sign_date | date:'mediumDate') : '—') }}</small>
             </td>
             <td class="td-actions text-end" data-label="Actions">
               <div class="action-btn-group">
-                <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
-                  <i class="fas fa-eye"></i> <span>View</span>
+                <button class="ibtn view" (click)="openModal(item, false)" title="View Form">
+                  <i class="fas fa-eye"></i>
                 </button>
-                <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
-                  <i class="fas fa-edit"></i> <span>Edit</span>
+                <button class="ibtn edit" (click)="openModal(item, true)" title="Edit & Update">
+                  <i class="fas fa-edit"></i>
                 </button>
-                <button *ngIf="item.enrollment_status === 'Completed' || item.status === 'approved' || item.app_status === 'approved'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
+                <button *ngIf="item.enrollment_status === 'Completed' || item.status === 'approved' || item.app_status === 'approved'" class="ibtn download" (click)="downloadPdf(item)" title="Download PDF">
                   <i class="fas fa-file-pdf"></i>
                 </button>
               </div>
@@ -359,33 +317,31 @@
               </span>
             </td>
             <td data-label="Status">
-              <select
-                class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
-                style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
-                [ngClass]="{
-                  'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.app_status === 'approved' || item.status === 'approved' || item.status === 'active',
-                  'border-warning text-warning-dark bg-warning-subtle': (item.enrollment_status === 'Pending' || item.app_status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.app_status !== 'approved' && item.status !== 'approved' && item.enrollment_status !== 'Rejected' && item.app_status !== 'rejected' && item.status !== 'rejected',
-                  'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.app_status === 'rejected' || item.status === 'rejected'
-                }"
-                [value]="item.enrollment_status || (item.app_status === 'approved' || item.status === 'approved' ? 'Completed' : (item.app_status === 'rejected' || item.status === 'rejected' ? 'Rejected' : 'Pending'))"
-                (change)="onInvestorInlineStatusChange(item, $event)">
-                <option value="Pending" *ngIf="item.enrollment_status === 'Pending' || (!item.enrollment_status && item.app_status !== 'approved' && item.status !== 'approved' && item.app_status !== 'rejected' && item.status !== 'rejected')">Pending</option>
-                <option value="Completed">&#x2714; Approved</option>
-                <option value="Rejected">&#x2716; Rejected</option>
-              </select>
+              <span class="chip" [ngClass]="{
+                'chip-ok': item.enrollment_status === 'Completed' || item.app_status === 'approved' || item.status === 'approved' || item.status === 'active',
+                'chip-warn': (item.enrollment_status === 'Pending' || item.app_status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.app_status !== 'approved' && item.status !== 'approved' && item.enrollment_status !== 'Rejected' && item.app_status !== 'rejected' && item.status !== 'rejected',
+                'chip-err': item.enrollment_status === 'Rejected' || item.app_status === 'rejected' || item.status === 'rejected'
+              }">
+                <i class="fas" [ngClass]="{
+                  'fa-check-circle': item.enrollment_status === 'Completed' || item.app_status === 'approved' || item.status === 'approved' || item.status === 'active',
+                  'fa-clock': (item.enrollment_status === 'Pending' || item.app_status === 'pending' || !item.enrollment_status) && item.enrollment_status !== 'Completed' && item.app_status !== 'approved' && item.status !== 'approved' && item.enrollment_status !== 'Rejected' && item.app_status !== 'rejected' && item.status !== 'rejected',
+                  'fa-times-circle': item.enrollment_status === 'Rejected' || item.app_status === 'rejected' || item.status === 'rejected'
+                }"></i>
+                {{ item.enrollment_status || (item.app_status === 'approved' || item.status === 'approved' ? 'Approved' : (item.app_status === 'rejected' || item.status === 'rejected' ? 'Rejected' : 'Pending')) }}
+              </span>
             </td>
             <td class="priority-3" data-label="Date">
               <small class="date-text">{{ item.form_date ? (item.form_date | date:'mediumDate') : (item.created_at ? (item.created_at | date:'mediumDate') : (item.submitted_at ? (item.submitted_at | date:'mediumDate') : (item.registered_at ? (item.registered_at | date:'mediumDate') : '—'))) }}</small>
             </td>
             <td class="td-actions text-end" data-label="Actions">
               <div class="action-btn-group">
-                <button class="btn-action btn-view" (click)="openModal(item, false)" title="View Form">
-                  <i class="fas fa-eye"></i> <span>View</span>
+                <button class="ibtn view" (click)="openModal(item, false)" title="View Form">
+                  <i class="fas fa-eye"></i>
                 </button>
-                <button class="btn-action btn-edit" (click)="openModal(item, true)" title="Edit & Update">
-                  <i class="fas fa-edit"></i> <span>Edit</span>
+                <button class="ibtn edit" (click)="openModal(item, true)" title="Edit & Update">
+                  <i class="fas fa-edit"></i>
                 </button>
-                <button *ngIf="item.enrollment_status === 'Completed'" class="btn-action btn-pdf" (click)="downloadPdf(item)" title="Download PDF">
+                <button *ngIf="item.enrollment_status === 'Completed' || item.app_status === 'approved'" class="ibtn download" (click)="downloadPdf(item)" title="Download PDF">
                   <i class="fas fa-file-pdf"></i>
                 </button>
               </div>
@@ -438,26 +394,24 @@
               <small class="d-block text-emerald fw-600">₹{{ (item.total_commission_earned || 0) | number:'1.0-0' }}</small>
             </td>
             <td data-label="Status">
-              <select
-                class="form-select form-select-sm fs-11 fw-700 status-dropdown shadow-none"
-                style="min-width: 110px; font-size: 11px; padding: 3px 6px; border-radius: 6px;"
-                [ngClass]="{
-                  'border-success text-success bg-success-subtle': item.status === 'Active' || item.status === 'Approved',
-                  'border-warning text-warning-dark bg-warning-subtle': (item.status === 'Pending' || !item.status) && item.status !== 'Active' && item.status !== 'Approved' && item.status !== 'Suspended' && item.status !== 'Rejected',
-                  'border-danger text-danger bg-danger-subtle': item.status === 'Suspended' || item.status === 'Rejected'
-                }"
-                [value]="item.status || 'Active'"
-                (change)="onTeamMemberInlineStatusChange(item, $event)">
-                <option value="Pending" *ngIf="item.status === 'Pending' || !item.status">Pending</option>
-                <option value="Active">&#x2714; Active</option>
-                <option value="Suspended">&#x2716; Suspended</option>
-              </select>
+              <span class="chip" [ngClass]="{
+                'chip-ok': item.status === 'Active' || item.status === 'Approved',
+                'chip-warn': item.status === 'Pending' || !item.status,
+                'chip-err': item.status === 'Suspended' || item.status === 'Rejected'
+              }">
+                <i class="fas" [ngClass]="{
+                  'fa-check-circle': item.status === 'Active' || item.status === 'Approved',
+                  'fa-clock': item.status === 'Pending' || !item.status,
+                  'fa-ban': item.status === 'Suspended' || item.status === 'Rejected'
+                }"></i>
+                {{ item.status || 'Active' }}
+              </span>
             </td>
             <td class="priority-3" data-label="Joined At">
               <small class="date-text">{{ item.joined_at ? (item.joined_at | date:'mediumDate') : (item.created_at | date:'mediumDate') || '—' }}</small>
             </td>
             <td class="td-actions text-end" data-label="Actions">
-              <span class="badge bg-light text-muted border">Team Member</span>
+              <span class="badge bg-light text-muted border">Roster Member</span>
             </td>
           </tr>
         </tbody>
