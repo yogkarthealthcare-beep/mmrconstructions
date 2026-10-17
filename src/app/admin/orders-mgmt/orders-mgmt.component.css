@@ -1,159 +1,426 @@
+:host {
+  display: block;
+}
+
 .orders-container {
   padding: 0;
   background-color: transparent;
   min-height: auto;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
+/* ── 1. HERO BANNER ─────────────────────────────────────────── */
+.admin-hero-card {
+  background: linear-gradient(135deg, #062b18 0%, #0d4a2c 50%, #062013 100%) !important;
+  border-radius: 10px !important;
+  padding: 10px 16px !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(6, 43, 24, 0.12) !important;
+  border: 1px solid rgba(201, 168, 76, 0.35) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-hero-badge {
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  color: #c9a84c !important;
+  margin-bottom: 2px !important;
+  text-transform: uppercase !important;
+}
+
+.admin-hero-title {
+  font-family: var(--ff-display, serif) !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  line-height: 1.25 !important;
+  margin-bottom: 2px !important;
+}
+
+.admin-hero-sub {
+  font-size: 11.5px !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+  line-height: 1.3 !important;
+}
+
+/* ── 2. COMPACT HORIZONTAL KPI CARDS ───────────────────────── */
+.kpi-card {
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  padding: 6px 10px !important;
+  min-height: 48px !important;
+  max-height: 56px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 8px 14px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
-.page-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0;
-  line-height: 1.25;
+.kpi-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06);
 }
 
-.page-sub {
-  color: #64748b;
-  font-size: 11px;
-  margin: 1px 0 0 0;
-  line-height: 1.3;
+.kpi-card.s-blue {
+  border-left: 3px solid #2563eb !important;
+  background: linear-gradient(90deg, #eff6ff 0%, #ffffff 100%) !important;
 }
 
-.header-icon-badge {
-  width: 28px;
-  height: 28px;
-  aspect-ratio: 1 / 1;
-  border-radius: 7px;
-  background: #eff6ff;
-  color: #2563eb;
+.kpi-card.s-green {
+  border-left: 3px solid #10b981 !important;
+  background: linear-gradient(90deg, #ecfdf5 0%, #ffffff 100%) !important;
+}
+
+.kpi-card.s-orange {
+  border-left: 3px solid #f59e0b !important;
+  background: linear-gradient(90deg, #fffbeb 0%, #ffffff 100%) !important;
+}
+
+.kpi-card.s-purple {
+  border-left: 3px solid #8b5cf6 !important;
+  background: linear-gradient(90deg, #f5f3ff 0%, #ffffff 100%) !important;
+}
+
+.kpi-content {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  flex-shrink: 0;
-  border: 1px solid #dbeafe;
-  margin-right: 4px;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.header-actions .btn {
-  height: 30px;
-  padding: 0 12px;
-  font-size: 11.5px;
-  font-weight: 600;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+.kpi-label {
+  font-size: 9.5px !important;
+  color: #64748b !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.35px !important;
+  margin-bottom: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpi-value {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  line-height: 1.1 !important;
+  margin: 0 !important;
+  letter-spacing: -0.01em !important;
   white-space: nowrap;
 }
 
-.filters-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+.kpi-subtext {
+  font-size: 9px !important;
+  color: #94a3b8 !important;
+  line-height: 1.1 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.filters-card .form-label {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+.kpi-icon-wrap {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 12px !important;
+  flex-shrink: 0 !important;
+}
+
+.kpi-blue { background: #dbeafe !important; color: #2563eb !important; }
+.kpi-emerald { background: #d1fae5 !important; color: #059669 !important; }
+.kpi-amber { background: #fef3c7 !important; color: #d97706 !important; }
+.kpi-purple { background: #ede9fe !important; color: #7c3aed !important; }
+
+/* ── 3. HORIZONTAL PILL TABS NAVIGATION ─────────────────────── */
+.tabs-nav {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  background: #ffffff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap !important;
+}
+
+.tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
   color: #475569;
-  margin-bottom: 3px;
-  display: block;
-  line-height: 1.2;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
 }
 
-.filters-card .form-control,
-.filters-card .form-select {
-  height: 32px;
-  min-height: 32px;
-  font-size: 11.5px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
+.tab-btn:hover {
+  background: #f1f5f9;
+  color: #062b18;
+}
+
+.tab-btn.active {
+  background: #062b18;
+  color: #ffffff;
+  border-color: #062b18;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(6, 43, 24, 0.2);
+}
+
+.tab-btn.active .badge {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+/* ── 4. FILTER CARD & CONTROLS ─────────────────────────────── */
+.filter-card {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 8px 12px;
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-box .search-icon {
+  position: absolute !important;
+  left: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  font-size: 11px !important;
+  color: #64748b !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+}
+
+.search-box input.f-input-search {
+  width: 100% !important;
+  height: var(--h-xs, 26px) !important;
+  padding-left: 32px !important;
+  padding-right: 28px !important;
+  font-size: var(--fs-xs, 12px) !important;
+  border-radius: var(--r-xs, 6px) !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+}
+
+.search-box input.f-input-search:focus {
+  border-color: #1a5c3a !important;
+  box-shadow: 0 0 0 2px rgba(26, 92, 58, 0.12) !important;
+  outline: none !important;
+}
+
+.btn-clear-search {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  padding: 2px 4px;
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.btn-clear-search:hover {
   color: #0f172a;
 }
 
-.filters-card .form-control:focus,
-.filters-card .form-select:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+.sel-sm {
+  height: var(--h-xs, 26px) !important;
+  font-size: var(--fs-xs, 12px) !important;
+  padding: 0 8px !important;
+  border-radius: var(--r-xs, 6px) !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
-.filters-card .input-group {
-  height: 32px;
+.filter-select-wrap {
+  min-width: 130px;
 }
 
-.filters-card .input-group-text {
-  height: 32px;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-right: none;
-  font-size: 11px;
-  color: #64748b;
-  padding: 0 9px;
-  border-radius: 6px 0 0 6px;
+.date-input-sm {
+  height: var(--h-xs, 26px) !important;
+  font-size: var(--fs-xs, 12px) !important;
+  padding: 0 6px !important;
+  border-radius: var(--r-xs, 6px) !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
-.filters-card .input-group .form-control {
-  border-radius: 0 6px 6px 0;
-  border-left: none;
-}
-
-.filters-card .btn {
-  height: 32px;
-  padding: 0 12px;
-  font-size: 11.5px;
-  font-weight: 600;
-  border-radius: 6px;
+/* ── 5. STATUS CHIPS & TABLE ────────────────────────────────── */
+.chip {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 5px;
-  white-space: nowrap;
-}
-
-.font-xs { font-size: 0.72rem; }
-.font-sm { font-size: 0.8rem; }
-.font-mono { font-family: monospace; }
-
-.table th {
-  white-space: nowrap;
-  font-size: 10.5px;
+  gap: 4px;
+  padding: 1.5px 7px;
+  border-radius: 12px;
+  font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 6px 8px;
-  height: 36px;
-  background: #f8fafc;
-  border-bottom: 1.5px solid #e2e8f0;
-  vertical-align: middle;
+  letter-spacing: 0.25px;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
-.table td {
-  white-space: nowrap;
-  padding: 6px 8px;
-  height: 42px;
-  font-size: 11.5px;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
+.chip-ok {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.chip-warn {
+  background: #fef9c3;
+  color: #a16207;
+  border: 1px solid #fef08a;
+}
+
+.chip-err {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.chip-blue {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.code-badge {
+  font-family: monospace;
+  font-size: 11px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.custom-dash-table th {
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  color: #64748b !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding: 6px 10px !important;
+  background: #f8fafc !important;
+  white-space: nowrap !important;
+}
+
+.custom-dash-table td {
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+}
+
+/* ── 6. BUTTONS & ACTIONS ───────────────────────────────────── */
+.btn-xs {
+  height: var(--h-xs, 26px) !important;
+  min-height: var(--h-xs, 26px) !important;
+  padding: 0 10px !important;
+  font-size: var(--fs-xs, 12px) !important;
+  font-weight: 600 !important;
+  border-radius: var(--r-xs, 6px) !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+
+.btn-emerald {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  border: 1px solid #10b981 !important;
+}
+
+.btn-emerald:hover {
+  background: #059669 !important;
+  border-color: #059669 !important;
+}
+
+/* 24px Square Icon Action Buttons */
+.ibtn {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: var(--icon-btn, 24px) !important;
+  height: var(--icon-btn, 24px) !important;
+  min-width: var(--icon-btn, 24px) !important;
+  padding: 0 !important;
+  border-radius: var(--r-xs, 6px) !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  cursor: pointer !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  transition: all 0.15s ease !important;
+  text-decoration: none !important;
+}
+
+.ibtn:hover {
+  background: #f1f5f9 !important;
+}
+
+.ibtn.view:hover {
+  color: #2563eb !important;
+  border-color: #bfdbfe !important;
+  background: #eff6ff !important;
+}
+
+.ibtn.download:hover {
+  color: #059669 !important;
+  border-color: #a7f3d0 !important;
+  background: #ecfdf5 !important;
+}
+
+.ibtn.print:hover {
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+}
+
+.ibtn.del:hover {
+  color: #b91c1c !important;
+  border-color: #fecaca !important;
+  background: #fef2f2 !important;
+}
+
+.action-btn-group {
+  display: inline-flex !important;
+  gap: 4px !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .toast-banner {
@@ -179,61 +446,69 @@
   border: 1px solid #fecaca;
 }
 
-.custom-dash-table {
-  min-width: 1200px;
-}
-
-/* ── MOBILE & TABLET RESPONSIVENESS (<= 768px) ── */
+/* ── 7. MOBILE OPTIMIZATIONS (390px) ────────────────────────── */
 @media (max-width: 768px) {
-  .page-header {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-    padding: 8px 10px !important;
-    border-radius: 8px !important;
-    margin-bottom: 8px !important;
+  .tabs-nav {
+    padding: 4px 6px;
   }
 
-  .header-title-section {
-    width: 100% !important;
-  }
-
-  .page-title {
-    font-size: 1.05rem !important;
-    line-height: 1.25 !important;
-  }
-
-  .page-sub {
-    font-size: 11px !important;
-    line-height: 1.35 !important;
-    margin-top: 2px !important;
-  }
-
-  .header-actions {
-    width: 100% !important;
-  }
-
-  .header-actions .btn {
-    width: 100% !important;
-    height: 32px !important;
+  .tab-btn {
+    height: 34px !important;
     font-size: 11.5px !important;
+    padding: 0 10px !important;
   }
 
-  .filters-card {
-    padding: 8px 10px !important;
-    border-radius: 8px !important;
-    margin-bottom: 8px !important;
+  .kpi-card {
+    min-height: 48px !important;
+    max-height: 54px !important;
+    padding: 5px 6px !important;
+    gap: 4px !important;
   }
 
-  .filters-card .col-12.d-flex {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 6px !important;
+  .kpi-label {
+    font-size: 8.5px !important;
+    letter-spacing: 0 !important;
   }
 
-  .filters-card .btn {
+  .kpi-value {
+    font-size: 13.5px !important;
+  }
+
+  .kpi-subtext {
+    font-size: 8px !important;
+  }
+
+  .kpi-icon-wrap {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 10px !important;
+  }
+
+  .filter-card .search-box {
     width: 100% !important;
-    height: 32px !important;
-    font-size: 11.5px !important;
+    min-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  .search-box input.f-input-search {
+    height: 38px !important;
+    padding-left: 38px !important;
+    font-size: 13px !important;
+  }
+
+  .filter-select-wrap {
+    flex: 1 1 calc(50% - 4px) !important;
+    min-width: calc(50% - 4px) !important;
+  }
+
+  .sel-sm,
+  .date-input-sm {
+    height: 38px !important;
+    font-size: 12.5px !important;
+  }
+
+  .btn-xs {
+    height: 34px !important;
+    font-size: 12px !important;
   }
 }

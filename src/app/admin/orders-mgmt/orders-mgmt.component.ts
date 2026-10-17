@@ -29,6 +29,40 @@ export class AdminOrdersMgmtComponent implements OnInit {
   fromDate = '';
   toDate = '';
   sortBy = 'latest';
+  activeTab: 'all' | 'paid' | 'pending' | 'completed' | 'cancelled' = 'all';
+
+  get paidOrdersCount(): number {
+    return this.orders.filter(o => o.payment_status === 'Paid').length;
+  }
+
+  get pendingOrdersCount(): number {
+    return this.orders.filter(o => o.payment_status !== 'Paid').length;
+  }
+
+  get completedOrdersCount(): number {
+    return this.orders.filter(o => o.order_status === 'Completed').length;
+  }
+
+  setTab(tab: 'all' | 'paid' | 'pending' | 'completed' | 'cancelled') {
+    this.activeTab = tab;
+    if (tab === 'all') {
+      this.paymentStatus = '';
+      this.orderStatus = '';
+    } else if (tab === 'paid') {
+      this.paymentStatus = 'Paid';
+      this.orderStatus = '';
+    } else if (tab === 'pending') {
+      this.paymentStatus = 'Pending';
+      this.orderStatus = '';
+    } else if (tab === 'completed') {
+      this.paymentStatus = '';
+      this.orderStatus = 'Completed';
+    } else if (tab === 'cancelled') {
+      this.paymentStatus = '';
+      this.orderStatus = 'Cancelled';
+    }
+    this.loadOrders(1);
+  }
 
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
@@ -85,6 +119,7 @@ export class AdminOrdersMgmtComponent implements OnInit {
     this.fromDate = '';
     this.toDate = '';
     this.sortBy = 'latest';
+    this.activeTab = 'all';
     this.loadOrders(1);
   }
 

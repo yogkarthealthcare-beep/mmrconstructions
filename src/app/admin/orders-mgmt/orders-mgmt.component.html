@@ -1,44 +1,128 @@
 <div class="orders-container">
-  <div class="page-header">
-    <div class="header-title-section">
-      <div class="d-flex align-items-center gap-2">
-        <div class="header-icon-badge">
-          <i class="fas fa-file-invoice"></i>
-        </div>
-        <div>
-          <h1 class="page-title">Orders & Invoice Management</h1>
-          <p class="page-sub">View, filter, export, and manage all customer & associate booking orders.</p>
-        </div>
-      </div>
-    </div>
-    <div class="header-actions">
-      <a routerLink="/admin/invoice-settings" class="btn btn-outline-primary">
-        <i class="fas fa-cog me-1"></i> Invoice Settings
-      </a>
-    </div>
-  </div>
-
-  <!-- Toast Alert -->
+  <!-- Toast Notification -->
   <div *ngIf="toastMessage" [class]="'toast-banner toast-' + toastType">
     <i [class]="toastType === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle'"></i>
     <span>{{ toastMessage }}</span>
   </div>
 
-  <!-- Filters & Search Toolbar -->
-  <div class="filters-card">
-    <div class="row g-2 align-items-end">
+  <!-- 1. TOP HERO BANNER -->
+  <div class="admin-hero-card d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+    <div>
+      <div class="admin-hero-badge"><i class="fas fa-file-invoice me-1"></i> Master Invoicing &amp; Orders Engine</div>
+      <h1 class="admin-hero-title mb-0">Orders &amp; Invoice Management</h1>
+      <p class="admin-hero-sub mb-0">View, filter, export, and manage all customer &amp; associate booking orders and payments</p>
+    </div>
+    <div class="d-flex align-items-center gap-1">
+      <a routerLink="/admin/invoice-settings" class="btn btn-outline-light btn-xs">
+        <i class="fas fa-cog me-1"></i> Invoice Settings
+      </a>
+      <button class="btn btn-outline-light btn-xs" (click)="loadOrders(pagination.page)" [disabled]="loading" title="Refresh Orders">
+        <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. 4 COMPACT HORIZONTAL KPI CARDS -->
+  <div class="row g-2 mb-2">
+    <div class="col-6 col-md-3">
+      <div class="kpi-card s-blue">
+        <div class="kpi-content">
+          <span class="kpi-label">Total Invoices</span>
+          <span class="kpi-value">{{ pagination.total }}</span>
+          <span class="kpi-subtext">Registered Records</span>
+        </div>
+        <div class="kpi-icon-wrap kpi-blue">
+          <i class="fas fa-file-invoice"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="kpi-card s-green">
+        <div class="kpi-content">
+          <span class="kpi-label">Paid Invoices</span>
+          <span class="kpi-value">{{ paidOrdersCount }}</span>
+          <span class="kpi-subtext">Settled Orders</span>
+        </div>
+        <div class="kpi-icon-wrap kpi-emerald">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="kpi-card s-orange">
+        <div class="kpi-content">
+          <span class="kpi-label">Pending Payments</span>
+          <span class="kpi-value">{{ pendingOrdersCount }}</span>
+          <span class="kpi-subtext">Awaiting Clearance</span>
+        </div>
+        <div class="kpi-icon-wrap kpi-amber">
+          <i class="fas fa-clock"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="kpi-card s-purple">
+        <div class="kpi-content">
+          <span class="kpi-label">Completed Orders</span>
+          <span class="kpi-value">{{ completedOrdersCount }}</span>
+          <span class="kpi-subtext">Finalized Contracts</span>
+        </div>
+        <div class="kpi-icon-wrap kpi-purple">
+          <i class="fas fa-receipt"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. HORIZONTAL PILL TABS NAVIGATION -->
+  <div class="tabs-nav mb-2">
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+      <i class="fas fa-layer-group"></i> All Orders
+      <span class="badge rounded-pill bg-light text-dark ms-1">{{ pagination.total }}</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'paid'" (click)="setTab('paid')">
+      <i class="fas fa-check-circle text-emerald"></i> Paid Only
+      <span class="badge rounded-pill bg-light text-dark ms-1">{{ paidOrdersCount }}</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'pending'" (click)="setTab('pending')">
+      <i class="fas fa-clock text-amber"></i> Pending Payment
+      <span class="badge rounded-pill bg-light text-dark ms-1">{{ pendingOrdersCount }}</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'completed'" (click)="setTab('completed')">
+      <i class="fas fa-shield-alt text-primary"></i> Completed Orders
+      <span class="badge rounded-pill bg-light text-dark ms-1">{{ completedOrdersCount }}</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'cancelled'" (click)="setTab('cancelled')">
+      <i class="fas fa-ban text-danger"></i> Cancelled Orders
+    </button>
+  </div>
+
+  <!-- 4. COMPACT FILTER CONTROLS TOOLBAR -->
+  <div class="filter-card mb-2">
+    <div class="row g-2 align-items-center">
+      <!-- Search Input -->
       <div class="col-12 col-md-4 col-xl-3">
-        <label class="form-label">SEARCH ORDERS</label>
-        <div class="input-group">
-          <span class="input-group-text"><i class="fas fa-search"></i></span>
-          <input type="text" class="form-control" [(ngModel)]="search" (keyup.enter)="onFilterChange()"
-            placeholder="Name, Mobile, Plot, Invoice #, Order ID..." />
+        <div class="search-box">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            class="f-input-search" 
+            [(ngModel)]="search" 
+            (keyup.enter)="onFilterChange()"
+            placeholder="Name, Mobile, Plot, Invoice #, Order ID..." 
+          />
+          <button *ngIf="search" class="btn-clear-search" (click)="search = ''; onFilterChange()">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
       </div>
 
+      <!-- Payment Status -->
       <div class="col-6 col-md-2 col-xl-2">
-        <label class="form-label">PAYMENT STATUS</label>
-        <select class="form-select" [(ngModel)]="paymentStatus" (change)="onFilterChange()">
+        <select class="sel-sm w-100" [(ngModel)]="paymentStatus" (change)="onFilterChange()">
           <option value="">All Payments</option>
           <option value="Paid">Paid</option>
           <option value="Pending">Pending</option>
@@ -47,9 +131,9 @@
         </select>
       </div>
 
+      <!-- Order Status -->
       <div class="col-6 col-md-2 col-xl-2">
-        <label class="form-label">ORDER STATUS</label>
-        <select class="form-select" [(ngModel)]="orderStatus" (change)="onFilterChange()">
+        <select class="sel-sm w-100" [(ngModel)]="orderStatus" (change)="onFilterChange()">
           <option value="">All Orders</option>
           <option value="Completed">Completed</option>
           <option value="Pending">Pending</option>
@@ -57,19 +141,19 @@
         </select>
       </div>
 
-      <div class="col-6 col-md-2 col-xl-2">
-        <label class="form-label">FROM DATE</label>
-        <input type="date" class="form-control" [(ngModel)]="fromDate" (change)="onFilterChange()" />
+      <!-- From Date -->
+      <div class="col-6 col-md-2 col-xl-1">
+        <input type="date" class="date-input-sm w-100" [(ngModel)]="fromDate" (change)="onFilterChange()" title="From Date" />
       </div>
 
-      <div class="col-6 col-md-2 col-xl-2">
-        <label class="form-label">TO DATE</label>
-        <input type="date" class="form-control" [(ngModel)]="toDate" (change)="onFilterChange()" />
+      <!-- To Date -->
+      <div class="col-6 col-md-2 col-xl-1">
+        <input type="date" class="date-input-sm w-100" [(ngModel)]="toDate" (change)="onFilterChange()" title="To Date" />
       </div>
 
-      <div class="col-12 col-md-4 col-xl-3">
-        <label class="form-label">SORT BY</label>
-        <select class="form-select" [(ngModel)]="sortBy" (change)="onFilterChange()">
+      <!-- Sort By -->
+      <div class="col-6 col-md-2 col-xl-2">
+        <select class="sel-sm w-100" [(ngModel)]="sortBy" (change)="onFilterChange()">
           <option value="latest">Latest First</option>
           <option value="oldest">Oldest First</option>
           <option value="amount_desc">Amount: High to Low</option>
@@ -77,136 +161,156 @@
         </select>
       </div>
 
-      <div class="col-12 col-md-8 col-xl-9 d-flex justify-content-end gap-2 mt-2 mt-md-0">
-        <button class="btn btn-primary" (click)="onFilterChange()">
-          <i class="fas fa-filter me-1"></i> Apply Filters
+      <!-- Action Buttons -->
+      <div class="col-6 col-md-10 col-xl-1 d-flex justify-content-end gap-1">
+        <button class="btn btn-emerald btn-xs" (click)="onFilterChange()" title="Apply Filters">
+          <i class="fas fa-filter me-1"></i> Apply
         </button>
-        <button class="btn btn-outline-secondary" (click)="resetFilters()">
-          <i class="fas fa-undo me-1"></i> Reset
+        <button class="btn btn-outline-secondary btn-xs" (click)="resetFilters()" title="Reset Filters">
+          <i class="fas fa-undo"></i>
         </button>
       </div>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-success" role="status"></div>
-    <p class="mt-2 text-muted">Loading Orders Data...</p>
+  <div *ngIf="loading" class="panel-card text-center py-5 mb-2">
+    <i class="fas fa-spinner fa-spin fs-2 text-emerald"></i>
+    <p class="mt-2 text-muted fs-12 mb-0">Loading Orders Data...</p>
   </div>
 
-  <!-- Orders Listing Table -->
-  <app-admin-table-container
-    *ngIf="!loading && orders.length > 0"
-    title="Orders Directory"
-    [count]="pagination.total"
-    (export)="exportData('all', 'excel')">
-    <div class="table-responsive bg-white rounded-3 shadow-sm border mt-3">
-      <table class="table table-hover align-middle mb-0 font-sm custom-dash-table">
-        <thead class="table-dark">
-          <tr>
-            <th class="th-sno">#</th>
-            <th>Order ID</th>
-            <th>Invoice #</th>
-            <th>Booking Date</th>
-            <th>Customer Name</th>
-            <th>Mobile</th>
-            <th>Email</th>
-            <th>Associate Name</th>
-            <th>Project / Site</th>
-            <th>Plot #</th>
-            <th>Plot Size</th>
-            <th>Rate/Sq.Ft</th>
-            <th>Plot Price</th>
-            <th>Discount</th>
-            <th>Reg. Charges</th>
-            <th>Other Charges</th>
-            <th>Final Amount</th>
-            <th>Paid Amount</th>
-            <th>Balance</th>
-            <th>Payment Method</th>
-            <th>Pay Status</th>
-            <th>Order Status</th>
-            <th class="text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let order of orders; let i = index">
-            <td class="td-sno">{{ (pagination.page - 1) * pagination.limit + i + 1 }}</td>
-            <td><span class="badge bg-secondary font-mono">{{ order.order_id || ('BK-' + order.booking_id) }}</span></td>
-            <td>
-              <a [routerLink]="['/booking', order.invoice_number || order.booking_id, 'invoice']" class="fw-bold text-success text-decoration-none">
-                {{ order.invoice_number }}
-              </a>
-            </td>
-            <td>{{ order.invoice_date | date:'mediumDate' }}</td>
-            <td><strong class="text-dark">{{ order.invoice_data?.customer_name || '-' }}</strong></td>
-            <td>{{ order.invoice_data?.mobile_no || '-' }}</td>
-            <td>{{ order.invoice_data?.email || '-' }}</td>
-            <td>
-              <span *ngIf="order.invoice_data?.associate_name" class="badge bg-info text-dark">
-                {{ order.invoice_data?.associate_name }}
-              </span>
-              <span *ngIf="!order.invoice_data?.associate_name" class="text-muted font-xs">Direct</span>
-            </td>
-            <td>{{ order.invoice_data?.site_name || '-' }}</td>
-            <td><span class="badge bg-light text-dark border">{{ order.invoice_data?.plot_number || '-' }}</span></td>
-            <td>{{ order.invoice_data?.plot_size || '-' }}</td>
-            <td>₹{{ order.invoice_data?.rate_per_sqft || 0 | number }}</td>
-            <td>₹{{ (order.invoice_data?.total_plot_price || order.subtotal || 0) | number }}</td>
-            <td class="text-danger">₹{{ (order.discount || 0) | number }}</td>
-            <td>₹{{ (order.registration_charges || 0) | number }}</td>
-            <td>₹{{ (order.other_charges || 0) | number }}</td>
-            <td><strong class="text-dark">₹{{ (order.grand_total || 0) | number }}</strong></td>
-            <td class="text-success fw-bold">₹{{ (order.paid_amount || 0) | number }}</td>
-            <td class="text-warning fw-bold">₹{{ (order.balance_amount || 0) | number }}</td>
-            <td><span class="badge bg-light text-dark border">{{ order.payment_method || 'Online' }}</span></td>
-            <td>
-              <span [class]="order.payment_status === 'Paid' ? 'badge bg-success' : 'badge bg-warning text-dark'">
-                {{ order.payment_status }}
-              </span>
-            </td>
-            <td>
-              <span [class]="order.order_status === 'Completed' ? 'badge bg-success' : 'badge bg-secondary'">
-                {{ order.order_status }}
-              </span>
-            </td>
-            <td class="text-center">
-              <div class="btn-group btn-group-sm">
-                <a [routerLink]="['/booking', order.invoice_number || order.booking_id, 'invoice']" class="btn btn-outline-success btn-xs" title="View Invoice">
-                  <i class="fas fa-eye"></i>
-                </a>
-                <button class="btn btn-outline-primary btn-xs" (click)="downloadPdf(order)" title="Download PDF">
-                  <i class="fas fa-download"></i>
-                </button>
-                <button class="btn btn-outline-dark btn-xs" (click)="printOrder(order)" title="Print Invoice">
-                  <i class="fas fa-print"></i>
-                </button>
-                <button class="btn btn-outline-danger btn-xs" (click)="deleteOrder(order)" title="Delete Order & Reset Plot">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <tr *ngIf="orders.length === 0">
-            <td colspan="23" class="text-center py-5 text-muted">
-              <i class="fas fa-inbox fa-3x mb-3 text-secondary opacity-50 d-block"></i>
-              No orders found matching your filter criteria.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <!-- 5. ORDERS LISTING TABLE -->
+  <div class="panel-card p-3 mb-2" *ngIf="!loading">
+    <div *ngIf="orders.length === 0" class="text-center py-5 text-muted">
+      <i class="fas fa-inbox fa-3x mb-2 text-secondary opacity-50 d-block"></i>
+      <h6 class="fw-700 text-dark mb-1">No Orders Found</h6>
+      <p class="fs-12 mb-0 text-muted">No booking orders match your current filter parameters.</p>
     </div>
-  </app-admin-table-container>
 
-  <!-- Unified Pagination -->
-  <app-admin-pagination
-    *ngIf="!loading && pagination.total > 0"
-    [totalItems]="pagination.total"
-    [page]="pagination.page"
-    [pageSize]="pagination.limit"
-    (pageChange)="onPageChange($event)"
-    (pageSizeChange)="onPageSizeChange($event)"
-    (export)="exportData($event.mode, $event.format)">
-  </app-admin-pagination>
+    <app-admin-table-container
+      *ngIf="orders.length > 0"
+      title="Orders Directory"
+      [count]="pagination.total"
+      (export)="exportData('all', 'excel')">
+      <div class="table-responsive">
+        <table class="table align-middle custom-dash-table mb-0">
+          <thead>
+            <tr>
+              <th class="th-sno">#</th>
+              <th>Order ID</th>
+              <th>Invoice #</th>
+              <th>Booking Date</th>
+              <th>Customer Name</th>
+              <th>Mobile</th>
+              <th>Email</th>
+              <th>Associate</th>
+              <th>Project / Site</th>
+              <th>Plot #</th>
+              <th>Plot Size</th>
+              <th>Rate/Sq.Ft</th>
+              <th>Plot Price</th>
+              <th>Discount</th>
+              <th>Reg. Charges</th>
+              <th>Other Charges</th>
+              <th>Final Amount</th>
+              <th>Paid Amount</th>
+              <th>Balance</th>
+              <th>Payment Method</th>
+              <th>Pay Status</th>
+              <th>Order Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let order of orders; let i = index">
+              <td class="td-sno">{{ (pagination.page - 1) * pagination.limit + i + 1 }}</td>
+              <td><span class="code-badge">{{ order.order_id || ('BK-' + order.booking_id) }}</span></td>
+              <td>
+                <a [routerLink]="['/booking', order.invoice_number || order.booking_id, 'invoice']" class="fw-700 text-emerald text-decoration-none">
+                  {{ order.invoice_number }}
+                </a>
+              </td>
+              <td class="fs-11 text-muted">{{ order.invoice_date | date:'mediumDate' }}</td>
+              <td><strong class="text-dark">{{ order.invoice_data?.customer_name || '-' }}</strong></td>
+              <td class="fs-11">{{ order.invoice_data?.mobile_no || '-' }}</td>
+              <td class="fs-11 text-muted">{{ order.invoice_data?.email || '-' }}</td>
+              <td>
+                <span *ngIf="order.invoice_data?.associate_name" class="chip chip-blue">
+                  {{ order.invoice_data?.associate_name }}
+                </span>
+                <span *ngIf="!order.invoice_data?.associate_name" class="text-muted fs-11">Direct</span>
+              </td>
+              <td>{{ order.invoice_data?.site_name || '-' }}</td>
+              <td><span class="badge bg-light text-dark border">#{{ order.invoice_data?.plot_number || '-' }}</span></td>
+              <td>{{ order.invoice_data?.plot_size || '-' }}</td>
+              <td>₹{{ order.invoice_data?.rate_per_sqft || 0 | number }}</td>
+              <td>₹{{ (order.invoice_data?.total_plot_price || order.subtotal || 0) | number }}</td>
+              <td class="text-danger">₹{{ (order.discount || 0) | number }}</td>
+              <td>₹{{ (order.registration_charges || 0) | number }}</td>
+              <td>₹{{ (order.other_charges || 0) | number }}</td>
+              <td><strong class="text-dark">₹{{ (order.grand_total || 0) | number }}</strong></td>
+              <td class="text-emerald fw-700">₹{{ (order.paid_amount || 0) | number }}</td>
+              <td class="text-amber fw-700">₹{{ (order.balance_amount || 0) | number }}</td>
+              <td><span class="badge bg-light text-dark border">{{ order.payment_method || 'Online' }}</span></td>
+              <td>
+                <span class="chip" [ngClass]="{
+                  'chip-ok': order.payment_status === 'Paid',
+                  'chip-warn': order.payment_status === 'Pending' || order.payment_status === 'Verification Pending',
+                  'chip-err': order.payment_status === 'Rejected'
+                }">
+                  <i class="fas" [ngClass]="{
+                    'fa-check-circle': order.payment_status === 'Paid',
+                    'fa-clock': order.payment_status === 'Pending' || order.payment_status === 'Verification Pending',
+                    'fa-times-circle': order.payment_status === 'Rejected'
+                  }"></i>
+                  {{ order.payment_status || 'Pending' }}
+                </span>
+              </td>
+              <td>
+                <span class="chip" [ngClass]="{
+                  'chip-ok': order.order_status === 'Completed',
+                  'chip-warn': order.order_status === 'Pending',
+                  'chip-err': order.order_status === 'Cancelled'
+                }">
+                  <i class="fas" [ngClass]="{
+                    'fa-check-circle': order.order_status === 'Completed',
+                    'fa-clock': order.order_status === 'Pending',
+                    'fa-ban': order.order_status === 'Cancelled'
+                  }"></i>
+                  {{ order.order_status || 'Pending' }}
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="action-btn-group">
+                  <a [routerLink]="['/booking', order.invoice_number || order.booking_id, 'invoice']" class="ibtn view" title="View Invoice">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <button type="button" class="ibtn download" (click)="downloadPdf(order)" title="Download PDF">
+                    <i class="fas fa-download"></i>
+                  </button>
+                  <button type="button" class="ibtn print" (click)="printOrder(order)" title="Print Invoice">
+                    <i class="fas fa-print"></i>
+                  </button>
+                  <button type="button" class="ibtn del" (click)="deleteOrder(order)" title="Delete Order & Reset Plot">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </app-admin-table-container>
+
+    <!-- Unified Pagination -->
+    <app-admin-pagination
+      *ngIf="orders.length > 0"
+      [totalItems]="pagination.total"
+      [page]="pagination.page"
+      [pageSize]="pagination.limit"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (export)="exportData($event.mode, $event.format)">
+    </app-admin-pagination>
+  </div>
 </div>
