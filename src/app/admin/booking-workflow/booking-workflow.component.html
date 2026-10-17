@@ -1,56 +1,325 @@
-<div *ngIf="toast" class="panel-alert panel-alert-success workflow-toast">{{ toast }}</div>
-<div class="pg-header"><h4>Booking & Compliance Workflow</h4><p>Configure booking payments, KYC approvals, locks, appointments, and action alerts.</p></div>
-
-<div class="filter-tabs mb-4">
-  <div class="filter-tab" [class.active]="activeTab==='settings'" (click)="activeTab='settings'">Booking Settings</div>
-  <div class="filter-tab" [class.active]="activeTab==='kyc'" (click)="activeTab='kyc'">KYC Verification</div>
-  <div class="filter-tab" [class.active]="activeTab==='alerts'" (click)="activeTab='alerts'">Alert Center</div>
+<!-- Toast Notification -->
+<div *ngIf="toast" class="workflow-toast">
+  <i class="fas fa-check-circle text-emerald me-2"></i> {{ toast }}
 </div>
 
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner"></i></div>
-
-<div class="panel-card" *ngIf="!loading && activeTab==='settings'">
-  <div class="panel-card-title">Initial Booking Payment Formula</div>
-  <div class="row g-3">
-    <div class="col-md-4"><label class="f-label">Minimum Booking Amount</label><input class="f-input" type="number" [(ngModel)]="settings.minimum_booking_amount"></div>
-    <div class="col-md-4"><label class="f-label">First EMI Amount</label><input class="f-input" type="number" [(ngModel)]="settings.first_emi_amount"></div>
-    <div class="col-md-4"><label class="f-label">Total Required</label><input class="f-input" [value]="requiredPayment" readonly></div>
-    <div class="col-md-4"><label class="f-label">Plot Lock Minutes</label><input class="f-input" type="number" [(ngModel)]="settings.plot_lock_minutes"></div>
-    <div class="col-md-4"><label class="f-label">Appointment Days Available</label><input class="f-input" type="number" [(ngModel)]="settings.appointment_days_ahead"></div>
-    <div class="col-md-2"><label class="f-label">Office Opens</label><input class="f-input" type="time" [(ngModel)]="settings.office_open_time"></div>
-    <div class="col-md-2"><label class="f-label">Office Closes</label><input class="f-input" type="time" [(ngModel)]="settings.office_close_time"></div>
-    <div class="col-md-6"><label class="f-label">Company Name</label><input class="f-input" [(ngModel)]="settings.company_name"></div>
-    <div class="col-md-6"><label class="f-label">Company Email</label><input class="f-input" [(ngModel)]="settings.company_email"></div>
-    <div class="col-12"><label class="f-label">Company Address</label><textarea class="f-input" rows="2" [(ngModel)]="settings.company_address"></textarea></div>
+<!-- 1. TOP HERO BANNER -->
+<div class="admin-hero-card d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+  <div>
+    <div class="admin-hero-badge"><i class="fas fa-shield-alt me-1"></i> Booking &amp; Compliance Engine</div>
+    <h1 class="admin-hero-title mb-0">Booking &amp; Compliance Workflow</h1>
+    <p class="admin-hero-sub mb-0">Configure booking payments, KYC approvals, locks, appointments, and action alerts</p>
   </div>
-  <button class="btn btn-green mt-3" (click)="saveSettings()" [disabled]="saving">{{ saving ? 'Saving...' : 'Save Workflow Settings' }}</button>
-</div>
-
-<div *ngIf="!loading && activeTab==='kyc'">
-  <div class="d-flex justify-content-end mb-3">
-    <select class="f-select workflow-filter" [(ngModel)]="statusFilter"><option value="">All Status</option><option>Not Submitted</option><option>Submitted</option><option>Under Review</option><option>Approved</option><option>Rejected</option></select>
+  <div class="d-flex align-items-center gap-1">
+    <button class="btn btn-outline-light btn-xs" (click)="loadAll()" title="Refresh Data">
+      <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Refresh
+    </button>
   </div>
-  <div class="data-table-wrap"><div class="table-responsive"><table class="table">
-    <thead><tr><th>Customer</th><th>Status</th><th>Documents</th><th>Remarks</th><th>Actions</th></tr></thead>
-    <tbody><tr *ngFor="let row of filteredKyc">
-      <td><strong>{{ row.full_name }}</strong><div class="fs-12 text-muted">{{ row.email }} · {{ row.mobile_no }}</div></td>
-      <td><span class="sbadge" [class.sbadge-green]="row.status==='Approved'" [class.sbadge-red]="row.status==='Rejected'" [class.sbadge-yellow]="row.status!=='Approved'&&row.status!=='Rejected'">{{ row.status }}</span></td>
-      <td><div *ngFor="let doc of row.documents"><a [href]="getDocUrl(doc)" target="_blank" rel="noopener noreferrer">{{ doc.document_type }}</a></div></td>
-      <td class="fs-12">{{ row.admin_remarks || '—' }}</td>
-      <td><div class="d-flex gap-1"><button class="action-btn" title="Under Review" (click)="setKyc(row,'Under Review')"><i class="fas fa-search"></i></button><button class="action-btn success" title="Approve" (click)="setKyc(row,'Approved')"><i class="fas fa-check"></i></button><button class="action-btn danger" title="Reject / Re-upload" (click)="setKyc(row,'Rejected')"><i class="fas fa-times"></i></button></div></td>
-    </tr></tbody>
-  </table></div></div>
 </div>
 
-<div class="row g-3" *ngIf="!loading && activeTab==='alerts'">
-  <div class="col-sm-6 col-lg-4" *ngFor="let item of [
-    ['Pending Email Verifications', alerts.pending_email_verifications, 'fas fa-envelope'],
-    ['Pending KYC Reviews', alerts.pending_kyc_reviews, 'fas fa-id-card'],
-    ['Rejected Documents', alerts.rejected_documents, 'fas fa-file-circle-xmark'],
-    ['Pending Offline Bookings', alerts.pending_offline_bookings, 'fas fa-building'],
-    ['Pending Payment Approvals', alerts.pending_payment_approvals, 'fas fa-money-check'],
-    ['Pending Appointments', alerts.pending_appointment_requests, 'fas fa-calendar']
-  ]">
-    <div class="stat-card"><div class="sc-icon"><i [class]="item[2]"></i></div><div class="sc-val">{{ item[1] || 0 }}</div><div class="sc-lbl">{{ item[0] }}</div></div>
+<!-- 2. 3 COMPACT HORIZONTAL KPI CARDS -->
+<div class="row g-2 mb-2">
+  <div class="col-4 col-md-4">
+    <div class="kpi-card s-blue">
+      <div class="kpi-content">
+        <span class="kpi-label">KYC Records</span>
+        <span class="kpi-value">{{ kycRows.length }}</span>
+        <span class="kpi-subtext">Customer Submissions</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-blue">
+        <i class="fas fa-id-card"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-4 col-md-4">
+    <div class="kpi-card s-orange">
+      <div class="kpi-content">
+        <span class="kpi-label">Pending KYC Reviews</span>
+        <span class="kpi-value">{{ alerts.pending_kyc_reviews || 0 }}</span>
+        <span class="kpi-subtext">Actionable Reviews</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-amber">
+        <i class="fas fa-clock"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-4 col-md-4">
+    <div class="kpi-card s-green">
+      <div class="kpi-content">
+        <span class="kpi-label">Min Booking Amount</span>
+        <span class="kpi-value">₹{{ settings.minimum_booking_amount || 0 | number }}</span>
+        <span class="kpi-subtext">Base Threshold</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-emerald">
+        <i class="fas fa-coins"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. HORIZONTAL PILL TABS NAVIGATION -->
+<div class="tabs-nav mb-2">
+  <button class="tab-btn" [class.active]="activeTab === 'settings'" (click)="activeTab = 'settings'">
+    <i class="fas fa-sliders-h"></i> Booking Settings
+  </button>
+  <button class="tab-btn" [class.active]="activeTab === 'kyc'" (click)="activeTab = 'kyc'">
+    <i class="fas fa-user-check"></i> KYC Verification
+    <span class="badge rounded-pill bg-light text-dark ms-1">{{ kycRows.length }}</span>
+  </button>
+  <button class="tab-btn" [class.active]="activeTab === 'alerts'" (click)="activeTab = 'alerts'">
+    <i class="fas fa-bell"></i> Alert Center
+    <span class="badge rounded-pill bg-danger text-white ms-1" *ngIf="(alerts.pending_kyc_reviews || 0) + (alerts.pending_payment_approvals || 0) > 0">
+      {{ (alerts.pending_kyc_reviews || 0) + (alerts.pending_payment_approvals || 0) }}
+    </span>
+    <span class="badge rounded-pill bg-light text-dark ms-1" *ngIf="(alerts.pending_kyc_reviews || 0) + (alerts.pending_payment_approvals || 0) === 0">0</span>
+  </button>
+</div>
+
+<!-- LOADING STATE -->
+<div class="panel-card text-center py-5 mb-2" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
+  <p class="text-muted fs-12 mt-2 mb-0">Loading workflow configuration &amp; KYC data...</p>
+</div>
+
+<!-- 4. TAB 1: BOOKING SETTINGS FORM -->
+<div class="panel-card mb-2" *ngIf="!loading && activeTab === 'settings'">
+  <div class="panel-card-title">
+    <i class="fas fa-calculator text-primary"></i> Initial Booking Payment Formula &amp; Operating Policies
+  </div>
+  
+  <div class="row g-2 mb-2">
+    <div class="col-12 col-md-4">
+      <label class="f-label">Minimum Booking Amount (₹)</label>
+      <input class="f-input" type="number" [(ngModel)]="settings.minimum_booking_amount" placeholder="e.g. 50000">
+    </div>
+    <div class="col-12 col-md-4">
+      <label class="f-label">First EMI Amount (₹)</label>
+      <input class="f-input" type="number" [(ngModel)]="settings.first_emi_amount" placeholder="e.g. 25000">
+    </div>
+    <div class="col-12 col-md-4">
+      <label class="f-label">Total Required Payment (₹)</label>
+      <input class="f-input" [value]="requiredPayment" readonly>
+    </div>
+  </div>
+
+  <div class="row g-2 mb-2">
+    <div class="col-6 col-md-4">
+      <label class="f-label">Plot Lock Minutes</label>
+      <input class="f-input" type="number" [(ngModel)]="settings.plot_lock_minutes" placeholder="e.g. 30">
+    </div>
+    <div class="col-6 col-md-4">
+      <label class="f-label">Appointment Days Available Ahead</label>
+      <input class="f-input" type="number" [(ngModel)]="settings.appointment_days_ahead" placeholder="e.g. 14">
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="f-label">Office Opens</label>
+      <input class="f-input" type="time" [(ngModel)]="settings.office_open_time">
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="f-label">Office Closes</label>
+      <input class="f-input" type="time" [(ngModel)]="settings.office_close_time">
+    </div>
+  </div>
+
+  <div class="panel-card-title mt-3">
+    <i class="fas fa-building text-primary"></i> Organization &amp; Legal Identity
+  </div>
+
+  <div class="row g-2 mb-3">
+    <div class="col-12 col-md-6">
+      <label class="f-label">Company Name</label>
+      <input class="f-input" [(ngModel)]="settings.company_name" placeholder="Company Legal Name">
+    </div>
+    <div class="col-12 col-md-6">
+      <label class="f-label">Company Email</label>
+      <input class="f-input" [(ngModel)]="settings.company_email" placeholder="support@company.com">
+    </div>
+    <div class="col-12">
+      <label class="f-label">Company Address</label>
+      <textarea class="f-input" rows="2" [(ngModel)]="settings.company_address" placeholder="Registered office address..."></textarea>
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn btn-emerald btn-xs" (click)="saveSettings()" [disabled]="saving">
+      <i class="fas fa-save me-1" [class.fa-spin]="saving"></i>
+      {{ saving ? 'Saving Settings...' : 'Save Workflow Settings' }}
+    </button>
+  </div>
+</div>
+
+<!-- 5. TAB 2: KYC VERIFICATION TABLE -->
+<div *ngIf="!loading && activeTab === 'kyc'">
+  <!-- Filter card -->
+  <div class="filter-card mb-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <span class="fs-12 fw-700 text-dark">Filter by Status:</span>
+      <select class="f-select" [(ngModel)]="statusFilter">
+        <option value="">All Statuses ({{ kycRows.length }})</option>
+        <option value="Not Submitted">Not Submitted</option>
+        <option value="Submitted">Submitted</option>
+        <option value="Under Review">Under Review</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="fs-11 text-muted">
+      Showing <strong>{{ filteredKyc.length }}</strong> of {{ kycRows.length }} submissions
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="panel-card p-3 mb-2">
+    <div *ngIf="filteredKyc.length === 0" class="text-center py-5">
+      <i class="fas fa-user-shield text-muted fs-1 mb-2"></i>
+      <h6 class="fw-700 text-dark mb-1">No KYC Records Found</h6>
+      <p class="text-muted fs-12 mb-0">No KYC submissions match your selected filter criteria.</p>
+    </div>
+
+    <div class="table-responsive" *ngIf="filteredKyc.length > 0">
+      <table class="table align-middle custom-dash-table mb-0">
+        <thead>
+          <tr>
+            <th style="width: 25%;">Customer Details</th>
+            <th style="width: 15%;">KYC Status</th>
+            <th style="width: 25%;">Uploaded Documents</th>
+            <th style="width: 20%;">Admin Remarks</th>
+            <th class="text-end" style="width: 15%;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of filteredKyc">
+            <td>
+              <strong class="text-dark d-block fs-12">{{ row.full_name }}</strong>
+              <div class="fs-10 text-muted">
+                <span><i class="fas fa-envelope me-1"></i>{{ row.email || '—' }}</span>
+                <span class="ms-2"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ row.mobile_no || '—' }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="chip" [ngClass]="{
+                'chip-ok': row.status === 'Approved',
+                'chip-err': row.status === 'Rejected',
+                'chip-warn': row.status !== 'Approved' && row.status !== 'Rejected'
+              }">
+                <i class="fas" [ngClass]="{
+                  'fa-check-circle': row.status === 'Approved',
+                  'fa-times-circle': row.status === 'Rejected',
+                  'fa-clock': row.status !== 'Approved' && row.status !== 'Rejected'
+                }"></i>
+                {{ row.status || 'Pending' }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex flex-wrap gap-1" *ngIf="row.documents && row.documents.length > 0">
+                <a *ngFor="let doc of row.documents" [href]="getDocUrl(doc)" target="_blank" rel="noopener noreferrer" class="doc-pill" [title]="'View ' + doc.document_type">
+                  <i class="fas fa-paperclip"></i> {{ doc.document_type || 'Document' }}
+                </a>
+              </div>
+              <span class="text-muted fs-11" *ngIf="!row.documents || row.documents.length === 0">—</span>
+            </td>
+            <td class="fs-11 text-muted">
+              {{ row.admin_remarks || '—' }}
+            </td>
+            <td class="text-end">
+              <div class="action-btn-group">
+                <button class="ibtn view" title="Mark Under Review" (click)="setKyc(row, 'Under Review')">
+                  <i class="fas fa-search"></i>
+                </button>
+                <button class="ibtn approve" title="Approve KYC" (click)="setKyc(row, 'Approved')">
+                  <i class="fas fa-check"></i>
+                </button>
+                <button class="ibtn del" title="Reject / Request Re-upload" (click)="setKyc(row, 'Rejected')">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 6. TAB 3: ALERT CENTER -->
+<div class="row g-2 mb-2" *ngIf="!loading && activeTab === 'alerts'">
+  <div class="col-6 col-md-4">
+    <div class="kpi-card s-blue">
+      <div class="kpi-content">
+        <span class="kpi-label">Pending Email Verifications</span>
+        <span class="kpi-value">{{ alerts.pending_email_verifications || 0 }}</span>
+        <span class="kpi-subtext">Unverified Accounts</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-blue">
+        <i class="fas fa-envelope"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4">
+    <div class="kpi-card s-orange">
+      <div class="kpi-content">
+        <span class="kpi-label">Pending KYC Reviews</span>
+        <span class="kpi-value">{{ alerts.pending_kyc_reviews || 0 }}</span>
+        <span class="kpi-subtext">Documents Awaiting Audit</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-amber">
+        <i class="fas fa-id-card"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4">
+    <div class="kpi-card s-red">
+      <div class="kpi-content">
+        <span class="kpi-label">Rejected Documents</span>
+        <span class="kpi-value">{{ alerts.rejected_documents || 0 }}</span>
+        <span class="kpi-subtext">Re-upload Required</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-rose">
+        <i class="fas fa-file-excel"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4">
+    <div class="kpi-card s-purple">
+      <div class="kpi-content">
+        <span class="kpi-label">Pending Offline Bookings</span>
+        <span class="kpi-value">{{ alerts.pending_offline_bookings || 0 }}</span>
+        <span class="kpi-subtext">Cheque / Cash Registrations</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-purple">
+        <i class="fas fa-building"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4">
+    <div class="kpi-card s-green">
+      <div class="kpi-content">
+        <span class="kpi-label">Pending Payment Approvals</span>
+        <span class="kpi-value">{{ alerts.pending_payment_approvals || 0 }}</span>
+        <span class="kpi-subtext">Ledger Verifications</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-emerald">
+        <i class="fas fa-money-check-alt"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4">
+    <div class="kpi-card s-gold">
+      <div class="kpi-content">
+        <span class="kpi-label">Pending Appointments</span>
+        <span class="kpi-value">{{ alerts.pending_appointment_requests || 0 }}</span>
+        <span class="kpi-subtext">Customer Office Visits</span>
+      </div>
+      <div class="kpi-icon-wrap kpi-gold">
+        <i class="fas fa-calendar-alt"></i>
+      </div>
+    </div>
   </div>
 </div>
