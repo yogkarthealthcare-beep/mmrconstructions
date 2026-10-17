@@ -3,96 +3,120 @@
   <i class="fas fa-check-circle text-emerald me-2"></i> {{ toast }}
 </div>
 
-<!-- TOP HERO EXECUTIVE BANNER -->
-<div class="admin-hero-card mb-2">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
-    <div>
-      <div class="admin-hero-badge"><i class="fas fa-file-invoice-dollar me-1"></i>BOOKING APPROVALS &amp; EMI TRACKING</div>
-      <h2 class="admin-hero-title mb-1">EMI &amp; Payment Management</h2>
-      <p class="admin-hero-sub mb-0">Confirm plot advance bookings, generate EMI schedules, track overdue installments &amp; collect payments.</p>
-    </div>
-
-    <div class="d-flex align-items-center gap-2 ms-auto">
-      <button class="btn btn-outline-light btn-xs" (click)="loadBookings(); loadOverdue()">
-        <i class="fas fa-sync me-1"></i> Refresh Data
-      </button>
-    </div>
+<!-- 1. TOP HERO BANNER -->
+<div class="admin-hero-card d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+  <div>
+    <div class="admin-hero-badge"><i class="fas fa-file-invoice-dollar me-1"></i> Booking Approvals &amp; EMI Tracking</div>
+    <h1 class="admin-hero-title mb-0">EMI &amp; Payment Management</h1>
+    <p class="admin-hero-sub mb-0">Confirm plot advance bookings, generate EMI schedules, track overdue installments &amp; collect payments</p>
+  </div>
+  <div class="d-flex align-items-center gap-1">
+    <button class="btn btn-outline-light btn-xs" (click)="loadBookings(); loadOverdue()" title="Refresh Data">
+      <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Refresh
+    </button>
   </div>
 </div>
 
-<!-- 4 STAT SUMMARY MINI CARDS -->
+<!-- 2. 4 COMPACT HORIZONTAL KPI CARDS -->
 <div class="row g-2 mb-2">
   <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-customers h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Total Bookings</span>
-        <div class="icon-wrap bg-blue text-primary"><i class="fas fa-calendar-check"></i></div>
+    <div class="kpi-card s-blue">
+      <div class="kpi-content">
+        <span class="kpi-label">Total Bookings</span>
+        <span class="kpi-value">{{ bookings.length }}</span>
+        <span class="kpi-subtext">Registered Requests</span>
       </div>
-      <div class="stat-mini-val">{{ bookings.length }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-file-alt text-primary me-1"></i>Total Requests</div>
+      <div class="kpi-icon-wrap kpi-blue">
+        <i class="fas fa-calendar-check"></i>
+      </div>
     </div>
   </div>
 
   <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-approvals h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Pending Confirmation</span>
-        <div class="icon-wrap bg-amber text-orange"><i class="fas fa-clock"></i></div>
+    <div class="kpi-card s-orange">
+      <div class="kpi-content">
+        <span class="kpi-label">Pending Approval</span>
+        <span class="kpi-value">{{ pendingBookingsCount }}</span>
+        <span class="kpi-subtext">Requires Review</span>
       </div>
-      <div class="stat-mini-val">{{ pendingBookingsCount }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-hourglass-half text-orange me-1"></i>Requires Approval</div>
+      <div class="kpi-icon-wrap kpi-amber">
+        <i class="fas fa-clock"></i>
+      </div>
     </div>
   </div>
 
   <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-plots h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Confirmed Contracts</span>
-        <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-check-circle"></i></div>
+    <div class="kpi-card s-green">
+      <div class="kpi-content">
+        <span class="kpi-label">Confirmed Contracts</span>
+        <span class="kpi-value">{{ confirmedBookingsCount }}</span>
+        <span class="kpi-subtext">Active EMI Plans</span>
       </div>
-      <div class="stat-mini-val">{{ confirmedBookingsCount }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-shield-alt text-emerald me-1"></i>Active EMI Plans</div>
+      <div class="kpi-icon-wrap kpi-emerald">
+        <i class="fas fa-check-circle"></i>
+      </div>
     </div>
   </div>
 
   <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-emi h-100">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Overdue EMIs</span>
-        <div class="icon-wrap bg-rose text-danger"><i class="fas fa-exclamation-triangle"></i></div>
+    <div class="kpi-card s-red">
+      <div class="kpi-content">
+        <span class="kpi-label">Overdue EMIs</span>
+        <span class="kpi-value">{{ overdueEmis.length }}</span>
+        <span class="kpi-subtext">Delayed Installments</span>
       </div>
-      <div class="stat-mini-val">{{ overdueEmis.length }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-bell text-danger me-1"></i>Pending Installments</div>
+      <div class="kpi-icon-wrap kpi-rose">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- MAIN NAVIGATION TABS & TOOLBAR -->
-<div class="panel-card p-3 mb-2">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-    
-    <div class="d-flex gap-2 flex-wrap">
-      <button class="main-nav-tab" [class.active]="activeTab==='bookings'" (click)="activeTab='bookings'">
-        <i class="fas fa-calendar-alt me-1.5"></i> Plot Bookings Management ({{ bookings.length }})
-      </button>
-      <button class="main-nav-tab" [class.active]="activeTab==='overdue'" (click)="activeTab='overdue'">
-        <i class="fas fa-exclamation-circle text-danger me-1.5"></i> Overdue EMI Installments ({{ overdueEmis.length }})
-      </button>
-    </div>
+<!-- 3. HORIZONTAL PILL TABS NAVIGATION -->
+<div class="tabs-nav mb-2">
+  <button class="tab-btn" [class.active]="activeTab === 'bookings'" (click)="activeTab = 'bookings'">
+    <i class="fas fa-calendar-alt"></i> Plot Bookings Management
+    <span class="badge rounded-pill bg-light text-dark ms-1">{{ bookings.length }}</span>
+  </button>
+  <button class="tab-btn" [class.active]="activeTab === 'overdue'" (click)="activeTab = 'overdue'">
+    <i class="fas fa-exclamation-circle text-danger"></i> Overdue EMI Installments
+    <span class="badge rounded-pill bg-danger text-white ms-1" *ngIf="overdueEmis.length > 0">{{ overdueEmis.length }}</span>
+    <span class="badge rounded-pill bg-light text-dark ms-1" *ngIf="overdueEmis.length === 0">0</span>
+  </button>
+</div>
 
-    <div class="search-box position-relative ms-auto" style="min-width: 240px;">
+<!-- 4. COMPACT FILTER TOOLBAR -->
+<div class="filter-card mb-2">
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    <!-- Search Box -->
+    <div class="search-box flex-grow-1 min-w-200">
       <i class="fas fa-search search-icon"></i>
-      <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" placeholder="Search customer, mobile, plot #...">
+      <input 
+        type="text" 
+        class="f-input-search"
+        [(ngModel)]="search" 
+        placeholder="Search customer, mobile, plot #, site..." 
+      />
+      <button *ngIf="search" class="btn-clear-search" (click)="search = ''">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
-  </div>
-
-  <!-- Sub Filter Tabs for Bookings -->
-  <div class="filter-tabs mt-2 pt-2 border-top" *ngIf="activeTab==='bookings'">
-    <button class="filter-tab" [class.active]="bookingFilter==='all'"             (click)="bookingFilter='all'">All Bookings ({{ bookings.length }})</button>
-    <button class="filter-tab" [class.active]="bookingFilter==='paymentpending'"(click)="bookingFilter='paymentpending'">Pending Approval ({{ pendingBookingsCount }})</button>
-    <button class="filter-tab" [class.active]="bookingFilter==='confirmed'"     (click)="bookingFilter='confirmed'">Confirmed</button>
-    <button class="filter-tab" [class.active]="bookingFilter==='cancelled'"     (click)="bookingFilter='cancelled'">Cancelled</button>
+    <!-- Sub-Filter Tabs for Bookings -->
+    <div class="filter-tabs ms-auto" *ngIf="activeTab === 'bookings'">
+      <button class="filter-pill-btn" [class.active]="bookingFilter === 'all'" (click)="bookingFilter = 'all'">
+        All ({{ bookings.length }})
+      </button>
+      <button class="filter-pill-btn" [class.active]="bookingFilter === 'paymentpending'" (click)="bookingFilter = 'paymentpending'">
+        Pending ({{ pendingBookingsCount }})
+      </button>
+      <button class="filter-pill-btn" [class.active]="bookingFilter === 'confirmed'" (click)="bookingFilter = 'confirmed'">
+        Confirmed ({{ confirmedBookingsCount }})
+      </button>
+      <button class="filter-pill-btn" [class.active]="bookingFilter === 'cancelled'" (click)="bookingFilter = 'cancelled'">
+        Cancelled
+      </button>
+    </div>
   </div>
 </div>
 
@@ -102,8 +126,8 @@
   <p class="text-muted fs-12 mt-2 mb-0">Loading booking records &amp; EMI data...</p>
 </div>
 
-<!-- TAB 1: PLOT BOOKINGS MANAGEMENT TABLE -->
-<div class="panel-card p-3 mb-2" *ngIf="!loading && activeTab==='bookings'">
+<!-- 5. TAB 1: PLOT BOOKINGS MANAGEMENT TABLE -->
+<div class="panel-card p-3 mb-2" *ngIf="!loading && activeTab === 'bookings'">
   
   <div *ngIf="filteredBookings.length === 0" class="text-center py-5">
     <i class="fas fa-calendar-times text-muted fs-1 mb-2"></i>
@@ -120,37 +144,37 @@
       <table class="table align-middle custom-dash-table mb-0">
         <thead>
           <tr>
-            <th class="th-sno">#</th>
-            <th>Customer Details</th>
-            <th>Plot &amp; Site Specs</th>
-            <th>Advance Paid</th>
-            <th>Payment Type</th>
-            <th>Booking Date</th>
-            <th>Status</th>
-            <th class="text-end">Actions</th>
+            <th class="th-sno" style="width: 5%;">#</th>
+            <th style="width: 23%;">Customer Details</th>
+            <th style="width: 18%;">Plot &amp; Site Specs</th>
+            <th style="width: 14%;">Advance Paid</th>
+            <th style="width: 12%;">Payment Type</th>
+            <th style="width: 12%;">Booking Date</th>
+            <th style="width: 8%;">Status</th>
+            <th class="text-end" style="width: 8%;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let b of pagedBookings; let i = index">
             <td class="td-sno">{{ (bookingsPage - 1) * bookingsPageSize + i + 1 }}</td>
             <td>
-              <div class="d-flex align-items-center gap-2.5">
-                <div class="user-avatar-circle bg-blue">
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar-circle">
                   {{ getInitials(b.customer_name || b.full_name) }}
                 </div>
-                <div>
-                  <div class="fw-700 text-dark fs-12">{{ b.customer_name || b.full_name }}</div>
+                <div class="min-w-0">
+                  <div class="fw-700 text-dark text-truncate" [title]="b.customer_name || b.full_name">{{ b.customer_name || b.full_name }}</div>
                   <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ b.mobile_no }}</div>
                 </div>
               </div>
             </td>
             <td>
-              <div class="fw-700 text-primary fs-12"><i class="fas fa-map-marker-alt text-gold me-1"></i>Plot #{{ b.plot_number }}</div>
-              <div class="fs-10 text-muted">{{ b.site_name || 'Project Site' }}</div>
+              <div class="fw-700 text-primary"><i class="fas fa-map-marker-alt text-gold me-1"></i>Plot #{{ b.plot_number }}</div>
+              <div class="fs-10 text-muted text-truncate">{{ b.site_name || 'Project Site' }}</div>
             </td>
             <td>
-              <div class="fw-800 text-emerald fs-13">₹{{ (b.advance_amount || b.booking_amount || 0) | number:'1.0-0' }}</div>
-              <div class="fs-10 text-muted" *ngIf="b.total_plot_price">of ₹{{ b.total_plot_price | number:'1.0-0' }} total</div>
+              <div class="fw-800 text-emerald">₹{{ (b.advance_amount || b.booking_amount || 0) | number:'1.0-0' }}</div>
+              <div class="fs-10 text-muted" *ngIf="b.total_plot_price">of ₹{{ b.total_plot_price | number:'1.0-0' }}</div>
             </td>
             <td>
               <span class="badge bg-light text-dark border fw-600">
@@ -162,31 +186,30 @@
               <div class="fs-10 text-muted">{{ b.booking_date | date:'hh:mm a' }}</div>
             </td>
             <td>
-              <span class="sbadge"
-                [class.sbadge-green]="b.booking_status==='Confirmed'"
-                [class.sbadge-yellow]="b.booking_status==='PaymentPending'||b.booking_status==='Pending'"
-                [class.sbadge-red]="b.booking_status==='Cancelled'">
+              <span class="chip" [ngClass]="{
+                'chip-ok': b.booking_status === 'Confirmed',
+                'chip-warn': b.booking_status === 'PaymentPending' || b.booking_status === 'Pending',
+                'chip-err': b.booking_status === 'Cancelled'
+              }">
+                <i class="fas" [ngClass]="{
+                  'fa-check-circle': b.booking_status === 'Confirmed',
+                  'fa-clock': b.booking_status === 'PaymentPending' || b.booking_status === 'Pending',
+                  'fa-times-circle': b.booking_status === 'Cancelled'
+                }"></i>
                 {{ b.booking_status }}
               </span>
             </td>
             <td class="text-end">
-              <div class="dropdown d-inline-block position-relative">
-                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === b.booking_id ? null : b.booking_id)">
-                  <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
+              <div class="action-btn-group">
+                <button class="ibtn view" (click)="openBookingDetail(b)" title="View EMI Schedule">
+                  <i class="fas fa-eye"></i>
                 </button>
-
-                <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 fs-11 py-1 position-absolute" style="top: 100%; right: 0; z-index: 1050; min-width: 175px; border-radius: 10px;" *ngIf="activeRowId === b.booking_id" (click)="$event.stopPropagation()">
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="openBookingDetail(b); activeRowId = null">
-                    <i class="fas fa-eye text-primary me-2 width-16"></i> EMI Schedule Details
-                  </button>
-                  <div class="dropdown-divider my-1" *ngIf="b.booking_status!=='Confirmed' || b.booking_status!=='Cancelled'"></div>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-emerald fw-700 d-flex align-items-center" (click)="confirmBooking(b); activeRowId = null" *ngIf="b.booking_status!=='Confirmed'" [disabled]="confirmLoading">
-                    <i class="fas fa-check-circle text-emerald me-2 width-16"></i> Approve Booking
-                  </button>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="openCancelModal(b); activeRowId = null" *ngIf="b.booking_status!=='Cancelled'">
-                    <i class="fas fa-times-circle text-danger me-2 width-16"></i> Cancel Booking
-                  </button>
-                </div>
+                <button *ngIf="b.booking_status !== 'Confirmed'" class="ibtn approve" (click)="confirmBooking(b)" [disabled]="confirmLoading" title="Approve Booking">
+                  <i class="fas fa-check-circle"></i>
+                </button>
+                <button *ngIf="b.booking_status !== 'Cancelled'" class="ibtn del" (click)="openCancelModal(b)" title="Cancel Booking">
+                  <i class="fas fa-times-circle"></i>
+                </button>
               </div>
             </td>
           </tr>
@@ -194,6 +217,7 @@
       </table>
     </div>
   </app-admin-table-container>
+
   <app-admin-pagination
     *ngIf="filteredBookings.length > 0"
     [totalItems]="filteredBookings.length"
@@ -205,8 +229,8 @@
   </app-admin-pagination>
 </div>
 
-<!-- TAB 2: OVERDUE EMI INSTALLMENTS TABLE -->
-<div class="panel-card p-3 mb-2" *ngIf="!loading && activeTab==='overdue'">
+<!-- 6. TAB 2: OVERDUE EMI INSTALLMENTS TABLE -->
+<div class="panel-card p-3 mb-2" *ngIf="!loading && activeTab === 'overdue'">
   
   <div *ngIf="filteredEmis.length === 0" class="text-center py-5">
     <i class="fas fa-check-circle text-emerald fs-1 mb-2"></i>
@@ -223,44 +247,44 @@
       <table class="table align-middle custom-dash-table mb-0">
         <thead>
           <tr>
-            <th class="th-sno">#</th>
-            <th>Customer Details</th>
-            <th>Plot &amp; Site</th>
-            <th>EMI Amount</th>
-            <th>Due Date</th>
-            <th>Overdue Days</th>
-            <th>Late Fee Due</th>
-            <th class="text-end">Action</th>
+            <th class="th-sno" style="width: 5%;">#</th>
+            <th style="width: 22%;">Customer Details</th>
+            <th style="width: 18%;">Plot &amp; Site</th>
+            <th style="width: 14%;">EMI Amount</th>
+            <th style="width: 12%;">Due Date</th>
+            <th style="width: 12%;">Overdue Days</th>
+            <th style="width: 10%;">Late Fee Due</th>
+            <th class="text-end" style="width: 7%;">Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let e of pagedOverdueEmis; let i = index">
             <td class="td-sno">{{ (overduePage - 1) * overduePageSize + i + 1 }}</td>
             <td>
-              <div class="fw-700 text-dark fs-12">{{ e.full_name || e.customer_name }}</div>
+              <div class="fw-700 text-dark">{{ e.full_name || e.customer_name }}</div>
               <div class="fs-10 text-muted"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ e.mobile_no }}</div>
             </td>
             <td>
-              <div class="fw-700 text-primary fs-12">Plot #{{ e.plot_number }}</div>
+              <div class="fw-700 text-primary">Plot #{{ e.plot_number }}</div>
               <div class="fs-10 text-muted">{{ e.site_name }}</div>
             </td>
             <td>
-              <div class="fw-800 text-dark fs-13">₹{{ (e.emi_amount || e.amount || 0) | number:'1.0-0' }}</div>
+              <div class="fw-800 text-dark">₹{{ (e.emi_amount || e.amount || 0) | number:'1.0-0' }}</div>
             </td>
             <td>
               <div class="fs-11 text-dark fw-600">{{ e.due_date | date:'dd MMM yyyy' }}</div>
             </td>
             <td>
-              <span class="sbadge sbadge-red">
-                <i class="fas fa-clock me-1"></i>{{ e.overdue_days || 0 }} Days Overdue
+              <span class="chip chip-err">
+                <i class="fas fa-clock"></i> {{ e.overdue_days || 0 }} Days Overdue
               </span>
             </td>
             <td>
-              <div class="fw-700 text-danger fs-12">₹{{ (e.late_fee_due || 0) | number:'1.0-0' }}</div>
+              <div class="fw-700 text-danger">₹{{ (e.late_fee_due || 0) | number:'1.0-0' }}</div>
             </td>
             <td class="text-end">
               <button class="btn btn-emerald btn-xs" (click)="confirmEmi(e)">
-                <i class="fas fa-check-circle me-1"></i> Collect Payment
+                <i class="fas fa-check-circle me-1"></i> Collect
               </button>
             </td>
           </tr>
@@ -268,6 +292,7 @@
       </table>
     </div>
   </app-admin-table-container>
+
   <app-admin-pagination
     *ngIf="filteredEmis.length > 0"
     [totalItems]="filteredEmis.length"
@@ -279,27 +304,27 @@
   </app-admin-pagination>
 </div>
 
-<!-- BOOKING DETAIL & EMI SCHEDULE MODAL -->
+<!-- 7. BOOKING DETAIL & EMI SCHEDULE MODAL -->
 <div class="modal-backdrop fade show" *ngIf="showDetailModal"></div>
 <div class="modal d-block fade show" tabIndex="-1" *ngIf="showDetailModal" (click)="closeModals()">
   <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-content border-0 rounded-14 shadow-lg">
-      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700 text-white"><i class="fas fa-file-invoice-dollar text-gold me-2"></i>Booking Details &amp; EMI Schedule</h5>
+    <div class="modal-content border-0 rounded-10 shadow-lg">
+      <div class="modal-header bg-dark-emerald text-white py-3 px-4">
+        <h5 class="modal-title fs-15 fw-700 text-white mb-0"><i class="fas fa-file-invoice-dollar text-gold me-2"></i>Booking Details &amp; EMI Schedule</h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
       </div>
 
-      <div class="modal-body p-4 position-relative">
+      <div class="modal-body p-3 position-relative">
         <div class="text-center py-4" *ngIf="detailLoading">
           <i class="fas fa-spinner fa-spin fs-3 text-gold"></i>
           <p class="text-muted fs-12 mt-2 mb-0">Loading complete booking record...</p>
         </div>
 
-        <ng-container *ngIf="!detailLoading &amp;&amp; selectedBooking">
+        <ng-container *ngIf="!detailLoading && selectedBooking">
           
-          <div class="row g-3 mb-3">
+          <div class="row g-2 mb-3">
             <div class="col-md-6">
-              <div class="p-3 bg-light rounded-10 border">
+              <div class="p-2.5 bg-light rounded-8 border">
                 <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-user text-primary me-2"></i>Customer Info</h6>
                 <div class="fs-12 mb-1"><strong>Name:</strong> {{ selectedBooking.customer_name || selectedBooking.full_name }}</div>
                 <div class="fs-12 mb-1"><strong>Mobile:</strong> {{ selectedBooking.mobile_no }}</div>
@@ -308,7 +333,7 @@
             </div>
 
             <div class="col-md-6">
-              <div class="p-3 bg-light rounded-10 border">
+              <div class="p-2.5 bg-light rounded-8 border">
                 <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-map-marked-alt text-emerald me-2"></i>Plot Details</h6>
                 <div class="fs-12 mb-1"><strong>Site:</strong> {{ selectedBooking.site_name }}</div>
                 <div class="fs-12 mb-1"><strong>Plot #:</strong> Plot #{{ selectedBooking.plot_number }}</div>
@@ -318,11 +343,11 @@
           </div>
 
           <!-- EMI SCHEDULE TIMELINE TABLE -->
-          <div *ngIf="selectedBooking.emis &amp;&amp; selectedBooking.emis.length > 0">
+          <div *ngIf="selectedBooking.emis && selectedBooking.emis.length > 0">
             <h6 class="fw-700 text-dark fs-13 mb-2"><i class="fas fa-list-ol text-gold me-2"></i>Installment Schedule Timeline</h6>
-            <div class="table-responsive" style="max-height: 220px;">
-              <table class="table align-middle table-sm border mb-0">
-                <thead class="table-light">
+            <div class="table-responsive" style="max-height: 240px;">
+              <table class="table align-middle custom-dash-table mb-0">
+                <thead>
                   <tr>
                     <th>Inst #</th>
                     <th>Due Date</th>
@@ -337,12 +362,21 @@
                     <td class="fs-11">{{ emi.due_date | date:'dd MMM yyyy' }}</td>
                     <td class="fw-700">₹{{ emi.emi_amount | number }}</td>
                     <td>
-                      <span class="sbadge" [class.sbadge-green]="emi.emi_status==='Paid'" [class.sbadge-yellow]="emi.emi_status==='Pending'" [class.sbadge-red]="emi.emi_status==='Overdue'">
+                      <span class="chip" [ngClass]="{
+                        'chip-ok': emi.emi_status === 'Paid',
+                        'chip-warn': emi.emi_status === 'Pending',
+                        'chip-err': emi.emi_status === 'Overdue'
+                      }">
+                        <i class="fas" [ngClass]="{
+                          'fa-check-circle': emi.emi_status === 'Paid',
+                          'fa-clock': emi.emi_status === 'Pending',
+                          'fa-exclamation-circle': emi.emi_status === 'Overdue'
+                        }"></i>
                         {{ emi.emi_status }}
                       </span>
                     </td>
                     <td class="text-end">
-                      <button class="btn btn-emerald btn-xs py-0 px-2" *ngIf="emi.emi_status!=='Paid'" (click)="confirmEmi(emi)">
+                      <button class="btn btn-emerald btn-xs" *ngIf="emi.emi_status !== 'Paid'" (click)="confirmEmi(emi)">
                         Mark Paid
                       </button>
                     </td>
@@ -355,31 +389,31 @@
         </ng-container>
       </div>
 
-      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+      <div class="modal-footer bg-light p-2.5">
         <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Close</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- CANCEL BOOKING MODAL -->
+<!-- 8. CANCEL BOOKING MODAL -->
 <div class="modal-backdrop fade show" *ngIf="showCancelModal"></div>
 <div class="modal d-block fade show" tabIndex="-1" *ngIf="showCancelModal" (click)="closeModals()">
   <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
-    <div class="modal-content border-0 rounded-14 shadow-lg">
-      <div class="modal-header bg-danger text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700"><i class="fas fa-exclamation-triangle me-2"></i>Cancel Booking Request</h5>
+    <div class="modal-content border-0 rounded-10 shadow-lg">
+      <div class="modal-header bg-danger text-white py-3 px-4">
+        <h5 class="modal-title fs-15 fw-700 text-white mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Cancel Booking Request</h5>
         <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
       </div>
 
-      <div class="modal-body p-4">
+      <div class="modal-body p-3">
         <p class="fs-13 text-dark fw-600 mb-2">Are you sure you want to cancel booking for Plot #{{ cancelBookingObj?.plot_number }}?</p>
         
         <label class="form-label fs-11 fw-700 text-dark">Cancellation Reason</label>
-        <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="cancelReason" placeholder="Enter reason for cancelling this booking..."></textarea>
+        <textarea class="form-control" rows="3" [(ngModel)]="cancelReason" placeholder="Enter reason for cancelling this booking..."></textarea>
       </div>
 
-      <div class="modal-footer bg-light rounded-bottom-14 p-3">
+      <div class="modal-footer bg-light p-2.5">
         <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Back</button>
         <button type="button" class="btn btn-danger btn-xs" (click)="processCancelBooking()" [disabled]="confirmLoading">
           <i class="fas fa-ban me-1"></i> Confirm Cancel Booking
@@ -388,4 +422,3 @@
     </div>
   </div>
 </div>
-
