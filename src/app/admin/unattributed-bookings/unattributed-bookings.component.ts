@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingAttributionApiService } from '../../services/booking-attribution-api.service';
 import { UnattributedCustomer, UnattributedCustomerStats } from '../../services/booking-attribution.types';
+import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
+import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-unattributed-bookings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminTableContainerComponent, AdminPaginationComponent],
   templateUrl: './unattributed-bookings.component.html',
   styleUrls: ['./unattributed-bookings.component.css']
 })
@@ -87,9 +89,34 @@ export class AdminUnattributedBookingsComponent implements OnInit {
     this.loadCustomers();
   }
 
+  clearSearch(): void {
+    if (!this.searchQuery) return;
+    this.searchQuery = '';
+    this.onSearch();
+  }
+
   setPage(p: number): void {
     this.page = p;
     this.loadCustomers();
+  }
+
+  get currentTabTotal(): number {
+    if (this.activeTab === 'LEGACY_AMBIGUOUS') {
+      return this.stats?.legacy_ambiguous_count ?? 0;
+    }
+    if (this.activeTab === 'COMPANY_DIRECT') {
+      return this.stats?.direct_signup_count ?? 0;
+    }
+    return this.stats?.total_unattributed ?? 0;
+  }
+
+  getInitials(name: string | undefined | null): string {
+    if (!name) return 'CU';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
   }
 
   // ── Single Row Referrer Assignment ──────────────────────────────
