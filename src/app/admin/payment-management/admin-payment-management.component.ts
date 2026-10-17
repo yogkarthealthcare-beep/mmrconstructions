@@ -384,6 +384,24 @@ export class AdminPaymentManagementComponent implements OnInit {
     window.open(`${this.baseUrl}/api/emi/${emiId}/voucher`, '_blank');
   }
 
+  clearFilters() {
+    this.ledgerFilters = {
+      status: '',
+      mode: '',
+      purpose: '',
+      search: '',
+      start_date: '',
+      end_date: ''
+    };
+    this.ledgerPage = 1;
+    this.loadLedger();
+  }
+
+  getInitials(name: string): string {
+    if (!name) return 'U';
+    return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  }
+
   showToast(msg: string, type: 'success' | 'danger') {
     this.toastMsg = msg;
     this.toastType = type;
