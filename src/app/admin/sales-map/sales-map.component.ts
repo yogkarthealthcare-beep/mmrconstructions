@@ -70,6 +70,10 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
   unitTypeFilter = 'ALL';
   unitTypesPresent: string[] = [];
 
+  clearSearch(): void {
+    this.searchTerm = '';
+  }
+
   // Active selection & UI states
   selectedPlot: AdminSalesPlot | null = null;
   hoveredPlot: AdminSalesPlot | null = null;
