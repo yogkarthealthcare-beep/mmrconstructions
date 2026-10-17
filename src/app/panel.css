@@ -1562,10 +1562,10 @@ body.table-fullscreen-active {
   }
 
   /* 44px Touch Targets & 16px iOS Font Size */
-  .panel-shell .form-control,
+  .panel-shell .form-control:not(.f-input-search):not(.customer-search-field),
   .panel-shell .form-select,
-  .panel-shell input[type="text"],
-  .panel-shell input[type="search"],
+  .panel-shell input[type="text"]:not(.f-input-search):not(.customer-search-field),
+  .panel-shell input[type="search"]:not(.f-input-search):not(.customer-search-field),
   .panel-shell input[type="date"],
   .panel-shell select {
     height: 44px !important;
@@ -1577,14 +1577,32 @@ body.table-fullscreen-active {
     box-sizing: border-box !important;
   }
 
-  .panel-shell .search-box input {
+  .panel-shell .search-box input,
+  .panel-shell .filter-search-box input,
+  .panel-shell .search input,
+  .panel-shell .input-with-icon input,
+  .panel-shell input.f-input-search,
+  .panel-shell input.customer-search-field {
     padding-left: 36px !important;
+    padding-right: 12px !important;
   }
 
   .panel-shell .search-box .search-icon,
-  .panel-shell .search-box i.fa-search {
-    left: 12px !important;
-    font-size: 14px !important;
+  .panel-shell .search-box i.fa-search,
+  .panel-shell .filter-search-box .search-icon,
+  .panel-shell .filter-search-box i,
+  .panel-shell .search .search-icon,
+  .panel-shell .search i,
+  .panel-shell .input-with-icon .search-icon,
+  .panel-shell .input-with-icon i {
+    position: absolute !important;
+    left: 11px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 13px !important;
+    color: #64748b !important;
+    pointer-events: none !important;
+    z-index: 5 !important;
   }
 
   .panel-shell .btn,

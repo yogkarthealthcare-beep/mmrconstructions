@@ -50,40 +50,40 @@
   
   <!-- KPI Metric Summary Cards -->
   <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-icon-wrap kpi-amber"><i class="fas fa-clock"></i></div>
+    <div class="kpi-card s-orange">
       <div class="kpi-content">
         <span class="kpi-label">Pending Verification</span>
         <h4 class="kpi-value text-amber">{{ pendingBookingsCount }}</h4>
         <span class="kpi-subtext">Awaiting Admin Action</span>
       </div>
+      <div class="kpi-icon-wrap kpi-amber"><i class="fas fa-clock"></i></div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-icon-wrap kpi-purple"><i class="fas fa-list-ol"></i></div>
+    <div class="kpi-card s-blue">
       <div class="kpi-content">
         <span class="kpi-label">Waitlisted Applications</span>
         <h4 class="kpi-value text-purple">{{ waitlistedBookingsCount }}</h4>
         <span class="kpi-subtext">Queue on In-Process Plots</span>
       </div>
+      <div class="kpi-icon-wrap kpi-purple"><i class="fas fa-list-ol"></i></div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-icon-wrap kpi-emerald"><i class="fas fa-check-double"></i></div>
+    <div class="kpi-card s-green">
       <div class="kpi-content">
         <span class="kpi-label">Confirmed &amp; Allotted</span>
         <h4 class="kpi-value text-emerald">{{ confirmedBookingsCount }}</h4>
-        <span class="kpi-subtext">Advance Collected: ₹{{ totalAdvanceVolume | number:'1.0-0' }}</span>
+        <span class="kpi-subtext">Advance: ₹{{ totalAdvanceVolume | number:'1.0-0' }}</span>
       </div>
+      <div class="kpi-icon-wrap kpi-emerald"><i class="fas fa-check-double"></i></div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-icon-wrap kpi-blue"><i class="fas fa-undo-alt"></i></div>
+    <div class="kpi-card s-red">
       <div class="kpi-content">
         <span class="kpi-label">Refund Due</span>
         <h4 class="kpi-value text-danger">{{ refundDueBookingsCount }}</h4>
         <span class="kpi-subtext">Flagged for Accounts</span>
       </div>
+      <div class="kpi-icon-wrap kpi-blue"><i class="fas fa-undo-alt"></i></div>
     </div>
   </div>
 
@@ -149,7 +149,7 @@
         </select>
       </div>
 
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="filterForm.reset({ search: '', status: '', paymentMethod: '' })" title="Reset Filters">
+      <button type="button" class="ibtn" (click)="filterForm.reset({ search: '', status: '', paymentMethod: '' })" title="Reset Filters">
         <i class="fas fa-undo"></i>
       </button>
     </form>
@@ -170,16 +170,16 @@
         <table class="table erp-table align-middle">
           <thead>
             <tr>
-              <th class="th-sno">#</th>
-              <th>Booking Ref</th>
-              <th>Customer</th>
-              <th>Plot &amp; Site</th>
-              <th>Advance Paid</th>
-              <th>Remaining</th>
-              <th>Attribution</th>
-              <th>Associate Approval</th>
-              <th>Status</th>
-              <th class="text-end">Action</th>
+              <th class="fit">#</th>
+              <th class="fit">Booking Ref</th>
+              <th class="grow">Customer</th>
+              <th class="fit">Plot &amp; Site</th>
+              <th class="fit num">Advance</th>
+              <th class="grow hide-lg">Attribution</th>
+              <th class="fit hide-xl">Mode</th>
+              <th class="fit hide-md">Approval</th>
+              <th class="fit">Status</th>
+              <th class="fit">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -187,120 +187,97 @@
                 [class.row-selected]="showDetailModal && selected?.booking_id === b.booking_id"
                 (click)="selectBooking(b)"
                 class="clickable-row">
-              <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
+              <td class="fit">{{ (page - 1) * pageSize + i + 1 }}</td>
               
               <!-- Booking Ref -->
-              <td>
-                <div class="booking-ref-box">
-                  <span class="booking-code">{{ b.booking_serial || ('#' + b.booking_id) }}</span>
-                  <span class="booking-date"><i class="far fa-calendar-alt me-1"></i>{{ b.booking_date ? (b.booking_date | date:'dd MMM yyyy') : (b.created_at | date:'dd MMM yyyy') }}</span>
-                  <span class="pay-method-badge" [ngClass]="b.payment_method === 'Offline' ? 'pay-offline' : 'pay-online'">
-                    <i class="fas" [ngClass]="b.payment_method === 'Offline' ? 'fa-building-columns' : 'fa-bolt'"></i>
-                    {{ b.payment_method || b.payment_type || 'Online' }}
-                  </span>
-                </div>
+              <td class="fit">
+                <div class="ref">{{ b.booking_serial || ('#' + b.booking_id) }}</div>
+                <div class="sub">{{ b.booking_date ? (b.booking_date | date:'dd MMM yyyy') : (b.created_at | date:'dd MMM yyyy') }}</div>
               </td>
 
               <!-- Customer Info -->
-              <td>
-                <div class="customer-info-cell">
-                  <div class="customer-avatar-sm">
-                    {{ getCustomerInitials(b.customer_name || b.full_name || (b.customer?.full_name) || 'User') }}
-                  </div>
-                  <div>
-                    <strong class="customer-name-text">{{ b.customer_name || b.full_name || (b.customer?.full_name) || 'Unnamed Customer' }}</strong>
-                    <div class="customer-meta-text">
-                      <i class="fas fa-phone-alt me-1"></i>{{ b.mobile_no || (b.customer?.mobile_no) || 'No Phone' }}
-                      <span *ngIf="b.member_id || b.customer?.member_id" class="text-muted d-none d-xl-inline"> · {{ b.member_id || b.customer?.member_id }}</span>
-                    </div>
-                  </div>
+              <td class="grow">
+                <div class="person">
+                  <span class="avatar">{{ getCustomerInitials(b.customer_name || b.full_name || (b.customer?.full_name) || 'User') }}</span>
+                  <span class="txt">
+                    <div><strong>{{ b.customer_name || b.full_name || (b.customer?.full_name) || 'Unnamed Customer' }}</strong></div>
+                    <div class="sub">{{ b.mobile_no || (b.customer?.mobile_no) || 'No Phone' }}<span *ngIf="b.member_id || b.customer?.member_id"> · {{ b.member_id || b.customer?.member_id }}</span></div>
+                  </span>
                 </div>
               </td>
 
               <!-- Plot & Site -->
-              <td>
-                <div class="plot-site-cell">
-                  <div class="site-tag">
-                    <i class="fas fa-map-marker-alt me-1 text-emerald"></i>
-                    {{ b.site_name || b.site?.site_name || 'Main Township' }}
-                  </div>
-                  <div class="plot-number-badge">
-                    Plot #{{ b.plot_number || b.plot?.plot_number || '-' }}
-                    <span class="plot-area-sub" *ngIf="b.plot_area || b.plot?.plot_area">({{ b.plot_area || b.plot?.plot_area }} sq.ft)</span>
-                  </div>
-                </div>
+              <td class="fit">
+                <div><strong>{{ b.site_name || b.site?.site_name || 'Main Township' }}</strong></div>
+                <div class="sub">Plot #{{ b.plot_number || b.plot?.plot_number || '-' }}<span *ngIf="b.plot_area || b.plot?.plot_area"> ({{ b.plot_area || b.plot?.plot_area }} sq.ft)</span></div>
               </td>
 
-              <!-- Advance Paid -->
-              <td>
-                <div class="amount-cell">
-                  <strong class="amount-val">₹{{ (b.advance_amount || b.booking_amount || 0) | number:'1.0-0' }}</strong>
-                  <span class="amount-sub" *ngIf="b.base_price || b.plot?.base_price">Price: ₹{{ (b.base_price || b.plot?.base_price) | number:'1.0-0' }}</span>
-                </div>
-              </td>
-
-              <!-- Remaining Balance -->
-              <td>
-                <div class="amount-cell">
-                  <strong class="amount-val text-danger" *ngIf="(b.remaining_balance || 0) > 0">₹{{ (b.remaining_balance || 0) | number:'1.0-0' }}</strong>
-                  <span class="badge-paid-full" *ngIf="(b.remaining_balance || 0) <= 0">₹0 (Paid)</span>
-                </div>
+              <!-- Advance Paid & Remaining -->
+              <td class="fit num">
+                <div class="amt">₹{{ (b.advance_amount || b.booking_amount || 0) | number:'1.0-0' }}</div>
+                <span class="badge b-green" *ngIf="(b.remaining_balance || 0) <= 0">₹0 Paid</span>
+                <div class="sub text-danger" *ngIf="(b.remaining_balance || 0) > 0">Rem: ₹{{ (b.remaining_balance || 0) | number:'1.0-0' }}</div>
               </td>
 
               <!-- Attribution Details -->
-              <td>
-                <div class="attribution-cell" style="font-size: 12px; line-height: 1.4;">
-                  <div><span class="text-muted">Booked:</span> <strong class="text-dark">{{ b.booked_by_name || ('User #' + b.booked_by) || '-' }}</strong></div>
-                  <div *ngIf="b.sold_by_name || b.sold_by"><span class="text-muted">Sold By:</span> {{ b.sold_by_name || ('User #' + b.sold_by) }}</div>
-                  <div *ngIf="b.associate_name || b.associate"><span class="text-muted">Associate:</span> <span class="badge bg-light text-dark border px-1">{{ b.associate_name || ('User #' + b.associate) }}</span></div>
+              <td class="grow hide-lg">
+                <div class="txt">
+                  <div>Booked: <strong>{{ b.booked_by_name || ('User #' + b.booked_by) || '-' }}</strong></div>
+                  <div class="sub" *ngIf="b.sold_by_name || b.sold_by">Sold By: {{ b.sold_by_name || ('User #' + b.sold_by) }}</div>
+                  <div class="sub" *ngIf="b.associate_name || b.associate">Assoc: {{ b.associate_name || ('User #' + b.associate) }}</div>
                 </div>
               </td>
 
+              <!-- Mode -->
+              <td class="fit hide-xl">
+                <span class="chip">{{ getShortPaymentMode(b.payment_method || b.payment_type) }}</span>
+              </td>
+
               <!-- Associate Approval Status & Overdue Badge -->
-              <td>
-                <div class="d-flex align-items-center gap-1 flex-wrap">
+              <td class="fit hide-md">
+                <div class="d-inline-flex align-items-center gap-1">
                   <span class="badge" [ngClass]="{
-                    'bg-success-subtle text-success border border-success': b.associate_approval_status === 'Approved',
-                    'bg-warning-subtle text-warning-emphasis border border-warning': b.associate_approval_status === 'Pending',
-                    'bg-danger-subtle text-danger border border-danger': b.associate_approval_status === 'Rejected',
-                    'bg-light text-muted border': !b.associate_approval_status || b.associate_approval_status === 'NotRequired'
+                    'b-green': b.associate_approval_status === 'Approved',
+                    'b-amber': b.associate_approval_status === 'Pending',
+                    'b-red': b.associate_approval_status === 'Rejected',
+                    'b-grey': !b.associate_approval_status || b.associate_approval_status === 'NotRequired'
                   }">
-                    {{ b.associate_approval_status || 'Not Required' }}
+                    {{ b.associate_approval_status === 'Approved' ? 'Approved' : (b.associate_approval_status === 'Pending' ? 'Pending' : (b.associate_approval_status === 'Rejected' ? 'Rejected' : 'NOT REQUIRED')) }}
                   </span>
-                  <span *ngIf="b.is_overdue && b.associate_approval_status === 'Pending'" class="badge bg-danger text-white" title="Approval Overdue (> 48h)">
-                    <i class="fas fa-clock"></i> Overdue
+                  <span *ngIf="b.is_overdue && b.associate_approval_status === 'Pending'" class="badge b-red" title="Approval Overdue (> 48h)">
+                    <i class="fas fa-clock"></i>
                   </span>
-                  <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-1 ms-1" (click)="overrideApproval(b); $event.stopPropagation()" title="Admin Override Approval">
+                  <button type="button" class="ibtn" (click)="overrideApproval(b); $event.stopPropagation()" title="Admin Override Approval">
                     <i class="fas fa-shield-alt"></i>
                   </button>
                 </div>
               </td>
 
               <!-- Status -->
-              <td>
-                <span class="erp-badge" [ngClass]="{
-                  'badge-emerald': (b.booking_status === 'Confirmed' || b.booking_status === 'Fully Paid'),
-                  'badge-amber': (b.booking_status === 'Pending' || b.booking_status === 'PaymentPending' || b.booking_status === 'Allocated'),
-                  'badge-danger': (b.booking_status === 'Cancelled' || b.booking_status === 'Rejected'),
-                  'badge-secondary': !b.booking_status
+              <td class="fit">
+                <span class="badge" [ngClass]="{
+                  'b-green': (b.booking_status === 'Confirmed' || b.booking_status === 'Fully Paid'),
+                  'b-amber': (b.booking_status === 'Pending' || b.booking_status === 'PaymentPending' || b.booking_status === 'Allocated'),
+                  'b-red': (b.booking_status === 'Cancelled' || b.booking_status === 'Rejected'),
+                  'b-blue': (b.booking_status === 'Submitted')
                 }">
                   {{ b.booking_status || 'Allocated' }}
                 </span>
               </td>
 
               <!-- Action -->
-              <td class="text-end" (click)="$event.stopPropagation()">
-                <div class="d-inline-flex gap-1 align-items-center">
-                  <a [routerLink]="['/invoice', b.booking_serial || b.booking_id]" 
-                     target="_blank" 
-                     class="btn btn-outline-success btn-sm"
-                     title="View & Download Official Invoice / Bill">
-                    <i class="fas fa-file-invoice me-1"></i> Bill
-                  </a>
-                  <button class="btn btn-view-inspect btn-sm" (click)="selectBooking(b)">
-                    <i class="fas fa-eye me-1"></i> View
+              <td class="fit" (click)="$event.stopPropagation()">
+                <span class="rowact">
+                  <button type="button" class="ibtn view" (click)="selectBooking(b)" title="View Booking Details">
+                    <i class="fas fa-eye"></i>
                   </button>
-                </div>
+                  <a [routerLink]="['/invoice', b.booking_serial || b.booking_id]" target="_blank" class="ibtn" title="View & Download Bill">
+                    <i class="fas fa-file-invoice"></i>
+                  </a>
+                  <button type="button" class="ibtn del" (click)="openCancelRefundModal(b)" title="Cancel / Refund">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </span>
               </td>
             </tr>
 
@@ -950,10 +927,10 @@
 <!-- ========================================================================= -->
 <ng-container *ngIf="mainSection === 'inquiries'">
   
-  <div class="filter-section-card mb-3">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-      <h5 class="fw-bold text-dark fs-15 mb-0"><i class="fas fa-headset text-gold me-2"></i> Website Plot Booking Inquiries</h5>
-      <span class="fs-12 text-muted">Showing prospective buyer inquiries submitted from website forms</span>
+  <div class="filter-section-card mb-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1.5">
+      <span class="fw-bold text-dark fs-12"><i class="fas fa-headset text-gold me-1.5"></i> Website Plot Booking Inquiries</span>
+      <span class="fs-11 text-muted">Showing prospective buyer inquiries submitted from website forms</span>
     </div>
     
     <div class="filter-form-row">
@@ -980,7 +957,7 @@
         </select>
       </div>
 
-      <button type="button" class="btn btn-gold btn-sm fw-bold" (click)="onInquirySearch()">
+      <button type="button" class="btn btn-gold btn-sm fw-bold" style="height: var(--h-xs, 26px); padding: 0 10px; font-size: 11.5px;" (click)="onInquirySearch()">
         <i class="fas fa-filter me-1"></i> Filter
       </button>
     </div>
@@ -993,65 +970,63 @@
     </div>
   </div>
 
-  <div class="card shadow-sm border-0 rounded-3" *ngIf="!inquiryLoading">
+  <div class="card shadow-sm border-0 rounded-2" *ngIf="!inquiryLoading">
     <app-admin-table-container [title]="'Plot Inquiries & Leads'" [count]="inquiryTotal">
       <div class="table-responsive">
-        <table class="table erp-table align-middle">
+        <table class="table tbl align-middle">
           <thead>
             <tr>
-              <th class="th-sno">#</th>
-              <th>Customer</th>
-              <th>Interested Site &amp; Plot</th>
-              <th>Message / Requirement</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th class="text-end">Actions</th>
+              <th class="fit">#</th>
+              <th class="grow">Customer</th>
+              <th class="fit">Interested Site &amp; Plot</th>
+              <th class="grow hide-xl">Message / Requirement</th>
+              <th class="fit hide-lg">Date</th>
+              <th class="fit">Status</th>
+              <th class="fit text-end">Action</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let inq of inquiries; let i = index">
-              <td class="td-sno">{{ (inquiryPage - 1) * inquiryPageSize + i + 1 }}</td>
+              <td class="fit text-muted">{{ (inquiryPage - 1) * inquiryPageSize + i + 1 }}</td>
               
               <!-- Customer -->
-              <td>
-                <div class="customer-info-cell">
-                  <div class="customer-avatar-sm">{{ getCustomerInitials(inq.full_name) }}</div>
-                  <div>
-                    <strong class="customer-name-text">{{ inq.full_name }}</strong>
-                    <div class="customer-contact-links mt-1">
-                      <a [href]="'tel:' + inq.mobile_no" class="contact-pill"><i class="fas fa-phone-alt"></i> {{ inq.mobile_no }}</a>
-                      <a [href]="'https://wa.me/91' + inq.mobile_no" target="_blank" class="contact-pill wa-pill"><i class="fab fa-whatsapp"></i> WA</a>
+              <td class="grow">
+                <div class="person">
+                  <div class="avatar">{{ getCustomerInitials(inq.full_name) }}</div>
+                  <div class="txt">
+                    <div class="fw-bold">{{ inq.full_name }}</div>
+                    <div class="sub">
+                      <a [href]="'tel:' + inq.mobile_no" class="text-decoration-none me-2"><i class="fas fa-phone-alt fs-10"></i> {{ inq.mobile_no }}</a>
+                      <a [href]="'https://wa.me/91' + inq.mobile_no" target="_blank" class="text-success text-decoration-none"><i class="fab fa-whatsapp fs-10"></i> WA</a>
+                      <span *ngIf="inq.matched_user_id" class="badge b-green ms-1">Reg</span>
                     </div>
-                    <span *ngIf="inq.matched_user_id" class="badge-matched-cust"><i class="fas fa-check-circle me-1"></i> Registered: {{ inq.matched_member_id || ('Cust #' + inq.matched_user_id) }}</span>
                   </div>
                 </div>
               </td>
 
               <!-- Site & Plot -->
-              <td>
-                <div class="plot-site-cell">
-                  <div class="site-tag"><i class="fas fa-map-marker-alt text-emerald me-1"></i> {{ inq.site_name || 'General Township' }}</div>
-                  <div class="plot-number-badge" *ngIf="inq.plot_number">Plot Preference: {{ inq.plot_number }}</div>
-                  <span class="fs-10 text-muted">{{ inq.inquiry_type || 'Plot Booking' }}</span>
-                </div>
+              <td class="fit">
+                <div class="fw-bold text-dark">{{ inq.site_name || 'General Township' }}</div>
+                <div class="sub" *ngIf="inq.plot_number"><span class="chip">Plot #{{ inq.plot_number }}</span></div>
+                <div class="sub" *ngIf="!inq.plot_number"><span class="chip">{{ inq.inquiry_type || 'Plot Booking' }}</span></div>
               </td>
 
               <!-- Message -->
-              <td>
-                <div class="inquiry-msg-box" [title]="inq.inquiry_message || 'No message provided'">
+              <td class="grow hide-xl">
+                <div class="text-truncate" style="max-width: 260px;" [title]="inq.inquiry_message || 'Inquiry submitted for plot booking & site visit.'">
                   {{ inq.inquiry_message || 'Inquiry submitted for plot booking & site visit.' }}
                 </div>
               </td>
 
               <!-- Date -->
-              <td>
-                <span class="booking-date">{{ inq.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
-                <div class="fs-10 text-muted">{{ inq.source_page || 'Website' }}</div>
+              <td class="fit hide-lg">
+                <div>{{ inq.created_at | date:'dd MMM yyyy' }}</div>
+                <div class="sub">{{ inq.created_at | date:'hh:mm a' }}</div>
               </td>
 
               <!-- Status -->
-              <td>
-                <select class="form-select form-select-xs status-select" [ngModel]="inq.status || 'New'" (ngModelChange)="updateInquiryStatus(inq, $event)">
+              <td class="fit">
+                <select class="sel form-select-xs" style="height: 22px; font-size: 11px; padding: 0 4px;" [ngModel]="inq.status || 'New'" (ngModelChange)="updateInquiryStatus(inq, $event)">
                   <option value="New">New</option>
                   <option value="Contacted">Contacted</option>
                   <option value="Follow-up">Follow-up</option>
@@ -1061,19 +1036,19 @@
               </td>
 
               <!-- Actions -->
-              <td class="text-end">
-                <button class="btn btn-emerald-action btn-sm fw-bold" (click)="openAllocateFromInquiry(inq)">
-                  <i class="fas fa-plus-circle me-1"></i> Allocate Plot
+              <td class="fit text-end">
+                <button type="button" class="btn btn-gold btn-xs fw-bold" style="height: 22px; padding: 0 8px; font-size: 11px;" (click)="openAllocateFromInquiry(inq)" title="Allocate Plot">
+                  <i class="fas fa-plus-circle me-1"></i> Allocate
                 </button>
               </td>
             </tr>
 
             <tr *ngIf="!inquiries.length">
-              <td colspan="7" class="empty-table-state">
+              <td colspan="7" class="empty-table-state py-4 text-center text-muted">
                 <div class="empty-state-wrap">
-                  <div class="empty-icon"><i class="fas fa-headset"></i></div>
-                  <h5>No Plot Inquiries Found</h5>
-                  <p>Inquiries submitted from website popup forms will appear here.</p>
+                  <div class="empty-icon fs-20 text-muted mb-1"><i class="fas fa-headset"></i></div>
+                  <h6 class="fs-13 fw-bold mb-0">No Plot Inquiries Found</h6>
+                  <p class="fs-11 text-muted mb-0">Inquiries submitted from website popup forms will appear here.</p>
                 </div>
               </td>
             </tr>

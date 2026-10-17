@@ -397,6 +397,17 @@ export class BookingManagementComponent implements OnInit {
     this.selected = null;
   }
 
+  getShortPaymentMode(method: string | null | undefined): string {
+    if (!method) return 'Online';
+    const m = String(method);
+    if (m.includes('Bank') || m.includes('NEFT') || m.includes('RTGS')) return 'Bank Transfer';
+    if (m.includes('UPI') || m.includes('QR')) return 'UPI / QR';
+    if (m.includes('Cash')) return 'Cash';
+    if (m.includes('EMI')) return 'EMI';
+    if (m.includes('Cheque')) return 'Cheque';
+    return m.split('/')[0].trim();
+  }
+
   // ==========================================
   // PLOT ALLOCATION MODAL LOGIC
   // ==========================================

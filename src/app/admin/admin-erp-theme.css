@@ -102,21 +102,23 @@
   text-transform: uppercase !important;
 }
 
-/* ── 4. STATISTIC & KPI MINI CARDS ───────────────────────────────────────── */
+/* ── 4. STATISTIC & KPI MINI CARDS (COMPACT ERP ARCHITECTURE) ───────── */
 .panel-shell .stat-mini-card,
 .panel-shell .kpi-card,
 .panel-shell .stats-card {
-  container-type: inline-size;
-  container-name: admin-kpi;
   width: 100%;
-  border-radius: 12px !important;
-  padding: 12px 14px !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
-  border: 1px solid #e2e8f0 !important;
-  min-height: 5.375rem !important;
+  border-radius: var(--r-xs, 6px) !important;
+  padding: 6px 10px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+  border: 1px solid var(--clr-border, #e2e8f0) !important;
+  border-left: 3px solid var(--clr-primary, #0f4d2b) !important;
+  min-height: 48px !important;
+  max-height: 58px !important;
   display: flex !important;
-  flex-direction: column !important;
+  flex-direction: row !important;
+  align-items: center !important;
   justify-content: space-between !important;
+  gap: 8px !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
   background: #ffffff !important;
   position: relative !important;
@@ -125,24 +127,50 @@
 
 .panel-shell .stat-mini-card:hover,
 .panel-shell .kpi-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06) !important;
   border-color: #cbd5e1 !important;
+}
+
+.panel-shell .kpi-card.s-orange,
+.panel-shell .stat-mini-card.s-orange {
+  border-left-color: #f59e0b !important;
+  background: linear-gradient(90deg, #fffbeb, #ffffff) !important;
+}
+
+.panel-shell .kpi-card.s-blue,
+.panel-shell .stat-mini-card.s-blue {
+  border-left-color: #3b82f6 !important;
+  background: linear-gradient(90deg, #eff6ff, #ffffff) !important;
+}
+
+.panel-shell .kpi-card.s-green,
+.panel-shell .stat-mini-card.s-green {
+  border-left-color: #10b981 !important;
+  background: linear-gradient(90deg, #ecfdf5, #ffffff) !important;
+}
+
+.panel-shell .kpi-card.s-red,
+.panel-shell .stat-mini-card.s-red {
+  border-left-color: #ef4444 !important;
+  background: linear-gradient(90deg, #fef2f2, #ffffff) !important;
 }
 
 .panel-shell .stat-mini-val,
 .panel-shell .kpi-value,
 .panel-shell .stat-val {
   font-family: var(--ff-erp-sans, 'Inter', system-ui, sans-serif) !important;
-  font-size: clamp(1rem, 0.95rem + 0.8vw, 1.45rem);
-  font-size: clamp(1rem, 7cqi + 0.35rem, 1.45rem);
+  font-size: 18px !important;
   font-weight: 800 !important;
   color: #0f172a !important;
-  line-height: 1.15 !important;
-  margin: 3px 0 5px 0 !important;
-  letter-spacing: -0.02em !important;
+  line-height: 1.1 !important;
+  margin: 1px 0 !important;
+  letter-spacing: -0.01em !important;
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
   word-break: break-word;
 }
 
@@ -283,15 +311,15 @@
 }
 
 /* ── 6. COMPACT SEARCH & FILTER CONTROLS ──────────────────────────────────── */
-.panel-shell .form-control,
+.panel-shell .form-control:not(.f-input-search):not(.customer-search-field),
 .panel-shell .form-select,
-.panel-shell .inp,
+.panel-shell .inp:not(.f-input-search):not(.customer-search-field),
 .panel-shell .sel,
-.panel-shell input[type="text"],
+.panel-shell input[type="text"]:not(.f-input-search):not(.customer-search-field),
 .panel-shell input[type="number"],
 .panel-shell input[type="email"],
 .panel-shell input[type="date"],
-.panel-shell input[type="search"],
+.panel-shell input[type="search"]:not(.f-input-search):not(.customer-search-field),
 .panel-shell input[type="tel"],
 .panel-shell select {
   height: var(--h-xs, 26px) !important;
@@ -345,7 +373,8 @@
 }
 
 .panel-shell .search,
-.panel-shell .search-box {
+.panel-shell .search-box,
+.panel-shell .filter-search-box {
   position: relative !important;
   flex: 1 1 220px !important;
   min-width: 0 !important;
@@ -356,21 +385,32 @@
 .panel-shell .search svg,
 .panel-shell .search-box .search-icon,
 .panel-shell .search-box i,
-.panel-shell .search-box svg {
+.panel-shell .search-box svg,
+.panel-shell .filter-search-box .search-icon,
+.panel-shell .filter-search-box i,
+.panel-shell .input-with-icon .search-icon,
+.panel-shell .input-with-icon i,
+.panel-shell .search-icon {
   position: absolute !important;
-  left: 8px !important;
+  left: 10px !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
   font-size: 11px !important;
   color: #64748b !important;
   pointer-events: none !important;
+  z-index: 5 !important;
 }
 
 .panel-shell .search input,
-.panel-shell .search-box input {
+.panel-shell .search-box input,
+.panel-shell .filter-search-box input,
+.panel-shell .input-with-icon input,
+.panel-shell input.f-input-search,
+.panel-shell input.customer-search-field {
   width: 100% !important;
   height: var(--h-xs, 26px) !important;
-  padding-left: 26px !important;
+  padding-left: 32px !important;
+  padding-right: 8px !important;
   font-size: var(--fs-xs, 12px) !important;
 }
 
@@ -600,12 +640,12 @@
   width: 100% !important;
   max-width: 100% !important;
   min-width: 0 !important;
-  min-height: 220px !important;
+  min-height: 0 !important;
   margin-bottom: 0 !important;
   overflow-x: auto !important;
   overflow-y: visible !important;
   -webkit-overflow-scrolling: touch !important;
-  padding-bottom: 12px !important;
+  padding-bottom: 0 !important;
   box-sizing: border-box !important;
 }
 
@@ -642,7 +682,6 @@ table.custom-dash-table {
   white-space: nowrap !important;
   vertical-align: middle !important;
   line-height: 1.2 !important;
-  display: table-cell !important;
 }
 
 .panel-shell .data-table tbody td,
@@ -662,7 +701,6 @@ table.custom-dash-table {
   transition: background-color 0.12s ease !important;
   overflow: visible !important;
   position: relative;
-  display: table-cell !important;
 }
 
 .panel-shell .data-table tbody tr:hover td,
@@ -700,16 +738,24 @@ table.custom-dash-table {
 .panel-shell .grow,
 .panel-shell th.grow,
 .panel-shell td.grow {
-  max-width: 0 !important;
-  overflow: hidden !important;
+  width: auto !important;
+  min-width: 140px !important;
   white-space: nowrap !important;
-  text-overflow: ellipsis !important;
+}
+
+.panel-shell th.grow {
+  overflow: visible !important;
+}
+
+.panel-shell td.grow {
+  overflow: hidden !important;
 }
 
 .panel-shell .grow > div,
 .panel-shell .grow .txt > div,
 .panel-shell td.grow > div,
 .panel-shell td.grow .txt > div {
+  max-width: 100% !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
@@ -1317,25 +1363,57 @@ body.modal-open .panel-shell td:focus-within,
     overflow-x: hidden !important;
   }
 
-  /* 44px Touch Targets & 16px Font (Prevents iOS Auto-Zoom) */
-  .panel-shell .form-control,
+  /* Mobile Touch Targets & Inputs */
+  .panel-shell .form-control:not(.f-input-search):not(.customer-search-field),
   .panel-shell .form-select,
-  .panel-shell input[type="text"],
+  .panel-shell input[type="text"]:not(.f-input-search):not(.customer-search-field),
   .panel-shell input[type="number"],
   .panel-shell input[type="email"],
   .panel-shell input[type="date"],
-  .panel-shell input[type="search"],
+  .panel-shell input[type="search"]:not(.f-input-search):not(.customer-search-field),
   .panel-shell select {
-    height: 44px !important;
-    min-height: 44px !important;
-    padding: 8px 12px !important;
-    font-size: 16px !important;
-    border-radius: 8px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+    border-radius: 6px !important;
     width: 100% !important;
   }
 
-  .panel-shell .search-box input {
-    padding-left: 36px !important;
+  .panel-shell .search input,
+  .panel-shell .search-box input,
+  .panel-shell .filter-search-box input,
+  .panel-shell .input-with-icon input,
+  .panel-shell input.f-input-search,
+  .panel-shell input.customer-search-field {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding-left: 38px !important;
+    padding-right: 12px !important;
+    font-size: 13px !important;
+    border-radius: 6px !important;
+    width: 100% !important;
+  }
+
+  .panel-shell .search .search-icon,
+  .panel-shell .search i,
+  .panel-shell .search svg,
+  .panel-shell .search-box .search-icon,
+  .panel-shell .search-box i,
+  .panel-shell .search-box svg,
+  .panel-shell .filter-search-box .search-icon,
+  .panel-shell .filter-search-box i,
+  .panel-shell .input-with-icon .search-icon,
+  .panel-shell .input-with-icon i,
+  .panel-shell .search-icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 13px !important;
+    color: #64748b !important;
+    pointer-events: none !important;
+    z-index: 5 !important;
   }
 
   .panel-shell .search-box .search-icon,
@@ -1376,15 +1454,16 @@ body.modal-open .panel-shell td:focus-within,
 
   .panel-shell .stat-mini-card,
   .panel-shell .kpi-card {
-    min-height: 74px !important;
-    padding: 8px 10px !important;
-    border-radius: 10px !important;
+    min-height: 48px !important;
+    max-height: 56px !important;
+    padding: 6px 8px !important;
+    border-radius: var(--r-xs, 6px) !important;
   }
 
   .panel-shell .stat-mini-val,
   .panel-shell .kpi-value,
   .panel-shell .stat-val {
-    font-size: clamp(1.05rem, 4.4vw, 1.25rem) !important;
+    font-size: 15px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -1393,59 +1472,99 @@ body.modal-open .panel-shell td:focus-within,
   .panel-shell .stat-mini-lbl,
   .panel-shell .kpi-label,
   .panel-shell .stat-label {
-    font-size: 11px !important;
+    font-size: 9.5px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
 
-  /* Stack Filters Vertically */
+  /* Compact Filters on Mobile */
   .panel-shell .filter-section-card,
   .panel-shell .filter-container {
-    padding: 12px !important;
+    padding: 6px 8px !important;
+    margin-bottom: 6px !important;
   }
 
-  .panel-shell .filter-row,
   .panel-shell .filter-tabs,
   .panel-shell .quick-filter-tabs {
     display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 4px !important;
+    padding-bottom: 4px !important;
     width: 100% !important;
+  }
+
+  .panel-shell .quick-tab-btn,
+  .panel-shell .filter-tab {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .panel-shell .filter-row,
+  .panel-shell .filter-form-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .panel-shell .filter-search-box,
+  .panel-shell .filter-select-box,
+  .panel-shell .filter-form-row .btn,
+  .panel-shell .filter-row > * {
+    width: 100% !important;
+    flex: 1 1 100% !important;
   }
 
   .panel-shell .filter-tab,
   .panel-shell .quick-tab-btn {
-    min-height: 40px !important;
-    display: flex !important;
+    height: var(--h-xs, 26px) !important;
+    min-height: var(--h-xs, 26px) !important;
+    font-size: 11px !important;
+    padding: 0 10px !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+    border-radius: 999px !important;
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 13px !important;
-    width: 100% !important;
   }
 }
 
 /* ── 15. RESPONSIVE COLUMN HIDING (ZERO HORIZONTAL SCROLL) ──────────────── */
-@media (max-width: 1180px) {
+@media (max-width: 1500px) {
   .panel-shell .hide-xl,
   .panel-shell th.hide-xl,
-  .panel-shell td.hide-xl {
+  .panel-shell td.hide-xl,
+  .hide-xl,
+  th.hide-xl,
+  td.hide-xl {
     display: none !important;
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1380px) {
   .panel-shell .hide-lg,
   .panel-shell th.hide-lg,
-  .panel-shell td.hide-lg {
+  .panel-shell td.hide-lg,
+  .hide-lg,
+  th.hide-lg,
+  td.hide-lg {
     display: none !important;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 992px) {
   .panel-shell .hide-md,
   .panel-shell th.hide-md,
-  .panel-shell td.hide-md {
+  .panel-shell td.hide-md,
+  .hide-md,
+  th.hide-md,
+  td.hide-md {
     display: none !important;
   }
 }
