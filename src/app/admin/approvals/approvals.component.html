@@ -1,381 +1,404 @@
 <!-- Toast Notification -->
-<div *ngIf="toast" class="toast-popup" style="position:fixed;top:76px;right:24px;z-index:9999;animation:slideIn .25s ease;">
-  <i class="fas fa-check-circle text-emerald me-2"></i> {{ toast }}
+<div *ngIf="toast" class="toast-popup">
+  <i class="fas fa-check-circle text-emerald me-1.5"></i> {{ toast }}
 </div>
 
-<!-- TOP HERO BANNER -->
-<div class="admin-hero-card mb-2">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
-    <div>
-      <div class="admin-hero-badge"><i class="fas fa-user-shield me-1"></i>KYC VERIFICATION &amp; APPROVALS</div>
-      <h2 class="admin-hero-title mb-1">Registration Approvals</h2>
-      <p class="admin-hero-sub mb-0">Review pending Customer, Associate &amp; Investor account registrations, verify KYC profiles &amp; activate accounts.</p>
-    </div>
+<div class="panel-shell">
+  <!-- TOP HERO EXECUTIVE BANNER -->
+  <div class="admin-hero-card mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+      <div>
+        <div class="admin-hero-badge"><i class="fas fa-user-shield me-1"></i>KYC VERIFICATION &amp; APPROVALS CONSOLE</div>
+        <h2 class="admin-hero-title mb-0.5">Registration Approvals</h2>
+        <p class="admin-hero-sub mb-0">Review pending Customer, Associate &amp; Investor account registrations, verify KYC profiles &amp; activate accounts.</p>
+      </div>
 
-    <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
-      <!-- Direct Links to Enrollment consoles -->
-      <a routerLink="/admin/enrollments" [queryParams]="{tab: 'associate'}" class="btn btn-gold-outline btn-xs text-white">
-        <i class="fas fa-id-card me-1 text-gold"></i> Associate Enrollments
-      </a>
-      <a routerLink="/admin/enrollments" [queryParams]="{tab: 'customer'}" class="btn btn-gold-outline btn-xs text-white">
-        <i class="fas fa-users me-1 text-gold"></i> Customer Enrollments
-      </a>
-      <button class="btn btn-outline-light btn-xs" (click)="loadUsers()">
-        <i class="fas fa-sync me-1" [class.fa-spin]="loading"></i> Refresh
-      </button>
+      <div class="d-flex align-items-center gap-1.5 ms-auto flex-wrap">
+        <a routerLink="/admin/enrollments" [queryParams]="{tab: 'associate'}" class="btn btn-outline-light btn-xs">
+          <i class="fas fa-id-card me-1 text-gold"></i> Associate Enrollments
+        </a>
+        <a routerLink="/admin/enrollments" [queryParams]="{tab: 'customer'}" class="btn btn-outline-light btn-xs">
+          <i class="fas fa-users me-1 text-gold"></i> Customer Enrollments
+        </a>
+        <button class="btn btn-gold btn-xs shadow-xs" (click)="loadUsers()" [disabled]="loading" title="Refresh list">
+          <i class="fas fa-sync me-1" [class.fa-spin]="loading"></i> Refresh
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- 4 STAT SUMMARY MINI CARDS -->
-<div class="row g-2 mb-2">
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-approvals h-100 cursor-pointer" (click)="setMode('pending')">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Pending Signups</span>
-        <div class="icon-wrap bg-amber text-orange">
-          <i class="fas fa-user-clock"></i>
+  <!-- 4 COMPACT HORIZONTAL KPI CARDS (~48-52px height) -->
+  <div class="kpi-grid mb-3">
+    <div class="kpi-card s-orange cursor-pointer" (click)="setMode('pending')" title="Click to view pending signups">
+      <div class="kpi-content">
+        <div class="kpi-label">Pending Signups</div>
+        <div class="kpi-value text-orange">{{ pendingCount }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-user-clock"></i></div>
+    </div>
+
+    <div class="kpi-card s-blue cursor-pointer" (click)="filter='customer'" title="Click to filter Customers">
+      <div class="kpi-content">
+        <div class="kpi-label">{{ viewMode === 'pending' ? 'Pending Customers' : 'Total Customers' }}</div>
+        <div class="kpi-value">{{ customerCount }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-users"></i></div>
+    </div>
+
+    <div class="kpi-card s-gold cursor-pointer" (click)="filter='associate'" title="Click to filter Associates">
+      <div class="kpi-content">
+        <div class="kpi-label">{{ viewMode === 'pending' ? 'Pending Associates' : 'Total Associates' }}</div>
+        <div class="kpi-value">{{ associateCount }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-user-tie"></i></div>
+    </div>
+
+    <div class="kpi-card s-green cursor-pointer" (click)="setMode('all')" title="Click to view all registered users">
+      <div class="kpi-content">
+        <div class="kpi-label">Registered Users</div>
+        <div class="kpi-value">{{ totalUsersCount }}</div>
+      </div>
+      <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+    </div>
+  </div>
+
+  <!-- VIEW MODE & TOOLBAR CARD -->
+  <div class="filter-card mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <!-- Mode Switcher & Pill Tabs -->
+      <div class="tabs-nav">
+        <!-- Main Mode Toggle -->
+        <button type="button" class="tab-btn" [class.active]="viewMode==='pending'" (click)="setMode('pending')">
+          <i class="fas fa-clock me-1"></i> Pending ({{ pendingCount }})
+        </button>
+        <button type="button" class="tab-btn" [class.active]="viewMode==='all'" (click)="setMode('all')">
+          <i class="fas fa-users me-1"></i> All Users ({{ totalUsersCount }})
+        </button>
+
+        <span class="tab-divider"></span>
+
+        <!-- Sub-filter Pills -->
+        <button type="button" class="tab-btn" [class.active]="filter==='all'" (click)="filter='all'">
+          All <span class="tab-badge">{{ filtered.length }}</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="filter==='customer'" (click)="filter='customer'">
+          Customers <span class="tab-badge" *ngIf="customerCount">{{ customerCount }}</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="filter==='associate'" (click)="filter='associate'">
+          Associates <span class="tab-badge" *ngIf="associateCount">{{ associateCount }}</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="filter==='teammember'" (click)="filter='teammember'">
+          Team Members <span class="tab-badge" *ngIf="teamMemberCount">{{ teamMemberCount }}</span>
+        </button>
+        <button type="button" class="tab-btn" [class.active]="filter==='investor'" (click)="filter='investor'">
+          Investors <span class="tab-badge" *ngIf="investorCount">{{ investorCount }}</span>
+        </button>
+        <button type="button" class="tab-btn" *ngIf="viewMode==='pending'" [class.active]="filter==='inforequested'" (click)="filter='inforequested'">
+          Info Requested
+        </button>
+        <button type="button" class="tab-btn" *ngIf="viewMode==='all'" [class.active]="filter==='active'" (click)="filter='active'">
+          Active
+        </button>
+      </div>
+
+      <!-- Search Box -->
+      <div class="filter-tools ms-auto d-flex align-items-center gap-2">
+        <div class="f-input-wrap search-field-box">
+          <i class="fas fa-search f-input-icon"></i>
+          <input
+            type="text"
+            class="f-input f-input-search"
+            [(ngModel)]="search"
+            placeholder="Search name, phone, email, ID...">
+          <button
+            type="button"
+            class="f-clear-btn"
+            *ngIf="search"
+            (click)="clearSearch()"
+            title="Clear search">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
       </div>
-      <div class="stat-mini-val">{{ pendingCount }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-exclamation-circle text-orange me-1"></i>Awaiting Approval</div>
     </div>
   </div>
 
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-customers h-100 cursor-pointer" (click)="viewMode==='all' ? filter='customer' : filter='customer'">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">{{ viewMode === 'pending' ? 'Pending Customers' : 'Total Customers' }}</span>
-        <div class="icon-wrap bg-blue text-primary">
-          <i class="fas fa-users"></i>
-        </div>
-      </div>
-      <div class="stat-mini-val">{{ customerCount }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-user text-primary me-1"></i>Plot Buyers</div>
-    </div>
+  <!-- LOADING STATE -->
+  <div class="panel-card text-center py-4 mb-3" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fs-3 text-gold mb-1.5"></i>
+    <p class="text-muted fs-11.5 mb-0">Loading user registrations &amp; KYC data...</p>
   </div>
 
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-associates h-100 cursor-pointer" (click)="viewMode==='all' ? filter='associate' : filter='associate'">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">{{ viewMode === 'pending' ? 'Pending Associates' : 'Total Associates' }}</span>
-        <div class="icon-wrap bg-gold-light text-gold-dark">
-          <i class="fas fa-user-tie"></i>
-        </div>
-      </div>
-      <div class="stat-mini-val">{{ associateCount }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-sitemap text-gold-dark me-1"></i>Network Agents</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-md-3">
-    <div class="stat-mini-card box-investors h-100 cursor-pointer" style="background: #f0fdf4; border: 1px solid #bbf7d0;" (click)="setMode('all')">
-      <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate" style="color: #166534;">Total Registered Users</span>
-        <div class="icon-wrap" style="background: #dcfce7; color: #15803d;">
-          <i class="fas fa-user-check"></i>
-        </div>
-      </div>
-      <div class="stat-mini-val" style="color: #14532d;">{{ totalUsersCount }}</div>
-      <div class="fs-11 fw-600" style="color: #166534;"><i class="fas fa-shield-alt me-1"></i>All Active Profiles</div>
-    </div>
-  </div>
-</div>
-
-<!-- VIEW MODE & TOOLBAR CARD -->
-<div class="panel-card p-3 mb-2">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <!-- MAIN DATA TABLE CARD -->
+  <div class="panel-card mb-3" *ngIf="!loading">
     
-    <!-- Mode Switcher (Pending vs All Users) -->
-    <div class="d-flex align-items-center gap-2">
-      <div class="btn-group btn-group-sm" role="group">
-        <button type="button" class="btn" [class.btn-emerald]="viewMode==='pending'" [class.btn-outline-secondary]="viewMode!=='pending'" (click)="setMode('pending')">
-          <i class="fas fa-clock me-1"></i> Pending Registrations ({{ pendingCount }})
+    <!-- EMPTY STATE FOR PENDING MODE -->
+    <div *ngIf="filtered.length === 0 && viewMode === 'pending'" class="text-center py-5">
+      <div class="d-inline-flex align-items-center justify-content-center rounded-circle p-2.5 mb-2" style="width: 48px; height: 48px; background: #dcfce7;">
+        <i class="fas fa-user-check text-emerald fs-4"></i>
+      </div>
+      <h6 class="fw-700 text-dark mb-1 fs-13">No Pending Registration Approvals</h6>
+      <p class="text-muted fs-11.5 mb-2.5 mx-auto" style="max-width: 450px;">
+        All user account registrations are currently active and verified. New online signups awaiting initial activation will appear here.
+      </p>
+      <div class="d-flex align-items-center justify-content-center flex-wrap gap-1.5">
+        <button type="button" class="btn btn-emerald btn-xs px-3" (click)="setMode('all')">
+          <i class="fas fa-users me-1"></i> View All Registered Users ({{ totalUsersCount }})
         </button>
-        <button type="button" class="btn" [class.btn-emerald]="viewMode==='all'" [class.btn-outline-secondary]="viewMode!=='all'" (click)="setMode('all')">
-          <i class="fas fa-users me-1"></i> All Users &amp; KYC ({{ totalUsersCount }})
-        </button>
+        <a routerLink="/admin/enrollments" [queryParams]="{tab: 'associate'}" class="btn btn-outline-secondary btn-xs px-2.5">
+          <i class="fas fa-id-card text-gold me-1"></i> Associate Enrollments
+        </a>
       </div>
     </div>
 
-    <!-- Filter Tabs -->
-    <div class="filter-tabs" *ngIf="viewMode === 'pending'">
-      <button class="filter-tab" [class.active]="filter==='all'"           (click)="filter='all'">All Pending ({{ pendingCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='customer'"      (click)="filter='customer'">Customers ({{ customerCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='associate'"     (click)="filter='associate'">Associates ({{ associateCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='teammember'"    (click)="filter='teammember'">Team Members ({{ teamMemberCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='investor'"      (click)="filter='investor'">Investors ({{ investorCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='inforequested'" (click)="filter='inforequested'">Info Requested</button>
+    <!-- EMPTY STATE FOR ALL USERS MODE -->
+    <div *ngIf="filtered.length === 0 && viewMode === 'all'" class="text-center py-5">
+      <i class="fas fa-search text-muted fs-1 mb-2"></i>
+      <h6 class="fw-700 text-dark mb-1 fs-13">No Users Found</h6>
+      <p class="text-muted fs-11.5 mb-0">No user matching the selected filter or search criteria.</p>
     </div>
 
-    <div class="filter-tabs" *ngIf="viewMode === 'all'">
-      <button class="filter-tab" [class.active]="filter==='all'"           (click)="filter='all'">All Users ({{ totalUsersCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='customer'"      (click)="filter='customer'">Customers ({{ customerCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='associate'"     (click)="filter='associate'">Associates ({{ associateCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='teammember'"    (click)="filter='teammember'">Team Members ({{ teamMemberCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='investor'"      (click)="filter='investor'">Investors ({{ investorCount }})</button>
-      <button class="filter-tab" [class.active]="filter==='active'"        (click)="filter='active'">Active</button>
-      <button class="filter-tab" [class.active]="filter==='pending'"       (click)="filter='pending'">Pending</button>
-    </div>
+    <!-- TABLE -->
+    <app-admin-table-container
+      *ngIf="filtered.length > 0"
+      [title]="viewMode === 'pending' ? 'Pending Approvals' : 'Registered Users & KYC Directory'"
+      [count]="filtered.length"
+      (export)="exportData('all', 'excel')">
+      <div class="table-responsive">
+        <table class="custom-dash-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th class="th-sno">#</th>
+              <th>User Profile</th>
+              <th>Contact &amp; Mobile</th>
+              <th>Role</th>
+              <th>Sponsor Details</th>
+              <th>Registered Date</th>
+              <th>Account Status</th>
+              <th>KYC Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of pagedUsers; let i = index">
+              <!-- S.No -->
+              <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
 
-    <!-- Search Box -->
-    <div class="search-box position-relative ms-auto" style="min-width: 220px;">
-      <i class="fas fa-search search-icon"></i>
-      <input type="text" class="form-control form-control-sm ps-4" [(ngModel)]="search" placeholder="Search name, phone, email...">
-    </div>
-  </div>
-</div>
-
-<!-- LOADING STATE -->
-<div class="panel-card text-center py-5 mb-2" *ngIf="loading">
-  <i class="fas fa-spinner fa-spin fs-2 text-gold"></i>
-  <p class="text-muted fs-12 mt-2 mb-0">Loading user registrations &amp; KYC data...</p>
-</div>
-
-<!-- MAIN DATA TABLE CARD -->
-<div class="panel-card p-3 mb-2" *ngIf="!loading">
-  
-  <!-- SMART EMPTY STATE FOR PENDING MODE -->
-  <div *ngIf="filtered.length === 0 && viewMode === 'pending'" class="text-center py-5">
-    <div class="d-inline-flex align-items-center justify-content-center bg-emerald-subtle rounded-circle p-3 mb-3" style="width: 64px; height: 64px; background: #dcfce7;">
-      <i class="fas fa-user-check text-emerald fs-2"></i>
-    </div>
-    <h5 class="fw-700 text-dark mb-1">No Pending Registration Approvals</h5>
-    <p class="text-muted fs-12 mb-3 max-w-500 mx-auto">
-      All user account registrations are currently active and verified. New online signups awaiting initial activation will appear here.
-    </p>
-    <div class="d-flex align-items-center justify-content-center flex-wrap gap-2">
-      <button class="btn btn-emerald btn-xs px-3" (click)="setMode('all')">
-        <i class="fas fa-users me-1"></i> View All Registered Users ({{ totalUsersCount }})
-      </button>
-      <a routerLink="/admin/enrollments" [queryParams]="{tab: 'associate'}" class="btn btn-outline-secondary btn-xs px-3">
-        <i class="fas fa-id-card text-gold me-1"></i> View Associate Enrollments
-      </a>
-      <a routerLink="/admin/enrollments" [queryParams]="{tab: 'customer'}" class="btn btn-outline-secondary btn-xs px-3">
-        <i class="fas fa-users text-primary me-1"></i> View Customer Enrollments
-      </a>
-    </div>
-  </div>
-
-  <!-- EMPTY STATE FOR ALL USERS MODE -->
-  <div *ngIf="filtered.length === 0 && viewMode === 'all'" class="text-center py-5">
-    <i class="fas fa-search text-muted fs-1 mb-2"></i>
-    <h6 class="fw-700 text-dark mb-1">No Users Found</h6>
-    <p class="text-muted fs-12 mb-0">No user matching the selected filter or search criteria.</p>
-  </div>
-
-  <!-- TABLE -->
-  <app-admin-table-container
-    *ngIf="filtered.length > 0"
-    [title]="viewMode === 'pending' ? 'Pending Approvals' : 'Registered Users & KYC Directory'"
-    [count]="filtered.length"
-    (export)="exportData('all', 'excel')">
-    <div class="table-responsive">
-      <table class="table align-middle custom-dash-table mb-0">
-        <thead>
-          <tr>
-            <th class="th-sno text-center">#</th>
-            <th class="col-user-profile">User Profile</th>
-            <th class="col-contact">Contact &amp; Mobile</th>
-            <th class="col-type">Type</th>
-            <th class="col-sponsor">Sponsor</th>
-            <th class="col-registered">Registered</th>
-            <th class="col-status text-center">Account Status</th>
-            <th class="col-kyc text-center">Enrollment / KYC</th>
-            <th class="col-actions text-end">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let u of pagedUsers; let i = index">
-            <td class="td-sno text-center">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td class="col-user-profile">
-              <div class="d-flex align-items-center gap-2">
-                <div class="user-avatar-circle" [class.bg-blue]="getUserType(u)==='Customer'" [class.bg-gold]="getUserType(u)==='Associate'" [class.bg-info]="getUserType(u)==='Team Member'" [class.bg-emerald]="getUserType(u)==='Investor'">
-                  {{ getInitials(u.full_name) }}
+              <!-- Profile -->
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="user-avatar-circle"
+                    [class.bg-blue-avatar]="getUserType(u)==='Customer'"
+                    [class.bg-gold-avatar]="getUserType(u)==='Associate'"
+                    [class.bg-info-avatar]="getUserType(u)==='Team Member'"
+                    [class.bg-green-avatar]="getUserType(u)==='Investor'">
+                    {{ getInitials(u.full_name) }}
+                  </div>
+                  <div>
+                    <div class="fw-700 text-dark fs-12">{{ u.full_name }}</div>
+                    <div class="text-muted fs-10.5 text-truncate" style="max-width: 170px;" [title]="u.email || ''">
+                      <i class="fas fa-envelope text-gold me-1"></i>{{ u.email || 'No email' }}
+                    </div>
+                  </div>
                 </div>
-                <div class="min-w-0">
-                  <div class="fw-700 text-dark fs-12 user-name text-truncate" [title]="u.full_name">{{ u.full_name }}</div>
-                  <div class="fs-10 text-muted user-email text-truncate" [title]="u.email || ''"><i class="fas fa-envelope me-1 text-gold"></i>{{ u.email || 'No email' }}</div>
-                </div>
-              </div>
-            </td>
-            <td class="col-contact">
-              <div class="fw-700 text-dark fs-12"><i class="fas fa-phone-alt me-1 text-emerald fs-10"></i>{{ u.mobile_no }}</div>
-              <div class="fs-10 text-muted" *ngIf="u.member_id"><span class="badge bg-light text-dark border">ID: {{ u.member_id }}</span></div>
-            </td>
-            <td class="col-type">
-              <span class="badge" 
-                [class.bg-primary-subtle]="getUserType(u)==='Customer'" 
-                [class.text-primary]="getUserType(u)==='Customer'" 
-                [class.bg-warning-subtle]="getUserType(u)==='Associate'" 
-                [class.text-warning-emphasis]="getUserType(u)==='Associate'"
-                [class.bg-info-subtle]="getUserType(u)==='Team Member'" 
-                [class.text-info-emphasis]="getUserType(u)==='Team Member'"
-                [class.bg-success-subtle]="getUserType(u)==='Investor'" 
-                [class.text-success]="getUserType(u)==='Investor'">
-                <i [class]="getUserType(u)==='Customer' ? 'fas fa-user me-1' : (getUserType(u)==='Investor' ? 'fas fa-piggy-bank me-1' : (getUserType(u)==='Team Member' ? 'fas fa-id-badge me-1' : 'fas fa-user-tie me-1'))"></i>{{ getUserType(u) }}
-              </span>
-            </td>
-            <td class="col-sponsor">
-              <div class="fs-12 fw-600 text-dark text-truncate" *ngIf="u.sponsor_name" [title]="u.sponsor_name">{{ u.sponsor_name }}</div>
-              <div class="fs-10 text-muted" *ngIf="u.sponsor_code">Code: {{ u.sponsor_code }}</div>
-              <span class="fs-11 text-muted" *ngIf="!u.sponsor_name && !u.sponsor_code">Direct / None</span>
-            </td>
-            <td class="col-registered">
-              <div class="fs-11 text-dark fw-600">{{ u.registered_at | date:'dd MMM yyyy' }}</div>
-              <div class="fs-10 text-muted">{{ u.registered_at | date:'hh:mm a' }}</div>
-            </td>
-            <td class="col-status text-center">
-              <span class="sbadge"
-                [class.sbadge-yellow]="u.account_status==='Pending'"
-                [class.sbadge-blue]="u.account_status==='InfoRequested'"
-                [class.sbadge-green]="u.account_status==='Active'"
-                [class.sbadge-red]="u.account_status==='Rejected' || u.account_status==='Suspended'">
-                {{ u.account_status || 'Pending' }}
-              </span>
-            </td>
-            <td class="col-kyc text-center">
-              <span class="sbadge"
-                [class.sbadge-green]="u.enrollment_status==='Completed' || u.enrollment_status==='Submitted'"
-                [class.sbadge-yellow]="u.enrollment_status==='Pending' || !u.enrollment_status">
-                <i class="fas fa-file-alt me-1"></i>{{ u.enrollment_status || 'Pending' }}
-              </span>
-            </td>
-            <td class="col-actions text-end">
-              <div class="dropdown d-inline-block position-relative" [class.dropup]="isDropup(i)">
-                <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2.5 rounded-8" (click)="$event.stopPropagation(); activeRowId = (activeRowId === u.user_id ? null : u.user_id)">
-                  <i class="fas fa-ellipsis-v text-muted fs-11 me-1"></i> <span class="fs-10 fw-700">Actions</span>
-                </button>
+              </td>
 
-                <div class="dropdown-menu dropdown-menu-end show action-dropdown-menu"
-                     [class.dropdown-menu-up]="isDropup(i)"
-                     [class.dropdown-menu-down]="!isDropup(i)"
-                     *ngIf="activeRowId === u.user_id" 
-                     (click)="$event.stopPropagation()">
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-primary fw-600 d-flex align-items-center" (click)="openDetailModal(u); activeRowId = null">
-                    <i class="fas fa-eye text-primary me-2 width-16"></i> View KYC Profile
-                  </button>
-                  <div class="dropdown-divider my-1"></div>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-emerald fw-700 d-flex align-items-center" (click)="approve(u); activeRowId = null" [disabled]="actionLoading || u.account_status==='Active'">
-                    <i class="fas fa-check-circle text-emerald me-2 width-16"></i> Approve User
-                  </button>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-warning fw-600 d-flex align-items-center" (click)="openInfoModal(u); activeRowId = null">
-                    <i class="fas fa-question-circle text-warning me-2 width-16"></i> Request Info
-                  </button>
-                  <button type="button" class="dropdown-item py-1.5 px-3 text-danger fw-600 d-flex align-items-center" (click)="openRejectModal(u); activeRowId = null" [disabled]="actionLoading">
-                    <i class="fas fa-ban text-danger me-2 width-16"></i> Reject User
-                  </button>
-                  <div class="dropdown-divider my-1"></div>
-                  <a class="dropdown-item py-1.5 px-3 text-dark fw-600 d-flex align-items-center" [href]="'tel:' + u.mobile_no">
-                    <i class="fas fa-phone text-secondary me-2 width-16"></i> Call User
+              <!-- Contact & Mobile -->
+              <td>
+                <div class="fs-11.5 fw-600 text-dark d-flex align-items-center gap-1">
+                  <a [href]="'tel:' + u.mobile_no" class="text-dark text-decoration-none" title="Call">
+                    <i class="fas fa-phone-alt text-emerald me-1"></i>{{ u.mobile_no }}
                   </a>
-                  <a class="dropdown-item py-1.5 px-3 text-success fw-600 d-flex align-items-center" [href]="'https://wa.me/91' + u.mobile_no" target="_blank">
-                    <i class="fab fa-whatsapp text-success me-2 width-16"></i> WhatsApp Chat
+                  <a *ngIf="u.mobile_no" [href]="'https://wa.me/91' + u.mobile_no" target="_blank" class="text-emerald ms-1" title="WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
                   </a>
                 </div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </app-admin-table-container>
-  <app-admin-pagination
-    *ngIf="filtered.length > 0"
-    [totalItems]="filtered.length"
-    [page]="page"
-    [pageSize]="pageSize"
-    (pageChange)="onPageChange($event)"
-    (pageSizeChange)="onPageSizeChange($event)"
-    (export)="exportData($event.mode, $event.format)">
-  </app-admin-pagination>
-</div>
+                <div class="text-muted fs-10.5" *ngIf="u.member_id">
+                  <span class="code-badge">ID: {{ u.member_id }}</span>
+                </div>
+              </td>
 
-<!-- DETAIL KYC MODAL -->
-<div class="modal-backdrop fade show" *ngIf="showDetailModal"></div>
-<div class="modal d-block fade show" tabIndex="-1" *ngIf="showDetailModal" (click)="closeModals()">
-  <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-content border-0 rounded-14 shadow-lg">
-      
-      <div class="modal-header bg-dark-emerald text-white rounded-top-14 py-3 px-4">
-        <div class="d-flex align-items-center gap-2">
-          <i class="fas fa-user-shield text-gold fs-5"></i>
-          <div>
-            <h5 class="modal-title fs-15 fw-700 mb-0 text-white">User Profile &amp; KYC Verification</h5>
-            <span class="fs-11 text-gold-light">{{ selectedUser?.full_name }} ({{ selectedUser?.user_type }})</span>
-          </div>
+              <!-- Role -->
+              <td>
+                <span class="chip-role"
+                  [class.role-customer]="getUserType(u)==='Customer'"
+                  [class.role-associate]="getUserType(u)==='Associate'"
+                  [class.role-teammember]="getUserType(u)==='Team Member'"
+                  [class.role-investor]="getUserType(u)==='Investor'">
+                  <i [class]="getUserType(u)==='Customer' ? 'fas fa-user me-1' : (getUserType(u)==='Investor' ? 'fas fa-piggy-bank me-1' : (getUserType(u)==='Team Member' ? 'fas fa-id-badge me-1' : 'fas fa-user-tie me-1'))"></i>
+                  {{ getUserType(u) }}
+                </span>
+              </td>
+
+              <!-- Sponsor -->
+              <td>
+                <div class="fs-11.5 fw-600 text-dark text-truncate" style="max-width: 140px;" *ngIf="u.sponsor_name" [title]="u.sponsor_name">{{ u.sponsor_name }}</div>
+                <div class="text-muted fs-10.5" *ngIf="u.sponsor_code">Code: {{ u.sponsor_code }}</div>
+                <span class="fs-11 text-muted" *ngIf="!u.sponsor_name && !u.sponsor_code">Direct / None</span>
+              </td>
+
+              <!-- Registered Date -->
+              <td>
+                <div class="fs-11 text-dark fw-600">{{ u.registered_at | date:'dd MMM yyyy' }}</div>
+                <div class="fs-10 text-muted">{{ u.registered_at | date:'hh:mm a' }}</div>
+              </td>
+
+              <!-- Account Status -->
+              <td>
+                <span class="chip"
+                  [class.chip-warn]="u.account_status==='Pending'"
+                  [class.chip-blue]="u.account_status==='InfoRequested'"
+                  [class.chip-ok]="u.account_status==='Active'"
+                  [class.chip-err]="u.account_status==='Rejected' || u.account_status==='Suspended'">
+                  {{ u.account_status || 'Pending' }}
+                </span>
+              </td>
+
+              <!-- KYC Status -->
+              <td>
+                <span class="chip"
+                  [class.chip-ok]="u.enrollment_status==='Completed' || u.enrollment_status==='Submitted'"
+                  [class.chip-warn]="u.enrollment_status==='Pending' || !u.enrollment_status">
+                  <i class="fas fa-file-alt me-1"></i>{{ u.enrollment_status || 'Pending' }}
+                </span>
+              </td>
+
+              <!-- Actions (24px square buttons) -->
+              <td class="text-end">
+                <div class="actions-cell justify-content-end">
+                  <!-- 1. View KYC Profile -->
+                  <button type="button" class="ibtn ibtn-view" (click)="openDetailModal(u)" title="View KYC Profile &amp; Documents">
+                    <i class="fas fa-eye"></i>
+                  </button>
+
+                  <!-- 2. Approve User -->
+                  <button type="button" class="ibtn ibtn-approve" (click)="approve(u)" [disabled]="actionLoading || u.account_status==='Active'" title="Approve Registration">
+                    <i class="fas fa-check-circle"></i>
+                  </button>
+
+                  <!-- 3. Request Info -->
+                  <button type="button" class="ibtn ibtn-info" (click)="openInfoModal(u)" title="Request Info / Documents">
+                    <i class="fas fa-question-circle"></i>
+                  </button>
+
+                  <!-- 4. Reject User -->
+                  <button type="button" class="ibtn ibtn-ban" (click)="openRejectModal(u)" [disabled]="actionLoading" title="Reject Registration">
+                    <i class="fas fa-ban"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="pagination-footer border-top d-flex align-items-center justify-content-between flex-wrap gap-2 px-3 py-2" *ngIf="filtered.length > 0">
+        <div class="fs-11 text-muted">
+          Showing <strong>{{ (page - 1) * pageSize + 1 }}</strong> to <strong>{{ Math.min(page * pageSize, filtered.length) }}</strong> of <strong>{{ filtered.length }}</strong> registrations
         </div>
-        <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
+        <app-admin-pagination
+          [totalItems]="filtered.length"
+          [pageSize]="pageSize"
+          [currentPage]="page"
+          (pageChange)="onPageChange($event)">
+        </app-admin-pagination>
+      </div>
+    </app-admin-table-container>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- 1. DETAIL KYC & USER PROFILE MODAL         -->
+<!-- ========================================== -->
+<div class="modal-backdrop-custom" *ngIf="showDetailModal" (click)="closeModals()">
+  <div class="modal-dialog-custom modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content-card">
+      
+      <!-- Modal Header -->
+      <div class="modal-header-compact">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-user-shield text-gold fs-5"></i>
+            <div>
+              <div class="modal-hero-badge">KYC VERIFICATION DOSSIER</div>
+              <h3 class="modal-hero-title mb-0">{{ selectedUser?.full_name }}</h3>
+              <div class="modal-hero-sub">Role: <strong>{{ selectedUser?.user_type }}</strong> &bull; Mobile: <strong>{{ selectedUser?.mobile_no }}</strong></div>
+            </div>
+          </div>
+          <button class="modal-close-btn" (click)="closeModals()" title="Close">&times;</button>
+        </div>
       </div>
 
-      <div class="modal-body p-4 position-relative">
-        
+      <!-- Modal Body -->
+      <div class="modal-body-compact" style="max-height: 75vh; overflow-y: auto;">
         <div class="text-center py-4" *ngIf="detailLoading">
           <i class="fas fa-spinner fa-spin fs-3 text-gold"></i>
-          <p class="text-muted fs-12 mt-2 mb-0">Loading complete user details &amp; documents...</p>
+          <p class="text-muted fs-11 mt-2 mb-0">Loading user details &amp; documents...</p>
         </div>
 
         <ng-container *ngIf="!detailLoading && selectedUser">
-          
-          <!-- SUMMARY ROW -->
-          <div class="row g-3 mb-3">
+          <div class="row g-2 mb-2.5">
+            <!-- Personal Info -->
             <div class="col-md-6">
-              <div class="p-3 bg-light rounded-10 border">
-                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-id-card text-primary me-2"></i>Personal Details</h6>
-                <div class="fs-12 mb-1"><strong>Name:</strong> {{ selectedUser.full_name }}</div>
-                <div class="fs-12 mb-1"><strong>Member ID:</strong> {{ selectedUser.member_id || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Mobile:</strong> {{ selectedUser.mobile_no }}</div>
-                <div class="fs-12 mb-1"><strong>Email:</strong> {{ selectedUser.email || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Role:</strong> {{ selectedUser.user_type }}</div>
-                <div class="fs-12"><strong>Status:</strong> <span class="badge" [class.bg-success]="selectedUser.account_status==='Active'" [class.bg-warning]="selectedUser.account_status==='Pending'">{{ selectedUser.account_status }}</span></div>
+              <div class="info-group-box h-100">
+                <h6 class="info-box-title"><i class="fas fa-id-card text-primary me-1.5"></i>Personal Details</h6>
+                <div class="info-row"><span class="info-lbl">Full Name:</span><span class="info-val">{{ selectedUser.full_name }}</span></div>
+                <div class="info-row"><span class="info-lbl">Member ID:</span><span class="info-val">{{ selectedUser.member_id || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">Mobile:</span><span class="info-val">{{ selectedUser.mobile_no }}</span></div>
+                <div class="info-row"><span class="info-lbl">Email:</span><span class="info-val">{{ selectedUser.email || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">Role:</span><span class="info-val">{{ selectedUser.user_type }}</span></div>
+                <div class="info-row"><span class="info-lbl">Account Status:</span><span class="info-val"><span class="chip" [class.chip-ok]="selectedUser.account_status==='Active'" [class.chip-warn]="selectedUser.account_status==='Pending'">{{ selectedUser.account_status }}</span></span></div>
               </div>
             </div>
 
+            <!-- Address Info -->
             <div class="col-md-6">
-              <div class="p-3 bg-light rounded-10 border">
-                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-map-marker-alt text-emerald me-2"></i>Address Info</h6>
-                <div class="fs-12 mb-1"><strong>Line 1:</strong> {{ selectedUser.address?.address_line1 || selectedUser.address || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>City:</strong> {{ selectedUser.address?.city || selectedUser.city || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>State:</strong> {{ selectedUser.address?.state || selectedUser.state || '—' }}</div>
-                <div class="fs-12"><strong>Pincode:</strong> {{ selectedUser.address?.pin_code || selectedUser.pin_code || '—' }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- BANK & NOMINEE ROW -->
-          <div class="row g-3 mb-3">
-            <div class="col-md-6">
-              <div class="p-3 bg-light rounded-10 border">
-                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-university text-warning me-2"></i>Bank Payout Details</h6>
-                <div class="fs-12 mb-1"><strong>Holder Name:</strong> {{ selectedUser.bank?.account_holder_name || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Bank:</strong> {{ selectedUser.bank?.bank_name || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Account #:</strong> {{ selectedUser.bank?.account_number || '—' }}</div>
-                <div class="fs-12"><strong>IFSC:</strong> {{ selectedUser.bank?.ifsc_code || '—' }}</div>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <div class="p-3 bg-light rounded-10 border">
-                <h6 class="fw-700 text-dark fs-12 mb-2"><i class="fas fa-user-heart text-purple me-2"></i>Nominee Details</h6>
-                <div class="fs-12 mb-1"><strong>Nominee Name:</strong> {{ selectedUser.nominee?.nominee_name || '—' }}</div>
-                <div class="fs-12 mb-1"><strong>Relationship:</strong> {{ selectedUser.nominee?.relationship || '—' }}</div>
-                <div class="fs-12"><strong>Nominee Mobile:</strong> {{ selectedUser.nominee?.nominee_mobile || '—' }}</div>
+              <div class="info-group-box h-100">
+                <h6 class="info-box-title"><i class="fas fa-map-marker-alt text-emerald me-1.5"></i>Address Info</h6>
+                <div class="info-row"><span class="info-lbl">Address Line 1:</span><span class="info-val">{{ selectedUser.address?.address_line1 || selectedUser.address || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">City:</span><span class="info-val">{{ selectedUser.address?.city || selectedUser.city || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">State:</span><span class="info-val">{{ selectedUser.address?.state || selectedUser.state || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">Pincode:</span><span class="info-val">{{ selectedUser.address?.pin_code || selectedUser.pin_code || '—' }}</span></div>
               </div>
             </div>
           </div>
 
-          <!-- DOCUMENTS LIST -->
-          <div class="p-3 bg-light rounded-10 border">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="fw-700 text-dark fs-12 mb-0"><i class="fas fa-file-alt text-primary me-2"></i>Uploaded KYC Documents</h6>
-              <span class="badge fs-11" [ngClass]="isKycFullyVerified ? 'bg-success text-white' : 'bg-warning text-dark'">
+          <div class="row g-2 mb-2.5">
+            <!-- Bank Details -->
+            <div class="col-md-6">
+              <div class="info-group-box h-100">
+                <h6 class="info-box-title"><i class="fas fa-university text-warning me-1.5"></i>Bank Payout Details</h6>
+                <div class="info-row"><span class="info-lbl">Account Holder:</span><span class="info-val">{{ selectedUser.bank?.account_holder_name || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">Bank Name:</span><span class="info-val">{{ selectedUser.bank?.bank_name || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">Account Number:</span><span class="info-val">{{ selectedUser.bank?.account_number || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">IFSC Code:</span><span class="info-val">{{ selectedUser.bank?.ifsc_code || '—' }}</span></div>
+              </div>
+            </div>
+
+            <!-- Nominee Details -->
+            <div class="col-md-6">
+              <div class="info-group-box h-100">
+                <h6 class="info-box-title"><i class="fas fa-user-shield text-purple me-1.5"></i>Nominee Details</h6>
+                <div class="info-row"><span class="info-lbl">Nominee Name:</span><span class="info-val">{{ selectedUser.nominee?.nominee_name || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">Relationship:</span><span class="info-val">{{ selectedUser.nominee?.relationship || '—' }}</span></div>
+                <div class="info-row"><span class="info-lbl">Nominee Mobile:</span><span class="info-val">{{ selectedUser.nominee?.nominee_mobile || '—' }}</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Uploaded Documents -->
+          <div class="info-group-box">
+            <div class="d-flex justify-content-between align-items-center mb-1.5">
+              <h6 class="info-box-title mb-0"><i class="fas fa-file-alt text-primary me-1.5"></i>Uploaded KYC Documents</h6>
+              <span class="chip" [ngClass]="isKycFullyVerified ? 'chip-ok' : 'chip-warn'">
                 {{ isKycFullyVerified ? 'All Documents Verified' : 'KYC Verification Pending' }}
               </span>
             </div>
-            <div *ngIf="!selectedUser.documents || selectedUser.documents.length === 0" class="text-muted fs-12">
+            <div *ngIf="!selectedUser.documents || selectedUser.documents.length === 0" class="text-muted fs-11 py-1">
               No standalone KYC document files attached yet. Full submission forms available in Enrollment Management.
             </div>
-            <div class="d-flex flex-wrap gap-2" *ngIf="selectedUser.documents && selectedUser.documents.length > 0">
+            <div class="d-flex flex-wrap gap-1.5" *ngIf="selectedUser.documents && selectedUser.documents.length > 0">
               <a *ngFor="let doc of selectedUser.documents" 
                  [href]="getDocUrl(doc)" 
                  (click)="openDoc(doc, $event)"
@@ -384,19 +407,18 @@
                  class="btn btn-outline-primary btn-xs d-inline-flex align-items-center gap-1">
                 <i class="fas" [ngClass]="doc.document_type?.toLowerCase()?.includes('photo') ? 'fa-image text-info' : 'fa-file-pdf text-danger'"></i>
                 <span>{{ doc.document_type || doc.file_name || 'Document' }}</span>
-                <span class="badge ms-1 px-1 py-0.5 fs-10" [ngClass]="doc.is_verified || doc.review_status === 'Approved' ? 'bg-success text-white' : 'bg-warning text-dark'">
+                <span class="badge ms-1 px-1 py-0.5 fs-9" [ngClass]="doc.is_verified || doc.review_status === 'Approved' ? 'bg-success text-white' : 'bg-warning text-dark'">
                   {{ doc.is_verified || doc.review_status === 'Approved' ? 'Verified' : 'Under Review' }}
                 </span>
               </a>
             </div>
           </div>
-
         </ng-container>
-
       </div>
 
-      <div class="modal-footer bg-light rounded-bottom-14 p-3">
-        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Close</button>
+      <!-- Modal Footer -->
+      <div class="modal-footer-compact border-top d-flex justify-content-between p-2.5">
+        <button type="button" class="btn btn-secondary btn-xs" (click)="closeModals()">Close</button>
         <button type="button" 
                 class="btn btn-emerald btn-xs" 
                 (click)="approve(selectedUser)" 
@@ -410,21 +432,24 @@
   </div>
 </div>
 
-<!-- REJECT REASON MODAL -->
-<div class="modal-backdrop fade show" *ngIf="showRejectModal"></div>
-<div class="modal d-block fade show" tabIndex="-1" *ngIf="showRejectModal" (click)="closeModals()">
-  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
-    <div class="modal-content border-0 rounded-14 shadow-lg">
-      <div class="modal-header bg-danger text-white rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700">Reject Registration</h5>
-        <button type="button" class="btn-close btn-close-white" (click)="closeModals()"></button>
+<!-- ========================================== -->
+<!-- 2. REJECT REGISTRATION MODAL               -->
+<!-- ========================================== -->
+<div class="modal-backdrop-custom" *ngIf="showRejectModal" (click)="closeModals()">
+  <div class="modal-dialog-custom modal-md" (click)="$event.stopPropagation()">
+    <div class="modal-content-card">
+      <div class="modal-header-compact bg-danger text-white">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <h3 class="modal-hero-title mb-0 fs-13"><i class="fas fa-ban me-1.5"></i>Reject Registration</h3>
+          <button class="modal-close-btn" (click)="closeModals()">&times;</button>
+        </div>
       </div>
-      <div class="modal-body p-4">
-        <p class="fs-12 text-muted mb-3">State the reason for rejecting registration for <strong>{{ selectedUser?.full_name }}</strong>:</p>
+      <div class="modal-body-compact">
+        <p class="fs-11 text-muted mb-2">State the reason for rejecting registration for <strong>{{ selectedUser?.full_name }}</strong>:</p>
         
-        <div class="mb-3">
-          <label class="form-label fs-11 fw-700 text-dark">Predefined Reason</label>
-          <select class="form-select form-select-sm" [(ngModel)]="rejectReason">
+        <div class="mb-2">
+          <label class="form-label-custom">Predefined Reason</label>
+          <select class="f-input" [(ngModel)]="rejectReason">
             <option value="Documents not clear or illegible">Documents not clear or illegible</option>
             <option value="PAN / Aadhaar name mismatch">PAN / Aadhaar name mismatch</option>
             <option value="Invalid Bank Account details">Invalid Bank Account details</option>
@@ -433,13 +458,13 @@
           </select>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label fs-11 fw-700 text-dark">Custom Note (Optional)</label>
-          <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="rejectCustom" placeholder="Add specific rejection notes for user..."></textarea>
+        <div class="mb-2">
+          <label class="form-label-custom">Custom Note (Optional)</label>
+          <textarea class="f-input" style="height: 60px; padding: 6px 8px;" [(ngModel)]="rejectCustom" placeholder="Add specific rejection notes for user..."></textarea>
         </div>
       </div>
-      <div class="modal-footer bg-light rounded-bottom-14 p-3">
-        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Cancel</button>
+      <div class="modal-footer-compact border-top d-flex justify-content-between p-2">
+        <button type="button" class="btn btn-secondary btn-xs" (click)="closeModals()">Cancel</button>
         <button type="button" class="btn btn-danger btn-xs" (click)="confirmReject()" [disabled]="actionLoading">
           <i class="fas fa-times me-1"></i> Confirm Rejection
         </button>
@@ -448,26 +473,29 @@
   </div>
 </div>
 
-<!-- REQUEST INFO MODAL -->
-<div class="modal-backdrop fade show" *ngIf="showInfoModal"></div>
-<div class="modal d-block fade show" tabIndex="-1" *ngIf="showInfoModal" (click)="closeModals()">
-  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
-    <div class="modal-content border-0 rounded-14 shadow-lg">
-      <div class="modal-header bg-warning text-dark rounded-top-14 py-3 px-4">
-        <h5 class="modal-title fs-15 fw-700">Request Clarification / Documents</h5>
-        <button type="button" class="btn-close" (click)="closeModals()"></button>
-      </div>
-      <div class="modal-body p-4">
-        <p class="fs-12 text-muted mb-3">Send document correction message to <strong>{{ selectedUser?.full_name }}</strong>:</p>
-        
-        <div class="mb-3">
-          <label class="form-label fs-11 fw-700 text-dark">Message to User</label>
-          <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="infoMessage" placeholder="Specify what info/documents need re-upload..."></textarea>
+<!-- ========================================== -->
+<!-- 3. REQUEST INFO MODAL                      -->
+<!-- ========================================== -->
+<div class="modal-backdrop-custom" *ngIf="showInfoModal" (click)="closeModals()">
+  <div class="modal-dialog-custom modal-md" (click)="$event.stopPropagation()">
+    <div class="modal-content-card">
+      <div class="modal-header-compact bg-warning text-dark">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <h3 class="modal-hero-title mb-0 fs-13 text-dark"><i class="fas fa-question-circle me-1.5"></i>Request Clarification / Documents</h3>
+          <button class="modal-close-btn" style="color: #0f172a; background: rgba(0,0,0,0.1);" (click)="closeModals()">&times;</button>
         </div>
       </div>
-      <div class="modal-footer bg-light rounded-bottom-14 p-3">
-        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeModals()">Cancel</button>
-        <button type="button" class="btn btn-warning btn-xs" (click)="confirmRequestInfo()" [disabled]="actionLoading">
+      <div class="modal-body-compact">
+        <p class="fs-11 text-muted mb-2">Send document correction message to <strong>{{ selectedUser?.full_name }}</strong>:</p>
+        
+        <div class="mb-2">
+          <label class="form-label-custom">Message to User</label>
+          <textarea class="f-input" style="height: 68px; padding: 6px 8px;" [(ngModel)]="infoMessage" placeholder="Specify what info/documents need re-upload..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer-compact border-top d-flex justify-content-between p-2">
+        <button type="button" class="btn btn-secondary btn-xs" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-gold btn-xs" (click)="confirmRequestInfo()" [disabled]="actionLoading">
           <i class="fas fa-paper-plane me-1"></i> Send Request
         </button>
       </div>
