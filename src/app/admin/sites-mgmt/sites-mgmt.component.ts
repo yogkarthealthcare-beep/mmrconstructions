@@ -312,6 +312,11 @@ export class SitesMgmtComponent implements OnInit {
     this.applyPlotFilter();
   }
 
+  clearPlotSearch() {
+    this.plotSearch = '';
+    this.applyPlotFilter();
+  }
+
   applyPlotFilter() {
     try {
       if (!Array.isArray(this.sitePlots)) {
