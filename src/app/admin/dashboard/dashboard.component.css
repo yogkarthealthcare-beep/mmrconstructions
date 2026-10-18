@@ -173,7 +173,7 @@
   line-height: 1.15;
 }
 
-/* ── 4. COMPACT HORIZONTAL KPI CARDS (~48-52px height) ───── */
+/* ── 4. STAT ACTION CARDS WITH ROUNDED PILLS (ZERO LINE BREAK) ─ */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -181,35 +181,45 @@
   margin-bottom: 10px;
 }
 
-.kpi-card {
-  height: 50px;
-  border-radius: 6px;
-  padding: 6px 12px;
+.stat-action-card {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid #16a34a;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  cursor: pointer;
+  text-decoration: none !important;
+}
+
+.stat-action-card:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1;
+}
+
+.stat-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  text-decoration: none !important;
-  cursor: pointer;
-  box-sizing: border-box;
+  gap: 8px;
+  min-width: 0;
 }
 
-.kpi-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
-}
-
-.kpi-content {
+.stat-meta {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   min-width: 0;
   overflow: hidden;
 }
 
-.kpi-label {
+.stat-label {
   font-size: 10px;
   font-weight: 700;
   color: #64748b;
@@ -221,9 +231,9 @@
   line-height: 1.1;
 }
 
-.kpi-value {
+.stat-value {
   font-family: 'Outfit', 'Inter', system-ui, sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #0f172a;
   line-height: 1.15;
@@ -233,63 +243,100 @@
   text-overflow: ellipsis;
 }
 
-.kpi-icon {
+.stat-icon-wrapper {
   width: 28px;
   height: 28px;
-  border-radius: 5px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   flex-shrink: 0;
-  margin-left: 8px;
 }
 
-/* Semantic KPI Accents */
-.s-amber   { border-left: 3.5px solid #d97706; background: #fffdfa; }
-.s-amber .kpi-icon { background: #fef3c7; color: #b45309; }
+.stat-bottom-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid #f1f5f9;
+  white-space: nowrap !important;
+  min-width: 0;
+  overflow: hidden;
+}
 
-.s-indigo  { border-left: 3.5px solid #4f46e5; background: #fafbff; }
-.s-indigo .kpi-icon { background: #e0e7ff; color: #4338ca; }
+/* Rounded shape button/pill at bottom (Single Line, Zero Break) */
+.stat-pill-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  height: 18px !important;
+  padding: 0 7px !important;
+  border-radius: 999px !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+}
 
-.s-blue    { border-left: 3.5px solid #2563eb; background: #fafcff; }
-.s-blue .kpi-icon { background: #dbeafe; color: #1d4ed8; }
+.stat-pill-badge i {
+  font-size: 8px;
+}
 
-.s-purple  { border-left: 3.5px solid #9333ea; background: #fdfaff; }
-.s-purple .kpi-icon { background: #f3e8ff; color: #7e22ce; }
+.stat-link-action {
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  flex-shrink: 1 !important;
+  text-align: right !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  letter-spacing: -0.01em !important;
+}
 
-.s-emerald { border-left: 3.5px solid #059669; background: #fafffc; }
-.s-emerald .kpi-icon { background: #d1fae5; color: #047857; }
+.stat-action-card:hover .stat-link-action {
+  text-decoration: underline;
+}
 
-.s-orange  { border-left: 3.5px solid #ea580c; background: #fffaf5; }
-.s-orange .kpi-icon { background: #ffedd5; color: #c2410c; }
+/* Badge Color Themes (Pill rounded badges) */
+.badge-amber   { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.badge-indigo  { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
+.badge-blue    { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.badge-fuchsia { background: #fae8ff; color: #86198f; border: 1px solid #f5d0fe; }
+.badge-emerald { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+.badge-orange  { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+.badge-green   { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.badge-teal    { background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; }
+.badge-default { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
-.s-green   { border-left: 3.5px solid #16a34a; background: #fafffa; }
-.s-green .kpi-icon { background: #dcfce7; color: #15803d; }
-
-.s-teal    { border-left: 3.5px solid #0d9488; background: #f9fefd; }
-.s-teal .kpi-icon { background: #ccfbf1; color: #0f766e; }
-
-/* ── 5. QUICK ACTIONS HUB TILES ──────────────────────────── */
+/* ── 5. QUICK ACTIONS HUB TILES (TIGHT SPACING, NO GAP) ───── */
 .quick-action-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px;
+  margin-bottom: 0;
 }
 
 .quick-action-tile {
-  height: 42px;
+  height: 44px;
   background: #ffffff;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
-  border-left: 3px solid #3b82f6;
-  padding: 5px 10px;
+  border-left: 3.5px solid #3b82f6;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   cursor: pointer;
   transition: all 0.15s ease;
   text-decoration: none !important;
+  box-sizing: border-box;
 }
 
 .quick-action-tile:hover {
@@ -315,7 +362,7 @@
 }
 
 .qa-title {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.15;
@@ -325,7 +372,7 @@
 }
 
 .qa-sub {
-  font-size: 10px;
+  font-size: 9.5px;
   color: #64748b;
   line-height: 1.1;
   white-space: nowrap !important;
@@ -504,12 +551,12 @@
   border-color: #0284c7;
 }
 
-/* ── 9. MINI NETWORK TREE PREVIEW ────────────────────────── */
+/* ── 9. MINI NETWORK TREE PREVIEW (SYSTEMATIC COMPACT) ───── */
 .tree-branch-item {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 6px 10px;
+  border-radius: 5px;
+  padding: 4px 8px;
   transition: border-color 0.15s ease;
 }
 
@@ -518,30 +565,31 @@
 }
 
 .assoc-node-card {
-  padding: 2px 0;
+  padding: 1px 0;
 }
 
 .assoc-avatar {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #fef3c7;
   color: #b45309;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 9.5px;
   flex-shrink: 0;
 }
 
 .tm-chip-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 6px;
+  height: 18px;
+  padding: 0 5px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 4px;
-  font-size: 10.5px;
+  font-size: 9.5px;
   transition: all 0.15s ease;
 }
 
