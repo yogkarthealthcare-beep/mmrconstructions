@@ -144,7 +144,7 @@
 
   <!-- 4. TEAM MEMBER FOCUS & BREAKDOWN ROW (ZERO LINE BREAK) -->
   <div class="panel-card mb-2">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-1.5 mb-2 border-bottom">
+    <div class="card-header-bar">
       <div class="d-flex align-items-center gap-1.5">
         <div class="section-icon-badge bg-indigo-soft">
           <i class="fas fa-users text-indigo"></i>
@@ -240,7 +240,7 @@
     <!-- LEFT: MINI NETWORK TREE PREVIEW (EXPANDABLE) -->
     <div class="col-12 col-xl-7">
       <div class="panel-card h-100 d-flex flex-column mb-0">
-        <div class="d-flex align-items-center justify-content-between mb-2 pb-1.5 border-bottom flex-wrap gap-2">
+        <div class="card-header-bar">
           <div class="d-flex align-items-center gap-1.5">
             <div class="section-icon-badge bg-emerald-soft">
               <i class="fas fa-sitemap"></i>
@@ -261,46 +261,46 @@
           </div>
         </div>
 
-        <!-- Tree Preview Content (Systematic Small Typography) -->
+        <!-- Tree Preview Content (50% Reduced Micro Typography) -->
         <div class="tree-preview-container flex-grow-1" *ngIf="networkPreview.length > 0">
-          <div class="tree-branch-item mb-1" *ngFor="let assoc of networkPreview.slice(0, 4)">
+          <div class="tree-branch-item" *ngFor="let assoc of networkPreview.slice(0, 4)">
             <!-- Associate Node Banner -->
             <div class="assoc-node-card d-flex align-items-center justify-content-between cursor-pointer"
                  (click)="onAssociateNodeClick(assoc)"
                  title="Click to view associate details">
-              <div class="d-flex align-items-center gap-1.5 min-w-0">
+              <div class="d-flex align-items-center gap-1 min-w-0">
                 <div class="assoc-avatar">
                   <i class="fas fa-user-tie"></i>
                 </div>
                 <div class="min-w-0">
-                  <div class="assoc-name text-truncate fw-700 fs-11">
-                    {{ assoc.full_name }}
-                    <span class="badge bg-gold-subtle text-dark fs-8.5 ms-1">{{ assoc.rank || 'Associate' }}</span>
+                  <div class="d-flex align-items-center gap-1">
+                    <span class="assoc-name text-truncate">{{ assoc.full_name }}</span>
+                    <span class="assoc-rank-badge">{{ assoc.rank || 'Associate' }}</span>
                   </div>
-                  <div class="assoc-id fs-9.5 text-muted text-truncate">
+                  <div class="assoc-id text-truncate">
                     ID: {{ assoc.member_id || ('USR-' + assoc.user_id) }} · 📱 {{ assoc.mobile_no || '—' }}
                   </div>
                 </div>
               </div>
               <div class="assoc-stats text-end flex-shrink-0 ms-1.5">
-                <span class="badge bg-light text-dark border fs-9 fw-700">
-                  <i class="fas fa-users me-1 text-primary"></i>{{ assoc.team_members?.length || assoc.team_count || 0 }} Members
+                <span class="assoc-members-badge">
+                  <i class="fas fa-users me-0.5 text-primary"></i>{{ assoc.team_members?.length || assoc.team_count || 0 }} Members
                 </span>
               </div>
             </div>
 
             <!-- Team Members Under this Associate (Only shown when members exist) -->
-            <div class="team-subbranch ps-2.5 mt-0.5 border-start-dashed" *ngIf="assoc.team_members && assoc.team_members.length > 0">
+            <div class="team-subbranch ps-2 mt-0.5 border-start-dashed" *ngIf="assoc.team_members && assoc.team_members.length > 0">
               <div class="d-flex flex-wrap gap-1 mt-0.5">
                 <div class="tm-chip-badge cursor-pointer"
                      *ngFor="let tm of assoc.team_members.slice(0, 4)"
                      (click)="onTeamMemberNodeClick(tm)"
                      title="Click to view team member enrollment">
-                  <i class="fas fa-user text-indigo me-0.5 fs-8.5"></i>
-                  <span class="tm-chip-name fw-600 fs-9.5">{{ tm.full_name }}</span>
-                  <span class="tm-chip-slot ms-1 text-muted fs-8.5">Slot {{ tm.slot_number || 1 }}</span>
+                  <i class="fas fa-user text-indigo me-0.5 fs-8"></i>
+                  <span class="tm-chip-name fw-600">{{ tm.full_name }}</span>
+                  <span class="tm-chip-slot ms-1 text-muted">Slot {{ tm.slot_number || 1 }}</span>
                 </div>
-                <span class="tm-chip-more badge bg-secondary text-white fs-8.5 cursor-pointer"
+                <span class="tm-chip-more badge bg-secondary text-white fs-7.5 cursor-pointer"
                       *ngIf="assoc.team_members.length > 4"
                       (click)="onAssociateNodeClick(assoc)">
                   +{{ assoc.team_members.length - 4 }} more
@@ -312,15 +312,15 @@
 
         <div class="empty-state-card text-center py-3 my-auto" *ngIf="networkPreview.length === 0">
           <i class="fas fa-sitemap fs-2 text-muted mb-1 opacity-50"></i>
-          <p class="fs-11 fw-700 text-dark mb-0.5">No Associate Hierarchy Found</p>
-          <span class="fs-9.5 text-muted">Associate networks and team members will be visualized here.</span>
+          <p class="fs-10.5 fw-700 text-dark mb-0.5">No Associate Hierarchy Found</p>
+          <span class="fs-9 text-muted">Associate networks and team members will be visualized here.</span>
         </div>
 
-        <div class="d-flex align-items-center justify-content-between pt-1.5 border-top mt-auto">
-          <span class="fs-9.5 text-muted text-nowrap">
+        <div class="tree-footer-bar">
+          <span class="fs-9 text-muted text-nowrap">
             <i class="fas fa-info-circle me-1"></i>Click any node to navigate to records
           </span>
-          <button type="button" class="btn btn-link btn-xs text-emerald fw-700 text-decoration-none p-0 fs-10 text-nowrap" (click)="toggleTreeExpand()">
+          <button type="button" class="btn btn-link btn-xs text-emerald fw-700 text-decoration-none p-0 fs-9.5 text-nowrap" (click)="toggleTreeExpand()">
             Expand Complete Tree View →
           </button>
         </div>
@@ -330,7 +330,7 @@
     <!-- RIGHT: QUICK ACTIONS & ERP ACCESS TILES (TIGHT SPACING, NO VOID) -->
     <div class="col-12 col-xl-5">
       <div class="panel-card h-100 d-flex flex-column mb-0">
-        <div class="d-flex align-items-center justify-content-between mb-2 pb-1.5 border-bottom">
+        <div class="card-header-bar">
           <div class="d-flex align-items-center gap-1.5">
             <div class="section-icon-badge bg-blue-soft">
               <i class="fas fa-bolt"></i>
@@ -340,10 +340,10 @@
               <span class="dash-section-sub">Direct access to primary administrative workflows</span>
             </div>
           </div>
-          <span class="badge bg-light text-dark border fs-9">6 Actions</span>
+          <span class="badge bg-light text-dark border fs-8.5">6 Actions</span>
         </div>
 
-        <div class="quick-action-grid mb-1.5">
+        <div class="quick-action-grid mb-1">
           <div class="quick-action-tile cursor-pointer"
                *ngFor="let qa of quickActions"
                (click)="onQuickActionClick(qa)"
@@ -356,15 +356,15 @@
               <div class="qa-title text-truncate">{{ qa.label }}</div>
               <div class="qa-sub text-truncate">{{ qa.sub }}</div>
             </div>
-            <i class="fas fa-chevron-right fs-8.5 text-muted ms-auto me-0.5"></i>
+            <i class="fas fa-chevron-right fs-8 text-muted ms-auto me-0.5"></i>
           </div>
         </div>
 
-        <div class="d-flex align-items-center justify-content-between pt-1.5 border-top mt-auto">
-          <span class="fs-9.5 text-muted text-nowrap">
+        <div class="tree-footer-bar">
+          <span class="fs-9 text-muted text-nowrap">
             <i class="fas fa-bolt text-warning me-1"></i>Direct ERP Shortcuts
           </span>
-          <span class="fs-9.5 fw-700 text-primary text-nowrap">6 Workflows Active</span>
+          <span class="fs-9 fw-700 text-primary text-nowrap">6 Workflows Active</span>
         </div>
       </div>
     </div>
@@ -373,8 +373,8 @@
 
   <!-- 6. RECENT DATA TABLES PANEL (TABBED COMPACT PREVIEWS) -->
   <div class="panel-card mb-2">
-    <!-- Tab Navigation Bar -->
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-1.5 mb-2 border-bottom">
+    <!-- Tab Navigation Bar (With proper divider spacing) -->
+    <div class="table-tabs-header">
       <div class="tabs-nav">
         <button type="button" class="tab-btn"
                 [class.active]="activeRecentTab === 'team_members'"
@@ -743,7 +743,7 @@
 
   <!-- 7. LIVE SITE OCCUPANCY & PLOT INVENTORY -->
   <div class="panel-card mb-2">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-1.5 mb-2 border-bottom">
+    <div class="card-header-bar">
       <div class="d-flex align-items-center gap-1.5">
         <div class="section-icon-badge bg-emerald-soft">
           <i class="fas fa-map-marked-alt text-emerald"></i>

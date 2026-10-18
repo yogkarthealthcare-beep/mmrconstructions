@@ -117,24 +117,33 @@
   <!-- MAIN WORKSPACE: SIDEBAR + SVG MAP CANVAS + RIGHT DRAWER -->
   <div class="sales-workspace-container rounded-8 border bg-white shadow-xs" *ngIf="!loading && !error">
     
-    <!-- LEFT FILTER SIDEBAR (260px) -->
-    <div class="sales-map-sidebar p-2.5 border-end" [class.mobile-open]="mobileFiltersOpen">
-      <div class="d-flex align-items-center justify-content-between mb-2.5 pb-1.5 border-bottom">
-        <h6 class="fs-11 fw-800 text-dark mb-0 text-uppercase letter-spacing-1">
-          <i class="fas fa-filter text-gold me-1"></i> Map Filters
-        </h6>
+    <!-- LEFT FILTER SIDEBAR (Compact ERP Standard 260px) -->
+    <aside class="sales-map-sidebar border-end" [class.mobile-open]="mobileFiltersOpen">
+      <!-- 1. Header Bar with Divider & Gap -->
+      <div class="sidebar-header-bar">
+        <div class="d-flex align-items-center gap-1.5">
+          <div class="sidebar-icon-badge">
+            <i class="fas fa-filter text-gold"></i>
+          </div>
+          <div>
+            <span class="sidebar-header-title">Map Filters</span>
+            <span class="sidebar-header-sub">Filter live units &amp; status</span>
+          </div>
+        </div>
         <button class="btn-close btn-close-sm d-md-none" (click)="mobileFiltersOpen = false"></button>
       </div>
 
-      <!-- Integrated Search Input -->
-      <div class="mb-2.5">
-        <label class="sidebar-label">Search Plot / Buyer / Associate</label>
+      <!-- 2. Integrated Search -->
+      <div class="filter-field-group">
+        <label class="sidebar-label">
+          <i class="fas fa-search me-1 text-muted"></i>Search Plot / Buyer / Associate
+        </label>
         <div class="f-input-wrap search-sidebar-wrap">
           <i class="fas fa-search f-input-icon"></i>
           <input
             type="text"
             class="f-input f-input-search"
-            placeholder="Plot #, Buyer name, mobile..."
+            placeholder="Plot #, Buyer, Mobile..."
             [(ngModel)]="searchTerm" />
           <button
             type="button"
@@ -147,9 +156,11 @@
         </div>
       </div>
 
-      <!-- Status Filter -->
-      <div class="mb-2.5">
-        <label class="sidebar-label">Occupancy Status</label>
+      <!-- 3. Occupancy Status Filter -->
+      <div class="filter-field-group">
+        <label class="sidebar-label">
+          <i class="fas fa-layer-group me-1 text-muted"></i>Occupancy Status
+        </label>
         <select class="form-select form-select-xs" [(ngModel)]="statusFilter">
           <option value="ALL">All Status ({{ totalPlotsCount }})</option>
           <option value="AVAILABLE">Available ({{ availableCount }})</option>
@@ -159,59 +170,86 @@
         </select>
       </div>
 
-      <!-- Unit Type Filter -->
-      <div class="mb-2.5" *ngIf="unitTypesPresent.length > 0">
-        <label class="sidebar-label">Unit Type</label>
+      <!-- 4. Unit Type Filter -->
+      <div class="filter-field-group" *ngIf="unitTypesPresent.length > 0">
+        <label class="sidebar-label">
+          <i class="fas fa-shapes me-1 text-muted"></i>Unit Type
+        </label>
         <select class="form-select form-select-xs" [(ngModel)]="unitTypeFilter">
           <option value="ALL">All Unit Types</option>
           <option *ngFor="let u of unitTypesPresent" [value]="u">{{ u }}</option>
         </select>
       </div>
 
-      <!-- Legend -->
-      <div class="pt-2 border-top">
-        <label class="sidebar-label mb-1.5">Map Legend &amp; Colors</label>
-        <div class="legend-item d-flex align-items-center justify-content-between mb-1.5 p-1 px-2 rounded bg-light border">
-          <div class="d-flex align-items-center gap-1.5">
-            <span class="legend-swatch bg-emerald"></span>
-            <span class="fs-10.5 fw-600 text-dark">Available / Vacant</span>
-          </div>
-          <strong class="fs-10.5 text-success">{{ availableCount }}</strong>
+      <!-- 5. Map Legend & Colors -->
+      <div class="legend-section">
+        <div class="legend-section-header">
+          <span class="sidebar-label mb-0">
+            <i class="fas fa-palette me-1 text-muted"></i>Map Legend &amp; Colors
+          </span>
+          <span class="legend-total-badge">{{ totalPlotsCount }} Units</span>
         </div>
-        <div class="legend-item d-flex align-items-center justify-content-between mb-1.5 p-1 px-2 rounded bg-light border">
-          <div class="d-flex align-items-center gap-1.5">
-            <span class="legend-swatch bg-warning"></span>
-            <span class="fs-10.5 fw-600 text-dark">In Process (Hold)</span>
+
+        <div class="legend-list">
+          <div class="legend-item cursor-pointer"
+               [class.active-filter]="statusFilter === 'AVAILABLE'"
+               (click)="statusFilter = (statusFilter === 'AVAILABLE' ? 'ALL' : 'AVAILABLE')"
+               title="Click to filter Available units">
+            <div class="d-flex align-items-center gap-1.5">
+              <span class="legend-swatch bg-emerald"></span>
+              <span class="legend-name">Available / Vacant</span>
+            </div>
+            <span class="legend-badge badge-emerald">{{ availableCount }}</span>
           </div>
-          <strong class="fs-10.5 text-warning">{{ inProcessCount }}</strong>
-        </div>
-        <div class="legend-item d-flex align-items-center justify-content-between mb-1.5 p-1 px-2 rounded bg-light border">
-          <div class="d-flex align-items-center gap-1.5">
-            <span class="legend-swatch bg-primary"></span>
-            <span class="fs-10.5 fw-600 text-dark">Booked / Confirmed</span>
+
+          <div class="legend-item cursor-pointer"
+               [class.active-filter]="statusFilter === 'IN_PROCESS'"
+               (click)="statusFilter = (statusFilter === 'IN_PROCESS' ? 'ALL' : 'IN_PROCESS')"
+               title="Click to filter In Process units">
+            <div class="d-flex align-items-center gap-1.5">
+              <span class="legend-swatch bg-amber"></span>
+              <span class="legend-name">In Process (Hold)</span>
+            </div>
+            <span class="legend-badge badge-amber">{{ inProcessCount }}</span>
           </div>
-          <strong class="fs-10.5 text-primary">{{ bookedCount }}</strong>
-        </div>
-        <div class="legend-item d-flex align-items-center justify-content-between mb-1.5 p-1 px-2 rounded bg-light border">
-          <div class="d-flex align-items-center gap-1.5">
-            <span class="legend-swatch bg-danger"></span>
-            <span class="fs-10.5 fw-600 text-dark">Sold Out / Registry</span>
+
+          <div class="legend-item cursor-pointer"
+               [class.active-filter]="statusFilter === 'BOOKED'"
+               (click)="statusFilter = (statusFilter === 'BOOKED' ? 'ALL' : 'BOOKED')"
+               title="Click to filter Booked units">
+            <div class="d-flex align-items-center gap-1.5">
+              <span class="legend-swatch bg-blue"></span>
+              <span class="legend-name">Booked / Confirmed</span>
+            </div>
+            <span class="legend-badge badge-blue">{{ bookedCount }}</span>
           </div>
-          <strong class="fs-10.5 text-danger">{{ soldCount }}</strong>
+
+          <div class="legend-item cursor-pointer"
+               [class.active-filter]="statusFilter === 'SOLD'"
+               (click)="statusFilter = (statusFilter === 'SOLD' ? 'ALL' : 'SOLD')"
+               title="Click to filter Sold units">
+            <div class="d-flex align-items-center gap-1.5">
+              <span class="legend-swatch bg-red"></span>
+              <span class="legend-name">Sold Out / Registry</span>
+            </div>
+            <span class="legend-badge badge-red">{{ soldCount }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- Filter Stats & Reset -->
-      <div class="pt-2 border-top mt-2">
-        <div class="d-flex justify-content-between align-items-center fs-10.5 text-muted mb-1.5">
-          <span>Showing plots:</span>
-          <strong class="text-dark">{{ filteredPlots.length }} of {{ totalPlotsCount }}</strong>
+      <!-- 6. Filter Stats & Reset Action -->
+      <div class="sidebar-footer-stats">
+        <div class="d-flex justify-content-between align-items-center mb-1.5">
+          <span class="fs-9.5 text-muted">Showing plots:</span>
+          <span class="fs-10 fw-700 text-dark">{{ filteredPlots.length }} of {{ totalPlotsCount }}</span>
         </div>
-        <button class="btn btn-outline-secondary btn-xs w-100" (click)="searchTerm=''; statusFilter='ALL'; unitTypeFilter='ALL'">
+        <button class="btn btn-outline-secondary btn-xs w-100"
+                (click)="searchTerm=''; statusFilter='ALL'; unitTypeFilter='ALL'"
+                title="Reset all search and status filters">
           <i class="fas fa-undo me-1"></i> Reset Filters
         </button>
       </div>
-    </div>
+    </aside>
 
     <!-- CENTER MAP CANVAS CONTAINER -->
     <div class="sales-map-canvas-wrap position-relative" #mapViewport
