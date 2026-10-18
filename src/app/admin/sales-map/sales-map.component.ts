@@ -205,18 +205,28 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
         this.renderMapData(data, initial);
       },
       error: (err: any) => {
-        // Resilient fallback to standard site map endpoint if backend phase-2 route is pending server reload
+        // Resilient fallback 1: standard site map endpoint
         this.api.getSiteMap(this.siteId).subscribe({
           next: (res: any) => {
             const data = res?.data || res || {};
             this.renderMapData(data, initial);
           },
           error: (fallbackErr: any) => {
-            this.loading = false;
-            this.isPolling = false;
-            if (initial) {
-              this.error = fallbackErr?.error?.message || err?.error?.message || 'Unable to load administrative sales map.';
-            }
+            // Resilient fallback 2: robust Admin Site Plots endpoint (has full CAD coordinates & statuses)
+            this.api.adminGetSitePlots(this.siteId).subscribe({
+              next: (plotsRes: any) => {
+                const plotsList = plotsRes?.data || (Array.isArray(plotsRes) ? plotsRes : []);
+                const siteObj = this.site || this.sites.find(s => s.site_id === this.siteId) || null;
+                this.renderMapData({ site: siteObj, plots: plotsList }, initial);
+              },
+              error: (finalErr: any) => {
+                this.loading = false;
+                this.isPolling = false;
+                if (initial) {
+                  this.error = finalErr?.error?.message || fallbackErr?.error?.message || err?.error?.message || 'Unable to load administrative sales map.';
+                }
+              }
+            });
           }
         });
       }
@@ -224,8 +234,8 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
   }
 
   private renderMapData(data: any, initial: boolean): void {
-    this.site = data.site || null;
-    const rawPlots: any[] = data.plots || [];
+    this.site = data.site || this.site || this.sites.find(s => s.site_id === this.siteId) || null;
+    const rawPlots: any[] = data.plots || (Array.isArray(data) ? data : (data.data || []));
     const mapUrl = this.site?.map_image_url || this.site?.layout_map_url || this.site?.property_image_url || '';
 
     this.inspectImageDimensions(mapUrl, () => {
