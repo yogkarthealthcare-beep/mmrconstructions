@@ -13,91 +13,86 @@ import Swal from 'sweetalert2';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, AdminPaginationComponent, AdminTableContainerComponent],
   template: `
-    <!-- Top Hero Banner -->
-    <div class="admin-hero-card mb-3">
-      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
-        <div>
-          <div class="admin-hero-badge"><i class="fas fa-file-contract me-1"></i>CUSTOMER ADMISSION &amp; ENROLLMENT</div>
-          <h2 class="admin-hero-title mb-1">Customer Enrollments &amp; Applications</h2>
-          <p class="admin-hero-sub mb-0">Review submitted enrollment forms, inline approve/reject KYC status, and print official application forms.</p>
-        </div>
-        <div class="d-flex align-items-center gap-2 ms-auto">
-          <button class="btn btn-outline-light btn-xs fw-700" (click)="loadApplications()">
-            <i class="fas fa-sync me-1" [class.fa-spin]="loading"></i> Refresh List
-          </button>
+    <div class="panel-shell">
+      <!-- Top Hero Banner -->
+      <div class="admin-hero-card mb-2">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+          <div>
+            <div class="admin-hero-badge"><i class="fas fa-file-contract me-1"></i>CUSTOMER ADMISSION &amp; ENROLLMENT</div>
+            <h2 class="admin-hero-title mb-0">Customer Enrollments &amp; Applications</h2>
+            <p class="admin-hero-sub mb-0">Review submitted enrollment forms, inline approve/reject KYC status, and print official application forms.</p>
+          </div>
+          <div class="d-flex align-items-center gap-2 ms-auto">
+            <button class="btn btn-outline-light btn-xs d-inline-flex align-items-center" (click)="loadApplications()" title="Refresh List" aria-label="Refresh List">
+              <i class="fas fa-sync me-1" [class.fa-spin]="loading"></i> Refresh List
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Quick Stats Cards -->
-    <div class="row g-2.5 mb-3">
-      <div class="col-6 col-lg-3">
-        <div class="stat-card stat-card-total p-2.5 px-3 rounded-12 shadow-sm h-100">
-          <div class="d-flex align-items-center justify-content-between">
-            <div>
-              <span class="fs-10 stat-card-title text-uppercase fw-700 letter-spacing-05">Total Enrolled</span>
-              <h3 class="fs-22 fw-800 stat-val-total mb-0 font-sans">{{ applications.length }}</h3>
+      <!-- Quick Stats Cards -->
+      <div class="row g-2 mb-2">
+        <div class="col-6 col-lg-3">
+          <div class="stat-mini-card box-total h-100">
+            <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+              <span class="stat-mini-lbl text-truncate">Total Enrolled</span>
+              <div class="icon-wrap bg-blue text-primary"><i class="fas fa-users"></i></div>
             </div>
-            <div class="stat-icon-wrap stat-icon-total p-2 rounded-10 d-flex align-items-center justify-content-center">
-              <i class="fas fa-users fs-14"></i>
-            </div>
+            <div class="stat-mini-val">{{ applications.length }}</div>
+            <div class="fs-10 text-muted fw-600 text-truncate"><i class="fas fa-id-card text-primary me-1"></i>All Applications</div>
           </div>
         </div>
-      </div>
-      <div class="col-6 col-lg-3">
-        <div class="stat-card stat-card-approved p-2.5 px-3 rounded-12 shadow-sm h-100">
-          <div class="d-flex align-items-center justify-content-between">
-            <div>
-              <span class="fs-10 stat-card-title text-uppercase fw-700 letter-spacing-05">Approved</span>
-              <h3 class="fs-22 fw-800 stat-val-approved mb-0 font-sans">{{ countByStatus('Approved') }}</h3>
-            </div>
-            <div class="stat-icon-wrap stat-icon-approved p-2 rounded-10 d-flex align-items-center justify-content-center">
-              <i class="fas fa-check-circle fs-14"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-lg-3">
-        <div class="stat-card stat-card-pending p-2.5 px-3 rounded-12 shadow-sm h-100">
-          <div class="d-flex align-items-center justify-content-between">
-            <div>
-              <span class="fs-10 stat-card-title text-uppercase fw-700 letter-spacing-05">Pending Review</span>
-              <h3 class="fs-22 fw-800 stat-val-pending mb-0 font-sans">{{ countByStatus('Pending') + countByStatus('Hold/Pending KYC') }}</h3>
-            </div>
-            <div class="stat-icon-wrap stat-icon-pending p-2 rounded-10 d-flex align-items-center justify-content-center">
-              <i class="fas fa-clock fs-14"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-lg-3">
-        <div class="stat-card stat-card-payment p-2.5 px-3 rounded-12 shadow-sm h-100">
-          <div class="d-flex align-items-center justify-content-between">
-            <div>
-              <span class="fs-10 stat-card-title text-uppercase fw-700 letter-spacing-05">Payment Cleared</span>
-              <h3 class="fs-22 fw-800 stat-val-payment mb-0 font-sans">{{ countByPaymentStatus('Cleared') }}</h3>
-            </div>
-            <div class="stat-icon-wrap stat-icon-payment p-2 rounded-10 d-flex align-items-center justify-content-center">
-              <i class="fas fa-money-bill-wave fs-14"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Filter & Search Bar -->
-    <div class="panel-card p-2.5 px-3 mb-3 bg-white rounded-12 border shadow-sm">
-      <div class="row g-2 align-items-center">
-        <div class="col-md-5 col-lg-5">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search fs-12"></i></span>
-            <input type="text" class="form-control bg-light border-start-0 fs-12" [(ngModel)]="searchQuery" (input)="page = 1" placeholder="Search by Customer Name, Mobile, App No, Project...">
+        <div class="col-6 col-lg-3">
+          <div class="stat-mini-card box-approved h-100">
+            <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+              <span class="stat-mini-lbl text-truncate">Approved</span>
+              <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-check-circle"></i></div>
+            </div>
+            <div class="stat-mini-val">{{ countByStatus('Approved') }}</div>
+            <div class="fs-10 text-muted fw-600 text-truncate"><i class="fas fa-check-double text-emerald me-1"></i>Verified Customers</div>
           </div>
         </div>
-        <div class="col-md-4 col-lg-4">
-          <div class="d-flex align-items-center gap-2">
+
+        <div class="col-6 col-lg-3">
+          <div class="stat-mini-card box-pending h-100">
+            <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+              <span class="stat-mini-lbl text-truncate">Pending Review</span>
+              <div class="icon-wrap bg-amber text-orange"><i class="fas fa-clock"></i></div>
+            </div>
+            <div class="stat-mini-val">{{ countByStatus('Pending') + countByStatus('Hold/Pending KYC') }}</div>
+            <div class="fs-10 text-muted fw-600 text-truncate"><i class="fas fa-hourglass-half text-orange me-1"></i>Awaiting KYC Review</div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="stat-mini-card box-payment h-100">
+            <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+              <span class="stat-mini-lbl text-truncate">Payment Cleared</span>
+              <div class="icon-wrap bg-purple-light text-purple"><i class="fas fa-money-bill-wave"></i></div>
+            </div>
+            <div class="stat-mini-val">{{ countByPaymentStatus('Cleared') }}</div>
+            <div class="fs-10 text-muted fw-600 text-truncate"><i class="fas fa-receipt text-purple me-1"></i>Realized Receipts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter & Search Bar -->
+      <div class="panel-card p-2 mb-2">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="f-input-wrap flex-grow-1" style="max-width: 380px;">
+            <i class="fas fa-search search-icon"></i>
+            <input
+              type="text"
+              class="f-input"
+              [(ngModel)]="searchQuery"
+              (input)="page = 1"
+              placeholder="Search by customer name, mobile, app no, project...">
+          </div>
+
+          <div class="d-flex align-items-center gap-2 ms-auto">
             <label class="fs-11 fw-700 text-muted mb-0 text-nowrap">Filter Status:</label>
-            <select class="form-select form-select-sm fs-12 py-1" [(ngModel)]="statusFilter" (change)="page = 1">
+            <select class="f-select" style="min-width: 140px;" [(ngModel)]="statusFilter" (change)="page = 1">
               <option value="">All Statuses</option>
               <option value="Approved">Approved (Verified)</option>
               <option value="Pending">Pending (Awaiting Approval)</option>
@@ -106,187 +101,187 @@ import Swal from 'sweetalert2';
             </select>
           </div>
         </div>
-        <div class="col-md-3 col-lg-3 text-md-end">
-          <span class="fs-12 text-muted fw-700">Showing {{ filteredApplications.length }} Records</span>
-        </div>
       </div>
-    </div>
 
-    <!-- Main Table Card -->
-    <div class="panel-card p-2.5 p-md-3 mb-3 bg-white rounded-12 border shadow-sm">
-      <app-admin-table-container
-        *ngIf="filteredApplications.length > 0"
-        title="Customer Applications &amp; Enrollments"
-        [count]="filteredApplications.length"
-        (export)="exportData('all', 'excel')">
-        <div class="table-responsive enrollment-table-responsive">
-          <table class="table align-middle custom-dash-table mb-0 w-100">
-            <thead class="bg-light">
-              <tr>
-                <th class="th-sno text-center" style="width: 30px;">#</th>
-                <th style="width: 110px;">DATE &amp; APP NO.</th>
-                <th style="min-width: 140px;">APPLICANT &amp; CONTACT</th>
-                <th style="min-width: 120px;">PROJECT &amp; SPONSOR</th>
-                <th style="min-width: 200px;">STATUS &amp; PAYMENT</th>
-                <th class="text-end" style="width: 85px;">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let app of pagedApplications; let i = index">
-                <!-- # S.No -->
-                <td class="td-sno text-center fs-11 fw-700 text-muted py-2">{{ (page - 1) * pageSize + i + 1 }}</td>
-                
-                <!-- Date & App No -->
-                <td class="py-2">
-                  <div class="d-flex flex-column gap-0.5">
-                    <span class="badge bg-dark text-gold border px-1.5 py-0.5 fs-10 fw-700 text-start w-fit">
-                      {{ app.application_no || app.member_id || 'Pending' }}
-                    </span>
-                    <small class="fs-10 text-muted mt-0.5 text-nowrap">
-                      <i class="fas fa-calendar-alt me-1 text-gold"></i>{{ app.form_date ? (app.form_date | date:'dd MMM yyyy') : (app.registered_at | date:'dd MMM yyyy') }}
-                    </small>
-                  </div>
-                </td>
+      <!-- Main Table Card -->
+      <div class="panel-card p-2 mb-2">
+        <div *ngIf="!loading && applications.length === 0" class="text-center py-4">
+          <i class="fas fa-folder-open text-muted fs-1 mb-2"></i>
+          <h6 class="fs-12 text-dark fw-700 mb-1">No Customer Enrollments Found</h6>
+          <p class="fs-11 text-muted mb-0">No customer forms have been submitted yet.</p>
+        </div>
 
-                <!-- Applicant Name & Contact -->
-                <td class="py-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="avatar-circle-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-800 fs-10" style="width: 26px; height: 26px; min-width: 26px;">
-                      {{ (app.applicant_name || app.full_name || 'C').charAt(0).toUpperCase() }}
+        <app-admin-table-container
+          *ngIf="filteredApplications.length > 0"
+          title="Customer Applications &amp; Enrollments"
+          [count]="filteredApplications.length"
+          (export)="exportData('all', 'excel')">
+          <div class="table-responsive">
+            <table class="table custom-dash-table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th class="fit">#</th>
+                  <th class="fit">DATE &amp; APP NO.</th>
+                  <th class="grow">APPLICANT &amp; CONTACT</th>
+                  <th class="fit">PROJECT &amp; SPONSOR</th>
+                  <th class="fit">STATUS &amp; PAYMENT</th>
+                  <th class="text-end fit">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let app of pagedApplications; let i = index">
+                  <!-- # S.No -->
+                  <td class="fit">{{ (page - 1) * pageSize + i + 1 }}</td>
+                  
+                  <!-- Date & App No -->
+                  <td class="fit">
+                    <div class="d-flex flex-column gap-0.5">
+                      <span class="code-badge">
+                        {{ app.application_no || app.member_id || 'Pending' }}
+                      </span>
+                      <span class="fs-10 text-muted mt-0.5 text-nowrap">
+                        <i class="fas fa-calendar-alt me-1 text-gold"></i>{{ app.form_date ? (app.form_date | date:'dd MMM yyyy') : (app.registered_at | date:'dd MMM yyyy') }}
+                      </span>
                     </div>
-                    <div class="min-w-0">
-                      <div class="fs-12 fw-800 text-dark text-truncate">{{ app.applicant_name || app.full_name || 'N/A' }}</div>
-                      <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <small class="fs-10 text-dark fw-600 text-nowrap"><i class="fas fa-phone-alt me-1 text-emerald fs-9"></i>{{ app.mobile_1 || app.mobile_no || 'N/A' }}</small>
-                        <small class="fs-10 text-muted text-truncate" *ngIf="app.email_1 || app.email" [title]="app.email_1 || app.email"><i class="fas fa-envelope me-1 text-muted fs-8"></i>{{ app.email_1 || app.email }}</small>
+                  </td>
+
+                  <!-- Applicant Name & Contact -->
+                  <td class="grow">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="user-avatar-circle bg-gold-avatar">
+                        {{ (app.applicant_name || app.full_name || 'C').charAt(0).toUpperCase() }}
+                      </div>
+                      <div class="min-w-0">
+                        <div class="fw-700 text-dark fs-12 text-truncate" [title]="app.applicant_name || app.full_name">{{ app.applicant_name || app.full_name || 'N/A' }}</div>
+                        <div class="fs-10 text-muted text-truncate" *ngIf="app.mobile_1 || app.mobile_no">
+                          <i class="fas fa-phone-alt me-1 text-emerald"></i>{{ app.mobile_1 || app.mobile_no }}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
+                  </td>
 
-                <!-- Project & Sponsor -->
-                <td class="py-2">
-                  <div class="fs-11 fw-700 text-dark text-truncate">{{ app.project_name || '—' }}</div>
-                  <small class="fs-10 text-muted d-block text-truncate" *ngIf="app.sponsor_name">
-                    Ref: {{ app.sponsor_name }} ({{ app.sponsor_id }})
-                  </small>
-                </td>
+                  <!-- Project & Sponsor -->
+                  <td class="fit">
+                    <div class="fs-11 fw-700 text-dark text-truncate" style="max-width: 150px;">{{ app.project_name || '—' }}</div>
+                    <span class="fs-10 text-muted d-block text-truncate" style="max-width: 150px;" *ngIf="app.sponsor_name">
+                      Ref: {{ app.sponsor_name }}
+                    </span>
+                  </td>
 
-                <!-- INLINE APPROVAL & PAYMENT DROPDOWNS -->
-                <td class="py-2">
-                  <div class="d-flex align-items-center gap-1.5 flex-wrap">
-                    <!-- Status Select -->
-                    <div class="position-relative flex-grow-1" style="min-width: 110px; max-width: 140px;">
-                      <select
-                        class="form-select form-select-sm fs-10 fw-700 status-dropdown shadow-none w-100"
-                        [ngClass]="{
-                          'border-success text-success bg-success-subtle': app.application_status === 'Approved',
-                          'border-warning text-warning-dark bg-warning-subtle': app.application_status === 'Pending',
-                          'border-info text-info bg-info-subtle': app.application_status === 'Hold/Pending KYC',
-                          'border-danger text-danger bg-danger-subtle': app.application_status === 'Rejected'
-                        }"
-                        [value]="app.application_status || 'Pending'"
-                        [disabled]="app._updatingStatus"
-                        (change)="onStatusChange(app, $event)">
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">&#x2714; Approved</option>
-                        <option value="Hold/Pending KYC">&#x26A0; Hold KYC</option>
-                        <option value="Rejected">&#x2716; Rejected</option>
-                      </select>
-                      <i *ngIf="app._updatingStatus" class="fas fa-spinner fa-spin text-primary position-absolute end-0 top-50 translate-middle-y me-2 fs-10"></i>
+                  <!-- INLINE APPROVAL & PAYMENT DROPDOWNS -->
+                  <td class="fit">
+                    <div class="d-inline-flex align-items-center gap-1.5">
+                      <!-- Status Select -->
+                      <div class="position-relative">
+                        <select
+                          class="status-select-pill"
+                          [ngClass]="{
+                            'status-approved': app.application_status === 'Approved',
+                            'status-pending': app.application_status === 'Pending' || !app.application_status,
+                            'status-hold': app.application_status === 'Hold/Pending KYC',
+                            'status-rejected': app.application_status === 'Rejected'
+                          }"
+                          [value]="app.application_status || 'Pending'"
+                          [disabled]="app._updatingStatus"
+                          (change)="onStatusChange(app, $event)">
+                          <option value="Pending">Pending</option>
+                          <option value="Approved">&#x2714; Approved</option>
+                          <option value="Hold/Pending KYC">&#x26A0; Hold KYC</option>
+                          <option value="Rejected">&#x2716; Rejected</option>
+                        </select>
+                        <i *ngIf="app._updatingStatus" class="fas fa-spinner fa-spin text-primary position-absolute end-0 top-50 translate-middle-y me-1.5 fs-9"></i>
+                      </div>
+
+                      <!-- Payment Select -->
+                      <div>
+                        <select
+                          class="payment-select-pill"
+                          [ngClass]="{
+                            'pay-cleared': app.payment_status === 'Cleared',
+                            'pay-pending': app.payment_status === 'Pending' || !app.payment_status,
+                            'pay-bounced': app.payment_status === 'Bounced'
+                          }"
+                          [value]="app.payment_status || 'Pending'"
+                          [disabled]="app._updatingPayment"
+                          (change)="onPaymentStatusChange(app, $event)">
+                          <option value="Pending">Pending</option>
+                          <option value="Cleared">Cleared</option>
+                          <option value="Bounced">Bounced</option>
+                        </select>
+                      </div>
                     </div>
+                  </td>
 
-                    <!-- Payment Select -->
-                    <div style="min-width: 80px; max-width: 95px;">
-                      <select
-                        class="form-select form-select-sm fs-10 fw-600 payment-dropdown shadow-none w-100"
-                        [ngClass]="{
-                          'border-success text-success': app.payment_status === 'Cleared',
-                          'border-warning text-warning-dark': app.payment_status === 'Pending' || !app.payment_status,
-                          'border-danger text-danger': app.payment_status === 'Bounced'
-                        }"
-                        [value]="app.payment_status || 'Pending'"
-                        [disabled]="app._updatingPayment"
-                        (change)="onPaymentStatusChange(app, $event)">
-                        <option value="Pending">Pending</option>
-                        <option value="Cleared">Cleared</option>
-                        <option value="Bounced">Bounced</option>
-                      </select>
+                  <!-- Actions -->
+                  <td class="text-end fit">
+                    <div class="d-inline-flex align-items-center justify-content-end gap-1">
+                      <button
+                        type="button"
+                        class="ibtn ibtn-view"
+                        (click)="viewDetails(app)"
+                        title="View Application Details"
+                        aria-label="View Application Details">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="ibtn ibtn-pdf"
+                        (click)="downloadPdf(app)"
+                        [disabled]="app._printing"
+                        title="Download Application PDF"
+                        aria-label="Download Application PDF">
+                        <i class="fas" [class.fa-file-pdf]="!app._printing" [class.fa-spinner]="app._printing" [class.fa-spin]="app._printing"></i>
+                      </button>
                     </div>
-                  </div>
-                </td>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredApplications.length === 0">
+                  <td colspan="6" class="text-center py-4 text-muted fs-11">
+                    <i class="fas fa-info-circle me-1 text-gold"></i> No customer enrollment records matched your search.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </app-admin-table-container>
 
-                <!-- Actions -->
-                <td class="text-end py-2">
-                  <div class="d-flex align-items-center justify-content-end gap-1">
-                    <button
-                      class="btn btn-xs btn-outline-primary py-0.5 px-1.5 rounded-6 fs-10 fw-700 d-inline-flex align-items-center gap-1"
-                      (click)="viewDetails(app)"
-                      title="View Details">
-                      <i class="fas fa-eye fs-9"></i> <span>Details</span>
-                    </button>
-                    <button
-                      class="btn btn-xs btn-outline-danger py-0.5 px-1 rounded-6 fs-10 d-inline-flex align-items-center justify-content-center"
-                      style="width: 24px; height: 24px;"
-                      (click)="downloadPdf(app)"
-                      [disabled]="app._printing"
-                      title="Download PDF">
-                      <i class="fas" [class.fa-file-pdf]="!app._printing" [class.fa-spinner]="app._printing" [class.fa-spin]="app._printing"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr *ngIf="filteredApplications.length === 0">
-                <td colspan="6" class="text-center py-4 text-muted fs-12">
-                  <i class="fas fa-info-circle me-1 text-gold"></i> No customer enrollment records matched your search.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </app-admin-table-container>
-
-      <app-admin-pagination
-        *ngIf="filteredApplications.length > 0"
-        [totalItems]="filteredApplications.length"
-        [page]="page"
-        [pageSize]="pageSize"
-        (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)"
-        (export)="exportData($event.mode, $event.format)">
-      </app-admin-pagination>
-
-      <div *ngIf="!loading && applications.length === 0" class="text-center py-5">
-        <i class="fas fa-folder-open text-muted fa-3x mb-2"></i>
-        <h5 class="fs-15 text-dark fw-700">No Customer Enrollments Found</h5>
-        <p class="fs-12 text-muted">No customer forms have been submitted yet.</p>
+        <app-admin-pagination
+          *ngIf="filteredApplications.length > 0"
+          [totalItems]="filteredApplications.length"
+          [page]="page"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+          (export)="exportData($event.mode, $event.format)">
+        </app-admin-pagination>
       </div>
     </div>
 
     <!-- VIEW APPLICATION DETAILS MODAL -->
-    <div class="modal-backdrop-custom" *ngIf="selectedApp">
-      <div class="modal-dialog-custom">
-        <div class="modal-content border-0 shadow-lg rounded-16 overflow-hidden">
-          <div class="modal-header bg-dark text-white p-3 d-flex align-items-center justify-content-between">
+    <div class="modal-backdrop fade show" *ngIf="selectedApp"></div>
+    <div class="modal d-block fade show" tabIndex="-1" *ngIf="selectedApp" (click)="selectedApp = null">
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;" (click)="$event.stopPropagation()">
+        <div class="modal-content border-0 rounded-2 shadow-lg">
+          <div class="modal-header bg-dark-emerald text-white py-2 px-3 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
-              <i class="fas fa-id-card text-gold fs-18"></i>
+              <i class="fas fa-id-card text-gold fs-14"></i>
               <div>
-                <h5 class="modal-title fs-15 fw-800 text-white mb-0">Customer Enrollment: {{ selectedApp.application_no || selectedApp.member_id }}</h5>
-                <small class="text-white-50 fs-11">Applicant: {{ selectedApp.applicant_name || selectedApp.full_name }}</small>
+                <h6 class="modal-title fs-13 fw-700 text-white mb-0">Customer Enrollment: {{ selectedApp.application_no || selectedApp.member_id }}</h6>
+                <div class="text-white-50 fs-10">Applicant: {{ selectedApp.applicant_name || selectedApp.full_name }}</div>
               </div>
             </div>
-            <button type="button" class="btn-close btn-close-white" (click)="selectedApp = null"></button>
+            <button type="button" class="btn-close btn-close-white" (click)="selectedApp = null" aria-label="Close"></button>
           </div>
 
-          <div class="modal-body p-3 bg-light overflow-auto" style="max-height: 75vh;">
+          <div class="modal-body p-3 bg-light overflow-auto" style="max-height: 72vh; overflow-x: hidden;">
             
             <!-- Quick Status Change Bar Inside Modal -->
-            <div class="p-3 bg-white rounded-12 border shadow-sm mb-3">
+            <div class="p-2 bg-white rounded-2 border shadow-sm mb-2">
               <div class="row g-2 align-items-center">
                 <div class="col-md-6">
-                  <label class="fs-11 fw-700 text-muted mb-1 text-uppercase">KYC &amp; Enrollment Status</label>
+                  <label class="form-label fs-10 fw-700 text-muted mb-0.5 text-uppercase">KYC &amp; Enrollment Status</label>
                   <select
-                    class="form-select form-select-sm fs-12 fw-700"
+                    class="f-select w-100"
                     [(ngModel)]="selectedApp.application_status"
                     (change)="onModalStatusChange(selectedApp)">
                     <option value="Pending">Pending</option>
@@ -296,9 +291,9 @@ import Swal from 'sweetalert2';
                   </select>
                 </div>
                 <div class="col-md-6">
-                  <label class="fs-11 fw-700 text-muted mb-1 text-uppercase">Payment Realization</label>
+                  <label class="form-label fs-10 fw-700 text-muted mb-0.5 text-uppercase">Payment Realization</label>
                   <select
-                    class="form-select form-select-sm fs-12 fw-700"
+                    class="f-select w-100"
                     [(ngModel)]="selectedApp.payment_status"
                     (change)="onModalPaymentChange(selectedApp)">
                     <option value="Pending">Pending</option>
@@ -310,12 +305,12 @@ import Swal from 'sweetalert2';
             </div>
 
             <!-- 1. Property Details -->
-            <div class="card border-0 rounded-12 shadow-sm mb-3">
-              <div class="card-header bg-white py-2.5 px-3 border-bottom">
-                <h6 class="fs-12 fw-800 text-dark mb-0"><i class="fas fa-building text-gold me-1.5"></i> 1. Property &amp; Project Details</h6>
+            <div class="card border-0 rounded-2 shadow-sm mb-2">
+              <div class="card-header bg-white py-1.5 px-2.5 border-bottom">
+                <h6 class="fs-11 fw-700 text-dark mb-0"><i class="fas fa-building text-gold me-1"></i> 1. Property &amp; Project Details</h6>
               </div>
-              <div class="card-body p-3">
-                <div class="row g-2 fs-12">
+              <div class="card-body p-2.5">
+                <div class="row g-1.5 fs-11">
                   <div class="col-sm-6"><strong>Project:</strong> {{ selectedApp.project_name || '—' }}</div>
                   <div class="col-sm-6"><strong>Property Type:</strong> {{ selectedApp.property_type || '—' }}</div>
                   <div class="col-sm-6"><strong>Plot / Flat No:</strong> {{ selectedApp.plot_flat_no || '—' }}</div>
@@ -323,18 +318,18 @@ import Swal from 'sweetalert2';
                   <div class="col-sm-6"><strong>Size / Area:</strong> {{ selectedApp.size_area || '—' }}</div>
                   <div class="col-sm-6"><strong>Rate:</strong> ₹{{ selectedApp.rate_per_unit || '—' }}</div>
                   <div class="col-sm-6"><strong>Basic Sale Price:</strong> ₹{{ selectedApp.basic_sale_price || 0 | number }}</div>
-                  <div class="col-sm-6"><strong>Total Property Value:</strong> ₹{{ selectedApp.total_property_value || 0 | number }}</div>
+                  <div class="col-sm-6"><strong>Total Value:</strong> ₹{{ selectedApp.total_property_value || 0 | number }}</div>
                 </div>
               </div>
             </div>
 
             <!-- 2. Applicant Details -->
-            <div class="card border-0 rounded-12 shadow-sm mb-3">
-              <div class="card-header bg-white py-2.5 px-3 border-bottom">
-                <h6 class="fs-12 fw-800 text-dark mb-0"><i class="fas fa-user text-primary me-1.5"></i> 2. Applicant Details</h6>
+            <div class="card border-0 rounded-2 shadow-sm mb-2">
+              <div class="card-header bg-white py-1.5 px-2.5 border-bottom">
+                <h6 class="fs-11 fw-700 text-dark mb-0"><i class="fas fa-user text-primary me-1"></i> 2. Applicant Details</h6>
               </div>
-              <div class="card-body p-3">
-                <div class="row g-2 fs-12">
+              <div class="card-body p-2.5">
+                <div class="row g-1.5 fs-11">
                   <div class="col-sm-6"><strong>Full Name:</strong> {{ selectedApp.applicant_name || selectedApp.full_name }}</div>
                   <div class="col-sm-6"><strong>Father / Husband:</strong> {{ selectedApp.fh_name || '—' }}</div>
                   <div class="col-sm-6"><strong>Mobile:</strong> {{ selectedApp.mobile_1 || selectedApp.mobile_no }}</div>
@@ -348,12 +343,12 @@ import Swal from 'sweetalert2';
             </div>
 
             <!-- 3. Payment Details -->
-            <div class="card border-0 rounded-12 shadow-sm mb-3">
-              <div class="card-header bg-white py-2.5 px-3 border-bottom">
-                <h6 class="fs-12 fw-800 text-dark mb-0"><i class="fas fa-wallet text-success me-1.5"></i> 3. Booking Payment Details</h6>
+            <div class="card border-0 rounded-2 shadow-sm mb-2">
+              <div class="card-header bg-white py-1.5 px-2.5 border-bottom">
+                <h6 class="fs-11 fw-700 text-dark mb-0"><i class="fas fa-wallet text-success me-1"></i> 3. Booking Payment Details</h6>
               </div>
-              <div class="card-body p-3">
-                <div class="row g-2 fs-12">
+              <div class="card-body p-2.5">
+                <div class="row g-1.5 fs-11">
                   <div class="col-sm-6"><strong>Booking Amount:</strong> ₹{{ selectedApp.booking_amount || 0 | number }}</div>
                   <div class="col-sm-6"><strong>Payment Mode:</strong> {{ selectedApp.payment_mode || '—' }}</div>
                   <div class="col-sm-6"><strong>Txn / Cheque No:</strong> {{ selectedApp.txn_cheque_no || '—' }}</div>
@@ -364,170 +359,333 @@ import Swal from 'sweetalert2';
 
           </div>
 
-          <div class="modal-footer bg-white p-2.5 d-flex align-items-center justify-content-between">
-            <button type="button" class="btn btn-outline-danger btn-sm" (click)="downloadPdf(selectedApp)">
+          <div class="modal-footer bg-light py-2 px-3 d-flex align-items-center justify-content-between">
+            <button type="button" class="btn btn-outline-danger btn-xs d-inline-flex align-items-center" (click)="downloadPdf(selectedApp)">
               <i class="fas fa-file-pdf me-1"></i> Download PDF
             </button>
-            <button type="button" class="btn btn-secondary btn-sm" (click)="selectedApp = null">Close</button>
+            <button type="button" class="btn btn-outline-secondary btn-xs" (click)="selectedApp = null">Close</button>
           </div>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .font-sans {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-    }
-    .letter-spacing-05 {
-      letter-spacing: 0.5px;
-    }
-    .w-fit {
-      width: fit-content !important;
-    }
-    .text-gold { color: #d97706 !important; }
-    .stat-card {
-      transition: all 0.2s ease;
-    }
-    .stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
+    :host {
+      display: block;
     }
 
-    .stat-card-total {
-      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important;
-      border: 1px solid #bfdbfe !important;
-      border-left: 4px solid #2563eb !important;
-    }
-    .stat-card-total .stat-card-title { color: #1d4ed8 !important; }
-    .stat-val-total { color: #1e3a8a !important; }
-    .stat-icon-total {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
-      color: #ffffff !important;
-      box-shadow: 0 3px 8px rgba(37, 99, 235, 0.35) !important;
-    }
-
-    .stat-card-approved {
-      background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%) !important;
-      border: 1px solid #a7f3d0 !important;
-      border-left: 4px solid #10b981 !important;
-    }
-    .stat-card-approved .stat-card-title { color: #047857 !important; }
-    .stat-val-approved { color: #064e3b !important; }
-    .stat-icon-approved {
-      background: linear-gradient(135deg, #10b981, #059669) !important;
-      color: #ffffff !important;
-      box-shadow: 0 3px 8px rgba(5, 150, 105, 0.35) !important;
-    }
-
-    .stat-card-pending {
-      background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%) !important;
-      border: 1px solid #fde68a !important;
-      border-left: 4px solid #f59e0b !important;
-    }
-    .stat-card-pending .stat-card-title { color: #b45309 !important; }
-    .stat-val-pending { color: #78350f !important; }
-    .stat-icon-pending {
-      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-      color: #ffffff !important;
-      box-shadow: 0 3px 8px rgba(217, 119, 6, 0.35) !important;
-    }
-
-    .stat-card-payment {
-      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%) !important;
-      border: 1px solid #bae6fd !important;
-      border-left: 4px solid #0284c7 !important;
-    }
-    .stat-card-payment .stat-card-title { color: #0369a1 !important; }
-    .stat-val-payment { color: #0c4a6e !important; }
-    .stat-icon-payment {
-      background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
-      color: #ffffff !important;
-      box-shadow: 0 3px 8px rgba(2, 132, 199, 0.35) !important;
-    }
-
-    .bg-primary-subtle { background-color: #eef2ff !important; }
-    .bg-success-subtle { background-color: #ecfdf5 !important; }
-    .bg-warning-subtle { background-color: #fefce8 !important; }
-    .bg-info-subtle { background-color: #f0f9ff !important; }
-    .bg-danger-subtle { background-color: #fef2f2 !important; }
-
-    .enrollment-table-responsive {
+    .panel-shell {
       width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
     }
 
+    /* ── EXECUTIVE HERO BANNER ───────────────────────────────── */
+    .admin-hero-card {
+      background: linear-gradient(135deg, #062b18 0%, #0d4a2c 50%, #062013 100%);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(6, 43, 24, 0.12);
+      border: 1px solid rgba(201, 168, 76, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .admin-hero-badge {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #c9a84c;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+
+    .admin-hero-title {
+      font-family: var(--ff-display, 'Outfit', 'Inter', sans-serif);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .admin-hero-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.25;
+    }
+
+    /* ── 4 STAT CARDS ────────────────────────────────────────── */
+    .stat-mini-card {
+      border-radius: 6px;
+      padding: 6px 10px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      transition: all 0.15s ease;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .stat-mini-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(6, 43, 24, 0.08);
+    }
+
+    .box-total {
+      background: #ffffff !important;
+      border: 1px solid #bfdbfe !important;
+      border-left: 3px solid #2563eb !important;
+    }
+
+    .box-approved {
+      background: #ffffff !important;
+      border: 1px solid #bbf7d0 !important;
+      border-left: 3px solid #10b981 !important;
+    }
+
+    .box-pending {
+      background: #ffffff !important;
+      border: 1px solid #fed7aa !important;
+      border-left: 3px solid #f97316 !important;
+    }
+
+    .box-payment {
+      background: #ffffff !important;
+      border: 1px solid #e9d5ff !important;
+      border-left: 3px solid #8b5cf6 !important;
+    }
+
+    .stat-mini-card .icon-wrap {
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .bg-blue { background: #dbeafe; }
+    .bg-amber { background: #fed7aa; }
+    .text-orange { color: #c2410c !important; }
+    .bg-purple-light { background: #e9d5ff; }
+    .text-purple { color: #6b21a8 !important; }
+    .bg-emerald-light { background: #bbf7d0; }
+
+    .stat-mini-val {
+      font-family: 'Outfit', 'Inter', system-ui, sans-serif !important;
+      font-size: 1.25rem !important;
+      font-weight: 800 !important;
+      color: #0f172a !important;
+      line-height: 1.1 !important;
+      margin-bottom: 2px;
+    }
+
+    .stat-mini-lbl {
+      font-size: 10px;
+      color: #64748b;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      line-height: 1.1;
+    }
+
+    /* ── TOOLBAR & SEARCH ────────────────────────────────────── */
+    .panel-card {
+      background: #ffffff;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .f-select {
+      height: 26px;
+      min-height: 26px;
+      padding: 0 24px 0 8px;
+      font-size: 11.5px;
+      color: #1e293b;
+      background-color: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .f-input-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .f-input-wrap .search-icon {
+      position: absolute;
+      left: 8px;
+      color: #94a3b8;
+      font-size: 11px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .f-input {
+      height: 26px;
+      min-height: 26px;
+      font-size: 11.5px;
+      color: #1e293b;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 0 8px;
+      outline: none;
+      width: 100%;
+    }
+
+    .f-input-wrap .f-input {
+      padding-left: 26px !important;
+    }
+
+    /* ── TABLE STYLING ───────────────────────────────────────── */
     .custom-dash-table {
       width: 100%;
-      table-layout: auto;
       border-collapse: separate;
       border-spacing: 0;
     }
 
-    .custom-dash-table thead th {
+    .custom-dash-table th {
       font-size: 10px;
       font-weight: 700;
-      color: #64748b;
-      letter-spacing: 0.5px;
-      padding: 8px 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #475569;
+      border-bottom: 1px solid #cbd5e1;
+      padding: 5px 8px;
+      background: #f8fafc;
       white-space: nowrap;
-      border-bottom: 1px solid #e2e8f0;
-      vertical-align: middle;
     }
 
-    .custom-dash-table tbody td {
-      padding: 8px 6px;
-      vertical-align: middle;
+    .custom-dash-table td {
+      padding: 5px 8px;
+      font-size: 11.5px;
       border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
     }
 
-    .status-dropdown {
-      font-size: 10px !important;
-      padding: 2px 4px !important;
-      border-radius: 5px;
-      cursor: pointer;
-      height: 26px;
+    .custom-dash-table tr:hover td {
+      background-color: #f8fafc;
     }
 
-    .payment-dropdown {
-      font-size: 10px !important;
-      padding: 2px 4px !important;
-      border-radius: 5px;
-      cursor: pointer;
-      height: 26px;
+    .fit {
+      width: 1% !important;
+      white-space: nowrap !important;
     }
 
-    .modal-backdrop-custom {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 1050;
+    .grow {
+      width: auto !important;
+      min-width: 0 !important;
+    }
+
+    .code-badge {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #062b18;
+      background: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+    }
+
+    .user-avatar-circle.bg-gold-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fef08a 0%, #fde047 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      font-family: 'Outfit', 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 9.5px;
+      color: #854d0e;
+      flex-shrink: 0;
+      border: 1px solid #facc15;
     }
 
-    .modal-dialog-custom {
-      width: 100%;
-      max-width: 650px;
-      animation: modalSlideDown 0.25s ease-out;
+    /* Status & Payment Pills */
+    .status-select-pill, .payment-select-pill {
+      height: 22px;
+      padding: 0 16px 0 6px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      outline: none;
+      cursor: pointer;
     }
 
-    @keyframes modalSlideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px) scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+    .status-approved { background-color: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+    .status-pending { background-color: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .status-hold { background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+    .status-rejected { background-color: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+
+    .pay-cleared { background-color: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+    .pay-pending { background-color: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .pay-bounced { background-color: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+
+    /* ── 24px SQUARE ACTION BUTTONS (.ibtn) ──────────────────── */
+    .ibtn {
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      padding: 0;
+      border-radius: 5px;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
     }
+
+    .ibtn-view {
+      background: #f1f5f9;
+      color: #2563eb;
+      border-color: #cbd5e1;
+    }
+    .ibtn-view:hover {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    .ibtn-pdf {
+      background: #fef2f2;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+    .ibtn-pdf:hover {
+      background: #dc2626;
+      color: #ffffff;
+    }
+
+    /* ── STANDARD ERP BUTTONS ────────────────────────────────── */
+    .btn-xs {
+      height: 26px;
+      padding: 0 9px !important;
+      font-size: 11.5px !important;
+      font-weight: 600;
+      border-radius: 5px !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .bg-dark-emerald {
+      background: linear-gradient(135deg, #062b18 0%, #0d4a2c 100%);
+      color: #ffffff !important;
+    }
+
+    .text-gold { color: #c9a84c !important; }
   `]
 })
 export class CustomerApplicationsListComponent implements OnInit {

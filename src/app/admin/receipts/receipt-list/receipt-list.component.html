@@ -211,37 +211,37 @@
       <table class="custom-dash-table align-middle mb-0">
         <thead>
           <tr>
-            <th (click)="sortBy('receipt_no')" class="cursor-pointer">
+            <th (click)="sortBy('receipt_no')" class="cursor-pointer fit">
               Receipt No. <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th (click)="sortBy('customer_name')" class="cursor-pointer">
+            <th (click)="sortBy('customer_name')" class="cursor-pointer grow">
               Customer Name <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th (click)="sortBy('plot_no')" class="cursor-pointer">
+            <th (click)="sortBy('plot_no')" class="cursor-pointer fit">
               Property / Project <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th (click)="sortBy('paid_amount')" class="cursor-pointer text-end">
+            <th (click)="sortBy('paid_amount')" class="cursor-pointer text-end fit">
               Amount (₹) <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th (click)="sortBy('payment_type')" class="cursor-pointer">
+            <th (click)="sortBy('payment_type')" class="cursor-pointer fit">
               Payment Mode <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th (click)="sortBy('receipt_date')" class="cursor-pointer">
+            <th (click)="sortBy('receipt_date')" class="cursor-pointer fit">
               Date <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th>Status</th>
-            <th class="text-end" style="width: 140px;">Actions</th>
+            <th class="fit">Status</th>
+            <th class="text-end fit">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let r of receipts" [class.row-cancelled]="r.status === 'Cancelled'">
             <!-- Receipt No -->
-            <td>
+            <td class="fit">
               <span class="code-badge cursor-pointer" (click)="viewReceipt(r)" title="Click to view receipt">{{ r.receipt_no }}</span>
             </td>
 
             <!-- Customer Profile -->
-            <td>
+            <td class="grow">
               <div class="d-flex align-items-center gap-2">
                 <div class="user-avatar-circle bg-gold-avatar">
                   {{ getInitials(r.customer_name) }}
@@ -261,19 +261,19 @@
             </td>
 
             <!-- Property / Project -->
-            <td>
+            <td class="fit">
               <div class="fw-600 text-dark fs-11.5" *ngIf="r.plot_no">Plot {{ r.plot_no }}</div>
               <div class="text-muted fs-10.5" *ngIf="r.plot_area">{{ r.plot_area }}</div>
               <div class="text-muted fs-11" *ngIf="!r.plot_no && !r.plot_area">—</div>
             </td>
 
             <!-- Amount (₹) -->
-            <td class="text-end">
+            <td class="text-end fit">
               <span class="fw-700 text-dark fs-12">₹{{ r.paid_amount | number:'1.0-0' }}</span>
             </td>
 
             <!-- Payment Mode Badge -->
-            <td>
+            <td class="fit">
               <span class="chip" [ngClass]="{
                 'chip-ok': r.payment_type === 'Cash',
                 'chip-blue': r.payment_type.includes('UPI') || r.payment_type.includes('Online'),
@@ -286,19 +286,19 @@
             </td>
 
             <!-- Date -->
-            <td>
+            <td class="fit">
               <span class="fs-11 text-dark fw-600">{{ r.receipt_date | date:'dd MMM yyyy' }}</span>
             </td>
 
             <!-- Status -->
-            <td>
+            <td class="fit">
               <span class="chip" [class.chip-ok]="r.status !== 'Cancelled'" [class.chip-err]="r.status === 'Cancelled'">
                 {{ r.status || 'Active' }}
               </span>
             </td>
 
             <!-- Actions (24px square buttons) -->
-            <td class="text-end">
+            <td class="text-end fit">
               <div class="actions-cell justify-content-end">
                 <!-- 1. View Receipt -->
                 <button type="button" class="ibtn ibtn-view" (click)="viewReceipt(r)" title="View Receipt Dossier">

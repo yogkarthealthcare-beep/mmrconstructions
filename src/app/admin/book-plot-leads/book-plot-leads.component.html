@@ -1,71 +1,208 @@
-<div class="pg-header">
-  <div>
-    <h4>Book Plot Leads</h4>
-    <p>Guest and registered-user plot inquiries</p>
-  </div>
-</div>
+<div class="panel-shell">
+  <!-- TOP HERO EXECUTIVE BANNER -->
+  <div class="admin-hero-card mb-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+      <div>
+        <div class="admin-hero-badge"><i class="fas fa-map-marked-alt me-1"></i>BUYER INTENT &amp; PLOT PIPELINE</div>
+        <h2 class="admin-hero-title mb-0">Book Plot Leads &amp; Registrations</h2>
+        <p class="admin-hero-sub mb-0">Manage guest &amp; registered buyer plot requests, verify contact details, and route inquiries.</p>
+      </div>
 
-<div class="filters">
-  <div class="search">
-    <i class="fas fa-search"></i>
-    <input [(ngModel)]="search" (keyup.enter)="filter()" placeholder="Search inquiry, name, mobile or site">
-  </div>
-  <select [(ngModel)]="status" (change)="filter()">
-    <option value="">All statuses</option>
-    <option *ngFor="let s of statuses">{{s}}</option>
-  </select>
-  <button class="btn btn-green" (click)="filter()">Search</button>
-</div>
-
-<div class="table-card">
-  <app-admin-table-container
-    *ngIf="rows.length > 0"
-    title="Plot Leads"
-    [count]="total"
-    (export)="exportData('all', 'excel')">
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr>
-            <th class="th-sno">#</th>
-            <th>Inquiry ID</th>
-            <th>Name / Mobile</th>
-            <th>Selected Site</th>
-            <th>Custom Site</th>
-            <th>Inquiry Date</th>
-            <th>User Type</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of rows; let i = index">
-            <td class="td-sno">{{ (page - 1) * limit + i + 1 }}</td>
-            <td><strong>{{row.inquiry_number}}</strong></td>
-            <td>{{row.full_name}}<small>{{row.contact_number}}</small></td>
-            <td>{{row.selected_site||'—'}}</td>
-            <td>{{row.custom_site_name||'—'}}</td>
-            <td>{{row.created_at|date:'dd MMM y, h:mm a'}}</td>
-            <td><span class="type">{{row.user_type}}</span></td>
-            <td>
-              <select [(ngModel)]="row.status" (change)="update(row)">
-                <option *ngFor="let s of statuses">{{s}}</option>
-              </select>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <button class="btn btn-outline-light btn-xs d-inline-flex align-items-center" (click)="load()" title="Refresh List" aria-label="Refresh List">
+          <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Refresh
+        </button>
+      </div>
     </div>
-  </app-admin-table-container>
-  <div *ngIf="!loading && !rows.length" class="empty text-center py-4">No leads found.</div>
-  <div *ngIf="loading" class="empty text-center py-4">Loading leads...</div>
-  <app-admin-pagination
-    *ngIf="total > 0"
-    [totalItems]="total"
-    [page]="page"
-    [pageSize]="limit"
-    (pageChange)="onPageChange($event)"
-    (pageSizeChange)="onPageSizeChange($event)"
-    (export)="exportData($event.mode, $event.format)">
-  </app-admin-pagination>
-</div>
+  </div>
 
+  <!-- 4 STAT SUMMARY MINI CARDS -->
+  <div class="row g-2 mb-2">
+    <div class="col-6 col-md-3">
+      <div class="stat-mini-card box-total h-100">
+        <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+          <span class="stat-mini-lbl text-truncate">Total Inquiries</span>
+          <div class="icon-wrap bg-blue text-primary"><i class="fas fa-layer-group"></i></div>
+        </div>
+        <div class="stat-mini-val">{{ total }}</div>
+        <div class="fs-10 text-muted fw-600 text-truncate"><i class="fas fa-database text-primary me-1"></i>All Logged Leads</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="stat-mini-card box-new h-100">
+        <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+          <span class="stat-mini-lbl text-truncate">New Leads</span>
+          <div class="icon-wrap bg-amber text-orange"><i class="fas fa-sparkles"></i></div>
+        </div>
+        <div class="stat-mini-val">{{ newCount }}</div>
+        <div class="fs-10 text-muted fw-600 text-truncate"><i class="fas fa-clock text-orange me-1"></i>Awaiting Contact</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="stat-mini-card box-contacted h-100">
+        <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+          <span class="stat-mini-lbl text-truncate">In Follow-Up</span>
+          <div class="icon-wrap bg-purple-light text-purple"><i class="fas fa-phone-volume"></i></div>
+        </div>
+        <div class="stat-mini-val">{{ contactedCount }}</div>
+        <div class="fs-10 text-muted fw-600 text-truncate"><i class="fas fa-comments text-purple me-1"></i>Contacted / Discussed</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="stat-mini-card box-converted h-100">
+        <div class="d-flex align-items-center justify-content-between mb-1 w-100">
+          <span class="stat-mini-lbl text-truncate">Converted / Closed</span>
+          <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-check-circle"></i></div>
+        </div>
+        <div class="stat-mini-val">{{ convertedCount }}</div>
+        <div class="fs-10 text-muted fw-600 text-truncate"><i class="fas fa-check-double text-emerald me-1"></i>Plot Booked</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR CARD -->
+  <div class="panel-card p-2 mb-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="f-input-wrap flex-grow-1" style="max-width: 380px;">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="f-input"
+          [(ngModel)]="search"
+          (keyup.enter)="filter()"
+          placeholder="Search inquiry #, customer name, mobile or site...">
+      </div>
+
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <select class="f-select" style="min-width: 140px;" [(ngModel)]="status" (change)="filter()">
+          <option value="">All Statuses</option>
+          <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+        </select>
+
+        <button type="button" class="btn btn-emerald btn-xs d-inline-flex align-items-center" (click)="filter()" title="Filter Records" aria-label="Filter Records">
+          <i class="fas fa-filter me-1"></i> Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN DATA TABLE CARD -->
+  <div class="panel-card p-2 mb-2">
+    <div *ngIf="!loading && rows.length === 0" class="text-center py-4">
+      <i class="fas fa-map-marked-alt text-muted fs-1 mb-2"></i>
+      <h6 class="fw-700 text-dark mb-1 fs-12">No Plot Leads Found</h6>
+      <p class="text-muted fs-11 mb-0">No lead submissions match the selected filter criteria.</p>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-4">
+      <i class="fas fa-spinner fa-spin text-muted fs-2 mb-2"></i>
+      <p class="text-muted fs-11 mb-0">Loading plot leads...</p>
+    </div>
+
+    <app-admin-table-container
+      *ngIf="!loading && rows.length > 0"
+      title="Plot Leads & Registrations"
+      [count]="total"
+      (export)="exportData('all', 'excel')">
+      <div class="table-responsive">
+        <table class="table custom-dash-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th class="fit">#</th>
+              <th class="fit">Inquiry #</th>
+              <th class="grow">Applicant / Contact</th>
+              <th class="fit">Selected Site</th>
+              <th class="fit">Custom Site</th>
+              <th class="fit">Inquiry Date</th>
+              <th class="fit">User Type</th>
+              <th class="fit">Status</th>
+              <th class="text-end fit">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of rows; let i = index">
+              <td class="fit">{{ (page - 1) * limit + i + 1 }}</td>
+              
+              <td class="fit">
+                <span class="code-badge">{{ row.inquiry_number || ('#' + row.id) }}</span>
+              </td>
+
+              <td class="grow">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="user-avatar-circle bg-gold-avatar">
+                    {{ getInitials(row.full_name) }}
+                  </div>
+                  <div class="min-w-0">
+                    <div class="fw-700 text-dark fs-12 text-truncate" [title]="row.full_name">{{ row.full_name }}</div>
+                    <div class="fs-10 text-muted" *ngIf="row.contact_number">
+                      <i class="fas fa-phone-alt me-1 text-emerald"></i>{{ row.contact_number }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <td class="fit">
+                <span class="chip chip-neutral" *ngIf="row.selected_site">
+                  <i class="fas fa-building text-gold me-1"></i>
+                  <span>{{ row.selected_site }}</span>
+                </span>
+                <span class="text-muted fs-11" *ngIf="!row.selected_site">—</span>
+              </td>
+
+              <td class="fit">
+                <span class="text-dark fs-11 fw-600" *ngIf="row.custom_site_name">{{ row.custom_site_name }}</span>
+                <span class="text-muted fs-11" *ngIf="!row.custom_site_name">—</span>
+              </td>
+
+              <td class="fit">
+                <span class="fs-11 text-dark fw-600">{{ row.created_at | date:'dd MMM yyyy, h:mm a' }}</span>
+              </td>
+
+              <td class="fit">
+                <span class="type-pill" [class.type-user]="row.user_type === 'Registered' || row.user_type === 'User'" [class.type-guest]="row.user_type === 'Guest'">
+                  {{ row.user_type || 'Guest' }}
+                </span>
+              </td>
+
+              <td class="fit">
+                <select
+                  class="status-select-pill"
+                  [(ngModel)]="row.status"
+                  (change)="update(row)"
+                  [class.status-new]="row.status === 'New'"
+                  [class.status-contacted]="row.status === 'Contacted' || row.status === 'Follow Up'"
+                  [class.status-converted]="row.status === 'Converted' || row.status === 'Closed'">
+                  <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+                </select>
+              </td>
+
+              <td class="text-end fit">
+                <div class="d-inline-flex align-items-center gap-1 justify-content-end">
+                  <a *ngIf="row.contact_number" class="ibtn ibtn-view" [href]="'tel:' + row.contact_number" title="Call Lead" aria-label="Call Lead">
+                    <i class="fas fa-phone"></i>
+                  </a>
+                  <a *ngIf="row.contact_number" class="ibtn ibtn-approve" [href]="'https://wa.me/91' + row.contact_number" target="_blank" title="WhatsApp Chat" aria-label="WhatsApp Chat">
+                    <i class="fab fa-whatsapp"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </app-admin-table-container>
+
+    <app-admin-pagination
+      *ngIf="total > 0"
+      [totalItems]="total"
+      [page]="page"
+      [pageSize]="limit"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+      (export)="exportData($event.mode, $event.format)">
+    </app-admin-pagination>
+  </div>
+</div>

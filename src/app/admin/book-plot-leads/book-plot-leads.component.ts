@@ -69,6 +69,23 @@ export class BookPlotLeadsComponent implements OnInit {
     this.load();
   }
 
+  getInitials(name: string): string {
+    if (!name) return 'PL';
+    return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  }
+
+  get newCount(): number {
+    return this.rows.filter(r => r.status === 'New').length;
+  }
+
+  get contactedCount(): number {
+    return this.rows.filter(r => r.status === 'Contacted' || r.status === 'Follow Up').length;
+  }
+
+  get convertedCount(): number {
+    return this.rows.filter(r => r.status === 'Converted' || r.status === 'Closed').length;
+  }
+
   update(row: any) {
     this.api.adminUpdateBookPlotLeadStatus(row.id, row.status).subscribe();
   }
