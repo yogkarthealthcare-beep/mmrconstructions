@@ -144,20 +144,20 @@
       <table class="table align-middle custom-dash-table mb-0">
         <thead>
           <tr>
-            <th class="th-sno" style="width: 5%;">#</th>
-            <th style="width: 23%;">Customer Details</th>
-            <th style="width: 18%;">Plot &amp; Site Specs</th>
-            <th style="width: 14%;">Advance Paid</th>
-            <th style="width: 12%;">Payment Type</th>
-            <th style="width: 12%;">Booking Date</th>
-            <th style="width: 8%;">Status</th>
-            <th class="text-end" style="width: 8%;">Actions</th>
+            <th class="th-sno fit">#</th>
+            <th class="grow">Customer Details</th>
+            <th class="grow">Plot &amp; Site Specs</th>
+            <th class="fit">Advance Paid</th>
+            <th class="fit d-none d-xl-table-cell">Payment Type</th>
+            <th class="fit d-none d-xl-table-cell">Booking Date</th>
+            <th class="fit text-center">Status</th>
+            <th class="fit text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let b of pagedBookings; let i = index">
-            <td class="td-sno">{{ (bookingsPage - 1) * bookingsPageSize + i + 1 }}</td>
-            <td>
+            <td class="td-sno fit">{{ (bookingsPage - 1) * bookingsPageSize + i + 1 }}</td>
+            <td class="grow">
               <div class="d-flex align-items-center gap-2">
                 <div class="user-avatar-circle">
                   {{ getInitials(b.customer_name || b.full_name) }}
@@ -168,24 +168,24 @@
                 </div>
               </div>
             </td>
-            <td>
+            <td class="grow">
               <div class="fw-700 text-primary"><i class="fas fa-map-marker-alt text-gold me-1"></i>Plot #{{ b.plot_number }}</div>
               <div class="fs-10 text-muted text-truncate">{{ b.site_name || 'Project Site' }}</div>
             </td>
-            <td>
+            <td class="fit text-nowrap">
               <div class="fw-800 text-emerald">₹{{ (b.advance_amount || b.booking_amount || 0) | number:'1.0-0' }}</div>
               <div class="fs-10 text-muted" *ngIf="b.total_plot_price">of ₹{{ b.total_plot_price | number:'1.0-0' }}</div>
             </td>
-            <td>
+            <td class="fit d-none d-xl-table-cell text-nowrap">
               <span class="badge bg-light text-dark border fw-600">
                 {{ b.payment_type || b.payment_mode || 'EMI Plan' }}
               </span>
             </td>
-            <td>
+            <td class="fit d-none d-xl-table-cell text-nowrap">
               <div class="fs-11 text-dark fw-600">{{ b.booking_date | date:'dd MMM yyyy' }}</div>
               <div class="fs-10 text-muted">{{ b.booking_date | date:'hh:mm a' }}</div>
             </td>
-            <td>
+            <td class="fit text-center">
               <span class="chip" [ngClass]="{
                 'chip-ok': b.booking_status === 'Confirmed',
                 'chip-warn': b.booking_status === 'PaymentPending' || b.booking_status === 'Pending',
@@ -199,7 +199,7 @@
                 {{ b.booking_status }}
               </span>
             </td>
-            <td class="text-end">
+            <td class="fit text-end">
               <div class="action-btn-group">
                 <button class="ibtn view" (click)="openBookingDetail(b)" title="View EMI Schedule">
                   <i class="fas fa-eye"></i>

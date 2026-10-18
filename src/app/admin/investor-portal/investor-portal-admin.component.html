@@ -185,8 +185,8 @@
                 <th class="fit">Date</th>
                 <th class="grow">Investor</th>
                 <th class="fit text-end">Amount</th>
-                <th class="fit">Method</th>
-                <th class="fit">Txn Reference / UTR</th>
+                <th class="fit d-none d-xl-table-cell">Method</th>
+                <th class="fit d-none d-xl-table-cell">Txn Reference / UTR</th>
                 <th class="fit text-center">Proof</th>
                 <th class="fit text-center">Status</th>
                 <th class="fit text-end pe-2">Actions</th>
@@ -201,8 +201,8 @@
                   <div class="fs-10 text-muted line-clamp-1" [title]="dep.investor_email">{{ dep.investor_email }}</div>
                 </td>
                 <td class="fw-700 text-success fs-12 text-end fit text-nowrap">₹{{ dep.amount | number:'1.2-2' }}</td>
-                <td class="fs-11 text-secondary fit text-nowrap">{{ dep.payment_method }}</td>
-                <td class="font-monospace fs-10 text-dark fit text-nowrap" [title]="dep.transaction_reference">{{ dep.transaction_reference || 'N/A' }}</td>
+                <td class="fs-11 text-secondary fit text-nowrap d-none d-xl-table-cell">{{ dep.payment_method }}</td>
+                <td class="font-monospace fs-10 text-dark fit text-nowrap d-none d-xl-table-cell" [title]="dep.transaction_reference">{{ dep.transaction_reference || 'N/A' }}</td>
                 <td class="fit text-center">
                   <button *ngIf="dep.payment_screenshot_url" type="button" class="ibtn ibtn-proof" (click)="openProofImage(dep.payment_screenshot_url)" title="View Proof Slip" aria-label="View Proof Slip">
                     <i class="fas fa-image"></i>
@@ -348,7 +348,7 @@
                 <th class="ps-2 th-sno fit">#</th>
                 <th class="fit">Date</th>
                 <th class="grow">Investor</th>
-                <th class="fit">Txn ID</th>
+                <th class="fit d-none d-xl-table-cell">Txn ID</th>
                 <th class="fit text-center">Type</th>
                 <th class="fit text-end">Amount</th>
                 <th class="fit text-end pe-2">Status</th>
@@ -362,7 +362,7 @@
                   <div class="fw-700 fs-12 text-dark line-clamp-1" [title]="tx.investor_name">{{ tx.investor_name }}</div>
                   <div class="fs-10 text-muted line-clamp-1" [title]="tx.investor_email">{{ tx.investor_email }}</div>
                 </td>
-                <td class="font-monospace fs-10 text-dark fit text-nowrap" [title]="tx.transaction_id">{{ tx.transaction_id }}</td>
+                <td class="font-monospace fs-10 text-dark fit text-nowrap d-none d-xl-table-cell" [title]="tx.transaction_id">{{ tx.transaction_id }}</td>
                 <td class="fit text-center">
                   <span class="badge text-uppercase px-1.5 py-0.5 fs-9"
                         [class.bg-success-subtle]="tx.type === 'deposit'"

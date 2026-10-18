@@ -180,13 +180,13 @@
         <table class="table align-middle custom-dash-table mb-0">
           <thead>
             <tr>
-              <th class="th-sno" style="width: 5%;">#</th>
-              <th style="width: 22%;">Lead Contact</th>
-              <th style="width: 23%;">Inquiry &amp; Project Details</th>
-              <th style="width: 22%;">Requirement Note</th>
-              <th style="width: 10%;">Date</th>
-              <th class="text-center" style="width: 8%;">Status</th>
-              <th class="text-end" style="width: 10%;">Actions</th>
+              <th class="th-sno fit">#</th>
+              <th class="grow">Lead Contact</th>
+              <th class="grow">Inquiry &amp; Project Details</th>
+              <th class="d-none d-xxl-table-cell" style="max-width: 200px;">Requirement Note</th>
+              <th class="fit text-nowrap d-none d-xl-table-cell">Date</th>
+              <th class="fit text-center">Status</th>
+              <th class="fit text-end">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -236,14 +236,14 @@
               </td>
 
               <!-- Requirement Note Column -->
-              <td>
-                <div class="text-truncate" style="max-width: 240px;" [title]="b.message">
+              <td class="d-none d-xxl-table-cell">
+                <div class="text-truncate" style="max-width: 220px;" [title]="b.message">
                   <i class="fas fa-quote-left text-muted opacity-50 me-1 fs-10"></i>{{ b.message || 'No specific requirement message' }}
                 </div>
               </td>
 
               <!-- Date Column -->
-              <td class="text-nowrap">
+              <td class="text-nowrap d-none d-xl-table-cell fit">
                 <div class="fs-11 text-dark fw-600">{{ b.date | date:'dd MMM yyyy' }}</div>
                 <div class="fs-10 text-muted text-truncate" [title]="b.source_page">
                   <i class="fas fa-globe me-1"></i>{{ b.source_page }}
@@ -251,7 +251,7 @@
               </td>
 
               <!-- Status Column -->
-              <td class="text-center">
+              <td class="text-center fit">
                 <span class="chip" [ngClass]="{
                   'chip-ok': b.status === 'closed',
                   'chip-warn': b.status === 'called' || b.status === 'follow-up',
@@ -267,7 +267,7 @@
               </td>
 
               <!-- Actions Column -->
-              <td class="text-end">
+              <td class="text-end fit">
                 <div class="action-btn-group">
                   <a class="ibtn call" [href]="'tel:' + b.mobile" title="Call Lead">
                     <i class="fas fa-phone"></i>

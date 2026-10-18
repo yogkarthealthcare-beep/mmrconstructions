@@ -214,29 +214,29 @@
               <table class="custom-dash-table align-middle mb-0">
                 <thead>
                   <tr>
-                    <th class="th-sno">#</th>
-                    <th>Page Name</th>
-                    <th>Page URL</th>
-                    <th class="text-end">Total Views</th>
-                    <th class="text-end">Unique</th>
-                    <th class="text-end">Avg. Time</th>
-                    <th class="text-end">% Share</th>
+                    <th class="th-sno fit">#</th>
+                    <th class="grow">Page Name</th>
+                    <th class="d-none d-xl-table-cell">Page URL</th>
+                    <th class="text-end fit">Total Views</th>
+                    <th class="text-end fit d-none d-xl-table-cell">Unique</th>
+                    <th class="text-end fit">Avg. Time</th>
+                    <th class="text-end fit">% Share</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let p of topPagesPaginated; let i = index">
-                    <td class="td-sno">{{ (topPagesPage - 1) * topPagesPageSize + i + 1 }}</td>
-                    <td>
+                    <td class="td-sno fit">{{ (topPagesPage - 1) * topPagesPageSize + i + 1 }}</td>
+                    <td class="grow">
                       <div class="d-flex align-items-center gap-1.5">
                         <span class="badge-rank">#{{ p.rank }}</span>
                         <strong class="text-dark fs-11 text-truncate" style="max-width: 180px;">{{ p.name }}</strong>
                       </div>
                     </td>
-                    <td><code class="code-badge text-primary">{{ p.url }}</code></td>
-                    <td class="text-end fw-700 text-dark fs-11">{{ formatNumber(p.views) }}</td>
-                    <td class="text-end fw-600 text-muted fs-11">{{ formatNumber(p.uniqueVisitors) }}</td>
-                    <td class="text-end fw-700 text-emerald fs-11">{{ p.avgTime }}</td>
-                    <td class="text-end">
+                    <td class="d-none d-xl-table-cell"><code class="code-badge text-primary">{{ p.url }}</code></td>
+                    <td class="text-end fw-700 text-dark fs-11 fit">{{ formatNumber(p.views) }}</td>
+                    <td class="text-end fw-600 text-muted fs-11 fit d-none d-xl-table-cell">{{ formatNumber(p.uniqueVisitors) }}</td>
+                    <td class="text-end fw-700 text-emerald fs-11 fit">{{ p.avgTime }}</td>
+                    <td class="text-end fit">
                       <div class="d-flex align-items-center justify-content-end gap-1.5">
                         <span class="fw-700 fs-10 text-dark">{{ p.pct }}%</span>
                         <div class="progress flex-grow-1" style="height: 4px; width: 40px; background: #e2e8f0;">
@@ -351,22 +351,22 @@
               <table class="custom-dash-table align-middle mb-0">
                 <thead>
                   <tr>
-                    <th class="th-sno">#</th>
-                    <th>Source</th>
-                    <th class="text-end">Visitors</th>
-                    <th class="text-end">Sessions</th>
-                    <th class="text-end">Page Views</th>
-                    <th class="text-end">Avg. Duration</th>
+                    <th class="th-sno fit">#</th>
+                    <th class="grow">Source</th>
+                    <th class="text-end fit">Visitors</th>
+                    <th class="text-end fit d-none d-xl-table-cell">Sessions</th>
+                    <th class="text-end fit d-none d-xl-table-cell">Page Views</th>
+                    <th class="text-end fit d-none d-xxl-table-cell">Avg. Duration</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let s of trafficSourcesPaginated; let i = index">
-                    <td class="td-sno">{{ (sourcesPage - 1) * sourcesPageSize + i + 1 }}</td>
-                    <td class="fw-700 text-dark fs-11">{{ s.source }}</td>
-                    <td class="text-end fw-700 text-primary fs-11">{{ formatNumber(s.visitors) }}</td>
-                    <td class="text-end fw-600 text-muted fs-11">{{ formatNumber(s.sessions) }}</td>
-                    <td class="text-end fw-700 text-dark fs-11">{{ formatNumber(s.pageViews) }}</td>
-                    <td class="text-end fw-700 text-emerald fs-11">{{ s.avgDuration }}</td>
+                    <td class="td-sno fit">{{ (sourcesPage - 1) * sourcesPageSize + i + 1 }}</td>
+                    <td class="fw-700 text-dark fs-11 grow">{{ s.source }}</td>
+                    <td class="text-end fw-700 text-primary fs-11 fit">{{ formatNumber(s.visitors) }}</td>
+                    <td class="text-end fw-600 text-muted fs-11 fit d-none d-xl-table-cell">{{ formatNumber(s.sessions) }}</td>
+                    <td class="text-end fw-700 text-dark fs-11 fit d-none d-xl-table-cell">{{ formatNumber(s.pageViews) }}</td>
+                    <td class="text-end fw-700 text-emerald fs-11 fit d-none d-xxl-table-cell">{{ s.avgDuration }}</td>
                   </tr>
                   <tr *ngIf="trafficSourcesList.length === 0">
                     <td colspan="6" class="text-center text-muted py-3 fs-11">No source breakdown data available</td>
@@ -426,21 +426,21 @@
           </div>
 
           <div class="table-responsive">
-            <table class="custom-dash-table align-middle mb-0">
+            <table class="custom-dash-table table-compact align-middle mb-0">
               <thead>
                 <tr>
-                  <th>City / State</th>
-                  <th>Country</th>
-                  <th class="text-end">Visitors</th>
-                  <th class="text-end">Share</th>
+                  <th class="grow">City / State</th>
+                  <th class="d-none d-xxl-table-cell fit">Country</th>
+                  <th class="text-end fit">Visitors</th>
+                  <th class="text-end fit d-none d-xxl-table-cell">Share</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let loc of locationsListProcessed">
-                  <td class="fw-700 text-dark fs-11"><i class="fas fa-map-marker-alt text-danger me-1 fs-10"></i>{{ loc.city }}, {{ loc.state }}</td>
-                  <td class="fs-10 text-muted">{{ loc.country }}</td>
-                  <td class="text-end fw-700 text-dark fs-11">{{ formatNumber(loc.count) }}</td>
-                  <td class="text-end fw-700 text-emerald fs-11">{{ loc.pct }}%</td>
+                  <td class="fw-700 text-dark fs-11 grow text-truncate" style="max-width: 110px;"><i class="fas fa-map-marker-alt text-danger me-1 fs-10"></i>{{ loc.city }}, {{ loc.state }}</td>
+                  <td class="fs-10 text-muted d-none d-xxl-table-cell fit">{{ loc.country }}</td>
+                  <td class="text-end fw-700 text-dark fs-11 fit">{{ formatNumber(loc.count) }}</td>
+                  <td class="text-end fw-700 text-emerald fs-11 fit d-none d-xxl-table-cell">{{ loc.pct }}%</td>
                 </tr>
                 <tr *ngIf="locationsListProcessed.length === 0">
                   <td colspan="4" class="text-center text-muted py-3 fs-11">No location tracking data available</td>

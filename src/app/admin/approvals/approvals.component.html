@@ -168,24 +168,24 @@
         <table class="custom-dash-table align-middle mb-0">
           <thead>
             <tr>
-              <th class="th-sno">#</th>
-              <th>User Profile</th>
-              <th>Contact &amp; Mobile</th>
-              <th>Role</th>
-              <th>Sponsor Details</th>
-              <th>Registered Date</th>
-              <th>Account Status</th>
-              <th>KYC Status</th>
-              <th class="text-end">Actions</th>
+              <th class="th-sno fit">#</th>
+              <th class="grow">User Profile</th>
+              <th class="fit">Contact &amp; Mobile</th>
+              <th class="fit">Role</th>
+              <th class="fit d-none d-xl-table-cell">Sponsor Details</th>
+              <th class="fit d-none d-xl-table-cell">Registered Date</th>
+              <th class="fit">Account Status</th>
+              <th class="fit d-none d-xl-table-cell">KYC Status</th>
+              <th class="text-end fit">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let u of pagedUsers; let i = index">
               <!-- S.No -->
-              <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
+              <td class="td-sno fit">{{ (page - 1) * pageSize + i + 1 }}</td>
 
               <!-- Profile -->
-              <td>
+              <td class="grow">
                 <div class="d-flex align-items-center gap-2">
                   <div class="user-avatar-circle"
                     [class.bg-blue-avatar]="getUserType(u)==='Customer'"
@@ -204,7 +204,7 @@
               </td>
 
               <!-- Contact & Mobile -->
-              <td>
+              <td class="fit text-nowrap">
                 <div class="fs-11.5 fw-600 text-dark d-flex align-items-center gap-1">
                   <a [href]="'tel:' + u.mobile_no" class="text-dark text-decoration-none" title="Call">
                     <i class="fas fa-phone-alt text-emerald me-1"></i>{{ u.mobile_no }}
@@ -219,7 +219,7 @@
               </td>
 
               <!-- Role -->
-              <td>
+              <td class="fit text-nowrap">
                 <span class="chip-role"
                   [class.role-customer]="getUserType(u)==='Customer'"
                   [class.role-associate]="getUserType(u)==='Associate'"
@@ -231,20 +231,20 @@
               </td>
 
               <!-- Sponsor -->
-              <td>
+              <td class="fit d-none d-xl-table-cell text-nowrap">
                 <div class="fs-11.5 fw-600 text-dark text-truncate" style="max-width: 140px;" *ngIf="u.sponsor_name" [title]="u.sponsor_name">{{ u.sponsor_name }}</div>
                 <div class="text-muted fs-10.5" *ngIf="u.sponsor_code">Code: {{ u.sponsor_code }}</div>
                 <span class="fs-11 text-muted" *ngIf="!u.sponsor_name && !u.sponsor_code">Direct / None</span>
               </td>
 
               <!-- Registered Date -->
-              <td>
+              <td class="fit d-none d-xl-table-cell text-nowrap">
                 <div class="fs-11 text-dark fw-600">{{ u.registered_at | date:'dd MMM yyyy' }}</div>
                 <div class="fs-10 text-muted">{{ u.registered_at | date:'hh:mm a' }}</div>
               </td>
 
               <!-- Account Status -->
-              <td>
+              <td class="fit text-nowrap">
                 <span class="chip"
                   [class.chip-warn]="u.account_status==='Pending'"
                   [class.chip-blue]="u.account_status==='InfoRequested'"
@@ -255,7 +255,7 @@
               </td>
 
               <!-- KYC Status -->
-              <td>
+              <td class="fit d-none d-xl-table-cell text-nowrap">
                 <span class="chip"
                   [class.chip-ok]="u.enrollment_status==='Completed' || u.enrollment_status==='Submitted'"
                   [class.chip-warn]="u.enrollment_status==='Pending' || !u.enrollment_status">
@@ -264,7 +264,7 @@
               </td>
 
               <!-- Actions (24px square buttons) -->
-              <td class="text-end">
+              <td class="text-end fit">
                 <div class="actions-cell justify-content-end">
                   <!-- 1. View KYC Profile -->
                   <button type="button" class="ibtn ibtn-view" (click)="openDetailModal(u)" title="View KYC Profile &amp; Documents">

@@ -100,12 +100,12 @@
             <tr>
               <th class="grow"><button type="button" class="sort-btn" (click)="sort('plot_size')">Plot Size</button></th>
               <th class="fit text-end"><button type="button" class="sort-btn" (click)="sort('plot_price')">Plot Price</button></th>
-              <th class="fit text-end"><button type="button" class="sort-btn" (click)="sort('down_payment')">Down Payment</button></th>
+              <th class="fit text-end d-none d-xl-table-cell"><button type="button" class="sort-btn" (click)="sort('down_payment')">Down Payment</button></th>
               <th class="fit text-center"><button type="button" class="sort-btn" (click)="sort('interest_rate')">Rate</button></th>
               <th class="fit text-center"><button type="button" class="sort-btn" (click)="sort('tenure_months')">Tenure</button></th>
               <th class="fit text-end"><button type="button" class="sort-btn" (click)="sort('monthly_emi')">Monthly EMI</button></th>
               <th class="fit text-center">Status</th>
-              <th class="fit text-center"><button type="button" class="sort-btn" (click)="sort('created_at')">Created</button></th>
+              <th class="fit text-center d-none d-xxl-table-cell"><button type="button" class="sort-btn" (click)="sort('created_at')">Created</button></th>
               <th class="fit text-end">Actions</th>
             </tr>
           </thead>
@@ -113,12 +113,12 @@
             <tr *ngFor="let plan of plans">
               <td class="grow"><strong>{{ plan.plot_size }}</strong></td>
               <td class="fit text-end">{{ money(plan.plot_price) | currency:'INR':'symbol':'1.0-0' }}</td>
-              <td class="fit text-end">{{ money(plan.down_payment) | currency:'INR':'symbol':'1.0-0' }}</td>
+              <td class="fit text-end d-none d-xl-table-cell">{{ money(plan.down_payment) | currency:'INR':'symbol':'1.0-0' }}</td>
               <td class="fit text-center">{{ plan.interest_rate }}%</td>
               <td class="fit text-center">{{ plan.tenure_months }} mo</td>
               <td class="fit text-end"><strong>{{ money(plan.monthly_emi) | currency:'INR':'symbol':'1.0-0' }}</strong></td>
               <td class="fit text-center"><span class="status-pill" [class.status-muted]="!plan.is_active">{{ plan.is_active ? 'Active' : 'Inactive' }}</span></td>
-              <td class="fit text-center">{{ plan.created_at | date:'dd MMM yyyy' }}</td>
+              <td class="fit text-center d-none d-xxl-table-cell">{{ plan.created_at | date:'dd MMM yyyy' }}</td>
               <td class="fit text-end">
                 <button type="button" class="icon-btn" title="Edit EMI plan" aria-label="Edit EMI plan" (click)="editPlan(plan)">
                   <i class="fas fa-edit"></i>
