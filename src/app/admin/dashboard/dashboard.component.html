@@ -289,13 +289,9 @@
               </div>
             </div>
 
-            <!-- Team Members Under this Associate -->
-            <div class="team-subbranch ps-2.5 mt-0.5 border-start-dashed">
-              <div *ngIf="(!assoc.team_members || assoc.team_members.length === 0)" class="fs-9.5 text-muted ps-1.5 py-0.5 fst-italic">
-                <i class="fas fa-info-circle me-1"></i>No direct team members enrolled under this associate.
-              </div>
-              
-              <div class="d-flex flex-wrap gap-1 mt-0.5" *ngIf="assoc.team_members && assoc.team_members.length > 0">
+            <!-- Team Members Under this Associate (Only shown when members exist) -->
+            <div class="team-subbranch ps-2.5 mt-0.5 border-start-dashed" *ngIf="assoc.team_members && assoc.team_members.length > 0">
+              <div class="d-flex flex-wrap gap-1 mt-0.5">
                 <div class="tm-chip-badge cursor-pointer"
                      *ngFor="let tm of assoc.team_members.slice(0, 4)"
                      (click)="onTeamMemberNodeClick(tm)"
@@ -321,10 +317,10 @@
         </div>
 
         <div class="d-flex align-items-center justify-content-between pt-1.5 border-top mt-auto">
-          <span class="fs-9.5 text-muted">
+          <span class="fs-9.5 text-muted text-nowrap">
             <i class="fas fa-info-circle me-1"></i>Click any node to navigate to records
           </span>
-          <button type="button" class="btn btn-link btn-xs text-emerald fw-700 text-decoration-none p-0 fs-10" (click)="toggleTreeExpand()">
+          <button type="button" class="btn btn-link btn-xs text-emerald fw-700 text-decoration-none p-0 fs-10 text-nowrap" (click)="toggleTreeExpand()">
             Expand Complete Tree View →
           </button>
         </div>
@@ -365,10 +361,10 @@
         </div>
 
         <div class="d-flex align-items-center justify-content-between pt-1.5 border-top mt-auto">
-          <span class="fs-9.5 text-muted">
-            <i class="fas fa-bolt text-warning me-1"></i>Direct ERP Management Shortcuts
+          <span class="fs-9.5 text-muted text-nowrap">
+            <i class="fas fa-bolt text-warning me-1"></i>Direct ERP Shortcuts
           </span>
-          <span class="fs-9.5 fw-700 text-primary">6 Active Modules</span>
+          <span class="fs-9.5 fw-700 text-primary text-nowrap">6 Workflows Active</span>
         </div>
       </div>
     </div>

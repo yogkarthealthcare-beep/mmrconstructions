@@ -173,9 +173,9 @@ export class AdminDashboardComponent implements OnInit {
       color: '#166534',
       borderAccent: '#16a34a',
       badgeText: 'Ready for Sale',
-      badgeClass: 'badge-green',
+      badgeClass: 'badge-emerald',
       route: '/admin/sales-map',
-      actionText: 'Interactive Sales Map →',
+      actionText: 'Sales Map →',
       description: 'Vacant plots across all active sites'
     },
     {
