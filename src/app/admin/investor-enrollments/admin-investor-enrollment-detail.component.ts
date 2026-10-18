@@ -40,12 +40,12 @@ import Swal from 'sweetalert2';
       line-height: 1;
     }
     .btn-save-erp {
-      background: var(--clr-primary-dk, #0f3d27) !important;
+      background: var(--grad-green, linear-gradient(135deg, #0f3d27 0%, #2e7d52 100%)) !important;
       color: #fff !important;
-      border: 1px solid var(--clr-primary-dk, #0f3d27) !important;
+      border: none !important;
     }
     .btn-save-erp:hover {
-      background: #072a17 !important;
+      filter: brightness(1.08);
       color: #fff !important;
     }
     .field label {
