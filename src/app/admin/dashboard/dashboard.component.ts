@@ -570,4 +570,25 @@ export class AdminDashboardComponent implements OnInit {
       this.router.navigate([qa.route]);
     }
   }
+
+  getInitials(name: string): string {
+    if (!name) return 'MM';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  getKpiColorClass(id: string): string {
+    switch (id) {
+      case 'associates': return 's-amber';
+      case 'team_members': return 's-indigo';
+      case 'customers': return 's-blue';
+      case 'investors': return 's-purple';
+      case 'bookings': return 's-emerald';
+      case 'plots_sold': return 's-orange';
+      case 'available_plots': return 's-green';
+      case 'revenue': return 's-teal';
+      default: return 's-blue';
+    }
+  }
 }
