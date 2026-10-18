@@ -2,15 +2,92 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-investor-enrollment-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
   templateUrl: './admin-investor-enrollment-detail.component.html',
-  styleUrls: ['../../investor/investor-enrollment/investor-enrollment.component.css']
+  styleUrls: ['../../investor/investor-enrollment/investor-enrollment.component.css'],
+  styles: [`
+    .admin-detail-shell {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .admin-top-bar {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 6px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-xs {
+      height: 26px !important;
+      min-height: 26px !important;
+      padding: 0 10px !important;
+      font-size: 11.5px !important;
+      font-weight: 600;
+      border-radius: 5px !important;
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
+    }
+    .btn-save-erp {
+      background: #0f3d27;
+      color: #fff;
+      border: 1px solid #0f3d27;
+    }
+    .btn-save-erp:hover {
+      background: #072a17;
+      color: #fff;
+    }
+    .field label {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: #475569 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.02em !important;
+    }
+    .field input, .field select, .field textarea {
+      font-size: 11.5px !important;
+      border-radius: 4px !important;
+    }
+    .field input[type="text"], .field input[type="date"], .field input[type="number"], .field input[type="tel"], .field input[type="email"] {
+      height: 26px !important;
+      padding: 2px 6px !important;
+    }
+    .nominee-table th {
+      font-size: 10.5px !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      background: #f8fafc !important;
+      padding: 4px 8px !important;
+    }
+    .nominee-table td {
+      padding: 4px 6px !important;
+      font-size: 11.5px !important;
+    }
+    .nominee-table td input {
+      height: 26px !important;
+      font-size: 11.5px !important;
+      padding: 2px 6px !important;
+    }
+    .badge-status-erp {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+  `]
 })
 export class AdminInvestorEnrollmentDetailComponent implements OnInit {
   private fb = inject(FormBuilder);

@@ -1,26 +1,32 @@
-<div class="pg-header investor-head mb-4">
-  <div class="d-flex align-items-center gap-3">
+<div class="pg-header investor-head mb-2.5">
+  <div class="d-flex align-items-center gap-2">
     <div class="header-icon-badge">
       <i class="fas fa-user-tie"></i>
     </div>
     <div>
-      <h4 class="mb-0">Investor Management</h4>
-      <p class="mb-0">Manage profiles displayed in Our Investors.</p>
+      <h4 class="mb-0 fs-14 fw-700 text-dark">Investor Profiles</h4>
+      <p class="mb-0 fs-11 text-muted">Manage executive investor profiles showcased on the public portal.</p>
     </div>
   </div>
-  <button class="btn btn-green add-btn" (click)="open()"><i class="fas fa-plus me-2"></i>Add Investor</button>
+  <button class="btn btn-green add-btn" (click)="open()" title="Add New Investor" aria-label="Add New Investor">
+    <i class="fas fa-plus me-1.5"></i>Add Investor
+  </button>
 </div>
 
-<div class="alert alert-success" *ngIf="message"><i class="fas fa-check-circle me-2"></i>{{message}}</div>
-<div class="alert alert-danger" *ngIf="error&&!showForm"><i class="fas fa-exclamation-circle me-2"></i>{{error}}</div>
+<div class="alert alert-success py-1.5 px-3 fs-12 mb-2" *ngIf="message">
+  <i class="fas fa-check-circle me-1.5"></i>{{message}}
+</div>
+<div class="alert alert-danger py-1.5 px-3 fs-12 mb-2" *ngIf="error&&!showForm">
+  <i class="fas fa-exclamation-circle me-1.5"></i>{{error}}
+</div>
 
 <div class="panel-card">
-  <div class="loading text-center py-5" *ngIf="loading">
-    <span class="spinner-border text-success"></span>
-    <p class="text-muted fs-12 mt-2 mb-0">Loading investor profiles...</p>
+  <div class="loading text-center py-4" *ngIf="loading">
+    <span class="spinner-border spinner-border-sm text-success me-2"></span>
+    <span class="text-muted fs-12">Loading investor profiles...</span>
   </div>
   
-  <div class="empty text-center py-5" *ngIf="!loading && !rows.length">
+  <div class="empty text-center py-4" *ngIf="!loading && !rows.length">
     <i class="fas fa-users-slash fs-2 text-muted mb-2"></i>
     <p class="text-muted fs-12 mb-0">No investors added yet.</p>
   </div>
@@ -34,51 +40,53 @@
       <table class="table align-middle custom-dash-table mb-0">
         <thead>
           <tr>
-            <th class="th-sno">#</th>
-            <th>Profile</th>
-            <th>Name &amp; Email</th>
-            <th>Contact</th>
-            <th class="text-center">Order</th>
-            <th class="text-center">Status</th>
-            <th class="text-end">Actions</th>
+            <th class="th-sno fit">#</th>
+            <th class="fit text-center">Photo</th>
+            <th class="grow">Investor Details</th>
+            <th class="fit">Contact</th>
+            <th class="fit text-center">Order</th>
+            <th class="fit text-center">Status</th>
+            <th class="fit text-end pe-3">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of pagedRows; let i = index">
-            <td class="td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-            <td>
+            <td class="td-sno fit">{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td class="fit text-center">
               <img [src]="row.profile_image_url || 'assets/images/user-placeholder.png'"
                    [alt]="row.name"
                    class="investor-avatar"
                    onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 24 24\' fill=\'%23059669\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M12 14c-6.1 0-8 4-8 4v2h16v-2s-1.9-4-8-4z\'/></svg>'">
             </td>
-            <td>
-              <div class="fw-700 text-dark fs-12">{{ row.name }}</div>
-              <div class="fs-10 text-muted"><i class="fas fa-envelope me-1 text-gold"></i>{{ row.email || 'No email linked' }}</div>
+            <td class="grow">
+              <div class="fw-700 text-dark fs-12 line-clamp-1" [title]="row.name">{{ row.name }}</div>
+              <div class="fs-10 text-muted line-clamp-1" [title]="row.email || 'No email linked'">
+                <i class="fas fa-envelope me-1 text-gold"></i>{{ row.email || 'No email linked' }}
+              </div>
             </td>
-            <td>
+            <td class="fit text-nowrap">
               <div class="fs-11 text-dark fw-600">
                 <i class="fas fa-phone-alt me-1 text-emerald fs-10" *ngIf="row.mobile_number"></i>{{ row.mobile_number || '—' }}
               </div>
             </td>
-            <td class="text-center">
-              <span class="badge bg-light text-dark border fw-700 px-2.5 py-1">{{ row.display_order }}</span>
+            <td class="fit text-center">
+              <span class="badge bg-light text-dark border fw-700 px-2 py-0.5 fs-10">{{ row.display_order }}</span>
             </td>
-            <td class="text-center">
+            <td class="fit text-center">
               <span [class.sbadge-green]="row.is_active" [class.sbadge-red]="!row.is_active" class="sbadge">
                 {{ row.is_active ? 'Active' : 'Inactive' }}
               </span>
             </td>
-            <td class="text-end">
-              <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
-                <button class="btn btn-outline-primary btn-xs" (click)="open(row)" title="Edit Profile">
-                  <i class="fas fa-user-edit me-1"></i>Edit Profile
+            <td class="fit text-end pe-3 text-nowrap">
+              <div class="d-inline-flex align-items-center gap-1 justify-content-end">
+                <button class="ibtn ibtn-edit" (click)="open(row)" title="Edit Profile" aria-label="Edit Profile">
+                  <i class="fas fa-pen"></i>
                 </button>
-                <button class="icon-btn" (click)="toggle(row)" [title]="row.is_active ? 'Deactivate' : 'Activate'">
-                  <i [class]="row.is_active ? 'fas fa-toggle-on text-success fs-16' : 'fas fa-toggle-off text-muted fs-16'"></i>
+                <button class="ibtn ibtn-toggle" (click)="toggle(row)" [title]="row.is_active ? 'Deactivate' : 'Activate'" [attr.aria-label]="row.is_active ? 'Deactivate' : 'Activate'">
+                  <i [class]="row.is_active ? 'fas fa-toggle-on text-success' : 'fas fa-toggle-off text-muted'"></i>
                 </button>
-                <button class="icon-btn danger" (click)="remove(row)" title="Delete">
-                  <i class="fas fa-trash text-danger"></i>
+                <button class="ibtn ibtn-danger" (click)="remove(row)" title="Delete Investor" aria-label="Delete Investor">
+                  <i class="fas fa-trash-alt"></i>
                 </button>
               </div>
             </td>
@@ -99,88 +107,103 @@
   </app-admin-pagination>
 </div>
 
+<!-- Modal Form -->
 <div class="modal-bg" *ngIf="showForm" (click)="showForm=false; showDropdown=false">
   <form class="investor-modal" (click)="$event.stopPropagation()" (ngSubmit)="save()">
-    <h5>{{editing ? 'Edit Profile' : 'Add Investor'}}</h5>
-    <div class="preview">
-      <img *ngIf="preview" [src]="preview" alt="Preview">
-      <i *ngIf="!preview" class="fas fa-user"></i>
+    <div class="investor-modal-header d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-user-tie text-emerald fs-13"></i>
+        <h6 class="mb-0 fs-13 fw-700 text-dark">{{editing ? 'Edit Investor Profile' : 'Add New Investor'}}</h6>
+      </div>
+      <button type="button" class="btn-close-compact" (click)="showForm=false; showDropdown=false" title="Close" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
-    <!-- Searchable Registered Investor Dropdown for Add Mode -->
-    <div class="position-relative mb-2" *ngIf="!editing">
-      <label class="form-label fw-bold fs-12 mb-1">Select Registered Investor *</label>
-      <div class="input-group">
-        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
-        <input class="form-control border-start-0"
-               name="searchInvestor"
-               [(ngModel)]="investorSearchTerm"
-               (focus)="showDropdown = true"
-               (input)="showDropdown = true"
-               placeholder="Search by Sponsor ID or Investor Name..."
-               autocomplete="off">
-        <button type="button" class="btn btn-outline-secondary" (click)="showDropdown = !showDropdown">
-          <i class="fas" [ngClass]="showDropdown ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-        </button>
+    <div class="investor-modal-body">
+      <div class="preview mb-2">
+        <img *ngIf="preview" [src]="preview" alt="Preview">
+        <i *ngIf="!preview" class="fas fa-user"></i>
       </div>
 
-      <!-- Dropdown Results -->
-      <div class="dropdown-menu show w-100 shadow-sm border mt-1"
-           style="max-height: 220px; overflow-y: auto; z-index: 2100; display: block;"
-           *ngIf="showDropdown">
-        <div *ngIf="filteredRegisteredInvestors.length === 0" class="p-2 text-muted fs-12 text-center">
-          No registered investors found.
+      <!-- Searchable Registered Investor Dropdown for Add Mode -->
+      <div class="position-relative mb-2" *ngIf="!editing">
+        <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Select Registered Investor *</label>
+        <div class="input-group search-ig-xs">
+          <span class="input-group-text bg-light border-end-0 py-0 px-2"><i class="fas fa-search text-muted fs-11"></i></span>
+          <input class="form-control f-input border-start-0"
+                 name="searchInvestor"
+                 [(ngModel)]="investorSearchTerm"
+                 (focus)="showDropdown = true"
+                 (input)="showDropdown = true"
+                 placeholder="Search by Sponsor ID or Name..."
+                 autocomplete="off">
+          <button type="button" class="btn btn-outline-secondary btn-dd-toggle" (click)="showDropdown = !showDropdown" title="Toggle List" aria-label="Toggle List">
+            <i class="fas fs-10" [ngClass]="showDropdown ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          </button>
         </div>
-        <button type="button"
-                class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between text-start"
-                *ngFor="let inv of filteredRegisteredInvestors"
-                (click)="selectInvestor(inv)">
-          <div>
-            <div class="fw-bold fs-13 text-dark">{{ inv.full_name }}</div>
-            <div class="fs-11 text-muted">
-              <span class="badge bg-secondary me-1">Sponsor: {{ inv.sponsor_invite_code || 'MMR00001' }}</span>
-              <span>{{ inv.mobile_number || inv.email }}</span>
-            </div>
+
+        <!-- Dropdown Results -->
+        <div class="dropdown-menu show w-100 shadow-sm border mt-1"
+             style="max-height: 200px; overflow-y: auto; z-index: 2100; display: block;"
+             *ngIf="showDropdown">
+          <div *ngIf="filteredRegisteredInvestors.length === 0" class="p-2 text-muted fs-11 text-center">
+            No registered investors found.
           </div>
-          <span class="badge" [ngClass]="inv.profile_picture_url ? 'bg-success' : 'bg-warning text-dark'">
-            {{ inv.profile_picture_url ? 'Photo Added' : 'No Photo' }}
-          </span>
-        </button>
+          <button type="button"
+                  class="dropdown-item py-1.5 px-2.5 border-bottom d-flex align-items-center justify-content-between text-start"
+                  *ngFor="let inv of filteredRegisteredInvestors"
+                  (click)="selectInvestor(inv)">
+            <div>
+              <div class="fw-700 fs-12 text-dark">{{ inv.full_name }}</div>
+              <div class="fs-10 text-muted">
+                <span class="badge bg-secondary me-1 py-0 px-1">Sponsor: {{ inv.sponsor_invite_code || 'MMR00001' }}</span>
+                <span>{{ inv.mobile_number || inv.email }}</span>
+              </div>
+            </div>
+            <span class="badge fs-9 py-0.5 px-1.5" [ngClass]="inv.profile_picture_url ? 'bg-success' : 'bg-warning text-dark'">
+              {{ inv.profile_picture_url ? 'Photo Added' : 'No Photo' }}
+            </span>
+          </button>
+        </div>
       </div>
-      <div style="font-size:11px; color:#666; margin-top: 4px;">
-        <i class="fas fa-info-circle text-primary me-1"></i> Search and select by Sponsor ID or Name.
+
+      <!-- Edit Name input -->
+      <div *ngIf="editing" class="mb-2">
+        <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Investor Name *</label>
+        <input class="form-control f-input" name="name" [(ngModel)]="form.name" required placeholder="Full Name">
       </div>
-    </div>
 
-    <!-- Edit Name input -->
-    <div *ngIf="editing" class="mb-2">
-      <label class="form-label fw-bold fs-12 mb-1">Investor Name *</label>
-      <input class="form-control" name="name" [(ngModel)]="form.name" required>
-    </div>
-
-    <!-- Profile Photo Upload -->
-    <div class="mb-2">
-      <label class="form-label fw-bold fs-12 mb-1">Profile Photo {{ (editing || preview) ? '' : '*' }}</label>
-      <input class="form-control" type="file" accept="image/jpeg,image/png,image/webp" (change)="choose($event)">
-      <div style="font-size:11px; color:#666; margin-top: 4px;">
-        <i class="fas fa-camera text-gold me-1"></i> Upload profile photo (JPG, PNG or WEBP).
+      <!-- Profile Photo Upload -->
+      <div class="mb-2">
+        <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Profile Photo {{ (editing || preview) ? '' : '*' }}</label>
+        <input class="form-control f-input" type="file" accept="image/jpeg,image/png,image/webp" (change)="choose($event)">
+        <div class="fs-10 text-muted mt-0.5">
+          <i class="fas fa-info-circle text-gold me-1"></i>JPG, PNG or WEBP format.
+        </div>
       </div>
+
+      <div class="row g-2 mb-2">
+        <div class="col-6">
+          <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Display Order</label>
+          <input class="form-control f-input" type="number" name="order" [(ngModel)]="form.display_order">
+        </div>
+        <div class="col-6 d-flex align-items-center pt-3">
+          <label class="check d-flex align-items-center gap-1.5 mb-0 fs-12 text-dark fw-600 cursor-pointer">
+            <input type="checkbox" name="active" [(ngModel)]="form.is_active"> Active on Portal
+          </label>
+        </div>
+      </div>
+
+      <div class="alert alert-danger py-1 px-2.5 fs-11 mb-2" *ngIf="error">{{error}}</div>
     </div>
 
-    <div class="mb-2">
-      <label class="form-label fw-bold fs-12 mb-1">Display Order</label>
-      <input class="form-control" type="number" name="order" [(ngModel)]="form.display_order">
-    </div>
-
-    <label class="check">
-      <input type="checkbox" name="active" [(ngModel)]="form.is_active"> Active
-    </label>
-
-    <div class="alert alert-danger mt-2" *ngIf="error">{{error}}</div>
-
-    <div class="actions">
-      <button type="button" class="btn btn-light" (click)="showForm=false; showDropdown=false">Cancel</button>
-      <button class="btn btn-green" [disabled]="saving">{{saving?'Saving...':'Save Profile'}}</button>
+    <div class="investor-modal-footer d-flex align-items-center justify-content-end gap-1.5">
+      <button type="button" class="btn btn-light btn-xs-modal" (click)="showForm=false; showDropdown=false">Cancel</button>
+      <button type="submit" class="btn btn-green btn-xs-modal" [disabled]="saving">
+        <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+        {{saving ? 'Saving...' : 'Save Profile'}}
+      </button>
     </div>
   </form>
 </div>

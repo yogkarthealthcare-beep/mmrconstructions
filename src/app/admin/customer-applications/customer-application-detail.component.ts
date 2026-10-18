@@ -194,7 +194,7 @@ import Swal from 'sweetalert2';
               <form [formGroup]="officeForm" (ngSubmit)="updateOfficeUse()">
                 
                 <div class="mb-2">
-                  <label class="form-label fs-10 fw-700 text-muted mb-0.5 text-uppercase">Application Status</label>
+                  <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Application Status</label>
                   <select class="f-select w-100" formControlName="applicationStatus">
                     <option value="Pending">Pending</option>
                     <option value="Approved">Approved (Verified Customer)</option>
@@ -204,12 +204,12 @@ import Swal from 'sweetalert2';
                 </div>
 
                 <div class="mb-2">
-                  <label class="form-label fs-10 fw-700 text-muted mb-0.5 text-uppercase">Verified By (Staff Name &amp; Code)</label>
+                  <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Verified By (Staff Name &amp; Code)</label>
                   <input type="text" class="f-input" formControlName="verifiedBy" placeholder="e.g. Ramesh Kumar (EMP-102)">
                 </div>
 
                 <div class="mb-2">
-                  <label class="form-label fs-10 fw-700 text-muted mb-0.5 text-uppercase">Payment Realization</label>
+                  <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Payment Realization</label>
                   <select class="f-select w-100" formControlName="paymentStatus">
                     <option value="">-- Select Status --</option>
                     <option value="Cleared">Cleared</option>
@@ -218,7 +218,7 @@ import Swal from 'sweetalert2';
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label fs-10 fw-700 text-muted mb-0.5 text-uppercase">Payment Status Date</label>
+                  <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Payment Status Date</label>
                   <input type="date" class="f-input" formControlName="paymentStatusDate">
                 </div>
 
@@ -287,7 +287,7 @@ import Swal from 'sweetalert2';
     .text-gold { color: #c9a84c !important; }
 
     .field-lbl {
-      font-size: 9.5px;
+      font-size: 11px !important;
       font-weight: 700;
       color: #64748b;
       text-transform: uppercase;

@@ -1,20 +1,50 @@
-<div class="sheet" id="printSection">
-  <!-- ============ HEADER ============ -->
-  <div class="company-header">
-    <div class="logo">MMR</div>
-    <div class="company-text">
-      <h1>M.M.R. CONSTRUCTION & DEVELOPERS PRIVATE LIMITED</h1>
-      <div class="sub">
-        <b>Head Office:</b> 05, Tribhuvan Khera, Sheshpur Nari &nbsp;|&nbsp;
-        <b>Corporate Office:</b> Unnao, Uttar Pradesh, India 209801<br>
-        <b>Ph No.</b> 9511119879 | 8429823067 &nbsp;|&nbsp;
-        <b>GST No.</b> 09AATCM6753A1Z5 &nbsp;|&nbsp; <b>CIN No.</b> U68200UP2025PTC229203
+<div class="admin-detail-shell">
+  <!-- Executive Top Bar (No Print) -->
+  <div class="admin-top-bar no-print">
+    <div class="d-flex align-items-center gap-2">
+      <a routerLink="/admin/investor-enrollments" class="btn btn-outline-secondary btn-xs" title="Back to Enrollments List" aria-label="Back to Enrollments List">
+        <i class="fas fa-arrow-left me-1"></i> Back
+      </a>
+      <div class="d-flex align-items-center gap-2">
+        <span class="fs-13 fw-700 text-dark">Investor Enrollment: {{ enrollmentForm.get('investorId')?.value || enrollmentForm.get('formNo')?.value || enrollmentId }}</span>
+        <span class="badge badge-status-erp" [ngClass]="{
+          'bg-success': enrollmentForm.get('appStatus')?.value === 'Approved',
+          'bg-warning text-dark': enrollmentForm.get('appStatus')?.value === 'Hold/Pending KYC' || !enrollmentForm.get('appStatus')?.value,
+          'bg-danger': enrollmentForm.get('appStatus')?.value === 'Rejected'
+        }">
+          {{ enrollmentForm.get('appStatus')?.value || 'Hold/Pending KYC' }}
+        </span>
       </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-1.5">
+      <button type="button" class="btn btn-outline-dark btn-xs" (click)="printPage()" title="Print Dossier" aria-label="Print Dossier">
+        <i class="fas fa-print me-1"></i> Print / PDF
+      </button>
+      <button type="button" class="btn btn-save-erp btn-xs" (click)="onSubmit()" [disabled]="enrollmentForm.invalid || submitting" title="Save Changes" aria-label="Save Changes">
+        <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+        <i *ngIf="!submitting" class="fas fa-save me-1"></i> {{ submitting ? 'Saving...' : 'Save Changes' }}
+      </button>
     </div>
   </div>
 
-  <form class="form-body" [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()">
-    <h2 class="form-title">Investor Enrollment Form (Admin View)</h2>
+  <div class="sheet" id="printSection">
+    <!-- ============ HEADER ============ -->
+    <div class="company-header">
+      <div class="logo">MMR</div>
+      <div class="company-text">
+        <h1>M.M.R. CONSTRUCTION & DEVELOPERS PRIVATE LIMITED</h1>
+        <div class="sub">
+          <b>Head Office:</b> 05, Tribhuvan Khera, Sheshpur Nari &nbsp;|&nbsp;
+          <b>Corporate Office:</b> Unnao, Uttar Pradesh, India 209801<br>
+          <b>Ph No.</b> 9511119879 | 8429823067 &nbsp;|&nbsp;
+          <b>GST No.</b> 09AATCM6753A1Z5 &nbsp;|&nbsp; <b>CIN No.</b> U68200UP2025PTC229203
+        </div>
+      </div>
+    </div>
+
+    <form class="form-body" [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()">
+      <h2 class="form-title">Investor Enrollment Form (Admin View)</h2>
 
     <div class="photo-box" title="Click to attach passport size photo" (click)="photoInput.click()">
       <ng-container *ngIf="photoDataUrl; else photoPlaceholder">
@@ -251,4 +281,5 @@
     Website: <a href="https://mmrconstructions.in/" target="_blank">https://mmrconstructions.in/</a> &nbsp;|&nbsp;
     Email: <a href="mailto:mmrconstructions&#64;hotmail.com">mmrconstructions&#64;hotmail.com</a>
   </footer>
+</div>
 </div>

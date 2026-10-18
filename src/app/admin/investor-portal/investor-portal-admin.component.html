@@ -1,64 +1,62 @@
-<div class="pg-header investor-portal-head mb-4">
-  <div class="d-flex align-items-center gap-3">
+<div class="pg-header investor-portal-head mb-2.5">
+  <div class="d-flex align-items-center gap-2">
     <div class="header-icon-badge">
       <i class="fas fa-briefcase"></i>
     </div>
     <div>
-      <h4 class="m-0 fw-bold">Investor Portal Management</h4>
-      <p class="text-muted m-0 small">Approve investors, process deposits, manage withdrawals, and inspect financial transactions</p>
+      <h4 class="m-0 fs-14 fw-700 text-dark">Investor Portal Management</h4>
+      <p class="text-muted m-0 fs-11">Approve investors, process deposits, manage withdrawals, and inspect financial transactions.</p>
     </div>
   </div>
 </div>
 
-<div *ngIf="message" class="alert alert-success alert-dismissible fade show mb-3">
-  <i class="fas fa-check-circle me-1"></i> {{ message }}
+<div *ngIf="message" class="alert alert-success alert-dismissible fade show py-1.5 px-3 fs-12 mb-2">
+  <i class="fas fa-check-circle me-1.5"></i> {{ message }}
 </div>
 
-<div *ngIf="error" class="alert alert-danger alert-dismissible fade show mb-3">
-  <i class="fas fa-exclamation-circle me-1"></i> {{ error }}
+<div *ngIf="error" class="alert alert-danger alert-dismissible fade show py-1.5 px-3 fs-12 mb-2">
+  <i class="fas fa-exclamation-circle me-1.5"></i> {{ error }}
 </div>
 
 <!-- Tabs Navigation -->
-<div class="card border-0 shadow-sm rounded-3 mb-3">
-  <div class="card-header bg-white p-2">
-    <ul class="nav nav-pills custom-admin-pills gap-1">
-      <li class="nav-item">
-        <button class="nav-link px-3 py-1.5 fs-12" [class.active]="activeTab === 'investors'" (click)="switchTab('investors')">
-          <i class="fas fa-users me-1"></i>Investor Accounts
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link px-3 py-1.5 fs-12" [class.active]="activeTab === 'deposits'" (click)="switchTab('deposits')">
-          <i class="fas fa-arrow-down-long me-1"></i>Deposits
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link px-3 py-1.5 fs-12" [class.active]="activeTab === 'withdrawals'" (click)="switchTab('withdrawals')">
-          <i class="fas fa-arrow-up-long me-1"></i>Withdrawals
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link px-3 py-1.5 fs-12" [class.active]="activeTab === 'transactions'" (click)="switchTab('transactions')">
-          <i class="fas fa-receipt me-1"></i>All Transactions
-        </button>
-      </li>
-    </ul>
-  </div>
+<div class="portal-nav-bar mb-2.5">
+  <ul class="nav nav-pills custom-admin-pills gap-1">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'investors'" (click)="switchTab('investors')">
+        <i class="fas fa-users me-1.5"></i>Investor Accounts
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'deposits'" (click)="switchTab('deposits')">
+        <i class="fas fa-arrow-down-long me-1.5"></i>Deposits
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'withdrawals'" (click)="switchTab('withdrawals')">
+        <i class="fas fa-arrow-up-long me-1.5"></i>Withdrawals
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab === 'transactions'" (click)="switchTab('transactions')">
+        <i class="fas fa-receipt me-1.5"></i>All Transactions
+      </button>
+    </li>
+  </ul>
 </div>
 
 <!-- Tab 1: Investors Accounts -->
-<div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'investors'">
-  <div class="card-header bg-white py-2 px-3">
+<div class="panel-card" *ngIf="activeTab === 'investors'">
+  <div class="table-filter-bar mb-2">
     <div class="row g-2 align-items-center">
       <div class="col-md-6 col-12">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light text-muted border-end-0"><i class="fas fa-search"></i></span>
-          <input type="text" class="form-control form-control-sm border-start-0 fs-12" [(ngModel)]="investorSearch" (keyup.enter)="loadData()" placeholder="Search investor by name, email, mobile, PAN..." />
-          <button class="btn btn-outline-secondary btn-sm fs-12 px-3" (click)="loadData()">Search</button>
+        <div class="input-group search-ig-xs">
+          <span class="input-group-text bg-light text-muted border-end-0 py-0 px-2"><i class="fas fa-search fs-11"></i></span>
+          <input type="text" class="form-control f-input border-start-0" [(ngModel)]="investorSearch" (keyup.enter)="loadData()" placeholder="Search investor by name, email, mobile, PAN..." />
+          <button class="btn btn-outline-secondary btn-search-xs" (click)="loadData()" title="Search" aria-label="Search">Search</button>
         </div>
       </div>
       <div class="col-md-4 col-12">
-        <select class="form-select form-select-sm fs-12" [(ngModel)]="investorStatusFilter" (change)="loadData()">
+        <select class="form-select f-select" [(ngModel)]="investorStatusFilter" (change)="loadData()">
           <option value="all">All Statuses</option>
           <option value="pending">Pending Approval</option>
           <option value="approved">Approved / Active</option>
@@ -68,9 +66,10 @@
     </div>
   </div>
 
-  <div class="card-body p-0">
-    <div *ngIf="loading" class="text-center py-5">
-      <div class="spinner-border text-success spinner-border-sm me-2"></div> Loading investors...
+  <div class="table-body p-0">
+    <div *ngIf="loading" class="text-center py-4">
+      <span class="spinner-border spinner-border-sm text-success me-2"></span>
+      <span class="text-muted fs-12">Loading investors...</span>
     </div>
 
     <div *ngIf="!loading">
@@ -82,14 +81,14 @@
           <table class="table-investors custom-dash-table align-middle mb-0">
             <thead>
               <tr>
-                <th class="ps-3 th-sno">#</th>
-                <th>Investor</th>
-                <th>Contact</th>
-                <th>PAN &amp; Bank</th>
-                <th class="text-end">Total Investment</th>
-                <th class="text-end">Available Bal</th>
-                <th class="text-center">Status</th>
-                <th class="text-end pe-3">Actions</th>
+                <th class="ps-2 th-sno fit">#</th>
+                <th class="grow">Investor</th>
+                <th class="fit">Contact</th>
+                <th class="fit">PAN &amp; Bank</th>
+                <th class="fit text-end">Total Investment</th>
+                <th class="fit text-end">Available Bal</th>
+                <th class="fit text-center">Status</th>
+                <th class="fit text-end pe-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -97,28 +96,28 @@
                   [class.row-disabled-free]="isFreeOrDisabled(inv)"
                   (click)="onRowClick(inv, $event)"
                   (dblclick)="onRowDblClick(inv, $event)">
-                <td class="ps-3 td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-                <td>
-                  <div class="fw-bold fs-13 text-dark text-truncate d-flex align-items-center gap-1" [title]="inv.full_name">
+                <td class="ps-2 td-sno fit">{{ (page - 1) * pageSize + i + 1 }}</td>
+                <td class="grow">
+                  <div class="fw-700 fs-12 text-dark line-clamp-1 d-flex align-items-center gap-1" [title]="inv.full_name">
                     <span>{{ inv.full_name }}</span>
                     <app-verified-badge [user]="inv" size="xs"></app-verified-badge>
                   </div>
-                  <div class="fs-11 text-muted text-truncate" [title]="inv.city + ', ' + inv.state">{{ inv.city }}, {{ inv.state }}</div>
+                  <div class="fs-10 text-muted line-clamp-1" [title]="inv.city + ', ' + inv.state">{{ inv.city }}, {{ inv.state }}</div>
                   <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-9 py-0 px-1 mt-0.5" *ngIf="isFreeOrDisabled(inv)">
                     Disabled / Free
                   </span>
                 </td>
-                <td>
-                  <div class="fs-12 text-truncate" [title]="inv.email">{{ inv.email }}</div>
-                  <div class="fs-11 text-muted">{{ inv.mobile_number }}</div>
+                <td class="fit text-nowrap">
+                  <div class="fs-11 text-dark line-clamp-1" [title]="inv.email">{{ inv.email }}</div>
+                  <div class="fs-10 text-muted">{{ inv.mobile_number }}</div>
                 </td>
-                <td>
-                  <div class="fs-12 text-truncate" [title]="'PAN: ' + (inv.pan_number || '-')">PAN: <strong class="text-dark">{{ inv.pan_number || '-' }}</strong></div>
-                  <div class="fs-11 text-muted text-truncate" [title]="(inv.bank_name || '-') + ' (' + (inv.account_number || '-') + ')'">{{ inv.bank_name || '-' }} ({{ inv.account_number || '-' }})</div>
+                <td class="fit text-nowrap">
+                  <div class="fs-11 line-clamp-1" [title]="'PAN: ' + (inv.pan_number || '-')">PAN: <strong class="text-dark">{{ inv.pan_number || '-' }}</strong></div>
+                  <div class="fs-10 text-muted line-clamp-1" [title]="(inv.bank_name || '-') + ' (' + (inv.account_number || '-') + ')'">{{ inv.bank_name || '-' }} ({{ inv.account_number || '-' }})</div>
                 </td>
-                <td class="fw-bold text-dark text-end fs-13">₹{{ inv.total_investment | number:'1.2-2' }}</td>
-                <td class="fw-bold text-success text-end fs-13">₹{{ inv.available_balance | number:'1.2-2' }}</td>
-                <td class="text-center">
+                <td class="fw-700 text-dark text-end fs-12 fit text-nowrap">₹{{ inv.total_investment | number:'1.2-2' }}</td>
+                <td class="fw-700 text-success text-end fs-12 fit text-nowrap">₹{{ inv.available_balance | number:'1.2-2' }}</td>
+                <td class="fit text-center">
                   <span class="status-pill-custom text-nowrap" [ngClass]="'status-' + (inv.status || 'pending').toLowerCase()">
                     <i [class]="{
                       'fas fa-clock': inv.status === 'pending',
@@ -128,16 +127,16 @@
                     {{ isFreeOrDisabled(inv) ? (inv.status || 'Disabled / Free') : inv.status }}
                   </span>
                 </td>
-                <td class="text-end pe-3 text-nowrap">
+                <td class="fit text-end pe-2 text-nowrap">
                   <div class="d-flex align-items-center justify-content-end gap-1" *ngIf="!isFreeOrDisabled(inv)">
-                    <button *ngIf="inv.status === 'approved' || inv.status === 'active'" class="action-btn-micro btn-outline-blue" title="Login as Investor" (click)="loginAsInvestor(inv)"><i class="fas fa-sign-in-alt"></i> Login</button>
-                    <button *ngIf="inv.status === 'pending'" class="action-btn-micro btn-approve-emerald" (click)="toggleInvestorStatus(inv, 'approved')"><i class="fas fa-check"></i> Approve</button>
-                    <button *ngIf="inv.status === 'pending'" class="action-btn-micro btn-reject-red" (click)="toggleInvestorStatus(inv, 'rejected')"><i class="fas fa-times"></i> Reject</button>
-                    <button *ngIf="inv.status === 'approved' || inv.status === 'active'" class="action-btn-micro btn-reject-red" (click)="toggleInvestorStatus(inv, 'inactive')"><i class="fas fa-ban"></i> Deactivate</button>
-                    <button *ngIf="inv.status === 'inactive' || inv.status === 'rejected'" class="action-btn-micro btn-approve-emerald" (click)="toggleInvestorStatus(inv, 'approved')"><i class="fas fa-check"></i> Activate</button>
+                    <button *ngIf="inv.status === 'approved' || inv.status === 'active'" class="ibtn ibtn-login" title="Login as Investor" aria-label="Login as Investor" (click)="loginAsInvestor(inv)"><i class="fas fa-sign-in-alt"></i></button>
+                    <button *ngIf="inv.status === 'pending'" class="ibtn ibtn-approve" title="Approve Investor" aria-label="Approve Investor" (click)="toggleInvestorStatus(inv, 'approved')"><i class="fas fa-check"></i></button>
+                    <button *ngIf="inv.status === 'pending'" class="ibtn ibtn-danger" title="Reject Investor" aria-label="Reject Investor" (click)="toggleInvestorStatus(inv, 'rejected')"><i class="fas fa-times"></i></button>
+                    <button *ngIf="inv.status === 'approved' || inv.status === 'active'" class="ibtn ibtn-danger" title="Deactivate Investor" aria-label="Deactivate Investor" (click)="toggleInvestorStatus(inv, 'inactive')"><i class="fas fa-ban"></i></button>
+                    <button *ngIf="inv.status === 'inactive' || inv.status === 'rejected'" class="ibtn ibtn-approve" title="Activate Investor" aria-label="Activate Investor" (click)="toggleInvestorStatus(inv, 'approved')"><i class="fas fa-check"></i></button>
                   </div>
                   <div *ngIf="isFreeOrDisabled(inv)">
-                    <span class="badge bg-light text-muted border fs-10 py-1 px-2" title="Disabled / Free Account">
+                    <span class="badge bg-light text-muted border fs-10 py-0.5 px-1.5" title="Disabled / Free Account">
                       <i class="fas fa-lock me-1"></i> Disabled
                     </span>
                   </div>
@@ -166,10 +165,11 @@
 </div>
 
 <!-- Tab 2: Deposits -->
-<div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'deposits'">
-  <div class="card-body p-0">
-    <div *ngIf="loading" class="text-center py-5">
-      <div class="spinner-border text-success spinner-border-sm me-2"></div> Loading deposits...
+<div class="panel-card" *ngIf="activeTab === 'deposits'">
+  <div class="table-body p-0">
+    <div *ngIf="loading" class="text-center py-4">
+      <span class="spinner-border spinner-border-sm text-success me-2"></span>
+      <span class="text-muted fs-12">Loading deposits...</span>
     </div>
 
     <div *ngIf="!loading">
@@ -181,35 +181,35 @@
           <table class="table-investors custom-dash-table align-middle mb-0">
             <thead>
               <tr>
-                <th class="ps-3 th-sno">#</th>
-                <th>Date</th>
-                <th>Investor</th>
-                <th class="text-end">Amount</th>
-                <th>Method</th>
-                <th>Txn Reference / UTR</th>
-                <th class="text-center">Proof</th>
-                <th class="text-center">Status</th>
-                <th class="text-end pe-3">Actions</th>
+                <th class="ps-2 th-sno fit">#</th>
+                <th class="fit">Date</th>
+                <th class="grow">Investor</th>
+                <th class="fit text-end">Amount</th>
+                <th class="fit">Method</th>
+                <th class="fit">Txn Reference / UTR</th>
+                <th class="fit text-center">Proof</th>
+                <th class="fit text-center">Status</th>
+                <th class="fit text-end pe-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let dep of pagedDeposits; let i = index">
-                <td class="ps-3 td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-                <td class="fs-11 text-muted text-nowrap">{{ dep.created_at | date:'dd MMM yyyy, h:mm a' }}</td>
-                <td>
-                  <div class="fw-bold fs-13 text-dark text-truncate" [title]="dep.investor_name">{{ dep.investor_name }}</div>
-                  <div class="fs-11 text-muted text-truncate" [title]="dep.investor_email">{{ dep.investor_email }}</div>
+                <td class="ps-2 td-sno fit">{{ (page - 1) * pageSize + i + 1 }}</td>
+                <td class="fs-11 text-muted text-nowrap fit">{{ dep.created_at | date:'dd MMM yyyy, h:mm a' }}</td>
+                <td class="grow">
+                  <div class="fw-700 fs-12 text-dark line-clamp-1" [title]="dep.investor_name">{{ dep.investor_name }}</div>
+                  <div class="fs-10 text-muted line-clamp-1" [title]="dep.investor_email">{{ dep.investor_email }}</div>
                 </td>
-                <td class="fw-bold text-success fs-13 text-end">₹{{ dep.amount | number:'1.2-2' }}</td>
-                <td class="fs-12 text-secondary">{{ dep.payment_method }}</td>
-                <td class="font-monospace fs-11 text-dark text-truncate" [title]="dep.transaction_reference">{{ dep.transaction_reference || 'N/A' }}</td>
-                <td class="text-center">
-                  <button *ngIf="dep.payment_screenshot_url" type="button" class="btn btn-sm btn-outline-info py-0 px-2 fs-11" (click)="openProofImage(dep.payment_screenshot_url)">
-                    <i class="fas fa-image me-1"></i>View
+                <td class="fw-700 text-success fs-12 text-end fit text-nowrap">₹{{ dep.amount | number:'1.2-2' }}</td>
+                <td class="fs-11 text-secondary fit text-nowrap">{{ dep.payment_method }}</td>
+                <td class="font-monospace fs-10 text-dark fit text-nowrap" [title]="dep.transaction_reference">{{ dep.transaction_reference || 'N/A' }}</td>
+                <td class="fit text-center">
+                  <button *ngIf="dep.payment_screenshot_url" type="button" class="ibtn ibtn-proof" (click)="openProofImage(dep.payment_screenshot_url)" title="View Proof Slip" aria-label="View Proof Slip">
+                    <i class="fas fa-image"></i>
                   </button>
                   <span *ngIf="!dep.payment_screenshot_url" class="text-muted fs-11">—</span>
                 </td>
-                <td class="text-center">
+                <td class="fit text-center">
                   <span class="status-pill-custom text-nowrap" [ngClass]="'status-' + (dep.status || 'pending').toLowerCase()">
                     <i [class]="{
                       'fas fa-clock': dep.status === 'pending',
@@ -219,10 +219,10 @@
                     {{ dep.status }}
                   </span>
                 </td>
-                <td class="text-end pe-3 text-nowrap">
+                <td class="fit text-end pe-2 text-nowrap">
                   <div *ngIf="dep.status === 'pending'" class="d-flex align-items-center justify-content-end gap-1">
-                    <button class="action-btn-micro btn-approve-emerald" (click)="openActionModal(dep, 'approve_deposit')"><i class="fas fa-check"></i> Approve</button>
-                    <button class="action-btn-micro btn-reject-red" (click)="openActionModal(dep, 'reject_deposit')"><i class="fas fa-times"></i> Reject</button>
+                    <button class="ibtn ibtn-approve" (click)="openActionModal(dep, 'approve_deposit')" title="Approve Deposit" aria-label="Approve Deposit"><i class="fas fa-check"></i></button>
+                    <button class="ibtn ibtn-danger" (click)="openActionModal(dep, 'reject_deposit')" title="Reject Deposit" aria-label="Reject Deposit"><i class="fas fa-times"></i></button>
                   </div>
                   <span *ngIf="dep.status !== 'pending'" class="text-muted fs-11"><i class="fas fa-lock me-1"></i>Processed</span>
                 </td>
@@ -241,7 +241,7 @@
         (pageSizeChange)="onPageSizeChange($event)">
       </app-admin-pagination>
 
-      <div *ngIf="!deposits.length" class="text-center text-muted py-5">
+      <div *ngIf="!deposits.length" class="text-center text-muted py-4">
         <i class="fas fa-inbox fs-2 text-muted mb-2"></i>
         <p class="mb-0 fs-12">No deposit requests recorded.</p>
       </div>
@@ -250,10 +250,11 @@
 </div>
 
 <!-- Tab 3: Withdrawals -->
-<div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'withdrawals'">
-  <div class="card-body p-0">
-    <div *ngIf="loading" class="text-center py-5">
-      <div class="spinner-border text-success spinner-border-sm me-2"></div> Loading withdrawals...
+<div class="panel-card" *ngIf="activeTab === 'withdrawals'">
+  <div class="table-body p-0">
+    <div *ngIf="loading" class="text-center py-4">
+      <span class="spinner-border spinner-border-sm text-success me-2"></span>
+      <span class="text-muted fs-12">Loading withdrawals...</span>
     </div>
 
     <div *ngIf="!loading">
@@ -265,29 +266,29 @@
           <table class="table-investors custom-dash-table align-middle mb-0">
             <thead>
               <tr>
-                <th class="ps-3 th-sno">#</th>
-                <th>Date</th>
-                <th>Investor</th>
-                <th class="text-end">Amount</th>
-                <th>Bank Details</th>
-                <th class="text-center">Status</th>
-                <th class="text-end pe-3">Actions</th>
+                <th class="ps-2 th-sno fit">#</th>
+                <th class="fit">Date</th>
+                <th class="grow">Investor</th>
+                <th class="fit text-end">Amount</th>
+                <th class="fit">Bank Details</th>
+                <th class="fit text-center">Status</th>
+                <th class="fit text-end pe-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let w of pagedWithdrawals; let i = index">
-                <td class="ps-3 td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-                <td class="fs-11 text-muted text-nowrap">{{ w.created_at | date:'dd MMM yyyy, h:mm a' }}</td>
-                <td>
-                  <div class="fw-bold fs-13 text-dark text-truncate" [title]="w.investor_name">{{ w.investor_name }}</div>
-                  <div class="fs-11 text-muted text-truncate">Avail Bal: ₹{{ w.current_balance | number:'1.2-2' }}</div>
+                <td class="ps-2 td-sno fit">{{ (page - 1) * pageSize + i + 1 }}</td>
+                <td class="fs-11 text-muted text-nowrap fit">{{ w.created_at | date:'dd MMM yyyy, h:mm a' }}</td>
+                <td class="grow">
+                  <div class="fw-700 fs-12 text-dark line-clamp-1" [title]="w.investor_name">{{ w.investor_name }}</div>
+                  <div class="fs-10 text-muted line-clamp-1">Avail: ₹{{ w.current_balance | number:'1.2-2' }}</div>
                 </td>
-                <td class="fw-bold text-dark fs-13 text-end">₹{{ w.amount | number:'1.2-2' }}</td>
-                <td>
-                  <div class="fs-12 text-truncate" [title]="w.bank_name">Bank: {{ w.bank_name }}</div>
-                  <div class="font-monospace fs-11 text-muted text-truncate" [title]="w.account_number + ' (' + w.ifsc_code + ')'">A/C: {{ w.account_number }} ({{ w.ifsc_code }})</div>
+                <td class="fw-700 text-dark fs-12 text-end fit text-nowrap">₹{{ w.amount | number:'1.2-2' }}</td>
+                <td class="fit text-nowrap">
+                  <div class="fs-11 line-clamp-1" [title]="w.bank_name">Bank: {{ w.bank_name }}</div>
+                  <div class="font-monospace fs-10 text-muted line-clamp-1" [title]="w.account_number + ' (' + w.ifsc_code + ')'">A/C: {{ w.account_number }} ({{ w.ifsc_code }})</div>
                 </td>
-                <td class="text-center">
+                <td class="fit text-center">
                   <span class="status-pill-custom text-nowrap" [ngClass]="'status-' + (w.status || 'pending').toLowerCase()">
                     <i [class]="{
                       'fas fa-clock': w.status === 'pending',
@@ -297,10 +298,10 @@
                     {{ w.status }}
                   </span>
                 </td>
-                <td class="text-end pe-3 text-nowrap">
+                <td class="fit text-end pe-2 text-nowrap">
                   <div *ngIf="w.status === 'pending'" class="d-flex align-items-center justify-content-end gap-1">
-                    <button class="action-btn-micro btn-approve-emerald" (click)="openActionModal(w, 'approve_withdrawal')"><i class="fas fa-check"></i> Approve</button>
-                    <button class="action-btn-micro btn-reject-red" (click)="openActionModal(w, 'reject_withdrawal')"><i class="fas fa-times"></i> Reject</button>
+                    <button class="ibtn ibtn-approve" (click)="openActionModal(w, 'approve_withdrawal')" title="Approve Withdrawal" aria-label="Approve Withdrawal"><i class="fas fa-check"></i></button>
+                    <button class="ibtn ibtn-danger" (click)="openActionModal(w, 'reject_withdrawal')" title="Reject Withdrawal" aria-label="Reject Withdrawal"><i class="fas fa-times"></i></button>
                   </div>
                   <span *ngIf="w.status !== 'pending'" class="text-muted fs-11"><i class="fas fa-lock me-1"></i>Processed</span>
                 </td>
@@ -319,7 +320,7 @@
         (pageSizeChange)="onPageSizeChange($event)">
       </app-admin-pagination>
 
-      <div *ngIf="!withdrawals.length" class="text-center text-muted py-5">
+      <div *ngIf="!withdrawals.length" class="text-center text-muted py-4">
         <i class="fas fa-inbox fs-2 text-muted mb-2"></i>
         <p class="mb-0 fs-12">No withdrawal requests recorded.</p>
       </div>
@@ -328,10 +329,11 @@
 </div>
 
 <!-- Tab 4: All Transactions -->
-<div class="card border-0 shadow-sm rounded-3" *ngIf="activeTab === 'transactions'">
-  <div class="card-body p-0">
-    <div *ngIf="loading" class="text-center py-5">
-      <div class="spinner-border text-success spinner-border-sm me-2"></div> Loading transaction log...
+<div class="panel-card" *ngIf="activeTab === 'transactions'">
+  <div class="table-body p-0">
+    <div *ngIf="loading" class="text-center py-4">
+      <span class="spinner-border spinner-border-sm text-success me-2"></span>
+      <span class="text-muted fs-12">Loading transaction log...</span>
     </div>
 
     <div *ngIf="!loading">
@@ -343,26 +345,26 @@
           <table class="table-investors custom-dash-table align-middle mb-0">
             <thead>
               <tr>
-                <th class="ps-3 th-sno">#</th>
-                <th>Date</th>
-                <th>Investor</th>
-                <th>Txn ID</th>
-                <th>Type</th>
-                <th class="text-end">Amount</th>
-                <th class="text-end pe-3">Status</th>
+                <th class="ps-2 th-sno fit">#</th>
+                <th class="fit">Date</th>
+                <th class="grow">Investor</th>
+                <th class="fit">Txn ID</th>
+                <th class="fit text-center">Type</th>
+                <th class="fit text-end">Amount</th>
+                <th class="fit text-end pe-2">Status</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let tx of pagedTransactions; let i = index">
-                <td class="ps-3 td-sno">{{ (page - 1) * pageSize + i + 1 }}</td>
-                <td class="fs-11 text-muted text-nowrap">{{ tx.created_at | date:'dd MMM yyyy, h:mm a' }}</td>
-                <td>
-                  <div class="fw-bold fs-13 text-dark text-truncate" [title]="tx.investor_name">{{ tx.investor_name }}</div>
-                  <div class="fs-11 text-muted text-truncate" [title]="tx.investor_email">{{ tx.investor_email }}</div>
+                <td class="ps-2 td-sno fit">{{ (page - 1) * pageSize + i + 1 }}</td>
+                <td class="fs-11 text-muted text-nowrap fit">{{ tx.created_at | date:'dd MMM yyyy, h:mm a' }}</td>
+                <td class="grow">
+                  <div class="fw-700 fs-12 text-dark line-clamp-1" [title]="tx.investor_name">{{ tx.investor_name }}</div>
+                  <div class="fs-10 text-muted line-clamp-1" [title]="tx.investor_email">{{ tx.investor_email }}</div>
                 </td>
-                <td class="font-monospace fs-11 text-dark text-truncate" [title]="tx.transaction_id">{{ tx.transaction_id }}</td>
-                <td>
-                  <span class="badge text-uppercase px-2 py-1 fs-10"
+                <td class="font-monospace fs-10 text-dark fit text-nowrap" [title]="tx.transaction_id">{{ tx.transaction_id }}</td>
+                <td class="fit text-center">
+                  <span class="badge text-uppercase px-1.5 py-0.5 fs-9"
                         [class.bg-success-subtle]="tx.type === 'deposit'"
                         [class.text-success]="tx.type === 'deposit'"
                         [class.bg-info-subtle]="tx.type === 'withdrawal'"
@@ -370,8 +372,8 @@
                     {{ tx.type }}
                   </span>
                 </td>
-                <td class="fw-bold text-dark fs-13 text-end">₹{{ tx.amount | number:'1.2-2' }}</td>
-                <td class="text-end pe-3">
+                <td class="fw-700 text-dark fs-12 text-end fit text-nowrap">₹{{ tx.amount | number:'1.2-2' }}</td>
+                <td class="text-end pe-2 fit text-nowrap">
                   <span class="status-pill-custom text-nowrap" [ngClass]="'status-' + (tx.status || 'pending').toLowerCase()">
                     <i [class]="{
                       'fas fa-clock': tx.status === 'pending',
@@ -396,7 +398,7 @@
         (pageSizeChange)="onPageSizeChange($event)">
       </app-admin-pagination>
 
-      <div *ngIf="!transactions.length" class="text-center text-muted py-5">
+      <div *ngIf="!transactions.length" class="text-center text-muted py-4">
         <i class="fas fa-receipt fs-2 text-muted mb-2"></i>
         <p class="mb-0 fs-12">No transactions recorded.</p>
       </div>
@@ -405,57 +407,59 @@
 </div>
 
 <!-- Action Modal for Admin Remarks -->
-<div class="modal fade show d-block" *ngIf="actionType" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-3">
-      <div class="modal-header" [class.bg-success-subtle]="actionType.includes('approve')" [class.bg-danger-subtle]="actionType.includes('reject')">
-        <h5 class="modal-title fw-bold" [class.text-success]="actionType.includes('approve')" [class.text-danger]="actionType.includes('reject')">
-          <i class="fas" [class.fa-check-circle]="actionType.includes('approve')" [class.fa-times-circle]="actionType.includes('reject')"></i>
+<div class="modal fade show d-block" *ngIf="actionType" tabindex="-1" style="background: rgba(0,0,0,0.55); z-index: 1050;">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+      <div class="modal-header py-2 px-3" [class.bg-success-subtle]="actionType.includes('approve')" [class.bg-danger-subtle]="actionType.includes('reject')">
+        <h6 class="modal-title fs-13 fw-700 m-0" [class.text-success]="actionType.includes('approve')" [class.text-danger]="actionType.includes('reject')">
+          <i class="fas me-1.5" [class.fa-check-circle]="actionType.includes('approve')" [class.fa-times-circle]="actionType.includes('reject')"></i>
           Confirm {{ actionType.replace('_', ' ') | uppercase }}
-        </h5>
-        <button type="button" class="btn-close" (click)="closeActionModal()"></button>
+        </h6>
+        <button type="button" class="btn-close-compact" (click)="closeActionModal()" title="Close" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div class="modal-body p-4">
-        <div class="bg-light p-3 rounded-2 mb-3 border">
-          <div class="d-flex justify-content-between mb-1">
-            <span class="text-muted small">Investor:</span>
-            <span class="fw-bold">{{ selectedItem?.investor_name || selectedItem?.full_name || 'N/A' }}</span>
+      <div class="modal-body p-3">
+        <div class="bg-light p-2.5 rounded-2 mb-2.5 border">
+          <div class="d-flex justify-content-between mb-1 fs-11">
+            <span class="text-muted">Investor:</span>
+            <span class="fw-700 text-dark">{{ selectedItem?.investor_name || selectedItem?.full_name || 'N/A' }}</span>
           </div>
-          <div class="d-flex justify-content-between mb-1">
-            <span class="text-muted small">Amount:</span>
-            <span class="fw-bold text-success fs-14">₹{{ selectedItem?.amount | number:'1.2-2' }}</span>
+          <div class="d-flex justify-content-between mb-1 fs-11">
+            <span class="text-muted">Amount:</span>
+            <span class="fw-700 text-success fs-13">₹{{ selectedItem?.amount | number:'1.2-2' }}</span>
           </div>
-          <div class="d-flex justify-content-between mb-1" *ngIf="selectedItem?.payment_method">
-            <span class="text-muted small">Method:</span>
-            <span class="fw-medium text-capitalize">{{ selectedItem?.payment_method }}</span>
+          <div class="d-flex justify-content-between mb-1 fs-11" *ngIf="selectedItem?.payment_method">
+            <span class="text-muted">Method:</span>
+            <span class="fw-600 text-capitalize text-dark">{{ selectedItem?.payment_method }}</span>
           </div>
-          <div class="d-flex justify-content-between mb-1" *ngIf="selectedItem?.transaction_reference">
-            <span class="text-muted small">UTR / Ref:</span>
-            <span class="font-monospace small">{{ selectedItem?.transaction_reference }}</span>
+          <div class="d-flex justify-content-between mb-1 fs-11" *ngIf="selectedItem?.transaction_reference">
+            <span class="text-muted">UTR / Ref:</span>
+            <span class="font-monospace text-dark">{{ selectedItem?.transaction_reference }}</span>
           </div>
-          <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top" *ngIf="selectedItem?.payment_screenshot_url">
-            <span class="text-muted small">Payment Proof:</span>
-            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fs-11" (click)="openProofImage(selectedItem?.payment_screenshot_url)">
-              <i class="fas fa-eye me-1"></i>View Uploaded Slip
+          <div class="d-flex justify-content-between align-items-center mt-1.5 pt-1.5 border-top" *ngIf="selectedItem?.payment_screenshot_url">
+            <span class="text-muted fs-11">Payment Proof:</span>
+            <button type="button" class="btn btn-outline-primary btn-xs-modal" (click)="openProofImage(selectedItem?.payment_screenshot_url)">
+              <i class="fas fa-eye me-1"></i>View Slip
             </button>
           </div>
         </div>
 
-        <div class="alert alert-info py-2 px-3 fs-12 mb-3" *ngIf="actionType === 'approve_deposit'">
+        <div class="alert alert-info py-1.5 px-2.5 fs-11 mb-2.5" *ngIf="actionType === 'approve_deposit'">
           <i class="fas fa-info-circle me-1"></i>
-          Approving this deposit will automatically credit <strong>₹{{ selectedItem?.amount | number:'1.2-2' }}</strong> to the investor's available balance &amp; total investment.
+          Approving this deposit will credit <strong>₹{{ selectedItem?.amount | number:'1.2-2' }}</strong> to balance.
         </div>
 
         <div>
-          <label class="form-label fw-semibold small">Admin Remarks / Note (Optional)</label>
-          <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="adminRemarks" placeholder="Enter remarks (e.g. UTR verified from bank statement)..."></textarea>
+          <label class="form-label fs-11 fw-700 text-muted mb-1 text-uppercase">Admin Remarks / Note (Optional)</label>
+          <textarea class="form-control f-input" rows="2" style="height: auto !important; min-height: 52px;" [(ngModel)]="adminRemarks" placeholder="Enter remarks (e.g. UTR verified from bank statement)..."></textarea>
         </div>
       </div>
-      <div class="modal-footer bg-light p-2 px-3">
-        <button type="button" class="btn btn-secondary btn-sm" (click)="closeActionModal()">Cancel</button>
-        <button type="button" class="btn btn-sm px-4 fw-bold" [class.btn-success]="actionType.includes('approve')" [class.btn-danger]="actionType.includes('reject')" (click)="confirmAction()" [disabled]="processingAction">
+      <div class="modal-footer bg-light py-1.5 px-3 d-flex justify-content-end gap-1.5">
+        <button type="button" class="btn btn-light btn-xs-modal" (click)="closeActionModal()">Cancel</button>
+        <button type="button" class="btn btn-xs-modal px-3 fw-700" [class.btn-success]="actionType.includes('approve')" [class.btn-danger]="actionType.includes('reject')" (click)="confirmAction()" [disabled]="processingAction">
           <span *ngIf="processingAction" class="spinner-border spinner-border-sm me-1"></span>
-          {{ actionType.includes('approve') ? 'Approve & Credit Funds' : 'Reject Request' }}
+          {{ actionType.includes('approve') ? 'Approve & Credit' : 'Reject Request' }}
         </button>
       </div>
     </div>
@@ -463,21 +467,23 @@
 </div>
 
 <!-- Image Proof Viewer Modal -->
-<div class="modal fade show d-block" *ngIf="previewImageUrl" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 1060;">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content bg-dark text-white border-0">
-      <div class="modal-header border-secondary p-2 px-3">
-        <h6 class="modal-title m-0"><i class="fas fa-receipt me-1.5 text-warning"></i>Payment Proof / Receipt Slip</h6>
-        <button type="button" class="btn-close btn-close-white" (click)="closeProofImage()"></button>
+<div class="modal fade show d-block" *ngIf="previewImageUrl" tabindex="-1" style="background: rgba(0,0,0,0.85); z-index: 1060;">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
+    <div class="modal-content bg-dark text-white border-0 shadow-lg rounded-3 overflow-hidden">
+      <div class="modal-header border-secondary py-2 px-3">
+        <h6 class="modal-title fs-13 m-0"><i class="fas fa-receipt me-1.5 text-warning"></i>Payment Proof Slip</h6>
+        <button type="button" class="btn-close-compact text-white" (click)="closeProofImage()" title="Close" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div class="modal-body text-center p-3">
-        <img [src]="previewImageUrl" alt="Payment Proof" class="img-fluid rounded border" style="max-height: 70vh; object-fit: contain;" />
+      <div class="modal-body text-center p-2.5 bg-black">
+        <img [src]="previewImageUrl" alt="Payment Proof" class="img-fluid rounded border border-secondary" style="max-height: 65vh; object-fit: contain;" />
       </div>
-      <div class="modal-footer border-secondary p-2 px-3 d-flex justify-content-between">
-        <a [href]="previewImageUrl" target="_blank" class="btn btn-sm btn-outline-light">
-          <i class="fas fa-external-link-alt me-1"></i>Open Full Size in New Tab
+      <div class="modal-footer border-secondary py-1.5 px-3 d-flex justify-content-between">
+        <a [href]="previewImageUrl" target="_blank" class="btn btn-outline-light btn-xs-modal">
+          <i class="fas fa-external-link-alt me-1"></i>Full Size
         </a>
-        <button type="button" class="btn btn-sm btn-secondary" (click)="closeProofImage()">Close</button>
+        <button type="button" class="btn btn-secondary btn-xs-modal" (click)="closeProofImage()">Close</button>
       </div>
     </div>
   </div>

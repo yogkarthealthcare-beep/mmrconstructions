@@ -279,7 +279,7 @@ import Swal from 'sweetalert2';
             <div class="p-2 bg-white rounded-2 border shadow-sm mb-2">
               <div class="row g-2 align-items-center">
                 <div class="col-md-6">
-                  <label class="form-label fs-10 fw-700 text-muted mb-0.5 text-uppercase">KYC &amp; Enrollment Status</label>
+                  <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">KYC &amp; Enrollment Status</label>
                   <select
                     class="f-select w-100"
                     [(ngModel)]="selectedApp.application_status"
@@ -291,7 +291,7 @@ import Swal from 'sweetalert2';
                   </select>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fs-10 fw-700 text-muted mb-0.5 text-uppercase">Payment Realization</label>
+                  <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Payment Realization</label>
                   <select
                     class="f-select w-100"
                     [(ngModel)]="selectedApp.payment_status"
