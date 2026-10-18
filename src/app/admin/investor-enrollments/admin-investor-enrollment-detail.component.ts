@@ -18,7 +18,7 @@ import Swal from 'sweetalert2';
     }
     .admin-top-bar {
       background: #ffffff;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--clr-border, #e2e8f0);
       border-radius: 8px;
       padding: 6px 12px;
       margin-bottom: 10px;
@@ -40,12 +40,12 @@ import Swal from 'sweetalert2';
       line-height: 1;
     }
     .btn-save-erp {
-      background: #0f3d27;
+      background: var(--clr-primary-dk, #0f3d27);
       color: #fff;
-      border: 1px solid #0f3d27;
+      border: 1px solid var(--clr-primary-dk, #0f3d27);
     }
     .btn-save-erp:hover {
-      background: #072a17;
+      background: var(--clr-primary-dk, #072a17);
       color: #fff;
     }
     .field label {
