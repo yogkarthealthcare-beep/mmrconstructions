@@ -259,8 +259,8 @@ import Swal from 'sweetalert2';
 
     <!-- VIEW APPLICATION DETAILS MODAL -->
     <div class="modal-backdrop fade show" *ngIf="selectedApp"></div>
-    <div class="modal d-block fade show" tabIndex="-1" *ngIf="selectedApp" (click)="selectedApp = null">
-      <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;" (click)="$event.stopPropagation()">
+    <div class="modal d-block fade show" tabIndex="-1" *ngIf="selectedApp">
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;">
         <div class="modal-content border-0 rounded-2 shadow-lg">
           <div class="modal-header bg-dark-emerald text-white py-2 px-3 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
@@ -586,11 +586,11 @@ import Swal from 'sweetalert2';
       font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
       font-size: 10.5px;
       font-weight: 700;
-      color: var(--clr-primary-dk, #062b18);
+      color: #062b18;
       background: #f1f5f9;
       padding: 2px 5px;
       border-radius: 4px;
-      border: 1px solid var(--clr-border, #cbd5e1);
+      border: 1px solid #cbd5e1;
     }
 
     .user-avatar-circle.bg-gold-avatar {

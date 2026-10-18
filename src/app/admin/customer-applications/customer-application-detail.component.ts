@@ -245,7 +245,7 @@ import Swal from 'sweetalert2';
 
     /* ── EXECUTIVE HERO BANNER ───────────────────────────────── */
     .admin-hero-card {
-      background: linear-gradient(135deg, var(--clr-primary-dk, #062b18) 0%, var(--clr-primary, #0d4a2c) 50%, #062013 100%);
+      background: linear-gradient(135deg, #062b18 0%, #0d4a2c 100%);
       border-radius: 6px;
       padding: 8px 12px;
       color: #ffffff;
@@ -259,7 +259,7 @@ import Swal from 'sweetalert2';
       font-size: 9px;
       font-weight: 800;
       letter-spacing: 0.08em;
-      color: var(--clr-gold, #c9a84c);
+      color: #c9a84c;
       margin-bottom: 2px;
       text-transform: uppercase;
     }
@@ -275,12 +275,12 @@ import Swal from 'sweetalert2';
     .panel-card {
       background: #ffffff;
       border-radius: 6px;
-      border: 1px solid var(--clr-border, #e2e8f0);
+      border: 1px solid #e2e8f0;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
 
     .bg-dark-emerald {
-      background: linear-gradient(135deg, var(--clr-primary-dk, #062b18) 0%, var(--clr-primary, #0d4a2c) 100%);
+      background: linear-gradient(135deg, #062b18 0%, #0d4a2c 100%);
       color: #ffffff !important;
     }
 

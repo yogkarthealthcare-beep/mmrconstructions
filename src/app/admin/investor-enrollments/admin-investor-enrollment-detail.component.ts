@@ -45,8 +45,8 @@ import Swal from 'sweetalert2';
       border: 1px solid var(--clr-primary-dk, #0f3d27) !important;
     }
     .btn-save-erp:hover {
-      background: var(--clr-primary-dk, #072a17);
-      color: #fff;
+      background: #072a17 !important;
+      color: #fff !important;
     }
     .field label {
       font-size: 11px !important;
