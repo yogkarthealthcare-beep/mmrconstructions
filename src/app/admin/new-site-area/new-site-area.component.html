@@ -43,67 +43,67 @@
 </div>
 
 <!-- 4 STAT SUMMARY CARDS -->
-<div class="row g-3 mb-4">
+<div class="row g-2 mb-2.5">
   <div class="col-6 col-md-3">
     <div class="stat-mini-card box-customers h-100">
       <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Total Site Areas</span>
+        <span class="stat-mini-lbl">Total Sites</span>
         <div class="icon-wrap bg-blue text-primary"><i class="fas fa-map-marked-alt"></i></div>
       </div>
       <div class="stat-mini-val">{{ sites.length }}</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-city me-1 text-primary"></i>Registered Projects</div>
+      <div class="fs-11 text-muted fw-600">Total</div>
     </div>
   </div>
 
   <div class="col-6 col-md-3">
     <div class="stat-mini-card box-plots h-100">
       <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Interactive Plot Mode</span>
+        <span class="stat-mini-lbl">Plots</span>
         <div class="icon-wrap bg-emerald-light text-emerald"><i class="fas fa-bolt"></i></div>
       </div>
-      <div class="stat-mini-val">{{ activePlotModeSitesCount }} Sites</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-check-circle me-1 text-emerald"></i>Ready to Book</div>
+      <div class="stat-mini-val">{{ activePlotModeSitesCount }}</div>
+      <div class="fs-11 text-muted fw-600">Active</div>
     </div>
   </div>
 
   <div class="col-6 col-md-3">
     <div class="stat-mini-card box-approvals h-100">
       <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Primary Region</span>
+        <span class="stat-mini-lbl">Region</span>
         <div class="icon-wrap bg-amber text-orange"><i class="fas fa-compass"></i></div>
       </div>
-      <div class="stat-mini-val text-truncate" style="font-size: 18px;">Uttar Pradesh</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-location-dot me-1 text-orange"></i>State Zone</div>
+      <div class="stat-mini-val" style="font-size: 15px;">UP</div>
+      <div class="fs-11 text-muted fw-600">Zone</div>
     </div>
   </div>
 
   <div class="col-6 col-md-3">
     <div class="stat-mini-card box-revenue h-100">
       <div class="d-flex align-items-center justify-content-between mb-1 w-100">
-        <span class="stat-mini-lbl text-truncate">Layout Engine</span>
+        <span class="stat-mini-lbl">Engine</span>
         <div class="icon-wrap bg-forest-light text-forest"><i class="fas fa-draw-polygon"></i></div>
       </div>
-      <div class="stat-mini-val" style="font-size: 18px;">SVG Vector &amp; Grid</div>
-      <div class="fs-11 text-muted fw-600"><i class="fas fa-shield-alt me-1 text-forest"></i>Plot Overlays</div>
+      <div class="stat-mini-val" style="font-size: 15px;">Grid</div>
+      <div class="fs-11 text-muted fw-600">Overlays</div>
     </div>
   </div>
 </div>
 
 <!-- 2-COLUMN MAIN CONTENT WORKSPACE -->
-<div class="row g-4 mb-4">
+<div class="row g-2.5 mb-2.5">
   
   <!-- LEFT: NEW SITE AREA FORM -->
   <div class="col-lg-7">
-    <div class="panel-card p-3.5 h-100 border">
-      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-        <h5 class="fs-14 fw-700 text-dark mb-0">
+    <div class="panel-card p-2.5 h-100 border">
+      <div class="d-flex align-items-center justify-content-between mb-2.5 pb-2 border-bottom">
+        <h5 class="fs-13 fw-700 text-dark mb-0">
           <i class="fas fa-plus-circle text-gold me-2"></i>Add New Site Area
         </h5>
-        <span class="badge bg-light text-dark border fs-11 font-mono">* Required Fields</span>
+        <span class="badge bg-light text-dark border fs-10 font-mono">* Required Fields</span>
       </div>
 
       <form (ngSubmit)="createNewSiteArea()" #siteForm="ngForm">
-        <div class="row g-3">
+        <div class="row g-2">
           
           <!-- SECTION 1 HEADER -->
           <div class="col-12">
@@ -263,9 +263,9 @@
 
   <!-- RIGHT: REGISTERED SITE AREAS DIRECTORY -->
   <div class="col-lg-5">
-    <div class="panel-card p-3.5 h-100 border">
-      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-        <h5 class="fs-14 fw-700 text-dark mb-0">
+    <div class="panel-card p-2.5 h-100 border">
+      <div class="d-flex align-items-center justify-content-between mb-2.5 pb-2 border-bottom">
+        <h5 class="fs-13 fw-700 text-dark mb-0">
           <i class="fas fa-building text-emerald me-2"></i>Registered Site Areas
         </h5>
         <button type="button" class="btn btn-outline-secondary btn-xs" (click)="loadExistingSiteAreas()">
@@ -273,22 +273,22 @@
         </button>
       </div>
 
-      <div *ngIf="sitesLoading" class="text-center py-5 text-gold">
-        <i class="fas fa-spinner fa-spin fs-2 mb-2"></i>
-        <div class="fs-12 text-muted">Loading site areas...</div>
+      <div *ngIf="sitesLoading" class="text-center py-4 text-gold">
+        <i class="fas fa-spinner fa-spin fs-4 mb-1.5"></i>
+        <div class="fs-11 text-muted">Loading site areas...</div>
       </div>
 
-      <div *ngIf="!sitesLoading && sites.length === 0" class="text-center py-5 text-muted">
-        <i class="fas fa-building-circle-exclamation fs-1 text-gold mb-2"></i>
-        <h6 class="fw-700 text-dark mb-1">No Site Areas Registered</h6>
-        <p class="fs-11 text-muted mb-0">Use the form on the left to add your first site area.</p>
+      <div *ngIf="!sitesLoading && sites.length === 0" class="text-center py-4 text-muted">
+        <i class="fas fa-building-circle-exclamation fs-2 text-gold mb-1.5"></i>
+        <h6 class="fw-700 text-dark mb-1 fs-12.5">No Site Areas Registered</h6>
+        <p class="fs-10.5 text-muted mb-0">Use the form on the left to add your first site area.</p>
       </div>
 
       <div *ngIf="!sitesLoading && sites.length > 0" class="site-area-directory-list" style="max-height: 640px; overflow-y: auto;">
-        <div class="site-directory-card p-3 mb-2.5 border rounded-8 bg-white shadow-xs" *ngFor="let s of sites">
-          <div class="d-flex align-items-center justify-content-between mb-1.5 flex-wrap gap-1">
-            <span class="fw-700 text-dark fs-13 text-truncate" style="max-width: 220px;">{{ s.site_name }}</span>
-            <span class="badge" [class.bg-emerald]="s.is_booking_enabled" [class.bg-secondary]="!s.is_booking_enabled" style="font-size: 10px;">
+        <div class="site-directory-card p-2 mb-2 border rounded-6 bg-white shadow-xs" *ngFor="let s of sites">
+          <div class="d-flex align-items-center justify-content-between mb-1 flex-wrap gap-1">
+            <span class="fw-700 text-dark fs-12 text-truncate" style="max-width: 220px;">{{ s.site_name }}</span>
+            <span class="badge" [class.bg-emerald]="s.is_booking_enabled" [class.bg-secondary]="!s.is_booking_enabled" style="font-size: 9.5px;">
               {{ s.is_booking_enabled ? 'Plot Mode ON' : 'Plot Mode OFF' }}
             </span>
           </div>
