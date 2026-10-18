@@ -114,9 +114,9 @@
               <th class="fit">#</th>
               <th class="grow">Lead Customer Profile</th>
               <th class="fit">Site &amp; Interest</th>
-              <th class="grow">Message Note</th>
-              <th class="fit">Priority</th>
-              <th class="fit">Date</th>
+              <th class="grow d-none d-xxl-table-cell">Message Note</th>
+              <th class="fit d-none d-xl-table-cell">Priority</th>
+              <th class="fit d-none d-xl-table-cell">Date</th>
               <th class="fit">Status</th>
               <th class="text-end fit">Actions</th>
             </tr>
@@ -132,6 +132,18 @@
                   <div class="min-w-0">
                     <div class="fw-700 text-dark fs-12 text-truncate" [title]="e.name">{{ e.name }}</div>
                     <div class="fs-10 text-muted text-truncate"><i class="fas fa-phone-alt me-1 text-emerald"></i>{{ e.mobile }}</div>
+                    <div class="d-flex align-items-center gap-1 mt-0.5 d-xl-none">
+                      <span class="sbadge"
+                        [class.sbadge-red]="e.priority==='high'"
+                        [class.sbadge-yellow]="e.priority==='medium'"
+                        [class.sbadge-green]="e.priority==='low'">
+                        {{ e.priority | uppercase }}
+                      </span>
+                      <span class="fs-10 text-muted">{{ e.date | date:'dd MMM yyyy' }}</span>
+                    </div>
+                    <div class="fs-10 text-muted text-truncate mt-0.5 d-xxl-none" style="max-width: 200px;" *ngIf="e.message">
+                      "{{ e.message }}"
+                    </div>
                   </div>
                 </div>
               </td>
@@ -141,12 +153,12 @@
                   <span class="text-truncate" style="max-width: 140px;">{{ e.site_name || 'General Inquiry' }}</span>
                 </div>
               </td>
-              <td class="grow">
+              <td class="grow d-none d-xxl-table-cell">
                 <div class="fs-11 text-dark text-truncate" style="max-width: 220px;" [title]="e.message">
                   "{{ e.message || '-' }}"
                 </div>
               </td>
-              <td class="fit">
+              <td class="fit d-none d-xl-table-cell">
                 <span class="sbadge"
                   [class.sbadge-red]="e.priority==='high'"
                   [class.sbadge-yellow]="e.priority==='medium'"
@@ -154,7 +166,7 @@
                   {{ e.priority | uppercase }}
                 </span>
               </td>
-              <td class="fit">
+              <td class="fit d-none d-xl-table-cell">
                 <div class="fs-11 text-dark fw-600">{{ e.date | date:'dd MMM yyyy' }}</div>
               </td>
               <td class="fit">

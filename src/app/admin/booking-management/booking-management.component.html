@@ -171,7 +171,7 @@
           <thead>
             <tr>
               <th class="fit">#</th>
-              <th class="fit">Booking Ref</th>
+              <th class="fit d-none d-xl-table-cell">Booking Ref</th>
               <th class="grow">Customer</th>
               <th class="fit">Plot &amp; Site</th>
               <th class="fit num">Advance</th>
@@ -190,7 +190,7 @@
               <td class="fit">{{ (page - 1) * pageSize + i + 1 }}</td>
               
               <!-- Booking Ref -->
-              <td class="fit">
+              <td class="fit d-none d-xl-table-cell">
                 <div class="ref">{{ b.booking_serial || ('#' + b.booking_id) }}</div>
                 <div class="sub">{{ b.booking_date ? (b.booking_date | date:'dd MMM yyyy') : (b.created_at | date:'dd MMM yyyy') }}</div>
               </td>
@@ -210,6 +210,9 @@
               <td class="fit">
                 <div><strong>{{ b.site_name || b.site?.site_name || 'Main Township' }}</strong></div>
                 <div class="sub">Plot #{{ b.plot_number || b.plot?.plot_number || '-' }}<span *ngIf="b.plot_area || b.plot?.plot_area"> ({{ b.plot_area || b.plot?.plot_area }} sq.ft)</span></div>
+                <div class="sub text-muted font-monospace d-xl-none">
+                  Ref: {{ b.booking_serial || ('#' + b.booking_id) }} · {{ b.booking_date ? (b.booking_date | date:'dd MMM') : (b.created_at | date:'dd MMM') }}
+                </div>
               </td>
 
               <!-- Advance Paid & Remaining -->
@@ -263,6 +266,15 @@
                 }">
                   {{ b.booking_status || 'Allocated' }}
                 </span>
+                <div class="mt-0.5 d-xl-none" *ngIf="b.associate_approval_status && b.associate_approval_status !== 'NotRequired'">
+                  <span class="badge fs-9" [ngClass]="{
+                    'b-green': b.associate_approval_status === 'Approved',
+                    'b-amber': b.associate_approval_status === 'Pending',
+                    'b-red': b.associate_approval_status === 'Rejected'
+                  }">
+                    Appr: {{ b.associate_approval_status.includes('Approved') ? 'Approved' : (b.associate_approval_status.includes('Pending') ? 'Pending' : (b.associate_approval_status.includes('Rejected') ? 'Rejected' : b.associate_approval_status)) }}
+                  </span>
+                </div>
               </td>
 
               <!-- Action -->

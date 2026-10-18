@@ -140,11 +140,11 @@
           <thead>
             <tr>
               <th class="grow">Customer</th>
-              <th class="fit">Member ID</th>
+              <th class="fit d-none d-xl-table-cell">Member ID</th>
               <th class="fit">Mobile</th>
-              <th class="fit hide-md">Registered At</th>
+              <th class="fit d-none d-xl-table-cell">Registered At</th>
               <th class="fit">Classification</th>
-              <th class="fit hide-lg">Bookings</th>
+              <th class="fit d-none d-xl-table-cell">Bookings</th>
               <th class="fit text-end num">Total Sales (₹)</th>
               <th class="fit text-end pe-3">Action</th>
             </tr>
@@ -159,13 +159,17 @@
                   </div>
                   <div class="person-info min-w-0">
                     <span class="person-name text-truncate">{{ c.full_name }}</span>
-                    <span class="sub text-muted">UID #{{ c.user_id }}</span>
+                    <span class="sub text-muted">
+                      <code class="member-id-badge me-1 d-xl-none">{{ c.member_id }}</code>
+                      UID #{{ c.user_id }}
+                      <span class="d-xl-none" *ngIf="c.total_bookings_count"> · {{ c.total_bookings_count }} Bkgs</span>
+                    </span>
                   </div>
                 </div>
               </td>
 
               <!-- Member ID -->
-              <td class="fit">
+              <td class="fit d-none d-xl-table-cell">
                 <code class="member-id-badge">{{ c.member_id }}</code>
               </td>
 
@@ -178,7 +182,7 @@
               </td>
 
               <!-- Registered At -->
-              <td class="fit hide-md text-nowrap text-muted">
+              <td class="fit d-none d-xl-table-cell text-nowrap text-muted">
                 {{ c.registered_at | date:'dd MMM yyyy, hh:mm a' }}
               </td>
 
@@ -194,7 +198,7 @@
               </td>
 
               <!-- Bookings -->
-              <td class="fit hide-lg">
+              <td class="fit d-none d-xl-table-cell">
                 <span class="badge bg-light text-dark border">
                   {{ c.total_bookings_count || 0 }} Bookings
                 </span>

@@ -217,16 +217,16 @@
             <th (click)="sortBy('customer_name')" class="cursor-pointer grow">
               Customer Name <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th (click)="sortBy('plot_no')" class="cursor-pointer fit">
+            <th (click)="sortBy('plot_no')" class="cursor-pointer fit d-none d-xl-table-cell">
               Property / Project <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
             <th (click)="sortBy('paid_amount')" class="cursor-pointer text-end fit">
               Amount (₹) <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th (click)="sortBy('payment_type')" class="cursor-pointer fit">
+            <th (click)="sortBy('payment_type')" class="cursor-pointer fit d-none d-xxl-table-cell">
               Payment Mode <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th (click)="sortBy('receipt_date')" class="cursor-pointer fit">
+            <th (click)="sortBy('receipt_date')" class="cursor-pointer fit d-none d-xxl-table-cell">
               Date <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
             <th class="fit">Status</th>
@@ -238,6 +238,7 @@
             <!-- Receipt No -->
             <td class="fit">
               <span class="code-badge cursor-pointer" (click)="viewReceipt(r)" title="Click to view receipt">{{ r.receipt_no }}</span>
+              <div class="text-muted fs-10 mt-0.5 d-xxl-none">{{ r.receipt_date | date:'dd MMM yyyy' }}</div>
             </td>
 
             <!-- Customer Profile -->
@@ -256,12 +257,15 @@
                       <i class="fab fa-whatsapp"></i>
                     </a>
                   </div>
+                  <div class="text-muted fs-10 mt-0.5 d-xl-none" *ngIf="r.plot_no">
+                    Plot {{ r.plot_no }}<span *ngIf="r.plot_area"> ({{ r.plot_area }})</span>
+                  </div>
                 </div>
               </div>
             </td>
 
             <!-- Property / Project -->
-            <td class="fit">
+            <td class="fit d-none d-xl-table-cell">
               <div class="fw-600 text-dark fs-11.5" *ngIf="r.plot_no">Plot {{ r.plot_no }}</div>
               <div class="text-muted fs-10.5" *ngIf="r.plot_area">{{ r.plot_area }}</div>
               <div class="text-muted fs-11" *ngIf="!r.plot_no && !r.plot_area">—</div>
@@ -269,11 +273,12 @@
 
             <!-- Amount (₹) -->
             <td class="text-end fit">
-              <span class="fw-700 text-dark fs-12">₹{{ r.paid_amount | number:'1.0-0' }}</span>
+              <div class="fw-700 text-dark fs-12">₹{{ r.paid_amount | number:'1.0-0' }}</div>
+              <div class="text-muted fs-10 mt-0.5 d-xxl-none">{{ r.payment_type }}</div>
             </td>
 
             <!-- Payment Mode Badge -->
-            <td class="fit">
+            <td class="fit d-none d-xxl-table-cell">
               <span class="chip" [ngClass]="{
                 'chip-ok': r.payment_type === 'Cash',
                 'chip-blue': r.payment_type.includes('UPI') || r.payment_type.includes('Online'),
@@ -286,7 +291,7 @@
             </td>
 
             <!-- Date -->
-            <td class="fit">
+            <td class="fit d-none d-xxl-table-cell">
               <span class="fs-11 text-dark fw-600">{{ r.receipt_date | date:'dd MMM yyyy' }}</span>
             </td>
 

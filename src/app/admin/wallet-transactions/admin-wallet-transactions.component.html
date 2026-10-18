@@ -188,8 +188,7 @@
               <th class="fit">#</th>
               <th class="grow">User Details</th>
               <th class="grow">Transaction Details</th>
-              <th class="fit text-end num">Amount (₹)</th>
-              <th class="fit text-end num hide-lg">Balance After</th>
+              <th class="fit text-end num">Amount &amp; Balance (₹)</th>
               <th class="fit text-center">Status</th>
               <th class="fit hide-lg">Date</th>
             </tr>
@@ -208,12 +207,14 @@
                     {{ getInitials(t.user_name) }}
                   </div>
                   <div class="person-info min-w-0">
-                    <span class="person-name text-truncate">{{ t.user_name || 'User #' + t.user_id }}</span>
-                    <span class="sub text-muted text-truncate">{{ t.user_mobile || t.user_email || '—' }}</span>
+                    <div class="person-name text-truncate" style="max-width: 135px;" [title]="t.user_name">{{ t.user_name || 'User #' + t.user_id }}</div>
+                    <div class="sub text-muted d-flex align-items-center gap-1">
+                      <span class="text-truncate" style="max-width: 95px;">{{ t.user_mobile || t.user_email || '—' }}</span>
+                      <span class="badge" [ngClass]="t.user_role === 'Associate' ? 'bg-warning text-dark' : 'bg-primary text-white'">
+                        {{ t.user_role }}
+                      </span>
+                    </div>
                   </div>
-                  <span class="badge ms-1" [ngClass]="t.user_role === 'Associate' ? 'bg-warning text-dark' : 'bg-primary text-white'">
-                    {{ t.user_role }}
-                  </span>
                 </div>
               </td>
 
@@ -232,17 +233,20 @@
                   <div class="text-muted fs-10 mt-0.5" *ngIf="t.payment_transaction_id">
                     Txn: <span class="font-monospace text-dark">{{ t.payment_transaction_id }}</span>
                   </div>
+                  <div class="text-muted fs-10 mt-0.5 d-xl-none" *ngIf="t.created_at">
+                    <i class="fas fa-calendar-alt me-1"></i>{{ t.created_at | date:'dd MMM yyyy, h:mm a' }}
+                  </div>
                 </div>
               </td>
 
-              <!-- Amount -->
-              <td class="fit text-end num font-monospace fw-bold" [class.text-success]="isCredit(t)" [class.text-danger]="!isCredit(t)">
-                {{ isCredit(t) ? '+' : '−' }} ₹{{ (t.amount < 0 ? -t.amount : t.amount) | number:'1.2-2' }}
-              </td>
-
-              <!-- Balance After -->
-              <td class="fit text-end num font-monospace hide-lg text-dark fw-bold">
-                ₹{{ t.balance_after | number:'1.2-2' }}
+              <!-- Amount & Balance (Merged) -->
+              <td class="fit text-end num font-monospace">
+                <div class="fw-bold" [class.text-success]="isCredit(t)" [class.text-danger]="!isCredit(t)">
+                  {{ isCredit(t) ? '+' : '−' }} ₹{{ (t.amount < 0 ? -t.amount : t.amount) | number:'1.2-2' }}
+                </div>
+                <div class="fs-10 text-muted mt-0.5" *ngIf="t.balance_after != null">
+                  Bal: <span class="fw-700 text-dark">₹{{ t.balance_after | number:'1.2-2' }}</span>
+                </div>
               </td>
 
               <!-- Status -->

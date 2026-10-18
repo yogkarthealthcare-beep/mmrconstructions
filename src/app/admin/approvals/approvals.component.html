@@ -174,8 +174,7 @@
               <th class="fit">Role</th>
               <th class="fit d-none d-xl-table-cell">Sponsor Details</th>
               <th class="fit d-none d-xl-table-cell">Registered Date</th>
-              <th class="fit">Account Status</th>
-              <th class="fit d-none d-xl-table-cell">KYC Status</th>
+              <th class="fit">Status &amp; KYC</th>
               <th class="text-end fit">Actions</th>
             </tr>
           </thead>
@@ -243,24 +242,24 @@
                 <div class="fs-10 text-muted">{{ u.registered_at | date:'hh:mm a' }}</div>
               </td>
 
-              <!-- Account Status -->
+              <!-- Status & KYC (Merged) -->
               <td class="fit text-nowrap">
-                <span class="chip"
-                  [class.chip-warn]="u.account_status==='Pending'"
-                  [class.chip-blue]="u.account_status==='InfoRequested'"
-                  [class.chip-ok]="u.account_status==='Active'"
-                  [class.chip-err]="u.account_status==='Rejected' || u.account_status==='Suspended'">
-                  {{ u.account_status || 'Pending' }}
-                </span>
-              </td>
-
-              <!-- KYC Status -->
-              <td class="fit d-none d-xl-table-cell text-nowrap">
-                <span class="chip"
-                  [class.chip-ok]="u.enrollment_status==='Completed' || u.enrollment_status==='Submitted'"
-                  [class.chip-warn]="u.enrollment_status==='Pending' || !u.enrollment_status">
-                  <i class="fas fa-file-alt me-1"></i>{{ u.enrollment_status || 'Pending' }}
-                </span>
+                <div>
+                  <span class="chip"
+                    [class.chip-warn]="u.account_status==='Pending'"
+                    [class.chip-blue]="u.account_status==='InfoRequested'"
+                    [class.chip-ok]="u.account_status==='Active'"
+                    [class.chip-err]="u.account_status==='Rejected' || u.account_status==='Suspended'">
+                    {{ u.account_status || 'Pending' }}
+                  </span>
+                </div>
+                <div class="mt-1">
+                  <span class="chip fs-10"
+                    [class.chip-ok]="u.enrollment_status==='Completed' || u.enrollment_status==='Submitted'"
+                    [class.chip-warn]="u.enrollment_status==='Pending' || !u.enrollment_status">
+                    <i class="fas fa-file-alt me-1"></i>KYC: {{ u.enrollment_status || 'Pending' }}
+                  </span>
+                </div>
               </td>
 
               <!-- Actions (24px square buttons) -->

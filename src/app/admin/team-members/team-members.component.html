@@ -124,9 +124,9 @@
             <tr>
               <th class="th-sno">#</th>
               <th>Team Member Profile</th>
-              <th>Sponsor Associate</th>
+              <th class="d-none d-xl-table-cell">Sponsor Associate</th>
               <th>Contact &amp; Email</th>
-              <th>Sales &amp; Customers</th>
+              <th class="d-none d-xl-table-cell">Sales &amp; Customers</th>
               <th>Status</th>
               <th class="text-end">Actions</th>
             </tr>
@@ -153,12 +153,16 @@
                       <span class="code-badge text-gold-dark"><i class="fas fa-id-badge text-gold me-1"></i>{{ m.team_member_uid || 'TM-' + m.id }}</span>
                       <span *ngIf="m.created_at" class="text-muted">Joined: {{ m.created_at | date:'dd MMM yyyy' }}</span>
                     </div>
+                    <div class="fs-10 text-muted d-xl-none mt-0.5">
+                      <span class="text-emerald fw-600"><i class="fas fa-map-marker-alt me-0.5"></i>{{ m.plots_sold_count || 0 }} Plots</span> · <span>{{ m.customers_count || 0 }} Cust</span>
+                      <span *ngIf="m.sponsor_name || m.assoc_full_name"> · <i class="fas fa-user-tie me-0.5"></i>{{ m.sponsor_name || m.assoc_full_name }}</span>
+                    </div>
                   </div>
                 </div>
               </td>
 
               <!-- Sponsor Associate -->
-              <td>
+              <td class="d-none d-xl-table-cell">
                 <div class="fw-600 text-dark fs-11.5">
                   {{ m.sponsor_name || m.assoc_full_name || m.associate_name || 'Direct / Head Office' }}
                 </div>
@@ -183,7 +187,7 @@
               </td>
 
               <!-- Sales & Customers -->
-              <td>
+              <td class="d-none d-xl-table-cell">
                 <div class="d-flex align-items-center gap-1 flex-wrap">
                   <span class="chip-metric bg-plots" title="Plots Sold">
                     <i class="fas fa-map-marker-alt me-1"></i>{{ m.plots_sold_count || 0 }} Plots

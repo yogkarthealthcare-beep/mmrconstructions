@@ -199,23 +199,23 @@
               <th class="th-sno">#</th>
               <th>Order ID</th>
               <th>Invoice #</th>
-              <th>Booking Date</th>
+              <th class="d-none d-xl-table-cell">Booking Date</th>
               <th>Customer Name</th>
-              <th>Mobile</th>
-              <th>Email</th>
+              <th class="d-none d-xl-table-cell">Mobile</th>
+              <th class="d-none d-xl-table-cell">Email</th>
               <th>Associate</th>
               <th>Project / Site</th>
               <th>Plot #</th>
-              <th>Plot Size</th>
-              <th>Rate/Sq.Ft</th>
-              <th>Plot Price</th>
-              <th>Discount</th>
-              <th>Reg. Charges</th>
-              <th>Other Charges</th>
+              <th class="d-none d-xl-table-cell">Plot Size</th>
+              <th class="d-none d-xl-table-cell">Rate/Sq.Ft</th>
+              <th class="d-none d-xl-table-cell">Plot Price</th>
+              <th class="d-none d-xl-table-cell">Discount</th>
+              <th class="d-none d-xl-table-cell">Reg. Charges</th>
+              <th class="d-none d-xl-table-cell">Other Charges</th>
               <th>Final Amount</th>
               <th>Paid Amount</th>
               <th>Balance</th>
-              <th>Payment Method</th>
+              <th class="d-none d-xl-table-cell">Payment Method</th>
               <th>Pay Status</th>
               <th>Order Status</th>
               <th class="text-center">Actions</th>
@@ -230,10 +230,13 @@
                   {{ order.invoice_number }}
                 </a>
               </td>
-              <td class="fs-11 text-muted">{{ order.invoice_date | date:'mediumDate' }}</td>
-              <td><strong class="text-dark">{{ order.invoice_data?.customer_name || '-' }}</strong></td>
-              <td class="fs-11">{{ order.invoice_data?.mobile_no || '-' }}</td>
-              <td class="fs-11 text-muted">{{ order.invoice_data?.email || '-' }}</td>
+              <td class="fs-11 text-muted d-none d-xl-table-cell">{{ order.invoice_date | date:'mediumDate' }}</td>
+              <td>
+                <strong class="text-dark">{{ order.invoice_data?.customer_name || '-' }}</strong>
+                <div class="fs-10 text-muted d-xl-none" *ngIf="order.invoice_data?.mobile_no">{{ order.invoice_data?.mobile_no }}</div>
+              </td>
+              <td class="fs-11 d-none d-xl-table-cell">{{ order.invoice_data?.mobile_no || '-' }}</td>
+              <td class="fs-11 text-muted d-none d-xl-table-cell">{{ order.invoice_data?.email || '-' }}</td>
               <td>
                 <span *ngIf="order.invoice_data?.associate_name" class="chip chip-blue">
                   {{ order.invoice_data?.associate_name }}
@@ -242,16 +245,16 @@
               </td>
               <td>{{ order.invoice_data?.site_name || '-' }}</td>
               <td><span class="badge bg-light text-dark border">#{{ order.invoice_data?.plot_number || '-' }}</span></td>
-              <td>{{ order.invoice_data?.plot_size || '-' }}</td>
-              <td>₹{{ order.invoice_data?.rate_per_sqft || 0 | number }}</td>
-              <td>₹{{ (order.invoice_data?.total_plot_price || order.subtotal || 0) | number }}</td>
-              <td class="text-danger">₹{{ (order.discount || 0) | number }}</td>
-              <td>₹{{ (order.registration_charges || 0) | number }}</td>
-              <td>₹{{ (order.other_charges || 0) | number }}</td>
+              <td class="d-none d-xl-table-cell">{{ order.invoice_data?.plot_size || '-' }}</td>
+              <td class="d-none d-xl-table-cell">₹{{ order.invoice_data?.rate_per_sqft || 0 | number }}</td>
+              <td class="d-none d-xl-table-cell">₹{{ (order.invoice_data?.total_plot_price || order.subtotal || 0) | number }}</td>
+              <td class="text-danger d-none d-xl-table-cell">₹{{ (order.discount || 0) | number }}</td>
+              <td class="d-none d-xl-table-cell">₹{{ (order.registration_charges || 0) | number }}</td>
+              <td class="d-none d-xl-table-cell">₹{{ (order.other_charges || 0) | number }}</td>
               <td><strong class="text-dark">₹{{ (order.grand_total || 0) | number }}</strong></td>
               <td class="text-emerald fw-700">₹{{ (order.paid_amount || 0) | number }}</td>
               <td class="text-amber fw-700">₹{{ (order.balance_amount || 0) | number }}</td>
-              <td><span class="badge bg-light text-dark border">{{ order.payment_method || 'Online' }}</span></td>
+              <td class="d-none d-xl-table-cell"><span class="badge bg-light text-dark border">{{ order.payment_method || 'Online' }}</span></td>
               <td>
                 <span class="chip" [ngClass]="{
                   'chip-ok': order.payment_status === 'Paid',

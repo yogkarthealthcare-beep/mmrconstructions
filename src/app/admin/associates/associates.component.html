@@ -123,10 +123,10 @@
               <th class="th-sno">#</th>
               <th>Associate Profile</th>
               <th>Contact &amp; Mobile</th>
-              <th class="hide-xl">Invite Code</th>
-              <th>Rank &amp; Role</th>
+              <th class="d-none d-xl-table-cell">Invite Code</th>
+              <th class="d-none d-xl-table-cell">Rank &amp; Role</th>
               <th>Team</th>
-              <th>Joined</th>
+              <th class="d-none d-xl-table-cell">Joined</th>
               <th>Status</th>
               <th class="text-end">Actions</th>
             </tr>
@@ -147,6 +147,9 @@
                     <div class="member-id-text text-truncate">
                       <i class="fas fa-id-card text-gold me-1"></i>{{ a.member_id || 'ID: #' + a.user_id }}
                     </div>
+                    <div class="fs-10 text-muted mt-0.5 d-xl-none">
+                      {{ a.rank_name || 'Associate' }} · Joined {{ a.registered_at | date:'dd MMM yyyy' }}
+                    </div>
                   </div>
                 </div>
               </td>
@@ -163,11 +166,11 @@
                   <span class="text-truncate text-muted">{{ a.email || 'No email' }}</span>
                 </div>
               </td>
-              <td class="hide-xl">
+              <td class="d-none d-xl-table-cell">
                 <span class="invite-code-pill" *ngIf="a.invitation_code">{{ a.invitation_code }}</span>
                 <span class="text-muted fs-10" *ngIf="!a.invitation_code">—</span>
               </td>
-              <td>
+              <td class="d-none d-xl-table-cell">
                 <span class="badge bg-warning-subtle text-warning-emphasis fs-10">
                   <i class="fas fa-award me-1"></i>{{ a.rank_name || 'Associate' }}
                 </span>
@@ -177,7 +180,7 @@
                   <i class="fas fa-users me-1"></i>{{ a.team_size || 0 }}/10
                 </span>
               </td>
-              <td>
+              <td class="d-none d-xl-table-cell">
                 <div class="reg-date">{{ a.registered_at | date:'dd MMM yyyy' }}</div>
                 <div class="reg-time text-muted">{{ a.registered_at | date:'hh:mm a' }}</div>
               </td>

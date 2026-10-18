@@ -99,8 +99,7 @@
           <thead>
             <tr>
               <th class="grow"><button type="button" class="sort-btn" (click)="sort('plot_size')">Plot Size</button></th>
-              <th class="fit text-end"><button type="button" class="sort-btn" (click)="sort('plot_price')">Plot Price</button></th>
-              <th class="fit text-end d-none d-xl-table-cell"><button type="button" class="sort-btn" (click)="sort('down_payment')">Down Payment</button></th>
+              <th class="fit text-end"><button type="button" class="sort-btn" (click)="sort('plot_price')">Price &amp; DP</button></th>
               <th class="fit text-center"><button type="button" class="sort-btn" (click)="sort('interest_rate')">Rate</button></th>
               <th class="fit text-center"><button type="button" class="sort-btn" (click)="sort('tenure_months')">Tenure</button></th>
               <th class="fit text-end"><button type="button" class="sort-btn" (click)="sort('monthly_emi')">Monthly EMI</button></th>
@@ -112,8 +111,10 @@
           <tbody>
             <tr *ngFor="let plan of plans">
               <td class="grow"><strong>{{ plan.plot_size }}</strong></td>
-              <td class="fit text-end">{{ money(plan.plot_price) | currency:'INR':'symbol':'1.0-0' }}</td>
-              <td class="fit text-end d-none d-xl-table-cell">{{ money(plan.down_payment) | currency:'INR':'symbol':'1.0-0' }}</td>
+              <td class="fit text-end">
+                <div>{{ money(plan.plot_price) | currency:'INR':'symbol':'1.0-0' }}</div>
+                <div class="fs-10 text-muted">DP: {{ money(plan.down_payment) | currency:'INR':'symbol':'1.0-0' }}</div>
+              </td>
               <td class="fit text-center">{{ plan.interest_rate }}%</td>
               <td class="fit text-center">{{ plan.tenure_months }} mo</td>
               <td class="fit text-end"><strong>{{ money(plan.monthly_emi) | currency:'INR':'symbol':'1.0-0' }}</strong></td>
