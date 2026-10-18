@@ -16,6 +16,7 @@ import { USER_TYPES, normalizeUserType, formatDisplayUserType } from '../../cons
   styleUrls: ['./approvals.component.css']
 })
 export class ApprovalsComponent implements OnInit {
+  readonly Math = Math;
   private api = inject(ApiService);
   private exportService = inject(AdminExportService);
 
