@@ -167,6 +167,17 @@ export class ReceiptListComponent implements OnInit {
     this.loadReceipts();
   }
 
+  clearSearch(): void {
+    this.search = '';
+    this.page = 1;
+    this.loadReceipts();
+  }
+
+  getInitials(name: string): string {
+    if (!name) return 'RC';
+    return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  }
+
   resetFilters(): void {
     this.search = '';
     this.customerName = '';

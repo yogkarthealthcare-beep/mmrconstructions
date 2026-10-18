@@ -1,166 +1,141 @@
 <!-- Toast Notification -->
-<div *ngIf="toastMessage" class="toast-popup" style="position:fixed;top:76px;right:24px;z-index:9999;animation:slideIn .25s ease;">
-  <i [class]="toastType === 'success' ? 'fas fa-check-circle text-emerald me-2' : 'fas fa-exclamation-circle text-danger me-2'"></i>
+<div *ngIf="toastMessage" class="toast-popup">
+  <i [class]="toastType === 'success' ? 'fas fa-check-circle text-emerald me-1.5' : 'fas fa-exclamation-circle text-danger me-1.5'"></i>
   <span>{{ toastMessage }}</span>
 </div>
 
-<div class="receipt-management-shell">
-  <!-- 1. PAGE HEADER -->
-  <div class="rm-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
-    <div class="d-flex align-items-center gap-3">
-      <div class="rm-header-icon">
-        <i class="fas fa-file-invoice"></i>
-      </div>
+<div class="panel-shell">
+  <!-- TOP HERO EXECUTIVE BANNER -->
+  <div class="admin-hero-card mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
       <div>
-        <h2 class="rm-header-title mb-0">Receipt Management</h2>
-        <p class="rm-header-sub mb-0">Track, search, verify &amp; generate official payment receipts for NEW M.M.R. CITY.</p>
+        <div class="admin-hero-badge"><i class="fas fa-file-invoice me-1"></i>FINANCIAL LEDGER &amp; OFFICIAL RECEIPTS</div>
+        <h2 class="admin-hero-title mb-0.5">Receipt Management</h2>
+        <p class="admin-hero-sub mb-0">Track, search, verify &amp; generate official payment receipts for NEW M.M.R. CITY.</p>
       </div>
-    </div>
 
-    <div class="d-flex align-items-center gap-2">
-      <a routerLink="/admin/receipts/create" class="btn rm-btn-gold">
-        <i class="fas fa-plus me-1.5"></i> Add New Receipt
-      </a>
+      <div class="d-flex align-items-center gap-1.5 ms-auto flex-wrap">
+        <button class="btn btn-outline-light btn-xs" (click)="loadReceipts()" [disabled]="loading" title="Refresh receipts">
+          <i class="fas fa-sync" [class.fa-spin]="loading"></i>
+          <span class="d-none d-sm-inline ms-1">Refresh</span>
+        </button>
+        <a routerLink="/admin/receipts/create" class="btn btn-gold btn-xs shadow-xs" title="Generate new payment receipt">
+          <i class="fas fa-plus me-1"></i> Add Receipt
+        </a>
+      </div>
     </div>
   </div>
 
-  <!-- 2. SUMMARY CARDS (4 Compact Cards in One Row) -->
-  <div class="row g-3 mb-3">
+  <!-- 4 COMPACT HORIZONTAL KPI CARDS (~48-52px height) -->
+  <div class="kpi-grid mb-3">
     <!-- Total Receipts -->
-    <div class="col-12 col-sm-6 col-xl-3">
-      <div class="rm-stat-card">
-        <div class="rm-stat-icon-wrap bg-green-subtle">
-          <i class="fas fa-file-alt text-green"></i>
-        </div>
-        <div class="rm-stat-content">
-          <div class="rm-stat-label">Total Receipts</div>
-          <div class="rm-stat-value">{{ summary.totalReceipts | number }}</div>
-          <div class="rm-stat-sub text-emerald">
-            <i class="fas fa-arrow-up me-1"></i>+{{ summary.todayReceipts }} this month
-          </div>
-        </div>
+    <div class="kpi-card s-green">
+      <div class="kpi-content">
+        <div class="kpi-label">Total Receipts</div>
+        <div class="kpi-value">{{ summary.totalReceipts | number }}</div>
       </div>
+      <div class="kpi-icon"><i class="fas fa-file-alt"></i></div>
     </div>
 
     <!-- Today's Receipts -->
-    <div class="col-12 col-sm-6 col-xl-3">
-      <div class="rm-stat-card">
-        <div class="rm-stat-icon-wrap bg-blue-subtle">
-          <i class="fas fa-calendar-alt text-blue"></i>
-        </div>
-        <div class="rm-stat-content">
-          <div class="rm-stat-label">Today's Receipts</div>
-          <div class="rm-stat-value">{{ summary.todayReceipts | number:'2.0-0' }}</div>
-          <div class="rm-stat-sub text-muted">
-            <i class="far fa-clock me-1"></i>Generated Today
-          </div>
-        </div>
+    <div class="kpi-card s-blue">
+      <div class="kpi-content">
+        <div class="kpi-label">Today's Receipts</div>
+        <div class="kpi-value">{{ summary.todayReceipts | number:'2.0-0' }}</div>
       </div>
+      <div class="kpi-icon"><i class="fas fa-calendar-alt"></i></div>
     </div>
 
     <!-- Today's Collection -->
-    <div class="col-12 col-sm-6 col-xl-3">
-      <div class="rm-stat-card">
-        <div class="rm-stat-icon-wrap bg-amber-subtle">
-          <i class="fas fa-rupee-sign text-amber"></i>
-        </div>
-        <div class="rm-stat-content">
-          <div class="rm-stat-label">Today's Collection</div>
-          <div class="rm-stat-value">₹{{ summary.todayCollection | number:'1.0-0' }}</div>
-          <div class="rm-stat-sub text-emerald">
-            <i class="fas fa-arrow-trend-up me-1"></i>Received Today
-          </div>
-        </div>
+    <div class="kpi-card s-orange">
+      <div class="kpi-content">
+        <div class="kpi-label">Today's Collection</div>
+        <div class="kpi-value text-orange">₹{{ summary.todayCollection | number:'1.0-0' }}</div>
       </div>
+      <div class="kpi-icon"><i class="fas fa-rupee-sign"></i></div>
     </div>
 
     <!-- Total Collection -->
-    <div class="col-12 col-sm-6 col-xl-3">
-      <div class="rm-stat-card">
-        <div class="rm-stat-icon-wrap bg-purple-subtle">
-          <i class="fas fa-layer-group text-purple"></i>
-        </div>
-        <div class="rm-stat-content">
-          <div class="rm-stat-label">Total Collection</div>
-          <div class="rm-stat-value">₹{{ formatIndianLakh(summary.totalCollection) }}</div>
-          <div class="rm-stat-sub text-emerald">
-            <i class="fas fa-check-circle me-1"></i>Lifetime Verified
-          </div>
-        </div>
+    <div class="kpi-card s-purple">
+      <div class="kpi-content">
+        <div class="kpi-label">Total Collection</div>
+        <div class="kpi-value text-purple">₹{{ formatIndianLakh(summary.totalCollection) }}</div>
       </div>
+      <div class="kpi-icon"><i class="fas fa-layer-group"></i></div>
     </div>
   </div>
 
-  <!-- 3. RECEIPT TABS + SEARCH COMPACT TOOLBAR -->
-  <div class="rm-panel-card mb-3">
-    <!-- Top Pill Tabs & Global Search -->
-    <div class="rm-filter-top d-flex align-items-center justify-content-between flex-wrap gap-2.5 px-3 py-2.5">
-      <div class="rm-pill-tabs d-flex align-items-center gap-2 overflow-auto">
-        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='all'" (click)="selectTab('all')">
-          All Receipts <span *ngIf="summary.totalReceipts">({{ summary.totalReceipts }})</span>
+  <!-- TOOLBAR CARD (PILL TABS & SEARCH) -->
+  <div class="filter-card mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <!-- Horizontal Scrollable Pill Tabs -->
+      <div class="tabs-nav">
+        <button type="button" class="tab-btn" [class.active]="activeTab==='all'" (click)="selectTab('all')">
+          All Receipts <span class="tab-badge" *ngIf="summary.totalReceipts">{{ summary.totalReceipts }}</span>
         </button>
-        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Active'" (click)="selectTab('Active')">
-          Active <span *ngIf="summary.activeReceipts">({{ summary.activeReceipts }})</span>
+        <button type="button" class="tab-btn" [class.active]="activeTab==='Active'" (click)="selectTab('Active')">
+          Active <span class="tab-badge" *ngIf="summary.activeReceipts">{{ summary.activeReceipts }}</span>
         </button>
-        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Cancelled'" (click)="selectTab('Cancelled')">
-          Cancelled <span *ngIf="summary.cancelledReceipts">({{ summary.cancelledReceipts }})</span>
+        <button type="button" class="tab-btn" [class.active]="activeTab==='Cancelled'" (click)="selectTab('Cancelled')">
+          Cancelled <span class="tab-badge" *ngIf="summary.cancelledReceipts">{{ summary.cancelledReceipts }}</span>
         </button>
-        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Cash'" (click)="selectTab('Cash')">
-          Cash <span *ngIf="summary.cashReceipts !== undefined && summary.cashReceipts > 0">({{ summary.cashReceipts }})</span>
+        <button type="button" class="tab-btn" [class.active]="activeTab==='Cash'" (click)="selectTab('Cash')">
+          Cash <span class="tab-badge" *ngIf="summary.cashReceipts">{{ summary.cashReceipts }}</span>
         </button>
-        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='Cheque'" (click)="selectTab('Cheque')">
-          Cheque <span *ngIf="summary.chequeReceipts !== undefined && summary.chequeReceipts > 0">({{ summary.chequeReceipts }})</span>
+        <button type="button" class="tab-btn" [class.active]="activeTab==='Cheque'" (click)="selectTab('Cheque')">
+          Cheque <span class="tab-badge" *ngIf="summary.chequeReceipts">{{ summary.chequeReceipts }}</span>
         </button>
-        <button type="button" class="rm-pill-tab" [class.active]="activeTab==='UPI'" (click)="selectTab('UPI')">
-          UPI / Online <span *ngIf="summary.upiReceipts !== undefined && summary.upiReceipts > 0">({{ summary.upiReceipts }})</span>
+        <button type="button" class="tab-btn" [class.active]="activeTab==='UPI'" (click)="selectTab('UPI')">
+          UPI / Online <span class="tab-badge" *ngIf="summary.upiReceipts">{{ summary.upiReceipts }}</span>
         </button>
       </div>
 
-      <div class="rm-search-box">
-        <i class="fas fa-search rm-search-icon"></i>
-        <input type="text" class="rm-search-input" [(ngModel)]="search" (keyup.enter)="onFilterChange()"
-               placeholder="Search name, receipt #, property..." />
+      <!-- Search & Advanced Filter Toggle -->
+      <div class="filter-tools ms-auto d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-xs" [class.active]="filtersOpen" (click)="toggleFilters()">
+          <i class="fas fa-filter me-1"></i> Filters
+          <span *ngIf="hasActiveFilters" class="badge bg-emerald text-white ms-1">Active</span>
+        </button>
+
+        <div class="f-input-wrap search-field-box">
+          <i class="fas fa-search f-input-icon"></i>
+          <input
+            type="text"
+            class="f-input f-input-search"
+            [(ngModel)]="search"
+            (keyup.enter)="onFilterChange()"
+            placeholder="Search name, receipt #, property...">
+          <button
+            type="button"
+            class="f-clear-btn"
+            *ngIf="search"
+            (click)="clearSearch()"
+            title="Clear search">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 4. FILTER SECTION (ACCORDION TOGGLE BAR) -->
-    <div class="rm-filter-accordion-header px-3 py-2.5 d-flex align-items-center justify-content-between border-top cursor-pointer"
-         (click)="toggleFilters()">
-      <div class="d-flex align-items-center gap-2">
-        <i class="fas fa-filter text-emerald fs-12"></i>
-        <span class="fw-700 fs-12 text-dark">Filters</span>
-        <span *ngIf="hasActiveFilters" class="badge bg-emerald-subtle text-emerald fs-10 py-0.5 px-2 rounded-pill ms-1">Active</span>
-      </div>
-      <div class="d-flex align-items-center gap-1 text-muted fs-11">
-        <span>{{ filtersOpen ? 'Hide Filters' : 'Show Filters' }}</span>
-        <i class="fas ms-1" [class.fa-chevron-up]="filtersOpen" [class.fa-chevron-down]="!filtersOpen"></i>
-      </div>
-    </div>
-
-    <!-- Filter Inputs Row (Collapsible) -->
-    <div class="rm-filter-drawer px-3 py-3 border-top bg-light-subtle" *ngIf="filtersOpen">
-      <div class="row g-3 align-items-end">
+    <!-- Collapsible Advanced Filters Drawer -->
+    <div class="filter-drawer border-top mt-2 pt-2" *ngIf="filtersOpen">
+      <div class="row g-2 align-items-end">
         <!-- Customer Name -->
-        <div class="col-12 col-sm-6 col-lg-3">
-          <label class="rm-field-label">Customer Name</label>
-          <div class="position-relative">
-            <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-2.5 text-muted fs-11"></i>
-            <input type="text" class="form-control rm-input rm-input-with-icon" [(ngModel)]="customerName" (keyup.enter)="onFilterChange()"
-                   placeholder="Search customer..." />
-          </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label-custom">Customer Name</label>
+          <input type="text" class="f-input" [(ngModel)]="customerName" (keyup.enter)="onFilterChange()" placeholder="Search customer...">
         </div>
 
         <!-- Receipt / Invoice # -->
-        <div class="col-12 col-sm-6 col-lg-3">
-          <label class="rm-field-label">Receipt / Invoice #</label>
-          <input type="text" class="form-control rm-input" [(ngModel)]="invoiceNo" (keyup.enter)="onFilterChange()"
-                 placeholder="e.g. MMR/REC/..." />
+        <div class="col-6 col-md-3">
+          <label class="form-label-custom">Receipt / Invoice #</label>
+          <input type="text" class="f-input" [(ngModel)]="invoiceNo" (keyup.enter)="onFilterChange()" placeholder="e.g. MMR/REC/...">
         </div>
 
         <!-- Payment Mode -->
-        <div class="col-6 col-sm-4 col-lg-2">
-          <label class="rm-field-label">Payment Mode</label>
-          <select class="form-select rm-input" [(ngModel)]="paymentMode" (change)="onFilterChange()">
+        <div class="col-6 col-md-2">
+          <label class="form-label-custom">Payment Mode</label>
+          <select class="f-input" [(ngModel)]="paymentMode" (change)="onFilterChange()">
             <option value="">All Modes</option>
             <option value="Full Payment">Full Payment</option>
             <option value="Installment">Installment</option>
@@ -172,171 +147,182 @@
         </div>
 
         <!-- From Date -->
-        <div class="col-6 col-sm-4 col-lg-2">
-          <label class="rm-field-label">From Date</label>
-          <input type="date" class="form-control rm-input" [(ngModel)]="dateFrom" (change)="onFilterChange()" />
+        <div class="col-3 col-md-2">
+          <label class="form-label-custom">From Date</label>
+          <input type="date" class="f-input" [(ngModel)]="dateFrom" (change)="onFilterChange()">
         </div>
 
         <!-- To Date -->
-        <div class="col-6 col-sm-4 col-lg-2">
-          <label class="rm-field-label">To Date</label>
-          <input type="date" class="form-control rm-input" [(ngModel)]="dateTo" (change)="onFilterChange()" />
+        <div class="col-3 col-md-2">
+          <label class="form-label-custom">To Date</label>
+          <input type="date" class="f-input" [(ngModel)]="dateTo" (change)="onFilterChange()">
         </div>
 
-        <!-- Amount Range (Min - Max) -->
-        <div class="col-12 col-sm-7 col-lg-4">
-          <label class="rm-field-label">Amount Range (₹)</label>
-          <div class="d-flex align-items-center gap-2">
-            <input type="number" class="form-control rm-input" [(ngModel)]="minAmount" (keyup.enter)="onFilterChange()" placeholder="Min ₹" min="0" />
-            <span class="text-muted fs-11 fw-semibold">to</span>
-            <input type="number" class="form-control rm-input" [(ngModel)]="maxAmount" (keyup.enter)="onFilterChange()" placeholder="Max ₹" min="0" />
+        <!-- Amount Range -->
+        <div class="col-8 col-md-4">
+          <label class="form-label-custom">Amount Range (₹)</label>
+          <div class="d-flex align-items-center gap-1.5">
+            <input type="number" class="f-input" [(ngModel)]="minAmount" (keyup.enter)="onFilterChange()" placeholder="Min ₹" min="0">
+            <span class="fs-10 text-muted fw-700">to</span>
+            <input type="number" class="f-input" [(ngModel)]="maxAmount" (keyup.enter)="onFilterChange()" placeholder="Max ₹" min="0">
           </div>
         </div>
 
-        <!-- Clear All & Apply Filter Buttons -->
-        <div class="col-12 col-sm-5 col-lg-8 d-flex align-items-center justify-content-end gap-2.5">
-          <button type="button" class="btn btn-link text-decoration-none rm-clear-link" (click)="resetFilters()" *ngIf="hasActiveFilters">
-            <i class="fas fa-undo me-1"></i> Clear All
+        <!-- Filter Actions -->
+        <div class="col-4 col-md-8 d-flex align-items-center justify-content-end gap-1.5">
+          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="resetFilters()" *ngIf="hasActiveFilters">
+            <i class="fas fa-undo me-1"></i> Reset
           </button>
-          <button type="button" class="btn rm-btn-apply" (click)="onFilterChange()">
-            <i class="fas fa-filter me-1.5"></i> Apply Filters
+          <button type="button" class="btn btn-emerald btn-xs" (click)="onFilterChange()">
+            <i class="fas fa-filter me-1"></i> Apply
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 5 & 6. MAIN DATA TABLE / COMPACT EMPTY STATE CARD -->
-  <div class="rm-panel-card mb-3">
-    <!-- Loading Spinner -->
-    <div class="text-center py-5" *ngIf="loading">
-      <div class="spinner-border spinner-border-sm text-emerald mx-auto mb-2" role="status"></div>
-      <p class="text-muted fs-12 mb-0">Loading receipt records...</p>
-    </div>
+  <!-- LOADING STATE -->
+  <div class="panel-card text-center py-4 mb-3" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fs-3 text-gold mb-1.5"></i>
+    <p class="text-muted fs-11.5 mb-0">Loading receipt records...</p>
+  </div>
 
-    <!-- 5. EMPTY STATE -->
-    <div class="rm-empty-state text-center py-5 px-3" *ngIf="!loading && receipts.length === 0">
-      <div class="rm-empty-icon mb-3">
-        <i class="fas fa-file-invoice"></i>
-      </div>
-      <h6 class="fw-700 text-dark mb-1.5 fs-15">No Receipts Found</h6>
-      <p class="text-muted fs-12 mb-3 mx-auto" style="max-width: 380px;">
+  <!-- MAIN DATA TABLE CARD -->
+  <div class="panel-card mb-3" *ngIf="!loading">
+    <!-- EMPTY STATE -->
+    <div class="text-center py-5 px-3" *ngIf="receipts.length === 0">
+      <i class="fas fa-file-invoice text-muted fs-1 mb-2"></i>
+      <h6 class="fw-700 text-dark mb-1 fs-13">No Receipts Found</h6>
+      <p class="text-muted fs-11.5 mb-2.5 mx-auto" style="max-width: 380px;">
         No payment receipts match your current search/filter criteria.
       </p>
-      <div class="d-flex justify-content-center gap-2">
-        <button *ngIf="hasActiveFilters" class="btn btn-outline-secondary btn-sm rounded-8" (click)="resetFilters()">
+      <div class="d-flex justify-content-center gap-1.5">
+        <button *ngIf="hasActiveFilters" class="btn btn-outline-secondary btn-xs" (click)="resetFilters()">
           <i class="fas fa-undo me-1"></i> Clear Filters
         </button>
-        <a routerLink="/admin/receipts/create" class="btn rm-btn-gold btn-sm">
-          <i class="fas fa-plus me-1.5"></i> Add First Receipt
+        <a routerLink="/admin/receipts/create" class="btn btn-gold btn-xs">
+          <i class="fas fa-plus me-1"></i> Add Receipt
         </a>
       </div>
     </div>
 
-    <!-- 6. DATA TABLE -->
-    <div class="rm-table-wrapper" *ngIf="!loading && receipts.length > 0">
-      <table class="table rm-table align-middle mb-0">
+    <!-- DATA TABLE -->
+    <div class="table-responsive" *ngIf="receipts.length > 0">
+      <table class="custom-dash-table align-middle mb-0">
         <thead>
           <tr>
             <th (click)="sortBy('receipt_no')" class="cursor-pointer">
-              Receipt No. <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+              Receipt No. <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
             <th (click)="sortBy('customer_name')" class="cursor-pointer">
-              Customer Name <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+              Customer Name <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
             <th (click)="sortBy('plot_no')" class="cursor-pointer">
-              Property / Project <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+              Property / Project <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th (click)="sortBy('paid_amount')" class="cursor-pointer">
-              Amount (₹) <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+            <th (click)="sortBy('paid_amount')" class="cursor-pointer text-end">
+              Amount (₹) <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
             <th (click)="sortBy('payment_type')" class="cursor-pointer">
-              Payment Mode <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+              Payment Mode <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
             <th (click)="sortBy('receipt_date')" class="cursor-pointer">
-              Date <i class="fas fa-sort text-muted fs-10 ms-1"></i>
+              Date <i class="fas fa-sort text-muted fs-9.5 ms-1"></i>
             </th>
-            <th class="text-center" style="width: 60px;">Actions</th>
+            <th>Status</th>
+            <th class="text-end" style="width: 140px;">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let r of receipts" [class.rm-row-cancelled]="r.status === 'Cancelled'">
+          <tr *ngFor="let r of receipts" [class.row-cancelled]="r.status === 'Cancelled'">
             <!-- Receipt No -->
             <td>
-              <span class="rm-receipt-number cursor-pointer" (click)="viewReceipt(r)">{{ r.receipt_no }}</span>
+              <span class="code-badge cursor-pointer" (click)="viewReceipt(r)" title="Click to view receipt">{{ r.receipt_no }}</span>
             </td>
 
-            <!-- Customer Name -->
+            <!-- Customer Profile -->
             <td>
-              <div class="rm-cust-name">{{ r.customer_name }}</div>
-              <div *ngIf="r.mobile_no" class="rm-cust-mobile">{{ r.mobile_no }}</div>
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar-circle bg-gold-avatar">
+                  {{ getInitials(r.customer_name) }}
+                </div>
+                <div>
+                  <div class="fw-700 text-dark fs-12">{{ r.customer_name }}</div>
+                  <div class="text-muted fs-10.5 d-flex align-items-center gap-1" *ngIf="r.mobile_no">
+                    <a [href]="'tel:' + r.mobile_no" class="text-muted text-decoration-none" title="Call">
+                      <i class="fas fa-phone-alt text-emerald me-0.5"></i>{{ r.mobile_no }}
+                    </a>
+                    <a [href]="'https://wa.me/91' + r.mobile_no" target="_blank" class="text-emerald ms-0.5" title="WhatsApp">
+                      <i class="fab fa-whatsapp"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
             </td>
 
             <!-- Property / Project -->
             <td>
-              <div class="rm-prop-val" *ngIf="r.plot_no">Plot {{ r.plot_no }}</div>
-              <div class="rm-prop-val" *ngIf="!r.plot_no && r.plot_area">{{ r.plot_area }}</div>
-              <div class="rm-prop-empty" *ngIf="!r.plot_no && !r.plot_area">—</div>
+              <div class="fw-600 text-dark fs-11.5" *ngIf="r.plot_no">Plot {{ r.plot_no }}</div>
+              <div class="text-muted fs-10.5" *ngIf="r.plot_area">{{ r.plot_area }}</div>
+              <div class="text-muted fs-11" *ngIf="!r.plot_no && !r.plot_area">—</div>
             </td>
 
             <!-- Amount (₹) -->
-            <td>
-              <span class="rm-amount-val">₹{{ r.paid_amount | number:'1.0-0' }}</span>
+            <td class="text-end">
+              <span class="fw-700 text-dark fs-12">₹{{ r.paid_amount | number:'1.0-0' }}</span>
             </td>
 
             <!-- Payment Mode Badge -->
             <td>
-              <div class="d-inline-flex align-items-center gap-1">
-                <!-- UPI -->
-                <span *ngIf="r.payment_type.includes('UPI') || r.payment_type.includes('Online')" class="rm-pay-badge rm-pay-upi">
-                  <i class="fas fa-bolt"></i> UPI
-                </span>
-                <!-- Cheque -->
-                <span *ngIf="r.payment_type === 'Cheque'" class="rm-pay-badge rm-pay-cheque">
-                  <i class="fas fa-money-check"></i> Cheque
-                </span>
-                <!-- Cash -->
-                <span *ngIf="r.payment_type === 'Cash'" class="rm-pay-badge rm-pay-cash">
-                  <i class="fas fa-money-bill-wave"></i> Cash
-                </span>
-                <!-- Other / Bank Transfer -->
-                <span *ngIf="r.payment_type !== 'Cash' && r.payment_type !== 'Cheque' && !r.payment_type.includes('UPI') && !r.payment_type.includes('Online')" class="rm-pay-badge rm-pay-other">
-                  <i class="fas fa-university"></i> {{ r.payment_type }}
-                </span>
-              </div>
+              <span class="chip" [ngClass]="{
+                'chip-ok': r.payment_type === 'Cash',
+                'chip-blue': r.payment_type.includes('UPI') || r.payment_type.includes('Online'),
+                'chip-warn': r.payment_type === 'Cheque',
+                'chip-neutral': r.payment_type !== 'Cash' && r.payment_type !== 'Cheque' && !r.payment_type.includes('UPI') && !r.payment_type.includes('Online')
+              }">
+                <i [class]="r.payment_type === 'Cash' ? 'fas fa-money-bill-wave me-1' : (r.payment_type === 'Cheque' ? 'fas fa-money-check me-1' : (r.payment_type.includes('UPI') || r.payment_type.includes('Online') ? 'fas fa-bolt me-1' : 'fas fa-university me-1'))"></i>
+                {{ r.payment_type }}
+              </span>
             </td>
 
             <!-- Date -->
             <td>
-              <span class="rm-date-val">{{ r.receipt_date | date:'dd MMM yyyy' }}</span>
+              <span class="fs-11 text-dark fw-600">{{ r.receipt_date | date:'dd MMM yyyy' }}</span>
             </td>
 
-            <!-- Actions Dropdown -->
-            <td class="text-center position-relative">
-              <button type="button" class="rm-action-dots-btn" (click)="toggleRowMenu($event, r.id)" title="Actions">
-                <i class="fas fa-ellipsis-v"></i>
-              </button>
+            <!-- Status -->
+            <td>
+              <span class="chip" [class.chip-ok]="r.status !== 'Cancelled'" [class.chip-err]="r.status === 'Cancelled'">
+                {{ r.status || 'Active' }}
+              </span>
+            </td>
 
-              <!-- Dropdown Menu -->
-              <div class="rm-actions-dropdown shadow-lg" *ngIf="activeRowMenuId === r.id" (click)="$event.stopPropagation()">
-                <button type="button" class="rm-dropdown-item" (click)="viewReceipt(r); activeRowMenuId = null">
-                  <i class="fas fa-eye text-primary me-2"></i> View Receipt
+            <!-- Actions (24px square buttons) -->
+            <td class="text-end">
+              <div class="actions-cell justify-content-end">
+                <!-- 1. View Receipt -->
+                <button type="button" class="ibtn ibtn-view" (click)="viewReceipt(r)" title="View Receipt Dossier">
+                  <i class="fas fa-eye"></i>
                 </button>
-                <a routerLink="/admin/receipts/create" class="rm-dropdown-item text-dark" (click)="activeRowMenuId = null">
-                  <i class="fas fa-edit text-warning me-2"></i> Edit
+
+                <!-- 2. Edit Receipt -->
+                <a routerLink="/admin/receipts/create" class="ibtn ibtn-edit" title="Edit Receipt">
+                  <i class="fas fa-edit"></i>
                 </a>
-                <button type="button" class="rm-dropdown-item text-success" (click)="downloadPdf(r); activeRowMenuId = null">
-                  <i class="fas fa-file-pdf text-success me-2"></i> Download PDF
+
+                <!-- 3. Download PDF -->
+                <button type="button" class="ibtn ibtn-pdf" (click)="downloadPdf(r)" title="Download PDF">
+                  <i class="fas fa-file-pdf"></i>
                 </button>
-                <button type="button" class="rm-dropdown-item" (click)="printReceipt(r); activeRowMenuId = null">
-                  <i class="fas fa-print text-secondary me-2"></i> Print
+
+                <!-- 4. Print -->
+                <button type="button" class="ibtn ibtn-print" (click)="printReceipt(r)" title="Print Receipt">
+                  <i class="fas fa-print"></i>
                 </button>
-                <button type="button" class="rm-dropdown-item text-info" (click)="verifyReceipt(r); activeRowMenuId = null">
-                  <i class="fas fa-check-double text-info me-2"></i> Verify
-                </button>
-                <div class="dropdown-divider my-1" *ngIf="r.status === 'Active'"></div>
-                <button *ngIf="r.status === 'Active'" type="button" class="rm-dropdown-item text-danger" (click)="openCancelModal(r); activeRowMenuId = null">
-                  <i class="fas fa-ban text-danger me-2"></i> Cancel Receipt
+
+                <!-- 5. Cancel Receipt -->
+                <button *ngIf="r.status !== 'Cancelled'" type="button" class="ibtn ibtn-ban" (click)="openCancelModal(r)" title="Cancel / Void Receipt">
+                  <i class="fas fa-ban"></i>
                 </button>
               </div>
             </td>
@@ -345,341 +331,335 @@
       </table>
     </div>
 
-    <!-- 7. PAGINATION FOOTER -->
-    <div class="rm-pagination-footer p-2.5 d-flex align-items-center justify-content-between flex-wrap gap-2 border-top" *ngIf="!loading && total > 0">
-      <div class="text-muted fs-12">
-        Showing <strong class="text-dark">{{ total === 0 ? 0 : (page - 1) * limit + 1 }} – {{ Math.min(page * limit, total) }}</strong> of <strong class="text-dark">{{ total }}</strong> receipts
+    <!-- PAGINATION FOOTER -->
+    <div class="pagination-footer border-top d-flex align-items-center justify-content-between flex-wrap gap-2 px-3 py-2" *ngIf="!loading && total > 0">
+      <div class="fs-11 text-muted">
+        Showing <strong>{{ total === 0 ? 0 : (page - 1) * limit + 1 }} – {{ Math.min(page * limit, total) }}</strong> of <strong>{{ total }}</strong> receipts
       </div>
 
-      <div class="rm-pagination-controls d-flex align-items-center gap-1">
-        <!-- Prev Button -->
-        <button class="rm-page-box" [disabled]="page <= 1" (click)="changePage(page - 1)" title="Previous Page">
+      <div class="d-flex align-items-center gap-1">
+        <button class="ibtn" [disabled]="page <= 1" (click)="changePage(page - 1)" title="Previous Page">
           <i class="fas fa-chevron-left"></i>
         </button>
 
-        <!-- Dynamic Page Numbers -->
         <ng-container *ngFor="let p of visiblePages">
-          <button class="rm-page-box" [class.active]="p === page" (click)="changePage(p)">
+          <button class="ibtn" [class.btn-active-page]="p === page" (click)="changePage(p)">
             {{ p }}
           </button>
         </ng-container>
 
-        <!-- Ellipsis if needed -->
-        <span *ngIf="totalPages > 5 && page < totalPages - 2" class="px-1 text-muted fs-11">...</span>
+        <span *ngIf="totalPages > 5 && page < totalPages - 2" class="px-1 text-muted fs-10">...</span>
 
-        <!-- Last page jump -->
-        <button *ngIf="totalPages > 5 && !visiblePages.includes(totalPages)" class="rm-page-box" (click)="changePage(totalPages)">
+        <button *ngIf="totalPages > 5 && !visiblePages.includes(totalPages)" class="ibtn" (click)="changePage(totalPages)">
           {{ totalPages }}
         </button>
 
-        <!-- Next Button -->
-        <button class="rm-page-box" [disabled]="page >= totalPages" (click)="changePage(page + 1)" title="Next Page">
+        <button class="ibtn" [disabled]="page >= totalPages" (click)="changePage(page + 1)" title="Next Page">
           <i class="fas fa-chevron-right"></i>
         </button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ======================================================== -->
-  <!-- ======================================================== -->
-  <!-- VIEW RECEIPT MODAL (A4 LANDSCAPE DUAL COPIES)             -->
-  <!-- ======================================================== -->
-  <div class="modal-backdrop fade show" *ngIf="showViewModal && selectedReceipt"></div>
-  <div class="modal d-block fade show" tabIndex="-1" *ngIf="showViewModal && selectedReceipt" (click)="closeViewModal()">
-    <div class="modal-dialog modal-dialog-centered modal-xl" (click)="$event.stopPropagation()">
-      <div class="modal-content border-0 rounded-12 shadow-lg overflow-hidden">
-        <div class="modal-header rm-modal-head text-white py-2 px-3 d-flex justify-content-between align-items-center no-print">
-          <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-receipt text-warning fs-13"></i>
-            <div>
-              <h6 class="modal-title fs-13 fw-700 text-white mb-0">Official Receipt Details (A4 Landscape - 2 Copies)</h6>
-              <div class="fs-10 text-white-50">Receipt #{{ selectedReceipt.receipt_no }} (Customer Copy &amp; Company Copy)</div>
-            </div>
-          </div>
-          <button type="button" class="btn-close btn-close-white" (click)="closeViewModal()"></button>
-        </div>
-
-        <div class="modal-body p-3 bg-light" style="max-height: 82vh; overflow-y: auto;">
-          <!-- Dual Copy Landscape Container (2 Copies on 1 A4 Landscape Sheet) -->
-          <div class="receipt-dual-landscape-wrapper">
-            
-            <!-- COPY 1: CUSTOMER COPY -->
-            <div class="receipt-paper receipt-copy-card">
-              <!-- Header -->
-              <div class="receipt-head text-center">
-                <h2 class="company-title">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</h2>
-                <p class="company-address">00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India</p>
-                <p class="company-contact">Email: support&#64;mmrconstructions.in | Contact: 9511119879</p>
-                <div class="d-flex align-items-center justify-content-center gap-1.5 my-1">
-                  <span class="receipt-badge-title">PAYMENT RECEIPT</span>
-                  <span class="receipt-copy-badge customer-badge">CUSTOMER COPY</span>
-                </div>
-              </div>
-
-              <!-- Meta Grid -->
-              <div class="receipt-meta-grid">
-                <div><strong>Receipt No:</strong> {{ selectedReceipt.receipt_no }}</div>
-                <div><strong>Date:</strong> {{ selectedReceipt.receipt_date | date:'dd/MM/yyyy' }}</div>
-                <div><span class="serial-highlight"><strong>Serial No:</strong> {{ selectedReceipt.serial_no }}</span></div>
-                <div><strong>Plotting Place:</strong> {{ selectedReceipt.plotting_place || '00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India' }}</div>
-              </div>
-
-              <hr class="receipt-divider" />
-
-              <!-- Table -->
-              <table class="table table-bordered receipt-table">
-                <tbody>
-                  <tr>
-                    <td class="lbl">Customer Name:</td>
-                    <td class="val fw-bold">{{ selectedReceipt.customer_name }}</td>
-                    <td class="lbl">Mobile No:</td>
-                    <td class="val">{{ selectedReceipt.mobile_no }}</td>
-                  </tr>
-                  <tr>
-                    <td class="lbl">R.O.P. (S/o, D/o, W/o):</td>
-                    <td class="val">{{ selectedReceipt.r_o_p || '—' }}</td>
-                    <td class="lbl">Plot No:</td>
-                    <td class="val fw-bold">{{ selectedReceipt.plot_no || '—' }}</td>
-                  </tr>
-                  <tr>
-                    <td class="lbl">Plot Area:</td>
-                    <td class="val">{{ selectedReceipt.plot_area || '—' }}</td>
-                    <td class="lbl">Payment Mode:</td>
-                    <td class="val"><span class="badge bg-success fs-9 py-0.5 px-1.5">{{ selectedReceipt.payment_mode }}</span></td>
-                  </tr>
-                  <tr>
-                    <td class="lbl">Payment Type:</td>
-                    <td class="val">
-                      <span class="badge fs-9 py-0.5 px-1.5" [ngClass]="{'bg-primary': selectedReceipt.payment_type==='Cash', 'bg-info': selectedReceipt.payment_type==='Cheque', 'bg-purple': selectedReceipt.payment_type==='UPI'}">
-                        {{ selectedReceipt.payment_type }}
-                      </span>
-                    </td>
-                    <td class="lbl">Amount Depositor:</td>
-                    <td class="val">{{ selectedReceipt.amount_depositor_name || '—' }}</td>
-                  </tr>
-                  <tr *ngIf="selectedReceipt.payment_type === 'Cheque'">
-                    <td class="lbl">Cheque No &amp; Date:</td>
-                    <td class="val">{{ selectedReceipt.cheque_no }} ({{ selectedReceipt.cheque_date | date:'dd/MM/yyyy' }})</td>
-                    <td class="lbl">Bank Name:</td>
-                    <td class="val">{{ selectedReceipt.bank_name }}</td>
-                  </tr>
-                  <tr>
-                    <td class="lbl">Advisor Name:</td>
-                    <td class="val">{{ selectedReceipt.advisor_name || '—' }}</td>
-                    <td class="lbl">Advisor Mobile:</td>
-                    <td class="val">{{ selectedReceipt.advisor_mobile || '—' }}</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <!-- Financial Figures -->
-              <div class="receipt-amount-box">
-                <div class="row text-center g-0">
-                  <div class="col-4">
-                    <div class="amt-lbl">Receipt Amount</div>
-                    <div class="amt-val text-secondary">₹{{ selectedReceipt.receipt_amount | number:'1.2-2' }}</div>
-                  </div>
-                  <div class="col-4">
-                    <div class="amt-lbl">Paid Amount</div>
-                    <div class="amt-val text-success fw-bold">₹{{ selectedReceipt.paid_amount | number:'1.2-2' }}</div>
-                  </div>
-                  <div class="col-4">
-                    <div class="amt-lbl">Inward Amount</div>
-                    <div class="amt-val text-info">₹{{ selectedReceipt.inward_amount | number:'1.2-2' }}</div>
-                  </div>
-                </div>
-                <div class="amount-words-line">
-                  <strong>Amount in Words: </strong>
-                  <span class="text-success fst-italic">{{ selectedAmountInWords }}</span>
-                </div>
-              </div>
-
-              <div *ngIf="selectedReceipt.notes" class="receipt-notes">
-                <strong>Notes / Terms:</strong> {{ selectedReceipt.notes }}
-              </div>
-
-              <div class="terms-disclaimer">
-                * This receipt is a verified acknowledgment of payment for MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED. All payments via cheque are subject to clearance.
-              </div>
-
-              <!-- Signatures with Generous Top Space -->
-              <div class="receipt-signatures">
-                <div class="signature-box text-center">
-                  <div class="sig-line"></div>
-                  <div class="sig-label">Depositor's Signature</div>
-                </div>
-                <div class="signature-box text-center">
-                  <div class="sig-line"></div>
-                  <div class="sig-label">Authorized Signatory</div>
-                  <div class="sig-sub">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- CENTER CUTTING DIVIDER (Perforation Line) -->
-            <div class="receipt-cut-divider">
-              <div class="cut-line"></div>
-              <div class="cut-scissor" title="Cut Here"><i class="fas fa-cut"></i></div>
-              <div class="cut-line"></div>
-            </div>
-
-            <!-- COPY 2: COMPANY / OFFICE COPY -->
-            <div class="receipt-paper receipt-copy-card">
-              <!-- Header -->
-              <div class="receipt-head text-center">
-                <h2 class="company-title">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</h2>
-                <p class="company-address">00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India</p>
-                <p class="company-contact">Email: support&#64;mmrconstructions.in | Contact: 9511119879</p>
-                <div class="d-flex align-items-center justify-content-center gap-1.5 my-1">
-                  <span class="receipt-badge-title">PAYMENT RECEIPT</span>
-                  <span class="receipt-copy-badge company-badge">COMPANY / OFFICE COPY</span>
-                </div>
-              </div>
-
-              <!-- Meta Grid -->
-              <div class="receipt-meta-grid">
-                <div><strong>Receipt No:</strong> {{ selectedReceipt.receipt_no }}</div>
-                <div><strong>Date:</strong> {{ selectedReceipt.receipt_date | date:'dd/MM/yyyy' }}</div>
-                <div><span class="serial-highlight"><strong>Serial No:</strong> {{ selectedReceipt.serial_no }}</span></div>
-                <div><strong>Plotting Place:</strong> {{ selectedReceipt.plotting_place || '00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India' }}</div>
-              </div>
-
-              <hr class="receipt-divider" />
-
-              <!-- Table -->
-              <table class="table table-bordered receipt-table">
-                <tbody>
-                  <tr>
-                    <td class="lbl">Customer Name:</td>
-                    <td class="val fw-bold">{{ selectedReceipt.customer_name }}</td>
-                    <td class="lbl">Mobile No:</td>
-                    <td class="val">{{ selectedReceipt.mobile_no }}</td>
-                  </tr>
-                  <tr>
-                    <td class="lbl">R.O.P. (S/o, D/o, W/o):</td>
-                    <td class="val">{{ selectedReceipt.r_o_p || '—' }}</td>
-                    <td class="lbl">Plot No:</td>
-                    <td class="val fw-bold">{{ selectedReceipt.plot_no || '—' }}</td>
-                  </tr>
-                  <tr>
-                    <td class="lbl">Plot Area:</td>
-                    <td class="val">{{ selectedReceipt.plot_area || '—' }}</td>
-                    <td class="lbl">Payment Mode:</td>
-                    <td class="val"><span class="badge bg-success fs-9 py-0.5 px-1.5">{{ selectedReceipt.payment_mode }}</span></td>
-                  </tr>
-                  <tr>
-                    <td class="lbl">Payment Type:</td>
-                    <td class="val">
-                      <span class="badge fs-9 py-0.5 px-1.5" [ngClass]="{'bg-primary': selectedReceipt.payment_type==='Cash', 'bg-info': selectedReceipt.payment_type==='Cheque', 'bg-purple': selectedReceipt.payment_type==='UPI'}">
-                        {{ selectedReceipt.payment_type }}
-                      </span>
-                    </td>
-                    <td class="lbl">Amount Depositor:</td>
-                    <td class="val">{{ selectedReceipt.amount_depositor_name || '—' }}</td>
-                  </tr>
-                  <tr *ngIf="selectedReceipt.payment_type === 'Cheque'">
-                    <td class="lbl">Cheque No &amp; Date:</td>
-                    <td class="val">{{ selectedReceipt.cheque_no }} ({{ selectedReceipt.cheque_date | date:'dd/MM/yyyy' }})</td>
-                    <td class="lbl">Bank Name:</td>
-                    <td class="val">{{ selectedReceipt.bank_name }}</td>
-                  </tr>
-                  <tr>
-                    <td class="lbl">Advisor Name:</td>
-                    <td class="val">{{ selectedReceipt.advisor_name || '—' }}</td>
-                    <td class="lbl">Advisor Mobile:</td>
-                    <td class="val">{{ selectedReceipt.advisor_mobile || '—' }}</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <!-- Financial Figures -->
-              <div class="receipt-amount-box">
-                <div class="row text-center g-0">
-                  <div class="col-4">
-                    <div class="amt-lbl">Receipt Amount</div>
-                    <div class="amt-val text-secondary">₹{{ selectedReceipt.receipt_amount | number:'1.2-2' }}</div>
-                  </div>
-                  <div class="col-4">
-                    <div class="amt-lbl">Paid Amount</div>
-                    <div class="amt-val text-success fw-bold">₹{{ selectedReceipt.paid_amount | number:'1.2-2' }}</div>
-                  </div>
-                  <div class="col-4">
-                    <div class="amt-lbl">Inward Amount</div>
-                    <div class="amt-val text-info">₹{{ selectedReceipt.inward_amount | number:'1.2-2' }}</div>
-                  </div>
-                </div>
-                <div class="amount-words-line">
-                  <strong>Amount in Words: </strong>
-                  <span class="text-success fst-italic">{{ selectedAmountInWords }}</span>
-                </div>
-              </div>
-
-              <div *ngIf="selectedReceipt.notes" class="receipt-notes">
-                <strong>Notes / Terms:</strong> {{ selectedReceipt.notes }}
-              </div>
-
-              <div class="terms-disclaimer">
-                * This receipt is a verified acknowledgment of payment for MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED. All payments via cheque are subject to clearance.
-              </div>
-
-              <!-- Signatures with Generous Top Space -->
-              <div class="receipt-signatures">
-                <div class="signature-box text-center">
-                  <div class="sig-line"></div>
-                  <div class="sig-label">Depositor's Signature</div>
-                </div>
-                <div class="signature-box text-center">
-                  <div class="sig-line"></div>
-                  <div class="sig-label">Authorized Signatory</div>
-                  <div class="sig-sub">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</div>
-                </div>
-              </div>
-            </div>
-
+<!-- ======================================================== -->
+<!-- VIEW RECEIPT MODAL (A4 LANDSCAPE DUAL COPIES)             -->
+<!-- ======================================================== -->
+<div class="modal-backdrop-custom" *ngIf="showViewModal && selectedReceipt" (click)="closeViewModal()">
+  <div class="modal-dialog-custom modal-xl" (click)="$event.stopPropagation()">
+    <div class="modal-content-card">
+      <div class="modal-header-compact d-flex justify-content-between align-items-center no-print">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fas fa-receipt text-gold fs-5"></i>
+          <div>
+            <h3 class="modal-hero-title mb-0 fs-13 text-white">Official Receipt (A4 Landscape - 2 Copies)</h3>
+            <div class="modal-hero-sub fs-10">Receipt #{{ selectedReceipt.receipt_no }} (Customer Copy &amp; Company Copy)</div>
           </div>
         </div>
+        <button type="button" class="modal-close-btn" (click)="closeViewModal()">&times;</button>
+      </div>
 
-        <div class="modal-footer bg-light p-2 d-flex justify-content-between align-items-center no-print">
-          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeViewModal()">Close</button>
-          <div class="d-flex gap-1.5">
-            <button type="button" class="btn btn-outline-success btn-xs" (click)="downloadPdf(selectedReceipt)">
-              <i class="fas fa-file-pdf me-1"></i> Download PDF
-            </button>
-            <button type="button" class="btn rm-btn-apply btn-xs" (click)="printReceipt(selectedReceipt)">
-              <i class="fas fa-print me-1"></i> Print A4 Landscape (2 Copies)
-            </button>
+      <div class="modal-body-compact p-3 bg-light" style="max-height: 82vh; overflow-y: auto;">
+        <!-- Dual Copy Landscape Container (2 Copies on 1 A4 Landscape Sheet) -->
+        <div class="receipt-dual-landscape-wrapper">
+          
+          <!-- COPY 1: CUSTOMER COPY -->
+          <div class="receipt-paper receipt-copy-card">
+            <!-- Header -->
+            <div class="receipt-head text-center">
+              <h2 class="company-title">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</h2>
+              <p class="company-address">00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India</p>
+              <p class="company-contact">Email: support&#64;mmrconstructions.in | Contact: 9511119879</p>
+              <div class="d-flex align-items-center justify-content-center gap-1.5 my-1">
+                <span class="receipt-badge-title">PAYMENT RECEIPT</span>
+                <span class="receipt-copy-badge customer-badge">CUSTOMER COPY</span>
+              </div>
+            </div>
+
+            <!-- Meta Grid -->
+            <div class="receipt-meta-grid">
+              <div><strong>Receipt No:</strong> {{ selectedReceipt.receipt_no }}</div>
+              <div><strong>Date:</strong> {{ selectedReceipt.receipt_date | date:'dd/MM/yyyy' }}</div>
+              <div><span class="serial-highlight"><strong>Serial No:</strong> {{ selectedReceipt.serial_no }}</span></div>
+              <div><strong>Plotting Place:</strong> {{ selectedReceipt.plotting_place || '00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India' }}</div>
+            </div>
+
+            <hr class="receipt-divider" />
+
+            <!-- Table -->
+            <table class="table table-bordered receipt-table">
+              <tbody>
+                <tr>
+                  <td class="lbl">Customer Name:</td>
+                  <td class="val fw-bold">{{ selectedReceipt.customer_name }}</td>
+                  <td class="lbl">Mobile No:</td>
+                  <td class="val">{{ selectedReceipt.mobile_no }}</td>
+                </tr>
+                <tr>
+                  <td class="lbl">R.O.P. (S/o, D/o, W/o):</td>
+                  <td class="val">{{ selectedReceipt.r_o_p || '—' }}</td>
+                  <td class="lbl">Plot No:</td>
+                  <td class="val fw-bold">{{ selectedReceipt.plot_no || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Plot Area:</td>
+                  <td class="val">{{ selectedReceipt.plot_area || '—' }}</td>
+                  <td class="lbl">Payment Mode:</td>
+                  <td class="val"><span class="badge bg-success fs-9 py-0.5 px-1.5">{{ selectedReceipt.payment_mode }}</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Payment Type:</td>
+                  <td class="val">
+                    <span class="badge fs-9 py-0.5 px-1.5" [ngClass]="{'bg-primary': selectedReceipt.payment_type==='Cash', 'bg-info': selectedReceipt.payment_type==='Cheque', 'bg-purple': selectedReceipt.payment_type==='UPI'}">
+                      {{ selectedReceipt.payment_type }}
+                    </span>
+                  </td>
+                  <td class="lbl">Amount Depositor:</td>
+                  <td class="val">{{ selectedReceipt.amount_depositor_name || '—' }}</td>
+                </tr>
+                <tr *ngIf="selectedReceipt.payment_type === 'Cheque'">
+                  <td class="lbl">Cheque No &amp; Date:</td>
+                  <td class="val">{{ selectedReceipt.cheque_no }} ({{ selectedReceipt.cheque_date | date:'dd/MM/yyyy' }})</td>
+                  <td class="lbl">Bank Name:</td>
+                  <td class="val">{{ selectedReceipt.bank_name }}</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Advisor Name:</td>
+                  <td class="val">{{ selectedReceipt.advisor_name || '—' }}</td>
+                  <td class="lbl">Advisor Mobile:</td>
+                  <td class="val">{{ selectedReceipt.advisor_mobile || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Financial Figures -->
+            <div class="receipt-amount-box">
+              <div class="row text-center g-0">
+                <div class="col-4">
+                  <div class="amt-lbl">Receipt Amount</div>
+                  <div class="amt-val text-secondary">₹{{ selectedReceipt.receipt_amount | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-4">
+                  <div class="amt-lbl">Paid Amount</div>
+                  <div class="amt-val text-success fw-bold">₹{{ selectedReceipt.paid_amount | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-4">
+                  <div class="amt-lbl">Inward Amount</div>
+                  <div class="amt-val text-info">₹{{ selectedReceipt.inward_amount | number:'1.2-2' }}</div>
+                </div>
+              </div>
+              <div class="amount-words-line">
+                <strong>Amount in Words: </strong>
+                <span class="text-success fst-italic">{{ selectedAmountInWords }}</span>
+              </div>
+            </div>
+
+            <div *ngIf="selectedReceipt.notes" class="receipt-notes">
+              <strong>Notes / Terms:</strong> {{ selectedReceipt.notes }}
+            </div>
+
+            <div class="terms-disclaimer">
+              * This receipt is a verified acknowledgment of payment for MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED. All payments via cheque are subject to clearance.
+            </div>
+
+            <!-- Signatures -->
+            <div class="receipt-signatures">
+              <div class="signature-box text-center">
+                <div class="sig-line"></div>
+                <div class="sig-label">Depositor's Signature</div>
+              </div>
+              <div class="signature-box text-center">
+                <div class="sig-line"></div>
+                <div class="sig-label">Authorized Signatory</div>
+                <div class="sig-sub">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</div>
+              </div>
+            </div>
           </div>
+
+          <!-- CENTER CUTTING DIVIDER -->
+          <div class="receipt-cut-divider">
+            <div class="cut-line"></div>
+            <div class="cut-scissor" title="Cut Here"><i class="fas fa-cut"></i></div>
+            <div class="cut-line"></div>
+          </div>
+
+          <!-- COPY 2: COMPANY / OFFICE COPY -->
+          <div class="receipt-paper receipt-copy-card">
+            <!-- Header -->
+            <div class="receipt-head text-center">
+              <h2 class="company-title">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</h2>
+              <p class="company-address">00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India</p>
+              <p class="company-contact">Email: support&#64;mmrconstructions.in | Contact: 9511119879</p>
+              <div class="d-flex align-items-center justify-content-center gap-1.5 my-1">
+                <span class="receipt-badge-title">PAYMENT RECEIPT</span>
+                <span class="receipt-copy-badge company-badge">COMPANY / OFFICE COPY</span>
+              </div>
+            </div>
+
+            <!-- Meta Grid -->
+            <div class="receipt-meta-grid">
+              <div><strong>Receipt No:</strong> {{ selectedReceipt.receipt_no }}</div>
+              <div><strong>Date:</strong> {{ selectedReceipt.receipt_date | date:'dd/MM/yyyy' }}</div>
+              <div><span class="serial-highlight"><strong>Serial No:</strong> {{ selectedReceipt.serial_no }}</span></div>
+              <div><strong>Plotting Place:</strong> {{ selectedReceipt.plotting_place || '00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India' }}</div>
+            </div>
+
+            <hr class="receipt-divider" />
+
+            <!-- Table -->
+            <table class="table table-bordered receipt-table">
+              <tbody>
+                <tr>
+                  <td class="lbl">Customer Name:</td>
+                  <td class="val fw-bold">{{ selectedReceipt.customer_name }}</td>
+                  <td class="lbl">Mobile No:</td>
+                  <td class="val">{{ selectedReceipt.mobile_no }}</td>
+                </tr>
+                <tr>
+                  <td class="lbl">R.O.P. (S/o, D/o, W/o):</td>
+                  <td class="val">{{ selectedReceipt.r_o_p || '—' }}</td>
+                  <td class="lbl">Plot No:</td>
+                  <td class="val fw-bold">{{ selectedReceipt.plot_no || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Plot Area:</td>
+                  <td class="val">{{ selectedReceipt.plot_area || '—' }}</td>
+                  <td class="lbl">Payment Mode:</td>
+                  <td class="val"><span class="badge bg-success fs-9 py-0.5 px-1.5">{{ selectedReceipt.payment_mode }}</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Payment Type:</td>
+                  <td class="val">
+                    <span class="badge fs-9 py-0.5 px-1.5" [ngClass]="{'bg-primary': selectedReceipt.payment_type==='Cash', 'bg-info': selectedReceipt.payment_type==='Cheque', 'bg-purple': selectedReceipt.payment_type==='UPI'}">
+                      {{ selectedReceipt.payment_type }}
+                    </span>
+                  </td>
+                  <td class="lbl">Amount Depositor:</td>
+                  <td class="val">{{ selectedReceipt.amount_depositor_name || '—' }}</td>
+                </tr>
+                <tr *ngIf="selectedReceipt.payment_type === 'Cheque'">
+                  <td class="lbl">Cheque No &amp; Date:</td>
+                  <td class="val">{{ selectedReceipt.cheque_no }} ({{ selectedReceipt.cheque_date | date:'dd/MM/yyyy' }})</td>
+                  <td class="lbl">Bank Name:</td>
+                  <td class="val">{{ selectedReceipt.bank_name }}</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Advisor Name:</td>
+                  <td class="val">{{ selectedReceipt.advisor_name || '—' }}</td>
+                  <td class="lbl">Advisor Mobile:</td>
+                  <td class="val">{{ selectedReceipt.advisor_mobile || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Financial Figures -->
+            <div class="receipt-amount-box">
+              <div class="row text-center g-0">
+                <div class="col-4">
+                  <div class="amt-lbl">Receipt Amount</div>
+                  <div class="amt-val text-secondary">₹{{ selectedReceipt.receipt_amount | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-4">
+                  <div class="amt-lbl">Paid Amount</div>
+                  <div class="amt-val text-success fw-bold">₹{{ selectedReceipt.paid_amount | number:'1.2-2' }}</div>
+                </div>
+                <div class="col-4">
+                  <div class="amt-lbl">Inward Amount</div>
+                  <div class="amt-val text-info">₹{{ selectedReceipt.inward_amount | number:'1.2-2' }}</div>
+                </div>
+              </div>
+              <div class="amount-words-line">
+                <strong>Amount in Words: </strong>
+                <span class="text-success fst-italic">{{ selectedAmountInWords }}</span>
+              </div>
+            </div>
+
+            <div *ngIf="selectedReceipt.notes" class="receipt-notes">
+              <strong>Notes / Terms:</strong> {{ selectedReceipt.notes }}
+            </div>
+
+            <div class="terms-disclaimer">
+              * This receipt is a verified acknowledgment of payment for MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED. All payments via cheque are subject to clearance.
+            </div>
+
+            <!-- Signatures -->
+            <div class="receipt-signatures">
+              <div class="signature-box text-center">
+                <div class="sig-line"></div>
+                <div class="sig-label">Depositor's Signature</div>
+              </div>
+              <div class="signature-box text-center">
+                <div class="sig-line"></div>
+                <div class="sig-label">Authorized Signatory</div>
+                <div class="sig-sub">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer-compact bg-light p-2 d-flex justify-content-between align-items-center no-print">
+        <button type="button" class="btn btn-secondary btn-xs" (click)="closeViewModal()">Close</button>
+        <div class="d-flex gap-1.5">
+          <button type="button" class="btn btn-outline-success btn-xs" (click)="downloadPdf(selectedReceipt)">
+            <i class="fas fa-file-pdf me-1"></i> Download PDF
+          </button>
+          <button type="button" class="btn btn-gold btn-xs" (click)="printReceipt(selectedReceipt)">
+            <i class="fas fa-print me-1"></i> Print A4 Landscape (2 Copies)
+          </button>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ======================================================== -->
-  <!-- CANCEL CONFIRMATION MODAL                                -->
-  <!-- ======================================================== -->
-  <div class="modal-backdrop fade show" *ngIf="receiptToCancel"></div>
-  <div class="modal d-block fade show" tabIndex="-1" *ngIf="receiptToCancel" (click)="closeCancelModal()">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;" (click)="$event.stopPropagation()">
-      <div class="modal-content border-0 rounded-12 shadow-lg overflow-hidden">
-        <div class="modal-header bg-danger text-white py-2 px-3">
-          <h6 class="modal-title fs-13 fw-700 text-white mb-0"><i class="fas fa-exclamation-triangle me-1.5"></i>Cancel Receipt</h6>
-          <button type="button" class="btn-close btn-close-white" (click)="closeCancelModal()"></button>
+<!-- ======================================================== -->
+<!-- CANCEL CONFIRMATION MODAL                                -->
+<!-- ======================================================== -->
+<div class="modal-backdrop-custom" *ngIf="receiptToCancel" (click)="closeCancelModal()">
+  <div class="modal-dialog-custom modal-md" (click)="$event.stopPropagation()">
+    <div class="modal-content-card">
+      <div class="modal-header-compact bg-danger text-white">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <h3 class="modal-hero-title mb-0 fs-13"><i class="fas fa-exclamation-triangle me-1.5"></i>Cancel Receipt</h3>
+          <button class="modal-close-btn" (click)="closeCancelModal()">&times;</button>
         </div>
-        <div class="p-3 bg-white">
-          <p class="mb-2 fs-12">Are you sure you want to cancel Receipt <strong>#{{ receiptToCancel.receipt_no }}</strong> for <strong>{{ receiptToCancel.customer_name }}</strong> (₹{{ receiptToCancel.paid_amount | number:'1.2-2' }})?</p>
-          <div class="mb-2">
-            <label class="form-label fs-11 fw-700 text-dark mb-1">Cancellation Reason</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="cancelReason" placeholder="Enter reason for cancelling..." />
-          </div>
-          <small class="text-danger fs-10">This record will be permanently marked as Cancelled in the financial ledger.</small>
+      </div>
+      <div class="modal-body-compact">
+        <p class="mb-2 fs-11 text-muted">Are you sure you want to cancel Receipt <strong>#{{ receiptToCancel.receipt_no }}</strong> for <strong>{{ receiptToCancel.customer_name }}</strong> (₹{{ receiptToCancel.paid_amount | number:'1.2-2' }})?</p>
+        <div class="mb-2">
+          <label class="form-label-custom">Cancellation Reason</label>
+          <input type="text" class="f-input" [(ngModel)]="cancelReason" placeholder="Enter reason for cancelling...">
         </div>
-        <div class="modal-footer bg-light p-2 d-flex justify-content-end gap-1.5">
-          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="closeCancelModal()" [disabled]="cancelling">Back</button>
-          <button type="button" class="btn btn-danger btn-xs" (click)="confirmCancelReceipt()" [disabled]="cancelling">
-            <span *ngIf="cancelling" class="spinner-border spinner-border-sm me-1"></span>
-            Confirm Cancel
-          </button>
-        </div>
+        <small class="text-danger fs-10">This record will be permanently marked as Cancelled in the financial ledger.</small>
+      </div>
+      <div class="modal-footer-compact border-top d-flex justify-content-end gap-1.5 p-2">
+        <button type="button" class="btn btn-secondary btn-xs" (click)="closeCancelModal()" [disabled]="cancelling">Back</button>
+        <button type="button" class="btn btn-danger btn-xs" (click)="confirmCancelReceipt()" [disabled]="cancelling">
+          <span *ngIf="cancelling" class="spinner-border spinner-border-sm me-1"></span>
+          Confirm Cancel
+        </button>
       </div>
     </div>
   </div>
