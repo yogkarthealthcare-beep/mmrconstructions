@@ -701,14 +701,14 @@
       <div class="site-occ-card" *ngFor="let s of sites">
         <div class="d-flex align-items-center justify-content-between mb-0.5">
           <span class="fw-700 text-dark fs-11 text-truncate" [title]="s.site_name">{{ s.site_name }}</span>
-          <span class="fs-10 text-muted fw-600">{{ (s.booked || 0) + (s.sold || 0) }}/{{ s.total_plots || 0 }} Sold</span>
+          <span class="fs-10 text-muted fw-600 text-nowrap flex-shrink-0 ms-1">{{ (s.booked || 0) + (s.sold || 0) }}/{{ s.total_plots || 0 }} Sold</span>
         </div>
         <div class="occ-bar-wrap">
           <div class="occ-bar-fill" [style.width.%]="occupancyPct(s)"></div>
         </div>
         <div class="d-flex align-items-center justify-content-between mt-1 fs-10">
-          <span class="text-muted fw-600">{{ occupancyPct(s) }}% Occupied</span>
-          <span class="chip chip-ok" *ngIf="s.vacant != null"><i class="fas fa-check me-0.5"></i>{{ s.vacant }} Vacant</span>
+          <span class="text-muted fw-600 text-nowrap">{{ occupancyPct(s) }}% Occupied</span>
+          <span class="chip chip-ok text-nowrap flex-shrink-0" *ngIf="s.vacant != null"><i class="fas fa-check me-0.5"></i>{{ s.vacant }} Vacant</span>
         </div>
       </div>
     </div>
