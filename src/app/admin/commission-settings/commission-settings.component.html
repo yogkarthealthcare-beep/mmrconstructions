@@ -1,6 +1,6 @@
 <div *ngIf="toast" class="panel-alert panel-alert-success commission-toast">{{ toast }}</div>
 
-<div class="page-header mb-3">
+<div class="commission-head mb-2">
   <div class="d-flex align-items-center gap-2">
     <div class="header-icon-badge">
       <i class="fas fa-percentage"></i>
@@ -175,28 +175,28 @@
     </div>
   </section>
 
-  <section class="panel-card mb-3" *ngIf="settings.commission_model === 'LevelWise'">
+  <section class="panel-card mb-2.5" *ngIf="settings.commission_model === 'LevelWise'">
     <div class="panel-card-title">Level Configuration Table</div>
     <div class="table-responsive">
-      <table class="table level-table table-sm">
-        <thead><tr><th>Level</th><th>Percentage</th><th>Status</th></tr></thead>
+      <table class="table level-table custom-dash-table align-middle mb-0">
+        <thead><tr><th class="fit">Level</th><th class="fit">Percentage</th><th class="grow">Status</th></tr></thead>
         <tbody>
           <tr *ngFor="let level of settings.levels">
-            <td><strong>Level {{ level.level_no }}</strong></td>
-            <td>
+            <td class="fit"><strong>Level {{ level.level_no }}</strong></td>
+            <td class="fit">
               <div class="input-group input-group-sm" style="max-width: 120px;">
                 <input class="form-control" type="number" min="0" max="100" step="0.01" [(ngModel)]="level.percentage">
                 <span class="input-group-text">%</span>
               </div>
             </td>
-            <td><label class="check-row mb-0"><input type="checkbox" [(ngModel)]="level.is_active"> Active</label></td>
+            <td class="grow"><label class="check-row mb-0"><input type="checkbox" [(ngModel)]="level.is_active"> Active</label></td>
           </tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <section class="panel-card mb-3">
+  <section class="panel-card mb-2.5">
     <div class="panel-card-title">Eligibility Rules</div>
     <div class="settings-grid">
       <label class="check-card"><input type="checkbox" [(ngModel)]="settings.eligibility_rules.require_active_associate"><span><strong>Active Associate Required</strong><small>Inactive associates commission receive नहीं करेंगे।</small></span></label>
@@ -206,7 +206,7 @@
     </div>
   </section>
 
-  <section class="panel-card mb-3">
+  <section class="panel-card mb-2.5">
     <div class="panel-card-title">Bonus Rules</div>
     <div class="settings-grid">
       <div class="setting-field">
@@ -223,29 +223,29 @@
     </div>
   </section>
 
-  <section class="panel-card mb-3">
-    <div class="settings-meta mb-3">
+  <section class="panel-card mb-2.5">
+    <div class="settings-meta mb-2">
       <span>Version <strong>{{ settings.version || 1 }}</strong></span>
       <span>Created {{ settings.created_at | date:'dd MMM yyyy, h:mm a' }}</span>
       <span>Updated {{ settings.updated_at | date:'dd MMM yyyy, h:mm a' }}</span>
       <span>Updated By <strong>{{ settings.updated_by || 'System' }}</strong></span>
     </div>
 
-    <button type="button" class="btn btn-green btn-sm" (click)="requestSave()"><i class="fas fa-save me-2"></i>Review & Activate Changes</button>
+    <button type="button" class="btn btn-green btn-xs" (click)="requestSave()"><i class="fas fa-save me-1.5"></i>Review &amp; Activate Changes</button>
   </section>
 
-  <section class="panel-card mb-3">
+  <section class="panel-card mb-2.5">
     <div class="panel-card-title">Commission Model Audit History</div>
     <div class="table-responsive">
-      <table class="table">
-        <thead><tr><th>Date</th><th>Old Model</th><th>New Model</th><th>Changed By</th><th>Reason</th></tr></thead>
+      <table class="table custom-dash-table align-middle mb-0">
+        <thead><tr><th class="fit">Date</th><th class="fit">Old Model</th><th class="fit">New Model</th><th class="fit">Changed By</th><th class="grow">Reason</th></tr></thead>
         <tbody>
           <tr *ngFor="let item of audit">
-            <td>{{ item.changed_at | date:'dd MMM yyyy, h:mm a' }}</td>
-            <td>{{ modelLabel(item.old_value?.commission_model) }} v{{ item.old_value?.version }}</td>
-            <td>{{ modelLabel(item.new_value?.commission_model) }} v{{ item.new_value?.version }}</td>
-            <td>{{ item.changed_by || 'Admin #' + item.changed_by_admin_id }}</td>
-            <td>{{ item.reason }}</td>
+            <td class="fit">{{ item.changed_at | date:'dd MMM yyyy, h:mm a' }}</td>
+            <td class="fit">{{ modelLabel(item.old_value?.commission_model) }} v{{ item.old_value?.version }}</td>
+            <td class="fit">{{ modelLabel(item.new_value?.commission_model) }} v{{ item.new_value?.version }}</td>
+            <td class="fit">{{ item.changed_by || 'Admin #' + item.changed_by_admin_id }}</td>
+            <td class="grow">{{ item.reason }}</td>
           </tr>
           <tr *ngIf="!audit.length"><td colspan="5"><div class="panel-empty small-empty"><p>No configuration changes recorded yet.</p></div></td></tr>
         </tbody>
