@@ -309,18 +309,18 @@
 }
 
 /* ── 6. COMPACT SEARCH & FILTER CONTROLS ──────────────────────────────────── */
-.panel-shell .form-control:not(.f-input-search):not(.customer-search-field),
+.panel-shell .form-control:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
 .panel-shell .form-select,
-.panel-shell .f-input:not(.f-input-search):not(.customer-search-field),
+.panel-shell .f-input:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
 .panel-shell .f-select,
 .panel-shell .rm-input:not(.rm-input-search),
-.panel-shell .inp:not(.f-input-search):not(.customer-search-field),
+.panel-shell .inp:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
 .panel-shell .sel,
-.panel-shell input[type="text"]:not(.f-input-search):not(.customer-search-field),
+.panel-shell input[type="text"]:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
 .panel-shell input[type="number"],
 .panel-shell input[type="email"],
 .panel-shell input[type="date"],
-.panel-shell input[type="search"]:not(.f-input-search):not(.customer-search-field),
+.panel-shell input[type="search"]:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
 .panel-shell input[type="tel"],
 .panel-shell select {
   height: var(--h-xs, 26px) !important;
@@ -334,6 +334,40 @@
   line-height: 1.25 !important;
   box-shadow: none !important;
   min-width: 0 !important;
+}
+
+/* Ensure all search input fields with icons maintain generous left padding */
+.panel-shell .search-input-wrap input,
+.panel-shell .search-input-wrapper input,
+.panel-shell .search-field,
+.panel-shell input.search-field,
+.panel-shell input.search-input,
+.panel-shell .search-box input,
+.panel-shell .filter-search-box input,
+.panel-shell .input-with-icon input {
+  height: 36px !important;
+  min-height: 36px !important;
+  padding-left: 38px !important;
+  padding-right: 32px !important;
+  font-size: 12.5px !important;
+  border-radius: 6px !important;
+}
+
+.panel-shell .search-input-wrap .search-icon,
+.panel-shell .search-input-wrap i.fa-search,
+.panel-shell .search-input-wrap i.fas.fa-search,
+.panel-shell .search-input-wrapper .search-icon,
+.panel-shell .search-input-wrapper i.fa-search {
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  font-size: 13px !important;
+  color: #94a3b8 !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+  margin: 0 !important;
+  line-height: 1 !important;
 }
 
 .panel-shell .form-control:focus,
@@ -1482,13 +1516,13 @@ body.modal-open .panel-shell td:focus-within,
   }
 
   /* Mobile Touch Targets & Inputs */
-  .panel-shell .form-control:not(.f-input-search):not(.customer-search-field),
+  .panel-shell .form-control:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
   .panel-shell .form-select,
-  .panel-shell input[type="text"]:not(.f-input-search):not(.customer-search-field),
+  .panel-shell input[type="text"]:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
   .panel-shell input[type="number"],
   .panel-shell input[type="email"],
   .panel-shell input[type="date"],
-  .panel-shell input[type="search"]:not(.f-input-search):not(.customer-search-field),
+  .panel-shell input[type="search"]:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
   .panel-shell select {
     height: 38px !important;
     min-height: 38px !important;
@@ -1501,6 +1535,10 @@ body.modal-open .panel-shell td:focus-within,
   .panel-shell .search input,
   .panel-shell .search-box input,
   .panel-shell .filter-search-box input,
+  .panel-shell .search-input-wrap input,
+  .panel-shell .search-input-wrapper input,
+  .panel-shell input.search-field,
+  .panel-shell input.search-input,
   .panel-shell .input-with-icon input,
   .panel-shell input.f-input-search,
   .panel-shell input.customer-search-field {

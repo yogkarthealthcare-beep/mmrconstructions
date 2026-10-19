@@ -25,7 +25,7 @@ import {
 })
 export class ProfileComponent implements OnInit {
   loading = true;
-  editMode = false;
+  editMode = true; // Default directly to editable form (Image 2) on page load
   saving = false;
   lookupLoading = false;
   profile: any = {};
@@ -60,6 +60,10 @@ export class ProfileComponent implements OnInit {
   constructor(private api: ApiService) {}
 
   ngOnInit() {
+    this.loadProfile();
+  }
+
+  loadProfile() {
     this.loading = true;
     this.api.getProfile().subscribe({
       next: (res: any) => {
@@ -82,8 +86,14 @@ export class ProfileComponent implements OnInit {
   populateEditable() {
     let dobVal = '';
     if (this.profile.date_of_birth) {
-      const parsed = parseDDMMYYYYToISO(this.profile.date_of_birth);
-      dobVal = parsed || '';
+      const raw = String(this.profile.date_of_birth).trim();
+      if (raw.includes('T')) {
+        dobVal = raw.split('T')[0];
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+        dobVal = raw;
+      } else {
+        dobVal = parseDDMMYYYYToISO(raw) || '';
+      }
     }
 
     this.editable = {
@@ -109,8 +119,8 @@ export class ProfileComponent implements OnInit {
   }
 
   cancelEdit() {
-    this.editMode = false;
     this.populateEditable();
+    this.showToast('Changes discarded. Profile reset to saved values.', 'success');
   }
 
   onNameBlur(fieldName: 'full_name' | 'father_name' | 'spouse_name' | 'nominee_name' | 'account_holder_name') {
@@ -251,9 +261,8 @@ export class ProfileComponent implements OnInit {
     this.api.updateProfile(payload).subscribe({
       next: (res: any) => {
         this.showToast(res.message || 'Profile updated successfully!', 'success');
-        this.editMode = false;
         this.saving = false;
-        this.ngOnInit();
+        this.loadProfile();
       },
       error: (e: any) => {
         const msg = e?.error?.message || e?.message || 'Profile update failed. Please check the entered details.';

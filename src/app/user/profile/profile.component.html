@@ -9,12 +9,12 @@
     <p class="text-muted fs-12 mb-0">Personal registration info, address, bank details for payouts &amp; nominee records</p>
   </div>
   <div class="d-flex align-items-center gap-2">
-    <button *ngIf="editMode" class="btn btn-xs btn-outline-secondary px-3 fw-600 shadow-sm" (click)="cancelEdit()" [disabled]="saving">
+    <button type="button" class="btn btn-xs btn-outline-secondary px-3 fw-600 shadow-sm" (click)="cancelEdit()" [disabled]="saving">
       <i class="fas fa-times me-1"></i> Cancel
     </button>
-    <button class="btn btn-xs px-3 fw-700 shadow-sm" [class.btn-emerald]="!editMode" [class.btn-gold]="editMode" (click)="editMode ? save() : editMode = true" [disabled]="saving">
-      <i [class]="saving ? 'fas fa-spinner fa-spin me-1' : editMode ? 'fas fa-save me-1' : 'fas fa-edit me-1'"></i>
-      {{ saving ? 'Saving Changes...' : editMode ? 'Save Profile' : 'Edit Details' }}
+    <button type="button" class="btn btn-xs px-3 fw-700 shadow-sm btn-gold" (click)="save()" [disabled]="saving">
+      <i [class]="saving ? 'fas fa-spinner fa-spin me-1' : 'fas fa-save me-1'"></i>
+      {{ saving ? 'Saving Changes...' : 'Save Profile' }}
     </button>
   </div>
 </div>
