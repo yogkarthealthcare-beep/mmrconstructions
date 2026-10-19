@@ -37,12 +37,8 @@ export class TeamMemberReferralComponent implements OnInit {
           this.inviteCode = p.member_id;
         }
 
-        if (p.referral_link) {
-          // Adapt backend domain to active origin (e.g. localhost or live domain)
-          this.referralUrl = p.referral_link.replace(/^https?:\/\/[^/]+/i, origin);
-        } else if (this.inviteCode) {
-          this.referralUrl = `${origin}/register?ref=${encodeURIComponent(this.inviteCode)}`;
-        }
+        const code = this.inviteCode || this.currentUser?.team_member_uid || '';
+        this.referralUrl = code ? `${origin}/register/customer?ref=${encodeURIComponent(code)}` : `${origin}/register/customer`;
         this.buildWhatsappUrl();
       },
       error: () => {}
@@ -54,12 +50,12 @@ export class TeamMemberReferralComponent implements OnInit {
     this.inviteCode = code;
 
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mmrconstructions.in';
-    this.referralUrl = code ? `${origin}/register?ref=${encodeURIComponent(code)}` : `${origin}/register`;
+    this.referralUrl = code ? `${origin}/register/customer?ref=${encodeURIComponent(code)}` : `${origin}/register/customer`;
     this.buildWhatsappUrl();
   }
 
   private buildWhatsappUrl(): void {
-    const msg = `नमस्ते! MMR Constructions & Developers me Kanpur, Unnao aur Lucknow me prime verified plots available hain.\n\nMere referral link se signup karein aur shandar offers payein:\n${this.referralUrl}\n(Referral Code: ${this.inviteCode})`;
+    const msg = `नमस्ते! MMR Constructions & Developers me Kanpur, Unnao aur Lucknow me prime verified plots available hain.\n\nMere referral link se Customer registration karein aur shandar offers payein:\n${this.referralUrl}\n(Referral Code: ${this.inviteCode})`;
     this.whatsappUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
   }
 
