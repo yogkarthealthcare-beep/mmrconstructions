@@ -37,8 +37,8 @@
             <i [class]="dt.icon" class="text-emerald fs-5"></i>
           </div>
           <div *ngIf="docStatus(dt.key) as doc">
-            <span class="sbadge" [class.sbadge-green]="doc.is_verified" [class.sbadge-yellow]="!doc.is_verified">
-              {{ doc.is_verified ? 'Verified' : 'Under Review' }}
+            <span class="sbadge" [class.sbadge-green]="isDocVerified(doc)" [class.sbadge-yellow]="!isDocVerified(doc)">
+              {{ isDocVerified(doc) ? 'Verified' : 'Under Review' }}
             </span>
           </div>
           <span *ngIf="!docStatus(dt.key)" class="sbadge sbadge-gray">Not Uploaded</span>
@@ -87,9 +87,9 @@
           </td>
           <td class="fs-12 text-muted">{{ d.uploaded_at | date:'dd MMM yyyy, hh:mm a' }}</td>
           <td>
-            <span class="sbadge" [class.sbadge-green]="d.is_verified" [class.sbadge-yellow]="!d.is_verified">
-              <i [class]="d.is_verified ? 'fas fa-check-circle me-1' : 'fas fa-clock me-1'"></i>
-              {{ d.is_verified ? 'Verified' : 'Under Review' }}
+            <span class="sbadge" [class.sbadge-green]="isDocVerified(d)" [class.sbadge-yellow]="!isDocVerified(d)">
+              <i [class]="isDocVerified(d) ? 'fas fa-check-circle me-1' : 'fas fa-clock me-1'"></i>
+              {{ isDocVerified(d) ? 'Verified' : 'Under Review' }}
             </span>
           </td>
           <td class="fs-12">
@@ -125,8 +125,8 @@
 
     <div class="d-flex justify-content-between align-items-center fs-12 text-muted mb-3">
       <span>Uploaded: <strong>{{ selectedDoc.uploaded_at | date:'dd MMM yyyy' }}</strong></span>
-      <span class="sbadge" [class.sbadge-green]="selectedDoc.is_verified" [class.sbadge-yellow]="!selectedDoc.is_verified">
-        {{ selectedDoc.is_verified ? 'Verified' : 'Under Review' }}
+      <span class="sbadge" [class.sbadge-green]="isDocVerified(selectedDoc)" [class.sbadge-yellow]="!isDocVerified(selectedDoc)">
+        {{ isDocVerified(selectedDoc) ? 'Verified' : 'Under Review' }}
       </span>
     </div>
 

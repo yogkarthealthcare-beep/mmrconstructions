@@ -44,8 +44,13 @@ export class DocumentsComponent implements OnInit {
     });
   }
 
+  isDocVerified(doc: any): boolean {
+    if (!doc) return false;
+    return Boolean(doc.is_verified) || String(doc.review_status || '').toLowerCase() === 'approved';
+  }
+
   get verifiedCount(): number {
-    return this.docs.filter(d => d.is_verified).length;
+    return this.docs.filter(d => this.isDocVerified(d)).length;
   }
 
   upload(type: string, event: Event) {

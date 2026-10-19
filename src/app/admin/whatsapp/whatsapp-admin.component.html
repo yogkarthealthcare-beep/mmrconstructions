@@ -87,14 +87,64 @@
   </section>
 
   <section *ngIf="activeTab==='queue'" class="panel">
-    <table><thead><tr><th>ID</th><th>Template</th><th>Recipient</th><th>Status</th><th>Attempts</th><th>Error</th></tr></thead>
-      <tbody><tr *ngFor="let q of queue"><td>{{q.queue_id}}</td><td>{{q.template_key}}</td><td>{{q.recipient_mobile}}</td><td>{{q.status}}</td><td>{{q.attempts}}/{{q.max_attempts}}</td><td>{{q.last_error}}</td></tr></tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table-erp">
+        <thead>
+          <tr>
+            <th class="fit">ID</th>
+            <th>Template</th>
+            <th>Recipient</th>
+            <th class="fit">Status</th>
+            <th class="fit">Attempts</th>
+            <th class="d-none d-md-table-cell">Error</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let q of queue">
+            <td class="fit">{{q.queue_id}}</td>
+            <td>{{q.template_key}}</td>
+            <td>{{q.recipient_mobile}}</td>
+            <td class="fit">{{q.status}}</td>
+            <td class="fit">{{q.attempts}}/{{q.max_attempts}}</td>
+            <td class="d-none d-md-table-cell text-truncate-cell" [title]="q.last_error || ''">{{q.last_error}}</td>
+          </tr>
+          <tr *ngIf="!queue || queue.length === 0">
+            <td colspan="6" class="text-center text-muted py-3">No queued messages.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <section *ngIf="activeTab==='logs'" class="panel">
-    <table><thead><tr><th>ID</th><th>Mobile</th><th>Template</th><th>Status</th><th>Delivery</th><th>Error</th><th>Created</th></tr></thead>
-      <tbody><tr *ngFor="let l of logs"><td>{{l.message_log_id}}</td><td>{{l.mobile_no}}</td><td>{{l.template_key}}</td><td>{{l.status}}</td><td>{{l.delivery_status}}</td><td>{{l.error_message}}</td><td>{{l.created_at | date:'short'}}</td></tr></tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table-erp">
+        <thead>
+          <tr>
+            <th class="fit">ID</th>
+            <th>Mobile</th>
+            <th>Template</th>
+            <th class="fit">Status</th>
+            <th class="fit">Delivery</th>
+            <th class="d-none d-lg-table-cell">Error</th>
+            <th class="fit">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let l of logs">
+            <td class="fit">{{l.message_log_id}}</td>
+            <td>{{l.mobile_no}}</td>
+            <td>{{l.template_key}}</td>
+            <td class="fit">{{l.status}}</td>
+            <td class="fit">{{l.delivery_status}}</td>
+            <td class="d-none d-lg-table-cell text-truncate-cell" [title]="l.error_message || ''">{{l.error_message}}</td>
+            <td class="fit">{{l.created_at | date:'short'}}</td>
+          </tr>
+          <tr *ngIf="!logs || logs.length === 0">
+            <td colspan="7" class="text-center text-muted py-3">No message logs found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 </div>

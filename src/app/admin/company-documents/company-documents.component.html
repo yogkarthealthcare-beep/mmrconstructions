@@ -26,18 +26,31 @@
 <section class="panel-card" *ngIf="!loading">
   <div class="table-responsive" *ngIf="documents.length; else emptyState">
     <table class="table documents-table">
-      <thead><tr><th>Preview</th><th>Document</th><th>File</th><th>Order</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <thead><tr><th class="fit">Preview</th><th class="grow">Document</th><th class="fit d-none d-lg-table-cell">File</th><th class="fit text-center">Order</th><th class="fit text-center">Status</th><th class="fit text-end">Actions</th></tr></thead>
       <tbody>
         <tr *ngFor="let document of documents">
-          <td>
+          <td class="fit">
             <img *ngIf="document.file_type === 'image'" class="document-thumb" [src]="fileUrl(document)" [alt]="document.document_name">
             <div *ngIf="document.file_type === 'pdf'" class="pdf-thumb"><i class="fas fa-file-pdf"></i></div>
           </td>
-          <td><strong>{{ document.document_name }}</strong><span>{{ document.document_type || 'Verification Document' }}</span><small>{{ document.document_description || 'No description' }}</small></td>
-          <td><a [href]="fileUrl(document)" target="_blank" rel="noopener noreferrer">{{ document.original_file_name || 'Open file' }}</a><small>{{ fileSize(document.file_size_bytes) }}</small></td>
-          <td>{{ document.display_order }}</td>
-          <td><span class="status-pill" [class.inactive]="!document.is_active">{{ document.is_active ? 'Active' : 'Inactive' }}</span></td>
-          <td class="text-end">
+          <td class="grow">
+            <strong>{{ document.document_name }}</strong>
+            <span>{{ document.document_type || 'Verification Document' }}</span>
+            <small>{{ document.document_description || 'No description' }}</small>
+            <div class="d-lg-none mt-1 fs-10 text-muted" *ngIf="document.original_file_name">
+              <a [href]="fileUrl(document)" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                <i class="fas fa-paperclip me-1"></i>{{ document.original_file_name }}
+              </a>
+              <span class="ms-1">({{ fileSize(document.file_size_bytes) }})</span>
+            </div>
+          </td>
+          <td class="fit d-none d-lg-table-cell">
+            <a [href]="fileUrl(document)" target="_blank" rel="noopener noreferrer">{{ document.original_file_name || 'Open file' }}</a>
+            <small>{{ fileSize(document.file_size_bytes) }}</small>
+          </td>
+          <td class="fit text-center">{{ document.display_order }}</td>
+          <td class="fit text-center"><span class="status-pill" [class.inactive]="!document.is_active">{{ document.is_active ? 'Active' : 'Inactive' }}</span></td>
+          <td class="fit text-end text-nowrap">
             <button type="button" class="icon-btn edit-btn" title="Edit document" (click)="openEdit(document)"><i class="fas fa-edit"></i></button>
             <button type="button" class="icon-btn" [class.warning]="document.is_active" [class.success]="!document.is_active" [title]="document.is_active ? 'Deactivate (hide from public)' : 'Activate (show on public)'" (click)="toggleStatus(document)"><i [class]="document.is_active ? 'fas fa-eye-slash' : 'fas fa-eye'"></i></button>
             <button type="button" class="icon-btn danger delete-btn" title="Delete document permanently" (click)="deleteDocument(document)"><i class="fas fa-trash-alt"></i></button>
