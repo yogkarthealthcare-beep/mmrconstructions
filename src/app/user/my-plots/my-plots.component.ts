@@ -201,9 +201,15 @@ export class MyPlotsComponent implements OnInit {
   }
 
   get basePrefix(): string {
-    if (this.router.url.startsWith('/associate')) return '/associate';
-    if (this.router.url.startsWith('/customer')) return '/customer';
+    const url = this.router.url || '';
+    if (url.startsWith('/team-member') || this.auth.isTeamMember()) return '/team-member';
+    if (url.startsWith('/associate') || (this.auth.isAssociate() && !this.auth.isTeamMember())) return '/associate';
+    if (url.startsWith('/customer')) return '/customer';
     return '/user';
+  }
+
+  get bookPlotRoute(): string {
+    return `${this.basePrefix}/book-plot`;
   }
 
   get totalPurchasedCount(): number {
@@ -335,7 +341,7 @@ export class MyPlotsComponent implements OnInit {
       inquiry_message: extraDetails || 'Property inquiry submitted from My Plots portal',
       preferred_plot_size: this.inquiryForm.preferred_plot_size || null,
       budget_range: this.inquiryForm.budget_range || null,
-      source_page: this.router.url.includes('/associate') ? 'Associate Portal - My Plots' : 'Customer Portal - My Plots'
+      source_page: this.router.url.includes('/team-member') ? 'Team Member Portal - My Plots' : (this.router.url.includes('/associate') ? 'Associate Portal - My Plots' : 'Customer Portal - My Plots')
     };
 
     this.api.submitInquiry(payload).subscribe({

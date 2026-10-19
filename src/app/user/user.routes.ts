@@ -31,6 +31,11 @@ export const USER_ROUTES: Routes = [
     loadComponent: () => import('./my-plots/my-plots.component').then(m => m.MyPlotsComponent) 
   },
   { 
+    path: 'book-plot', 
+    loadComponent: () => import('../shared/book-plot/book-plot.component').then(m => m.BookPlotComponent),
+    title: 'Book a Plot'
+  },
+  { 
     path: 'emi-history', 
     loadComponent: () => import('./emi-history/emi-history.component').then(m => m.EmiHistoryComponent) 
   },
