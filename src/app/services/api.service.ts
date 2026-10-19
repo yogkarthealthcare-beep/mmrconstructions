@@ -107,8 +107,9 @@ export class ApiService {
   clearOtpLogs() {
     return this.post('/api/auth/clear-otp-logs', {});
   }
-  verifySponsorCode(code: string) {
-    return this.get(`/api/auth/verify-sponsor/${encodeURIComponent(code)}`);
+  verifySponsorCode(code: string, role?: string) {
+    const q = role ? `?role=${encodeURIComponent(role)}` : '';
+    return this.get(`/api/auth/verify-sponsor/${encodeURIComponent(code)}${q}`);
   }
   trackReferralCode(code: string) {
     return this.get(`/api/auth/referral/validate/${encodeURIComponent(code)}`);

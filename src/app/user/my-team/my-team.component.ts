@@ -384,7 +384,7 @@ export class MyTeamComponent implements OnInit {
   get referralLink(): string {
     const code = this.currentUser?.invitation_code || this.currentUser?.member_id || '';
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mmrconstructions.in';
-    return code ? `${origin}/register?ref=${encodeURIComponent(code)}` : `${origin}/register`;
+    return code ? `${origin}/register/team-member?ref=${encodeURIComponent(code)}` : `${origin}/register/team-member`;
   }
 
   copyLink(): void {

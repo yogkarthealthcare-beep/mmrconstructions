@@ -1,0 +1,136 @@
+<div class="container-fluid p-3 p-md-4">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+      <h4 class="fw-700 text-dark mb-1">
+        <i class="fas fa-bullhorn text-warning me-2"></i>Executive Referral Links
+      </h4>
+      <p class="text-muted fs-13 mb-0">
+        Generate, copy and share role-based onboarding links for Associates and Customers with Corporate Admin sponsorship.
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a routerLink="/admin/dashboard" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Dashboard
+      </a>
+      <a routerLink="/admin/approvals" class="btn btn-gold btn-sm">
+        <i class="fas fa-user-check me-1"></i> View Registrations
+      </a>
+    </div>
+  </div>
+
+  <!-- Sponsor Code Card -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 text-center text-white mb-4" style="background: linear-gradient(135deg, #062b18 0%, #0d4a2c 50%, #062013 100%); border: 1px solid rgba(201, 168, 76, 0.3);">
+    <div class="text-uppercase fw-700 fs-11 letter-spacing-2 mb-1" style="color: #c9a84c;">Corporate Admin Sponsor Code</div>
+    <div class="fs-1 fw-800 font-monospace mb-3" style="color: #c9a84c; text-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+      {{ adminReferralCode }}
+    </div>
+    <div class="d-flex justify-content-center gap-2">
+      <button class="btn btn-sm btn-gold px-3 fw-700" (click)="copyCode()">
+        <i [class]="copiedCode ? 'fas fa-check text-success me-1' : 'fas fa-copy me-1'"></i>
+        {{ copiedCode ? 'Copied Code!' : 'Copy Code' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Exactly Two Referral Cards -->
+  <div class="row g-3 mb-4">
+    <!-- 1. Refer an Associate -->
+    <div class="col-12 col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: #ffffff; border-left: 5px solid #f59e0b !important;">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="d-flex align-items-center gap-2.5">
+            <div class="rounded-3 p-2.5 bg-warning-subtle text-warning">
+              <i class="fas fa-user-tie fa-lg"></i>
+            </div>
+            <div>
+              <h5 class="fw-700 text-dark mb-0">Refer an Associate</h5>
+              <span class="fs-11 text-muted">Partner Network Onboarding</span>
+            </div>
+          </div>
+          <span class="badge bg-success-subtle text-success fs-11 fw-600 px-2.5 py-1 rounded-pill">Active</span>
+        </div>
+
+        <p class="fs-13 text-muted mb-3">
+          Generates the Admin's Associate referral link. When opened, it directly opens the <strong>Associate Registration</strong> page. New Associates are placed under Corporate Admin sponsorship.
+        </p>
+
+        <div class="mb-3">
+          <label class="fs-11 fw-700 text-muted uppercase mb-1">Direct Registration URL</label>
+          <div class="input-group">
+            <input type="text" class="form-control font-monospace fs-12 bg-light" [value]="associateReferralUrl" readonly #assocInput>
+            <button class="btn btn-outline-warning fw-600 px-3" (click)="copyAssociateLink(assocInput)">
+              <i [class]="copiedAssociate ? 'fas fa-check text-success' : 'fas fa-copy'"></i>
+              <span class="ms-1">{{ copiedAssociate ? 'Copied!' : 'Copy Link' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-warning flex-fill btn-sm fw-600" (click)="copyAssociateLink(assocInput)">
+            <i [class]="copiedAssociate ? 'fas fa-check text-success me-1' : 'fas fa-copy me-1'"></i>
+            {{ copiedAssociate ? 'Link Copied!' : 'Copy Associate Link' }}
+          </button>
+          <button class="btn btn-whatsapp flex-fill btn-sm fw-600" (click)="shareAssociateWhatsApp()">
+            <i class="fab fa-whatsapp me-1"></i> WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Refer a Customer -->
+    <div class="col-12 col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: #ffffff; border-left: 5px solid #10b981 !important;">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="d-flex align-items-center gap-2.5">
+            <div class="rounded-3 p-2.5 bg-success-subtle text-success">
+              <i class="fas fa-users fa-lg"></i>
+            </div>
+            <div>
+              <h5 class="fw-700 text-dark mb-0">Refer a Customer</h5>
+              <span class="fs-11 text-muted">Direct Client Onboarding</span>
+            </div>
+          </div>
+          <span class="badge bg-success-subtle text-success fs-11 fw-600 px-2.5 py-1 rounded-pill">Active</span>
+        </div>
+
+        <p class="fs-13 text-muted mb-3">
+          Generates the Admin's Customer referral link. When opened, it directly opens the <strong>Customer Registration</strong> page. New Customers are permanently attributed to Corporate Admin.
+        </p>
+
+        <div class="mb-3">
+          <label class="fs-11 fw-700 text-muted uppercase mb-1">Direct Registration URL</label>
+          <div class="input-group">
+            <input type="text" class="form-control font-monospace fs-12 bg-light" [value]="customerReferralUrl" readonly #custInput>
+            <button class="btn btn-outline-success fw-600 px-3" (click)="copyCustomerLink(custInput)">
+              <i [class]="copiedCustomer ? 'fas fa-check text-success' : 'fas fa-copy'"></i>
+              <span class="ms-1">{{ copiedCustomer ? 'Copied!' : 'Copy Link' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-success flex-fill btn-sm fw-600" (click)="copyCustomerLink(custInput)">
+            <i [class]="copiedCustomer ? 'fas fa-check text-success me-1' : 'fas fa-copy me-1'"></i>
+            {{ copiedCustomer ? 'Link Copied!' : 'Copy Customer Link' }}
+          </button>
+          <button class="btn btn-whatsapp flex-fill btn-sm fw-600" (click)="shareCustomerWhatsApp()">
+            <i class="fab fa-whatsapp me-1"></i> WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Role Hierarchy Attribution Guide -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-light">
+    <h6 class="fw-700 text-dark mb-2">
+      <i class="fas fa-shield-alt text-success me-2"></i>Attribution &amp; Security Rules
+    </h6>
+    <ul class="text-muted fs-13 mb-0 ps-3">
+      <li class="mb-1">Links automatically select the intended registration role and lock the Corporate Sponsor code.</li>
+      <li class="mb-1">Associates registering through the Associate link appear in <strong>Registrations &amp; KYC</strong> for approval.</li>
+      <li>Customers registering through the Customer link are attributed directly to MMR Corporate Admin for commission and plot booking tracking.</li>
+    </ul>
+  </div>
+</div>

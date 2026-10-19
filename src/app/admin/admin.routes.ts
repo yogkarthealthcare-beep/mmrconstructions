@@ -252,4 +252,9 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./customer-applications/customer-application-detail.component').then(m => m.CustomerApplicationDetailComponent),
     title: 'Customer Application Detail'
   },
+  { 
+    path: 'referral', 
+    loadComponent: () => import('./referral/admin-referral.component').then(m => m.AdminReferralComponent),
+    title: 'Executive Referral Links — MMR Admin'
+  },
 ];

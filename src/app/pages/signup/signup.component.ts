@@ -77,6 +77,13 @@ export class SignupComponent implements OnInit {
     const url = this.router.url.split('?')[0].toLowerCase();
     const routeType = this.route.snapshot.data?.['type'];
     const queryType = this.route.snapshot.queryParams?.['type'];
+    const cleanRef = this.getActiveUrlReferral();
+
+    // Auto-redirect Team Member referral links opened on base /register to /register/customer
+    if ((url === '/register' || url === '/register/' || url === '/signup') && cleanRef && cleanRef.startsWith('MMR-TM-')) {
+      this.router.navigate(['/register/customer'], { queryParamsHandling: 'preserve' });
+      return;
+    }
 
     if (routeType) {
       this.setupRole(routeType as UserRole);
@@ -178,17 +185,17 @@ export class SignupComponent implements OnInit {
     this.sponsorValid = false;
     this.sponsorName = '';
     this.sponsorCodeFormatted = '';
-    this.referralLocked = false;
+    this.referralLocked = Boolean(this.getActiveUrlReferral());
     this.v = {};
     this.verifySponsor(defaultSponsor);
   }
 
   private initSponsor() {
     const cleanRef = this.getActiveUrlReferral();
-    this.referralLocked = false;
 
     if (cleanRef) {
-      // Referral link explicitly provided in URL (Associate or Team Member)
+      // Referral link explicitly provided in URL
+      this.referralLocked = true;
       this.form.sponsor_invite_code = cleanRef;
       try {
         localStorage.setItem('mmr_referral_code', cleanRef);
@@ -199,7 +206,7 @@ export class SignupComponent implements OnInit {
     }
 
     // Fresh page load without referral link in URL:
-    // If user removes referral link or loads fresh /register, clear stale cache and default to MMR-ASC-0001
+    this.referralLocked = false;
     try {
       localStorage.removeItem('mmr_referral_code');
     } catch {}
@@ -240,17 +247,24 @@ export class SignupComponent implements OnInit {
     this.sponsorName = '';
     delete this.v['sponsor_invite_code'];
 
-    this.api.verifySponsorCode(cleanCode).subscribe({
+    this.api.verifySponsorCode(cleanCode, this.userType).subscribe({
       next: (res: any) => {
         this.sponsorChecking = false;
         if (res?.success && res?.data?.valid) {
+          const sType = String(res.data.user_type || '').toLowerCase();
+          if (sType.includes('team member') && this.userType !== 'Customer') {
+            this.sponsorValid = false;
+            this.v['sponsor_invite_code'] = `✕ Team Members can only refer Customers. This referral code cannot be used to register as ${this.userType}.`;
+            return;
+          }
           this.sponsorValid = true;
           this.sponsorName = res.data.full_name || 'Suraj Kumar Verma';
           this.sponsorCodeFormatted = res.data.invitation_code || res.data.member_id || cleanCode;
+          delete this.v['sponsor_invite_code'];
         } else if (cleanCode === 'MMR-ASC-0001' || cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
-          // Default Sponsor Fallback Guarantee
+          // Default Sponsor Fallback Guarantee (Admin)
           this.sponsorValid = true;
-          this.sponsorName = 'Suraj Kumar Verma (Default Sponsor)';
+          this.sponsorName = 'Suraj Kumar Verma (Corporate Admin)';
           this.sponsorCodeFormatted = 'MMR-ASC-0001';
           delete this.v['sponsor_invite_code'];
         } else {
@@ -262,7 +276,7 @@ export class SignupComponent implements OnInit {
         this.sponsorChecking = false;
         if (cleanCode === 'MMR-ASC-0001' || cleanCode === 'MMR0001' || cleanCode === 'MMR3001') {
           this.sponsorValid = true;
-          this.sponsorName = 'Suraj Kumar Verma (Default Sponsor)';
+          this.sponsorName = 'Suraj Kumar Verma (Corporate Admin)';
           this.sponsorCodeFormatted = 'MMR-ASC-0001';
           delete this.v['sponsor_invite_code'];
         } else {

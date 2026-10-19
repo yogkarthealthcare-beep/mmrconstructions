@@ -371,6 +371,9 @@
                   <span *ngIf="userType === 'Team Member'">Sponsor ID / Member ID <span class="text-danger">*</span></span>
                   <span *ngIf="userType !== 'Team Member'">Sponsor ID <span *ngIf="userType === 'Customer'" class="text-muted fw-normal">(Optional)</span><span *ngIf="userType !== 'Customer'" class="text-danger">*</span></span>
                 </label>
+                <span class="badge bg-green-subtle text-success fs-10 fw-600 px-2 py-0.5" *ngIf="referralLocked">
+                  <i class="fas fa-lock me-1"></i>Referred via Link
+                </span>
               </div>
 
               <div class="input-icon-wrap">
@@ -384,6 +387,7 @@
                   (blur)="verifySponsor()"
                   name="sponsor_invite_code"
                   autocomplete="off"
+                  [readonly]="referralLocked"
                   [class.is-invalid]="v['sponsor_invite_code']"
                 />
               </div>
@@ -398,6 +402,11 @@
 
               <div class="field-error-text mt-1" *ngIf="!sponsorChecking && v['sponsor_invite_code']">
                 <i class="fas fa-exclamation-circle me-1"></i> {{ v['sponsor_invite_code'] }}
+                <div class="mt-1.5" *ngIf="v['sponsor_invite_code'].includes('Team Members can only refer Customers')">
+                  <button type="button" class="btn btn-outline-success btn-xs fw-700 py-1 px-2.5 shadow-sm" (click)="selectRole('Customer')">
+                    <i class="fas fa-user-check me-1"></i> Switch to Customer Registration
+                  </button>
+                </div>
               </div>
             </div>
 

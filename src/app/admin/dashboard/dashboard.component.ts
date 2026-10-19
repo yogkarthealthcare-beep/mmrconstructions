@@ -62,6 +62,47 @@ export class AdminDashboardComponent implements OnInit {
   treeSearchTerm = '';
   selectedTreeNode: any = null;
 
+  // Executive Referral System
+  adminReferralCode: string = 'MMR-ASC-0001';
+  copiedAdminAssociate: boolean = false;
+  copiedAdminCustomer: boolean = false;
+
+  get adminAssociateReferralUrl(): string {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mmrconstructions.in';
+    return `${origin}/register/associate?ref=${encodeURIComponent(this.adminReferralCode)}`;
+  }
+
+  get adminCustomerReferralUrl(): string {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mmrconstructions.in';
+    return `${origin}/register/customer?ref=${encodeURIComponent(this.adminReferralCode)}`;
+  }
+
+  copyAdminAssociateLink(inputElem?: HTMLInputElement): void {
+    if (inputElem) inputElem.select();
+    navigator.clipboard.writeText(this.adminAssociateReferralUrl).then(() => {
+      this.copiedAdminAssociate = true;
+      setTimeout(() => this.copiedAdminAssociate = false, 2500);
+    });
+  }
+
+  copyAdminCustomerLink(inputElem?: HTMLInputElement): void {
+    if (inputElem) inputElem.select();
+    navigator.clipboard.writeText(this.adminCustomerReferralUrl).then(() => {
+      this.copiedAdminCustomer = true;
+      setTimeout(() => this.copiedAdminCustomer = false, 2500);
+    });
+  }
+
+  shareAdminAssociateWhatsApp(): void {
+    const msg = encodeURIComponent(`नमस्ते! MMR Constructions & Developers में Associate Partner के रूप में जुड़ें और अपना रियल-एस्टेट नेटवर्क बनाएं।\n\nAssociate Registration Link:\n${this.adminAssociateReferralUrl}\n(Corporate Sponsor: ${this.adminReferralCode})`);
+    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+  }
+
+  shareAdminCustomerWhatsApp(): void {
+    const msg = encodeURIComponent(`नमस्ते! MMR Constructions & Developers में Kanpur, Unnao और Lucknow में prime plots उपलब्ध हैं।\n\nCustomer Registration Link:\n${this.adminCustomerReferralUrl}\n(Corporate Sponsor: ${this.adminReferralCode})`);
+    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+  }
+
   /**
    * Primary People Metric Cards (Actionable & Connected to Existing Management Pages)
    */

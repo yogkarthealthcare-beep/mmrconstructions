@@ -84,6 +84,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-percent', label: 'Commission Settings', route: '/admin/commission-settings' },
         { icon: 'fas fa-exchange-alt', label: 'Wallet Transactions', route: '/admin/wallet-transactions' },
         { icon: 'fas fa-money-bill-wave', label: 'Withdrawal Requests', route: '/admin/withdrawal-requests', badge: 'REQ' },
+        { icon: 'fas fa-bullhorn', label: 'Referral Tools', route: '/admin/referral', badge: 'LINKS' },
         { icon: 'fas fa-envelope-open-text', label: 'Associate Enquiries', route: '/admin/booking-report', queryParams: { type: 'associate' } },
       ]
     },
