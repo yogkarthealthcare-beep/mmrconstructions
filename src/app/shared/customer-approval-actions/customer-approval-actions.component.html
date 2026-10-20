@@ -1,0 +1,218 @@
+<!-- INLINE ROW DISPLAY -->
+<div class="approval-actions-strip d-inline-flex align-items-center gap-1.5 flex-wrap">
+
+  <!-- Status Summary Badges -->
+  <span class="badge-approval"
+        [class.ba-success]="isEnrollmentApproved"
+        [class.ba-warning]="!isEnrollmentApproved && !isEnrollmentRejected"
+        [class.ba-danger]="isEnrollmentRejected"
+        [title]="'Enrollment: ' + (enrollment?.application_status || 'Pending')">
+    <i class="fas" [class.fa-check-circle]="isEnrollmentApproved" [class.fa-clock]="!isEnrollmentApproved && !isEnrollmentRejected" [class.fa-times-circle]="isEnrollmentRejected"></i>
+    Form: {{ enrollment?.application_status || 'Pending' }}
+  </span>
+
+  <span class="badge-approval"
+        [class.ba-success]="docs.length > 0 && verifiedDocsCount === docs.length"
+        [class.ba-warning]="docs.length > 0 && verifiedDocsCount < docs.length"
+        [class.ba-secondary]="docs.length === 0"
+        [title]="docs.length > 0 ? (verifiedDocsCount + '/' + docs.length + ' Documents Verified') : 'No Documents Uploaded'">
+    <i class="fas fa-file-alt"></i>
+    Docs: {{ docs.length > 0 ? (verifiedDocsCount + '/' + docs.length) : '0' }}
+  </span>
+
+  <span class="badge-approval"
+        [class.ba-success]="isKycVerified"
+        [class.ba-warning]="!isKycVerified && !isKycRejected"
+        [class.ba-danger]="isKycRejected"
+        [title]="'KYC Status: ' + (kyc?.status || customer?.account_status || 'Pending')">
+    <i class="fas fa-shield-alt"></i>
+    KYC: {{ kyc?.status || customer?.account_status || 'Pending' }}
+  </span>
+
+  <!-- Action / Review Trigger Button -->
+  <button type="button"
+          class="btn btn-xs fw-700 shadow-sm btn-approval-trigger"
+          [class.btn-success-soft]="canApproveAny"
+          [class.btn-outline-secondary]="!canApproveAny"
+          (click)="openReviewModal($event)"
+          [title]="canApproveAny ? 'Review & Approve customer artifacts' : 'View approval details and audit history'">
+    <i class="fas" [class.fa-tasks]="canApproveAny" [class.fa-eye]="!canApproveAny"></i>
+    <span>{{ canApproveAny ? 'Review / Approve' : 'Approval Details' }}</span>
+  </button>
+</div>
+
+<!-- COMPREHENSIVE MODAL DIALOG -->
+<div class="approval-modal-backdrop" *ngIf="showModal" (click)="closeReviewModal()">
+  <div class="approval-modal-dialog" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="amd-header d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar-circle">
+          <i class="fas fa-user-check"></i>
+        </div>
+        <div>
+          <h5 class="amd-title mb-0">Customer Approval &amp; Verification</h5>
+          <span class="amd-sub text-muted">
+            {{ customer?.full_name }} &bull; <code class="text-success">{{ customer?.member_id }}</code>
+            <span class="ms-1" *ngIf="customer?.sponsor_name">&bull; Sponsor: {{ customer?.sponsor_name }} ({{ customer?.sponsor_id }})</span>
+          </span>
+        </div>
+      </div>
+      <button type="button" class="btn-close-amd" (click)="closeReviewModal()">&times;</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="amd-body">
+
+      <!-- SECTION 1: ENROLLMENT FORM -->
+      <div class="review-section-card mb-3">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="step-num">1</span>
+            <h6 class="mb-0 fw-700 text-dark">Enrollment Form Submission</h6>
+          </div>
+          <span class="badge"
+                [class.bg-success]="isEnrollmentApproved"
+                [class.bg-warning]="!isEnrollmentApproved && !isEnrollmentRejected"
+                [class.bg-danger]="isEnrollmentRejected">
+            {{ enrollment?.application_status || 'Pending Submission' }}
+          </span>
+        </div>
+
+        <div class="audit-info-box fs-12 mb-2" *ngIf="enrollment?.approved_by_name || enrollment?.verified_by">
+          <i class="fas fa-check-circle text-success me-1"></i>
+          <strong>Approved by:</strong> {{ formatApprovedBy(enrollment?.approved_by_name, enrollment?.approved_by_member_id, enrollment?.approved_by_role, enrollment?.approved_at, enrollment?.verified_by) }}
+        </div>
+
+        <div class="rejection-box fs-12 mb-2 text-danger" *ngIf="enrollment?.reject_reason">
+          <i class="fas fa-exclamation-circle me-1"></i>
+          <strong>Rejection Reason:</strong> {{ enrollment.reject_reason }}
+        </div>
+
+        <!-- Action Buttons for Enrollment Form -->
+        <div class="d-flex align-items-center gap-2 mt-2" *ngIf="customer?.can_approve_enrollment && !isEnrollmentApproved">
+          <button type="button"
+                  class="btn btn-success btn-sm fw-600"
+                  (click)="approveEnrollment()"
+                  [disabled]="submittingKey === 'enrollment-approve'">
+            <i class="fas fa-check me-1" *ngIf="submittingKey !== 'enrollment-approve'"></i>
+            <i class="fas fa-spinner fa-spin me-1" *ngIf="submittingKey === 'enrollment-approve'"></i>
+            Approve Form
+          </button>
+          <button type="button"
+                  class="btn btn-outline-danger btn-sm fw-600"
+                  (click)="rejectEnrollment()"
+                  [disabled]="submittingKey === 'enrollment-reject'">
+            <i class="fas fa-times me-1" *ngIf="submittingKey !== 'enrollment-reject'"></i>
+            <i class="fas fa-spinner fa-spin me-1" *ngIf="submittingKey === 'enrollment-reject'"></i>
+            Reject Form
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION 2: UPLOADED DOCUMENTS -->
+      <div class="review-section-card mb-3">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="step-num">2</span>
+            <h6 class="mb-0 fw-700 text-dark">KYC Document Artifacts</h6>
+          </div>
+          <span class="badge bg-secondary">
+            {{ docs.length }} Uploaded
+          </span>
+        </div>
+
+        <div *ngIf="docs.length === 0" class="text-muted small py-2 text-center bg-light rounded">
+          <i class="fas fa-file-upload me-1"></i> No documents uploaded yet by applicant.
+        </div>
+
+        <div class="doc-list-grid" *ngIf="docs.length > 0">
+          <div class="doc-item-row p-2 border rounded mb-2 d-flex align-items-center justify-content-between flex-wrap gap-2" *ngFor="let d of docs">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-file-image text-primary fs-5"></i>
+              <div>
+                <div class="fw-600 fs-13 text-dark">{{ d.document_type }}</div>
+                <div class="fs-11 text-muted" *ngIf="d.verified_by_name">
+                  Verified by: {{ formatApprovedBy(d.verified_by_name, d.verifier_member_id, d.verifier_role, d.verified_at, d.verified_by) }}
+                </div>
+                <div class="fs-11 text-danger" *ngIf="d.reject_reason">
+                  Reason: {{ d.reject_reason }}
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-1.5 ms-auto">
+              <a [href]="getImageUrl(d.file_path)" target="_blank" class="btn btn-outline-secondary btn-xs" title="View Document File">
+                <i class="fas fa-external-link-alt me-1"></i> View
+              </a>
+              <ng-container *ngIf="customer?.can_approve_documents && !d.is_verified && d.review_status !== 'Approved'">
+                <button type="button" class="btn btn-success btn-xs" (click)="verifyDoc(d)" [disabled]="submittingKey === ('doc-ver-' + d.document_id)">
+                  <i class="fas fa-check"></i> Verify
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-xs" (click)="rejectDoc(d)" [disabled]="submittingKey === ('doc-rej-' + d.document_id)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </ng-container>
+              <span class="badge bg-success-subtle text-success border border-success-subtle fs-11" *ngIf="d.is_verified || d.review_status === 'Approved'">
+                <i class="fas fa-check-circle me-1"></i> Verified
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: KYC PROFILE & ACCOUNT ACTIVATION -->
+      <div class="review-section-card">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="step-num">3</span>
+            <h6 class="mb-0 fw-700 text-dark">KYC Profile &amp; Account Activation</h6>
+          </div>
+          <span class="badge"
+                [class.bg-success]="isKycVerified"
+                [class.bg-warning]="!isKycVerified && !isKycRejected"
+                [class.bg-danger]="isKycRejected">
+            {{ kyc?.status || customer?.account_status || 'Pending' }}
+          </span>
+        </div>
+
+        <div class="audit-info-box fs-12 mb-2" *ngIf="kyc?.reviewer_name">
+          <i class="fas fa-shield-alt text-success me-1"></i>
+          <strong>Verified by:</strong> {{ formatApprovedBy(kyc?.reviewer_name, kyc?.reviewer_member_id, kyc?.reviewer_role, kyc?.reviewed_at) }}
+        </div>
+
+        <div class="rejection-box fs-12 mb-2 text-danger" *ngIf="kyc?.reject_reason">
+          <i class="fas fa-exclamation-circle me-1"></i>
+          <strong>Rejection Reason:</strong> {{ kyc.reject_reason }}
+        </div>
+
+        <!-- Action Buttons for KYC Profile -->
+        <div class="d-flex align-items-center gap-2 mt-2" *ngIf="customer?.can_verify_kyc && !isKycVerified">
+          <button type="button"
+                  class="btn btn-success btn-sm fw-600"
+                  (click)="verifyKyc()"
+                  [disabled]="submittingKey === 'kyc-verify'">
+            <i class="fas fa-shield-alt me-1" *ngIf="submittingKey !== 'kyc-verify'"></i>
+            <i class="fas fa-spinner fa-spin me-1" *ngIf="submittingKey === 'kyc-verify'"></i>
+            Verify &amp; Activate KYC
+          </button>
+          <button type="button"
+                  class="btn btn-outline-danger btn-sm fw-600"
+                  (click)="rejectKyc()"
+                  [disabled]="submittingKey === 'kyc-reject'">
+            <i class="fas fa-times me-1" *ngIf="submittingKey !== 'kyc-reject'"></i>
+            <i class="fas fa-spinner fa-spin me-1" *ngIf="submittingKey === 'kyc-reject'"></i>
+            Reject KYC
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="amd-footer text-end p-2 border-top bg-light">
+      <button type="button" class="btn btn-secondary btn-sm" (click)="closeReviewModal()">Close</button>
+    </div>
+  </div>
+</div>

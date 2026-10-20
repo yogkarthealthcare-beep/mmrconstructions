@@ -47,7 +47,8 @@
             <th>Member ID</th>
             <th>Mobile Number</th>
             <th>Email</th>
-            <th>Status</th>
+            <th>Account Status</th>
+            <th>Approval &amp; Verification</th>
             <th class="text-end">Actions</th>
           </tr>
         </thead>
@@ -63,6 +64,10 @@
               <span class="badge bg-success-subtle text-success border border-success-subtle">
                 {{ c.account_status || 'Active' }}
               </span>
+            </td>
+            <td>
+              <!-- Reusable Customer Approval Actions (Enrollment, Docs, KYC) -->
+              <app-customer-approval-actions [customer]="c" (updated)="loadCustomers()"></app-customer-approval-actions>
             </td>
             <td class="text-end">
               <button class="btn btn-sm btn-success" (click)="bookForCustomer(c)">

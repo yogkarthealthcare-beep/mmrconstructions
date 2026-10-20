@@ -210,6 +210,18 @@ import Swal from 'sweetalert2';
                         </select>
                       </div>
                     </div>
+                    <!-- Approved by audit information -->
+                    <div *ngIf="app.application_status === 'Approved' && (app.approved_by_name || app.approved_by_member_id)" class="fs-9 text-success fw-600 mt-1 d-flex align-items-center gap-1">
+                      <i class="fas fa-user-check"></i>
+                      <span>Approved by: {{ app.approved_by_name || 'Admin' }} ({{ app.approved_by_member_id || 'MMR00001' }}) – {{ app.approved_by_role || 'Admin' }}<ng-container *ngIf="app.approved_at">, {{ app.approved_at | date:'dd MMM yyyy' }}</ng-container></span>
+                    </div>
+                    <div *ngIf="app.application_status === 'Approved' && !app.approved_by_name && !app.approved_by_member_id" class="fs-9 text-muted mt-0.5">
+                      Approved by: —
+                    </div>
+                    <div *ngIf="app.application_status === 'Rejected' && app.reject_reason" class="fs-9 text-danger fw-600 mt-1 d-flex align-items-center gap-1">
+                      <i class="fas fa-times-circle"></i>
+                      <span>Reason: {{ app.reject_reason }}</span>
+                    </div>
                   </td>
 
                   <!-- Actions -->

@@ -264,6 +264,15 @@ export class ApiService {
   adminUpdateCustomerEnrollment(id: string, data: any) { return this.put(`/api/admin/customer-enrollments/${id}`, data, true); }
   adminQuickUpdateCustomerStatus(id: string, data: any) { return this.put(`/api/admin/customer-enrollments/${id}`, data, true); }
 
+  // ── Scoped Customer Approvals (Associate, Team Member & Admin) ──
+  getMyCustomersForApproval(params: any = {}) { return this.get('/api/portal/my-customers-for-approval', params); }
+  approveCustomerEnrollment(customerId: number | string) { return this.post(`/api/portal/customers/${customerId}/enrollment/approve`, {}); }
+  rejectCustomerEnrollment(customerId: number | string, reason: string) { return this.post(`/api/portal/customers/${customerId}/enrollment/reject`, { reason }); }
+  verifyCustomerDocument(customerId: number | string, docId: number | string) { return this.post(`/api/portal/customers/${customerId}/documents/${docId}/verify`, {}); }
+  rejectCustomerDocument(customerId: number | string, docId: number | string, reason: string) { return this.post(`/api/portal/customers/${customerId}/documents/${docId}/reject`, { reason }); }
+  verifyCustomerKyc(customerId: number | string) { return this.post(`/api/portal/customers/${customerId}/kyc/verify`, {}); }
+  rejectCustomerKyc(customerId: number | string, reason: string) { return this.post(`/api/portal/customers/${customerId}/kyc/reject`, { reason }); }
+
   // ── Associate Enrollment ──────────────────────────
   getMyAssociateEnrollment()          { return this.get('/api/associate-enrollment/me'); }
   adminGetAssociateEnrollments(params: any = {}) { return this.get('/api/admin/associate-enrollments', params, true); }

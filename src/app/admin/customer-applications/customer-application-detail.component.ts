@@ -203,8 +203,27 @@ import Swal from 'sweetalert2';
                   </select>
                 </div>
 
-                <div class="mb-2">
-                  <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Verified By (Staff Name &amp; Code)</label>
+                <div class="mb-2" *ngIf="appData.application_status === 'Approved'">
+                  <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Approval Audit Record</label>
+                  <div class="p-2 bg-success-subtle text-success border border-success-subtle rounded fs-11 fw-600" *ngIf="appData.approved_by_name || appData.approved_by_member_id">
+                    <i class="fas fa-user-check me-1"></i>
+                    Approved by: {{ appData.approved_by_name || 'Admin' }} ({{ appData.approved_by_member_id || 'MMR00001' }}) – {{ appData.approved_by_role || 'Admin' }}<ng-container *ngIf="appData.approved_at">, {{ appData.approved_at | date:'dd MMM yyyy, hh:mm a' }}</ng-container>
+                  </div>
+                  <div class="p-1.5 bg-light text-muted border rounded fs-11" *ngIf="!appData.approved_by_name && !appData.approved_by_member_id">
+                    Approved by: —
+                  </div>
+                </div>
+
+                <div class="mb-2" *ngIf="appData.application_status === 'Rejected' && appData.reject_reason">
+                  <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Rejection Reason</label>
+                  <div class="p-2 bg-danger-subtle text-danger border border-danger-subtle rounded fs-11 fw-600">
+                    <i class="fas fa-exclamation-circle me-1"></i>
+                    {{ appData.reject_reason }}
+                  </div>
+                </div>
+
+                <div class="mb-2" *ngIf="appData.application_status !== 'Approved'">
+                  <label class="form-label fs-11 fw-700 text-muted mb-0.5 text-uppercase">Verified By Notes / Office Staff</label>
                   <input type="text" class="f-input" formControlName="verifiedBy" placeholder="e.g. Ramesh Kumar (EMP-102)">
                 </div>
 

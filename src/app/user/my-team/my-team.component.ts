@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
+import { CustomerApprovalActionsComponent } from '../../shared/customer-approval-actions/customer-approval-actions.component';
 
 export interface TeamMemberNode {
   user_id: number;
@@ -28,7 +29,7 @@ export interface TeamMemberNode {
 @Component({
   selector: 'app-my-team',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, VerifiedBadgeComponent, AdminPaginationComponent],
+  imports: [CommonModule, FormsModule, RouterLink, VerifiedBadgeComponent, AdminPaginationComponent, CustomerApprovalActionsComponent],
   templateUrl: './my-team.component.html',
   styleUrls: ['./my-team.component.css']
 })
@@ -156,8 +157,9 @@ export class MyTeamComponent implements OnInit {
       this.api.getAssocNetworkTree().toPromise().catch(() => null),
       this.api.getAssocNetwork().toPromise().catch(() => null),
       this.api.getAssociateTeamMembers().toPromise().catch(() => null),
-      this.api.getProfile().toPromise().catch(() => null)
-    ]).then(([treeRes, networkRes, teamMembersRes, profileRes]) => {
+      this.api.getProfile().toPromise().catch(() => null),
+      this.api.getMyCustomersForApproval().toPromise().catch(() => null)
+    ]).then(([treeRes, networkRes, teamMembersRes, profileRes, customerApprovalsRes]) => {
       if (profileRes?.success && profileRes?.data) {
         this.currentUser = profileRes.data;
         this.auth.setUserSession({ user: profileRes.data });
@@ -176,11 +178,54 @@ export class MyTeamComponent implements OnInit {
         : [];
       this.flatList = flatData;
 
-      if (teamMembersRes?.success && Array.isArray(teamMembersRes.data)) {
-        this.teamMembers = teamMembersRes.data.filter((item: any) => item.user_type !== 'Customer');
-      } else {
-        this.teamMembers = flatData;
+      // Base team members list
+      const rawMembers = (teamMembersRes?.success && Array.isArray(teamMembersRes.data))
+        ? teamMembersRes.data
+        : (Array.isArray(flatData) ? [...flatData] : []);
+
+      // Build customer approvals map
+      const approvalList = (customerApprovalsRes?.success && Array.isArray(customerApprovalsRes.data))
+        ? customerApprovalsRes.data
+        : (Array.isArray(customerApprovalsRes) ? customerApprovalsRes : []);
+
+      const approvalMap = new Map<number, any>();
+      for (const ca of approvalList) {
+        approvalMap.set(Number(ca.user_id), ca);
       }
+
+      // Merge approval details onto existing records
+      const mergedList = rawMembers.map((m: any) => {
+        const uid = Number(m.user_id);
+        const ca = approvalMap.get(uid);
+        if (ca) {
+          return { ...m, ...ca };
+        }
+        return m;
+      });
+
+      // Append customers from approval list not yet present
+      const existingIds = new Set(mergedList.map((m: any) => Number(m.user_id)));
+      for (const ca of approvalList) {
+        if (!existingIds.has(Number(ca.user_id))) {
+          mergedList.push({
+            user_id: ca.user_id,
+            member_id: ca.member_id,
+            full_name: ca.full_name,
+            mobile_no: ca.mobile_no,
+            email: ca.email,
+            user_type: 'Customer',
+            account_status: ca.account_status || 'Active',
+            sponsor_user_id: ca.sponsor_user_id,
+            sponsor_name: ca.sponsor_name,
+            sponsor_id: ca.sponsor_id,
+            relationship: ca.relationship,
+            ...ca
+          });
+          existingIds.add(Number(ca.user_id));
+        }
+      }
+
+      this.teamMembers = mergedList;
 
       if (treeRes?.success && treeRes?.data) {
         this.treeRoot = this.formatTree(treeRes.data);
