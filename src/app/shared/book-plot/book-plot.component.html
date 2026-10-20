@@ -169,7 +169,7 @@
           <div class="drawer-plot-specs text-muted fs-12 mt-1">
             <span><i class="fas fa-ruler-combined me-1"></i> {{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj</span>
             <span class="mx-2">•</span>
-            <span class="text-success fw-bold"><i class="fas fa-tag me-1"></i> Base Price: ₹{{ (selectedPlot?.base_price || selectedPlot?.price || 0) | number }}</span>
+            <span [class.text-success]="isPlotPriceValid" [class.text-danger]="!isPlotPriceValid" class="fw-bold"><i class="fas fa-tag me-1"></i> Base Price: ₹{{ totalPlotPrice | number }} <span *ngIf="!isPlotPriceValid" class="badge bg-danger ms-1">Price Unset</span></span>
           </div>
         </div>
 
@@ -508,6 +508,10 @@
           <div class="fs-11 text-uppercase fw-700 text-dark mb-2">
             <i class="fas fa-calculator text-success me-1"></i> Live Payment Calculation Summary
           </div>
+          <div *ngIf="!isPlotPriceValid" class="alert alert-danger py-2 px-3 fs-12 mb-2">
+            <i class="fas fa-exclamation-triangle me-1"></i>
+            Plot price is not configured in the system (₹0). Booking cannot proceed until an administrator sets the plot base price.
+          </div>
           <div class="row g-2 text-center text-md-start">
             <div class="col-4">
               <span class="fs-11 text-muted text-uppercase">Total Plot Value</span>
@@ -522,11 +526,11 @@
               <div class="fw-800 text-danger fs-14">₹{{ remainingBalance | number }}</div>
             </div>
           </div>
-          <div class="fs-11 text-success fw-600 mt-2 text-center text-md-start" *ngIf="paymentMode !== 'EMI'">
+          <div class="fs-11 text-success fw-600 mt-2 text-center text-md-start" *ngIf="paymentMode !== 'EMI' && isPlotPriceValid">
             <i class="fas fa-check-circle me-1"></i>
             <strong>Formula:</strong> Unpaid Balance = Total Plot Value (₹{{ totalPlotPrice | number }}) − Total Paid (₹{{ (agreedAmount || advanceAmount || 0) | number }}) | Interest = <strong>₹0</strong>
           </div>
-          <div class="fs-11 text-primary fw-600 mt-2 text-center text-md-start" *ngIf="paymentMode === 'EMI' && installmentPreview">
+          <div class="fs-11 text-primary fw-600 mt-2 text-center text-md-start" *ngIf="paymentMode === 'EMI' && installmentPreview && isPlotPriceValid">
             <i class="fas fa-info-circle me-1"></i>
             <strong>EMI Plan:</strong> {{ installmentPreview.tenure_months }} Months &#64; ₹{{ installmentPreview.monthly_emi | number }}/month (Interest: {{ installmentPreview.interest_rate }}%)
           </div>
@@ -583,6 +587,10 @@
 
     <!-- Drawer Footer (Sticky Button) -->
     <div class="drawer-footer">
+      <div *ngIf="validationError && selectedPlot" class="alert alert-warning py-1.5 px-2.5 fs-12 mb-2 d-flex align-items-center">
+        <i class="fas fa-info-circle me-1.5 flex-shrink-0 text-warning"></i>
+        <span>{{ validationError }}</span>
+      </div>
       <button
         type="button"
         class="btn btn-success w-100 py-2.5 fs-14 fw-bold submit-booking-btn shadow-sm"

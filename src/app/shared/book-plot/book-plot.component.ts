@@ -361,7 +361,8 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       }
     } else if (key.startsWith('CUS_')) {
       const custId = Number(key.replace('CUS_', ''));
-      const cust = this.teamMemberCustomers.find(c => Number(c.user_id) === custId);
+      const cust = this.teamMemberCustomers.find(c => Number(c.user_id) === custId)
+        || this.myCustomers.find(c => Number(c.user_id) === custId);
       if (cust) {
         this.buyerType = 'ON_BEHALF';
         this.selectedCustomer = cust;
@@ -384,7 +385,21 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   }
 
   onSelectTeamMemberCustomer(customerId: number | string): void {
-    this.onBuyerKeyChange('CUS_' + customerId);
+    if (!customerId) {
+      this.selectedCustomer = null;
+      this.selectedBuyerKey = '';
+      return;
+    }
+    const custId = Number(customerId);
+    const cust = this.myCustomers.find(c => Number(c.user_id) === custId);
+    if (cust) {
+      this.buyerType = 'ON_BEHALF';
+      this.selectedCustomer = cust;
+      this.selectedBuyerKey = 'CUS_' + custId;
+    } else {
+      this.selectedCustomer = null;
+      this.selectedBuyerKey = '';
+    }
   }
 
   // ── Direct Customer Management ──────────────────────
@@ -682,12 +697,25 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   // ── Plot Selection & Details ────────────────────────
 
   get totalPlotPrice(): number {
-    if (!this.selectedPlot) return 0;
-    return Number(this.selectedPlot.base_price || this.selectedPlot.price || (Number(this.selectedPlot.plot_area || 0) * 1000) || 0);
+    const p = this.selectedPlotDetail || this.selectedPlot;
+    if (!p) return 0;
+    const raw = p.base_price !== undefined && p.base_price !== null && p.base_price !== ''
+      ? p.base_price
+      : p.price;
+    const num = Number(raw);
+    if (!isNaN(num) && num > 0) {
+      return num;
+    }
+    return 0;
+  }
+
+  get isPlotPriceValid(): boolean {
+    return this.totalPlotPrice > 0;
   }
 
   get remainingBalance(): number {
     const total = this.totalPlotPrice;
+    if (total <= 0) return 0;
     const paid = Number(this.agreedAmount || this.advanceAmount || 0);
     return Math.max(0, total - paid);
   }
@@ -698,13 +726,16 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
     if (mode === 'ONE_TIME') {
       this.paymentType = 'FullPayment';
-      this.agreedAmount = price > 0 ? price : 50000;
+      this.agreedAmount = price > 0 ? price : 0;
       this.advanceAmount = this.agreedAmount;
       this.installmentPreview = null;
     } else if (mode === 'PART_WISE') {
       this.paymentType = 'PartPayment';
-      const dp = Number(this.selectedPlot?.down_payment || Math.round(price * 0.25));
-      this.agreedAmount = dp > 0 ? dp : Math.max(10000, Math.round(price * 0.25));
+      const dp = Number(this.selectedPlot?.down_payment || (price > 0 ? Math.round(price * 0.25) : 0));
+      this.agreedAmount = dp > 0 ? dp : (price > 0 ? Math.min(price, Math.max(10000, Math.round(price * 0.25))) : 10000);
+      if (price > 0 && this.agreedAmount > price) {
+        this.agreedAmount = price;
+      }
       this.advanceAmount = this.agreedAmount;
       this.installmentPreview = null;
     } else if (mode === 'EMI') {
@@ -807,7 +838,14 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
     this.api.getPlot(plot.plot_id).subscribe({
       next: (res: any) => {
-        this.selectedPlotDetail = res?.data || res || plot;
+        const detail = res?.data || res || plot;
+        this.selectedPlotDetail = detail;
+        if (detail) {
+          this.selectedPlot = { ...this.selectedPlot, ...detail };
+          if (this.isBookable(this.selectedPlot)) {
+            this.setPaymentMode(this.paymentMode);
+          }
+        }
       },
       error: () => {
         this.selectedPlotDetail = plot;
@@ -996,31 +1034,57 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     return s ? s.site_name : 'Selected Site';
   }
 
-  isSubmitDisabled(): boolean {
-    if (!this.selectedPlotId || !this.selectedPlot) return true;
-    if (!this.isBookable(this.selectedPlot)) return true;
-    const amount = Number(this.agreedAmount || this.advanceAmount);
-    if (!amount || isNaN(amount) || amount < 10000) return true;
-
+  get validationError(): string | null {
+    if (!this.selectedPlotId || !this.selectedPlot) {
+      return 'Please select an available plot on the map.';
+    }
+    if (!this.isBookable(this.selectedPlot)) {
+      return 'Selected plot is not available for booking.';
+    }
+    if (!this.isPlotPriceValid) {
+      return 'Plot price is unconfigured (₹0). Please contact administration.';
+    }
     if (this.isAssociate) {
       if (this.bookingForMode === 'TEAM_MEMBER') {
-        if (!this.selectedTeamMemberId || !this.selectedCustomer) return true;
+        if (!this.selectedTeamMemberId) return 'Please select a Team Member.';
+        if (!this.selectedCustomer) return 'Please select a Buyer (Team Member or Customer).';
       } else if (this.bookingForMode === 'SELF_DIRECT') {
-        if (!this.selectedSelfOrDirectKey) return true;
-        if (this.buyerType === 'ON_BEHALF' && !this.selectedCustomer) return true;
+        if (!this.selectedSelfOrDirectKey) return 'Please select a booking entity.';
+        if (this.buyerType === 'ON_BEHALF' && !this.selectedCustomer) return 'Please select a customer.';
       }
     } else if (this.isTeamMember) {
-      if (!this.selectedCustomer) return true;
+      if (!this.selectedCustomer) {
+        return 'Please select a Customer / Party to book for.';
+      }
     }
+    const amount = Number(this.agreedAmount || this.advanceAmount || 0);
+    if (!amount || isNaN(amount) || amount < 10000) {
+      return 'Minimum booking / advance amount is ₹10,000.';
+    }
+    if (this.totalPlotPrice > 0 && amount > this.totalPlotPrice) {
+      return `Amount cannot exceed the total plot value of ₹${this.totalPlotPrice.toLocaleString()}.`;
+    }
+    if (this.paymentMode === 'ONE_TIME') {
+      if (this.totalPlotPrice > 0 && amount < this.totalPlotPrice) {
+        return `One-Time Payment requires the full plot value of ₹${this.totalPlotPrice.toLocaleString()}.`;
+      }
+    }
+    if (this.paymentMode === 'EMI') {
+      if (!this.selectedInstallmentPlanId) {
+        return 'Please select an active EMI installment plan.';
+      }
+      if ((this.isTeamMember || this.isAssociate || this.buyerType === 'ON_BEHALF') && !this.allowEmiOnBehalf) {
+        return 'Installment (EMI) option is currently unavailable for on-behalf bookings.';
+      }
+    }
+    if (!this.paymentMethod) {
+      return 'Please select a payment method.';
+    }
+    return null;
+  }
 
-    if (this.paymentMode === 'EMI' && !this.selectedInstallmentPlanId) {
-      return true;
-    }
-
-    if ((this.isTeamMember || this.isAssociate || this.buyerType === 'ON_BEHALF') && this.paymentType === 'EMI' && !this.allowEmiOnBehalf) {
-      return true;
-    }
-    return false;
+  isSubmitDisabled(): boolean {
+    return Boolean(this.validationError);
   }
 
   submitBooking(): void {
