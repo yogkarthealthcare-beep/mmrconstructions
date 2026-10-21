@@ -50,7 +50,8 @@
       <p class="small">All submissions in this category have been processed.</p>
     </div>
 
-    <div *ngIf="filteredBookings.length > 0" class="table-responsive">
+    <!-- 1. DESKTOP VIEW: SINGLE-ROW 8-COLUMN TABLE -->
+    <div *ngIf="filteredBookings.length > 0" class="table-responsive d-none d-md-block">
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
           <tr>
@@ -113,6 +114,74 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- 2. MOBILE VIEW: TWO CONSECUTIVE VISUAL ROWS PER BOOKING RECORD -->
+    <div *ngIf="filteredBookings.length > 0" class="mobile-approvals-list d-block d-md-none">
+      <div
+        class="mobile-booking-card"
+        *ngFor="let b of filteredBookings; let i = index; let isEven = even"
+        [class.booking-bg-gray]="isEven"
+        [class.booking-bg-white]="!isEven"
+      >
+        <!-- VISUAL ROW 1: SERIAL, BUYER, ADVANCE & STATUS -->
+        <div class="mobile-booking-row-1">
+          <div class="mobile-row-left">
+            <div class="d-flex align-items-center gap-1.5 flex-wrap">
+              <strong class="text-success fs-12">{{ b.booking_serial }}</strong>
+              <span *ngIf="b.is_overdue" class="overdue-alert py-0 px-1.5">
+                <i class="fas fa-clock"></i> 48h+
+              </span>
+            </div>
+            <div class="mobile-buyer-name text-dark fw-bold">
+              {{ b.customer_name || 'Customer' }}
+              <span class="mobile-buyer-type text-muted fw-normal">({{ b.buyer_type === 'ON_BEHALF' ? 'On Behalf' : 'Self Purchase' }})</span>
+            </div>
+          </div>
+
+          <div class="mobile-row-right text-end">
+            <div class="fw-bold fs-13 text-dark font-monospace">₹{{ (b.advance_amount || 0) | number }}</div>
+            <span
+              class="mobile-status-pill mt-0.5"
+              [class.badge-pending]="b.associate_approval_status === 'Pending'"
+              [class.badge-approved]="b.associate_approval_status === 'Approved'"
+              [class.badge-rejected]="b.associate_approval_status === 'Rejected'"
+            >
+              {{ b.associate_approval_status }}
+            </span>
+          </div>
+        </div>
+
+        <!-- VISUAL ROW 2: SUBMITTED BY (TM), PLOT/SITE, DATE & ACTIONS -->
+        <div class="mobile-booking-row-2">
+          <div class="mobile-meta-details">
+            <div class="mobile-meta-line">
+              <i class="fas fa-map-marker-alt text-warning me-1"></i>
+              <span class="fw-600 text-dark">Plot {{ b.plot_number }}</span>
+              <span class="text-muted ms-1">({{ b.site_name }})</span>
+            </div>
+            <div class="mobile-meta-subline">
+              <span><i class="fas fa-user-shield text-muted me-1"></i>{{ b.booked_by_name || 'Team Member' }}</span>
+              <span class="mx-1 text-muted">&bull;</span>
+              <span class="text-muted">{{ b.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
+            </div>
+          </div>
+
+          <div class="mobile-actions-wrap text-end">
+            <div *ngIf="b.associate_approval_status === 'Pending'" class="btn-group btn-group-sm">
+              <button class="btn btn-success btn-xs" (click)="openApproveModal(b)">
+                <i class="fas fa-check me-0.5"></i> Approve
+              </button>
+              <button class="btn btn-outline-danger btn-xs" (click)="openRejectModal(b)">
+                <i class="fas fa-times me-0.5"></i> Reject
+              </button>
+            </div>
+            <span *ngIf="b.associate_approval_status !== 'Pending'" class="text-muted small">
+              {{ b.associate_approval_status }}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
