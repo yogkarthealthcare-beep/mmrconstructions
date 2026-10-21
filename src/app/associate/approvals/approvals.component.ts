@@ -44,19 +44,48 @@ export class AssociateApprovalsComponent implements OnInit {
     });
   }
 
+  isPendingStatus(status?: string): boolean {
+    const s = (status || '').toLowerCase();
+    return s === 'pending';
+  }
+
+  isApprovedStatus(status?: string): boolean {
+    const s = (status || '').toLowerCase();
+    return s.includes('approved');
+  }
+
+  isRejectedStatus(status?: string): boolean {
+    const s = (status || '').toLowerCase();
+    return s.includes('rejected');
+  }
+
+  getStatusLabel(status?: string): string {
+    if (!status) return 'Pending';
+    const s = status.toLowerCase();
+    if (s.includes('autoapproved') || s.includes('auto_approved')) return 'Auto-Approved';
+    if (s.includes('approved')) return 'Approved';
+    if (s.includes('rejected')) return 'Rejected';
+    if (s === 'pending') return 'Pending';
+    return status;
+  }
+
   calculateCounts(): void {
-    this.pendingCount = this.allBookings.filter(b => b.associate_approval_status === 'Pending').length;
-    this.approvedCount = this.allBookings.filter(b => b.associate_approval_status === 'Approved').length;
-    this.rejectedCount = this.allBookings.filter(b => b.associate_approval_status === 'Rejected').length;
-    this.pendingOverdueCount = this.allBookings.filter(b => b.associate_approval_status === 'Pending' && b.is_overdue).length;
+    this.pendingCount = this.allBookings.filter(b => this.isPendingStatus(b.associate_approval_status)).length;
+    this.approvedCount = this.allBookings.filter(b => this.isApprovedStatus(b.associate_approval_status)).length;
+    this.rejectedCount = this.allBookings.filter(b => this.isRejectedStatus(b.associate_approval_status)).length;
+    this.pendingOverdueCount = this.allBookings.filter(b => this.isPendingStatus(b.associate_approval_status) && b.is_overdue).length;
   }
 
   setTab(tab: 'Pending' | 'Approved' | 'Rejected' | 'All'): void {
     this.activeTab = tab;
     if (tab === 'All') {
       this.filteredBookings = [...this.allBookings];
-    } else {
-      this.filteredBookings = this.allBookings.filter(b => b.associate_approval_status === tab);
+    } else if (tab === 'Pending') {
+      this.filteredBookings = this.allBookings.filter(b => this.isPendingStatus(b.associate_approval_status));
+    } else if (tab === 'Approved') {
+      this.filteredBookings = this.allBookings.filter(b => this.isApprovedStatus(b.associate_approval_status));
+    } else if (tab === 'Rejected') {
+      this.filteredBookings = this.allBookings.filter(b => this.isRejectedStatus(b.associate_approval_status));
     }
   }
 
