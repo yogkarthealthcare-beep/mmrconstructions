@@ -567,8 +567,8 @@
             <span class="summary-label">Selected Buyer:</span>
             <strong class="summary-val text-success">
               {{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})
-              <span class="badge bg-info-subtle text-info ms-1" *ngIf="selectedBuyerKey?.startsWith('TM_')">Team Member (Self)</span>
-              <span class="badge bg-success-subtle text-success ms-1" *ngIf="selectedBuyerKey?.startsWith('CUS_')">Customer</span>
+              <span class="badge bg-info-subtle text-info ms-1" *ngIf="selectedBuyerKey.startsWith('TM_')">Team Member (Self)</span>
+              <span class="badge bg-success-subtle text-success ms-1" *ngIf="selectedBuyerKey.startsWith('CUS_')">Customer</span>
             </strong>
           </div>
           <div class="summary-row">
@@ -621,9 +621,9 @@
           <span class="text-muted">Buyer Name:</span>
           <strong>{{ confirmedBooking?.buyer_name || (buyerType === 'ON_BEHALF' && selectedCustomer ? selectedCustomer.full_name : currentUser?.full_name) }}</strong>
         </div>
-        <div class="detail-row" *ngIf="selectedCustomer?.mobile_no">
+        <div class="detail-row" *ngIf="selectedCustomer?.mobile_no as mobile">
           <span class="text-muted">Customer Contact:</span>
-          <strong>{{ selectedCustomer?.mobile_no }}</strong>
+          <strong>{{ mobile }}</strong>
         </div>
         <div class="detail-row" *ngIf="bookingForMode === 'TEAM_MEMBER' && selectedTeamMember">
           <span class="text-muted">Attributed Team Member:</span>

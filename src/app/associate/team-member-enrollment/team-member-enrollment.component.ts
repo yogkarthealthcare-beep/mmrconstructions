@@ -99,6 +99,14 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   targetUserId: number | null = null;
   targetSlotNumber: number | null = null;
 
+  // Review & Lifecycle States
+  isReviewMode = signal<boolean>(false);
+  isFinalSubmitted = signal<boolean>(false);
+  isEditing = signal<boolean>(false);
+  enrolledMemberId = signal<number | null>(null);
+  enrolledMemberUid = signal<string>('');
+  downloadingPdf = signal<boolean>(false);
+
   // ── 10 Direct Slots Computed (11 Total Team with Team Lead) ───
   slots = computed<TeamMemberSlot[]>(() => {
     const members = this.teamMembers() || [];
@@ -302,6 +310,12 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       this.targetSlotNumber = slotNum;
     }
     this.targetUserId = null;
+    this.enrolledMemberId.set(null);
+    this.enrolledMemberUid.set('');
+    this.isReviewMode.set(false);
+    this.isFinalSubmitted.set(false);
+    this.isEditing.set(false);
+
     this.enrollmentForm.reset({
       associateId: this.associateId,
       associateName: this.associateName,
@@ -324,6 +338,9 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       ifscCode: '',
       declarationAccepted: false
     });
+    this.enrollmentForm.enable();
+    this.enrollmentForm.get('associateId')?.disable();
+    this.enrollmentForm.get('associateName')?.disable();
     this.enrollmentForm.markAsPristine();
     this.enrollmentForm.markAsUntouched();
     this.photoFile = null;
@@ -674,25 +691,16 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   onSubmit(): void {
-    if (!this.declarationAcceptedSignal()) {
+    if (this.isFinalSubmitted()) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Declaration Required (घोषणा आवश्यक है)',
-        text: 'Please accept the Declaration & Code of Conduct checkbox to proceed (कृपया नीचे दिए गए घोषणा चेकबॉक्स को स्वीकार करें).',
-        confirmButtonColor: '#0b5345'
+        icon: 'info',
+        title: 'Form Finalized',
+        text: 'This team member enrollment has already been finalized and cannot be modified.'
       });
-      setTimeout(() => {
-        const declEl = document.querySelector('.declaration-gate-box, #declarationCheck') as HTMLElement;
-        if (declEl) {
-          declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          const chk = declEl.querySelector('input[type="checkbox"]') as HTMLElement;
-          if (chk) chk.focus();
-        }
-      }, 100);
       return;
     }
 
-    if (!this.photoFile) {
+    if (!this.photoFile && !this.photoPreviewUrl) {
       Swal.fire({
         icon: 'warning',
         title: 'Photo Required (फोटो आवश्यक है)',
@@ -731,6 +739,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    // Always use getRawValue() so disabled controls are not dropped from payload
     const raw = this.enrollmentForm.getRawValue();
     const applicantSig = this.uploadedApplicantSigUrl || this.applicantSigPad?.dataUrl() || '';
     const associateSig = this.uploadedAssociateSigUrl || this.associateSigPad?.dataUrl() || '';
@@ -759,6 +768,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     formData.append('accountNo', raw.accountNo);
     formData.append('ifscCode', raw.ifscCode);
     formData.append('declarationAccepted', 'true');
+    formData.append('isFinalSubmit', 'false');
 
     if (this.photoFile) {
       formData.append('photo', this.photoFile);
@@ -779,43 +789,217 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
 
     this.submitting.set(true);
 
-    this.api.createTeamMember(formData).subscribe({
+    const isUpdate = Boolean(this.enrolledMemberId());
+    const apiCall = isUpdate
+      ? this.api.updateTeamMember(this.enrolledMemberId()!, formData)
+      : this.api.createTeamMember(formData);
+
+    apiCall.subscribe({
       next: (res: any) => {
         this.submitting.set(false);
         if (res?.success) {
-          const uid = res.data?.team_member_uid || 'Created';
+          const id = res.data?.id || this.enrolledMemberId();
+          const uid = res.data?.team_member_uid || this.enrolledMemberUid();
+          this.enrolledMemberId.set(id);
+          this.enrolledMemberUid.set(uid);
+          this.isReviewMode.set(true);
+          this.isFinalSubmitted.set(false);
+          this.isEditing.set(false);
+
+          // Disable all data fields
+          this.enrollmentForm.disable();
+
+          this.loadTeamMembersList();
+
           Swal.fire({
             icon: 'success',
-            title: 'Enrollment Submitted!',
+            title: isUpdate ? 'Draft Updated (समीक्षा मोड)' : 'Draft Saved (समीक्षा मोड)',
             html: `
               <div style="text-align: center;">
-                <p>Team Member has been enrolled successfully.</p>
+                <p>Team Member application draft has been saved.</p>
                 <div style="background: #e8f5e9; border: 2px dashed #2e7d32; border-radius: 8px; padding: 12px; margin: 15px 0;">
                   <span style="font-size: 13px; color: #1b5e20; font-weight: 600;">ASSIGNED TEAM MEMBER ID:</span><br>
                   <strong style="font-size: 20px; color: #0d47a1; letter-spacing: 1px;">${uid}</strong>
                 </div>
-                <p style="font-size: 13px; color: #555;">Status is currently <b>Pending Office Approval</b>.</p>
+                <p style="font-size: 13px; color: #555;">Please review the application and click <b>Final Submit</b>.</p>
               </div>
             `,
-            confirmButtonText: 'View Team Members List',
+            confirmButtonText: 'Review Application',
             confirmButtonColor: '#1b5e20'
-          }).then(() => {
-            this.resetForm();
-            this.setTab('list');
           });
         }
       },
       error: (err: any) => {
         this.submitting.set(false);
-        const errMsg = err?.error?.message || err?.message || 'Failed to enroll team member. Please try again.';
+        const errMsg = err?.error?.message || err?.message || 'Failed to save team member draft. Please try again.';
         Swal.fire({
           icon: 'error',
-          title: 'Submission Failed',
+          title: 'Save Failed',
           text: errMsg,
           confirmButtonColor: '#d32f2f'
         });
       }
     });
+  }
+
+  onEdit(): void {
+    if (this.isFinalSubmitted()) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Form Finalized',
+        text: 'This team member enrollment form has been permanently finalized and cannot be edited.'
+      });
+      return;
+    }
+    this.isEditing.set(true);
+    this.isReviewMode.set(false);
+    this.enrollmentForm.enable();
+    this.enrollmentForm.get('associateId')?.disable();
+    this.enrollmentForm.get('associateName')?.disable();
+  }
+
+  onFinalSubmit(): void {
+    if (this.isFinalSubmitted()) return;
+
+    Swal.fire({
+      title: 'Confirm Final Submission?',
+      text: 'Once finalized, this Team Member enrollment will be permanently locked and cannot be edited anymore. It will be submitted for office approval.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, Final Submit',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.executeFinalSubmit();
+      }
+    });
+  }
+
+  private executeFinalSubmit(): void {
+    const memberId = this.enrolledMemberId();
+    if (!memberId) {
+      Swal.fire('Error', 'No enrolled member ID found for final submission.', 'error');
+      return;
+    }
+
+    this.submitting.set(true);
+    this.api.finalSubmitTeamMember(memberId, true).subscribe({
+      next: (res: any) => {
+        this.submitting.set(false);
+        this.isFinalSubmitted.set(true);
+        this.isReviewMode.set(false);
+        this.isEditing.set(false);
+        this.enrollmentForm.disable();
+        this.loadTeamMembersList();
+        Swal.fire({
+          icon: 'success',
+          title: 'Enrollment Finalized & Locked!',
+          text: 'The Team Member enrollment has been permanently finalized and locked. It is now awaiting office approval.',
+          confirmButtonColor: '#10b981'
+        });
+      },
+      error: (err: any) => {
+        this.submitting.set(false);
+        const errMsg = err?.error?.message || 'Failed to final submit team member application.';
+        Swal.fire({
+          icon: 'error',
+          title: 'Final Submission Failed',
+          text: errMsg,
+          confirmButtonColor: '#d32f2f'
+        });
+      }
+    });
+  }
+
+  downloadPdf(memberId?: number | string | null, uid?: string, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    const targetId = memberId || this.enrolledMemberId();
+    if (!targetId) {
+      Swal.fire('No Record', 'Please save or select a team member first to preview the PDF.', 'warning');
+      return;
+    }
+
+    this.downloadingPdf.set(true);
+    this.api.downloadTeamMemberPdf(targetId).subscribe({
+      next: (blob: Blob) => {
+        this.downloadingPdf.set(false);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const filename = `MMR_TeamMember_${uid || targetId}.pdf`;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err: any) => {
+        this.downloadingPdf.set(false);
+        const errMsg = err?.error?.message || 'Failed to download Team Member application PDF.';
+        Swal.fire({
+          icon: 'error',
+          title: 'Preview Failed',
+          text: errMsg,
+          confirmButtonColor: '#d32f2f'
+        });
+      }
+    });
+  }
+
+  resumeDraftMember(member: any): void {
+    if (!member) return;
+    this.enrolledMemberId.set(member.id);
+    this.enrolledMemberUid.set(member.team_member_uid || '');
+    this.targetSlotNumber = member.slot_number ? Number(member.slot_number) : null;
+    this.targetUserId = member.user_id ? Number(member.user_id) : null;
+
+    let dobStr = '';
+    if (member.date_of_birth) {
+      dobStr = String(member.date_of_birth).split('T')[0];
+    }
+
+    const isFinal = Boolean(member.is_final_submitted);
+
+    this.enrollmentForm.patchValue({
+      associateId: member.associate_id || this.associateId,
+      associateName: member.associate_name || this.associateName,
+      fullName: member.full_name || '',
+      fatherHusbandName: member.father_husband_name || '',
+      dateOfBirth: dobStr,
+      gender: member.gender || 'Male',
+      aadharNo: member.aadhar_no || '',
+      panNo: member.pan_no || '',
+      mobileNo: member.mobile_no || '',
+      emailId: member.email_id || '',
+      fullAddress: member.full_address || '',
+      nomineeName: member.nominee_name || '',
+      nomineeRelation: member.nominee_relation || '',
+      nomineeAgeDob: member.nominee_age_dob || '',
+      nomineeContactNo: member.nominee_contact_no || '',
+      bankName: member.bank_name || '',
+      branchName: member.branch_name || '',
+      accountNo: member.account_no || '',
+      ifscCode: member.ifsc_code || '',
+      declarationAccepted: true
+    });
+
+    this.photoPreviewUrl = member.photo_url || null;
+    this.uploadedApplicantSigUrl = member.applicant_signature_url || null;
+    this.uploadedAssociateSigUrl = member.associate_signature_url || null;
+
+    this.isFinalSubmitted.set(isFinal);
+    this.isReviewMode.set(!isFinal);
+    this.isEditing.set(false);
+
+    this.enrollmentForm.disable();
+
+    this.activeTab = 'enroll';
+    setTimeout(() => this.initSignaturePads(), 150);
   }
 
   resetForm(): void {

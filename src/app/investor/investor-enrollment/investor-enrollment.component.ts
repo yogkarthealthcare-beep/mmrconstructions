@@ -1,7 +1,8 @@
-import { Component, OnInit, ViewChild, ElementRef, inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
@@ -29,13 +30,17 @@ import {
   templateUrl: './investor-enrollment.component.html',
   styleUrls: ['./investor-enrollment.component.css']
 })
-export class InvestorEnrollmentComponent implements OnInit {
+export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDestroy {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private subs = new Subscription();
 
   enrollmentForm!: FormGroup;
+
+  showModal: boolean = false;
+  modalAgreeCheck: boolean = false;
 
   statesList = APPROVED_INDIAN_STATES;
   religionsList = RELIGIONS_LIST;
@@ -45,8 +50,6 @@ export class InvestorEnrollmentComponent implements OnInit {
   declSignatureDataUrl: string = '';
   sigFirstUploaded: string = '';
   sigJointUploaded: string = '';
-  showModal: boolean = false;
-  modalAgreeCheck: boolean = false;
   submitting: boolean = false;
   isSubmitted: boolean = false;
   isFinalSubmitted: boolean = false;
@@ -81,6 +84,10 @@ export class InvestorEnrollmentComponent implements OnInit {
 
   ngAfterViewInit() {
     this.initSignaturePads();
+  }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe();
   }
 
   initForm() {
@@ -129,17 +136,12 @@ export class InvestorEnrollmentComponent implements OnInit {
       accountNumber: ['', Validators.required],
       ifscCode: ['', [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
       nominees: this.fb.array([this.createNomineeGroup()]),
-      declarationCheck: [false, Validators.requiredTrue],
       declDate: [todayStr, Validators.required],
       declPlace: ['', Validators.required],
       declSignatureName: ['', [humanNameValidator()]],
       firstApplicantName: ['', [Validators.required, humanNameValidator()]],
       jointApplicantName: ['', [humanNameValidator()]],
-      appStatus: [{ value: 'Hold/Pending KYC', disabled: true }],
-      verifiedBy: [{ value: '', disabled: true }],
-      paymentStatus: [{ value: '', disabled: true }],
-      paymentStatusDate: [{ value: '', disabled: true }],
-      authorizedSignatory: [{ value: '', disabled: true }]
+      declarationCheck: [false, Validators.requiredTrue]
     });
 
     // Auto-calculate Age on DOB change
@@ -425,7 +427,74 @@ export class InvestorEnrollmentComponent implements OnInit {
     return canvas.toDataURL() === blank.toDataURL();
   }
 
-  private focusFirstInvalidControl() {
+  private getFirstInvalidControlName(group: FormGroup | FormArray): { name: string; label: string } | null {
+    const fieldLabels: Record<string, string> = {
+      formNo: 'Form Number',
+      formDate: 'Form Date',
+      branchCode: 'Branch Code',
+      branchName: 'Branch Name',
+      investorId: 'Investor ID',
+      projectName: 'Project Name',
+      invFirstName: 'First Name',
+      invMiddleName: 'Middle Name',
+      invSurname: 'Surname',
+      fhFirstName: "Father's / Husband's First Name",
+      fhMiddleName: "Father's / Husband's Middle Name",
+      fhSurname: "Father's / Husband's Surname",
+      dob: 'Date of Birth',
+      age: 'Age',
+      gender: 'Gender',
+      religion: 'Religion',
+      occupation: 'Occupation',
+      occupationOther: 'Other Occupation',
+      address: 'Permanent Address',
+      city: 'Permanent City',
+      state: 'Permanent State',
+      pinCode: 'Permanent Pin Code',
+      corrAddress: 'Correspondence Address',
+      corrCity: 'Correspondence City',
+      corrState: 'Correspondence State',
+      corrPinCode: 'Correspondence Pin Code',
+      mobile: 'Mobile Number',
+      altTel: 'Alternative Phone Number',
+      email: 'Email Address',
+      pan: 'PAN Card Number',
+      aadhar: 'Aadhaar Number',
+      amount: 'Investment Amount',
+      amountWords: 'Amount in Words',
+      paymentMode: 'Payment Mode',
+      txnNo: 'Transaction / Cheque / DD No.',
+      txnDate: 'Transaction Date',
+      bankBranch: 'Drawn Bank & Branch',
+      accountNumber: 'Bank Account Number',
+      ifscCode: 'Bank IFSC Code',
+      declDate: 'Declaration Date',
+      declPlace: 'Place of Signing',
+      declSignatureName: 'Declaration Signature Name',
+      firstApplicantName: 'First Applicant Full Name',
+      jointApplicantName: 'Joint Applicant Full Name',
+      name: 'Nominee Name',
+      relation: 'Nominee Relationship',
+      ageDob: 'Nominee Age / DOB',
+      aadharNo: 'Nominee Aadhaar Number',
+      guardianName: 'Nominee Guardian Name',
+      guardianRelation: 'Nominee Guardian Relationship',
+      declarationCheck: 'Declaration Checkbox'
+    };
+
+    for (const key of Object.keys(group.controls)) {
+      const control = group.get(key);
+      if (control instanceof FormGroup || control instanceof FormArray) {
+        const nested = this.getFirstInvalidControlName(control);
+        if (nested) return nested;
+      } else if (control && control.invalid) {
+        return { name: key, label: fieldLabels[key] || key };
+      }
+    }
+    return null;
+  }
+
+  private focusFirstInvalidControl(isSigMissing = false) {
     setTimeout(() => {
       // 1. If photo is missing, focus & scroll to photo box first
       if (!this.photoDataUrl) {
@@ -433,6 +502,8 @@ export class InvestorEnrollmentComponent implements OnInit {
         if (photoEl) {
           photoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           photoEl.focus();
+          photoEl.classList.add('pulse-error-highlight');
+          setTimeout(() => photoEl.classList.remove('pulse-error-highlight'), 3000);
           Swal.fire({
             toast: true,
             position: 'top-end',
@@ -445,7 +516,55 @@ export class InvestorEnrollmentComponent implements OnInit {
         }
       }
 
-      // 2. Otherwise focus first invalid input/select/textarea
+      // 2. Find first invalid FormControl in the FormGroup tree
+      const invalidInfo = this.getFirstInvalidControlName(this.enrollmentForm);
+      if (invalidInfo) {
+        const targetEl = document.querySelector(
+          `[formControlName="${invalidInfo.name}"], input[name="${invalidInfo.name}"], select[name="${invalidInfo.name}"], #${invalidInfo.name}`
+        ) as HTMLElement;
+
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetEl.focus();
+          targetEl.classList.add('pulse-error-highlight');
+          setTimeout(() => targetEl.classList.remove('pulse-error-highlight'), 3000);
+
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: `Please fill required field: ${invalidInfo.label} *`,
+            showConfirmButton: false,
+            timer: 3500
+          });
+          return;
+        }
+      }
+
+      // 3. Declaration check
+      if (!this.enrollmentForm.get('declarationCheck')?.value) {
+        const declEl = document.querySelector('.agree-line') as HTMLElement;
+        if (declEl) {
+          declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const chk = declEl.querySelector('input[type="checkbox"]') as HTMLElement;
+          if (chk) {
+            chk.focus();
+            chk.classList.add('pulse-error-highlight');
+            setTimeout(() => chk.classList.remove('pulse-error-highlight'), 3000);
+          }
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please accept the Declaration checkbox *',
+            showConfirmButton: false,
+            timer: 3500
+          });
+          return;
+        }
+      }
+
+      // 4. Fallback: Check any DOM element with .ng-invalid
       const invalidControl = document.querySelector(
         '.ng-invalid[formControlName], input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid'
       ) as HTMLElement;
@@ -453,16 +572,20 @@ export class InvestorEnrollmentComponent implements OnInit {
         invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         if (typeof invalidControl.focus === 'function') {
           invalidControl.focus();
+          invalidControl.classList.add('pulse-error-highlight');
+          setTimeout(() => invalidControl.classList.remove('pulse-error-highlight'), 3000);
         }
         return;
       }
 
-      // 3. If declaration signature is missing
-      if (!this.declSignatureDataUrl && !this.sigFirstUploaded && this.isCanvasEmpty(this.sigFirstCanvas?.nativeElement)) {
+      // 5. If declaration signature is missing
+      if (isSigMissing) {
         const sigEl = document.querySelector('.signature-upload-wrapper') as HTMLElement;
         if (sigEl) {
           sigEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           sigEl.focus();
+          sigEl.classList.add('pulse-error-highlight');
+          setTimeout(() => sigEl.classList.remove('pulse-error-highlight'), 3000);
           Swal.fire({
             toast: true,
             position: 'top-end',
@@ -503,7 +626,7 @@ export class InvestorEnrollmentComponent implements OnInit {
     return formData;
   }
 
-  confirmAndSubmit() {
+  public confirmAndSubmit(): void {
     if (!this.modalAgreeCheck || this.submitting) return;
 
     this.submitting = true;
@@ -744,7 +867,12 @@ export class InvestorEnrollmentComponent implements OnInit {
       declPlace: d.decl_place || '',
       declSignatureName: d.decl_signature_name || '',
       firstApplicantName: d.first_applicant_name || '',
-      jointApplicantName: d.joint_applicant_name || ''
+      jointApplicantName: d.joint_applicant_name || '',
+      appStatus: d.app_status || d.appStatus || 'Hold/Pending KYC',
+      verifiedBy: d.verified_by || d.verifiedBy || '',
+      paymentStatus: d.payment_status || d.paymentStatus || '',
+      paymentStatusDate: d.payment_status_date ? String(d.payment_status_date).split('T')[0] : (d.paymentStatusDate || ''),
+      authorizedSignatory: d.authorized_signatory || d.authorizedSignatory || ''
     });
 
     this.enrollmentForm.disable();

@@ -209,14 +209,21 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  transition: all 0.25s ease;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
   overflow: hidden;
+  position: relative;
 }
 
 .team-member-pro-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   border-color: rgba(201, 168, 76, 0.5);
+}
+
+.team-member-pro-card:has(.approval-modal-backdrop),
+.team-member-pro-card.modal-active {
+  transform: none !important;
+  overflow: visible !important;
+  z-index: 99999 !important;
 }
 
 .member-card-header {
@@ -455,11 +462,78 @@
   color: #78350f;
 }
 
-/* ── CUSTOM TEAM TABLE (LIST VIEW) ───────────────────────── */
-.custom-team-table {
-  margin-bottom: 0;
+/* ── ACTION BUTTONS: GREEN, YELLOW, BLUE ─────────────────── */
+.btn-action-green {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  border-radius: 6px;
+  padding: 4px 10px !important;
+  font-size: 11.5px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
 }
 
+.btn-action-green:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.45);
+}
+
+.btn-action-yellow {
+  background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%) !important;
+  color: #78350f !important;
+  border: 1px solid #d97706 !important;
+  font-weight: 700 !important;
+  border-radius: 6px;
+  padding: 4px 10px !important;
+  font-size: 11.5px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
+}
+
+.btn-action-yellow:hover {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%) !important;
+  color: #451a03 !important;
+  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.45);
+}
+
+.btn-action-blue {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 600 !important;
+  border-radius: 6px;
+  padding: 4px 9px !important;
+  font-size: 11.5px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.25);
+}
+
+.btn-action-blue:hover {
+  background: #0369a1 !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 8px rgba(2, 132, 199, 0.4);
+}
+
+/* ── CUSTOM TEAM TABLE (LIST VIEW) ───────────────────────── */
+.custom-dash-table,
+.custom-team-table {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.custom-dash-table th,
 .custom-team-table th {
   background: #f8fafc !important;
   color: #475569 !important;
@@ -467,18 +541,43 @@
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
-  padding: 12px 14px !important;
+  padding: 10px 12px !important;
   border-bottom: 1px solid #e2e8f0 !important;
+  white-space: nowrap;
 }
 
+.custom-dash-table td,
 .custom-team-table td {
-  padding: 12px 14px !important;
-  font-size: 13px !important;
+  padding: 8px 12px !important;
+  font-size: 12.5px !important;
   border-bottom: 1px solid #f1f5f9 !important;
+  vertical-align: middle;
 }
 
+.custom-dash-table tbody tr:hover,
 .custom-team-table tbody tr:hover {
   background: #f8fafc;
+}
+
+/* Column Auto-Fit rules so zero amounts don't bloat spacing */
+.custom-dash-table .col-fit {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.custom-dash-table .col-customer {
+  min-width: 175px;
+}
+
+.custom-dash-table .col-property {
+  min-width: 125px;
+}
+
+.custom-dash-table .col-actions {
+  width: 1%;
+  white-space: nowrap;
+  min-width: 200px;
+  text-align: right;
 }
 
 .member-code-badge {
@@ -937,26 +1036,29 @@
   display: none;
 }
 
-/* Hover Tooltips */
-.node-hover-tooltip {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+/* Floating Tree Tooltip on Node Hover */
+.tree-floating-tooltip {
+  position: fixed;
   background: #0f172a;
   color: #ffffff;
-  padding: 10px 12px;
-  border-radius: 8px;
-  width: 220px;
-  z-index: 100;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  text-align: left;
-  margin-top: 6px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  width: 245px;
+  z-index: 99999 !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  animation: tooltipFadeIn 0.15s ease-out;
 }
 
-.tree-card:hover .node-hover-tooltip {
-  display: block;
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.tree-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  z-index: 50;
 }
 
 .tooltip-header {

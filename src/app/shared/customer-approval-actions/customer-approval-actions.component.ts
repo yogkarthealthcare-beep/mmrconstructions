@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -11,13 +11,14 @@ import Swal from 'sweetalert2';
   templateUrl: './customer-approval-actions.component.html',
   styleUrls: ['./customer-approval-actions.component.css']
 })
-export class CustomerApprovalActionsComponent {
+export class CustomerApprovalActionsComponent implements OnDestroy {
   @Input() customer: any;
   @Input() compact = false;
   @Output() updated = new EventEmitter<void>();
 
   showModal = false;
   submittingKey = '';
+  private activeParentCard: HTMLElement | null = null;
 
   constructor(private api: ApiService) {}
 
@@ -69,12 +70,37 @@ export class CustomerApprovalActionsComponent {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
+      const target = event.target as HTMLElement;
+      this.activeParentCard = target?.closest('.team-member-pro-card') as HTMLElement | null;
+      if (this.activeParentCard) {
+        this.activeParentCard.classList.add('modal-active');
+      }
+    }
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('approval-modal-open');
     }
     this.showModal = true;
   }
 
   closeReviewModal(): void {
     this.showModal = false;
+    if (this.activeParentCard) {
+      this.activeParentCard.classList.remove('modal-active');
+      this.activeParentCard = null;
+    }
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('approval-modal-open');
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.activeParentCard) {
+      this.activeParentCard.classList.remove('modal-active');
+      this.activeParentCard = null;
+    }
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('approval-modal-open');
+    }
   }
 
   formatApprovedBy(name?: string, memberId?: string, role?: string, date?: string, fallback?: string): string {

@@ -57,6 +57,10 @@ export class MyTeamComponent implements OnInit {
   hoveredMember: any = null;
   tooltipPos = { x: 0, y: 0 };
 
+  // Floating Hover Tooltip for Hierarchical Tree View
+  hoveredTreeNode: TeamMemberNode | null = null;
+  treeTooltipPos = { x: 0, y: 0 };
+
   // Calculated Stats
   totalTeamCount = 0;
   directCount = 0;
@@ -526,6 +530,51 @@ export class MyTeamComponent implements OnInit {
 
   hideListTooltip(): void {
     this.hoveredMember = null;
+  }
+
+  showTreeNodeTooltip(node: TeamMemberNode, event: MouseEvent): void {
+    this.hoveredTreeNode = node;
+    const tooltipWidth = 245;
+    const tooltipHeight = 210;
+
+    const target = (event.currentTarget || event.target) as HTMLElement;
+    const cardEl = target?.closest ? target.closest('.tree-card') as HTMLElement : null;
+    const rect = cardEl ? cardEl.getBoundingClientRect() : null;
+
+    let x = event.clientX + 15;
+    let y = event.clientY + 15;
+
+    if (rect) {
+      // Horizontally center with the tree card
+      x = rect.left + (rect.width - tooltipWidth) / 2;
+
+      // Smart vertical positioning based on viewport space
+      if (rect.bottom + tooltipHeight + 12 <= window.innerHeight) {
+        // Fits below the card
+        y = rect.bottom + 8;
+      } else if (rect.top - tooltipHeight - 12 >= 0) {
+        // Fits above the card
+        y = rect.top - tooltipHeight - 8;
+      } else {
+        // Tight space top & bottom: vertically center on screen and position to left/right
+        y = Math.max(12, (window.innerHeight - tooltipHeight) / 2);
+        if (rect.right + tooltipWidth + 12 <= window.innerWidth) {
+          x = rect.right + 10;
+        } else if (rect.left - tooltipWidth - 12 >= 0) {
+          x = rect.left - tooltipWidth - 10;
+        }
+      }
+    }
+
+    // Clamp inside screen bounds
+    x = Math.max(12, Math.min(x, window.innerWidth - tooltipWidth - 12));
+    y = Math.max(12, Math.min(y, window.innerHeight - tooltipHeight - 12));
+
+    this.treeTooltipPos = { x, y };
+  }
+
+  hideTreeNodeTooltip(): void {
+    this.hoveredTreeNode = null;
   }
 
   clearSearch(): void {

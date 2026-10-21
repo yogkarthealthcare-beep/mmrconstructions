@@ -98,7 +98,9 @@
               }"></i>
               <ng-container [ngSwitch]="slot.status">
                 <span *ngSwitchCase="'empty'">Available</span>
-                <span *ngSwitchCase="'pending'">Pending Approval</span>
+                <span *ngSwitchCase="'pending'">
+                  {{ slot.member?.is_final_submitted ? 'Pending Approval' : 'Draft (Unfinalized)' }}
+                </span>
                 <span *ngSwitchCase="'approved'">Approved</span>
                 <span *ngSwitchCase="'rejected'">Rejected</span>
                 <span *ngSwitchCase="'inactive'">Inactive</span>
@@ -142,16 +144,28 @@
               <i class="fas fa-user-plus"></i> Enroll into Slot {{ slot.slotNumber }}
             </button>
 
+            <!-- Approve Member (Only when member is finalized) -->
             <button 
               type="button" 
               class="btn-slot-approve mb-1.5 w-100 fw-700" 
               style="background: #10b981; border: none; color: #fff; padding: 7px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;"
-              *ngIf="slot.status === 'pending' && slot.member"
+              *ngIf="slot.status === 'pending' && slot.member && slot.member.is_final_submitted"
               (click)="approveSlotMember(slot.member, $event)"
               [disabled]="approvingId() === (slot.member.id || slot.member.user_id)"
             >
               <i class="fas" [class.fa-check-circle]="approvingId() !== (slot.member.id || slot.member.user_id)" [class.fa-spinner]="approvingId() === (slot.member.id || slot.member.user_id)" [class.fa-spin]="approvingId() === (slot.member.id || slot.member.user_id)"></i>
               Approve Member
+            </button>
+
+            <!-- Resume Draft (When member is not yet finalized) -->
+            <button 
+              type="button" 
+              class="btn-slot-resume mb-1.5 w-100 fw-700" 
+              style="background: #f59e0b; border: none; color: #fff; padding: 7px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;"
+              *ngIf="slot.status === 'pending' && slot.member && !slot.member.is_final_submitted"
+              (click)="resumeDraftMember(slot.member)"
+            >
+              <i class="fas fa-edit me-1"></i> Resume &amp; Finalize Draft
             </button>
 
             <button 
@@ -764,7 +778,7 @@
           <div class="sig-pad-card">
             <div class="sig-pad-header">
               <label><i class="fas fa-signature text-gold"></i> Applicant Digital Signature</label>
-              <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2" *ngIf="!isReviewMode() && !isFinalSubmitted()">
                 <label class="btn-clear-sig mb-0" style="cursor: pointer;" for="applicantSigFileInput">
                   <i class="fas fa-upload text-gold"></i> Upload Signature (JPG/PNG)
                   <input 
@@ -783,14 +797,14 @@
             <div class="canvas-wrapper">
               <canvas #applicantSigCanvas id="applicantSigCanvas" class="sig-canvas"></canvas>
             </div>
-            <span class="sig-hint">Draw signature inside the box or upload image (JPG/PNG/WEBP)</span>
+            <span class="sig-hint">Applicant digital signature</span>
           </div>
 
           <!-- Associate Signature Pad -->
           <div class="sig-pad-card">
             <div class="sig-pad-header">
               <label><i class="fas fa-file-signature text-gold"></i> Sponsoring Associate Signature</label>
-              <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2" *ngIf="!isReviewMode() && !isFinalSubmitted()">
                 <label class="btn-clear-sig mb-0" style="cursor: pointer;" for="associateSigFileInput">
                   <i class="fas fa-upload text-gold"></i> Upload Signature (JPG/PNG)
                   <input 
@@ -809,37 +823,125 @@
             <div class="canvas-wrapper">
               <canvas #associateSigCanvas id="associateSigCanvas" class="sig-canvas"></canvas>
             </div>
-            <span class="sig-hint">Sponsoring Associate signature (Draw or upload JPG/PNG/WEBP)</span>
+            <span class="sig-hint">Sponsoring Associate signature</span>
           </div>
         </div>
 
-        <!-- Submission Buttons Bar -->
-        <div class="form-actions-bar">
-          <button 
-            type="button" 
-            class="btn btn-secondary" 
-            (click)="resetForm()"
-            [disabled]="submitting()"
-          >
-            <i class="fas fa-redo"></i> Reset Form
-          </button>
-
-          <div class="submit-btn-wrapper">
+        <!-- 3-State Submission / Action Buttons Bar -->
+        <div class="form-actions-bar" style="margin-top: 24px; padding-top: 18px; border-top: 1.5px solid #e2e8f0;">
+          
+          <!-- State A: Active Drafting (Not in review mode and not final submitted) -->
+          <ng-container *ngIf="!isReviewMode() && !isFinalSubmitted()">
             <button 
-              type="submit" 
-              class="btn btn-primary btn-submit"
-              [disabled]="submitting() || isCapacityFull() || !canSubmit()"
-              [class.disabled-gate]="!canSubmit()"
-              [title]="!declarationAcceptedSignal() ? 'Please accept the declaration checkbox above to enable submit' : ''"
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="resetForm()"
+              [disabled]="submitting()"
             >
-              <span *ngIf="submitting()" class="spinner-border spinner-border-sm me-2"></span>
-              <i *ngIf="!submitting()" class="fas fa-paper-plane me-2"></i>
-              <span>{{ submitting() ? 'Submitting Enrollment...' : 'Submit Team Member Enrollment' }}</span>
+              <i class="fas fa-redo me-1"></i> Reset Form
             </button>
-            <small *ngIf="!declarationAcceptedSignal()" class="gate-hint">
-              <i class="fas fa-lock"></i> Check the declaration box above to enable submission
-            </small>
-          </div>
+
+            <div class="submit-btn-wrapper ms-auto">
+              <button 
+                type="submit" 
+                class="btn btn-primary btn-submit"
+                [disabled]="submitting() || isCapacityFull() || enrollmentForm.invalid || (!photoFile && !photoPreviewUrl)"
+              >
+                <span *ngIf="submitting()" class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!submitting()" class="fas fa-arrow-right me-2"></i>
+                <span>{{ isEditing() ? 'Update & Review Application' : 'Save & Proceed to Review' }}</span>
+              </button>
+            </div>
+          </ng-container>
+
+          <!-- State B: Review Mode (Draft review: Edit, Preview PDF, Final Submit) -->
+          <ng-container *ngIf="isReviewMode() && !isFinalSubmitted()">
+            <div class="d-flex flex-wrap align-items-center justify-content-between w-100 gap-3">
+              <div class="review-status-indicator d-flex align-items-center gap-2">
+                <span class="badge" style="background: #fffbeb; color: #b45309; border: 1.5px solid #fcd34d; font-size: 13px; padding: 7px 14px; border-radius: 20px;">
+                  <i class="fas fa-clipboard-check me-1"></i> <strong>Draft Review Mode</strong>
+                </span>
+              </div>
+
+              <div class="review-actions-group d-flex align-items-center gap-2 ms-auto">
+                <!-- Edit Application Button -->
+                <button 
+                  type="button" 
+                  class="btn btn-outline-secondary" 
+                  (click)="onEdit()"
+                  [disabled]="submitting()"
+                  title="Re-enable data fields for editing"
+                  style="border-radius: 6px; font-weight: 600;"
+                >
+                  <i class="fas fa-edit me-1"></i> Edit Application
+                </button>
+
+                <!-- Preview Application PDF Button (HttpClient Blob) -->
+                <button 
+                  type="button" 
+                  class="btn btn-outline-primary" 
+                  (click)="downloadPdf(enrolledMemberId(), enrolledMemberUid())"
+                  [disabled]="downloadingPdf()"
+                  title="Preview application PDF with auth token"
+                  style="border-radius: 6px; font-weight: 600;"
+                >
+                  <i class="fas" [class.fa-file-pdf]="!downloadingPdf()" [class.fa-spinner]="downloadingPdf()" [class.fa-spin]="downloadingPdf()" class="me-1"></i>
+                  <span>{{ downloadingPdf() ? 'Generating PDF...' : 'Preview PDF' }}</span>
+                </button>
+
+                <!-- Final Submit Application Button -->
+                <button 
+                  type="button" 
+                  class="btn btn-success fw-bold" 
+                  style="background: #10b981; border: none; border-radius: 6px; padding: 8px 18px;"
+                  (click)="onFinalSubmit()"
+                  [disabled]="submitting()"
+                  title="Permanently finalize and lock application"
+                >
+                  <span *ngIf="submitting()" class="spinner-border spinner-border-sm me-2"></span>
+                  <i *ngIf="!submitting()" class="fas fa-check-double me-1"></i>
+                  <span>Final Submit</span>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- State C: Final Submitted & Locked -->
+          <ng-container *ngIf="isFinalSubmitted()">
+            <div class="d-flex flex-wrap align-items-center justify-content-between w-100 gap-3">
+              <div class="final-status-indicator d-flex align-items-center gap-2">
+                <span class="badge" style="background: #ecfdf5; color: #047857; border: 1.5px solid #a7f3d0; font-size: 13.5px; padding: 8px 16px; border-radius: 20px;">
+                  <i class="fas fa-lock me-1"></i> <strong>Application Finalized &amp; Locked</strong> (Pending Office Approval)
+                </span>
+              </div>
+
+              <div class="final-actions-group d-flex align-items-center gap-2 ms-auto">
+                <!-- Preview / Download PDF -->
+                <button 
+                  type="button" 
+                  class="btn btn-outline-primary" 
+                  (click)="downloadPdf(enrolledMemberId(), enrolledMemberUid())"
+                  [disabled]="downloadingPdf()"
+                  title="Download finalized enrollment PDF"
+                  style="border-radius: 6px; font-weight: 600;"
+                >
+                  <i class="fas" [class.fa-file-pdf]="!downloadingPdf()" [class.fa-spinner]="downloadingPdf()" [class.fa-spin]="downloadingPdf()" class="me-1"></i>
+                  <span>{{ downloadingPdf() ? 'Downloading...' : 'Preview / Download PDF' }}</span>
+                </button>
+
+                <!-- Go to Team List -->
+                <button 
+                  type="button" 
+                  class="btn btn-secondary" 
+                  (click)="setTab('list')"
+                  style="border-radius: 6px; font-weight: 600;"
+                >
+                  <i class="fas fa-list-ul me-1"></i> Go to Team List
+                </button>
+              </div>
+            </div>
+          </ng-container>
+
         </div>
       </div>
     </form>
@@ -953,13 +1055,20 @@
                 </div>
               </td>
               <td data-label="Status">
-                <span class="badge-status" [ngClass]="member.status">
-                  <i class="fas" [ngClass]="{
-                    'fa-clock': member.status === 'pending',
-                    'fa-check-circle': member.status === 'approved',
-                    'fa-times-circle': member.status === 'rejected'
-                  }"></i>
-                  {{ member.status | uppercase }}
+                <span class="badge-status pending-draft" *ngIf="member.status === 'pending' && !member.is_final_submitted" style="background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; font-size: 11px; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-pencil-alt"></i> DRAFT (UNFINALIZED)
+                </span>
+                <span class="badge-status pending-final" *ngIf="member.status === 'pending' && member.is_final_submitted" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; font-size: 11px; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-clock"></i> PENDING APPROVAL
+                </span>
+                <span class="badge-status approved" *ngIf="member.status === 'approved'">
+                  <i class="fas fa-check-circle"></i> APPROVED
+                </span>
+                <span class="badge-status rejected" *ngIf="member.status === 'rejected'">
+                  <i class="fas fa-times-circle"></i> REJECTED
+                </span>
+                <span class="badge-status inactive" *ngIf="member.status === 'inactive' || member.status === 'blocked'">
+                  <i class="fas fa-ban"></i> INACTIVE
                 </span>
               </td>
               <td class="priority-3" data-label="Enrolled">
@@ -967,10 +1076,11 @@
               </td>
               <td class="text-end" data-label="Action">
                 <div class="d-inline-flex align-items-center gap-1">
+                  <!-- Approve button: ONLY when member is pending AND is_final_submitted -->
                   <button 
                     type="button" 
                     class="btn-action-approve" 
-                    *ngIf="member.status === 'pending'"
+                    *ngIf="member.status === 'pending' && member.is_final_submitted"
                     (click)="approveSlotMember(member, $event)"
                     [disabled]="approvingId() === (member.id || member.user_id)"
                     title="Approve Team Member"
@@ -978,6 +1088,31 @@
                     <i class="fas" [class.fa-check-circle]="approvingId() !== (member.id || member.user_id)" [class.fa-spinner]="approvingId() === (member.id || member.user_id)" [class.fa-spin]="approvingId() === (member.id || member.user_id)"></i>
                     Approve
                   </button>
+
+                  <!-- Resume Draft button: for unfinalized pending members -->
+                  <button 
+                    type="button" 
+                    class="btn btn-sm btn-outline-warning text-dark fw-bold px-2 py-1" 
+                    *ngIf="member.status === 'pending' && !member.is_final_submitted"
+                    (click)="resumeDraftMember(member)"
+                    title="Resume and finalize application"
+                    style="font-size: 11px; border-radius: 4px;"
+                  >
+                    <i class="fas fa-edit me-1"></i> Resume
+                  </button>
+
+                  <!-- PDF Download Button (blob download via HttpClient) -->
+                  <button 
+                    type="button" 
+                    class="btn btn-sm btn-outline-primary px-2 py-1" 
+                    *ngIf="member.id"
+                    (click)="downloadPdf(member.id, member.team_member_uid, $event)"
+                    title="Download Application PDF"
+                    style="font-size: 11px; border-radius: 4px;"
+                  >
+                    <i class="fas fa-file-pdf"></i>
+                  </button>
+
                   <button type="button" class="btn-action-view" (click)="viewMemberDetails(member)">
                     <i class="fas fa-eye"></i> View
                   </button>
@@ -1073,27 +1208,59 @@
           <div class="detail-item">
             <label>Application Status</label>
             <div class="detail-value">
-              <span class="badge-status" [ngClass]="selectedMember()?.status">
-                {{ selectedMember()?.status | uppercase }}
+              <span class="badge-status pending-draft" *ngIf="selectedMember()?.status === 'pending' && !selectedMember()?.is_final_submitted" style="background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; font-size: 11px; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fas fa-pencil-alt"></i> DRAFT (UNFINALIZED)
+              </span>
+              <span class="badge-status pending-final" *ngIf="selectedMember()?.status === 'pending' && selectedMember()?.is_final_submitted" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; font-size: 11px; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fas fa-clock"></i> PENDING APPROVAL
+              </span>
+              <span class="badge-status approved" *ngIf="selectedMember()?.status === 'approved'">
+                <i class="fas fa-check-circle"></i> APPROVED
+              </span>
+              <span class="badge-status rejected" *ngIf="selectedMember()?.status === 'rejected'">
+                <i class="fas fa-times-circle"></i> REJECTED
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="modal-footer-custom d-flex align-items-center justify-content-between">
-        <button 
-          type="button" 
-          class="btn btn-success fw-700" 
-          style="background: #10b981; border: none;" 
-          *ngIf="selectedMember()?.status === 'pending'"
-          (click)="approveSlotMember(selectedMember(), $event)"
-          [disabled]="approvingId() === (selectedMember()?.id || selectedMember()?.user_id)"
-        >
-          <i class="fas" [class.fa-check-circle]="approvingId() !== (selectedMember()?.id || selectedMember()?.user_id)" [class.fa-spinner]="approvingId() === (selectedMember()?.id || selectedMember()?.user_id)" [class.fa-spin]="approvingId() === (selectedMember()?.id || selectedMember()?.user_id)"></i>
-          Approve Application &amp; Activate Account
-        </button>
-        <button type="button" class="btn btn-secondary ms-auto" (click)="closeModal()">Close</button>
+      <div class="modal-footer-custom d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div *ngIf="selectedMember()?.status === 'pending' && !selectedMember()?.is_final_submitted" class="badge" style="background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; font-size: 12px; padding: 6px 12px;">
+          <i class="fas fa-exclamation-triangle me-1"></i> Draft Application: Must be Final Submitted before approval.
+        </div>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <button 
+            type="button" 
+            class="btn btn-warning text-dark fw-bold" 
+            *ngIf="selectedMember()?.status === 'pending' && !selectedMember()?.is_final_submitted"
+            (click)="resumeDraftMember(selectedMember()); closeModal()"
+            style="font-size: 13px;"
+          >
+            <i class="fas fa-edit me-1"></i> Resume &amp; Finalize Draft
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-success fw-700" 
+            style="background: #10b981; border: none;" 
+            *ngIf="selectedMember()?.status === 'pending' && selectedMember()?.is_final_submitted"
+            (click)="approveSlotMember(selectedMember(), $event)"
+            [disabled]="approvingId() === (selectedMember()?.id || selectedMember()?.user_id)"
+          >
+            <i class="fas" [class.fa-check-circle]="approvingId() !== (selectedMember()?.id || selectedMember()?.user_id)" [class.fa-spinner]="approvingId() === (selectedMember()?.id || selectedMember()?.user_id)" [class.fa-spin]="approvingId() === (selectedMember()?.id || selectedMember()?.user_id)"></i>
+            Approve Application &amp; Activate Account
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-outline-primary" 
+            *ngIf="selectedMember()?.id"
+            (click)="downloadPdf(selectedMember()?.id, selectedMember()?.team_member_uid, $event)"
+            title="Download Application PDF"
+          >
+            <i class="fas fa-file-pdf me-1"></i> PDF
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+        </div>
       </div>
     </div>
   </div>

@@ -185,6 +185,14 @@ export class ApiService {
     return this.patch(`/api/team-members/${id}/status`, { status, authorizedSignatoryName });
   }
 
+  finalSubmitTeamMember(id: number | string, declarationAccepted: boolean = true): Observable<any> {
+    return this.post(`/api/team-members/${id}/final-submit`, { declarationAccepted, termsAccepted: declarationAccepted });
+  }
+
+  downloadTeamMemberPdf(id: number | string): Observable<Blob> {
+    return this.getBlob(`/api/team-members/${id}/print`);
+  }
+
   // ── Sites & Plots ─────────────────────────────────
   getHomeSliders()              { return this.get('/api/home-sliders'); }
   getSites()                    { return this.get('/api/sites'); }
@@ -514,7 +522,7 @@ export class ApiService {
 
   // Orders Management & Utility
   getBlob(path: string, admin = false): Observable<Blob> {
-    return this.http.get(`${BASE_URL}${path}`, { headers: this.headers(admin), responseType: 'blob' });
+    return this.http.get(`${BASE_URL}${path}`, { headers: this.headers(admin, path), responseType: 'blob' });
   }
   adminDeleteOrder(invNum: string) { return this.delete(`/api/admin/orders/${invNum}`, true); }
 

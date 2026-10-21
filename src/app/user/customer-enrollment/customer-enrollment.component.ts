@@ -1,6 +1,7 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
@@ -29,7 +30,7 @@ import {
   templateUrl: './customer-enrollment.component.html',
   styleUrls: ['./customer-enrollment.component.css']
 })
-export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
+export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDestroy {
   enrollmentForm!: FormGroup;
   submitting = false;
   isSubmitted = false;
@@ -40,6 +41,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   toastMsg = '';
   submissionId: string | null = null;
   printing = false;
+
+  private subs = new Subscription();
 
   statesList = APPROVED_INDIAN_STATES;
   religionsList = RELIGIONS_LIST;
@@ -83,6 +86,10 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.sigSolePad = this.setupSignaturePad('sigSole');
     this.sigCoPad = this.setupSignaturePad('sigCo');
+  }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe();
   }
 
   initForm() {
@@ -396,6 +403,94 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
     }
   }
 
+  private getFirstInvalidControlName(group: FormGroup | FormArray): { name: string; label: string } | null {
+    const fieldLabels: Record<string, string> = {
+      projectName: 'Project Name',
+      propertyType: 'Property Type',
+      propertyTypeOther: 'Other Property Type',
+      plotFlatNo: 'Plot / Flat No.',
+      blockTower: 'Block / Tower',
+      sizeArea: 'Super / Carpet Area',
+      rate: 'Rate per Sq. Ft. / Unit',
+      bsp: 'Basic Sale Price (BSP)',
+      plcDev: 'PLC / Development Charges',
+      
+      applicantName: 'Applicant Full Name',
+      fhName: "Father's / Husband's Name",
+      dob: 'Date of Birth',
+      age: 'Age',
+      gender: 'Gender',
+      maritalStatus: 'Marital Status',
+      nationality: 'Nationality',
+      nationalityOther: 'Other Nationality',
+      religion: 'Religion',
+      pan: 'PAN Card Number',
+      aadhar: 'Aadhaar Number',
+      occupation: 'Occupation',
+      
+      presentAddress: 'Present Address',
+      presentCity: 'Present City',
+      presentState: 'Present State',
+      presentPinCode: 'Present Pin Code',
+      permanentAddress: 'Permanent Address',
+      permanentCity: 'Permanent City',
+      permanentState: 'Permanent State',
+      permanentPinCode: 'Permanent Pin Code',
+      mobile1: 'Mobile Number (Primary)',
+      mobile2: 'Alternative Contact Number',
+      email1: 'Email Address',
+
+      coApplicantName: 'Co-Applicant Full Name',
+      coFhName: "Co-Applicant Father's / Husband's Name",
+      coRelation: 'Relationship with Applicant',
+      coDob: 'Co-Applicant Date of Birth',
+      coAge: 'Co-Applicant Age',
+      coGender: 'Co-Applicant Gender',
+      coPan: 'Co-Applicant PAN',
+      coAadhar: 'Co-Applicant Aadhaar',
+      coPresentAddress: 'Co-Applicant Address',
+      coMobile: 'Co-Applicant Mobile',
+      coEmail: 'Co-Applicant Email',
+
+      name: 'Nominee Name',
+      relationship: 'Nominee Relationship',
+      nomineeName: 'Nominee Name',
+      relation: 'Nominee Relationship',
+      ageDob: 'Nominee Age / DOB',
+      aadharNo: 'Nominee Aadhaar No.',
+
+      bookingAmount: 'Booking Amount',
+      bookingAmountWords: 'Amount in Words',
+      paymentMode: 'Payment Mode',
+      txnNo: 'Transaction / Cheque / DD No.',
+      txnDate: 'Transaction Date',
+      drawnBankBranch: 'Drawn Bank & Branch',
+
+      accHolderName: 'Refund Account Holder Name',
+      accBankBranch: 'Refund Bank & Branch Name',
+      accNumber: 'Refund Bank Account Number',
+      ifscCode: 'Bank IFSC Code',
+
+      associateName: 'Sponsor / Associate Name',
+      associateId: 'Sponsor / Associate ID',
+      associateMobile: 'Sponsor Mobile Number',
+      associateSignatureName: 'Associate Signature Name',
+
+      declarationCheck: 'Declaration Checkbox'
+    };
+
+    for (const key of Object.keys(group.controls)) {
+      const control = group.get(key);
+      if (control instanceof FormGroup || control instanceof FormArray) {
+        const nested = this.getFirstInvalidControlName(control);
+        if (nested) return nested;
+      } else if (control && control.invalid) {
+        return { name: key, label: fieldLabels[key] || key };
+      }
+    }
+    return null;
+  }
+
   private focusFirstInvalidControl(isSigSoleMissing = false) {
     setTimeout(() => {
       // 1. If applicant photo is missing, focus & scroll to photo box first
@@ -404,20 +499,43 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
         if (photoEl) {
           photoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           photoEl.focus();
+          photoEl.classList.add('pulse-error-highlight');
+          setTimeout(() => photoEl.classList.remove('pulse-error-highlight'), 3000);
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please upload Applicant Photo *',
+            showConfirmButton: false,
+            timer: 3500
+          });
           return;
         }
       }
 
-      // 2. Focus first invalid input/select/textarea/radio
-      const invalidControl = document.querySelector(
-        'input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid[formControlName], .ng-invalid[formArrayName], .ng-invalid[formGroupName], .fieldset-invalid input, .ng-invalid'
-      ) as HTMLElement;
-      if (invalidControl) {
-        invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        if (typeof invalidControl.focus === 'function') {
-          invalidControl.focus();
+      // 2. Find first invalid FormControl in the FormGroup tree
+      const invalidInfo = this.getFirstInvalidControlName(this.enrollmentForm);
+      if (invalidInfo) {
+        const targetEl = document.querySelector(
+          `[formControlName="${invalidInfo.name}"], input[name="${invalidInfo.name}"], select[name="${invalidInfo.name}"], #${invalidInfo.name}`
+        ) as HTMLElement;
+
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetEl.focus();
+          targetEl.classList.add('pulse-error-highlight');
+          setTimeout(() => targetEl.classList.remove('pulse-error-highlight'), 3000);
+
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: `Please fill required field: ${invalidInfo.label} *`,
+            showConfirmButton: false,
+            timer: 3500
+          });
+          return;
         }
-        return;
       }
 
       // 3. Declaration check
@@ -426,16 +544,53 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit {
         if (declEl) {
           declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           const chk = declEl.querySelector('input[type="checkbox"]') as HTMLElement;
-          if (chk) chk.focus();
+          if (chk) {
+            chk.focus();
+            chk.classList.add('pulse-error-highlight');
+            setTimeout(() => chk.classList.remove('pulse-error-highlight'), 3000);
+          }
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please accept the Declaration checkbox *',
+            showConfirmButton: false,
+            timer: 3500
+          });
+          return;
+        }
+      }
+
+      // 4. Fallback: Check any DOM element with .ng-invalid
+      const invalidControl = document.querySelector(
+        'input.ng-invalid, select.ng-invalid, textarea.ng-invalid'
+      ) as HTMLElement;
+      if (invalidControl) {
+        invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof invalidControl.focus === 'function') {
+          invalidControl.focus();
+          invalidControl.classList.add('pulse-error-highlight');
+          setTimeout(() => invalidControl.classList.remove('pulse-error-highlight'), 3000);
         }
         return;
       }
 
-      // 4. Signature missing
+      // 5. Check if Sole/First Applicant Signature is missing
       if (isSigSoleMissing) {
         const sigEl = document.querySelector('.sig-block') as HTMLElement;
         if (sigEl) {
           sigEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          sigEl.classList.add('pulse-error-highlight');
+          setTimeout(() => sigEl.classList.remove('pulse-error-highlight'), 3000);
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please provide Sole / First Applicant Signature *',
+            showConfirmButton: false,
+            timer: 3500
+          });
+          return;
         }
       }
     }, 100);
