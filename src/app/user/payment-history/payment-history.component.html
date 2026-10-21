@@ -97,7 +97,7 @@
 
 <!-- CATEGORY FILTER TABS FOR ASSOCIATES / USERS -->
 <div class="payment-tabs-bar mb-2" *ngIf="!loading && (isAssociateUser || countWallet > 0 || countCommission > 0)">
-  <div class="d-flex align-items-center gap-1.5 overflow-x-auto py-1">
+  <div class="payment-tabs-scroll">
     <button
       type="button"
       class="payment-tab-btn"
@@ -157,10 +157,10 @@
 <!-- SEARCH & TOOLBAR CONTROLS -->
 <div class="toolbar-card mb-3" *ngIf="!loading">
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div class="d-flex align-items-center gap-2 flex-wrap flex-fill" style="max-width: 820px;">
+    <div class="toolbar-controls-wrap d-flex align-items-center gap-2 flex-wrap flex-fill">
       
       <!-- Search Input -->
-      <div class="search-input-wrap flex-fill" style="min-width: 200px;">
+      <div class="search-input-wrap flex-fill">
         <i class="fas fa-search search-icon"></i>
         <input
           type="text"
@@ -170,30 +170,32 @@
         />
       </div>
 
-      <!-- Plot / Property Filter -->
-      <select class="form-select form-select-sm status-select" [(ngModel)]="selectedPlot" style="width: 170px;" *ngIf="plots.length > 1">
-        <option value="all">All Properties ({{ plots.length }})</option>
-        <option *ngFor="let p of plots" [value]="p">{{ p }}</option>
-      </select>
+      <div class="toolbar-filter-grid d-flex align-items-center gap-2 flex-wrap">
+        <!-- Plot / Property Filter -->
+        <select class="form-select form-select-sm status-select" [(ngModel)]="selectedPlot" *ngIf="plots.length > 1">
+          <option value="all">All Properties ({{ plots.length }})</option>
+          <option *ngFor="let p of plots" [value]="p">{{ p }}</option>
+        </select>
 
-      <!-- Payment Mode Filter -->
-      <select class="form-select form-select-sm status-select" [(ngModel)]="paymentModeFilter" style="width: 140px;">
-        <option value="all">All Modes</option>
-        <option value="upi">UPI</option>
-        <option value="bank">Bank Transfer</option>
-        <option value="cash">Cash</option>
-        <option value="wallet">Wallet</option>
-        <option value="online">Online Gateway</option>
-      </select>
+        <!-- Payment Mode Filter -->
+        <select class="form-select form-select-sm status-select" [(ngModel)]="paymentModeFilter">
+          <option value="all">All Modes</option>
+          <option value="upi">UPI</option>
+          <option value="bank">Bank Transfer</option>
+          <option value="cash">Cash</option>
+          <option value="wallet">Wallet</option>
+          <option value="online">Online Gateway</option>
+        </select>
 
-      <!-- Status Filter -->
-      <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter" style="width: 130px;">
-        <option value="all">All Status</option>
-        <option value="approved">Approved</option>
-        <option value="success">Success</option>
-        <option value="pending">Pending</option>
-        <option value="failed">Failed</option>
-      </select>
+        <!-- Status Filter -->
+        <select class="form-select form-select-sm status-select" [(ngModel)]="statusFilter">
+          <option value="all">All Status</option>
+          <option value="approved">Approved</option>
+          <option value="success">Success</option>
+          <option value="pending">Pending</option>
+          <option value="failed">Failed</option>
+        </select>
+      </div>
     </div>
 
     <button class="btn btn-outline-secondary btn-xs ms-auto" (click)="loadData()">
@@ -250,7 +252,8 @@
     </span>
   </div>
 
-  <div class="table-responsive">
+  <!-- 1. DESKTOP VIEW: FULL TABLE (Fully Scrollable, Category Column Unfrozen) -->
+  <div class="table-responsive d-none d-md-block">
     <table class="table align-middle custom-payments-table mb-0">
       <thead>
         <tr>
@@ -385,6 +388,111 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- 2. MOBILE VIEW: 2-ROW GROUPED CARDS WITH ALTERNATING COLORS -->
+  <div class="mobile-tx-list d-block d-md-none">
+    <div *ngIf="filteredPayments.length === 0" class="text-center py-5 text-muted fs-12">
+      <i class="fas fa-search fs-2 text-gold mb-2 d-block"></i>
+      No records matched your search / filter criteria.
+    </div>
+
+    <div
+      class="mobile-tx-card"
+      *ngFor="let p of filteredPayments; let i = index; let isEven = even"
+      [class.mobile-tx-even]="isEven"
+      [class.mobile-tx-odd]="!isEven"
+    >
+      <!-- ROW 1: CATEGORY & TYPE (LEFT) + AMOUNT & STATUS (RIGHT) -->
+      <div class="mobile-tx-row-top">
+        <div class="d-flex align-items-center gap-2 min-w-0">
+          <span class="tx-badge-pill" [ngClass]="p.categoryBadgeClass">
+            {{ p.installment_no || (p.isCredit ? 'CR' : 'DR') }}
+          </span>
+          <div class="min-w-0">
+            <div class="mobile-tx-title">{{ p.payment_type }}</div>
+            <div class="mobile-tx-sub">{{ p.categoryLabel }}</div>
+          </div>
+        </div>
+
+        <div class="text-end flex-shrink-0 ms-2">
+          <div
+            class="fw-800 fs-13 font-monospace"
+            [class.text-success]="p.isCredit !== false"
+            [class.text-danger]="p.isCredit === false"
+          >
+            {{ p.isCredit === false ? '−' : '+' }} ₹{{ (p.paid_amount || p.amount) | number:'1.0-2' }}
+          </div>
+          <span
+            class="sbadge text-nowrap mt-0.5"
+            [ngClass]="{
+              'sbadge-green': p.status === 'Approved' || p.status === 'Success' || p.status === 'success',
+              'sbadge-yellow': p.status === 'Pending' || p.status === 'pending' || p.status === 'Processing',
+              'sbadge-red': p.status === 'Failed' || p.status === 'failed' || p.status === 'Cancelled' || p.status === 'Rejected'
+            }"
+          >
+            {{ (p.status || 'Approved') | titlecase }}
+          </span>
+        </div>
+      </div>
+
+      <!-- ROW 2: TARGET/CUSTOMER/PLOT & DATE/MODE (LEFT) + ACTION BUTTONS (RIGHT) -->
+      <div class="mobile-tx-row-bottom">
+        <div class="mobile-tx-meta">
+          <!-- Customer or Plot Info -->
+          <div class="mobile-meta-item" *ngIf="p.plot_number">
+            <i class="fas fa-th-large text-gold me-1"></i>
+            <span class="fw-700 text-dark">Plot {{ p.plot_number }}</span>
+            <span class="text-muted ms-1" *ngIf="p.site_name">({{ p.site_name }})</span>
+          </div>
+          <div class="mobile-meta-item" *ngIf="p.customer_name">
+            <i class="fas fa-user text-primary me-1"></i>
+            <span class="fw-700 text-primary">{{ p.customer_name }}</span>
+            <span class="text-muted ms-1" *ngIf="p.customer_member_id">({{ p.customer_member_id }})</span>
+          </div>
+          <div class="mobile-meta-item" *ngIf="!p.plot_number && !p.customer_name">
+            <i class="fas fa-wallet text-secondary me-1"></i>
+            <span class="text-muted">Associate Account</span>
+          </div>
+
+          <!-- Date & Mode Info -->
+          <div class="mobile-meta-sub">
+            <span><i class="fas fa-calendar-check text-success me-1"></i>{{ p.paid_date ? (p.paid_date | date:'dd MMM yyyy') : '—' }}</span>
+            <span class="mx-1">•</span>
+            <span>{{ p.payment_mode || 'Online / Bank' }}</span>
+            <span *ngIf="p.transaction_reference" class="text-muted font-monospace ms-1">({{ p.transaction_reference }})</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mobile-tx-actions">
+          <button
+            *ngIf="p.invoice_number || p.category === 'personal_plot' || p.category === 'team_plot'"
+            class="btn btn-xs btn-outline-green"
+            (click)="viewInvoice(p)"
+            title="View Invoice"
+          >
+            <i class="fas fa-file-invoice"></i>
+          </button>
+          <button
+            *ngIf="p.category === 'personal_plot' || p.invoice_number"
+            class="btn btn-xs btn-outline-success"
+            (click)="downloadOfficialPdf(p)"
+            [disabled]="downloadingPdfId === p.id"
+            title="Download PDF"
+          >
+            <i [class]="downloadingPdfId === p.id ? 'fas fa-spinner fa-spin' : 'fas fa-download'"></i>
+          </button>
+          <button
+            class="btn btn-xs btn-outline-secondary"
+            (click)="viewReceipt(p)"
+            title="View Details"
+          >
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

@@ -28,32 +28,49 @@
   <!-- TOP HEADER HERO BANNER -->
   <div class="team-hero-card mb-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative z-2">
-      <div>
+      <div class="team-hero-info">
         <div class="team-hero-badge"><i class="fas fa-users-cog me-1.5"></i>ASSOCIATE PORTAL · TEAM &amp; BOOKING SUITE</div>
         <h2 class="team-hero-title mb-1">Team Members, Plot Bookings &amp; Invoices</h2>
         <p class="team-hero-sub mb-0">Manage customer enrollments, initiate plot bookings, track part-wise payments, and view official invoices.</p>
       </div>
 
-      <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-        <a class="btn btn-outline-light btn-sm fw-700 shadow-sm px-3" routerLink="/associate/team-member-enrollment">
-          <i class="fas fa-th-large me-1.5"></i> 10 Direct Slots
-        </a>
-        <button class="btn btn-success btn-sm fw-700 shadow-sm px-3" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none; color: #ffffff;" (click)="openAddTeamMemberModal()">
-          <i class="fas fa-user-shield me-1.5"></i> + Add New Team Member
-        </button>
-        <button class="btn btn-gold btn-sm fw-700 shadow-sm px-3" (click)="openAddCustomerModal()">
-          <i class="fas fa-user-plus me-1.5"></i> + Add New Customer
-        </button>
-        <button class="btn btn-action-green btn-sm fw-700 shadow-sm px-3" (click)="openBookingModal()" *ngIf="teamMembers.length > 0">
-          <i class="fas fa-map-marked-alt me-1.5"></i> Book Plot for Member
-        </button>
-        <button class="btn btn-copy-link btn-sm" (click)="copyLink()">
-          <i [class]="copiedLink ? 'fas fa-check text-success me-1' : 'fas fa-copy me-1'"></i>
-          {{ copiedLink ? 'Copied!' : 'Copy Invite Link' }}
-        </button>
-        <button class="btn btn-whatsapp-share btn-sm" (click)="shareWhatsapp()">
-          <i class="fab fa-whatsapp me-1"></i> Invite on WhatsApp
-        </button>
+      <!-- ACTION BUTTONS: 3 ROWS × 2 PER ROW PAIRS -->
+      <div class="team-hero-actions">
+        <!-- ROW 1: DIRECT SLOTS & TEAM MEMBER -->
+        <div class="team-hero-btn-row">
+          <a class="team-hero-btn btn-hero-slots" routerLink="/associate/team-member-enrollment">
+            <i class="fas fa-th-large me-1.5"></i>
+            <span>10 Direct Slots</span>
+          </a>
+          <button class="team-hero-btn btn-hero-team" (click)="openAddTeamMemberModal()">
+            <i class="fas fa-user-shield me-1.5"></i>
+            <span>+ Add New Team Member</span>
+          </button>
+        </div>
+
+        <!-- ROW 2: CUSTOMER & PLOT BOOKING -->
+        <div class="team-hero-btn-row">
+          <button class="team-hero-btn btn-hero-customer" (click)="openAddCustomerModal()">
+            <i class="fas fa-user-plus me-1.5"></i>
+            <span>+ Add New Customer</span>
+          </button>
+          <button class="team-hero-btn btn-hero-booking" (click)="openBookingModal()">
+            <i class="fas fa-map-marked-alt me-1.5"></i>
+            <span>Book Plot for Member</span>
+          </button>
+        </div>
+
+        <!-- ROW 3: INVITE LINK & WHATSAPP SHARE -->
+        <div class="team-hero-btn-row">
+          <button class="team-hero-btn btn-hero-copy" (click)="copyLink()">
+            <i [class]="copiedLink ? 'fas fa-check text-success me-1.5' : 'fas fa-copy me-1.5'"></i>
+            <span>{{ copiedLink ? 'Copied!' : 'Copy Invite Link' }}</span>
+          </button>
+          <button class="team-hero-btn btn-hero-whatsapp" (click)="shareWhatsapp()">
+            <i class="fab fa-whatsapp me-1.5"></i>
+            <span>Invite on WhatsApp</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

@@ -122,46 +122,74 @@
 }
 
 /* ── CATEGORY FILTER TABS ────────────────────────────── */
+/* ── CATEGORY FILTER TABS ────────────────────────────── */
 .payment-tabs-bar {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 6px 10px;
+  padding: 6px 8px;
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+  width: 100%;
+  overflow: hidden;
+}
+
+.payment-tabs-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding: 4px 2px;
+}
+
+.payment-tabs-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.payment-tabs-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 .payment-tab-btn {
   display: inline-flex;
   align-items: center;
-  padding: 6px 14px;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+  padding: 6px 12px;
   font-size: 12px;
   font-weight: 700;
   color: #475569;
-  background: transparent;
-  border: 1px solid transparent;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
-  white-space: nowrap;
+  user-select: none;
 }
 
 .payment-tab-btn:hover {
   color: #062b18;
   background: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
 .payment-tab-btn.active {
-  background: #062b18;
-  color: #ffffff;
-  border-color: #062b18;
+  background: #062b18 !important;
+  color: #ffffff !important;
+  border-color: #062b18 !important;
+  box-shadow: 0 2px 6px rgba(6, 43, 24, 0.25);
 }
 
 .payment-tab-btn .tab-count {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-left: 6px;
   font-size: 10px;
   font-weight: 800;
-  padding: 1px 6px;
+  padding: 2px 7px;
   border-radius: 99px;
   background: rgba(0, 0, 0, 0.08);
 }
@@ -182,6 +210,7 @@
 
 .search-input-wrap {
   position: relative;
+  min-width: 200px;
 }
 
 .search-input-wrap .search-icon {
@@ -200,9 +229,10 @@
 .search-field {
   padding-left: 38px !important;
   padding-right: 14px !important;
-  height: 36px !important;
+  height: 38px !important;
   border-radius: 8px !important;
   border: 1.5px solid #e2e8f0 !important;
+  font-size: 12.5px;
 }
 
 .search-field:focus {
@@ -213,14 +243,54 @@
 .status-select {
   border-radius: 8px;
   border: 1.5px solid #e2e8f0;
+  height: 38px !important;
+  font-size: 12.5px;
+  font-weight: 600;
 }
 
-/* ── TABLE STYLING ───────────────────────────────────── */
+.toolbar-filter-grid {
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .toolbar-card {
+    padding: 10px 10px;
+  }
+  .toolbar-controls-wrap {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .search-input-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .toolbar-filter-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+  .toolbar-filter-grid select {
+    width: 100% !important;
+  }
+}
+
+/* ── TABLE STYLING (CATEGORY & DESCRIPTION UNFREEZED) ── */
 .panel-card {
   background: #ffffff;
   border-radius: 14px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+/* Force Category & Description column to be fully scrollable, NOT sticky */
+.custom-payments-table th:first-child,
+.custom-payments-table td:first-child {
+  position: static !important;
+  left: auto !important;
+  z-index: 1 !important;
+  box-shadow: none !important;
 }
 
 .custom-payments-table th {
@@ -249,6 +319,96 @@
 
 .custom-payments-table tr:hover td {
   background-color: #f8fafc;
+}
+
+/* ── MOBILE 2-ROW GROUPED TRANSACTION CARDS ──────────── */
+.mobile-tx-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-tx-card {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+/* Grouping Alternating Colors for 2-Row Record Sets */
+.mobile-tx-card.mobile-tx-even {
+  background: #ffffff;
+  border-left: 4px solid #10b981;
+}
+
+.mobile-tx-card.mobile-tx-odd {
+  background: #f8fafc;
+  border-left: 4px solid #0284c7;
+}
+
+.mobile-tx-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.mobile-tx-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.mobile-tx-sub {
+  font-size: 10.5px;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.mobile-tx-row-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(226, 232, 240, 0.7);
+}
+
+.mobile-tx-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-meta-item {
+  font-size: 11.5px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-meta-sub {
+  font-size: 10.5px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.mobile-tx-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.mobile-tx-actions .btn {
+  padding: 4px 8px !important;
+  font-size: 10.5px !important;
+  border-radius: 6px !important;
 }
 
 /* ── BADGES & CHIPS ──────────────────────────────────── */
