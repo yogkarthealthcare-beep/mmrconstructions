@@ -76,6 +76,10 @@ export class UserDashboardComponent implements OnInit {
     return this.userData?.user_type === 'Associate' || this.router.url.startsWith('/associate');
   }
 
+  // Associate Network Stats (Team Members & Customers)
+  associateTeamMembersCount: number = 0;
+  associateCustomersCount: number = 0;
+
   // Active Portfolio Tab: 'active' (Purchased/Booked) or 'sold' (Sold/Buyback)
   portfolioTab: 'active' | 'sold' = 'active';
 
@@ -265,7 +269,51 @@ export class UserDashboardComponent implements OnInit {
         this.userDocuments = [];
         this.hasUploadedDocs = true;
         this.docsLoaded = true;
-      })
+      }),
+
+      (this.isAssociate
+        ? Promise.all([
+            this.api.getAssociateTeamMembers().toPromise().catch(() => null),
+            this.api.getMyCustomersForApproval().toPromise().catch(() => null),
+            this.api.getAssocNetwork().toPromise().catch(() => null)
+          ]).then(([tmRes, custRes, netRes]) => {
+            const rawMembers = (tmRes?.success && Array.isArray(tmRes.data)) ? tmRes.data : [];
+            const rawCustApprovals = (custRes?.success && Array.isArray(custRes.data)) ? custRes.data : (Array.isArray(custRes) ? custRes : []);
+            const rawNetwork = (netRes?.success && Array.isArray(netRes.data)) ? netRes.data : [];
+
+            const teamMemberIds = new Set<number>();
+            const customerIds = new Set<number>();
+
+            for (const m of rawMembers) {
+              const uid = Number(m.user_id);
+              const type = String(m.user_type || '').toLowerCase();
+              if (type === 'customer') {
+                customerIds.add(uid);
+              } else if (type === 'team member' || m.slot_number != null || m.team_member_uid != null) {
+                teamMemberIds.add(uid);
+              } else {
+                teamMemberIds.add(uid);
+              }
+            }
+
+            for (const c of rawCustApprovals) {
+              if (c?.user_id) customerIds.add(Number(c.user_id));
+            }
+
+            for (const n of rawNetwork) {
+              const uid = Number(n.user_id);
+              const type = String(n.user_type || '').toLowerCase();
+              if (type === 'customer') {
+                customerIds.add(uid);
+              } else if (type === 'team member') {
+                teamMemberIds.add(uid);
+              }
+            }
+
+            this.associateTeamMembersCount = teamMemberIds.size;
+            this.associateCustomersCount = customerIds.size;
+          }).catch(err => console.warn('Associate network count warning:', err))
+        : Promise.resolve())
     ]).finally(() => {
       this.buildPropertyDossiers();
       this.loading = false;
