@@ -152,6 +152,9 @@ export class BookingAttributionApiService {
     team_member_user_id?: number;
     installment_plan_id?: number | null;
     notes?: string;
+    custom_plot_price?: number;
+    plot_price?: number;
+    base_price?: number;
   }, isAssociateRoute = false): Observable<any> {
     const endpoint = isAssociateRoute ? `${BASE_URL}/api/associate/bookings` : `${BASE_URL}/api/bookings`;
     return this.http.post<any>(endpoint, payload, {

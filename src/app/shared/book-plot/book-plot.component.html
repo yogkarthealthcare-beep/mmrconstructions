@@ -169,7 +169,7 @@
           <div class="drawer-plot-specs text-muted fs-12 mt-1">
             <span><i class="fas fa-ruler-combined me-1"></i> {{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj</span>
             <span class="mx-2">•</span>
-            <span [class.text-success]="isPlotPriceValid" [class.text-danger]="!isPlotPriceValid" class="fw-bold"><i class="fas fa-tag me-1"></i> Base Price: ₹{{ totalPlotPrice | number }} <span *ngIf="!isPlotPriceValid" class="badge bg-danger ms-1">Price Unset</span></span>
+            <span [class.text-success]="isPlotPriceValid" [class.text-warning-emphasis]="!isPlotPriceValid" class="fw-bold"><i class="fas fa-tag me-1"></i> Total Price: ₹{{ totalPlotPrice | number }} <span *ngIf="!isPlotPriceValid" class="badge bg-warning text-dark ms-1">Price Required</span></span>
           </div>
         </div>
 
@@ -327,6 +327,61 @@
           </div>
         </div>
       </ng-container>
+      <!-- ── Plot Valuation & Pricing Section ── -->
+      <div class="form-section-card p-3 mb-3" *ngIf="selectedPlot">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="section-title-tag mb-0">
+            <i class="fas fa-tag text-success me-1"></i> Plot Valuation &amp; Price <span class="text-danger">*</span>
+          </div>
+          <span *ngIf="hasAdminBasePrice" class="badge bg-success-subtle text-success border border-success-subtle fs-11 fw-700">
+            <i class="fas fa-check-circle me-1"></i> Admin Pre-Configured
+          </span>
+          <span *ngIf="!hasAdminBasePrice" class="badge bg-warning-subtle text-warning-emphasis border border-warning fs-11 fw-700">
+            <i class="fas fa-edit me-1"></i> Manual Price Entry
+          </span>
+        </div>
+
+        <!-- Case 1: Admin configured base price exists -->
+        <div *ngIf="hasAdminBasePrice" class="p-2.5 rounded-8 bg-light border d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div>
+            <div class="fs-11 text-muted text-uppercase fw-bold">Official Plot Base Price</div>
+            <div class="fs-18 fw-800 text-dark">₹{{ totalPlotPrice | number }}</div>
+          </div>
+          <div class="text-end">
+            <span class="fs-11 text-muted d-block">Plot Area: {{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj</span>
+            <span class="fs-11 text-success fw-600"><i class="fas fa-shield-alt me-1"></i>Official Base Rate Set by Admin</span>
+          </div>
+        </div>
+
+        <!-- Case 2: Admin base price NOT configured (₹0 / missing) -> Editable Textbox -->
+        <div *ngIf="!hasAdminBasePrice" class="plot-price-entry-card p-3 rounded-8 bg-amber-50 border border-warning">
+          <label class="form-label fw-800 fs-13 text-dark mb-1">
+            <i class="fas fa-rupee-sign text-warning-emphasis me-1"></i> Enter Total Plot Price (₹) <span class="text-danger">*</span>
+          </label>
+          <p class="fs-11 text-muted mb-2">
+            Is plot ka base price admin dwaara set nahi hai (₹0). Kripya booking ke liye plot ka total price yahan add karein:
+          </p>
+          <div class="input-group">
+            <span class="input-group-text fw-bold bg-white text-dark">₹</span>
+            <input
+              type="number"
+              class="form-control form-control-lg fw-bold fs-15 text-dark"
+              [(ngModel)]="customPlotPrice"
+              (ngModelChange)="onCustomPlotPriceChange()"
+              placeholder="e.g. 800000"
+              min="10000"
+              required
+            />
+          </div>
+          <div *ngIf="customPlotPrice && customPlotPrice >= 10000" class="d-flex align-items-center gap-1.5 fs-11 text-success fw-bold mt-2">
+            <i class="fas fa-check-circle"></i>
+            <span>Total Plot Value Configured: ₹{{ customPlotPrice | number }}</span>
+          </div>
+          <div *ngIf="!customPlotPrice || customPlotPrice < 10000" class="fs-11 text-danger mt-1.5">
+            <i class="fas fa-info-circle me-1"></i> Kripya valid total plot price darj karein (minimum ₹10,000).
+          </div>
+        </div>
+      </div>
 
       <!-- ── Unified Payment Section (3 Modes: One-Time, Part-Wise, EMI) ── -->
       <div class="form-section-card p-3 mb-3" *ngIf="selectedPlot">

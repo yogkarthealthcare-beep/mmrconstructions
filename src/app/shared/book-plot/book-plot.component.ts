@@ -92,6 +92,9 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   plotSearchTerm = '';
   plotStatusFilter = 'All';
 
+  // Plot Total Price Configuration (Manual fallback if unconfigured by admin)
+  customPlotPrice: number | null = null;
+
   // Status items legend (Pink = In Progress, Red = Booked/Sold, Green = Available)
   readonly statusItems = [
     { status: 'Available', label: 'Available (उपलब्ध)', color: '#16a34a' },
@@ -259,6 +262,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
   closeDrawer(): void {
     this.isDrawerOpen = false;
+    this.customPlotPrice = null;
   }
 
   // Legacy mode switching helper
@@ -696,21 +700,59 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
   // ── Plot Selection & Details ────────────────────────
 
-  get totalPlotPrice(): number {
+  get hasAdminBasePrice(): boolean {
     const p = this.selectedPlotDetail || this.selectedPlot;
-    if (!p) return 0;
+    if (!p) return false;
     const raw = p.base_price !== undefined && p.base_price !== null && p.base_price !== ''
       ? p.base_price
       : p.price;
     const num = Number(raw);
-    if (!isNaN(num) && num > 0) {
-      return num;
+    return !isNaN(num) && num > 0;
+  }
+
+  get totalPlotPrice(): number {
+    const p = this.selectedPlotDetail || this.selectedPlot;
+    if (!p) return 0;
+
+    // 1. If admin has set a valid base price, use it
+    const raw = p.base_price !== undefined && p.base_price !== null && p.base_price !== ''
+      ? p.base_price
+      : p.price;
+    const adminNum = Number(raw);
+    if (!isNaN(adminNum) && adminNum > 0) {
+      return adminNum;
     }
+
+    // 2. Otherwise use the custom/manually entered price
+    if (this.customPlotPrice !== null && this.customPlotPrice !== undefined && Number(this.customPlotPrice) > 0) {
+      return Number(this.customPlotPrice);
+    }
+
     return 0;
   }
 
   get isPlotPriceValid(): boolean {
     return this.totalPlotPrice > 0;
+  }
+
+  onCustomPlotPriceChange(): void {
+    const price = this.totalPlotPrice;
+    if (this.paymentMode === 'ONE_TIME') {
+      this.agreedAmount = price > 0 ? price : 0;
+      this.advanceAmount = this.agreedAmount;
+    } else if (this.paymentMode === 'PART_WISE') {
+      const minDp = price > 0 ? Math.min(price, Math.max(10000, Math.round(price * 0.25))) : 10000;
+      if (!this.agreedAmount || this.agreedAmount < 10000 || (price > 0 && this.agreedAmount > price)) {
+        this.agreedAmount = minDp;
+        this.advanceAmount = minDp;
+      }
+    } else if (this.paymentMode === 'EMI') {
+      if (this.selectedPlan) {
+        this.selectInstallmentPlan(this.selectedPlan);
+      } else {
+        this.updateInstallmentPreview();
+      }
+    }
   }
 
   get remainingBalance(): number {
@@ -832,6 +874,9 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.selectedPlot = plot;
     this.selectedPlotDetail = null;
 
+    const initialAdminPrice = Number(plot.base_price || plot.price || 0);
+    this.customPlotPrice = initialAdminPrice > 0 ? initialAdminPrice : null;
+
     if (this.isBookable(plot)) {
       this.setPaymentMode(this.paymentMode);
     }
@@ -842,6 +887,10 @@ export class BookPlotComponent implements OnInit, OnDestroy {
         this.selectedPlotDetail = detail;
         if (detail) {
           this.selectedPlot = { ...this.selectedPlot, ...detail };
+          const detailAdminPrice = Number(detail.base_price || detail.price || 0);
+          if (detailAdminPrice > 0) {
+            this.customPlotPrice = detailAdminPrice;
+          }
           if (this.isBookable(this.selectedPlot)) {
             this.setPaymentMode(this.paymentMode);
           }
@@ -1042,7 +1091,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       return 'Selected plot is not available for booking.';
     }
     if (!this.isPlotPriceValid) {
-      return 'Plot price is unconfigured (₹0). Please contact administration.';
+      return 'Plot price is unconfigured. Please enter the total plot price above to proceed.';
     }
     if (this.isAssociate) {
       if (this.bookingForMode === 'TEAM_MEMBER') {
@@ -1104,7 +1153,10 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       advance_amount: finalAmount,
       booking_amount: finalAmount,
       buyer_type: this.buyerType,
-      notes: this.notes.trim() || undefined
+      notes: this.notes.trim() || undefined,
+      custom_plot_price: this.totalPlotPrice,
+      plot_price: this.totalPlotPrice,
+      base_price: this.totalPlotPrice
     };
 
     if (this.buyerType === 'ON_BEHALF' && this.selectedCustomer) {
@@ -1159,6 +1211,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.isDrawerOpen = false;
     this.agreedAmount = null;
     this.advanceAmount = 50000;
+    this.customPlotPrice = null;
     this.notes = '';
     this.selectedTeamMemberId = null;
     this.selectedTeamMember = null;
