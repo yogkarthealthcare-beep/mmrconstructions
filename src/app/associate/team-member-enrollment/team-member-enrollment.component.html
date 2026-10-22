@@ -606,6 +606,15 @@
               <span class="error-msg" *ngIf="enrollmentForm.get('nomineeAgeDob')?.errors?.['required'] && enrollmentForm.get('nomineeAgeDob')?.touched">
                 Nominee age / DOB is required.
               </span>
+              <span class="error-msg" *ngIf="enrollmentForm.get('nomineeAgeDob')?.errors?.['underAge'] && enrollmentForm.get('nomineeAgeDob')?.touched">
+                Nominee must be at least 18 years old.
+              </span>
+              <span class="error-msg" *ngIf="enrollmentForm.get('nomineeAgeDob')?.errors?.['futureDate'] && enrollmentForm.get('nomineeAgeDob')?.touched">
+                Nominee Date of Birth cannot be in the future.
+              </span>
+              <span class="error-msg" *ngIf="enrollmentForm.get('nomineeAgeDob')?.errors?.['invalidDate'] && enrollmentForm.get('nomineeAgeDob')?.touched">
+                Please enter a valid age or Date of Birth (DD/MM/YYYY).
+              </span>
             </div>
           </div>
 

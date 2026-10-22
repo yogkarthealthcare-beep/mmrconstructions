@@ -7,8 +7,6 @@ import { PaymentService } from '../../services/payment.service';
 import { RazorpayService } from '../../services/razorpay.service';
 import { CashfreeService } from '../../services/cashfree.service';
 import { PayuService } from '../../services/payu.service';
-import { GatewayCardComponent } from '../../shared/components/gateway-card/gateway-card.component';
-import { LoadingButtonComponent } from '../../shared/components/loading-button/loading-button.component';
 import { PaymentGateway } from '../../services/payment.types';
 
 declare var Razorpay: any;
@@ -19,9 +17,7 @@ declare var Razorpay: any;
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
-    GatewayCardComponent,
-    LoadingButtonComponent
+    RouterLink
   ],
   template: `
     <div class="wallet-page-wrap">
@@ -411,7 +407,7 @@ declare var Razorpay: any;
       background: #ffffff;
       border: 1px solid #e8ede9;
       border-radius: 16px;
-      padding: 1.75rem;
+      padding: 1.15rem 1.25rem;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
       position: relative;
     }
@@ -439,6 +435,7 @@ declare var Razorpay: any;
       border: 2px solid #e2e8f0;
       border-radius: 14px;
       padding: 8px 16px;
+      min-height: 58px;
       transition: all 0.25s ease;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
     }
@@ -454,11 +451,12 @@ declare var Razorpay: any;
     }
 
     .currency-prefix {
-      font-size: 1.75rem;
+      font-size: 2rem;
       font-weight: 800;
       color: #f59e0b;
       margin-right: 8px;
       user-select: none;
+      line-height: 1;
     }
 
     .amount-large-input {
@@ -466,10 +464,12 @@ declare var Razorpay: any;
       outline: none;
       background: transparent;
       width: 100%;
-      font-size: 1.75rem;
+      height: 48px;
+      font-size: 2rem;
       font-weight: 800;
       color: #0f172a;
       letter-spacing: -0.02em;
+      line-height: 1;
     }
 
     .amount-currency-badge {
@@ -805,7 +805,7 @@ export class AddFundComponent implements OnInit {
   submitting = false;
   errorMessage = '';
   successMessage = '';
-  minimumAmount = 1;
+  minimumAmount = 100;
   availableBalance = 0.00;
   private activeOrderId = '';
 
@@ -821,7 +821,7 @@ export class AddFundComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {
     this.fundForm = this.fb.group({
-      amount: ['', [Validators.required, Validators.min(1)]]
+      amount: ['', [Validators.required, Validators.min(100)]]
     });
   }
 
@@ -860,9 +860,10 @@ export class AddFundComponent implements OnInit {
 
   private applyMinimumAmount() {
     const selected = this.gateways.find((gw) => gw.gateway_name === this.selectedGateway) || this.gateways[0];
-    this.minimumAmount = this.isAssociate()
-      ? Number(selected?.min_associate_fund_amount || 1)
-      : Number(selected?.min_customer_fund_amount || 1);
+    const gatewayMin = this.isAssociate()
+      ? Number(selected?.min_associate_fund_amount || 100)
+      : Number(selected?.min_customer_fund_amount || 100);
+    this.minimumAmount = Math.max(100, gatewayMin);
 
     const amountControl = this.fundForm.get('amount');
     amountControl?.setValidators([Validators.required, Validators.min(this.minimumAmount)]);

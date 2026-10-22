@@ -1,5 +1,6 @@
 @import './app/investor/investor-theme.css';
 @import './app/admin/admin-erp-theme.css';
+@import './styles/mobile.css';
 
 :root {
   --clr-primary: #1a5c3a;
@@ -1187,6 +1188,8 @@ button[style*="background: #166534"]:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .footer-bottom span {
@@ -1196,17 +1199,48 @@ button[style*="background: #166534"]:disabled {
 
 .footer-bl {
   display: flex;
+  align-items: center;
   gap: 20px;
+  flex-shrink: 0;
 }
 
 .footer-bl a {
   font-size: 12px;
   color: rgba(255, 255, 255, .3);
   transition: var(--t-fast);
+  white-space: nowrap;
 }
 
 .footer-bl a:hover {
   color: var(--clr-gold-lt);
+}
+
+@media (max-width: 768px) {
+  .footer-bottom {
+    flex-direction: column-reverse;
+    text-align: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 18px 0 22px;
+  }
+
+  .footer-bottom span {
+    text-align: center;
+    line-height: 1.6;
+    display: block;
+    font-size: 11.5px;
+  }
+
+  .footer-bl {
+    justify-content: center;
+    width: 100%;
+    gap: 20px;
+  }
+
+  .footer-bl a {
+    font-size: 12px;
+    padding: 2px 6px;
+  }
 }
 
 /* Brand */
@@ -2756,11 +2790,15 @@ select.inv-select:focus {
     padding-bottom: 32px !important;
   }
 
-  /* ── 2. FLUID TYPOGRAPHIC SCALE & SAFE BREAK-WORD ── */
+  /* ── 2. FLUID TYPOGRAPHIC SCALE & SAFE TEXT WRAPPING ── */
   h1, h2, h3, h4, h5, h6,
-  p, span, a, label, li, td, th {
+  p, .lead-text, .section-subtext {
     overflow-wrap: break-word !important;
-    word-break: break-word !important;
+  }
+
+  span, a, label, .badge, .status-badge, .stat-pill, .chip {
+    word-break: normal !important;
+    overflow-wrap: normal !important;
   }
 
   /* H1 (Hero & Main Page Headers) */
@@ -3147,6 +3185,97 @@ button.btn-light:hover:not(:disabled) {
 .btn-close.btn-close-white:hover {
   opacity: 1 !important;
 }
+
+/* ==========================================================================
+   GLOBAL FIXES: G1 & G2 FOR ASSOCIATE & ADMIN PANELS
+   ========================================================================== */
+
+/* G1: Icon + Input Groups (Zero Overlap & Square Joined Corners) */
+.input-with-icon {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.input-with-icon > i,
+.input-with-icon > .input-icon,
+.input-with-icon > .search-icon {
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 18px !important;
+  text-align: center !important;
+  pointer-events: none !important;
+  z-index: 4 !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+}
+
+.input-with-icon input,
+.input-with-icon select,
+.input-with-icon .form-control {
+  padding-left: 38px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* G1 Joined Addon Cells: Square corners on the shared edge */
+.input-group > .input-group-text,
+.modern-input-group > .ig-icon {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.input-group > .form-control,
+.input-group > .form-select,
+.modern-input-group > .modern-input {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.input-group-sm > .input-group-text,
+.input-group-sm > .form-control,
+.input-group-sm > .form-select {
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 12px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+/* G2: Compact Extra-Small Search Bars & Filter Dropdowns */
+.compact-filter-select,
+.portfolio-filter-select,
+.search-xs-field {
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 12px !important;
+  padding: 0 10px !important;
+  border-radius: 6px !important;
+}
+
+/* G2 Mobile Filter Stacking */
+@media (max-width: 768px) {
+  .filters-responsive-row {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  .filters-responsive-row > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+  }
+}
+
 
 
 

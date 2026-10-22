@@ -481,6 +481,80 @@
         </div>
 
         <form (ngSubmit)="submitBooking()">
+          <!-- Customer Proposed Rate & Valuation Section -->
+          <div class="p-3 mb-3 rounded-8 bg-amber-50 border border-warning">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label fw-800 fs-13 text-dark mb-0">
+                <i class="fas fa-tag text-warning-emphasis me-1"></i>आपका प्रस्तावित रेट (Proposed Valuation) <span class="text-danger">*</span>
+              </label>
+              <span class="badge bg-warning text-dark fs-10">Admin Approval Required</span>
+            </div>
+            <p class="fs-11 text-muted mb-2">
+              प्लॉट का रेट प्रति गज या प्रति sq ft में दर्ज करें। दोनों वैल्यू एक-दूसरे के अनुसार स्वतः अपडेट होंगी।
+            </p>
+
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="form-label fs-11 fw-700 text-muted mb-1">रेट प्रति गज (₹/Gaj)</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white fw-bold">₹</span>
+                  <input
+                    type="number"
+                    class="form-control fw-bold fs-12 text-dark"
+                    [(ngModel)]="bookingForm.rate_per_gaj"
+                    name="rate_per_gaj"
+                    (ngModelChange)="onProposedRateGajChange()"
+                    placeholder="₹8,000 / गज"
+                    min="1"
+                  />
+                </div>
+              </div>
+
+              <div class="col-6">
+                <label class="form-label fs-11 fw-700 text-muted mb-1">रेट प्रति Sq.Ft (₹/sq ft)</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white fw-bold">₹</span>
+                  <input
+                    type="number"
+                    class="form-control fw-bold fs-12 text-dark"
+                    [(ngModel)]="bookingForm.rate_per_sqft"
+                    name="rate_per_sqft"
+                    (ngModelChange)="onProposedRateSqftChange()"
+                    placeholder="Auto (₹/9)"
+                    min="1"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label fs-11 fw-700 text-muted mb-1">कुल प्रस्तावित कीमत (Total Value):</label>
+              <div class="input-group">
+                <span class="input-group-text fw-bold bg-white text-dark">₹</span>
+                <input
+                  type="number"
+                  class="form-control fw-800 fs-15 text-dark"
+                  [(ngModel)]="bookingForm.proposed_price"
+                  name="proposed_price"
+                  (ngModelChange)="onProposedPriceChange()"
+                  placeholder="न्यूनतम ₹2,00,000"
+                  min="200000"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Min Price Limit Validation Badge -->
+            <div *ngIf="isPriceEligible" class="d-flex align-items-center gap-1.5 fs-11 text-success fw-bold">
+              <i class="fas fa-check-circle"></i>
+              <span>कुल कीमत मान्य: ₹{{ effectivePlotPrice | number }} (न्यूनतम ₹2,00,000 पूरी हुई)</span>
+            </div>
+            <div *ngIf="!isPriceEligible" class="fs-11 text-danger fw-bold">
+              <i class="fas fa-times-circle me-1"></i>प्लॉट की कुल कीमत कम से कम ₹2,00,000 होना अनिवार्य है।
+            </div>
+          </div>
+
           <!-- Customer Profile Summary -->
           <div class="form-row mb-3">
             <label class="form-label">Customer Name</label>
@@ -640,7 +714,7 @@
             <button type="button" class="btn btn-outline-secondary" (click)="closeBookingModal()">
               Cancel
             </button>
-            <button type="submit" class="btn btn-gold btn-submit-booking" [disabled]="bookingSubmitting">
+            <button type="submit" class="btn btn-gold btn-submit-booking" [disabled]="bookingSubmitting || !isPriceEligible">
               <span *ngIf="!bookingSubmitting"><i class="fas fa-check-circle me-1.5"></i> Confirm & Submit Booking</span>
               <span *ngIf="bookingSubmitting"><span class="spinner-border spinner-border-sm me-1"></span> Processing...</span>
             </button>

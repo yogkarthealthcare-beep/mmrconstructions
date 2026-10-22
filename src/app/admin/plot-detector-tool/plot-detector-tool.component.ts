@@ -77,6 +77,11 @@ export type DetectedPlot = {
   detection_source: CandidateKind;
   warning?: string;
   area_units?: number;
+  area_gaj?: number;
+  area_sqft?: number;
+  rate_per_gaj?: number;
+  rate_per_sqft?: number;
+  base_price?: number;
   db_status?: string;
 };
 
@@ -165,6 +170,101 @@ export class PlotDetectorToolComponent implements OnInit {
   dxfExtractResult: ExtractResult | null = null;
   showWarningsList = false;
   sitePlotsMap = new Map<string, any>();
+
+  // Unpriced Plots Pricing Table (Part 1, Item 2)
+  showUnpricedPlotsModal = false;
+  unpricedPlots: Array<{
+    plot_no: string;
+    area_gaj: number;
+    area_sqft: number;
+    rate_per_gaj: number | null;
+    rate_per_sqft: number | null;
+    total_price: number | null;
+    dxfPlot: any;
+  }> = [];
+  bulkRatePerGaj: number | null = null;
+  bulkRatePerSqft: number | null = null;
+
+  onBulkGajRateChange() {
+    const gaj = Number(this.bulkRatePerGaj || 0);
+    this.bulkRatePerSqft = gaj > 0 ? Math.round((gaj / 9) * 100) / 100 : null;
+  }
+
+  onBulkSqftRateChange() {
+    const sqft = Number(this.bulkRatePerSqft || 0);
+    this.bulkRatePerGaj = sqft > 0 ? Math.round((sqft * 9) * 100) / 100 : null;
+  }
+
+  applyBulkRateToAll() {
+    const rGaj = Number(this.bulkRatePerGaj || 0);
+    const rSqft = Number(this.bulkRatePerSqft || 0);
+    for (const p of this.unpricedPlots) {
+      if (rGaj > 0) {
+        p.rate_per_gaj = rGaj;
+        p.rate_per_sqft = rSqft || Math.round((rGaj / 9) * 100) / 100;
+        p.total_price = Math.round(p.area_gaj * rGaj);
+      }
+    }
+  }
+
+  onRowRateGajChange(row: any) {
+    const gaj = Number(row.rate_per_gaj || 0);
+    if (gaj > 0) {
+      row.rate_per_sqft = Math.round((gaj / 9) * 100) / 100;
+      row.total_price = Math.round(row.area_gaj * gaj);
+    } else {
+      row.rate_per_sqft = null;
+      row.total_price = null;
+    }
+  }
+
+  onRowRateSqftChange(row: any) {
+    const sqft = Number(row.rate_per_sqft || 0);
+    if (sqft > 0) {
+      row.rate_per_gaj = Math.round((sqft * 9) * 100) / 100;
+      row.total_price = Math.round(row.area_gaj * 9 * sqft);
+    } else {
+      row.rate_per_gaj = null;
+      row.total_price = null;
+    }
+  }
+
+  onRowTotalPriceChange(row: any) {
+    const price = Number(row.total_price || 0);
+    if (price > 0 && row.area_gaj > 0) {
+      row.rate_per_gaj = Math.round((price / row.area_gaj) * 100) / 100;
+      row.rate_per_sqft = Math.round((price / (row.area_gaj * 9)) * 100) / 100;
+    } else {
+      row.rate_per_gaj = null;
+      row.rate_per_sqft = null;
+    }
+  }
+
+  closeUnpricedPlotsModal() {
+    this.showUnpricedPlotsModal = false;
+  }
+
+  skipUnpricedPlots() {
+    this.showUnpricedPlotsModal = false;
+  }
+
+  saveUnpricedRates() {
+    for (const p of this.unpricedPlots) {
+      if (p.total_price && p.total_price > 0) {
+        p.dxfPlot.base_price = p.total_price;
+        p.dxfPlot.rate_per_gaj = p.rate_per_gaj;
+        p.dxfPlot.rate_per_sqft = p.rate_per_sqft;
+      }
+    }
+    this.showUnpricedPlotsModal = false;
+    Swal.fire({
+      icon: 'success',
+      title: 'Rates Applied',
+      text: 'Plot rates have been successfully assigned to CAD units.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  }
 
   // Filter chips
   selectedTypeFilter = 'ALL';
@@ -617,6 +717,28 @@ export class PlotDetectorToolComponent implements OnInit {
       // Compute CAD diff if site already has DB plots
       if (this.sitePlotsMap.size > 0) {
         this.computeCadDiff();
+      }
+
+      // Check for unpriced plots from CAD extraction (Part 1, Item 2)
+      this.unpricedPlots = [];
+      for (const p of this.detections) {
+        const areaGaj = Number(p.area_gaj || p.area_units || 0);
+        const areaSqft = Number(p.area_sqft || Math.round(areaGaj * 9 * 100) / 100);
+        const basePrice = Number(p.base_price || 0);
+        if (basePrice <= 0) {
+          this.unpricedPlots.push({
+            plot_no: p.plot_no,
+            area_gaj: areaGaj,
+            area_sqft: areaSqft,
+            rate_per_gaj: null,
+            rate_per_sqft: null,
+            total_price: null,
+            dxfPlot: p
+          });
+        }
+      }
+      if (this.unpricedPlots.length > 0) {
+        this.showUnpricedPlotsModal = true;
       }
     } catch (err: any) {
       this.error = 'CAD extraction failed: ' + (err?.message || err);
@@ -1228,6 +1350,8 @@ export class PlotDetectorToolComponent implements OnInit {
         plot_id: d.plot_id || (d.id > 0 && String(d.id).length < 8 ? d.id : undefined),
         plot_number: d.plot_no,
         unit_type: d.unit_type || 'PLOT',
+        plot_area: d.area_gaj || d.area_units || 1,
+        base_price: d.base_price || 0,
         coordinates: d.points.map(p => ({
           x: Number(((p.x / w) * 100).toFixed(2)),
           y: Number(((p.y / h) * 100).toFixed(2)),

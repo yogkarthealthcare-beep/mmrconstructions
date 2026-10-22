@@ -79,7 +79,10 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     payment_type: 'EMI' as 'EMI' | 'FullPayment' | 'DownPayment',
     installment_plan_id: null as number | null,
     advance_amount: 51000,
-    notes: ''
+    notes: '',
+    proposed_price: 0,
+    rate_per_gaj: 0,
+    rate_per_sqft: 0
   };
 
   // Map Dimensions & Transform
@@ -739,17 +742,70 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     });
   }
 
+  get effectivePlotPrice(): number {
+    if (this.bookingForm.proposed_price > 0) {
+      return Number(this.bookingForm.proposed_price);
+    }
+    return Number(this.selectedPlot?.price || 0);
+  }
+
+  get isPriceEligible(): boolean {
+    return this.effectivePlotPrice >= 200000;
+  }
+
+  onProposedRateGajChange(): void {
+    const rGaj = Number(this.bookingForm.rate_per_gaj || 0);
+    const areaGaj = Number(this.selectedPlot?.area_gaj || 0);
+    if (rGaj > 0) {
+      this.bookingForm.rate_per_sqft = Math.round((rGaj / 9) * 100) / 100;
+      if (areaGaj > 0) {
+        this.bookingForm.proposed_price = Math.round(areaGaj * rGaj);
+      }
+    } else {
+      this.bookingForm.rate_per_sqft = 0;
+    }
+    this.onPaymentTypeChange();
+  }
+
+  onProposedRateSqftChange(): void {
+    const rSqft = Number(this.bookingForm.rate_per_sqft || 0);
+    const areaGaj = Number(this.selectedPlot?.area_gaj || 0);
+    if (rSqft > 0) {
+      this.bookingForm.rate_per_gaj = Math.round((rSqft * 9) * 100) / 100;
+      if (areaGaj > 0) {
+        this.bookingForm.proposed_price = Math.round(areaGaj * 9 * rSqft);
+      }
+    } else {
+      this.bookingForm.rate_per_gaj = 0;
+    }
+    this.onPaymentTypeChange();
+  }
+
+  onProposedPriceChange(): void {
+    const price = Number(this.bookingForm.proposed_price || 0);
+    const areaGaj = Number(this.selectedPlot?.area_gaj || 0);
+    if (price > 0 && areaGaj > 0) {
+      this.bookingForm.rate_per_gaj = Math.round((price / areaGaj) * 100) / 100;
+      this.bookingForm.rate_per_sqft = Math.round((price / (areaGaj * 9)) * 100) / 100;
+    }
+    this.onPaymentTypeChange();
+  }
+
   openBookingModal(plot: PublicPlot): void {
     const user = this.auth.getUser() || {};
     const basePrice = Number(plot.price || 0);
+    const areaGaj = Number(plot.area_gaj || 0);
 
     const defaultPlan = this.activeInstallmentPlans.length > 0 ? this.activeInstallmentPlans[0] : null;
     this.selectedPlan = defaultPlan;
 
-    let minAdvance = Math.max(51000, Math.round(basePrice * 0.1));
+    let minAdvance = Math.max(30000, Math.round(basePrice * 0.1));
     if (defaultPlan && defaultPlan.down_payment_percent) {
-      minAdvance = Math.round(basePrice * (Number(defaultPlan.down_payment_percent) / 100));
+      minAdvance = Math.max(30000, Math.round(basePrice * (Number(defaultPlan.down_payment_percent) / 100)));
     }
+
+    const initialRateGaj = basePrice > 0 && areaGaj > 0 ? Math.round((basePrice / areaGaj) * 100) / 100 : 8000;
+    const initialRateSqft = Math.round((initialRateGaj / 9) * 100) / 100;
 
     this.bookingForm = {
       customer_name: user.full_name || '',
@@ -758,7 +814,10 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
       payment_type: 'EMI',
       installment_plan_id: defaultPlan ? defaultPlan.id : null,
       advance_amount: minAdvance,
-      notes: ''
+      notes: '',
+      proposed_price: basePrice > 0 ? basePrice : (areaGaj > 0 ? Math.round(areaGaj * initialRateGaj) : 200000),
+      rate_per_gaj: initialRateGaj,
+      rate_per_sqft: initialRateSqft
     };
     this.updatePlanCalculation();
     this.showBookingModal = true;
@@ -769,24 +828,26 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     if (p) {
       this.selectedPlan = p;
       this.bookingForm.installment_plan_id = p.id;
-      const basePrice = Number(this.selectedPlot?.price || 0);
-      if (basePrice > 0 && p.down_payment_percent) {
-        this.bookingForm.advance_amount = Math.round(basePrice * (Number(p.down_payment_percent) / 100));
+      const effectivePrice = this.effectivePlotPrice;
+      if (effectivePrice > 0 && p.down_payment_percent) {
+        this.bookingForm.advance_amount = Math.max(30000, Math.round(effectivePrice * (Number(p.down_payment_percent) / 100)));
       }
       this.updatePlanCalculation();
     }
   }
 
   onPaymentTypeChange(): void {
-    const basePrice = Number(this.selectedPlot?.price || 0);
+    const effectivePrice = this.effectivePlotPrice;
     if (this.bookingForm.payment_type === 'EMI') {
       if (this.selectedPlan) {
-        this.bookingForm.advance_amount = Math.round(basePrice * (Number(this.selectedPlan.down_payment_percent || 20) / 100));
+        this.bookingForm.advance_amount = Math.max(30000, Math.round(effectivePrice * (Number(this.selectedPlan.down_payment_percent || 20) / 100)));
+      } else {
+        this.bookingForm.advance_amount = 30000;
       }
     } else if (this.bookingForm.payment_type === 'DownPayment') {
-      this.bookingForm.advance_amount = Math.round(basePrice * 0.25);
+      this.bookingForm.advance_amount = Math.round(effectivePrice * 0.25);
     } else {
-      this.bookingForm.advance_amount = basePrice;
+      this.bookingForm.advance_amount = effectivePrice;
     }
     this.updatePlanCalculation();
   }
@@ -796,7 +857,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
       this.selectedPlanPreview = null;
       return;
     }
-    const price = Number(this.selectedPlot.price || 0);
+    const price = this.effectivePlotPrice;
     const tenure = Number(this.selectedPlan.tenure_months || 12);
     const interestRate = Number(this.selectedPlan.interest_percent || 0);
     const dpAmount = Number(this.bookingForm.advance_amount || 0);
@@ -825,6 +886,16 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     if (!this.selectedPlot) return;
     if (this.bookingSubmitting) return;
 
+    if (this.effectivePlotPrice < 200000) {
+      Swal.fire({
+        icon: 'error',
+        title: 'न्यूनतम सीमा नियम',
+        text: 'प्लॉट की कुल कीमत ₹2,00,000 से कम नहीं हो सकती। कृपया वैध रेट दर्ज करें।',
+        confirmButtonColor: '#0f3d2e'
+      });
+      return;
+    }
+
     if (!this.bookingForm.advance_amount || this.bookingForm.advance_amount <= 0) {
       Swal.fire({
         icon: 'warning',
@@ -842,6 +913,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
       payment_type: this.bookingForm.payment_type === 'DownPayment' ? 'PartWise' : this.bookingForm.payment_type,
       installment_plan_id: this.bookingForm.payment_type === 'EMI' ? (this.bookingForm.installment_plan_id || undefined) : undefined,
       advance_amount: Number(this.bookingForm.advance_amount),
+      custom_plot_price: this.effectivePlotPrice,
       notes: this.bookingForm.notes || undefined
     };
 
@@ -852,6 +924,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
 
         const booking = res?.data || res?.booking || {};
         const serial = booking.booking_serial || `BK-${this.selectedPlot?.plot_number}`;
+        const isPendingApproval = booking.booking_status === 'Pending Admin Price Approval';
 
         // Immediately update local plot status to IN_PROCESS
         if (this.selectedPlot) {
@@ -860,26 +933,52 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
           if (inMap) inMap.public_status = 'IN_PROCESS';
         }
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Booking Submitted!',
-          html: `
-            <div style="text-align: left; font-size: 14px; line-height: 1.6;">
-              <p><strong>Booking Serial:</strong> <span style="color: #0f3d2e; font-weight: 700;">${serial}</span></p>
-              <p><strong>Plot Unit:</strong> ${this.selectedPlot?.plot_number} (${this.selectedPlot?.unit_type})</p>
-              <p>Your booking has been registered. Our admin team will review and confirm your documentation shortly.</p>
-            </div>
-          `,
-          showCancelButton: true,
-          confirmButtonColor: '#0f3d2e',
-          cancelButtonColor: '#d4a843',
-          confirmButtonText: '<i class="fas fa-list me-1"></i> My Bookings',
-          cancelButtonText: 'Stay on Map'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            this.router.navigate(['/customer/my-plots']);
-          }
-        });
+        if (isPendingApproval) {
+          Swal.fire({
+            icon: 'info',
+            title: 'बुकिंग दर्ज! रेट एडमिन अप्रूवल में है',
+            html: `
+              <div style="text-align: left; font-size: 14px; line-height: 1.6;">
+                <p><strong>Booking Serial:</strong> <span style="color: #0f3d2e; font-weight: 700;">${serial}</span></p>
+                <p><strong>प्रस्तावित कुल कीमत:</strong> ₹${this.effectivePlotPrice.toLocaleString('en-IN')}</p>
+                <p><strong>स्टेटस:</strong> <span class="badge bg-warning text-dark">Pending Admin Price Approval</span></p>
+                <div class="alert alert-warning mt-2 fs-12">
+                  <i class="fas fa-clock me-1"></i> आपका प्रस्तावित रेट एडमिन पैनल में अनुमोदन हेतु भेज दिया गया है। एडमिन द्वारा रेट मंज़ूर (Approve) होने के बाद आपका अंतिम EMI / पेमेंट शेड्यूल सक्रिय होगा।
+                </div>
+              </div>
+            `,
+            showCancelButton: true,
+            confirmButtonColor: '#0f3d2e',
+            cancelButtonColor: '#d4a843',
+            confirmButtonText: '<i class="fas fa-list me-1"></i> My Bookings',
+            cancelButtonText: 'Stay on Map'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              this.router.navigate(['/customer/my-plots']);
+            }
+          });
+        } else {
+          Swal.fire({
+            icon: 'success',
+            title: 'Booking Confirmed!',
+            html: `
+              <div style="text-align: left; font-size: 14px; line-height: 1.6;">
+                <p><strong>Booking Serial:</strong> <span style="color: #0f3d2e; font-weight: 700;">${serial}</span></p>
+                <p><strong>Plot Unit:</strong> ${this.selectedPlot?.plot_number} (${this.selectedPlot?.unit_type})</p>
+                <p>Your booking has been registered. Our admin team will review and confirm your documentation shortly.</p>
+              </div>
+            `,
+            showCancelButton: true,
+            confirmButtonColor: '#0f3d2e',
+            cancelButtonColor: '#d4a843',
+            confirmButtonText: '<i class="fas fa-list me-1"></i> My Bookings',
+            cancelButtonText: 'Stay on Map'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              this.router.navigate(['/customer/my-plots']);
+            }
+          });
+        }
       },
       error: (err: any) => {
         this.bookingSubmitting = false;

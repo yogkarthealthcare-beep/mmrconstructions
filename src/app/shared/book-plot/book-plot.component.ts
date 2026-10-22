@@ -31,6 +31,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   isDrawerOpen = false;
   bookingForMode: 'TEAM_MEMBER' | 'SELF_DIRECT' = 'TEAM_MEMBER';
   selectedSelfOrDirectKey = '';
+  selectedTeamMemberBuyerKey = 'SELF';
   agreedAmount: number | null = null;
 
   // Associate 3-Way Booking Mode
@@ -94,6 +95,8 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
   // Plot Total Price Configuration (Manual fallback if unconfigured by admin)
   customPlotPrice: number | null = null;
+  ratePerGaj: number | null = null;
+  ratePerSqft: number | null = null;
 
   // Status items legend (Pink = In Progress, Red = Booked/Sold, Green = Available)
   readonly statusItems = [
@@ -147,6 +150,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
     // Default booking mode
     const qTeamMemberId = this.route.snapshot.queryParamMap.get('teamMemberId');
+    const qCustomerId = this.route.snapshot.queryParamMap.get('customerId');
     if (this.isAssociate) {
       this.bookingForMode = 'TEAM_MEMBER';
       this.bookingTargetMode = 'TEAM_MEMBER_CUSTOMER';
@@ -158,8 +162,15 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       this.loadMyCustomers();
     } else if (this.isTeamMember) {
       this.bookingForMode = 'TEAM_MEMBER';
-      this.bookingTargetMode = 'DIRECT_CUSTOMER';
-      this.buyerType = 'ON_BEHALF';
+      if (qCustomerId) {
+        this.bookingTargetMode = 'DIRECT_CUSTOMER';
+        this.buyerType = 'ON_BEHALF';
+        this.selectedTeamMemberBuyerKey = 'CUS_' + qCustomerId;
+      } else {
+        this.bookingTargetMode = 'SELF';
+        this.buyerType = 'SELF';
+        this.selectedTeamMemberBuyerKey = 'SELF';
+      }
       this.loadMyCustomers();
     } else {
       this.bookingForMode = 'SELF_DIRECT';
@@ -388,22 +399,35 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     });
   }
 
-  onSelectTeamMemberCustomer(customerId: number | string): void {
-    if (!customerId) {
+  onSelectTeamMemberBuyer(key: string): void {
+    this.selectedTeamMemberBuyerKey = key;
+    if (!key || key === 'SELF') {
+      this.buyerType = 'SELF';
+      this.bookingTargetMode = 'SELF';
       this.selectedCustomer = null;
-      this.selectedBuyerKey = '';
+      this.selectedBuyerKey = 'SELF';
+    } else if (key.startsWith('CUS_')) {
+      const custId = Number(key.replace('CUS_', ''));
+      const cust = this.myCustomers.find(c => Number(c.user_id) === custId);
+      if (cust) {
+        this.buyerType = 'ON_BEHALF';
+        this.bookingTargetMode = 'DIRECT_CUSTOMER';
+        this.selectedCustomer = cust;
+        this.selectedBuyerKey = 'CUS_' + custId;
+      } else {
+        this.selectedCustomer = null;
+        this.selectedBuyerKey = '';
+      }
+    }
+  }
+
+  onSelectTeamMemberCustomer(customerId: number | string): void {
+    if (!customerId || customerId === 'SELF') {
+      this.onSelectTeamMemberBuyer('SELF');
       return;
     }
-    const custId = Number(customerId);
-    const cust = this.myCustomers.find(c => Number(c.user_id) === custId);
-    if (cust) {
-      this.buyerType = 'ON_BEHALF';
-      this.selectedCustomer = cust;
-      this.selectedBuyerKey = 'CUS_' + custId;
-    } else {
-      this.selectedCustomer = null;
-      this.selectedBuyerKey = '';
-    }
+    const key = String(customerId).startsWith('CUS_') ? String(customerId) : ('CUS_' + customerId);
+    this.onSelectTeamMemberBuyer(key);
   }
 
   // ── Direct Customer Management ──────────────────────
@@ -415,6 +439,9 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       next: (customers) => {
         this.myCustomers = customers || [];
         this.loadingCustomers = false;
+        if (this.isTeamMember && this.selectedTeamMemberBuyerKey?.startsWith('CUS_')) {
+          this.onSelectTeamMemberBuyer(this.selectedTeamMemberBuyerKey);
+        }
       },
       error: () => {
         this.myCustomers = [];
@@ -549,6 +576,12 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
         this.closeAddCustomerModal();
 
+        if (this.isTeamMember) {
+          this.selectedTeamMemberBuyerKey = 'CUS_' + (createdCustomer.user_id || createdCustomer.id);
+          this.buyerType = 'ON_BEHALF';
+          this.bookingTargetMode = 'DIRECT_CUSTOMER';
+        }
+
         // Refresh corresponding list
         if (this.bookingTargetMode === 'TEAM_MEMBER_CUSTOMER' && this.selectedTeamMemberId) {
           this.loadCustomersForTeamMember(this.selectedTeamMemberId);
@@ -581,19 +614,33 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   loadSites(): void {
     this.api.getSites().subscribe({
       next: (res: any) => {
-        this.sites = res?.data || res || [];
+        const list = res?.data || res || [];
+        this.sites = Array.isArray(list) ? list : [];
         const qSiteId = Number(this.route.snapshot.queryParamMap.get('siteId'));
         const qPlotId = Number(this.route.snapshot.queryParamMap.get('plotId'));
 
-        if (qSiteId && this.sites.some(s => s.site_id === qSiteId)) {
+        if (qSiteId && this.sites.some(s => Number(s.site_id || s.id) === qSiteId)) {
           this.selectedSiteId = qSiteId;
           this.loadSiteMap(this.selectedSiteId!, qPlotId || null);
         } else if (this.sites.length > 0) {
-          this.selectedSiteId = this.sites[0].site_id;
+          this.selectedSiteId = Number(this.sites[0].site_id || this.sites[0].id);
           this.loadSiteMap(this.selectedSiteId!, qPlotId || null);
         }
       },
-      error: (err) => console.error('Failed to load sites:', err)
+      error: (err) => {
+        console.error('Failed to load sites:', err);
+        this.api.getPublicSitesSummary().subscribe({
+          next: (res2: any) => {
+            const list2 = res2?.data || res2 || [];
+            this.sites = Array.isArray(list2) ? list2 : [];
+            if (this.sites.length > 0) {
+              this.selectedSiteId = Number(this.sites[0].site_id || this.sites[0].id);
+              this.loadSiteMap(this.selectedSiteId!);
+            }
+          },
+          error: () => {}
+        });
+      }
     });
   }
 
@@ -604,7 +651,8 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.isDrawerOpen = false;
     this.resetView();
 
-    if (this.selectedSiteId) {
+    if (this.selectedSiteId != null) {
+      this.selectedSiteId = Number(this.selectedSiteId);
       this.loadSiteMap(this.selectedSiteId);
     } else {
       this.site = null;
@@ -710,11 +758,25 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     return !isNaN(num) && num > 0;
   }
 
+  get plotAreaGaj(): number {
+    const p = this.selectedPlotDetail || this.selectedPlot;
+    return Number(p?.plot_area || 0);
+  }
+
+  get plotAreaSqft(): number {
+    return Math.round(this.plotAreaGaj * 9 * 100) / 100;
+  }
+
   get totalPlotPrice(): number {
+    // 1. If custom / manually edited price is provided, prioritize it
+    if (this.customPlotPrice !== null && this.customPlotPrice !== undefined && Number(this.customPlotPrice) > 0) {
+      return Number(this.customPlotPrice);
+    }
+
+    // 2. Otherwise use base_price from plot
     const p = this.selectedPlotDetail || this.selectedPlot;
     if (!p) return 0;
 
-    // 1. If admin has set a valid base price, use it
     const raw = p.base_price !== undefined && p.base_price !== null && p.base_price !== ''
       ? p.base_price
       : p.price;
@@ -723,16 +785,49 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       return adminNum;
     }
 
-    // 2. Otherwise use the custom/manually entered price
-    if (this.customPlotPrice !== null && this.customPlotPrice !== undefined && Number(this.customPlotPrice) > 0) {
-      return Number(this.customPlotPrice);
-    }
-
     return 0;
   }
 
   get isPlotPriceValid(): boolean {
     return this.totalPlotPrice > 0;
+  }
+
+  onRatePerGajChange(): void {
+    const rGaj = Number(this.ratePerGaj || 0);
+    if (rGaj > 0) {
+      this.ratePerSqft = Math.round((rGaj / 9) * 100) / 100;
+      if (this.plotAreaGaj > 0) {
+        this.customPlotPrice = Math.round(this.plotAreaGaj * rGaj);
+      }
+    } else {
+      this.ratePerSqft = null;
+    }
+    this.onCustomPlotPriceChange();
+  }
+
+  onRatePerSqftChange(): void {
+    const rSqft = Number(this.ratePerSqft || 0);
+    if (rSqft > 0) {
+      this.ratePerGaj = Math.round((rSqft * 9) * 100) / 100;
+      if (this.plotAreaGaj > 0) {
+        this.customPlotPrice = Math.round(this.plotAreaGaj * 9 * rSqft);
+      }
+    } else {
+      this.ratePerGaj = null;
+    }
+    this.onCustomPlotPriceChange();
+  }
+
+  onCustomPlotPriceInput(): void {
+    const price = Number(this.customPlotPrice || 0);
+    if (price > 0 && this.plotAreaGaj > 0) {
+      this.ratePerGaj = Math.round((price / this.plotAreaGaj) * 100) / 100;
+      this.ratePerSqft = Math.round((price / (this.plotAreaGaj * 9)) * 100) / 100;
+    } else {
+      this.ratePerGaj = null;
+      this.ratePerSqft = null;
+    }
+    this.onCustomPlotPriceChange();
   }
 
   onCustomPlotPriceChange(): void {
@@ -875,7 +970,19 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.selectedPlotDetail = null;
 
     const initialAdminPrice = Number(plot.base_price || plot.price || 0);
-    this.customPlotPrice = initialAdminPrice > 0 ? initialAdminPrice : null;
+    const areaGaj = Number(plot.plot_area || 0);
+
+    if (initialAdminPrice > 0) {
+      this.customPlotPrice = initialAdminPrice;
+      if (areaGaj > 0) {
+        this.ratePerGaj = Math.round((initialAdminPrice / areaGaj) * 100) / 100;
+        this.ratePerSqft = Math.round((initialAdminPrice / (areaGaj * 9)) * 100) / 100;
+      }
+    } else {
+      this.customPlotPrice = null;
+      this.ratePerGaj = null;
+      this.ratePerSqft = null;
+    }
 
     if (this.isBookable(plot)) {
       this.setPaymentMode(this.paymentMode);
@@ -888,8 +995,13 @@ export class BookPlotComponent implements OnInit, OnDestroy {
         if (detail) {
           this.selectedPlot = { ...this.selectedPlot, ...detail };
           const detailAdminPrice = Number(detail.base_price || detail.price || 0);
-          if (detailAdminPrice > 0) {
+          const detailAreaGaj = Number(detail.plot_area || areaGaj || 0);
+          if (detailAdminPrice > 0 && !this.customPlotPrice) {
             this.customPlotPrice = detailAdminPrice;
+            if (detailAreaGaj > 0) {
+              this.ratePerGaj = Math.round((detailAdminPrice / detailAreaGaj) * 100) / 100;
+              this.ratePerSqft = Math.round((detailAdminPrice / (detailAreaGaj * 9)) * 100) / 100;
+            }
           }
           if (this.isBookable(this.selectedPlot)) {
             this.setPaymentMode(this.paymentMode);
@@ -921,6 +1033,9 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     }
 
     this.selectPlot(plot);
+    if (this.isTeamMember && !this.selectedTeamMemberBuyerKey) {
+      this.onSelectTeamMemberBuyer('SELF');
+    }
     this.isDrawerOpen = true;
   }
 
@@ -1102,7 +1217,10 @@ export class BookPlotComponent implements OnInit, OnDestroy {
         if (this.buyerType === 'ON_BEHALF' && !this.selectedCustomer) return 'Please select a customer.';
       }
     } else if (this.isTeamMember) {
-      if (!this.selectedCustomer) {
+      if (!this.selectedTeamMemberBuyerKey) {
+        return 'Please select who this plot is being booked for (Self or Customer).';
+      }
+      if (this.buyerType === 'ON_BEHALF' && !this.selectedCustomer) {
         return 'Please select a Customer / Party to book for.';
       }
     }
@@ -1143,6 +1261,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     const finalAmount = Number(this.agreedAmount || this.advanceAmount || 10000);
     this.advanceAmount = finalAmount;
 
+    const basePriceNum = Number(this.selectedPlot.base_price || this.selectedPlotDetail?.base_price || 0);
     const payload: any = {
       plot_id: this.selectedPlot.plot_id,
       site_id: this.selectedSiteId,
@@ -1156,7 +1275,11 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       notes: this.notes.trim() || undefined,
       custom_plot_price: this.totalPlotPrice,
       plot_price: this.totalPlotPrice,
-      base_price: this.totalPlotPrice
+      base_price: this.totalPlotPrice,
+      list_price: basePriceNum > 0 ? basePriceNum : null,
+      price_overridden: basePriceNum > 0 && Math.abs(this.totalPlotPrice - basePriceNum) > 0.01,
+      rate_per_gaj: this.ratePerGaj,
+      rate_per_sqft: this.ratePerSqft
     };
 
     if (this.buyerType === 'ON_BEHALF' && this.selectedCustomer) {
@@ -1219,6 +1342,13 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.teamMemberCustomers = [];
     this.selectedCustomer = null;
     this.selectedSelfOrDirectKey = '';
+    if (this.isTeamMember) {
+      this.selectedTeamMemberBuyerKey = 'SELF';
+      this.buyerType = 'SELF';
+      this.bookingTargetMode = 'SELF';
+    } else {
+      this.selectedTeamMemberBuyerKey = '';
+    }
     if (this.selectedSiteId) {
       this.loadSiteMap(this.selectedSiteId);
     }

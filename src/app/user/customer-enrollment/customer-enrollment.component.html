@@ -310,7 +310,16 @@
             <div class="field"><label>Relation <span class="text-danger">*</span></label><input type="text" formControlName="nomineeRelation"></div>
           </div>
           <div class="row2">
-            <div class="field"><label>Age / DOB <span class="text-danger">*</span></label><input type="text" formControlName="nomineeAgeDob"></div>
+            <div class="field">
+              <label>Age / DOB <span class="text-danger">*</span></label>
+              <input type="text" formControlName="nomineeAgeDob" placeholder="e.g. 28 Years or DD/MM/YYYY">
+              <div class="text-danger fs-12 mt-1" *ngIf="nom.get('nomineeAgeDob')?.errors?.['underAge'] && nom.get('nomineeAgeDob')?.touched">
+                Nominee must be at least 18 years old.
+              </div>
+              <div class="text-danger fs-12 mt-1" *ngIf="nom.get('nomineeAgeDob')?.errors?.['futureDate'] && nom.get('nomineeAgeDob')?.touched">
+                Nominee Date of Birth cannot be in the future.
+              </div>
+            </div>
             <div class="field"><label>Aadhar No. (12 Digits) <span class="text-danger">*</span></label><input type="text" formControlName="nomineeAadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>
           </div>
         </div>

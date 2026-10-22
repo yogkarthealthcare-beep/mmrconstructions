@@ -132,16 +132,16 @@
 
       <!-- Associate Action Buttons -->
       <div class="d-flex gap-2 flex-wrap" *ngIf="isAssociate && !isTeamMember">
-        <button type="button" class="btn btn-hero-gold btn-sm" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none; color: #fff;" (click)="openAddTeamMemberModal()">
+        <button type="button" class="btn btn-dash-team btn-sm" (click)="openAddTeamMemberModal()">
           <i class="fas fa-user-shield me-1.5"></i>+ Add New Team Member
         </button>
-        <a [routerLink]="'/associate/my-team'" class="btn btn-hero-gold btn-sm">
+        <a [routerLink]="'/associate/my-team'" class="btn btn-dash-customer btn-sm">
           <i class="fas fa-user-plus me-1.5"></i>+ Add New Customer
         </a>
-        <a [routerLink]="'/associate/my-team'" class="btn btn-hero-outline btn-sm">
+        <a [routerLink]="'/associate/my-team'" class="btn btn-dash-book btn-sm">
           <i class="fas fa-map-marked-alt me-1.5"></i>Book Plot for Member
         </a>
-        <a [routerLink]="'/associate/commission'" class="btn btn-hero-outline btn-sm">
+        <a [routerLink]="'/associate/commission'" class="btn btn-dash-commission btn-sm">
           <i class="fas fa-hand-holding-usd me-1.5"></i>Commission Tracker
         </a>
       </div>
@@ -506,12 +506,14 @@
           </div>
         </div>
 
-        <div *ngIf="activePurchasedProperties.length === 0" class="text-center py-5">
-          <i class="fas fa-home text-muted fs-40 mb-3 d-block"></i>
-          <h6 class="fw-bold text-dark">No Active Booked Plots Found</h6>
-          <p class="text-muted fs-12">You do not have any active plot bookings matching the filter criteria.</p>
-          <button type="button" class="btn btn-hero-gold btn-sm" (click)="openInquiryModal()">
-            <i class="fas fa-plus me-1"></i>Browse Available Sites &amp; Plots
+        <div *ngIf="activePurchasedProperties.length === 0" class="d-flex flex-column align-items-center justify-content-center text-center py-5">
+          <div class="empty-icon-wrap-center mb-3">
+            <i class="fas fa-home text-muted fs-3"></i>
+          </div>
+          <h6 class="fw-bold text-dark text-center mb-1">No active book plot</h6>
+          <p class="text-muted fs-12 text-center mb-3">You do not have any active plot bookings matching the filter criteria.</p>
+          <button type="button" class="btn btn-emerald btn-sm" (click)="openInquiryModal()">
+            <i class="fas fa-plus me-1"></i>Available Sites &amp; Plots
           </button>
         </div>
       </ng-container>
@@ -556,10 +558,12 @@
           </div>
         </div>
 
-        <div *ngIf="soldTransferredProperties.length === 0" class="text-center py-5">
-          <i class="fas fa-handshake text-muted fs-40 mb-3 d-block"></i>
-          <h6 class="fw-bold text-dark">No Sold / Transferred Properties</h6>
-          <p class="text-muted fs-12">You do not have any historical sold or transferred plots.</p>
+        <div *ngIf="soldTransferredProperties.length === 0" class="d-flex flex-column align-items-center justify-content-center text-center py-5">
+          <div class="empty-icon-wrap-center mb-3">
+            <i class="fas fa-handshake text-muted fs-3"></i>
+          </div>
+          <h6 class="fw-bold text-dark text-center mb-1">No Sold / Transferred Properties</h6>
+          <p class="text-muted fs-12 text-center mb-0">You do not have any historical sold or transferred plots.</p>
         </div>
       </ng-container>
 

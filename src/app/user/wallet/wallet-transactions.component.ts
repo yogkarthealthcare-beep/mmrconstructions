@@ -9,19 +9,21 @@ import { ApiService } from '../../services/api.service';
   imports: [CommonModule, RouterLink],
   template: `
     <div class="panel-content wallet-tx-page">
-      <!-- HEADER -->
-      <div class="pg-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-        <div>
-          <div class="d-flex align-items-center gap-2 mb-1">
-            <a routerLink="../" class="btn btn-outline-success btn-sm px-2.5 py-1 text-decoration-none fw-bold fs-12">
-              <i class="fas fa-arrow-left me-1"></i> Back to Wallet
-            </a>
-            <h4 class="m-0 fw-extrabold text-dark fs-18">Wallet Transaction History</h4>
+      <!-- GREEN HEADER CARD -->
+      <div class="wallet-tx-header-card mb-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+              <a routerLink="../" class="btn btn-sm btn-white-emerald px-2.5 py-1 text-decoration-none fw-bold fs-12">
+                <i class="fas fa-arrow-left me-1"></i> Back to Wallet
+              </a>
+              <h4 class="m-0 fw-extrabold text-white fs-18">Wallet Transaction History</h4>
+            </div>
+            <p class="text-emerald-100 fs-12 m-0 opacity-90">Detailed log of all credits, debits, online deposits, and payout activities.</p>
           </div>
-          <p class="text-muted fs-12 m-0">Detailed log of all credits, debits, online deposits, and payout activities.</p>
-        </div>
-        <div class="count-badge">
-          <i class="fas fa-list-check me-1 text-success"></i> {{ filteredTransactions.length }} Transactions Found
+          <div class="count-badge-hero">
+            <i class="fas fa-list-check me-1 text-emerald-light"></i> {{ filteredTransactions.length }} Transactions Found
+          </div>
         </div>
       </div>
 
@@ -31,7 +33,7 @@ import { ApiService } from '../../services/api.service';
           
           <!-- Search -->
           <div class="col-md-4">
-            <div class="input-group input-group-sm">
+            <div class="input-group input-group-sm tx-search-group">
               <span class="input-group-text bg-light text-muted border-end-0"><i class="fas fa-search"></i></span>
               <input
                 type="text"
@@ -45,7 +47,7 @@ import { ApiService } from '../../services/api.service';
 
           <!-- Type Filter -->
           <div class="col-md-2 col-6">
-            <select class="form-select form-select-sm" (change)="filterType($event)" [value]="selectedType">
+            <select class="form-select form-select-sm tx-select" (change)="filterType($event)" [value]="selectedType">
               <option value="">All Types</option>
               <option value="credit">Credit (Deposit)</option>
               <option value="debit">Debit (Withdrawal)</option>
@@ -54,7 +56,7 @@ import { ApiService } from '../../services/api.service';
 
           <!-- Source Filter -->
           <div class="col-md-3 col-6">
-            <select class="form-select form-select-sm" (change)="filterSource($event)" [value]="selectedSource">
+            <select class="form-select form-select-sm tx-select" (change)="filterSource($event)" [value]="selectedSource">
               <option value="">All Sources</option>
               <option value="Add Fund">Add Fund</option>
               <option value="Withdrawal">Withdrawal</option>
@@ -65,7 +67,7 @@ import { ApiService } from '../../services/api.service';
 
           <!-- Status Filter -->
           <div class="col-md-2 col-6">
-            <select class="form-select form-select-sm" (change)="filterStatus($event)" [value]="selectedStatus">
+            <select class="form-select form-select-sm tx-select" (change)="filterStatus($event)" [value]="selectedStatus">
               <option value="">All Statuses</option>
               <option value="success">Success</option>
               <option value="pending">Pending</option>
@@ -75,7 +77,7 @@ import { ApiService } from '../../services/api.service';
 
           <!-- Refresh / Reset -->
           <div class="col-md-1 col-6 text-end">
-            <button class="btn btn-light btn-sm text-secondary w-100 fs-12 fw-bold" (click)="resetFilters()" title="Reset Filters">
+            <button class="btn btn-light btn-sm text-secondary w-100 tx-btn-reset fs-12 fw-bold" (click)="resetFilters()" title="Reset Filters">
               <i class="fas fa-undo"></i>
             </button>
           </div>
@@ -214,14 +216,46 @@ import { ApiService } from '../../services/api.service';
   styles: [`
     .wallet-tx-page { width: 100%; }
 
-    .count-badge {
+    .wallet-tx-header-card {
+      background: linear-gradient(135deg, #064e3b 0%, #047857 55%, #022c22 100%);
+      border-radius: 14px;
+      padding: 1.15rem 1.35rem;
+      color: #ffffff;
+      box-shadow: 0 4px 14px -2px rgba(6, 78, 59, 0.25);
+    }
+
+    .btn-white-emerald {
+      background: #ffffff;
+      color: #065f46;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+    .btn-white-emerald:hover {
+      background: #f0fdf4;
+      color: #047857;
+      transform: translateY(-1px);
+    }
+
+    .count-badge-hero {
       font-size: 0.75rem;
       font-weight: 700;
-      color: #047857;
-      background: #ecfdf5;
-      border: 1px solid #a7f3d0;
-      padding: 0.35rem 0.75rem;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      padding: 0.35rem 0.85rem;
       border-radius: 50px;
+      backdrop-filter: blur(4px);
+    }
+
+    .text-emerald-100 {
+      color: #d1fae5;
+    }
+
+    .text-emerald-light {
+      color: #a7f3d0;
     }
 
     .filter-card-glass {
@@ -230,6 +264,61 @@ import { ApiService } from '../../services/api.service';
       border-radius: 12px;
       padding: 0.75rem 1rem;
       box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+    }
+
+    .tx-search-group {
+      height: 34px !important;
+      display: flex;
+    }
+
+    .tx-search-group .input-group-text {
+      height: 34px !important;
+      min-height: 34px !important;
+      max-height: 34px !important;
+      padding: 0 10px !important;
+      font-size: 12px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top-right-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
+      border-top-left-radius: 6px !important;
+      border-bottom-left-radius: 6px !important;
+      box-sizing: border-box;
+    }
+
+    .tx-search-group .form-control {
+      height: 34px !important;
+      min-height: 34px !important;
+      max-height: 34px !important;
+      font-size: 12px !important;
+      padding: 0 10px !important;
+      border-top-left-radius: 0 !important;
+      border-bottom-left-radius: 0 !important;
+      border-top-right-radius: 6px !important;
+      border-bottom-right-radius: 6px !important;
+      box-sizing: border-box;
+    }
+
+    .tx-select {
+      height: 34px !important;
+      min-height: 34px !important;
+      max-height: 34px !important;
+      font-size: 12px !important;
+      padding: 0 8px !important;
+      border-radius: 6px !important;
+      box-sizing: border-box;
+    }
+
+    .tx-btn-reset {
+      height: 34px !important;
+      min-height: 34px !important;
+      font-size: 12px !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px !important;
+      box-sizing: border-box;
     }
 
     .tx-table-container {

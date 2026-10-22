@@ -15,11 +15,13 @@
 
       <!-- Site Selector Dropdown -->
       <div class="topbar-site-selector">
-        <label class="site-selector-label"><i class="fas fa-building me-1"></i> Project Site:</label>
+        <label class="site-selector-label text-white" style="color: #ffffff !important;">
+          <i class="fas fa-building me-1 text-white" style="color: #ffffff !important;"></i> Project Site:
+        </label>
         <select class="form-select site-select-dropdown" [(ngModel)]="selectedSiteId" (change)="onSiteChange()">
           <option [ngValue]="null" disabled>-- Choose Project Site --</option>
-          <option *ngFor="let s of sites" [ngValue]="s.site_id">
-            {{ s.site_name }} ({{ s.city || s.location }})
+          <option *ngFor="let s of sites" [ngValue]="s.site_id || s.id">
+            {{ s.site_name }}{{ (s.city || s.state || s.location) ? ' (' + (s.city || s.state || s.location) + ')' : '' }}
           </option>
         </select>
       </div>
@@ -306,23 +308,38 @@
       <ng-container *ngIf="isTeamMember">
         <div class="workflow-content">
           <div class="form-group mb-3">
-            <label class="form-label fw-bold fs-13">
-              <i class="fas fa-user-check text-success me-1"></i> Select Customer / Party <span class="text-danger">*</span>
-            </label>
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <label class="form-label fw-bold fs-13 mb-0">
+                <i class="fas fa-user-check text-success me-1"></i> Select Customer / Party <span class="text-danger">*</span>
+              </label>
+              <button type="button" class="btn btn-link btn-xs text-success p-0 fw-600 text-decoration-none" (click)="openAddCustomerModal()">
+                <i class="fas fa-user-plus me-1"></i> + New Customer
+              </button>
+            </div>
             <select
               class="form-select custom-select-lg"
-              [ngModel]="selectedCustomer?.user_id"
-              (ngModelChange)="onSelectTeamMemberCustomer($event)">
-              <option [ngValue]="undefined" disabled>-- Choose Your Customer / Party --</option>
-              <option *ngFor="let c of myCustomers" [ngValue]="c.user_id">
-                {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
-              </option>
+              [ngModel]="selectedTeamMemberBuyerKey"
+              (ngModelChange)="onSelectTeamMemberBuyer($event)">
+              <option value="" disabled>-- Choose Buyer (Self or Customer) --</option>
+              <optgroup label="Team Member (Book for Self)">
+                <option value="SELF">
+                  ⭐ {{ currentUser?.full_name || 'My Self' }} (Self - {{ currentUser?.member_id || 'Team Member' }})
+                </option>
+              </optgroup>
+              <optgroup label="Direct Registered Customers" *ngIf="myCustomers.length > 0">
+                <option *ngFor="let c of myCustomers" [value]="'CUS_' + c.user_id">
+                  👤 {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
+                </option>
+              </optgroup>
             </select>
+            <small class="text-muted fs-11 d-block mt-1">
+              Select your own account for <strong>Self Booking</strong>, or choose any customer registered under you.
+            </small>
             <div *ngIf="loadingCustomers" class="text-muted small mt-1">
               <i class="fas fa-spinner fa-spin me-1"></i> Loading your registered customers...
             </div>
-            <div *ngIf="myCustomers.length === 0 && !loadingCustomers" class="alert alert-warning py-2 px-3 mt-2 fs-12 mb-0">
-              <i class="fas fa-info-circle me-1"></i> No registered customers found under your account.
+            <div *ngIf="myCustomers.length === 0 && !loadingCustomers" class="alert alert-info py-1.5 px-2.5 mt-2 fs-11 mb-0">
+              <i class="fas fa-info-circle me-1"></i> No direct customers registered yet. You can book for yourself (Self) or click <strong>+ New Customer</strong> to add a customer.
             </div>
           </div>
         </div>
@@ -341,44 +358,99 @@
           </span>
         </div>
 
-        <!-- Case 1: Admin configured base price exists -->
-        <div *ngIf="hasAdminBasePrice" class="p-2.5 rounded-8 bg-light border d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <div>
-            <div class="fs-11 text-muted text-uppercase fw-bold">Official Plot Base Price</div>
-            <div class="fs-18 fw-800 text-dark">₹{{ totalPlotPrice | number }}</div>
+        <!-- Editable Plot Rate & Valuation Card (Available to Associate, Team Member & Admin) -->
+        <div class="plot-price-entry-card p-3 rounded-8 bg-light border">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <span class="fs-11 text-muted text-uppercase fw-bold">Plot Area Dimensions</span>
+              <div class="fs-13 fw-800 text-dark">
+                {{ plotAreaGaj }} गज (Gaj) &bull; {{ plotAreaSqft }} sq ft
+              </div>
+            </div>
+            <span *ngIf="hasAdminBasePrice" class="badge bg-success-subtle text-success fs-10 fw-700">
+              <i class="fas fa-tag me-1"></i>List Price: ₹{{ selectedPlot?.base_price | number }}
+            </span>
+            <span *ngIf="!hasAdminBasePrice" class="badge bg-amber-subtle text-warning-emphasis fs-10 fw-700">
+              <i class="fas fa-exclamation-triangle me-1"></i>रेट तय करके डालें
+            </span>
           </div>
-          <div class="text-end">
-            <span class="fs-11 text-muted d-block">Plot Area: {{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj</span>
-            <span class="fs-11 text-success fw-600"><i class="fas fa-shield-alt me-1"></i>Official Base Rate Set by Admin</span>
-          </div>
-        </div>
 
-        <!-- Case 2: Admin base price NOT configured (₹0 / missing) -> Editable Textbox -->
-        <div *ngIf="!hasAdminBasePrice" class="plot-price-entry-card p-3 rounded-8 bg-amber-50 border border-warning">
-          <label class="form-label fw-800 fs-13 text-dark mb-1">
-            <i class="fas fa-rupee-sign text-warning-emphasis me-1"></i> Enter Total Plot Price (₹) <span class="text-danger">*</span>
-          </label>
-          <p class="fs-11 text-muted mb-2">
-            Is plot ka base price admin dwaara set nahi hai (₹0). Kripya booking ke liye plot ka total price yahan add karein:
-          </p>
-          <div class="input-group">
-            <span class="input-group-text fw-bold bg-white text-dark">₹</span>
-            <input
-              type="number"
-              class="form-control form-control-lg fw-bold fs-15 text-dark"
-              [(ngModel)]="customPlotPrice"
-              (ngModelChange)="onCustomPlotPriceChange()"
-              placeholder="e.g. 800000"
-              min="10000"
-              required
-            />
+          <!-- Dual Rate Conversion Row: Gaj ↔ Sq.Ft -->
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label fs-11 fw-700 text-muted mb-1">
+                रेट प्रति गज (₹/Gaj)
+              </label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white fw-bold">₹</span>
+                <input
+                  type="number"
+                  class="form-control fw-bold fs-12 text-dark"
+                  [(ngModel)]="ratePerGaj"
+                  (ngModelChange)="onRatePerGajChange()"
+                  placeholder="₹8,000 / गज (सुझाव)"
+                  min="1"
+                />
+              </div>
+            </div>
+
+            <div class="col-6">
+              <label class="form-label fs-11 fw-700 text-muted mb-1">
+                रेट प्रति Sq.Ft (₹/sq ft)
+              </label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white fw-bold">₹</span>
+                <input
+                  type="number"
+                  class="form-control fw-bold fs-12 text-dark"
+                  [(ngModel)]="ratePerSqft"
+                  (ngModelChange)="onRatePerSqftChange()"
+                  placeholder="Auto (₹/9)"
+                  min="1"
+                  step="0.01"
+                />
+              </div>
+            </div>
           </div>
-          <div *ngIf="customPlotPrice && customPlotPrice >= 10000" class="d-flex align-items-center gap-1.5 fs-11 text-success fw-bold mt-2">
-            <i class="fas fa-check-circle"></i>
-            <span>Total Plot Value Configured: ₹{{ customPlotPrice | number }}</span>
+
+          <!-- Total Plot Price (Agreed) Input -->
+          <div class="mb-3">
+            <label class="form-label fs-12 fw-800 text-dark mb-1">
+              <i class="fas fa-handshake text-success me-1"></i>Total Plot Price (Agreed) <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text fw-bold bg-white text-dark">₹</span>
+              <input
+                type="number"
+                class="form-control form-control-lg fw-bold fs-16 text-dark"
+                [(ngModel)]="customPlotPrice"
+                (ngModelChange)="onCustomPlotPriceInput()"
+                [placeholder]="hasAdminBasePrice ? '' : 'रेट तय करके डालें (सुझाव: ₹8,000/गज)'"
+                min="10000"
+                required
+              />
+            </div>
+            <p *ngIf="!hasAdminBasePrice && !customPlotPrice" class="fs-10 text-muted mt-1 mb-0">
+              * इस प्लॉट पर कोई पूर्व-निर्धारित बेस रेट नहीं है। कृपया बातचीत के अनुसार तय किया गया रेट दर्ज करें।
+            </p>
           </div>
-          <div *ngIf="!customPlotPrice || customPlotPrice < 10000" class="fs-11 text-danger mt-1.5">
-            <i class="fas fa-info-circle me-1"></i> Kripya valid total plot price darj karein (minimum ₹10,000).
+
+          <!-- 3 Permanent Summary Lines -->
+          <div class="p-2.5 rounded-8 bg-white border">
+            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+              <span class="fs-12 fw-700 text-muted">Total Plot Price (Agreed):</span>
+              <span class="fs-13 fw-800 text-dark">₹{{ totalPlotPrice | number }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+              <span class="fs-12 fw-700 text-primary">Paying Now:</span>
+              <span class="fs-13 fw-800 text-primary">₹{{ (agreedAmount || advanceAmount || 0) | number }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-1">
+              <span class="fs-12 fw-700 text-danger">Remaining Balance:</span>
+              <span class="fs-13 fw-800 text-danger">
+                ₹{{ ((totalPlotPrice - (agreedAmount || advanceAmount || 0)) > 0 ? (totalPlotPrice - (agreedAmount || advanceAmount || 0)) : 0) | number }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -624,6 +696,13 @@
               {{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})
               <span class="badge bg-info-subtle text-info ms-1" *ngIf="selectedBuyerKey.startsWith('TM_')">Team Member (Self)</span>
               <span class="badge bg-success-subtle text-success ms-1" *ngIf="selectedBuyerKey.startsWith('CUS_')">Customer</span>
+            </strong>
+          </div>
+          <div class="summary-row" *ngIf="!selectedCustomer && buyerType === 'SELF'">
+            <span class="summary-label">Selected Buyer:</span>
+            <strong class="summary-val text-success">
+              {{ currentUser?.full_name || 'Self' }} ({{ currentUser?.member_id }})
+              <span class="badge bg-info-subtle text-info ms-1">Self Booking</span>
             </strong>
           </div>
           <div class="summary-row">

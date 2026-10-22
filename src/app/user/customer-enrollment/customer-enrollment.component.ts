@@ -15,6 +15,7 @@ import {
   APPROVED_INDIAN_STATES, 
   getMaxAdultDobDate, 
   adultAgeValidator, 
+  nomineeDobValidator,
   RELIGIONS_LIST, 
   formatDateToDDMMYYYY, 
   parseDDMMYYYYToISO,
@@ -269,7 +270,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     return this.fb.group({
       nomineeName: ['', [Validators.required, humanNameValidator()]],
       nomineeRelation: ['', Validators.required],
-      nomineeAgeDob: ['', Validators.required],
+      nomineeAgeDob: ['', [Validators.required, nomineeDobValidator(18)]],
       nomineeAadhar: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]]
     });
   }

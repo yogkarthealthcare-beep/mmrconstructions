@@ -113,6 +113,49 @@ export class PlotMapEditorComponent implements OnInit {
 
   constructor(private api: ApiService, private fb: FormBuilder) {}
 
+  editorRatePerGaj: number | null = null;
+  editorRatePerSqft: number | null = null;
+
+  onEditorRateGajChange(rGaj: any) {
+    const num = Number(rGaj || 0);
+    this.editorRatePerGaj = num > 0 ? num : null;
+    const area = Number(this.detailForm.get('plot_area')?.value || 0);
+    if (num > 0) {
+      this.editorRatePerSqft = Math.round((num / 9) * 100) / 100;
+      if (area > 0) {
+        this.detailForm.patchValue({ base_price: Math.round(area * num) });
+      }
+    } else {
+      this.editorRatePerSqft = null;
+    }
+  }
+
+  onEditorRateSqftChange(rSqft: any) {
+    const num = Number(rSqft || 0);
+    this.editorRatePerSqft = num > 0 ? num : null;
+    const area = Number(this.detailForm.get('plot_area')?.value || 0);
+    if (num > 0) {
+      this.editorRatePerGaj = Math.round((num * 9) * 100) / 100;
+      if (area > 0) {
+        this.detailForm.patchValue({ base_price: Math.round(area * 9 * num) });
+      }
+    } else {
+      this.editorRatePerGaj = null;
+    }
+  }
+
+  onEditorBasePriceChange() {
+    const price = Number(this.detailForm.get('base_price')?.value || 0);
+    const area = Number(this.detailForm.get('plot_area')?.value || 0);
+    if (price > 0 && area > 0) {
+      this.editorRatePerGaj = Math.round((price / area) * 100) / 100;
+      this.editorRatePerSqft = Math.round((price / (area * 9)) * 100) / 100;
+    } else {
+      this.editorRatePerGaj = null;
+      this.editorRatePerSqft = null;
+    }
+  }
+
   ngOnInit() { this.loadSites(); }
 
   get draftPointString() { return this.draftPoints.map(p => `${p.x},${p.y}`).join(' '); }
@@ -374,11 +417,20 @@ export class PlotMapEditorComponent implements OnInit {
       plot_status: this.normalizedStatus(plot.plot_status),
       description: plot.extended_description || plot.description || '',
       features: Array.isArray(plot.features) ? plot.features.join(', ') : (plot.features || ''),
-      is_corner_plot: !!plot.is_corner_plot,
       is_park_facing: Array.isArray(plot.features)
         ? plot.features.some((feature: any) => /park/i.test(String(feature)))
         : /park/i.test(String(plot.features || '')),
     });
+
+    const price = Number(plot.base_price || 0);
+    const area = Number(plot.plot_area || 0);
+    if (price > 0 && area > 0) {
+      this.editorRatePerGaj = Math.round((price / area) * 100) / 100;
+      this.editorRatePerSqft = Math.round((price / (area * 9)) * 100) / 100;
+    } else {
+      this.editorRatePerGaj = null;
+      this.editorRatePerSqft = null;
+    }
   }
 
   onPlotClick(plot: any, event: MouseEvent) {

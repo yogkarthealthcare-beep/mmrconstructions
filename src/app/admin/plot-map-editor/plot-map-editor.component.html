@@ -465,14 +465,10 @@
 
     <form [formGroup]="detailForm" (ngSubmit)="saveDetails()" class="details-form">
       <label>Plot Number<input class="f-input" formControlName="plot_number"></label>
-      <label>Area<input class="f-input" type="number" formControlName="plot_area"></label>
-      <label>Plot Name / Size<input class="f-input" formControlName="dimensions"></label>
-      <label>Plot Type<input class="f-input" formControlName="plot_category"></label>
-      <label>Status<select class="f-input" formControlName="plot_status" title="Plot status" aria-label="Plot status"><option *ngFor="let item of statusItems" [value]="item.value">{{ item.label }}</option></select></label>
-      <label>Width<input class="f-input" type="number" formControlName="width_ft"></label>
-      <label>Length<input class="f-input" type="number" formControlName="length_ft"></label>
-      <label>Road Width<input class="f-input" type="number" formControlName="road_width_ft"></label>
-      <label>Price<input class="f-input" type="number" formControlName="base_price"></label>
+      <label>Area (Gaj)<input class="f-input" type="number" formControlName="plot_area"></label>
+      <label>Rate / Gaj (₹)<input class="f-input" type="number" [ngModel]="editorRatePerGaj" [ngModelOptions]="{standalone: true}" (ngModelChange)="onEditorRateGajChange($event)" placeholder="₹/Gaj"></label>
+      <label>Rate / Sq.Ft (₹)<input class="f-input" type="number" [ngModel]="editorRatePerSqft" [ngModelOptions]="{standalone: true}" (ngModelChange)="onEditorRateSqftChange($event)" placeholder="₹/Sq.Ft"></label>
+      <label>Price (₹)<input class="f-input" type="number" formControlName="base_price" (input)="onEditorBasePriceChange()"></label>
       <label>EMI<input class="f-input" type="number" formControlName="monthly_emi"></label>
       <label>Facing<input class="f-input" formControlName="facing"></label>
       <label>Block<input class="f-input" formControlName="block"></label>

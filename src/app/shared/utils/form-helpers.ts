@@ -390,15 +390,69 @@ export function getMaxAdultDobDateDDMMYYYY(): string {
 }
 
 /**
- * Angular Validator ensuring applicant is 18 years or older
+ * Angular Validator ensuring applicant or nominee is 18 years or older and not a future date
  */
 export function adultAgeValidator(minAge: number = 18) {
   return (control: { value: any }) => {
     if (!control.value) return null;
-    const age = calculateAgeFromDob(control.value);
-    if (age === '' || typeof age !== 'number') return null;
+    const val = String(control.value).trim();
+    if (!val) return null;
+
+    const isoStr = parseDDMMYYYYToISO(val);
+    if (isoStr) {
+      const birthDate = new Date(isoStr);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      if (birthDate > today) {
+        return { futureDate: true, message: 'Date cannot be in the future' };
+      }
+    }
+    const age = calculateAgeFromDob(val);
+    if (age === '' || typeof age !== 'number') {
+      return { invalidDate: true, message: 'Invalid Date of Birth' };
+    }
     if (age < minAge) {
-      return { underAge: { requiredAge: minAge, actualAge: age } };
+      return { underAge: { requiredAge: minAge, actualAge: age }, message: `Must be at least ${minAge} years old` };
+    }
+    return null;
+  };
+}
+
+/**
+ * Dedicated Nominee Date of Birth validator:
+ * Strictly enforces that nominee is at least 18 years old and date is not in the future.
+ */
+export function nomineeDobValidator(minAge: number = 18) {
+  return (control: { value: any }) => {
+    if (!control.value) return null;
+    const rawVal = String(control.value).trim();
+    if (!rawVal) return null;
+
+    // Check if entered as plain age (e.g. "25", "25 Years", "25 yrs")
+    const ageMatch = rawVal.match(/^(\d{1,3})(\s*(years?|yrs?|yr)?)?$/i);
+    if (ageMatch && !rawVal.includes('/') && !rawVal.includes('-')) {
+      const numAge = parseInt(ageMatch[1], 10);
+      if (numAge < minAge) {
+        return { underAge: { requiredAge: minAge, actualAge: numAge }, message: `Nominee must be at least ${minAge} years old` };
+      }
+      return null;
+    }
+
+    const isoStr = parseDDMMYYYYToISO(rawVal);
+    if (isoStr) {
+      const birthDate = new Date(isoStr);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      if (birthDate > today) {
+        return { futureDate: true, message: 'Nominee Date of Birth cannot be in the future' };
+      }
+    }
+    const age = calculateAgeFromDob(rawVal);
+    if (age === '' || typeof age !== 'number') {
+      return { invalidDate: true, message: 'Invalid Nominee Date of Birth' };
+    }
+    if (age < minAge) {
+      return { underAge: { requiredAge: minAge, actualAge: age }, message: `Nominee must be at least ${minAge} years old` };
     }
     return null;
   };

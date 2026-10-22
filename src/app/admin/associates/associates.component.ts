@@ -463,11 +463,7 @@ export class AssociatesComponent implements OnInit {
       rank_name: 'Associate',
       password: '',
       confirm_password: '',
-      account_status: 'Active',
-      address: '',
-      city: '',
-      state: '',
-      pin_code: ''
+      account_status: 'Active'
     };
     this.showAddModal = true;
   }

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { LoadingButtonComponent } from '../../shared/components/loading-button/loading-button.component';
 
 @Component({
   selector: 'app-withdraw-fund',
@@ -11,8 +10,7 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
-    LoadingButtonComponent
+    RouterLink
   ],
   template: `
     <div class="wallet-page-wrap">
@@ -681,7 +679,7 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
       background: #ffffff;
       border: 1px solid #e8ede9;
       border-radius: 16px;
-      padding: 1.75rem;
+      padding: 1.15rem 1.25rem;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
       position: relative;
     }
@@ -709,6 +707,7 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
       border: 2px solid #e2e8f0;
       border-radius: 14px;
       padding: 8px 16px;
+      min-height: 58px;
       transition: all 0.25s ease;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
     }
@@ -724,11 +723,12 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
     }
 
     .currency-prefix {
-      font-size: 1.75rem;
+      font-size: 2rem;
       font-weight: 800;
       color: #f59e0b;
       margin-right: 8px;
       user-select: none;
+      line-height: 1;
     }
 
     .amount-large-input {
@@ -736,10 +736,12 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
       outline: none;
       background: transparent;
       width: 100%;
-      font-size: 1.75rem;
+      height: 48px;
+      font-size: 2rem;
       font-weight: 800;
       color: #0f172a;
       letter-spacing: -0.02em;
+      line-height: 1;
     }
 
     .amount-currency-badge {
@@ -815,7 +817,7 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
       flex-shrink: 0;
     }
 
-    /* Form Fields & Modern Input Group (Zero Overlap) */
+    /* Form Fields & Modern Input Group (Zero Overlap & Square Joined Corners - G1) */
     .custom-label {
       font-size: 12.5px;
       font-weight: 700;
@@ -837,8 +839,10 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
       background: #f8fafc;
       border: 1.5px solid #e2e8f0;
       border-right: none;
-      border-top-left-radius: 10px;
-      border-bottom-left-radius: 10px;
+      border-top-left-radius: 10px !important;
+      border-bottom-left-radius: 10px !important;
+      border-top-right-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
       color: #64748b;
       font-size: 13px;
       padding: 0 14px;
@@ -853,10 +857,10 @@ import { LoadingButtonComponent } from '../../shared/components/loading-button/l
     .modern-input-group .modern-input {
       border: 1.5px solid #e2e8f0;
       border-left: none;
-      border-top-right-radius: 10px;
-      border-bottom-right-radius: 10px;
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
+      border-top-right-radius: 10px !important;
+      border-bottom-right-radius: 10px !important;
+      border-top-left-radius: 0 !important;
+      border-bottom-left-radius: 0 !important;
       height: 44px;
       font-size: 13.5px;
       font-weight: 600;

@@ -422,9 +422,53 @@ export class DxfPlotExtractorService {
       const status = isUnknown || isDuplicate ? 'invalid' : 'detected';
       const valid = !isUnknown && !isDuplicate;
 
+      // Extract CAD attributes if present: PLOT_NO, AREA_GAJ, AREA_SQFT, RATE_PER_GAJ, RATE_PER_SQFT
+      let extractedPlotNo: string | null = null;
+      let extractedAreaGaj: number | null = null;
+      let extractedAreaSqft: number | null = null;
+      let extractedRateGaj: number | null = null;
+      let extractedRateSqft: number | null = null;
+
+      for (const cand of candidateTexts) {
+        const t = String(cand.textObj.text || '').trim();
+        const areaGajMatch = t.match(/(?:AREA_GAJ|GAJ|AREA_YD|YD)[:=\s]*([0-9.]+)/i);
+        const areaSqftMatch = t.match(/(?:AREA_SQFT|SQFT|AREA_FT|FT2)[:=\s]*([0-9.]+)/i);
+        const rateGajMatch = t.match(/(?:RATE_PER_GAJ|RATE_GAJ|RATE_YD)[:=\s]*([0-9.]+)/i);
+        const rateSqftMatch = t.match(/(?:RATE_PER_SQFT|RATE_SQFT|RATE_FT)[:=\s]*([0-9.]+)/i);
+        const plotNoMatch = t.match(/(?:PLOT_NO|PLOT|UNIT)[:=\s]*([A-Z0-9-]+)/i);
+
+        if (areaGajMatch) extractedAreaGaj = Number(areaGajMatch[1]);
+        if (areaSqftMatch) extractedAreaSqft = Number(areaSqftMatch[1]);
+        if (rateGajMatch) extractedRateGaj = Number(rateGajMatch[1]);
+        if (rateSqftMatch) extractedRateSqft = Number(rateSqftMatch[1]);
+        if (plotNoMatch && !extractedPlotNo) extractedPlotNo = plotNoMatch[1];
+      }
+
+      if (extractedAreaSqft && !extractedAreaGaj) {
+        extractedAreaGaj = Math.round((extractedAreaSqft / 9) * 100) / 100;
+      } else if (extractedAreaGaj && !extractedAreaSqft) {
+        extractedAreaSqft = Math.round(extractedAreaGaj * 9 * 100) / 100;
+      }
+
+      if (extractedRateSqft && !extractedRateGaj) {
+        extractedRateGaj = Math.round((extractedRateSqft * 9) * 100) / 100;
+      } else if (extractedRateGaj && !extractedRateSqft) {
+        extractedRateSqft = Math.round((extractedRateGaj / 9) * 100) / 100;
+      }
+
+      let computedBasePrice: number | null = null;
+      if (extractedAreaGaj && extractedRateGaj) {
+        computedBasePrice = Math.round(extractedAreaGaj * extractedRateGaj);
+      } else if (extractedAreaSqft && extractedRateSqft) {
+        computedBasePrice = Math.round(extractedAreaSqft * extractedRateSqft);
+      }
+
+      const finalAreaGaj = extractedAreaGaj || Math.round(areaUnits * 100) / 100;
+      const finalAreaSqft = extractedAreaSqft || Math.round(finalAreaGaj * 9 * 100) / 100;
+
       rawPlots.push({
         id: i + 1,
-        plot_no: plotNo,
+        plot_no: extractedPlotNo || plotNo,
         unit_type: poly.unitType,
         ocr_confidence: 100,
         boundary_confidence: 100,
@@ -436,7 +480,12 @@ export class DxfPlotExtractorService {
         valid,
         detection_source: 'dxf',
         warning: plotWarning,
-        area_units: Math.round(areaUnits * 100) / 100,
+        area_units: finalAreaGaj,
+        area_gaj: finalAreaGaj,
+        area_sqft: finalAreaSqft,
+        rate_per_gaj: extractedRateGaj,
+        rate_per_sqft: extractedRateSqft,
+        base_price: computedBasePrice,
       });
     }
 

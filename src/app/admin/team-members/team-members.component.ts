@@ -10,6 +10,7 @@ import { AdminTableContainerComponent } from '../../shared/admin-table-container
 import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
 import Swal from 'sweetalert2';
 import { USER_TYPES } from '../../constants/user-types.constant';
+import { nomineeDobValidator } from '../../shared/utils/form-helpers';
 
 @Component({
   selector: 'app-admin-team-members',
@@ -300,34 +301,56 @@ export class AdminTeamMembersComponent implements OnInit {
   // --- 2. EDIT / ENROLLMENT FORM MODAL ---
   openEditModal(member: any, startInEditMode = false): void {
     this.isEditMode = startInEditMode;
-    this.editForm = {
-      id: member.id,
-      team_member_uid: member.team_member_uid,
-      full_name: member.full_name || '',
-      father_husband_name: member.father_husband_name || '',
-      date_of_birth: member.date_of_birth ? member.date_of_birth.split('T')[0] : '',
-      gender: member.gender || 'Male',
-      aadhar_no: member.aadhar_no || '',
-      pan_no: member.pan_no || '',
-      mobile_no: member.mobile_no || '',
-      email_id: member.email_id || '',
-      full_address: member.full_address || '',
-      nominee_name: member.nominee_name || '',
-      nominee_relation: member.nominee_relation || '',
-      nominee_age_dob: member.nominee_age_dob || '',
-      nominee_contact_no: member.nominee_contact_no || '',
-      bank_name: member.bank_name || '',
-      branch_name: member.branch_name || '',
-      account_no: member.account_no || '',
-      ifsc_code: member.ifsc_code || '',
-      status: member.status || 'approved',
-      photo_url: member.photo_url || '',
-      applicant_signature_url: member.applicant_signature_url || '',
-      associate_signature_url: member.associate_signature_url || '',
-      sponsor_name: member.sponsor_name || member.associate_name || '—',
-      sponsor_member_id: member.sponsor_member_id || '—'
-    };
+    this.populateEditForm(member);
     this.showEditModal = true;
+
+    const targetId = member.id || member.team_member_uid || member.user_id;
+    if (targetId) {
+      this.api.adminGetTeamMember(targetId).subscribe({
+        next: (res: any) => {
+          if (res.success && res.data) {
+            const detail = res.data.member || res.data.profile || res.data;
+            this.populateEditForm({ ...this.editForm, ...detail });
+          }
+        },
+        error: (err: any) => {
+          console.warn('[EditModal] Could not fetch fresh team member detail:', err);
+        }
+      });
+    }
+  }
+
+  populateEditForm(data: any): void {
+    if (!data) return;
+    this.editForm = {
+      id: data.id || data.user_id || this.editForm?.id || 0,
+      team_member_uid: data.team_member_uid || data.member_id || this.editForm?.team_member_uid || '',
+      full_name: data.full_name || data.fullName || data.name || this.editForm?.full_name || '',
+      father_husband_name: data.father_husband_name || data.fatherHusbandName || data.father_name || this.editForm?.father_husband_name || '',
+      date_of_birth: (data.date_of_birth || data.dateOfBirth || data.dob)
+        ? String(data.date_of_birth || data.dateOfBirth || data.dob).split('T')[0]
+        : (this.editForm?.date_of_birth || ''),
+      gender: data.gender || this.editForm?.gender || 'Male',
+      aadhar_no: data.aadhar_no || data.aadharNo || data.aadhar_number || this.editForm?.aadhar_no || '',
+      pan_no: (data.pan_no || data.panNo || data.pan_number || this.editForm?.pan_no || '').toUpperCase(),
+      mobile_no: data.mobile_no || data.mobileNo || data.mobile || this.editForm?.mobile_no || '',
+      email_id: data.email_id || data.emailId || data.email || this.editForm?.email_id || '',
+      full_address: data.full_address || data.fullAddress || data.address || data.perm_address || data.permanent_address || this.editForm?.full_address || '',
+      nominee_name: data.nominee_name || data.nomineeName || this.editForm?.nominee_name || '',
+      nominee_relation: data.nominee_relation || data.nomineeRelation || data.relationship || this.editForm?.nominee_relation || '',
+      nominee_age_dob: data.nominee_age_dob || data.nomineeAgeDob || data.nominee_dob || this.editForm?.nominee_age_dob || '',
+      nominee_contact_no: data.nominee_contact_no || data.nomineeContactNo || data.nominee_mobile || data.nominee_phone || this.editForm?.nominee_contact_no || '',
+      bank_name: data.bank_name || data.bankName || this.editForm?.bank_name || '',
+      branch_name: data.branch_name || data.branchName || this.editForm?.branch_name || '',
+      account_no: data.account_no || data.accountNo || data.account_number || this.editForm?.account_no || '',
+      ifsc_code: (data.ifsc_code || data.ifscCode || this.editForm?.ifsc_code || '').toUpperCase(),
+      status: data.status || this.editForm?.status || 'approved',
+      photo_url: data.photo_url || data.applicant_photo_url || data.profile_image || this.editForm?.photo_url || '',
+      applicant_signature_url: data.applicant_signature_url || data.applicantSignature || this.editForm?.applicant_signature_url || '',
+      associate_signature_url: data.associate_signature_url || data.associateSignature || this.editForm?.associate_signature_url || '',
+      sponsor_name: data.sponsor_name || data.associate_name || this.editForm?.sponsor_name || '—',
+      sponsor_member_id: data.sponsor_member_id || this.editForm?.sponsor_member_id || '—'
+    };
   }
 
   toggleEditMode(): void {
@@ -338,6 +361,14 @@ export class AdminTeamMembersComponent implements OnInit {
     if (!this.editForm.full_name || !this.editForm.mobile_no) {
       this.showToast('Please fill required fields (Full Name, Mobile Number)');
       return;
+    }
+
+    if (this.editForm.nominee_age_dob) {
+      const nomErr = nomineeDobValidator(18)({ value: this.editForm.nominee_age_dob });
+      if (nomErr) {
+        this.showToast(nomErr.message || 'Nominee must be at least 18 years old');
+        return;
+      }
     }
 
     this.actionLoading = true;

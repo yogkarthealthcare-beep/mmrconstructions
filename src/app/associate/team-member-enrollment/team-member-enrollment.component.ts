@@ -13,6 +13,7 @@ import {
   APPROVED_INDIAN_STATES, 
   getMaxAdultDobDate, 
   adultAgeValidator, 
+  nomineeDobValidator,
   calculateAgeFromDob,
   humanNameValidator,
   normalizeHumanName,
@@ -259,7 +260,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
 
       nomineeName: ['', [Validators.required, humanNameValidator()]],
       nomineeRelation: ['', Validators.required],
-      nomineeAgeDob: ['', Validators.required],
+      nomineeAgeDob: ['', [Validators.required, nomineeDobValidator(18)]],
       nomineeContactNo: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
 
       bankName: ['', Validators.required],

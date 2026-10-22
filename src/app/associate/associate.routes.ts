@@ -27,6 +27,10 @@ export const ASSOCIATE_ROUTES: Routes = [
     loadComponent: () => import('../user/wallet/wallet-transactions.component').then(m => m.WalletTransactionsComponent) 
   },
   { 
+    path: 'wallet/transaction', 
+    loadComponent: () => import('../user/wallet/wallet-transactions.component').then(m => m.WalletTransactionsComponent) 
+  },
+  { 
     path: 'wallet/withdrawal-history', 
     loadComponent: () => import('../user/wallet/withdrawal-history.component').then(m => m.WithdrawalHistoryComponent) 
   },
@@ -44,6 +48,10 @@ export const ASSOCIATE_ROUTES: Routes = [
   },
   { 
     path: 'payments', 
+    loadComponent: () => import('../user/payment-history/payment-history.component').then(m => m.PaymentHistoryComponent) 
+  },
+  { 
+    path: 'payment', 
     loadComponent: () => import('../user/payment-history/payment-history.component').then(m => m.PaymentHistoryComponent) 
   },
   { 

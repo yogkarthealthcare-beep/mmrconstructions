@@ -1,0 +1,693 @@
+/* ==========================================================================
+   MMR CONSTRUCTIONS – UNIVERSAL PANEL MOBILE ARCHITECTURE (PART 0 ISOLATED)
+   Applies STRICTLY to: Admin, Customer, Associate, Team Member, Investor Panels
+   Active ONLY below 768px Viewports. Public Pages & Desktop are 100% untouched.
+   ========================================================================== */
+
+@media (max-width: 767.98px) {
+
+  /* ── 0. UNIFIED TYPOGRAPHY (Single font family across all panels) ── */
+  .panel-shell,
+  .panel-shell * {
+    font-family: var(--ff-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif) !important;
+  }
+
+  .panel-shell :is(.fa, .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands) {
+    font-family: var(--fa-family, var(--fa-style-family, 'Font Awesome 7 Free')) !important;
+  }
+
+  /* ── 1. SEARCH INPUTS & ICON OVERLAPS (Problem 1) ── */
+  .panel-shell .search-box,
+  .panel-shell .search-input-wrap,
+  .panel-shell .search-input-wrapper,
+  .panel-shell .filter-search-box,
+  .panel-shell .table-search-input-wrapper,
+  .panel-shell .rm-search-box,
+  .panel-shell .search-box-wrap,
+  .panel-shell .search-box-compact,
+  .panel-shell .input-with-icon {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .panel-shell .search-box > .search-icon,
+  .panel-shell .search-box > i.fa-search,
+  .panel-shell .search-box > i.fas.fa-search,
+  .panel-shell .search-input-wrap > .search-icon,
+  .panel-shell .search-input-wrap > i.fa-search,
+  .panel-shell .search-input-wrap > i.fas.fa-search,
+  .panel-shell .search-input-wrapper > .search-icon,
+  .panel-shell .search-input-wrapper > i.fa-search,
+  .panel-shell .filter-search-box > .search-icon,
+  .panel-shell .filter-search-box > i.fa-search,
+  .panel-shell .table-search-input-wrapper > .search-icon,
+  .panel-shell .table-search-input-wrapper > i.fa-search,
+  .panel-shell .rm-search-box > .rm-search-icon,
+  .panel-shell .rm-search-box > i.fa-search,
+  .panel-shell .search-box-wrap > .search-icon,
+  .panel-shell .search-box-wrap > i.fa-search,
+  .panel-shell .search-box-compact > i.fa-search,
+  .panel-shell .input-with-icon > i {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 13px !important;
+    color: #94a3b8 !important;
+    pointer-events: none !important;
+    z-index: 5 !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    display: inline-block !important;
+  }
+
+  .panel-shell .search-box input,
+  .panel-shell .search-input-wrap input,
+  .panel-shell .search-input-wrapper input,
+  .panel-shell .filter-search-box input,
+  .panel-shell .table-search-input-wrapper input,
+  .panel-shell .rm-search-box input,
+  .panel-shell .search-box-wrap input,
+  .panel-shell .search-box-compact input,
+  .panel-shell input.search-field,
+  .panel-shell input.search-input,
+  .panel-shell input.f-input-search,
+  .panel-shell input.rm-search-input,
+  .panel-shell input.table-search-input,
+  .panel-shell input.rm-input-with-icon,
+  .panel-shell input.customer-search-field,
+  .panel-shell .input-with-icon input,
+  .panel-shell .input-with-icon select,
+  .panel-shell .input-with-icon .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-left: 38px !important;
+    padding-right: 32px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    box-sizing: border-box !important;
+    text-indent: 0 !important;
+  }
+
+  .panel-shell input::placeholder,
+  .panel-shell textarea::placeholder {
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    color: #94a3b8 !important;
+  }
+
+  /* ── 2. ZERO OVERLAPS: FLEX WRAPPING & SPACING (Problem 2) ── */
+  .panel-shell .card-header,
+  .panel-shell .panel-header,
+  .panel-shell .section-header,
+  .panel-shell .dtable-header,
+  .panel-shell .filter-row,
+  .panel-shell .dtable-actions,
+  .panel-shell .action-btn-group,
+  .panel-shell .modal-footer,
+  .panel-shell .form-actions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .panel-shell i,
+  .panel-shell svg,
+  .panel-shell .fa,
+  .panel-shell .fas,
+  .panel-shell .fab,
+  .panel-shell .far {
+    flex-shrink: 0 !important;
+  }
+
+  /* ── 3. BUTTON SIZING STANDARDIZATION (Problem 3) ── */
+  /* Large 48px: Main Submit in Form/Modal Footers ONLY */
+  .panel-shell button[type="submit"]:not(.btn-sm):not(.btn-xs),
+  .panel-shell .btn-submit,
+  .panel-shell .modal-footer .btn-primary,
+  .panel-shell .form-footer .btn-primary,
+  .panel-shell .form-actions .btn-primary:last-child,
+  .panel-shell .sticky-submit-btn {
+    height: 48px !important;
+    min-height: 48px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    padding: 0 20px !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Default 44px: Standard buttons, filters, secondary actions */
+  .panel-shell .btn:not(.btn-sm):not(.btn-xs):not(.btn-icon):not(.table-action-btn):not(.btn-action):not(.icon-btn):not([type="submit"]):not(.modal-footer .btn-primary) {
+    height: 44px !important;
+    min-height: 44px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    padding: 0 16px !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Small 36px (with 44px hit area): Card / Record / Table row buttons */
+  .panel-shell .btn-sm,
+  .panel-shell .btn-xs,
+  .panel-shell .btn-action,
+  .panel-shell .table-action-btn,
+  .panel-shell .action-btn,
+  .panel-shell .record-btn,
+  .panel-shell .card-btn {
+    height: 36px !important;
+    min-height: 36px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 0 12px !important;
+    border-radius: 6px !important;
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .panel-shell .btn-sm::after,
+  .panel-shell .btn-xs::after,
+  .panel-shell .btn-action::after,
+  .panel-shell .table-action-btn::after,
+  .panel-shell .action-btn::after,
+  .panel-shell .record-btn::after,
+  .panel-shell .card-btn::after {
+    content: '' !important;
+    position: absolute !important;
+    top: -4px !important;
+    bottom: -4px !important;
+    left: -4px !important;
+    right: -4px !important;
+  }
+
+  /* Icon 32px (with 44px hit area): Standalone icon triggers */
+  .panel-shell .btn-icon,
+  .panel-shell .icon-btn,
+  .panel-shell .topbar-icon-btn,
+  .panel-shell .table-icon-btn,
+  .panel-shell .action-icon-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 6px !important;
+    position: relative !important;
+  }
+  .panel-shell .btn-icon::after,
+  .panel-shell .icon-btn::after,
+  .panel-shell .topbar-icon-btn::after,
+  .panel-shell .table-icon-btn::after,
+  .panel-shell .action-icon-btn::after {
+    content: '' !important;
+    position: absolute !important;
+    top: -6px !important;
+    bottom: -6px !important;
+    left: -6px !important;
+    right: -6px !important;
+  }
+
+  /* ── 4. DARK HERO CARD CONTRAST & LEGIBILITY (Problem 4) ── */
+  .panel-shell .admin-hero-card,
+  .panel-shell .wallet-hero-card,
+  .panel-shell .team-hero-card,
+  .panel-shell .inv-hero-card,
+  .panel-shell .payments-hero-card,
+  .panel-shell .plots-hero-card,
+  .panel-shell .emi-hero-card,
+  .panel-shell .docs-hero-card,
+  .panel-shell .summary-hero-card,
+  .panel-shell .buyback-hero-card,
+  .panel-shell .referral-hero-card,
+  .panel-shell .profile-hero-card,
+  .panel-shell .capacity-hero-card,
+  .panel-shell .notif-hero-card {
+    background: linear-gradient(135deg, #062b18 0%, #0d4a2c 100%) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 14px 16px !important;
+    margin-bottom: 12px !important;
+    box-shadow: 0 4px 14px rgba(6, 43, 24, 0.25) !important;
+  }
+
+  .panel-shell .admin-hero-card h1,
+  .panel-shell .admin-hero-card h2,
+  .panel-shell .admin-hero-card h3,
+  .panel-shell .admin-hero-card .admin-hero-title,
+  .panel-shell .wallet-hero-card h1,
+  .panel-shell .wallet-hero-card h2,
+  .panel-shell .wallet-hero-card h3,
+  .panel-shell .wallet-hero-card .hero-title,
+  .panel-shell .team-hero-card h1,
+  .panel-shell .team-hero-card h2,
+  .panel-shell .inv-hero-card h1,
+  .panel-shell .inv-hero-card h2,
+  .panel-shell .payments-hero-card h1,
+  .panel-shell .plots-hero-card h1,
+  .panel-shell .emi-hero-card h1,
+  .panel-shell .docs-hero-card h1,
+  .panel-shell .summary-hero-card h1,
+  .panel-shell .buyback-hero-card h1,
+  .panel-shell .referral-hero-card h1,
+  .panel-shell .profile-hero-card h1,
+  .panel-shell .capacity-hero-card h1 {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1.25rem !important;
+    margin-bottom: 4px !important;
+    line-height: 1.3 !important;
+  }
+
+  .panel-shell .admin-hero-card p,
+  .panel-shell .admin-hero-card .admin-hero-sub,
+  .panel-shell .wallet-hero-card p,
+  .panel-shell .wallet-hero-card .hero-sub,
+  .panel-shell .team-hero-card p,
+  .panel-shell .inv-hero-card p,
+  .panel-shell .payments-hero-card p,
+  .panel-shell .plots-hero-card p,
+  .panel-shell .emi-hero-card p,
+  .panel-shell .docs-hero-card p,
+  .panel-shell .summary-hero-card p,
+  .panel-shell .buyback-hero-card p,
+  .panel-shell .referral-hero-card p,
+  .panel-shell .profile-hero-card p,
+  .panel-shell .capacity-hero-card p {
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .panel-shell .admin-hero-card .text-muted,
+  .panel-shell .wallet-hero-card .text-muted,
+  .panel-shell .team-hero-card .text-muted,
+  .panel-shell .inv-hero-card .text-muted,
+  .panel-shell .payments-hero-card .text-muted {
+    color: rgba(255, 255, 255, 0.78) !important;
+  }
+
+  .panel-shell .admin-hero-card .amount,
+  .panel-shell .admin-hero-card .hero-balance,
+  .panel-shell .wallet-hero-card .wallet-balance,
+  .panel-shell .wallet-hero-card .balance-amount,
+  .panel-shell .inv-hero-card .balance-val {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 1.45rem !important;
+  }
+
+  .panel-shell .admin-hero-card .admin-hero-badge,
+  .panel-shell .wallet-hero-card .hero-badge {
+    background: rgba(201, 168, 76, 0.22) !important;
+    color: #fde047 !important;
+    border: 1px solid rgba(201, 168, 76, 0.45) !important;
+    font-size: 9.5px !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  /* ── 5. PREVENT VERTICAL SQUEEZING & STACKED LETTERS (Problem 5) ── */
+  .panel-shell span,
+  .panel-shell a,
+  .panel-shell label,
+  .panel-shell .badge,
+  .panel-shell th,
+  .panel-shell td {
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  .panel-shell .col-actions,
+  .panel-shell .table-action-cell,
+  .panel-shell .record-actions {
+    min-width: 90px !important;
+    white-space: nowrap !important;
+  }
+
+  /* ── 6. BADGES, CHIPS, AND SUFFIXES (Problem 6) ── */
+  .panel-shell .badge,
+  .panel-shell .status-badge,
+  .panel-shell .chip,
+  .panel-shell .stat-pill,
+  .panel-shell .user-role-badge,
+  .panel-shell .sl-badge,
+  .panel-shell .plan-badge,
+  .panel-shell .site-stat-chip,
+  .panel-shell .currency,
+  .panel-shell .unit,
+  .panel-shell .suffix {
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    word-break: keep-all !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+  }
+
+  /* ── 7. UNCLIPPED HEADINGS & LABELS (Hindi Matra Safe) (Problem 7) ── */
+  .panel-shell h1,
+  .panel-shell h2,
+  .panel-shell h3,
+  .panel-shell h4,
+  .panel-shell h5,
+  .panel-shell h6,
+  .panel-shell .card-title,
+  .panel-shell .section-title,
+  .panel-shell .page-title,
+  .panel-shell label,
+  .panel-shell .form-label,
+  .panel-shell .filter-label {
+    height: auto !important;
+    min-height: unset !important;
+    max-height: none !important;
+    line-height: 1.45 !important;
+    overflow: visible !important;
+  }
+
+  /* ── 8. COMPACT LAYOUT ENGINE (Problem 8) ── */
+  /* 2-Up Tiles for Stat / KPI Grids */
+  .panel-shell .stat-grid,
+  .panel-shell .stats-row,
+  .panel-shell .kpi-grid,
+  .panel-shell .overview-cards,
+  .panel-shell .row:has(.stat-mini-card),
+  .panel-shell .row:has(.kpi-card),
+  .panel-shell .row:has(.stats-card) {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    margin: 0 0 12px 0 !important;
+  }
+
+  .panel-shell .stat-mini-card,
+  .panel-shell .kpi-card,
+  .panel-shell .stats-card {
+    padding: 10px 12px !important;
+    min-height: 68px !important;
+    margin: 0 !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  .panel-shell .stat-mini-val,
+  .panel-shell .kpi-value,
+  .panel-shell .stat-val {
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+  }
+
+  .panel-shell .stat-mini-lbl,
+  .panel-shell .kpi-label,
+  .panel-shell .stat-label {
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Horizontal Scroll Pills for Filters & Navigation Tabs */
+  .panel-shell .filter-tabs,
+  .panel-shell .nav-tabs,
+  .panel-shell .nav-pills,
+  .panel-shell .status-pills,
+  .panel-shell .tab-bar,
+  .panel-shell .sub-tabs,
+  .panel-shell .filter-row:has(.badge) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 6px !important;
+    padding: 2px 2px 8px 2px !important;
+    margin-bottom: 10px !important;
+    scrollbar-width: none !important;
+  }
+  .panel-shell .filter-tabs::-webkit-scrollbar,
+  .panel-shell .nav-tabs::-webkit-scrollbar,
+  .panel-shell .nav-pills::-webkit-scrollbar,
+  .panel-shell .status-pills::-webkit-scrollbar,
+  .panel-shell .tab-bar::-webkit-scrollbar,
+  .panel-shell .sub-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+  .panel-shell .filter-tabs > *,
+  .panel-shell .nav-tabs > *,
+  .panel-shell .nav-pills > *,
+  .panel-shell .status-pills > *,
+  .panel-shell .tab-bar > *,
+  .panel-shell .sub-tabs > * {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Compact Empty States */
+  .panel-shell .empty-state,
+  .panel-shell .no-data,
+  .panel-shell .no-records,
+  .panel-shell .empty-card {
+    padding: 24px 16px !important;
+    text-align: center !important;
+    margin: 12px 0 !important;
+    border-radius: 10px !important;
+  }
+  .panel-shell .empty-state i,
+  .panel-shell .empty-state svg,
+  .panel-shell .no-data i,
+  .panel-shell .no-records i {
+    font-size: 28px !important;
+    margin-bottom: 8px !important;
+    color: #94a3b8 !important;
+  }
+
+  /* Sticky Bottom Action Bar for Forms & Modals */
+  .panel-shell .sticky-bottom-bar,
+  .panel-shell .form-sticky-footer,
+  .panel-shell .form-actions-sticky,
+  .panel-shell .modal-footer {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 100 !important;
+    background: #ffffff !important;
+    padding: 10px 16px !important;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08) !important;
+    border-top: 1px solid #e2e8f0 !important;
+    width: 100% !important;
+  }
+
+  /* Collapsible Details/Summary for Secondary Sections (CSS-only) */
+  .panel-shell details.mobile-collapsible,
+  .panel-shell .collapsible-card {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px !important;
+    background: #ffffff !important;
+    overflow: hidden !important;
+  }
+  .panel-shell details.mobile-collapsible > summary {
+    padding: 12px 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    list-style: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #f8fafc !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-size: 13px !important;
+  }
+  .panel-shell details.mobile-collapsible > summary::after {
+    content: '\f078' !important;
+    font-family: 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-size: 11px !important;
+    color: #64748b !important;
+    transition: transform 0.2s ease !important;
+  }
+  .panel-shell details.mobile-collapsible[open] > summary::after {
+    transform: rotate(180deg) !important;
+  }
+  .panel-shell details.mobile-collapsible > .collapsible-content {
+    padding: 12px 14px !important;
+  }
+
+  /* ── 9. DEDICATED SAMPLE PAGES ENHANCEMENTS ── */
+
+  /* Page 1: Withdraw Fund & Wallet */
+  .panel-shell .wh-status-badge,
+  .panel-shell .amount-currency-badge,
+  .panel-shell .wh-currency,
+  .panel-shell .wh-tag {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .panel-shell .quick-pills-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .panel-shell .quick-amount-pill {
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+  }
+  .panel-shell .btn-proceed-cta {
+    min-height: 48px !important;
+    height: 48px !important;
+    width: 100% !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .panel-shell .cta-section {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 99 !important;
+    background: #ffffff !important;
+    padding: 10px 0 !important;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* Page 2: Dashboard Hero & Notification Banners */
+  .panel-shell .dash-welcome-hero {
+    padding: 14px 16px !important;
+    margin-bottom: 12px !important;
+    border-radius: 12px !important;
+  }
+  .panel-shell .dash-hero-title {
+    font-size: 1.25rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 6px !important;
+  }
+  .panel-shell .dash-meta-badge,
+  .panel-shell .dash-role-badge {
+    white-space: nowrap !important;
+    font-size: 10.5px !important;
+    padding: 2px 7px !important;
+  }
+  .panel-shell .missing-docs-warning-card,
+  .panel-shell .pending-approval-banner {
+    padding: 12px 14px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Page 3: Wallet Transactions & Filter Glass */
+  .panel-shell .filter-card-glass {
+    padding: 12px !important;
+    border-radius: 10px !important;
+  }
+  .panel-shell .input-group .input-group-text,
+  .panel-shell .input-group .form-control {
+    height: 42px !important;
+    min-height: 42px !important;
+  }
+
+  /* Page 4: Buyback Info & Cards */
+  .panel-shell .buyback-hero-card {
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+  }
+  .panel-shell .stat-pill-box {
+    padding: 8px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Page 5: Associate Approvals & Tabs */
+  .panel-shell .status-tabs-bar {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 8px !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 14px !important;
+    scrollbar-width: none !important;
+  }
+  .panel-shell .status-tabs-bar::-webkit-scrollbar {
+    display: none !important;
+  }
+  .panel-shell .tab-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+  }
+  .panel-shell .tab-count {
+    white-space: nowrap !important;
+    font-size: 11px !important;
+  }
+
+  /* Page 6: Team Sales Performance */
+  .panel-shell .team-sales-container .filter-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  /* Page 7: Team Member Enrollment & Capacity Slots */
+  .panel-shell .capacity-hero-card {
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .panel-shell .capacity-gauge-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .panel-shell .slots-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .panel-shell .slot-card {
+    padding: 14px 16px !important;
+    min-height: auto !important;
+  }
+  .panel-shell .slot-pill,
+  .panel-shell .slot-status-badge {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* ── 10. ALL PANELS UNIVERSAL TABLE CONTAINMENT ── */
+  .panel-shell .table-responsive,
+  .panel-shell .admin-table-scroll-container,
+  .panel-shell .dtable-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin-bottom: 12px !important;
+    border-radius: 10px !important;
+  }
+}
