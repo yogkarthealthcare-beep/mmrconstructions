@@ -349,67 +349,69 @@
         </div>
 
         <!-- Valuation Card with Unit Switching Tabs (Gaj vs Sq.Ft) -->
-        <div class="plot-price-entry-card p-3 rounded-12 bg-white border">
+        <div class="plot-price-entry-card p-2.5 rounded-8 bg-white border">
           <!-- Total Plot Dimensions Header -->
-          <div class="d-flex justify-content-between align-items-center mb-2.5 pb-2 border-bottom">
+          <div class="d-flex justify-content-between align-items-center mb-2 pb-1.5 border-bottom">
             <div>
-              <span class="fs-11 text-muted text-uppercase fw-bold">प्लॉट कुल साइज (Total Size)</span>
-              <div class="fs-13 fw-800 text-dark d-flex align-items-center gap-1.5 mt-0.5">
-                <i class="fas fa-ruler-combined text-success fs-12"></i>
-                <span>{{ plotAreaGaj }} गज (Gaj)</span>
+              <span class="fs-10 text-muted text-uppercase fw-bold">Plot Total Dimensions</span>
+              <div class="fs-12 fw-800 text-dark d-flex align-items-center gap-1.5 mt-0.5">
+                <i class="fas fa-ruler-combined text-success fs-11"></i>
+                <span>{{ plotAreaGaj }} Gaj</span>
                 <span class="text-muted fs-11 fw-normal">•</span>
-                <span class="text-muted fs-12 fw-700">{{ plotAreaSqft }} sq ft</span>
+                <span class="text-muted fs-11 fw-600">{{ plotAreaSqft }} sq ft</span>
               </div>
             </div>
-            <span *ngIf="hasAdminBasePrice" class="badge bg-success-subtle text-success border border-success-subtle fs-11 fw-700">
-              <i class="fas fa-tag me-1"></i>बेस रेट: ₹{{ selectedPlot?.base_price | number }}
+            <span *ngIf="hasAdminBasePrice" class="badge bg-success-subtle text-success border border-success-subtle fs-10 fw-700">
+              <i class="fas fa-tag me-1"></i>Base Rate: ₹{{ selectedPlot?.base_price | number }}
             </span>
-            <span *ngIf="!hasAdminBasePrice" class="badge bg-amber-subtle text-warning-emphasis border border-warning-subtle fs-11 fw-700">
-              <i class="fas fa-calculator me-1"></i>रेट तय करके डालें
+            <span *ngIf="!hasAdminBasePrice" class="badge bg-amber-subtle text-warning-emphasis border border-warning-subtle fs-10 fw-700">
+              <i class="fas fa-calculator me-1"></i>Custom Rate Setup
             </span>
           </div>
 
-          <!-- Unit Selector Segmented Tabs (Gaj vs Sq.Ft) -->
-          <div class="unit-selector-wrapper mb-3">
-            <label class="form-label fs-11 fw-bold text-uppercase text-muted mb-1.5 d-flex align-items-center justify-content-between">
-              <span><i class="fas fa-exchange-alt me-1 text-primary"></i> गणना यूनिट चुनें (Select Unit)</span>
-              <span class="badge bg-light text-secondary border fs-10 fw-normal">
-                {{ pricingUnit === 'GAJ' ? 'गज आधारित' : 'स्क्वायर फीट आधारित' }}
+          <!-- Extra-Small Unit Selector Segmented Tabs (Gaj vs Sq.Ft) -->
+          <div class="unit-selector-wrapper mb-2.5">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <label class="form-label fs-10 fw-bold text-uppercase text-muted mb-0">
+                <i class="fas fa-exchange-alt me-1 text-primary"></i> Select Pricing Unit
+              </label>
+              <span class="badge bg-light text-secondary border fs-10 fw-normal py-0.5 px-1.5">
+                {{ pricingUnit === 'GAJ' ? 'Gaj Based' : 'Sq. Ft Based' }}
               </span>
-            </label>
-            <div class="pricing-unit-segmented">
+            </div>
+            <div class="pricing-unit-segmented-xs">
               <button
                 type="button"
-                class="unit-segment-btn"
+                class="unit-segment-btn-xs"
                 [class.active]="pricingUnit === 'GAJ'"
                 (click)="setPricingUnit('GAJ')">
-                <i class="fas fa-vector-square me-1.5"></i>
-                <span class="segment-title">गज (Gaj / Sq.Yd)</span>
+                <i class="fas fa-vector-square me-1"></i>
+                <span>Gaj (Sq. Yd)</span>
               </button>
               <button
                 type="button"
-                class="unit-segment-btn"
+                class="unit-segment-btn-xs"
                 [class.active]="pricingUnit === 'SQFT'"
                 (click)="setPricingUnit('SQFT')">
-                <i class="fas fa-th me-1.5"></i>
-                <span class="segment-title">स्क्वायर फीट (Sq. Ft)</span>
+                <i class="fas fa-th me-1"></i>
+                <span>Square Feet (Sq. Ft)</span>
               </button>
             </div>
           </div>
 
-          <!-- FORM A: GAJ FORM (When गज is selected) -->
+          <!-- FORM A: GAJ FORM (When Gaj is selected) -->
           <div *ngIf="pricingUnit === 'GAJ'" class="unit-calculation-form animate-fade-in">
             <div class="row g-2 mb-2">
               <!-- Field 1: Area in Gaj -->
               <div class="col-6">
                 <label class="form-label fs-11 fw-bold text-dark mb-1">
-                  ज़रूरी ज़मीन / एरिया (गज) <span class="text-danger">*</span>
+                  Required Area (Gaj) <span class="text-danger">*</span>
                 </label>
-                <div class="custom-calc-input-group">
-                  <span class="calc-prefix-icon"><i class="fas fa-ruler-combined text-muted"></i></span>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light text-muted px-2"><i class="fas fa-ruler-combined fs-11"></i></span>
                   <input
                     type="number"
-                    class="form-control calc-input"
+                    class="form-control fw-bold fs-12 text-dark px-2"
                     [(ngModel)]="bookingAreaGaj"
                     (ngModelChange)="onGajCalculationChange()"
                     placeholder="e.g. {{ plotAreaGaj || 1 }}"
@@ -417,58 +419,58 @@
                     step="any"
                     required
                   />
-                  <span class="calc-suffix-pill">गज</span>
+                  <span class="input-group-text bg-light text-muted fs-11 fw-bold px-2">Gaj</span>
                 </div>
                 <small class="text-muted fs-10 d-block mt-0.5">
-                  प्लॉट साइज: {{ plotAreaGaj }} गज
+                  Plot Total: {{ plotAreaGaj }} Gaj
                 </small>
               </div>
 
               <!-- Field 2: Rate per Gaj -->
               <div class="col-6">
                 <label class="form-label fs-11 fw-bold text-dark mb-1">
-                  1 गज का रेट (₹/गज) <span class="text-danger">*</span>
+                  Rate per Gaj (₹/Gaj) <span class="text-danger">*</span>
                 </label>
-                <div class="custom-calc-input-group">
-                  <span class="calc-prefix-icon currency-sym">₹</span>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-success-subtle text-success fw-bold px-2">₹</span>
                   <input
                     type="number"
-                    class="form-control calc-input fw-bold"
+                    class="form-control fw-bold fs-12 text-dark px-2"
                     [(ngModel)]="ratePerGaj"
                     (ngModelChange)="onGajCalculationChange()"
-                    placeholder="₹ प्रति गज"
+                    placeholder="₹ Rate / Gaj"
                     min="1"
                     step="any"
                     required
                   />
-                  <span class="calc-suffix-pill">/ गज</span>
+                  <span class="input-group-text bg-light text-muted fs-11 fw-bold px-2">/ Gaj</span>
                 </div>
                 <small class="text-muted fs-10 d-block mt-0.5">
-                  प्रति गज तय रेट
+                  Agreed Rate per Gaj
                 </small>
               </div>
             </div>
 
             <!-- Conversion Equivalents Pill -->
-            <div class="conversion-preview-pill mb-2.5">
+            <div class="conversion-preview-pill-sm mb-2">
               <i class="fas fa-info-circle text-primary me-1"></i>
-              <span>समकक्ष Sq.Ft: <strong>{{ bookingAreaSqft || 0 }} sq ft</strong> &#64; <strong>₹{{ (ratePerSqft || 0) | number:'1.2-2' }}/sq ft</strong></span>
+              <span>Equivalent in Sq. Ft: <strong>{{ bookingAreaSqft || 0 }} sq ft</strong> &#64; <strong>₹{{ (ratePerSqft || 0) | number:'1.2-2' }}/sq ft</strong></span>
             </div>
           </div>
 
-          <!-- FORM B: SQ.FT FORM (When स्क्वायर फीट is selected) -->
+          <!-- FORM B: SQ.FT FORM (When Sq.Ft is selected) -->
           <div *ngIf="pricingUnit === 'SQFT'" class="unit-calculation-form animate-fade-in">
             <div class="row g-2 mb-2">
               <!-- Field 1: Area in Sq.Ft -->
               <div class="col-6">
                 <label class="form-label fs-11 fw-bold text-dark mb-1">
-                  ज़रूरी ज़मीन / एरिया (Sq.Ft) <span class="text-danger">*</span>
+                  Required Area (Sq. Ft) <span class="text-danger">*</span>
                 </label>
-                <div class="custom-calc-input-group">
-                  <span class="calc-prefix-icon"><i class="fas fa-th text-muted"></i></span>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light text-muted px-2"><i class="fas fa-th fs-11"></i></span>
                   <input
                     type="number"
-                    class="form-control calc-input"
+                    class="form-control fw-bold fs-12 text-dark px-2"
                     [(ngModel)]="bookingAreaSqft"
                     (ngModelChange)="onSqftCalculationChange()"
                     placeholder="e.g. {{ plotAreaSqft || 9 }}"
@@ -476,74 +478,74 @@
                     step="any"
                     required
                   />
-                  <span class="calc-suffix-pill">sq ft</span>
+                  <span class="input-group-text bg-light text-muted fs-11 fw-bold px-2">sq ft</span>
                 </div>
                 <small class="text-muted fs-10 d-block mt-0.5">
-                  प्लॉट साइज: {{ plotAreaSqft }} sq ft
+                  Plot Total: {{ plotAreaSqft }} sq ft
                 </small>
               </div>
 
               <!-- Field 2: Rate per Sq.Ft -->
               <div class="col-6">
                 <label class="form-label fs-11 fw-bold text-dark mb-1">
-                  1 Sq.Ft का रेट (₹) <span class="text-danger">*</span>
+                  Rate per Sq. Ft (₹) <span class="text-danger">*</span>
                 </label>
-                <div class="custom-calc-input-group">
-                  <span class="calc-prefix-icon currency-sym">₹</span>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-success-subtle text-success fw-bold px-2">₹</span>
                   <input
                     type="number"
-                    class="form-control calc-input fw-bold"
+                    class="form-control fw-bold fs-12 text-dark px-2"
                     [(ngModel)]="ratePerSqft"
                     (ngModelChange)="onSqftCalculationChange()"
-                    placeholder="₹ प्रति sq ft"
+                    placeholder="₹ Rate / sq ft"
                     min="0.1"
                     step="0.01"
                     required
                   />
-                  <span class="calc-suffix-pill">/ sq ft</span>
+                  <span class="input-group-text bg-light text-muted fs-11 fw-bold px-2">/ sq ft</span>
                 </div>
                 <small class="text-muted fs-10 d-block mt-0.5">
-                  प्रति sq ft तय रेट
+                  Agreed Rate per Sq. Ft
                 </small>
               </div>
             </div>
 
             <!-- Conversion Equivalents Pill -->
-            <div class="conversion-preview-pill mb-2.5">
+            <div class="conversion-preview-pill-sm mb-2">
               <i class="fas fa-info-circle text-primary me-1"></i>
-              <span>समकक्ष गज: <strong>{{ bookingAreaGaj || 0 }} गज</strong> &#64; <strong>₹{{ (ratePerGaj || 0) | number:'1.2-2' }}/गज</strong></span>
+              <span>Equivalent in Gaj: <strong>{{ bookingAreaGaj || 0 }} Gaj</strong> &#64; <strong>₹{{ (ratePerGaj || 0) | number:'1.2-2' }}/Gaj</strong></span>
             </div>
           </div>
 
           <!-- Multiplication Breakdown Formula Pill -->
-          <div class="formula-breakdown-card p-2 rounded-8 mb-3">
+          <div class="formula-breakdown-card-sm p-1.5 rounded-6 mb-2.5">
             <div class="d-flex justify-content-between align-items-center">
-              <span class="fs-11 fw-bold text-dark">
-                <i class="fas fa-calculator text-success me-1"></i>
+              <span class="fs-11 fw-bold text-dark d-flex align-items-center gap-1">
+                <i class="fas fa-calculator text-success fs-11"></i>
                 <ng-container *ngIf="pricingUnit === 'GAJ'">
-                  {{ bookingAreaGaj || 0 }} गज &times; ₹{{ (ratePerGaj || 0) | number }}
+                  {{ bookingAreaGaj || 0 }} Gaj &times; ₹{{ (ratePerGaj || 0) | number }}
                 </ng-container>
                 <ng-container *ngIf="pricingUnit === 'SQFT'">
                   {{ bookingAreaSqft || 0 }} sq ft &times; ₹{{ (ratePerSqft || 0) | number:'1.0-2' }}
                 </ng-container>
               </span>
-              <span class="badge bg-success text-white fs-11 fw-800">
+              <span class="badge bg-success text-white fs-11 fw-800 px-2 py-1">
                 = ₹{{ totalPlotPrice | number }}
               </span>
             </div>
           </div>
 
           <!-- Total Plot Price (Agreed) Input -->
-          <div class="mb-3">
-            <label class="form-label fs-12 fw-800 text-dark mb-1 d-flex justify-content-between align-items-center">
+          <div class="mb-2.5">
+            <label class="form-label fs-11 fw-800 text-dark mb-1 d-flex justify-content-between align-items-center">
               <span><i class="fas fa-handshake text-success me-1"></i>Total Plot Price (Agreed) <span class="text-danger">*</span></span>
-              <span class="badge bg-light text-muted border fs-10 fw-normal">अंतिम मूल्य</span>
+              <span class="badge bg-light text-muted border fs-10 fw-normal">Final Payable</span>
             </label>
-            <div class="custom-calc-input-group price-main-group">
-              <span class="calc-prefix-icon currency-sym-lg">₹</span>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-success-subtle text-success fw-bold px-2.5 fs-13">₹</span>
               <input
                 type="number"
-                class="form-control calc-input-lg fw-bold text-dark"
+                class="form-control fw-800 fs-13 text-dark px-2"
                 [(ngModel)]="customPlotPrice"
                 (ngModelChange)="onCustomPlotPriceInput()"
                 placeholder="Total Plot Price"
@@ -554,24 +556,24 @@
           </div>
 
           <!-- 3 Permanent Summary Lines -->
-          <div class="valuation-summary-card p-2.5 rounded-8 bg-light border">
-            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom">
-              <span class="fs-12 fw-700 text-muted d-flex align-items-center gap-1.5">
-                <i class="fas fa-tag text-muted fs-11"></i> Total Plot Price (Agreed):
+          <div class="valuation-summary-card p-2 rounded-6 bg-light border">
+            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+              <span class="fs-11 fw-600 text-muted d-flex align-items-center gap-1">
+                <i class="fas fa-tag text-muted fs-10"></i> Total Plot Price (Agreed):
               </span>
-              <span class="fs-13 fw-800 text-dark">₹{{ totalPlotPrice | number }}</span>
+              <span class="fs-12 fw-800 text-dark">₹{{ totalPlotPrice | number }}</span>
             </div>
-            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom">
-              <span class="fs-12 fw-700 text-primary d-flex align-items-center gap-1.5">
-                <i class="fas fa-wallet text-primary fs-11"></i> Paying Now:
+            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+              <span class="fs-11 fw-600 text-primary d-flex align-items-center gap-1">
+                <i class="fas fa-wallet text-primary fs-10"></i> Paying Now:
               </span>
-              <span class="fs-13 fw-800 text-primary">₹{{ (agreedAmount || advanceAmount || 0) | number }}</span>
+              <span class="fs-12 fw-800 text-primary">₹{{ (agreedAmount || advanceAmount || 0) | number }}</span>
             </div>
-            <div class="d-flex justify-content-between align-items-center py-1.5">
-              <span class="fs-12 fw-700 text-danger d-flex align-items-center gap-1.5">
-                <i class="fas fa-clock text-danger fs-11"></i> Remaining Balance:
+            <div class="d-flex justify-content-between align-items-center py-1">
+              <span class="fs-11 fw-600 text-danger d-flex align-items-center gap-1">
+                <i class="fas fa-clock text-danger fs-10"></i> Remaining Balance:
               </span>
-              <span class="fs-13 fw-800 text-danger">
+              <span class="fs-12 fw-800 text-danger">
                 ₹{{ ((totalPlotPrice - (agreedAmount || advanceAmount || 0)) > 0 ? (totalPlotPrice - (agreedAmount || advanceAmount || 0)) : 0) | number }}
               </span>
             </div>
