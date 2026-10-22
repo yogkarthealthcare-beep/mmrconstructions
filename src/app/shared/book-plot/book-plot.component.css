@@ -1293,10 +1293,6 @@
   gap: 10px;
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   5. REDESIGNED FULL-WIDTH MAP & BOOKING DRAWER / SLIDE
-   ═══════════════════════════════════════════════════════════════════ */
-
 .booking-workspace-map-only {
   display: block;
   width: 100%;
@@ -1309,12 +1305,16 @@
   border-radius: 14px;
 }
 
-/* Drawer Backdrop Overlay */
+/* ═══════════════════════════════════════════════════════════════════
+   REDESIGNED BOOK PLOT DRAWER (4 CLEAR STEPS & MODERN UI/UX)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Backdrop Overlay */
 .booking-drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(3px);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
   z-index: 1040;
   animation: drawerFadeIn 0.2s ease-out;
 }
@@ -1333,27 +1333,28 @@
   width: min(500px, 100vw);
   height: 100vh;
   background: #ffffff;
-  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.2);
+  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.18);
   z-index: 1050;
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .booking-drawer.open {
   transform: translateX(0);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .booking-drawer {
     top: auto;
     bottom: 0;
     width: 100vw;
     height: auto;
-    max-height: 88vh;
-    border-radius: 20px 20px 0 0;
+    max-height: 95vh;
+    border-radius: 18px 18px 0 0;
     transform: translateY(100%);
   }
   .booking-drawer.open {
@@ -1361,40 +1362,51 @@
   }
 }
 
-/* Drawer Header */
+/* ── Sticky Drawer Header ───────────────────────────────────────── */
 .drawer-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid #f1f5f9;
-  background: linear-gradient(135deg, #f8fafc, #ffffff);
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .drawer-header {
+    padding: 14px 16px;
+  }
 }
 
 .drawer-plot-title {
-  font-size: 24px;
-  font-weight: 900;
+  font-size: 20px;
+  font-weight: 800;
   color: #0f172a;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
 }
 
 .drawer-plot-specs {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  color: #64748b;
+  font-size: 12.5px;
 }
 
 .btn-close-drawer {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1px solid #e2e8f0;
-  background: #ffffff;
+  background: #f8fafc;
   color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 15px;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .btn-close-drawer:hover {
@@ -1404,29 +1416,148 @@
   transform: scale(1.05);
 }
 
-/* Drawer Body */
+/* ── Scrollable Drawer Body (Single Scroll, 4 Steps) ────────────── */
 .drawer-body {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 24px;
+  overflow-x: hidden;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
 }
 
-.form-label-tag {
-  font-size: 11px;
+@media (max-width: 640px) {
+  .drawer-body {
+    padding: 16px;
+    gap: 20px;
+  }
+}
+
+/* ── Step Section Container & Header ────────────────────────────── */
+.drawer-step-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.drawer-step-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.step-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #166534;
+  color: #ffffff;
+  font-size: 12.5px;
   font-weight: 800;
-  text-transform: uppercase;
-  color: #475569;
-  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-/* Booking For Segmented Selector */
+.step-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── High-Contrast Form Inputs & Labels (8px Grid) ───────────────── */
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.form-control,
+.form-select {
+  min-height: 44px;
+  height: 44px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #0f172a;
+  background-color: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+@media (max-width: 640px) {
+  .form-control,
+  .form-select {
+    font-size: 16px; /* Prevents automatic zoom on iOS */
+  }
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+  outline: none;
+}
+
+.input-group .form-control {
+  border-radius: 0;
+}
+
+.input-group .form-control:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.input-group .form-control:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.input-group-text {
+  min-height: 44px;
+  height: 44px;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 12px;
+}
+
+.form-helper-text {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* ── Step 1: Associate Booking For Selector ──────────────────────── */
 .booking-for-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 6px;
   background: #f1f5f9;
-  padding: 6px;
-  border-radius: 10px;
+  padding: 4px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
 }
 
@@ -1434,15 +1565,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 14px;
-  border-radius: 8px;
+  min-height: 40px;
+  border-radius: 6px;
   border: none;
   background: transparent;
   color: #64748b;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .for-option-btn:hover {
@@ -1452,204 +1583,385 @@
 .for-option-btn.active {
   background: #ffffff;
   color: #166534;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-/* Booking Summary Card */
-.booking-summary-card {
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px 20px;
-  margin-top: 14px;
+/* ── Step 2: Segmented Unit Control (Gaj vs Sq.Ft) ───────────────── */
+.unit-segment-control {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
-.summary-heading {
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #334155;
-  margin-bottom: 12px;
-  letter-spacing: 0.5px;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 7px 0;
+.unit-segment-btn {
+  padding: 8px 12px;
+  min-height: 38px;
   font-size: 13px;
-  border-bottom: 1px dashed #e2e8f0;
-}
-
-.summary-row:last-child {
-  border-bottom: none;
-}
-
-.summary-label {
-  color: #64748b;
-  font-weight: 500;
-}
-
-.summary-val {
-  color: #0f172a;
   font-weight: 700;
-  text-align: right;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Drawer Footer */
-.drawer-footer {
-  padding: 16px 24px;
-  border-top: 1px solid #f1f5f9;
+.unit-segment-btn:hover {
+  color: #0f172a;
+}
+
+.unit-segment-btn.active {
   background: #ffffff;
-  flex-shrink: 0;
-  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03);
+  color: #166534;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-/* ── 3-Mode Payment System Styles ── */
-.payment-option-card {
+.unit-conversion-line {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0369a1;
+  padding: 7px 12px;
+  background: #f0f9ff;
+  border-radius: 6px;
+  border: 1px solid #bae6fd;
+  line-height: 1.4;
+}
+
+.calculation-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+/* ── Total Plot Price (Agreed) - Largest & Most Prominent ─────────── */
+.total-plot-price-box {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: 10px;
+}
+
+.total-price-input-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.total-price-input-group .rupee-symbol {
+  font-size: 22px;
+  font-weight: 800;
+  color: #166534;
+  background: #dcfce7;
+  border-color: #86efac;
+  padding: 0 16px;
+  min-height: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+}
+
+.total-price-input {
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  color: #166534 !important;
+  min-height: 52px !important;
+  height: 52px !important;
+  border-color: #86efac !important;
+  background-color: #ffffff !important;
+}
+
+.total-price-input:focus {
+  border-color: #16a34a !important;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25) !important;
+}
+
+/* ── Step 3: Payment Options ─────────────────────────────────────── */
+.payment-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .payment-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.payment-mode-card {
   background: #ffffff;
   border: 2px solid #e2e8f0;
   border-radius: 10px;
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-}
-
-.payment-option-card:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.payment-option-card.selected {
-  border-color: #166534;
-  background: #f0fdf4;
-  box-shadow: 0 0 0 2px rgba(22, 101, 52, 0.15);
-}
-
-.emi-plan-selector-box {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
-
-.company-bank-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
-
-.bank-details-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-
-@media (max-width: 576px) {
-  .bank-details-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.live-payment-summary-box {
-  background: linear-gradient(135deg, #fefce8 0%, #fffbeb 100%);
-  border: 1px solid rgba(201, 168, 76, 0.4);
-}
-
-.bg-amber-50 {
-  background-color: #fffbeb !important;
-}
-
-/* ── Valuation & Pricing Card (Compact & Perfectly Aligned) ── */
-.plot-price-entry-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-}
-
-/* Extra-small Unit Selector Segmented Tabs (Gaj vs Sq.Ft) */
-.pricing-unit-segmented-xs {
-  display: flex;
-  background: #f1f5f9;
-  border-radius: 6px;
-  padding: 2px;
-  gap: 2px;
-  border: 1px solid #e2e8f0;
-}
-
-.unit-segment-btn-xs {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3px 8px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #475569;
-  background: transparent;
-  border: none;
-  border-radius: 4px;
+  padding: 12px 14px;
   cursor: pointer;
   transition: all 0.15s ease;
-  user-select: none;
-  line-height: 1.2;
-}
-
-.unit-segment-btn-xs:hover {
-  color: #1e293b;
-  background: rgba(255, 255, 255, 0.7);
-}
-
-.unit-segment-btn-xs.active {
-  background: #ffffff;
-  color: #166534;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.unit-segment-btn-xs.active i {
-  color: #166534;
-}
-
-/* Compact Conversion preview pill */
-.conversion-preview-pill-sm {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+  user-select: none;
+  min-height: 68px;
+  box-sizing: border-box;
+}
+
+.payment-mode-card:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.payment-mode-card.selected {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  box-shadow: 0 0 0 1px #16a34a;
+}
+
+.payment-mode-top {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  background: #f0f9ff;
-  border: 1px dashed #bae6fd;
-  border-radius: 5px;
-  font-size: 10.5px;
-  color: #0369a1;
+}
+
+.payment-mode-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.payment-mode-card.selected .payment-mode-title {
+  color: #166534;
+}
+
+.mode-check-icon {
+  color: #16a34a;
+  font-size: 15px;
+}
+
+.mode-uncheck-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid #cbd5e1;
+  display: inline-block;
+}
+
+.payment-mode-desc {
+  font-size: 11.5px;
+  color: #64748b;
   line-height: 1.3;
 }
 
-/* Compact Formula Breakdown Card */
-.formula-breakdown-card-sm {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+/* Quick Chips */
+.quick-chips-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.valuation-summary-card {
-  background: #f8fafc;
+.quick-chip-btn {
+  flex: 1;
+  min-width: 80px;
+  min-height: 38px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-chip-btn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+/* Collapsible Bank Details */
+.company-bank-accordion {
   border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-in-out;
+.bank-accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  background: #f8fafc;
+  user-select: none;
+  list-style: none;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(2px);
+.bank-accordion-header::-webkit-details-marker {
+  display: none;
+}
+
+.bank-key-val-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bank-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.no-cash-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  color: #92400e;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* ── Step 4: Single Unified Review Card ─────────────────────────── */
+.unified-review-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.amounts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.amount-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.amount-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.3px;
+}
+
+.amount-value {
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.amount-value.total-val {
+  color: #0f172a;
+}
+
+.amount-value.pay-val {
+  color: #166534;
+}
+
+.amount-value.rem-val {
+  color: #dc2626;
+}
+
+.review-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.review-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 13px;
+  gap: 8px;
+}
+
+.review-label {
+  color: #64748b;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.review-val {
+  color: #0f172a;
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* ── Sticky Action Bar at Bottom ────────────────────────────────── */
+.drawer-footer {
+  padding: 16px 24px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+  flex-shrink: 0;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 640px) {
+  .drawer-footer {
+    padding: 14px 16px;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
+.submit-booking-btn {
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.submit-booking-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #15803d, #166534);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
 
+.submit-booking-btn:disabled {
+  background: #cbd5e1;
+  opacity: 0.8;
+  cursor: not-allowed;
+}

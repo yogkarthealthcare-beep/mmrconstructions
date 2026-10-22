@@ -157,21 +157,19 @@
 
   <!-- 3. Booking Drawer / Slide Panel -->
   <aside class="booking-drawer" [class.open]="isDrawerOpen" *ngIf="!bookingSuccess">
-    <!-- Drawer Header -->
+    <!-- Drawer Header (Sticky & Compact) -->
     <div class="drawer-header">
-      <div class="d-flex justify-content-between align-items-start w-100">
-        <div>
-          <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-success-subtle text-success border border-success-subtle fs-12 fw-bold">
-              <i class="fas fa-check-circle me-1"></i> Available Unit
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="drawer-header-info">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <h2 class="drawer-plot-title mb-0">Plot {{ selectedPlot?.plot_number }}</h2>
+            <span class="text-muted fs-13">• {{ site?.site_name }}</span>
+            <span class="badge bg-success-subtle text-success border border-success-subtle fs-11 fw-bold">
+              <i class="fas fa-check-circle me-1"></i> Available
             </span>
-            <span class="text-muted fs-12">{{ site?.site_name }}</span>
           </div>
-          <h2 class="drawer-plot-title mb-0">Plot {{ selectedPlot?.plot_number }}</h2>
-          <div class="drawer-plot-specs text-muted fs-12 mt-1">
-            <span><i class="fas fa-ruler-combined me-1"></i> {{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj</span>
-            <span class="mx-2">•</span>
-            <span [class.text-success]="isPlotPriceValid" [class.text-warning-emphasis]="!isPlotPriceValid" class="fw-bold"><i class="fas fa-tag me-1"></i> Total Price: ₹{{ totalPlotPrice | number }} <span *ngIf="!isPlotPriceValid" class="badge bg-warning text-dark ms-1">Price Required</span></span>
+          <div class="drawer-plot-specs text-muted fs-12 mt-0.5">
+            <span>{{ plotAreaGaj }} Gaj ({{ plotAreaSqft }} sq ft)</span>
           </div>
         </div>
 
@@ -185,14 +183,55 @@
       </div>
     </div>
 
-    <!-- Drawer Body (Scrollable) -->
+    <!-- Drawer Body (Scrollable 4-Step Form) -->
     <div class="drawer-body">
-      <!-- ── Associate Booking Workflow ── -->
-      <ng-container *ngIf="isAssociate">
-        <!-- Exactly One Booking For Selector with 2 Options: Team Member vs Self / Direct -->
-        <div class="booking-for-section mb-4">
-          <label class="form-label-tag mb-2">Booking For <span class="text-danger">*</span></label>
-          <div class="booking-for-selector">
+      <!-- ═══════════════════════════════════════════════════════
+           STEP 1: BUYER INFORMATION
+           ═══════════════════════════════════════════════════════ -->
+      <section class="drawer-step-section">
+        <div class="step-header">
+          <div class="step-badge">1</div>
+          <h3 class="step-title">Buyer Information</h3>
+        </div>
+
+        <!-- Team Member Panel (/team-member/book-plot) -->
+        <div *ngIf="isTeamMember" class="step-content">
+          <div class="form-group mb-0">
+            <label class="form-label d-flex justify-content-between align-items-center">
+              <span>Select Buyer / Customer <span class="text-danger">*</span></span>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-11" *ngIf="selectedTeamMemberBuyerKey === 'SELF'">
+                <i class="fas fa-user-check me-1"></i> Self Booking
+              </span>
+            </label>
+            <select
+              class="form-select custom-select-lg"
+              [ngModel]="selectedTeamMemberBuyerKey"
+              (ngModelChange)="onSelectTeamMemberBuyer($event)">
+              <option value="" disabled>-- Choose Buyer (Self or Customer) --</option>
+              <optgroup label="Team Member (Book for Self)">
+                <option value="SELF">
+                  ★ {{ currentUser?.full_name || 'My Self' }} (Self - {{ currentUser?.member_id || 'Team Member' }})
+                </option>
+              </optgroup>
+              <optgroup label="Direct Registered Customers" *ngIf="myCustomers.length > 0">
+                <option *ngFor="let c of myCustomers" [value]="'CUS_' + c.user_id">
+                  {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
+                </option>
+              </optgroup>
+            </select>
+            <div class="form-helper-text mt-1 text-muted fs-12">
+              Select your own account for Self Booking, or choose any customer registered under you.
+            </div>
+            <div *ngIf="loadingCustomers" class="text-muted small mt-1">
+              <i class="fas fa-spinner fa-spin me-1"></i> Loading your registered customers...
+            </div>
+          </div>
+        </div>
+
+        <!-- Associate Booking Workflow (/associate/...) -->
+        <div *ngIf="isAssociate" class="step-content">
+          <!-- Associate Booking For Mode Switcher -->
+          <div class="booking-for-selector mb-3">
             <button
               type="button"
               class="for-option-btn"
@@ -210,208 +249,130 @@
               <span>Self / Direct</span>
             </button>
           </div>
-        </div>
 
-        <!-- ───────────────────────────────────────────────────────────── -->
-        <!-- WORKFLOW A: Team Member Booking                               -->
-        <!-- ───────────────────────────────────────────────────────────── -->
-        <!-- WORKFLOW A: Team Member Booking -->
-        <div *ngIf="bookingForMode === 'TEAM_MEMBER'" class="workflow-content">
-          <!-- Field 1: Select Team Member -->
-          <div class="form-group mb-3">
-            <label class="form-label fw-bold fs-13">
-              <i class="fas fa-user-tie text-primary me-1"></i> 1. Select Team Member <span class="text-danger">*</span>
-            </label>
-            <select
-              class="form-select custom-select-lg"
-              [(ngModel)]="selectedTeamMemberId"
-              (change)="onTeamMemberChange()">
-              <option [ngValue]="null" disabled>-- Choose Team Member --</option>
-              <option *ngFor="let tm of teamMembers" [ngValue]="tm.user_id">
-                {{ tm.member_id }} — {{ tm.full_name }} ({{ tm.mobile_no || 'Mobile N/A' }})
-              </option>
-            </select>
-            <div *ngIf="loadingTeamMembers" class="text-muted small mt-1">
-              <i class="fas fa-spinner fa-spin me-1"></i> Loading authorized team members...
-            </div>
-            <div *ngIf="teamMembers.length === 0 && !loadingTeamMembers" class="alert alert-warning py-2 px-3 mt-2 fs-12 mb-0">
-              <i class="fas fa-exclamation-triangle me-1"></i> No active Team Members found in your downline team.
-            </div>
-          </div>
-
-          <!-- Field 2: Select Buyer (Team Member Themselves OR Customer under Team Member) -->
-          <div class="form-group mb-3" *ngIf="selectedTeamMemberId">
-            <label class="form-label fw-bold fs-13 mb-1">
-              <i class="fas fa-user-check text-success me-1"></i> 2. Select Buyer (Team Member / Customer) <span class="text-danger">*</span>
-            </label>
-            <select
-              class="form-select custom-select-lg"
-              [disabled]="loadingTeamMemberCustomers"
-              [ngModel]="selectedBuyerKey"
-              (ngModelChange)="onBuyerKeyChange($event)">
-              <option value="" disabled>-- Choose Buyer --</option>
-              <optgroup label="Team Member (Book for Self)">
-                <option [value]="'TM_' + selectedTeamMember?.user_id">
-                  ⭐ {{ selectedTeamMember?.full_name }} (Self - {{ selectedTeamMember?.member_id }})
+          <!-- WORKFLOW A: Team Member Booking -->
+          <div *ngIf="bookingForMode === 'TEAM_MEMBER'" class="workflow-content">
+            <div class="form-group mb-3">
+              <label class="form-label">
+                Select Team Member <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select custom-select-lg"
+                [(ngModel)]="selectedTeamMemberId"
+                (change)="onTeamMemberChange()">
+                <option [ngValue]="null" disabled>-- Choose Team Member --</option>
+                <option *ngFor="let tm of teamMembers" [ngValue]="tm.user_id">
+                  {{ tm.member_id }} — {{ tm.full_name }} ({{ tm.mobile_no || 'Mobile N/A' }})
                 </option>
-              </optgroup>
-              <optgroup label="Customers (Registered under this Team Member)" *ngIf="teamMemberCustomers.length > 0">
-                <option *ngFor="let c of teamMemberCustomers" [value]="'CUS_' + c.user_id">
-                  👤 {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
-                </option>
-              </optgroup>
-              <optgroup label="Customers" *ngIf="teamMemberCustomers.length === 0 && !loadingTeamMemberCustomers">
-                <option value="" disabled>No customers registered under this Team Member yet</option>
-              </optgroup>
-            </select>
-            <div *ngIf="loadingTeamMemberCustomers" class="text-muted small mt-1">
-              <i class="fas fa-spinner fa-spin me-1"></i> Loading customers for {{ selectedTeamMember?.full_name }}...
-            </div>
-          </div>
-        </div>
-
-        <!-- WORKFLOW B: Self / Direct Booking -->
-        <div *ngIf="bookingForMode === 'SELF_DIRECT'" class="workflow-content">
-          <!-- Field 1: Customer / Booking Entity Dropdown -->
-          <div class="form-group mb-3">
-            <label class="form-label fw-bold fs-13">
-              <i class="fas fa-address-book text-success me-1"></i> 1. Select Customer / Booking Entity <span class="text-danger">*</span>
-            </label>
-            <select
-              class="form-select custom-select-lg"
-              [ngModel]="selectedSelfOrDirectKey"
-              (ngModelChange)="onSelfOrDirectEntityChange($event)">
-              <option value="" disabled>-- Select Associate (Self) or Direct Customer --</option>
-              <option value="SELF">
-                ★ [Self] {{ currentUser?.member_id }} — {{ currentUser?.full_name }} (Associate)
-              </option>
-              <optgroup label="Direct Customers" *ngIf="myCustomers.length > 0">
-                <option *ngFor="let c of myCustomers" [value]="'CUS_' + c.user_id">
-                  {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
-                </option>
-              </optgroup>
-            </select>
-            <small class="text-muted fs-11">Choose either your own Associate record (Self) or one of your direct customers.</small>
-            <div *ngIf="myCustomers.length === 0 && !loadingCustomers" class="text-muted small mt-1">
-              No direct customers registered yet. You can select your own Associate account for Self booking.
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- ── Team Member Panel (/team-member/book-plot) ── -->
-      <ng-container *ngIf="isTeamMember">
-        <div class="workflow-content">
-          <div class="form-group mb-3">
-            <label class="form-label fw-bold fs-13 mb-1">
-              <i class="fas fa-user-check text-success me-1"></i> Select Customer / Party <span class="text-danger">*</span>
-            </label>
-            <select
-              class="form-select custom-select-lg"
-              [ngModel]="selectedTeamMemberBuyerKey"
-              (ngModelChange)="onSelectTeamMemberBuyer($event)">
-              <option value="" disabled>-- Choose Buyer (Self or Customer) --</option>
-              <optgroup label="Team Member (Book for Self)">
-                <option value="SELF">
-                  ⭐ {{ currentUser?.full_name || 'My Self' }} (Self - {{ currentUser?.member_id || 'Team Member' }})
-                </option>
-              </optgroup>
-              <optgroup label="Direct Registered Customers" *ngIf="myCustomers.length > 0">
-                <option *ngFor="let c of myCustomers" [value]="'CUS_' + c.user_id">
-                  👤 {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
-                </option>
-              </optgroup>
-            </select>
-            <small class="text-muted fs-11 d-block mt-1">
-              Select your own account for <strong>Self Booking</strong>, or choose any customer registered under you.
-            </small>
-            <div *ngIf="loadingCustomers" class="text-muted small mt-1">
-              <i class="fas fa-spinner fa-spin me-1"></i> Loading your registered customers...
-            </div>
-            <div *ngIf="myCustomers.length === 0 && !loadingCustomers" class="alert alert-info py-1.5 px-2.5 mt-2 fs-11 mb-0">
-              <i class="fas fa-info-circle me-1"></i> No direct customers registered yet. You can book for yourself (Self).
-            </div>
-          </div>
-        </div>
-      </ng-container>
-      <!-- ── Plot Valuation & Pricing Section ── -->
-      <div class="form-section-card p-3 mb-3" *ngIf="selectedPlot">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <div class="section-title-tag mb-0">
-            <i class="fas fa-tag text-success me-1"></i> Plot Valuation &amp; Price <span class="text-danger">*</span>
-          </div>
-          <span *ngIf="hasAdminBasePrice" class="badge bg-success-subtle text-success border border-success-subtle fs-11 fw-700">
-            <i class="fas fa-check-circle me-1"></i> Admin Pre-Configured
-          </span>
-          <span *ngIf="!hasAdminBasePrice" class="badge bg-warning-subtle text-warning-emphasis border border-warning fs-11 fw-700">
-            <i class="fas fa-edit me-1"></i> Manual Price Entry
-          </span>
-        </div>
-
-        <!-- Valuation Card with Unit Switching Tabs (Gaj vs Sq.Ft) -->
-        <div class="plot-price-entry-card p-2.5 rounded-8 bg-white border">
-          <!-- Total Plot Dimensions Header -->
-          <div class="d-flex justify-content-between align-items-center mb-2 pb-1.5 border-bottom">
-            <div>
-              <span class="fs-10 text-muted text-uppercase fw-bold">Plot Total Dimensions</span>
-              <div class="fs-12 fw-800 text-dark d-flex align-items-center gap-1.5 mt-0.5">
-                <i class="fas fa-ruler-combined text-success fs-11"></i>
-                <span>{{ plotAreaGaj }} Gaj</span>
-                <span class="text-muted fs-11 fw-normal">•</span>
-                <span class="text-muted fs-11 fw-600">{{ plotAreaSqft }} sq ft</span>
+              </select>
+              <div *ngIf="loadingTeamMembers" class="text-muted small mt-1">
+                <i class="fas fa-spinner fa-spin me-1"></i> Loading authorized team members...
+              </div>
+              <div *ngIf="teamMembers.length === 0 && !loadingTeamMembers" class="text-muted small mt-1">
+                No active Team Members found in your downline team.
               </div>
             </div>
-            <span *ngIf="hasAdminBasePrice" class="badge bg-success-subtle text-success border border-success-subtle fs-10 fw-700">
-              <i class="fas fa-tag me-1"></i>Base Rate: ₹{{ selectedPlot?.base_price | number }}
-            </span>
-            <span *ngIf="!hasAdminBasePrice" class="badge bg-amber-subtle text-warning-emphasis border border-warning-subtle fs-10 fw-700">
-              <i class="fas fa-calculator me-1"></i>Custom Rate Setup
-            </span>
+
+            <div class="form-group" *ngIf="selectedTeamMemberId">
+              <label class="form-label">
+                Select Buyer (Team Member / Customer) <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select custom-select-lg"
+                [disabled]="loadingTeamMemberCustomers"
+                [ngModel]="selectedBuyerKey"
+                (ngModelChange)="onBuyerKeyChange($event)">
+                <option value="" disabled>-- Choose Buyer --</option>
+                <optgroup label="Team Member (Book for Self)">
+                  <option [value]="'TM_' + selectedTeamMember?.user_id">
+                    ★ {{ selectedTeamMember?.full_name }} (Self - {{ selectedTeamMember?.member_id }})
+                  </option>
+                </optgroup>
+                <optgroup label="Customers (Registered under this Team Member)" *ngIf="teamMemberCustomers.length > 0">
+                  <option *ngFor="let c of teamMemberCustomers" [value]="'CUS_' + c.user_id">
+                    {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
+                  </option>
+                </optgroup>
+                <optgroup label="Customers" *ngIf="teamMemberCustomers.length === 0 && !loadingTeamMemberCustomers">
+                  <option value="" disabled>No customers registered under this Team Member yet</option>
+                </optgroup>
+              </select>
+              <div *ngIf="loadingTeamMemberCustomers" class="text-muted small mt-1">
+                <i class="fas fa-spinner fa-spin me-1"></i> Loading customers for {{ selectedTeamMember?.full_name }}...
+              </div>
+            </div>
           </div>
 
-          <!-- Extra-Small Unit Selector Segmented Tabs (Gaj vs Sq.Ft) -->
-          <div class="unit-selector-wrapper mb-2.5">
-            <div class="d-flex align-items-center justify-content-between mb-1">
-              <label class="form-label fs-10 fw-bold text-uppercase text-muted mb-0">
-                <i class="fas fa-exchange-alt me-1 text-primary"></i> Select Pricing Unit
+          <!-- WORKFLOW B: Self / Direct Booking -->
+          <div *ngIf="bookingForMode === 'SELF_DIRECT'" class="workflow-content">
+            <div class="form-group">
+              <label class="form-label d-flex justify-content-between align-items-center">
+                <span>Select Booking Entity / Customer <span class="text-danger">*</span></span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-11" *ngIf="selectedSelfOrDirectKey === 'SELF'">
+                  <i class="fas fa-user-check me-1"></i> Self Booking
+                </span>
               </label>
-              <span class="badge bg-light text-secondary border fs-10 fw-normal py-0.5 px-1.5">
-                {{ pricingUnit === 'GAJ' ? 'Gaj Based' : 'Sq. Ft Based' }}
-              </span>
+              <select
+                class="form-select custom-select-lg"
+                [ngModel]="selectedSelfOrDirectKey"
+                (ngModelChange)="onSelfOrDirectEntityChange($event)">
+                <option value="" disabled>-- Select Associate (Self) or Direct Customer --</option>
+                <option value="SELF">
+                  ★ [Self] {{ currentUser?.member_id }} — {{ currentUser?.full_name }} (Associate)
+                </option>
+                <optgroup label="Direct Customers" *ngIf="myCustomers.length > 0">
+                  <option *ngFor="let c of myCustomers" [value]="'CUS_' + c.user_id">
+                    {{ c.member_id }} — {{ c.full_name }} ({{ c.mobile_no }})
+                  </option>
+                </optgroup>
+              </select>
+              <div class="form-helper-text mt-1 text-muted fs-12">
+                Choose your own Associate account for Self booking or select a direct customer.
+              </div>
             </div>
-            <div class="pricing-unit-segmented-xs">
-              <button
-                type="button"
-                class="unit-segment-btn-xs"
-                [class.active]="pricingUnit === 'GAJ'"
-                (click)="setPricingUnit('GAJ')">
-                <i class="fas fa-vector-square me-1"></i>
-                <span>Gaj (Sq. Yd)</span>
-              </button>
-              <button
-                type="button"
-                class="unit-segment-btn-xs"
-                [class.active]="pricingUnit === 'SQFT'"
-                (click)="setPricingUnit('SQFT')">
-                <i class="fas fa-th me-1"></i>
-                <span>Square Feet (Sq. Ft)</span>
-              </button>
-            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════
+           STEP 2: PLOT & PRICING
+           ═══════════════════════════════════════════════════════ -->
+      <section class="drawer-step-section" *ngIf="selectedPlot">
+        <div class="step-header">
+          <div class="step-badge">2</div>
+          <h3 class="step-title">Plot &amp; Pricing</h3>
+        </div>
+
+        <div class="step-content">
+          <!-- Segmented Unit Selector [ Gaj ] [ Sq. Ft ] -->
+          <div class="unit-segment-control mb-3">
+            <button
+              type="button"
+              class="unit-segment-btn"
+              [class.active]="pricingUnit === 'GAJ'"
+              (click)="setPricingUnit('GAJ')">
+              Gaj (Sq. Yd)
+            </button>
+            <button
+              type="button"
+              class="unit-segment-btn"
+              [class.active]="pricingUnit === 'SQFT'"
+              (click)="setPricingUnit('SQFT')">
+              Square Feet (Sq. Ft)
+            </button>
           </div>
 
           <!-- FORM A: GAJ FORM (When Gaj is selected) -->
-          <div *ngIf="pricingUnit === 'GAJ'" class="unit-calculation-form animate-fade-in">
-            <div class="row g-2 mb-2">
-              <!-- Field 1: Area in Gaj -->
-              <div class="col-6">
-                <label class="form-label fs-11 fw-bold text-dark mb-1">
-                  Required Area (Gaj) <span class="text-danger">*</span>
+          <div *ngIf="pricingUnit === 'GAJ'" class="unit-form-group">
+            <div class="row g-3 mb-2">
+              <div class="col-12 col-sm-6">
+                <label class="form-label">
+                  Booking Area (Gaj) <span class="text-danger">*</span>
                 </label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-light text-muted px-2"><i class="fas fa-ruler-combined fs-11"></i></span>
+                <div class="input-group">
                   <input
                     type="number"
-                    class="form-control fw-bold fs-12 text-dark px-2"
+                    class="form-control"
                     [(ngModel)]="bookingAreaGaj"
                     (ngModelChange)="onGajCalculationChange()"
                     placeholder="e.g. {{ plotAreaGaj || 1 }}"
@@ -419,58 +380,54 @@
                     step="any"
                     required
                   />
-                  <span class="input-group-text bg-light text-muted fs-11 fw-bold px-2">Gaj</span>
+                  <span class="input-group-text">Gaj</span>
                 </div>
-                <small class="text-muted fs-10 d-block mt-0.5">
+                <div class="form-helper-text mt-1 text-muted fs-12">
                   Plot Total: {{ plotAreaGaj }} Gaj
-                </small>
+                </div>
               </div>
 
-              <!-- Field 2: Rate per Gaj -->
-              <div class="col-6">
-                <label class="form-label fs-11 fw-bold text-dark mb-1">
-                  Rate per Gaj (₹/Gaj) <span class="text-danger">*</span>
+              <div class="col-12 col-sm-6">
+                <label class="form-label">
+                  Rate per Gaj <span class="text-danger">*</span>
                 </label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-success-subtle text-success fw-bold px-2">₹</span>
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
                   <input
                     type="number"
-                    class="form-control fw-bold fs-12 text-dark px-2"
+                    class="form-control"
                     [(ngModel)]="ratePerGaj"
                     (ngModelChange)="onGajCalculationChange()"
-                    placeholder="₹ Rate / Gaj"
+                    placeholder="Rate / Gaj"
                     min="1"
                     step="any"
                     required
                   />
-                  <span class="input-group-text bg-light text-muted fs-11 fw-bold px-2">/ Gaj</span>
+                  <span class="input-group-text">/ Gaj</span>
                 </div>
-                <small class="text-muted fs-10 d-block mt-0.5">
+                <div class="form-helper-text mt-1 text-muted fs-12">
                   Agreed Rate per Gaj
-                </small>
+                </div>
               </div>
             </div>
 
-            <!-- Conversion Equivalents Pill -->
-            <div class="conversion-preview-pill-sm mb-2">
-              <i class="fas fa-info-circle text-primary me-1"></i>
-              <span>Equivalent in Sq. Ft: <strong>{{ bookingAreaSqft || 0 }} sq ft</strong> &#64; <strong>₹{{ (ratePerSqft || 0) | number:'1.2-2' }}/sq ft</strong></span>
+            <!-- 1-line clean conversion text -->
+            <div class="unit-conversion-line mb-3">
+              = {{ bookingAreaSqft || 0 }} sq ft &#64; ₹{{ (ratePerSqft || 0) | number:'1.2-2' }}/sq ft
             </div>
           </div>
 
           <!-- FORM B: SQ.FT FORM (When Sq.Ft is selected) -->
-          <div *ngIf="pricingUnit === 'SQFT'" class="unit-calculation-form animate-fade-in">
-            <div class="row g-2 mb-2">
-              <!-- Field 1: Area in Sq.Ft -->
-              <div class="col-6">
-                <label class="form-label fs-11 fw-bold text-dark mb-1">
-                  Required Area (Sq. Ft) <span class="text-danger">*</span>
+          <div *ngIf="pricingUnit === 'SQFT'" class="unit-form-group">
+            <div class="row g-3 mb-2">
+              <div class="col-12 col-sm-6">
+                <label class="form-label">
+                  Booking Area (Sq. Ft) <span class="text-danger">*</span>
                 </label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-light text-muted px-2"><i class="fas fa-th fs-11"></i></span>
+                <div class="input-group">
                   <input
                     type="number"
-                    class="form-control fw-bold fs-12 text-dark px-2"
+                    class="form-control"
                     [(ngModel)]="bookingAreaSqft"
                     (ngModelChange)="onSqftCalculationChange()"
                     placeholder="e.g. {{ plotAreaSqft || 9 }}"
@@ -478,74 +435,67 @@
                     step="any"
                     required
                   />
-                  <span class="input-group-text bg-light text-muted fs-11 fw-bold px-2">sq ft</span>
+                  <span class="input-group-text">sq ft</span>
                 </div>
-                <small class="text-muted fs-10 d-block mt-0.5">
+                <div class="form-helper-text mt-1 text-muted fs-12">
                   Plot Total: {{ plotAreaSqft }} sq ft
-                </small>
+                </div>
               </div>
 
-              <!-- Field 2: Rate per Sq.Ft -->
-              <div class="col-6">
-                <label class="form-label fs-11 fw-bold text-dark mb-1">
-                  Rate per Sq. Ft (₹) <span class="text-danger">*</span>
+              <div class="col-12 col-sm-6">
+                <label class="form-label">
+                  Rate per Sq. Ft <span class="text-danger">*</span>
                 </label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-success-subtle text-success fw-bold px-2">₹</span>
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
                   <input
                     type="number"
-                    class="form-control fw-bold fs-12 text-dark px-2"
+                    class="form-control"
                     [(ngModel)]="ratePerSqft"
                     (ngModelChange)="onSqftCalculationChange()"
-                    placeholder="₹ Rate / sq ft"
+                    placeholder="Rate / sq ft"
                     min="0.1"
                     step="0.01"
                     required
                   />
-                  <span class="input-group-text bg-light text-muted fs-11 fw-bold px-2">/ sq ft</span>
+                  <span class="input-group-text">/ sq ft</span>
                 </div>
-                <small class="text-muted fs-10 d-block mt-0.5">
+                <div class="form-helper-text mt-1 text-muted fs-12">
                   Agreed Rate per Sq. Ft
-                </small>
+                </div>
               </div>
             </div>
 
-            <!-- Conversion Equivalents Pill -->
-            <div class="conversion-preview-pill-sm mb-2">
-              <i class="fas fa-info-circle text-primary me-1"></i>
-              <span>Equivalent in Gaj: <strong>{{ bookingAreaGaj || 0 }} Gaj</strong> &#64; <strong>₹{{ (ratePerGaj || 0) | number:'1.2-2' }}/Gaj</strong></span>
+            <!-- 1-line clean conversion text -->
+            <div class="unit-conversion-line mb-3">
+              = {{ bookingAreaGaj || 0 }} Gaj &#64; ₹{{ (ratePerGaj || 0) | number:'1.2-2' }}/Gaj
             </div>
           </div>
 
-          <!-- Multiplication Breakdown Formula Pill -->
-          <div class="formula-breakdown-card-sm p-1.5 rounded-6 mb-2.5">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="fs-11 fw-bold text-dark d-flex align-items-center gap-1">
-                <i class="fas fa-calculator text-success fs-11"></i>
-                <ng-container *ngIf="pricingUnit === 'GAJ'">
-                  {{ bookingAreaGaj || 0 }} Gaj &times; ₹{{ (ratePerGaj || 0) | number }}
-                </ng-container>
-                <ng-container *ngIf="pricingUnit === 'SQFT'">
-                  {{ bookingAreaSqft || 0 }} sq ft &times; ₹{{ (ratePerSqft || 0) | number:'1.0-2' }}
-                </ng-container>
-              </span>
-              <span class="badge bg-success text-white fs-11 fw-800 px-2 py-1">
-                = ₹{{ totalPlotPrice | number }}
-              </span>
-            </div>
+          <!-- Short calculation line -->
+          <div class="calculation-line mb-3">
+            <span class="text-muted">Calculation:</span>
+            <span class="fw-semibold text-dark">
+              <ng-container *ngIf="pricingUnit === 'GAJ'">
+                {{ bookingAreaGaj || 0 }} Gaj &times; ₹{{ (ratePerGaj || 0) | number }}
+              </ng-container>
+              <ng-container *ngIf="pricingUnit === 'SQFT'">
+                {{ bookingAreaSqft || 0 }} sq ft &times; ₹{{ (ratePerSqft || 0) | number:'1.0-2' }}
+              </ng-container>
+              = ₹{{ totalPlotPrice | number }}
+            </span>
           </div>
 
-          <!-- Total Plot Price (Agreed) Input -->
-          <div class="mb-2.5">
-            <label class="form-label fs-11 fw-800 text-dark mb-1 d-flex justify-content-between align-items-center">
-              <span><i class="fas fa-handshake text-success me-1"></i>Total Plot Price (Agreed) <span class="text-danger">*</span></span>
-              <span class="badge bg-light text-muted border fs-10 fw-normal">Final Payable</span>
+          <!-- Total Plot Price (Agreed) - LARGEST & MOST PROMINENT FIELD -->
+          <div class="total-plot-price-box mb-2">
+            <label class="form-label fw-bold text-dark mb-1.5 fs-14">
+              Total Plot Price (Agreed) <span class="text-danger">*</span>
             </label>
-            <div class="input-group input-group-sm">
-              <span class="input-group-text bg-success-subtle text-success fw-bold px-2.5 fs-13">₹</span>
+            <div class="input-group total-price-input-group">
+              <span class="input-group-text rupee-symbol">₹</span>
               <input
                 type="number"
-                class="form-control fw-800 fs-13 text-dark px-2"
+                class="form-control total-price-input"
                 [(ngModel)]="customPlotPrice"
                 (ngModelChange)="onCustomPlotPriceInput()"
                 placeholder="Total Plot Price"
@@ -553,312 +503,314 @@
                 required
               />
             </div>
-          </div>
-
-          <!-- 3 Permanent Summary Lines -->
-          <div class="valuation-summary-card p-2 rounded-6 bg-light border">
-            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
-              <span class="fs-11 fw-600 text-muted d-flex align-items-center gap-1">
-                <i class="fas fa-tag text-muted fs-10"></i> Total Plot Price (Agreed):
-              </span>
-              <span class="fs-12 fw-800 text-dark">₹{{ totalPlotPrice | number }}</span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
-              <span class="fs-11 fw-600 text-primary d-flex align-items-center gap-1">
-                <i class="fas fa-wallet text-primary fs-10"></i> Paying Now:
-              </span>
-              <span class="fs-12 fw-800 text-primary">₹{{ (agreedAmount || advanceAmount || 0) | number }}</span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center py-1">
-              <span class="fs-11 fw-600 text-danger d-flex align-items-center gap-1">
-                <i class="fas fa-clock text-danger fs-10"></i> Remaining Balance:
-              </span>
-              <span class="fs-12 fw-800 text-danger">
-                ₹{{ ((totalPlotPrice - (agreedAmount || advanceAmount || 0)) > 0 ? (totalPlotPrice - (agreedAmount || advanceAmount || 0)) : 0) | number }}
-              </span>
+            <div *ngIf="!isPlotPriceValid" class="text-danger small mt-1.5 fw-semibold">
+              <i class="fas fa-exclamation-circle me-1"></i> Total plot price is required to proceed.
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- ── Unified Payment Section (3 Modes: One-Time, Part-Wise, EMI) ── -->
-      <div class="form-section-card p-3 mb-3" *ngIf="selectedPlot">
-        <div class="section-title-tag mb-2">
-          <i class="fas fa-wallet text-success me-1"></i> 3. Payment Option & Methods <span class="text-danger">*</span>
+      <!-- ═══════════════════════════════════════════════════════
+           STEP 3: PAYMENT CONFIGURATION
+           ═══════════════════════════════════════════════════════ -->
+      <section class="drawer-step-section" *ngIf="selectedPlot">
+        <div class="step-header">
+          <div class="step-badge">3</div>
+          <h3 class="step-title">Payment</h3>
         </div>
 
-        <!-- 3 Interactive Payment Cards -->
-        <div class="row g-2 mb-3">
-          <!-- Option 1: One-Time Payment -->
-          <div class="col-12 col-md-4">
+        <div class="step-content">
+          <!-- 3 Radio Cards (Equal Width) -->
+          <div class="payment-cards-grid mb-3">
+            <!-- Option 1: One-Time -->
             <div
-              class="payment-option-card h-100"
+              class="payment-mode-card"
               [class.selected]="paymentMode === 'ONE_TIME'"
               (click)="setPaymentMode('ONE_TIME')">
-              <div class="d-flex align-items-center justify-content-between mb-1">
-                <span class="fw-800 fs-13 text-dark">One-Time Payment</span>
-                <input type="radio" [checked]="paymentMode === 'ONE_TIME'" name="drawer_pay_mode" />
+              <div class="payment-mode-top">
+                <span class="payment-mode-title">One-Time</span>
+                <i class="fas fa-check-circle mode-check-icon" *ngIf="paymentMode === 'ONE_TIME'"></i>
+                <span class="mode-uncheck-circle" *ngIf="paymentMode !== 'ONE_TIME'"></span>
               </div>
-              <div class="fs-11 text-muted">Full plot payment in a single settlement transaction.</div>
-              <div class="badge bg-success-subtle text-success fs-10 mt-2 align-self-start">100% Settle</div>
+              <div class="payment-mode-desc">100% full settlement</div>
             </div>
-          </div>
 
-          <!-- Option 2: Part-Wise Payment -->
-          <div class="col-12 col-md-4">
+            <!-- Option 2: Part-Wise -->
             <div
-              class="payment-option-card h-100"
+              class="payment-mode-card"
               [class.selected]="paymentMode === 'PART_WISE'"
               (click)="setPaymentMode('PART_WISE')">
-              <div class="d-flex align-items-center justify-content-between mb-1">
-                <span class="fw-800 fs-13 text-dark">Part-Wise Payment</span>
-                <input type="radio" [checked]="paymentMode === 'PART_WISE'" name="drawer_pay_mode" />
+              <div class="payment-mode-top">
+                <span class="payment-mode-title">Part-Wise</span>
+                <i class="fas fa-check-circle mode-check-icon" *ngIf="paymentMode === 'PART_WISE'"></i>
+                <span class="mode-uncheck-circle" *ngIf="paymentMode !== 'PART_WISE'"></span>
               </div>
-              <div class="fs-11 text-muted">Flexible advance token with 0% interest on balance amount.</div>
-              <div class="badge bg-warning-subtle text-dark fs-10 mt-2 fw-700 align-self-start">0% Interest Charge</div>
+              <div class="payment-mode-desc">0% interest charge</div>
             </div>
-          </div>
 
-          <!-- Option 3: Installment (EMI) -->
-          <div class="col-12 col-md-4">
+            <!-- Option 3: Installment (EMI) -->
             <div
-              class="payment-option-card h-100"
+              class="payment-mode-card"
               [class.selected]="paymentMode === 'EMI'"
               (click)="setPaymentMode('EMI')">
-              <div class="d-flex align-items-center justify-content-between mb-1">
-                <span class="fw-800 fs-13 text-dark">Installment (EMI)</span>
-                <input type="radio" [checked]="paymentMode === 'EMI'" name="drawer_pay_mode" />
+              <div class="payment-mode-top">
+                <span class="payment-mode-title">Installment (EMI)</span>
+                <i class="fas fa-check-circle mode-check-icon" *ngIf="paymentMode === 'EMI'"></i>
+                <span class="mode-uncheck-circle" *ngIf="paymentMode !== 'EMI'"></span>
               </div>
-              <div class="fs-11 text-muted">Structured monthly tenure plans (12 - 60 Months).</div>
-              <div class="badge bg-primary-subtle text-primary fs-10 mt-2 fw-700 align-self-start">Custom Tenure Plans</div>
+              <div class="payment-mode-desc">Custom tenure plans</div>
             </div>
           </div>
-        </div>
 
-        <!-- EMI Plan Selector (when EMI selected) -->
-        <div class="emi-plan-selector-box p-2.5 mb-3 rounded-8" *ngIf="paymentMode === 'EMI'">
-          <label class="form-label fs-12 fw-700 text-dark mb-1">
-            <i class="fas fa-calendar-alt text-primary me-1"></i> Select EMI Tenure Plan <span class="text-danger">*</span>
-          </label>
-          <select
-            class="form-select form-select-sm"
-            [(ngModel)]="selectedInstallmentPlanId"
-            (ngModelChange)="onPlanChange($event)">
-            <option [ngValue]="null" disabled>-- Choose Tenure Plan --</option>
-            <option *ngFor="let plan of activeInstallmentPlans" [ngValue]="plan.id || plan.plan_id">
-              {{ plan.plan_name }} ({{ plan.tenure_months }} Months) — Min DP: {{ plan.down_payment_percent || 20 }}% | {{ plan.annual_interest_rate || 0 }}% Int.
-            </option>
-          </select>
-          <div *ngIf="activeInstallmentPlans.length === 0" class="text-muted small mt-1">
-            <i class="fas fa-spinner fa-spin me-1"></i> Loading active EMI tenure plans...
-          </div>
+          <!-- EMI Plan Selector (When EMI selected) -->
+          <div class="emi-plan-section mb-3 p-3 rounded bg-light border" *ngIf="paymentMode === 'EMI'">
+            <label class="form-label mb-1.5">
+              Select EMI Tenure Plan <span class="text-danger">*</span>
+            </label>
+            <select
+              class="form-select"
+              [(ngModel)]="selectedInstallmentPlanId"
+              (ngModelChange)="onPlanChange($event)">
+              <option [ngValue]="null" disabled>-- Choose Tenure Plan --</option>
+              <option *ngFor="let plan of activeInstallmentPlans" [ngValue]="plan.id || plan.plan_id">
+                {{ plan.plan_name }} ({{ plan.tenure_months }} Months) — Min DP: {{ plan.down_payment_percent || 20 }}% | {{ plan.annual_interest_rate || 0 }}% Int.
+              </option>
+            </select>
+            <div *ngIf="activeInstallmentPlans.length === 0" class="text-muted small mt-1">
+              <i class="fas fa-spinner fa-spin me-1"></i> Loading active EMI tenure plans...
+            </div>
 
-          <div class="emi-preview-strip mt-2 p-2 rounded bg-white border" *ngIf="installmentPreview">
-            <div class="row g-1 text-center fs-11">
-              <div class="col-4">
-                <span class="text-muted text-uppercase">Tenure</span>
-                <div class="fw-bold text-dark">{{ installmentPreview.tenure_months }} Months</div>
-              </div>
-              <div class="col-4">
-                <span class="text-muted text-uppercase">Monthly EMI</span>
-                <div class="fw-bold text-primary">₹{{ installmentPreview.monthly_emi | number }} / mo</div>
-              </div>
-              <div class="col-4">
-                <span class="text-muted text-uppercase">Down Payment</span>
-                <div class="fw-bold text-success">₹{{ installmentPreview.down_payment | number }}</div>
+            <div class="emi-preview-box mt-2.5 p-2.5 rounded bg-white border" *ngIf="installmentPreview">
+              <div class="row g-2 text-center fs-12">
+                <div class="col-4">
+                  <div class="text-muted fs-11 text-uppercase">Tenure</div>
+                  <div class="fw-bold text-dark mt-0.5">{{ installmentPreview.tenure_months }} Mo</div>
+                </div>
+                <div class="col-4">
+                  <div class="text-muted fs-11 text-uppercase">Monthly EMI</div>
+                  <div class="fw-bold text-primary mt-0.5">₹{{ installmentPreview.monthly_emi | number }}</div>
+                </div>
+                <div class="col-4">
+                  <div class="text-muted fs-11 text-uppercase">Down Payment</div>
+                  <div class="fw-bold text-success mt-0.5">₹{{ installmentPreview.down_payment | number }}</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Payment Amount Input -->
-        <div class="form-group mb-3">
-          <label class="form-label fw-bold fs-13 text-dark">
-            <i class="fas fa-rupee-sign text-success me-1"></i>
-            {{ paymentMode === 'ONE_TIME' ? 'Total Payment Amount (₹)' : (paymentMode === 'EMI' ? 'Down Payment Amount (₹)' : 'Initial / Advance Booking Amount (₹)') }}
-            <span class="text-danger">*</span>
-          </label>
-          <div class="input-group">
-            <span class="input-group-text fw-bold">₹</span>
+          <!-- Advance / Initial Amount Input -->
+          <div class="form-group mb-3">
+            <label class="form-label">
+              {{ paymentMode === 'ONE_TIME' ? 'Payment Amount' : (paymentMode === 'EMI' ? 'Down Payment Amount' : 'Advance / Initial Amount') }}
+              <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text">₹</span>
+              <input
+                type="number"
+                class="form-control fw-bold"
+                [(ngModel)]="agreedAmount"
+                (ngModelChange)="onAgreedAmountChange()"
+                [placeholder]="paymentMode === 'ONE_TIME' ? 'Full Plot Value' : 'Enter amount (min 10,000)'"
+                min="10000"
+                [max]="totalPlotPrice"
+              />
+            </div>
+            <!-- Quick Chips Row Directly Below -->
+            <div class="quick-chips-row mt-2" *ngIf="totalPlotPrice > 0">
+              <button
+                type="button"
+                class="quick-chip-btn"
+                (click)="setCustomAmount(Math.round(totalPlotPrice * 0.1))">
+                10% (₹{{ Math.round(totalPlotPrice * 0.1) | number }})
+              </button>
+              <button
+                type="button"
+                class="quick-chip-btn"
+                (click)="setCustomAmount(Math.round(totalPlotPrice * 0.25))">
+                25% (₹{{ Math.round(totalPlotPrice * 0.25) | number }})
+              </button>
+              <button
+                type="button"
+                class="quick-chip-btn"
+                (click)="setCustomAmount(totalPlotPrice)">
+                100% (₹{{ totalPlotPrice | number }})
+              </button>
+            </div>
+          </div>
+
+          <!-- Payment Method Dropdown -->
+          <div class="form-group mb-3">
+            <label class="form-label">
+              Payment Method <span class="text-danger">*</span>
+            </label>
+            <select class="form-select" [(ngModel)]="paymentMethod">
+              <option *ngFor="let m of allowedPaymentMethods" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+
+          <!-- Collapsible Authorized Company Bank Details -->
+          <details class="company-bank-accordion mb-3">
+            <summary class="bank-accordion-header">
+              <span class="fw-semibold text-dark fs-13 d-flex align-items-center gap-1.5">
+                <i class="fas fa-university text-primary"></i> View Company Bank Details
+              </span>
+              <span class="badge bg-success-subtle text-success fs-11">Verified Current A/C</span>
+            </summary>
+            <div class="bank-accordion-body p-3 mt-2 rounded bg-light border">
+              <div class="bank-key-val-list fs-13">
+                <div class="bank-row">
+                  <span class="text-muted">A/C Name:</span>
+                  <span class="fw-bold text-dark">MMR CONSTRUCTIONS PRIVATE LIMITED</span>
+                </div>
+                <div class="bank-row">
+                  <span class="text-muted">Bank Name:</span>
+                  <span class="fw-bold text-dark">HDFC Bank Ltd.</span>
+                </div>
+                <div class="bank-row align-items-center">
+                  <span class="text-muted">A/C Number:</span>
+                  <span class="fw-bold text-dark d-flex align-items-center gap-2">
+                    <code>50200088921832</code>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary btn-xs py-0.5 px-2"
+                      (click)="copyBankAC()"
+                      title="Copy Account Number">
+                      <i class="fas" [class.fa-copy]="!copiedBankAC" [class.fa-check]="copiedBankAC"></i>
+                      <span class="ms-1">{{ copiedBankAC ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </span>
+                </div>
+                <div class="bank-row">
+                  <span class="text-muted">IFSC Code:</span>
+                  <span class="fw-bold text-dark"><code>HDFC0001234</code></span>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Single-Language No Cash Warning -->
+          <div class="no-cash-strip mb-3">
+            <i class="fas fa-exclamation-triangle flex-shrink-0 text-warning"></i>
+            <span>Cash is not accepted. Please pay via authorized bank transfer / UPI.</span>
+          </div>
+
+          <!-- Booking Remarks -->
+          <div class="form-group mb-2">
+            <label class="form-label">
+              Booking Remarks / Reference <span class="text-muted fw-normal">(Optional)</span>
+            </label>
             <input
-              type="number"
-              class="form-control fw-bold"
-              [(ngModel)]="agreedAmount"
-              (ngModelChange)="onAgreedAmountChange()"
-              [placeholder]="paymentMode === 'ONE_TIME' ? 'Full Plot Value' : 'Enter amount (min 10000)'"
-              min="10000"
-              [max]="totalPlotPrice"
+              type="text"
+              class="form-control"
+              [(ngModel)]="notes"
+              placeholder="Bank Transfer Ref / UTR / Client notes..."
             />
           </div>
-          <div class="quick-amount-chips mt-1.5 d-flex gap-1.5 flex-wrap">
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-xs py-0.5 px-2 fs-10"
-              *ngIf="totalPlotPrice > 0"
-              (click)="setCustomAmount(Math.round(totalPlotPrice * 0.1))">
-              10% (₹{{ Math.round(totalPlotPrice * 0.1) | number }})
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-xs py-0.5 px-2 fs-10"
-              *ngIf="totalPlotPrice > 0"
-              (click)="setCustomAmount(Math.round(totalPlotPrice * 0.25))">
-              25% (₹{{ Math.round(totalPlotPrice * 0.25) | number }})
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-xs py-0.5 px-2 fs-10"
-              *ngIf="totalPlotPrice > 0"
-              (click)="setCustomAmount(totalPlotPrice)">
-              100% Full (₹{{ totalPlotPrice | number }})
-            </button>
-          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════
+           STEP 4: BOOKING REVIEW
+           ═══════════════════════════════════════════════════════ -->
+      <section class="drawer-step-section" *ngIf="selectedPlot">
+        <div class="step-header">
+          <div class="step-badge">4</div>
+          <h3 class="step-title">Review</h3>
         </div>
 
-        <!-- Payment Method Selector -->
-        <div class="form-group mb-3">
-          <label class="form-label fs-13 fw-bold text-dark">
-            <i class="fas fa-credit-card text-primary me-1"></i> Payment Method <span class="text-danger">*</span>
-          </label>
-          <select class="form-select" [(ngModel)]="paymentMethod">
-            <option *ngFor="let m of allowedPaymentMethods" [value]="m">{{ m }}</option>
-          </select>
-        </div>
-
-        <!-- Authorized Company Bank Accounts & Strictly No Cash Notice -->
-        <div class="company-bank-card p-2.5 mb-3 rounded-8">
-          <div class="d-flex align-items-center justify-content-between mb-1.5">
-            <span class="fs-11 text-uppercase fw-bold text-dark">
-              <i class="fas fa-university text-success me-1"></i> Authorized Company Bank Account
-            </span>
-            <span class="badge bg-success-subtle text-success fs-10">Verified Current A/C</span>
-          </div>
-          <div class="bank-details-grid fs-11 text-muted">
-            <div><strong>A/C Name:</strong> MMR CONSTRUCTIONS PRIVATE LIMITED</div>
-            <div><strong>Bank Name:</strong> HDFC Bank Ltd.</div>
-            <div><strong>A/C Number:</strong> 50200088921832</div>
-            <div><strong>IFSC Code:</strong> HDFC0001234</div>
-          </div>
-          <div class="alert alert-danger py-1.5 px-2 fs-11 mt-2 mb-0 d-flex align-items-center">
-            <i class="fas fa-ban me-1.5 fs-13 text-danger"></i>
-            <span><strong>Strictly No Cash Policy:</strong> Client se cash accept nahi kiya jata. Payment sirf authorized bank transfer / UPI se karein.</span>
-          </div>
-        </div>
-
-        <!-- Booking Notes / Remarks -->
-        <div class="form-group mb-3">
-          <label class="form-label fs-13 fw-bold text-dark">Booking Remarks / Reference</label>
-          <input
-            type="text"
-            class="form-control"
-            [(ngModel)]="notes"
-            placeholder="e.g. Bank Transfer Ref / UTR / Client notes..."
-          />
-        </div>
-
-        <!-- LIVE DYNAMIC PAYMENT SUMMARY BOX -->
-        <div class="live-payment-summary-box p-3 rounded-8 mb-3" *ngIf="selectedPlot">
-          <div class="fs-11 text-uppercase fw-700 text-dark mb-2">
-            <i class="fas fa-calculator text-success me-1"></i> Live Payment Calculation Summary
-          </div>
-          <div *ngIf="!isPlotPriceValid" class="alert alert-danger py-2 px-3 fs-12 mb-2">
-            <i class="fas fa-exclamation-triangle me-1"></i>
-            Plot price is not configured in the system (₹0). Booking cannot proceed until an administrator sets the plot base price.
-          </div>
-          <div class="row g-2 text-center text-md-start">
-            <div class="col-4">
-              <span class="fs-11 text-muted text-uppercase">Total Plot Value</span>
-              <div class="fw-800 text-dark fs-14">₹{{ totalPlotPrice | number }}</div>
+        <div class="step-content">
+          <!-- Single Unified Review Card -->
+          <div class="unified-review-card">
+            <!-- 3 Large Amounts Side-by-Side -->
+            <div class="amounts-grid">
+              <div class="amount-col">
+                <span class="amount-label">Total</span>
+                <span class="amount-value total-val">₹{{ totalPlotPrice | number }}</span>
+              </div>
+              <div class="amount-col">
+                <span class="amount-label">Paying Now</span>
+                <span class="amount-value pay-val">₹{{ (agreedAmount || advanceAmount || 0) | number }}</span>
+              </div>
+              <div class="amount-col">
+                <span class="amount-label">Remaining</span>
+                <span class="amount-value rem-val">₹{{ remainingBalance | number }}</span>
+              </div>
             </div>
-            <div class="col-4">
-              <span class="fs-11 text-muted text-uppercase">Paid / Advance</span>
-              <div class="fw-800 text-success fs-14">₹{{ (agreedAmount || advanceAmount || 0) | number }}</div>
-            </div>
-            <div class="col-4">
-              <span class="fs-11 text-muted text-uppercase">Remaining Balance</span>
-              <div class="fw-800 text-danger fs-14">₹{{ remainingBalance | number }}</div>
+
+            <!-- Key-Value Details Rows -->
+            <div class="review-details-list">
+              <div class="review-row">
+                <span class="review-label">Plot:</span>
+                <span class="review-val">
+                  Plot {{ selectedPlot?.plot_number }} • {{ site?.site_name }} ({{ plotAreaGaj }} Gaj / {{ plotAreaSqft }} sq ft)
+                </span>
+              </div>
+
+              <!-- Buyer row -->
+              <div class="review-row" *ngIf="selectedCustomer">
+                <span class="review-label">Buyer:</span>
+                <span class="review-val">
+                  {{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})
+                  <span class="badge bg-success-subtle text-success ms-1" *ngIf="selectedBuyerKey?.startsWith('CUS_')">Customer</span>
+                </span>
+              </div>
+              <div class="review-row" *ngIf="!selectedCustomer">
+                <span class="review-label">Buyer:</span>
+                <span class="review-val">
+                  {{ currentUser?.full_name || 'Self' }} ({{ currentUser?.member_id }})
+                  <span class="badge bg-primary-subtle text-primary ms-1">Self Booking</span>
+                </span>
+              </div>
+
+              <!-- Logged-in User (Shown ONLY when it differs from Buyer!) -->
+              <div class="review-row" *ngIf="selectedCustomer && selectedCustomer.user_id !== currentUser?.user_id">
+                <span class="review-label">Logged-in User:</span>
+                <span class="review-val text-muted">
+                  {{ currentUser?.full_name }} ({{ currentUser?.member_id }})
+                </span>
+              </div>
+
+              <!-- Payment Mode -->
+              <div class="review-row">
+                <span class="review-label">Payment Mode:</span>
+                <span class="review-val">
+                  {{ paymentMode === 'ONE_TIME' ? 'One-Time (100% Settle)' : (paymentMode === 'EMI' ? 'Installment (EMI)' : 'Part-Wise (0% Interest)') }}
+                </span>
+              </div>
+
+              <div class="review-row" *ngIf="paymentMode === 'EMI' && installmentPreview">
+                <span class="review-label">EMI Plan:</span>
+                <span class="review-val text-primary fw-semibold">
+                  {{ installmentPreview.tenure_months }} Mo &#64; ₹{{ installmentPreview.monthly_emi | number }}/mo
+                </span>
+              </div>
             </div>
           </div>
-          <div class="fs-11 text-success fw-600 mt-2 text-center text-md-start" *ngIf="paymentMode !== 'EMI' && isPlotPriceValid">
-            <i class="fas fa-check-circle me-1"></i>
-            <strong>Formula:</strong> Unpaid Balance = Total Plot Value (₹{{ totalPlotPrice | number }}) − Total Paid (₹{{ (agreedAmount || advanceAmount || 0) | number }}) | Interest = <strong>₹0</strong>
-          </div>
-          <div class="fs-11 text-primary fw-600 mt-2 text-center text-md-start" *ngIf="paymentMode === 'EMI' && installmentPreview && isPlotPriceValid">
-            <i class="fas fa-info-circle me-1"></i>
-            <strong>EMI Plan:</strong> {{ installmentPreview.tenure_months }} Months &#64; ₹{{ installmentPreview.monthly_emi | number }}/month (Interest: {{ installmentPreview.interest_rate }}%)
-          </div>
         </div>
-
-        <!-- Field: Booking Summary -->
-        <div class="booking-summary-card mb-3">
-          <h5 class="summary-heading">
-            <i class="fas fa-clipboard-check text-success me-1"></i> Booking Summary
-          </h5>
-          <div class="summary-row">
-            <span class="summary-label">Site:</span>
-            <strong class="summary-val">{{ site?.site_name }} (ID: {{ site?.site_id }})</strong>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Selected Plot:</span>
-            <strong class="summary-val text-dark">Plot {{ selectedPlot?.plot_number }} ({{ selectedPlot?.plot_area || selectedPlot?.size_label || '-' }} Gaj)</strong>
-          </div>
-          <div class="summary-row" *ngIf="isAssociate">
-            <span class="summary-label">Booking For:</span>
-            <span class="badge" [class.bg-primary]="bookingForMode === 'TEAM_MEMBER'" [class.bg-success]="bookingForMode === 'SELF_DIRECT'">
-              {{ bookingForMode === 'TEAM_MEMBER' ? 'Team Member' : 'Self / Direct' }}
-            </span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Logged-in User:</span>
-            <strong class="summary-val">{{ currentUser?.full_name }} ({{ currentUser?.member_id }})</strong>
-          </div>
-          <div class="summary-row" *ngIf="isAssociate && bookingForMode === 'TEAM_MEMBER' && selectedTeamMember">
-            <span class="summary-label">Selected Team Member:</span>
-            <strong class="summary-val text-primary">{{ selectedTeamMember.full_name }} ({{ selectedTeamMember.member_id }})</strong>
-          </div>
-          <div class="summary-row" *ngIf="selectedCustomer">
-            <span class="summary-label">Selected Buyer:</span>
-            <strong class="summary-val text-success">
-              {{ selectedCustomer.full_name }} ({{ selectedCustomer.member_id }})
-              <span class="badge bg-info-subtle text-info ms-1" *ngIf="selectedBuyerKey.startsWith('TM_')">Team Member (Self)</span>
-              <span class="badge bg-success-subtle text-success ms-1" *ngIf="selectedBuyerKey.startsWith('CUS_')">Customer</span>
-            </strong>
-          </div>
-          <div class="summary-row" *ngIf="!selectedCustomer && buyerType === 'SELF'">
-            <span class="summary-label">Selected Buyer:</span>
-            <strong class="summary-val text-success">
-              {{ currentUser?.full_name || 'Self' }} ({{ currentUser?.member_id }})
-              <span class="badge bg-info-subtle text-info ms-1">Self Booking</span>
-            </strong>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Payment Mode:</span>
-            <span class="badge bg-dark">
-              {{ paymentMode === 'ONE_TIME' ? 'One-Time (100% Settle)' : (paymentMode === 'EMI' ? 'Installment (EMI)' : 'Part-Wise (0% Interest)') }}
-            </span>
-          </div>
-          <div class="summary-row" *ngIf="agreedAmount || advanceAmount">
-            <span class="summary-label">Advance / Paid Amount:</span>
-            <strong class="summary-val text-success fs-15">₹{{ (agreedAmount || advanceAmount) | number }}</strong>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
 
-    <!-- Drawer Footer (Sticky Button) -->
+    <!-- Drawer Footer (Sticky Action Bar) -->
     <div class="drawer-footer">
+      <div class="drawer-footer-status d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted fs-13">Remaining Balance:</span>
+        <span class="fw-bold text-danger fs-14">₹{{ remainingBalance | number }}</span>
+      </div>
+
       <div *ngIf="validationError && selectedPlot" class="alert alert-warning py-1.5 px-2.5 fs-12 mb-2 d-flex align-items-center">
         <i class="fas fa-info-circle me-1.5 flex-shrink-0 text-warning"></i>
         <span>{{ validationError }}</span>
       </div>
+
       <button
         type="button"
-        class="btn btn-success w-100 py-2.5 fs-14 fw-bold submit-booking-btn shadow-sm"
+        class="btn btn-success w-100 py-2.5 fs-15 fw-bold submit-booking-btn shadow-sm"
         [disabled]="isSubmitDisabled() || submitting"
         (click)="submitBooking()">
         <i *ngIf="submitting" class="fas fa-spinner fa-spin me-2"></i>
         <i *ngIf="!submitting" class="fas fa-check-circle me-2"></i>
-        <span>{{ submitting ? 'Submitting Booking...' : 'Confirm Booking' }}</span>
+        <span>{{ submitting ? 'Submitting Booking...' : ('Confirm Booking • Pay ₹' + ((agreedAmount || advanceAmount || 0) | number) + ' now') }}</span>
       </button>
     </div>
   </aside>

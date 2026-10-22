@@ -120,6 +120,17 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   allowEmiOnBehalf: boolean = true;
   advanceAmount: number = 50000;
   notes: string = '';
+  copiedBankAC = false;
+
+  copyBankAC(): void {
+    const ac = '50200088921832';
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(ac).then(() => {
+        this.copiedBankAC = true;
+        setTimeout(() => (this.copiedBankAC = false), 2000);
+      }).catch(() => {});
+    }
+  }
 
   // EMI installment plans state
   activeInstallmentPlans: any[] = [];
