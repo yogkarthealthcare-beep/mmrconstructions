@@ -93,7 +93,10 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   plotSearchTerm = '';
   plotStatusFilter = 'All';
 
-  // Plot Total Price Configuration (Manual fallback if unconfigured by admin)
+  // Plot Valuation & Area-based Pricing Configuration (Gaj vs Sq.Ft Tabs)
+  pricingUnit: 'GAJ' | 'SQFT' = 'GAJ';
+  bookingAreaGaj: number | null = null;
+  bookingAreaSqft: number | null = null;
   customPlotPrice: number | null = null;
   ratePerGaj: number | null = null;
   ratePerSqft: number | null = null;
@@ -792,40 +795,62 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     return this.totalPlotPrice > 0;
   }
 
-  onRatePerGajChange(): void {
-    const rGaj = Number(this.ratePerGaj || 0);
-    if (rGaj > 0) {
-      this.ratePerSqft = Math.round((rGaj / 9) * 100) / 100;
-      if (this.plotAreaGaj > 0) {
-        this.customPlotPrice = Math.round(this.plotAreaGaj * rGaj);
-      }
+  setPricingUnit(unit: 'GAJ' | 'SQFT'): void {
+    this.pricingUnit = unit;
+    if (unit === 'GAJ') {
+      this.onGajCalculationChange();
     } else {
-      this.ratePerSqft = null;
+      this.onSqftCalculationChange();
+    }
+  }
+
+  onGajCalculationChange(): void {
+    const area = Number(this.bookingAreaGaj || 0);
+    const rate = Number(this.ratePerGaj || 0);
+
+    // Auto-sync Sq.Ft equivalents
+    this.bookingAreaSqft = area > 0 ? Math.round(area * 9 * 100) / 100 : null;
+    this.ratePerSqft = rate > 0 ? Math.round((rate / 9) * 100) / 100 : null;
+
+    if (area > 0 && rate > 0) {
+      this.customPlotPrice = Math.round(area * rate);
     }
     this.onCustomPlotPriceChange();
   }
 
-  onRatePerSqftChange(): void {
-    const rSqft = Number(this.ratePerSqft || 0);
-    if (rSqft > 0) {
-      this.ratePerGaj = Math.round((rSqft * 9) * 100) / 100;
-      if (this.plotAreaGaj > 0) {
-        this.customPlotPrice = Math.round(this.plotAreaGaj * 9 * rSqft);
-      }
-    } else {
-      this.ratePerGaj = null;
+  onSqftCalculationChange(): void {
+    const areaSqft = Number(this.bookingAreaSqft || 0);
+    const rateSqft = Number(this.ratePerSqft || 0);
+
+    // Auto-sync Gaj equivalents
+    this.bookingAreaGaj = areaSqft > 0 ? Math.round((areaSqft / 9) * 100) / 100 : null;
+    this.ratePerGaj = rateSqft > 0 ? Math.round(rateSqft * 9 * 100) / 100 : null;
+
+    if (areaSqft > 0 && rateSqft > 0) {
+      this.customPlotPrice = Math.round(areaSqft * rateSqft);
     }
     this.onCustomPlotPriceChange();
+  }
+
+  onRatePerGajChange(): void {
+    this.onGajCalculationChange();
+  }
+
+  onRatePerSqftChange(): void {
+    this.onSqftCalculationChange();
   }
 
   onCustomPlotPriceInput(): void {
     const price = Number(this.customPlotPrice || 0);
-    if (price > 0 && this.plotAreaGaj > 0) {
-      this.ratePerGaj = Math.round((price / this.plotAreaGaj) * 100) / 100;
-      this.ratePerSqft = Math.round((price / (this.plotAreaGaj * 9)) * 100) / 100;
-    } else {
-      this.ratePerGaj = null;
-      this.ratePerSqft = null;
+    if (price > 0) {
+      if (this.pricingUnit === 'GAJ' && this.bookingAreaGaj && this.bookingAreaGaj > 0) {
+        this.ratePerGaj = Math.round((price / this.bookingAreaGaj) * 100) / 100;
+        this.ratePerSqft = Math.round((this.ratePerGaj / 9) * 100) / 100;
+      } else if (this.pricingUnit === 'SQFT' && this.bookingAreaSqft && this.bookingAreaSqft > 0) {
+        this.ratePerSqft = Math.round((price / this.bookingAreaSqft) * 100) / 100;
+        this.ratePerSqft = Math.round((price / this.bookingAreaSqft) * 100) / 100;
+        this.ratePerGaj = Math.round(this.ratePerSqft * 9 * 100) / 100;
+      }
     }
     this.onCustomPlotPriceChange();
   }
@@ -971,17 +996,19 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
     const initialAdminPrice = Number(plot.base_price || plot.price || 0);
     const areaGaj = Number(plot.plot_area || 0);
+    this.bookingAreaGaj = areaGaj > 0 ? areaGaj : 1;
+    this.bookingAreaSqft = Math.round(this.bookingAreaGaj * 9 * 100) / 100;
 
     if (initialAdminPrice > 0) {
       this.customPlotPrice = initialAdminPrice;
-      if (areaGaj > 0) {
-        this.ratePerGaj = Math.round((initialAdminPrice / areaGaj) * 100) / 100;
-        this.ratePerSqft = Math.round((initialAdminPrice / (areaGaj * 9)) * 100) / 100;
+      if (this.bookingAreaGaj > 0) {
+        this.ratePerGaj = Math.round((initialAdminPrice / this.bookingAreaGaj) * 100) / 100;
+        this.ratePerSqft = Math.round((this.ratePerGaj / 9) * 100) / 100;
       }
     } else {
-      this.customPlotPrice = null;
-      this.ratePerGaj = null;
-      this.ratePerSqft = null;
+      this.ratePerGaj = 20000;
+      this.ratePerSqft = Math.round((20000 / 9) * 100) / 100;
+      this.customPlotPrice = Math.round(this.bookingAreaGaj * this.ratePerGaj);
     }
 
     if (this.isBookable(plot)) {
@@ -996,11 +1023,15 @@ export class BookPlotComponent implements OnInit, OnDestroy {
           this.selectedPlot = { ...this.selectedPlot, ...detail };
           const detailAdminPrice = Number(detail.base_price || detail.price || 0);
           const detailAreaGaj = Number(detail.plot_area || areaGaj || 0);
-          if (detailAdminPrice > 0 && !this.customPlotPrice) {
+          if (detailAreaGaj > 0) {
+            this.bookingAreaGaj = detailAreaGaj;
+            this.bookingAreaSqft = Math.round(detailAreaGaj * 9 * 100) / 100;
+          }
+          if (detailAdminPrice > 0) {
             this.customPlotPrice = detailAdminPrice;
-            if (detailAreaGaj > 0) {
-              this.ratePerGaj = Math.round((detailAdminPrice / detailAreaGaj) * 100) / 100;
-              this.ratePerSqft = Math.round((detailAdminPrice / (detailAreaGaj * 9)) * 100) / 100;
+            if (this.bookingAreaGaj && this.bookingAreaGaj > 0) {
+              this.ratePerGaj = Math.round((detailAdminPrice / this.bookingAreaGaj) * 100) / 100;
+              this.ratePerSqft = Math.round((this.ratePerGaj / 9) * 100) / 100;
             }
           }
           if (this.isBookable(this.selectedPlot)) {
@@ -1332,9 +1363,14 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.selectedPlot = null;
     this.selectedPlotDetail = null;
     this.isDrawerOpen = false;
+    this.pricingUnit = 'GAJ';
+    this.bookingAreaGaj = null;
+    this.bookingAreaSqft = null;
     this.agreedAmount = null;
     this.advanceAmount = 50000;
     this.customPlotPrice = null;
+    this.ratePerGaj = null;
+    this.ratePerSqft = null;
     this.notes = '';
     this.selectedTeamMemberId = null;
     this.selectedTeamMember = null;
