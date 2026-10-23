@@ -92,6 +92,11 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./booking-management/booking-management.component').then(m => m.BookingManagementComponent) 
   },
   { 
+    path: 'plot-orders', 
+    loadComponent: () => import('./plot-orders/plot-orders.component').then(m => m.AdminPlotOrdersComponent),
+    title: 'Plot Booking Orders' 
+  },
+  { 
     path: 'unattributed-bookings', 
     loadComponent: () => import('./unattributed-bookings/unattributed-bookings.component').then(m => m.AdminUnattributedBookingsComponent),
     title: 'Unattributed Bookings Resolution' 
