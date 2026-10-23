@@ -20,8 +20,11 @@ interface NavItem {
 interface NavGroup {
   label: string;
   icon: string;
-  expanded: boolean;
+  expanded?: boolean;
   items: NavItem[];
+  directLink?: string;
+  badge?: string;
+  red?: boolean;
 }
 
 @Component({
@@ -53,13 +56,10 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     {
       label: 'PLOT ORDERS',
       icon: 'fas fa-clipboard-check',
+      directLink: '/admin/plot-orders',
+      badge: 'NEW',
       expanded: false,
-      items: [
-        { icon: 'fas fa-clipboard-list', label: 'Plot Booking Orders', route: '/admin/plot-orders', badge: 'NEW' },
-        { icon: 'fas fa-clock', label: 'Pending Orders', route: '/admin/plot-orders', queryParams: { tab: 'PENDING' } },
-        { icon: 'fas fa-check-circle', label: 'Approved Orders', route: '/admin/plot-orders', queryParams: { tab: 'CONFIRMED' } },
-        { icon: 'fas fa-user-tag', label: 'Self Purchase (0% Comm)', route: '/admin/plot-orders', queryParams: { tab: 'SELF_PURCHASE' } },
-      ]
+      items: []
     },
     {
       label: 'CUSTOMER',
@@ -222,15 +222,20 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   }
 
   toggleGroup(group: NavGroup) {
+    if (group.directLink) {
+      this.router.navigate([group.directLink]);
+      return;
+    }
     const willExpand = !group.expanded;
     // Close all other groups (single active group accordion)
     this.filteredNavGroups.forEach(g => g.expanded = false);
     this.rawNavGroups.forEach(g => g.expanded = false);
     group.expanded = willExpand;
+  }
 
-    if (group.label === 'PLOT ORDERS' && !this.router.url.startsWith('/admin/plot-orders')) {
-      this.router.navigate(['/admin/plot-orders']);
-    }
+  isDirectGroupActive(group: NavGroup): boolean {
+    if (!group.directLink) return false;
+    return this.router.url.startsWith(group.directLink);
   }
 
   isItemActive(item: NavItem): boolean {
