@@ -33,6 +33,7 @@ export class AdminPlotOrdersComponent implements OnInit {
   detailLoading = false;
   actionLoading = false;
   statusUpdatingId: number | null = null;
+  hoveredOrderId: number | null = null;
 
   orders: any[] = [];
   metrics: any = {
