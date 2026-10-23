@@ -32,12 +32,13 @@ export class ApiService {
     };
 
     const isInvestorRoute = path.includes('/investor') || (typeof window !== 'undefined' && window.location.pathname.startsWith('/investor'));
+    const isAdminRoute = admin || path.includes('/admin') || (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'));
 
-    let token = admin
-      ? getToken('mmr_admin_token', 'mmr_admin_login_date', 'mmr_admin_expires_at')
+    let token = isAdminRoute
+      ? (getToken('mmr_admin_token', 'mmr_admin_login_date', 'mmr_admin_expires_at') || getToken('mmr_user_token', 'mmr_user_login_date', 'mmr_user_expires_at'))
       : (isInvestorRoute
-          ? (getToken('mmr_investor_token', 'mmr_investor_login_date', 'mmr_investor_expires_at') || getToken('mmr_user_token', 'mmr_user_login_date', 'mmr_user_expires_at'))
-          : (getToken('mmr_user_token', 'mmr_user_login_date', 'mmr_user_expires_at') || getToken('mmr_investor_token', 'mmr_investor_login_date', 'mmr_investor_expires_at')));
+          ? (getToken('mmr_investor_token', 'mmr_investor_login_date', 'mmr_investor_expires_at') || getToken('mmr_user_token', 'mmr_user_login_date', 'mmr_user_expires_at') || getToken('mmr_admin_token', 'mmr_admin_login_date', 'mmr_admin_expires_at'))
+          : (getToken('mmr_user_token', 'mmr_user_login_date', 'mmr_user_expires_at') || getToken('mmr_admin_token', 'mmr_admin_login_date', 'mmr_admin_expires_at') || getToken('mmr_investor_token', 'mmr_investor_login_date', 'mmr_investor_expires_at')));
 
     return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }

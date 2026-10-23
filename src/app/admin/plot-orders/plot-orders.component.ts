@@ -272,14 +272,18 @@ export class AdminPlotOrdersComponent implements OnInit {
   openInvoice(order: any): void {
     const invId = order.invoice_number || order.invoice_id || order.booking_id;
     if (order.invoice_number || order.invoice_id) {
-      this.router.navigate(['/invoice', invId]);
+      if (typeof window !== 'undefined') {
+        window.open(`/invoice/${invId}`, '_blank');
+      } else {
+        this.router.navigate(['/invoice', invId]);
+      }
     } else {
       // Auto-generate invoice first
-      this.generateInvoice(order);
+      this.generateInvoice(order, true);
     }
   }
 
-  generateInvoice(order: any): void {
+  generateInvoice(order: any, openAfter: boolean = false): void {
     this.actionLoading = true;
     this.api.post(`/api/admin/plot-orders/${order.booking_id}/generate-invoice`, {}, true).subscribe({
       next: (res: any) => {
@@ -288,7 +292,13 @@ export class AdminPlotOrdersComponent implements OnInit {
           const invNum = res.data?.invoice?.invoice_number || `MMR-INV-${order.booking_id}`;
           this.showToast('Invoice generated successfully!', 'success');
           order.invoice_number = invNum;
-          this.router.navigate(['/invoice', invNum]);
+          if (openAfter) {
+            if (typeof window !== 'undefined') {
+              window.open(`/invoice/${invNum}`, '_blank');
+            } else {
+              this.router.navigate(['/invoice', invNum]);
+            }
+          }
         }
       },
       error: (err: any) => {
