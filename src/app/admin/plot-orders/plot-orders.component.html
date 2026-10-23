@@ -1,0 +1,547 @@
+<div class="orders-page-shell">
+  <!-- Toast Notification -->
+  <div *ngIf="toastMessage" class="toast-bar" [ngClass]="toastType">
+    <i class="fas" [ngClass]="toastType === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'"></i>
+    <span>{{ toastMessage }}</span>
+  </div>
+
+  <!-- Page Header -->
+  <div class="orders-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <i class="fas fa-clipboard-check"></i>
+      </div>
+      <div>
+        <h1 class="header-title">Plot Booking Orders</h1>
+        <p class="header-subtitle">Admin Master Control • Customer & Self-Purchase Booking Requests</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline-secondary btn-sm" (click)="resetFilters()">
+        <i class="fas fa-sync-alt me-1"></i> Refresh
+      </button>
+      <button class="btn btn-primary btn-sm" (click)="exportData()">
+        <i class="fas fa-file-export me-1"></i> Export CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Metrics Bar -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label"><i class="fas fa-list-check me-1 text-primary"></i> Total Orders</div>
+      <div class="metric-value">{{ metrics.total_orders || 0 }}</div>
+      <div class="metric-sub">All time plot bookings</div>
+    </div>
+
+    <div class="metric-card card-approved">
+      <div class="metric-label"><i class="fas fa-check-circle me-1 text-success"></i> Approved / Confirmed</div>
+      <div class="metric-value text-success">{{ metrics.approved_count || 0 }}</div>
+      <div class="metric-sub">Plots marked sold</div>
+    </div>
+
+    <div class="metric-card card-pending">
+      <div class="metric-label"><i class="fas fa-clock me-1 text-warning"></i> Pending Requests</div>
+      <div class="metric-value text-warning">{{ metrics.pending_count || 0 }}</div>
+      <div class="metric-sub">Awaiting admin review</div>
+    </div>
+
+    <div class="metric-card card-rejected">
+      <div class="metric-label"><i class="fas fa-times-circle me-1 text-danger"></i> Rejected</div>
+      <div class="metric-value text-danger">{{ metrics.rejected_count || 0 }}</div>
+      <div class="metric-sub">Declined orders</div>
+    </div>
+
+    <div class="metric-card card-self">
+      <div class="metric-label"><i class="fas fa-user-tag me-1 text-purple"></i> Self Purchases</div>
+      <div class="metric-value text-purple">{{ metrics.self_purchase_count || 0 }}</div>
+      <div class="metric-sub">0% Commission Bookings</div>
+    </div>
+
+    <div class="metric-card card-volume">
+      <div class="metric-label"><i class="fas fa-rupee-sign me-1 text-info"></i> Total Booking Value</div>
+      <div class="metric-value text-info">₹{{ (metrics.total_sales_volume || 0) | number:'1.0-0' }}</div>
+      <div class="metric-sub">Adv: ₹{{ (metrics.total_advance_volume || 0) | number:'1.0-0' }}</div>
+    </div>
+  </div>
+
+  <!-- Filter & Quick-Tabs Bar -->
+  <div class="filter-controls-card">
+    <div class="tabs-row">
+      <button class="tab-btn" [class.active]="activeTab === 'ALL'" (click)="setTab('ALL')">
+        All Orders ({{ metrics.total_orders || 0 }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'PENDING'" (click)="setTab('PENDING')">
+        <i class="fas fa-clock text-warning me-1"></i> Pending ({{ metrics.pending_count || 0 }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'CONFIRMED'" (click)="setTab('CONFIRMED')">
+        <i class="fas fa-check-circle text-success me-1"></i> Approved ({{ metrics.approved_count || 0 }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'REJECTED'" (click)="setTab('REJECTED')">
+        <i class="fas fa-times-circle text-danger me-1"></i> Rejected ({{ metrics.rejected_count || 0 }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'SELF_PURCHASE'" (click)="setTab('SELF_PURCHASE')">
+        <i class="fas fa-user-tag text-purple me-1"></i> Self Purchase (0% Comm) ({{ metrics.self_purchase_count || 0 }})
+      </button>
+    </div>
+
+    <div class="search-inputs-row">
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          placeholder="Search Order ID, Buyer, Mobile, Plot #, Site, Team Member..."
+          [(ngModel)]="search"
+          (keyup.enter)="onSearch()"
+        />
+        <button class="btn btn-sm btn-search" (click)="onSearch()">Search</button>
+      </div>
+
+      <div class="filter-dropdowns">
+        <select class="form-select form-select-sm" [(ngModel)]="bookingType" (change)="loadOrders(1)">
+          <option value="ALL">All Buyer Types</option>
+          <option value="SELF_PURCHASE">Self Purchase Only (0% Comm)</option>
+          <option value="CUSTOMER_SALE">Customer Sales Only</option>
+        </select>
+
+        <select class="form-select form-select-sm" [(ngModel)]="status" (change)="loadOrders(1)">
+          <option value="ALL">All Statuses</option>
+          <option value="Confirmed">Approved / Confirmed</option>
+          <option value="Pending">Pending / Under Process</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ultra-Compact ERP Table Container -->
+  <div class="table-card">
+    <div *ngIf="loading" class="table-loading-overlay">
+      <i class="fas fa-spinner fa-spin fa-2x text-primary mb-2"></i>
+      <span>Loading plot orders...</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="erp-dense-table">
+        <thead>
+          <tr>
+            <th style="width: 130px;">Order ID & Date</th>
+            <th style="width: 170px;">Buyer Details</th>
+            <th style="width: 150px;">Team Member (Sold By)</th>
+            <th style="width: 130px;">Associate Leader</th>
+            <th style="width: 160px;">Plot & Site Location</th>
+            <th style="width: 160px;">Pricing & Advance</th>
+            <th style="width: 130px;">Invoice</th>
+            <th style="width: 145px; text-align: center;">Admin Approval</th>
+            <th style="width: 80px; text-align: center;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of orders; let odd = odd; let even = even" [class.row-odd]="odd" [class.row-even]="even">
+            <!-- Col 1: Order ID & Date (2 lines) -->
+            <td>
+              <div class="cell-line font-mono fw-bold text-dark">
+                #{{ order.booking_serial || ('BK-' + order.booking_id) }}
+              </div>
+              <div class="cell-sub text-muted">
+                {{ order.booking_date | date:'dd MMM yyyy, hh:mm a' }}
+              </div>
+            </td>
+
+            <!-- Col 2: Buyer Details (3 lines with self-purchase badge) -->
+            <td>
+              <div class="cell-line fw-bold text-dark d-flex align-items-center gap-1">
+                <span>{{ order.buyer_name || 'Anonymous' }}</span>
+                <span *ngIf="order.buyer_member_id" class="member-tag">({{ order.buyer_member_id }})</span>
+              </div>
+              <div class="cell-sub text-muted">
+                <i class="fas fa-phone-alt me-1 font-xs"></i>{{ order.buyer_mobile || 'No Mobile' }}
+              </div>
+              <div class="mt-0.5">
+                <span *ngIf="order.is_self_purchase" class="badge-tag badge-self" title="Self Purchase: 0% Commission and No Payment Cut">
+                  <i class="fas fa-user-tag me-1"></i>Self Purchase (0% Comm)
+                </span>
+                <span *ngIf="!order.is_self_purchase" class="badge-tag badge-cust">
+                  <i class="fas fa-user me-1"></i>Customer Sale
+                </span>
+              </div>
+            </td>
+
+            <!-- Col 3: Team Member (2 lines) -->
+            <td>
+              <div class="cell-line fw-semibold text-dark">
+                <span *ngIf="order.team_member_name">{{ order.team_member_name }}</span>
+                <span *ngIf="!order.team_member_name" class="text-muted fst-italic">— Direct Sale</span>
+              </div>
+              <div *ngIf="order.team_member_name" class="cell-sub text-muted">
+                <span>ID: {{ order.team_member_member_id || ('#' + order.sold_by_user_id) }}</span>
+                <span *ngIf="order.team_member_mobile"> • {{ order.team_member_mobile }}</span>
+              </div>
+            </td>
+
+            <!-- Col 4: Associate Leader (2 lines) -->
+            <td>
+              <div class="cell-line fw-semibold text-dark">
+                <span *ngIf="order.associate_name">{{ order.associate_name }}</span>
+                <span *ngIf="!order.associate_name" class="text-muted fst-italic">— Direct</span>
+              </div>
+              <div *ngIf="order.associate_name" class="cell-sub text-muted">
+                <span>ID: {{ order.associate_member_id || ('#' + order.associate_user_id) }}</span>
+              </div>
+            </td>
+
+            <!-- Col 5: Plot & Site Location (2 lines) -->
+            <td>
+              <div class="cell-line fw-bold text-primary">
+                Plot #{{ order.plot_number || 'N/A' }}
+                <span class="area-text">({{ order.plot_area }} {{ order.area_unit || 'Gaj' }})</span>
+              </div>
+              <div class="cell-sub text-dark">
+                <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                <span class="fw-semibold">{{ order.site_name || 'Site' }}</span>
+                <span *ngIf="order.site_city" class="text-muted">, {{ order.site_city }}</span>
+              </div>
+            </td>
+
+            <!-- Col 6: Pricing & Payment (3 lines) -->
+            <td>
+              <div class="cell-line">
+                <span class="text-muted font-xs">Total:</span>
+                <span class="fw-bold font-mono text-dark ms-1">₹{{ (order.total_agreed_price || 0) | number:'1.0-0' }}</span>
+              </div>
+              <div class="cell-sub">
+                <span class="text-muted font-xs">Advance:</span>
+                <span class="fw-bold font-mono text-success ms-1">₹{{ (order.advance_amount || 0) | number:'1.0-0' }}</span>
+              </div>
+              <div class="cell-sub text-muted font-xs">
+                {{ order.payment_method || 'Bank Transfer' }} • {{ order.payment_type || 'FullPayment' }}
+              </div>
+            </td>
+
+            <!-- Col 7: Invoice -->
+            <td>
+              <div *ngIf="order.invoice_number" class="d-flex align-items-center gap-1">
+                <button
+                  class="btn-inv-link"
+                  (click)="openInvoice(order)"
+                  title="View / Print Invoice"
+                >
+                  <i class="fas fa-file-invoice text-primary me-1"></i>
+                  <span class="font-mono">{{ order.invoice_number }}</span>
+                </button>
+              </div>
+              <div *ngIf="!order.invoice_number">
+                <button
+                  class="btn-gen-inv"
+                  (click)="generateInvoice(order)"
+                  [disabled]="actionLoading"
+                  title="Generate Invoice Record"
+                >
+                  <i class="fas fa-plus-circle me-1"></i> Generate
+                </button>
+              </div>
+            </td>
+
+            <!-- Col 8: Admin Approval Inline Dropdown -->
+            <td style="text-align: center;">
+              <div class="approval-dropdown-container">
+                <select
+                  class="form-select form-select-xs status-select"
+                  [ngClass]="{
+                    'status-approved': order.booking_status === 'Confirmed' || order.booking_status === 'Approved',
+                    'status-pending': order.booking_status === 'Pending' || order.booking_status === 'PaymentPending' || order.booking_status === 'Under Process',
+                    'status-rejected': order.booking_status === 'Rejected'
+                  }"
+                  [ngModel]="order.booking_status"
+                  (ngModelChange)="onStatusChange(order, $event)"
+                  [disabled]="statusUpdatingId === order.booking_id"
+                >
+                  <option value="Confirmed">✓ Approved</option>
+                  <option value="Pending">⏳ Pending</option>
+                  <option value="Under Process">⚙ Under Process</option>
+                  <option value="Rejected">✕ Rejected</option>
+                </select>
+                <div *ngIf="statusUpdatingId === order.booking_id" class="status-spinner">
+                  <i class="fas fa-spinner fa-spin text-primary"></i>
+                </div>
+              </div>
+            </td>
+
+            <!-- Col 9: Actions (View 👁️ Details) -->
+            <td style="text-align: center;">
+              <button
+                class="btn-action-icon btn-view"
+                (click)="viewDetails(order)"
+                title="View Full Booking & Location Details"
+              >
+                <i class="fas fa-eye"></i>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="!loading && orders.length === 0">
+            <td colspan="9" class="text-center py-5 text-muted">
+              <i class="fas fa-inbox fa-3x mb-2 text-secondary"></i>
+              <div class="fw-semibold">No plot booking orders found</div>
+              <div class="font-xs">Try adjusting your filters or search keywords</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div class="table-footer" *ngIf="pagination.total > 0">
+      <div class="footer-info">
+        Showing <b>{{ (pagination.page - 1) * pagination.limit + 1 }}</b> to
+        <b>{{ Math.min(pagination.page * pagination.limit, pagination.total) }}</b> of
+        <b>{{ pagination.total }}</b> orders
+      </div>
+      <app-admin-pagination
+        [currentPage]="pagination.page"
+        [totalItems]="pagination.total"
+        [pageSize]="pagination.limit"
+        (pageChange)="onPageChange($event)"
+      ></app-admin-pagination>
+    </div>
+  </div>
+
+  <!-- Detail Modal / Drawer (Highlighted Site & Location Specs) -->
+  <div *ngIf="showDetailModal" class="modal-backdrop-custom" (click)="closeModal()">
+    <div class="modal-card-custom" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="modal-header-custom">
+        <div class="d-flex align-items-center gap-2">
+          <div class="modal-badge-icon">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          <div>
+            <h2 class="modal-title">
+              Order #{{ selectedOrder?.booking_serial || selectedOrder?.booking_id }}
+            </h2>
+            <div class="modal-sub">
+              Booked on {{ selectedOrder?.booking_date | date:'dd MMMM yyyy, hh:mm a' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <span
+            class="status-pill"
+            [ngClass]="{
+              'pill-approved': selectedOrder?.booking_status === 'Confirmed' || selectedOrder?.booking_status === 'Approved',
+              'pill-pending': selectedOrder?.booking_status === 'Pending' || selectedOrder?.booking_status === 'Under Process',
+              'pill-rejected': selectedOrder?.booking_status === 'Rejected'
+            }"
+          >
+            {{ selectedOrder?.booking_status }}
+          </span>
+          <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body-custom">
+        <div *ngIf="detailLoading" class="text-center py-4">
+          <i class="fas fa-spinner fa-spin fa-2x text-primary mb-2"></i>
+          <p>Loading full plot specs & location...</p>
+        </div>
+
+        <div *ngIf="!detailLoading && selectedOrder" class="detail-sections">
+          <!-- 1. HIGHLIGHTED SITE & LOCATION CARD (User requirement: किस साइड में किस लोकेशन पे उसने प्लॉट बुक किया है, वो भी दिख जाएगा, हाइलाइट हो जाएगा) -->
+          <div class="site-location-highlight-card">
+            <div class="site-highlight-header">
+              <div class="site-icon-box">
+                <i class="fas fa-map-marked-alt"></i>
+              </div>
+              <div class="site-title-info">
+                <span class="site-tag">BOOKED SITE LOCATION</span>
+                <h3 class="site-name">{{ selectedOrder.site_name || 'MMR Project Site' }}</h3>
+                <div class="site-location-text">
+                  <i class="fas fa-location-dot text-danger me-1"></i>
+                  <b>{{ selectedOrder.site_location || selectedOrder.site_city || 'Varanasi' }}</b>
+                  <span *ngIf="selectedOrder.site_state">, {{ selectedOrder.site_state }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="site-address-box" *ngIf="selectedOrder.site_address">
+              <span class="text-muted font-xs">Full Address:</span>
+              <p class="mb-0 fw-medium text-dark font-sm">{{ selectedOrder.site_address }}</p>
+            </div>
+          </div>
+
+          <!-- 2. PLOT SPECIFICATIONS CARD -->
+          <div class="detail-card">
+            <div class="card-section-title">
+              <i class="fas fa-vector-square text-primary me-2"></i>Plot Specifications
+            </div>
+            <div class="spec-grid">
+              <div class="spec-item">
+                <span class="spec-label">Plot Number</span>
+                <span class="spec-val fw-bold text-primary font-md">Plot #{{ selectedOrder.plot_number || 'N/A' }}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Area (Gaj)</span>
+                <span class="spec-val fw-bold font-md">{{ selectedOrder.plot_area || 0 }} {{ selectedOrder.area_unit || 'Gaj' }}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Area in Sq. Ft.</span>
+                <span class="spec-val">{{ (selectedOrder.plot_area * 9) || 0 }} Sq. Ft.</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Facing / Orientation</span>
+                <span class="spec-val">{{ selectedOrder.facing || 'East Facing' }}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Unit Type</span>
+                <span class="spec-val">{{ selectedOrder.unit_type || 'Residential Plot' }}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Plot Status</span>
+                <span class="spec-val badge-tag badge-plot-status">{{ selectedOrder.plot_status || 'Sold' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. BUYER & SALES ATTRIBUTION HIERARCHY -->
+          <div class="detail-card">
+            <div class="card-section-title">
+              <i class="fas fa-users-cog text-info me-2"></i>Buyer & Sales Attribution Hierarchy
+            </div>
+
+            <!-- Self Purchase 0% Commission Alert -->
+            <div *ngIf="selectedOrder.is_self_purchase" class="self-purchase-alert">
+              <div class="alert-icon"><i class="fas fa-shield-alt"></i></div>
+              <div>
+                <strong>Self Purchase by Team Member / Associate</strong>
+                <p class="mb-0 font-xs">
+                  0% Commission policy applied. No payout deductions are charged on this booking. Full payment is directly settled with the company.
+                </p>
+              </div>
+            </div>
+
+            <div class="hierarchy-grid">
+              <!-- Buyer -->
+              <div class="entity-box buyer-box">
+                <div class="entity-badge">BUYER</div>
+                <div class="entity-name">{{ selectedOrder.buyer_name }}</div>
+                <div class="entity-detail">ID: <b>{{ selectedOrder.buyer_member_id || ('#' + selectedOrder.user_id) }}</b></div>
+                <div class="entity-detail">Mobile: {{ selectedOrder.buyer_mobile }}</div>
+                <div class="entity-detail" *ngIf="selectedOrder.buyer_email">Email: {{ selectedOrder.buyer_email }}</div>
+                <div class="entity-detail" *ngIf="selectedOrder.buyer_city">City: {{ selectedOrder.buyer_city }}</div>
+                <div class="entity-detail">KYC: <span class="badge-kyc">{{ selectedOrder.buyer_kyc_status || 'Approved' }}</span></div>
+              </div>
+
+              <!-- Attributed Team Member -->
+              <div class="entity-box tm-box">
+                <div class="entity-badge">TEAM MEMBER (SELLER)</div>
+                <div *ngIf="selectedOrder.team_member_name">
+                  <div class="entity-name">{{ selectedOrder.team_member_name }}</div>
+                  <div class="entity-detail">ID: <b>{{ selectedOrder.team_member_member_id || ('#' + selectedOrder.sold_by_user_id) }}</b></div>
+                  <div class="entity-detail">Mobile: {{ selectedOrder.team_member_mobile || '—' }}</div>
+                  <div class="entity-detail" *ngIf="selectedOrder.team_member_email">Email: {{ selectedOrder.team_member_email }}</div>
+                </div>
+                <div *ngIf="!selectedOrder.team_member_name" class="text-muted font-sm py-2">
+                  <i class="fas fa-building me-1"></i> Direct Company Booking
+                </div>
+              </div>
+
+              <!-- Attributed Associate Leader -->
+              <div class="entity-box assoc-box">
+                <div class="entity-badge">ASSOCIATE LEADER</div>
+                <div *ngIf="selectedOrder.associate_name">
+                  <div class="entity-name">{{ selectedOrder.associate_name }}</div>
+                  <div class="entity-detail">ID: <b>{{ selectedOrder.associate_member_id || ('#' + selectedOrder.associate_user_id) }}</b></div>
+                  <div class="entity-detail">Mobile: {{ selectedOrder.associate_mobile || '—' }}</div>
+                </div>
+                <div *ngIf="!selectedOrder.associate_name" class="text-muted font-sm py-2">
+                  <i class="fas fa-minus-circle me-1"></i> None (Direct)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. FINANCIAL & PAYMENT BREAKDOWN -->
+          <div class="detail-card">
+            <div class="card-section-title">
+              <i class="fas fa-file-invoice-dollar text-success me-2"></i>Financial & Payment Breakdown
+            </div>
+            <div class="financial-grid">
+              <div class="fin-box">
+                <span class="fin-label">Agreed Plot Price</span>
+                <span class="fin-amount text-dark font-mono">₹{{ (selectedOrder.total_agreed_price || 0) | number:'1.0-0' }}</span>
+              </div>
+              <div class="fin-box">
+                <span class="fin-label">Advance Amount Paid</span>
+                <span class="fin-amount text-success font-mono">₹{{ (selectedOrder.advance_amount || 0) | number:'1.0-0' }}</span>
+              </div>
+              <div class="fin-box">
+                <span class="fin-label">Remaining Balance</span>
+                <span class="fin-amount text-danger font-mono">₹{{ (selectedOrder.remaining_balance || (selectedOrder.total_agreed_price - selectedOrder.advance_amount)) | number:'1.0-0' }}</span>
+              </div>
+              <div class="fin-box">
+                <span class="fin-label">Payment Method</span>
+                <span class="fin-val fw-bold">{{ selectedOrder.payment_method || 'Bank Transfer' }}</span>
+              </div>
+              <div class="fin-box">
+                <span class="fin-label">Payment Plan</span>
+                <span class="fin-val fw-bold">{{ selectedOrder.payment_type || 'FullPayment' }}</span>
+              </div>
+              <div class="fin-box">
+                <span class="fin-label">Invoice Number</span>
+                <span class="fin-val font-mono fw-bold text-primary">{{ selectedOrder.invoice_number || 'Pending Generation' }}</span>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div *ngIf="selectedOrder.notes" class="order-notes-box">
+              <span class="text-muted font-xs fw-bold">Booking Notes / Remarks:</span>
+              <p class="mb-0 font-sm">{{ selectedOrder.notes }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer with Admin Decisions -->
+      <div class="modal-footer-custom">
+        <div class="footer-left">
+          <button
+            *ngIf="selectedOrder?.invoice_number"
+            class="btn btn-outline-primary btn-sm"
+            (click)="openInvoice(selectedOrder)"
+          >
+            <i class="fas fa-file-invoice me-1"></i> View / Print Invoice
+          </button>
+        </div>
+
+        <div class="footer-right d-flex align-items-center gap-2">
+          <!-- Quick Approve / Reject in Modal -->
+          <button
+            *ngIf="selectedOrder?.booking_status !== 'Confirmed'"
+            class="btn btn-success btn-sm"
+            (click)="onStatusChange(selectedOrder, 'Confirmed')"
+            [disabled]="statusUpdatingId === selectedOrder?.booking_id"
+          >
+            <i class="fas fa-check-circle me-1"></i> Approve Booking
+          </button>
+
+          <button
+            *ngIf="selectedOrder?.booking_status !== 'Rejected'"
+            class="btn btn-danger btn-sm"
+            (click)="onStatusChange(selectedOrder, 'Rejected')"
+            [disabled]="statusUpdatingId === selectedOrder?.booking_id"
+          >
+            <i class="fas fa-times-circle me-1"></i> Reject Booking
+          </button>
+
+          <button class="btn btn-secondary btn-sm" (click)="closeModal()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
