@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ApiService, BASE_URL } from '../../services/api.service';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
@@ -25,6 +25,7 @@ export class AdminPlotOrdersComponent implements OnInit {
   private api = inject(ApiService);
   private exportService = inject(AdminExportService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   baseUrl = BASE_URL;
   Math = Math;
@@ -67,7 +68,13 @@ export class AdminPlotOrdersComponent implements OnInit {
   toastType: 'success' | 'error' = 'success';
 
   ngOnInit(): void {
-    this.loadOrders(1);
+    this.route.queryParams.subscribe((params: any) => {
+      if (params.tab && ['ALL', 'PENDING', 'CONFIRMED', 'REJECTED', 'SELF_PURCHASE'].includes(String(params.tab).toUpperCase())) {
+        this.setTab(String(params.tab).toUpperCase() as any);
+      } else {
+        this.loadOrders(1);
+      }
+    });
   }
 
   loadOrders(page: number = 1): void {

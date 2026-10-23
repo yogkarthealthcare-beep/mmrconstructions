@@ -51,13 +51,23 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       ]
     },
     {
+      label: 'PLOT ORDERS',
+      icon: 'fas fa-clipboard-check',
+      expanded: false,
+      items: [
+        { icon: 'fas fa-clipboard-list', label: 'Plot Booking Orders', route: '/admin/plot-orders', badge: 'NEW' },
+        { icon: 'fas fa-clock', label: 'Pending Orders', route: '/admin/plot-orders', queryParams: { tab: 'PENDING' } },
+        { icon: 'fas fa-check-circle', label: 'Approved Orders', route: '/admin/plot-orders', queryParams: { tab: 'CONFIRMED' } },
+        { icon: 'fas fa-user-tag', label: 'Self Purchase (0% Comm)', route: '/admin/plot-orders', queryParams: { tab: 'SELF_PURCHASE' } },
+      ]
+    },
+    {
       label: 'CUSTOMER',
       icon: 'fas fa-users',
       expanded: false,
       items: [
         { icon: 'fas fa-users', label: 'Customer Directory', route: '/admin/customers' },
         { icon: 'fas fa-id-card', label: 'Customer Enrollments', route: '/admin/enrollments', queryParams: { tab: 'customer' } },
-        { icon: 'fas fa-clipboard-check', label: 'Plot Orders', route: '/admin/plot-orders', badge: 'NEW' },
         { icon: 'fas fa-calendar-check', label: 'Booking Management', route: '/admin/booking-management' },
         { icon: 'fas fa-sitemap', label: 'Unattributed Bookings', route: '/admin/unattributed-bookings', badge: 'RESOLVE' },
         { icon: 'fas fa-trophy', label: 'Sales Leaderboards', route: '/admin/leaderboards', badge: 'RANK' },
@@ -217,6 +227,10 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     this.filteredNavGroups.forEach(g => g.expanded = false);
     this.rawNavGroups.forEach(g => g.expanded = false);
     group.expanded = willExpand;
+
+    if (group.label === 'PLOT ORDERS' && !this.router.url.startsWith('/admin/plot-orders')) {
+      this.router.navigate(['/admin/plot-orders']);
+    }
   }
 
   isItemActive(item: NavItem): boolean {
