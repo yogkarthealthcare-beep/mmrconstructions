@@ -62,6 +62,12 @@ export interface SalesTrackerSummary {
   yearly_gaj_sold?: number;
   customers_count?: number;
   plots_sold_count?: number;
+  active_customers_count?: number;
+  processing_count?: number;
+  cancelled_deals_count?: number;
+  total_sales_value?: number;
+  plots_sold?: number;
+  kpis?: any;
 }
 
 export interface CustomerSalesRow {
