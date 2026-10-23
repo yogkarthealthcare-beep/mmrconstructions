@@ -17,6 +17,7 @@ export interface BookableCustomer {
   is_verified?: boolean;
   kyc_status?: string;
   registered_at?: string;
+  created_at?: string;
   relationship?: 'DIRECT' | 'TEAM_MEMBER' | string;
   referrer_user_id?: number;
   referrer_name?: string;

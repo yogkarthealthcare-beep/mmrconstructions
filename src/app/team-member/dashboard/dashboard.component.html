@@ -206,7 +206,7 @@
                 </span>
               </td>
               <td class="text-muted small">
-                {{ cust.created_at ? (cust.created_at | date:'dd MMM yyyy') : '-' }}
+                {{ (cust.registered_at || cust.created_at) ? ((cust.registered_at || cust.created_at) | date:'dd MMM yyyy') : '-' }}
               </td>
               <td class="text-end">
                 <button
@@ -292,7 +292,7 @@
               </td>
               <td class="text-end">
                 <a
-                  [routerLink]="['/team-member/invoice', row.booking_id || row.id]"
+                  [routerLink]="['/team-member/invoice', row.booking_id]"
                   class="btn-xs btn-outline-info"
                   title="View Invoice"
                 >
