@@ -126,163 +126,187 @@
       <table class="erp-dense-table">
         <thead>
           <tr>
-            <th style="width: 130px;">Order ID & Date</th>
-            <th style="width: 170px;">Buyer Details</th>
-            <th style="width: 150px;">Team Member (Sold By)</th>
-            <th style="width: 130px;">Associate Leader</th>
-            <th style="width: 160px;">Plot & Site Location</th>
-            <th style="width: 160px;">Pricing & Advance</th>
-            <th style="width: 130px;">Invoice</th>
-            <th style="width: 145px; text-align: center;">Admin Approval</th>
+            <th style="width: 170px;">Order ID & Date</th>
+            <th style="width: 260px;">Buyer Details</th>
+            <th style="width: 240px;">Pricing & Advance</th>
+            <th style="width: 150px;">Invoice</th>
+            <th style="width: 160px; text-align: center;">Admin Approval</th>
             <th style="width: 80px; text-align: center;">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let order of orders; let odd = odd; let even = even" [class.row-odd]="odd" [class.row-even]="even">
-            <!-- Col 1: Order ID & Date (2 lines) -->
-            <td>
-              <div class="cell-line font-mono fw-bold text-dark">
-                #{{ order.booking_serial || ('BK-' + order.booking_id) }}
-              </div>
-              <div class="cell-sub text-muted">
-                {{ order.booking_date | date:'dd MMM yyyy, hh:mm a' }}
-              </div>
-            </td>
-
-            <!-- Col 2: Buyer Details (3 lines with self-purchase badge) -->
-            <td>
-              <div class="cell-line fw-bold text-dark d-flex align-items-center gap-1">
-                <span>{{ order.buyer_name || 'Anonymous' }}</span>
-                <span *ngIf="order.buyer_member_id" class="member-tag">({{ order.buyer_member_id }})</span>
-              </div>
-              <div class="cell-sub text-muted">
-                <i class="fas fa-phone-alt me-1 font-xs"></i>{{ order.buyer_mobile || 'No Mobile' }}
-              </div>
-              <div class="mt-0.5">
-                <span *ngIf="order.is_self_purchase" class="badge-tag badge-self" title="Self Purchase: 0% Commission and No Payment Cut">
-                  <i class="fas fa-user-tag me-1"></i>Self Purchase (0% Comm)
-                </span>
-                <span *ngIf="!order.is_self_purchase" class="badge-tag badge-cust">
-                  <i class="fas fa-user me-1"></i>Customer Sale
-                </span>
-              </div>
-            </td>
-
-            <!-- Col 3: Team Member (2 lines) -->
-            <td>
-              <div class="cell-line fw-semibold text-dark">
-                <span *ngIf="order.team_member_name">{{ order.team_member_name }}</span>
-                <span *ngIf="!order.team_member_name" class="text-muted fst-italic">— Direct Sale</span>
-              </div>
-              <div *ngIf="order.team_member_name" class="cell-sub text-muted">
-                <span>ID: {{ order.team_member_member_id || ('#' + order.sold_by_user_id) }}</span>
-                <span *ngIf="order.team_member_mobile"> • {{ order.team_member_mobile }}</span>
-              </div>
-            </td>
-
-            <!-- Col 4: Associate Leader (2 lines) -->
-            <td>
-              <div class="cell-line fw-semibold text-dark">
-                <span *ngIf="order.associate_name">{{ order.associate_name }}</span>
-                <span *ngIf="!order.associate_name" class="text-muted fst-italic">— Direct</span>
-              </div>
-              <div *ngIf="order.associate_name" class="cell-sub text-muted">
-                <span>ID: {{ order.associate_member_id || ('#' + order.associate_user_id) }}</span>
-              </div>
-            </td>
-
-            <!-- Col 5: Plot & Site Location (2 lines) -->
-            <td>
-              <div class="cell-line fw-bold text-primary">
-                Plot #{{ order.plot_number || 'N/A' }}
-                <span class="area-text">({{ order.plot_area }} {{ order.area_unit || 'Gaj' }})</span>
-              </div>
-              <div class="cell-sub text-dark">
-                <i class="fas fa-map-marker-alt text-danger me-1"></i>
-                <span class="fw-semibold">{{ order.site_name || 'Site' }}</span>
-                <span *ngIf="order.site_city" class="text-muted">, {{ order.site_city }}</span>
-              </div>
-            </td>
-
-            <!-- Col 6: Pricing & Payment (3 lines) -->
-            <td>
-              <div class="cell-line">
-                <span class="text-muted font-xs">Total:</span>
-                <span class="fw-bold font-mono text-dark ms-1">₹{{ (order.total_agreed_price || 0) | number:'1.0-0' }}</span>
-              </div>
-              <div class="cell-sub">
-                <span class="text-muted font-xs">Advance:</span>
-                <span class="fw-bold font-mono text-success ms-1">₹{{ (order.advance_amount || 0) | number:'1.0-0' }}</span>
-              </div>
-              <div class="cell-sub text-muted font-xs">
-                {{ order.payment_method || 'Bank Transfer' }} • {{ order.payment_type || 'FullPayment' }}
-              </div>
-            </td>
-
-            <!-- Col 7: Invoice -->
-            <td>
-              <div *ngIf="order.invoice_number" class="d-flex align-items-center gap-1">
-                <button
-                  class="btn-inv-link"
-                  (click)="openInvoice(order)"
-                  title="View / Print Invoice"
-                >
-                  <i class="fas fa-file-invoice text-primary me-1"></i>
-                  <span class="font-mono">{{ order.invoice_number }}</span>
-                </button>
-              </div>
-              <div *ngIf="!order.invoice_number">
-                <button
-                  class="btn-gen-inv"
-                  (click)="generateInvoice(order)"
-                  [disabled]="actionLoading"
-                  title="Generate Invoice Record"
-                >
-                  <i class="fas fa-plus-circle me-1"></i> Generate
-                </button>
-              </div>
-            </td>
-
-            <!-- Col 8: Admin Approval Inline Dropdown -->
-            <td style="text-align: center;">
-              <div class="approval-dropdown-container">
-                <select
-                  class="form-select form-select-xs status-select"
-                  [ngClass]="{
-                    'status-approved': order.booking_status === 'Confirmed' || order.booking_status === 'Approved',
-                    'status-pending': order.booking_status === 'Pending' || order.booking_status === 'PaymentPending' || order.booking_status === 'Under Process',
-                    'status-rejected': order.booking_status === 'Rejected'
-                  }"
-                  [ngModel]="order.booking_status"
-                  (ngModelChange)="onStatusChange(order, $event)"
-                  [disabled]="statusUpdatingId === order.booking_id"
-                >
-                  <option value="Confirmed">✓ Approved</option>
-                  <option value="Pending">⏳ Pending</option>
-                  <option value="Under Process">⚙ Under Process</option>
-                  <option value="Rejected">✕ Rejected</option>
-                </select>
-                <div *ngIf="statusUpdatingId === order.booking_id" class="status-spinner">
-                  <i class="fas fa-spinner fa-spin text-primary"></i>
+          <ng-container *ngFor="let order of orders; let odd = odd; let even = even">
+            <!-- Main Row (Always Visible) -->
+            <tr
+              class="order-main-row"
+              [class.row-odd]="odd"
+              [class.row-even]="even"
+              [class.row-hovered]="hoveredOrderId === order.booking_id"
+              (mouseenter)="hoveredOrderId = order.booking_id"
+              (mouseleave)="hoveredOrderId = null"
+            >
+              <!-- Col 1: Order ID & Date -->
+              <td>
+                <div class="cell-line font-mono fw-bold text-dark">
+                  #{{ order.booking_serial || ('BK-' + order.booking_id) }}
                 </div>
-              </div>
-            </td>
+                <div class="cell-sub text-muted">
+                  {{ order.booking_date | date:'dd MMM yyyy, hh:mm a' }}
+                </div>
+              </td>
 
-            <!-- Col 9: Actions (View 👁️ Details) -->
-            <td style="text-align: center;">
-              <button
-                class="btn-action-icon btn-view"
-                (click)="viewDetails(order)"
-                title="View Full Booking & Location Details"
-              >
-                <i class="fas fa-eye"></i>
-              </button>
-            </td>
-          </tr>
+              <!-- Col 2: Buyer Details -->
+              <td>
+                <div class="cell-line fw-bold text-dark d-flex align-items-center gap-1">
+                  <span>{{ order.buyer_name || 'Anonymous' }}</span>
+                  <span *ngIf="order.buyer_member_id" class="member-tag">({{ order.buyer_member_id }})</span>
+                </div>
+                <div class="cell-sub text-muted">
+                  <i class="fas fa-phone-alt me-1 font-xs"></i>{{ order.buyer_mobile || 'No Mobile' }}
+                </div>
+                <div class="mt-0.5">
+                  <span *ngIf="order.is_self_purchase" class="badge-tag badge-self" title="Self Purchase: 0% Commission and No Payment Cut">
+                    <i class="fas fa-user-tag me-1"></i>Self Purchase (0% Comm)
+                  </span>
+                  <span *ngIf="!order.is_self_purchase" class="badge-tag badge-cust">
+                    <i class="fas fa-user me-1"></i>Customer Sale
+                  </span>
+                </div>
+              </td>
+
+              <!-- Col 3: Pricing & Advance -->
+              <td>
+                <div class="cell-line">
+                  <span class="text-muted font-xs">Total:</span>
+                  <span class="fw-bold font-mono text-dark ms-1">₹{{ (order.total_agreed_price || 0) | number:'1.0-0' }}</span>
+                </div>
+                <div class="cell-sub">
+                  <span class="text-muted font-xs">Advance:</span>
+                  <span class="fw-bold font-mono text-success ms-1">₹{{ (order.advance_amount || 0) | number:'1.0-0' }}</span>
+                </div>
+                <div class="cell-sub text-muted font-xs">
+                  {{ order.payment_method || 'Bank Transfer' }} • {{ order.payment_type || 'FullPayment' }}
+                </div>
+              </td>
+
+              <!-- Col 4: Invoice -->
+              <td>
+                <div *ngIf="order.invoice_number" class="d-flex align-items-center gap-1">
+                  <button
+                    class="btn-inv-link"
+                    (click)="openInvoice(order)"
+                    title="View / Print Invoice"
+                  >
+                    <i class="fas fa-file-invoice text-primary me-1"></i>
+                    <span class="font-mono">{{ order.invoice_number }}</span>
+                  </button>
+                </div>
+                <div *ngIf="!order.invoice_number">
+                  <button
+                    class="btn-gen-inv"
+                    (click)="generateInvoice(order)"
+                    [disabled]="actionLoading"
+                    title="Generate Invoice Record"
+                  >
+                    <i class="fas fa-plus-circle me-1"></i> Generate
+                  </button>
+                </div>
+              </td>
+
+              <!-- Col 5: Admin Approval Inline Dropdown -->
+              <td style="text-align: center;">
+                <div class="approval-dropdown-container">
+                  <select
+                    class="form-select form-select-xs status-select"
+                    [ngClass]="{
+                      'status-approved': order.booking_status === 'Confirmed' || order.booking_status === 'Approved',
+                      'status-pending': order.booking_status === 'Pending' || order.booking_status === 'PaymentPending' || order.booking_status === 'Under Process',
+                      'status-rejected': order.booking_status === 'Rejected'
+                    }"
+                    [ngModel]="order.booking_status"
+                    (ngModelChange)="onStatusChange(order, $event)"
+                    [disabled]="statusUpdatingId === order.booking_id"
+                  >
+                    <option value="Confirmed">✓ Approved</option>
+                    <option value="Pending">⏳ Pending</option>
+                    <option value="Under Process">⚙ Under Process</option>
+                    <option value="Rejected">✕ Rejected</option>
+                  </select>
+                  <div *ngIf="statusUpdatingId === order.booking_id" class="status-spinner">
+                    <i class="fas fa-spinner fa-spin text-primary"></i>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Col 6: Actions (View 👁️ Details) -->
+              <td style="text-align: center;">
+                <button
+                  class="btn-action-icon btn-view"
+                  (click)="viewDetails(order)"
+                  title="View Full Booking & Location Details"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Second Line on Hover (Revealed when row is hovered) -->
+            <tr
+              class="order-hover-subrow"
+              [class.row-odd]="odd"
+              [class.row-even]="even"
+              [class.row-hovered]="hoveredOrderId === order.booking_id"
+              (mouseenter)="hoveredOrderId = order.booking_id"
+              (mouseleave)="hoveredOrderId = null"
+            >
+              <td colspan="6" class="hover-subrow-cell">
+                <div class="hover-details-strip">
+                  <!-- 1. Plot & Site Location -->
+                  <div class="hover-item">
+                    <span class="hover-badge badge-plot">
+                      <i class="fas fa-map-marker-alt me-1"></i> PLOT & SITE
+                    </span>
+                    <span class="hover-val text-primary fw-bold">Plot #{{ order.plot_number || 'N/A' }}</span>
+                    <span class="area-text">({{ order.plot_area }} {{ order.area_unit || 'Gaj' }})</span>
+                    <span class="text-dark fw-semibold ms-1">• {{ order.site_name || 'Site' }}<span *ngIf="order.site_city" class="text-muted">, {{ order.site_city }}</span></span>
+                  </div>
+
+                  <span class="hover-separator"></span>
+
+                  <!-- 2. Team Member (Sold By) -->
+                  <div class="hover-item">
+                    <span class="hover-badge badge-tm">
+                      <i class="fas fa-user-tag me-1"></i> SOLD BY
+                    </span>
+                    <span *ngIf="order.team_member_name" class="fw-semibold text-dark">
+                      {{ order.team_member_name }}
+                      <span class="member-tag">({{ order.team_member_member_id || ('#' + order.sold_by_user_id) }})</span>
+                      <span *ngIf="order.team_member_mobile" class="text-muted font-xs"> • {{ order.team_member_mobile }}</span>
+                    </span>
+                    <span *ngIf="!order.team_member_name" class="text-muted fst-italic">— Direct Company Sale</span>
+                  </div>
+
+                  <span class="hover-separator"></span>
+
+                  <!-- 3. Associate Leader -->
+                  <div class="hover-item">
+                    <span class="hover-badge badge-assoc">
+                      <i class="fas fa-user-tie me-1"></i> ASSOCIATE
+                    </span>
+                    <span *ngIf="order.associate_name" class="fw-semibold text-dark">
+                      {{ order.associate_name }}
+                      <span class="member-tag">({{ order.associate_member_id || ('#' + order.associate_user_id) }})</span>
+                    </span>
+                    <span *ngIf="!order.associate_name" class="text-muted fst-italic">— Direct (No Associate)</span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
 
           <!-- Empty State -->
           <tr *ngIf="!loading && orders.length === 0">
-            <td colspan="9" class="text-center py-5 text-muted">
+            <td colspan="6" class="text-center py-5 text-muted">
               <i class="fas fa-inbox fa-3x mb-2 text-secondary"></i>
               <div class="fw-semibold">No plot booking orders found</div>
               <div class="font-xs">Try adjusting your filters or search keywords</div>
