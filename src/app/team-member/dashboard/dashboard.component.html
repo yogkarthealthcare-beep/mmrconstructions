@@ -1,125 +1,309 @@
 <div class="tm-dashboard">
-  <!-- Welcome Banner -->
+  <!-- Compact Welcome Banner -->
   <div class="welcome-banner">
     <div class="welcome-text">
-      <h2 style="color: #ffffff !important;" class="d-flex align-items-center gap-2 flex-wrap">
-        <span>Welcome back, {{ currentUser?.full_name }}!</span>
-        <app-verified-badge [user]="currentUser" size="md"></app-verified-badge>
-      </h2>
-      <p>Team Member ID: <strong>{{ currentUser?.member_id }}</strong> &bull; Track your sales, customers, and bookings in real-time.</p>
+      <div class="banner-title-row">
+        <h2 class="banner-title">
+          <span>Welcome, {{ currentUser?.full_name || 'Team Member' }}</span>
+          <app-verified-badge [user]="currentUser" size="sm"></app-verified-badge>
+        </h2>
+        <span class="member-tag">ID: {{ currentUser?.member_id || '-' }}</span>
+      </div>
+      <p class="banner-subtitle">Real-time performance, deals pipeline & customer portfolio</p>
     </div>
     <div class="welcome-actions">
-      <a routerLink="/team-member/book-plot" class="btn-book-now">
-        <i class="fas fa-plus-circle"></i> Book a Plot
+      <a routerLink="/team-member/book-plot" class="btn-xs btn-amber">
+        <i class="fas fa-plus-circle"></i>
+        <span>Book Plot</span>
       </a>
-      <a routerLink="/team-member/referral" class="btn-share-referral">
-        <i class="fab fa-whatsapp"></i> Referral Tools
+      <a routerLink="/team-member/referral" class="btn-xs btn-emerald">
+        <i class="fab fa-whatsapp"></i>
+        <span>Referral Link</span>
       </a>
     </div>
   </div>
 
-  <!-- Loading Indicator -->
-  <div *ngIf="loading" class="text-center py-5">
-    <i class="fas fa-spinner fa-spin fa-2x text-success"></i>
-    <p class="mt-2 text-muted">Loading your performance metrics...</p>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-box text-center py-4">
+    <i class="fas fa-circle-notch fa-spin fa-2x text-success"></i>
+    <p class="mt-2 text-muted small">Loading your dashboard performance...</p>
   </div>
 
-  <!-- Stat Cards Grid -->
+  <!-- 6 Core Metric Cards -->
   <div *ngIf="!loading" class="stats-grid">
+    <!-- 1. Active Users -->
     <div class="stat-card">
-      <div class="stat-icon green">
-        <i class="fas fa-vector-square"></i>
+      <div class="stat-icon-wrap bg-green">
+        <i class="fas fa-user-check"></i>
       </div>
-      <div class="stat-data">
-        <h5>Total Gaj Sold</h5>
-        <div class="value">{{ (summary?.total_gaj_sold || 0) | number }} <small style="font-size: 0.9rem; font-weight: 500;">Gaj</small></div>
+      <div class="stat-details">
+        <span class="stat-label">Active Users</span>
+        <div class="stat-val text-green">{{ activeUsersCount }}</div>
       </div>
     </div>
 
+    <!-- 2. Processing Deals -->
     <div class="stat-card">
-      <div class="stat-icon blue">
+      <div class="stat-icon-wrap bg-amber">
+        <i class="fas fa-hourglass-half"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-label">Processing</span>
+        <div class="stat-val text-amber">{{ processingCount }}</div>
+      </div>
+    </div>
+
+    <!-- 3. Sold Deals -->
+    <div class="stat-card">
+      <div class="stat-icon-wrap bg-blue">
+        <i class="fas fa-check-double"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-label">Sold Plots</span>
+        <div class="stat-val text-blue">{{ soldCount }}</div>
+      </div>
+    </div>
+
+    <!-- 4. Cancelled Deals -->
+    <div class="stat-card">
+      <div class="stat-icon-wrap bg-rose">
+        <i class="fas fa-ban"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-label">Cancelled</span>
+        <div class="stat-val text-rose">{{ cancelledCount }}</div>
+      </div>
+    </div>
+
+    <!-- 5. Total Deals -->
+    <div class="stat-card">
+      <div class="stat-icon-wrap bg-purple">
         <i class="fas fa-handshake"></i>
       </div>
-      <div class="stat-data">
-        <h5>Total Bookings</h5>
-        <div class="value">{{ summary?.total_sales_count || summary?.plots_sold_count || 0 }}</div>
+      <div class="stat-details">
+        <span class="stat-label">Total Deals</span>
+        <div class="stat-val text-purple">{{ totalSalesCount }}</div>
       </div>
     </div>
 
+    <!-- 6. Total Sales Value & Gaj -->
     <div class="stat-card">
-      <div class="stat-icon purple">
-        <i class="fas fa-users"></i>
+      <div class="stat-icon-wrap bg-teal">
+        <i class="fas fa-rupee-sign"></i>
       </div>
-      <div class="stat-data">
-        <h5>Attributed Customers</h5>
-        <div class="value">{{ summary?.customers_count || 0 }}</div>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon amber">
-        <i class="fas fa-clock"></i>
-      </div>
-      <div class="stat-data">
-        <h5>Pending Approvals</h5>
-        <div class="value">{{ summary?.pending_approval_count || 0 }}</div>
+      <div class="stat-details">
+        <span class="stat-label">Total Sale Value</span>
+        <div class="stat-val text-teal">₹{{ totalSalesValue | number:'1.0-0' }}</div>
+        <span class="stat-sub">{{ totalGajSold | number }} Gaj</span>
       </div>
     </div>
   </div>
 
-  <!-- Recent Sales Pipeline Preview -->
-  <div *ngIf="!loading" class="content-card">
-    <div class="content-card-header">
-      <h4><i class="fas fa-chart-line text-success"></i> Recent Sales Pipeline</h4>
-      <a routerLink="/team-member/sales" class="btn btn-sm btn-outline-success">
-        View All Sales <i class="fas fa-arrow-right ms-1"></i>
-      </a>
+  <!-- Content Section with Customers List & Recent Sales -->
+  <div *ngIf="!loading" class="content-panel">
+    <div class="panel-header">
+      <!-- Tabs Switcher -->
+      <div class="tab-pills">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeTab === 'customers'"
+          (click)="activeTab = 'customers'"
+        >
+          <i class="fas fa-users"></i>
+          <span>My Customers</span>
+          <span class="count-badge">{{ customers.length }}</span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeTab === 'sales'"
+          (click)="activeTab = 'sales'"
+        >
+          <i class="fas fa-chart-line"></i>
+          <span>Recent Bookings</span>
+          <span class="count-badge">{{ recentSales.length }}</span>
+        </button>
+      </div>
+
+      <!-- Header Actions (Search / View All) -->
+      <div class="panel-actions">
+        <div *ngIf="activeTab === 'customers'" class="search-box">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search customer..."
+            [(ngModel)]="searchCustomer"
+            (ngModelChange)="onSearchCustomer()"
+          />
+        </div>
+        <a *ngIf="activeTab === 'sales'" routerLink="/team-member/sales" class="btn-xs btn-outline-success">
+          <span>All Sales</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
     </div>
 
-    <div *ngIf="recentSales.length === 0" class="text-center py-4 text-muted">
-      <i class="fas fa-box-open fa-2x mb-2 text-secondary"></i>
-      <p>No bookings found yet. Click <strong>"Book a Plot"</strong> to initiate your first sale!</p>
+    <!-- TAB 1: CUSTOMERS LIST -->
+    <div *ngIf="activeTab === 'customers'" class="panel-body">
+      <!-- Empty State -->
+      <div *ngIf="filteredCustomers.length === 0" class="empty-state">
+        <div class="empty-icon"><i class="fas fa-user-plus"></i></div>
+        <p class="empty-title">No customers found</p>
+        <p class="empty-desc">Share your referral link with prospects to register them directly under your account.</p>
+        <a routerLink="/team-member/referral" class="btn-xs btn-emerald mt-2">
+          <i class="fab fa-whatsapp"></i>
+          <span>Share Referral Link</span>
+        </a>
+      </div>
+
+      <!-- Customers Table -->
+      <div *ngIf="filteredCustomers.length > 0" class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Member ID</th>
+              <th>Mobile</th>
+              <th>Status</th>
+              <th>Registered</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cust of filteredCustomers">
+              <td>
+                <div class="customer-info">
+                  <div class="avatar-circle">
+                    {{ (cust.full_name || 'C').charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="customer-names">
+                    <span class="cust-name">{{ cust.full_name }}</span>
+                    <span class="cust-sub text-muted d-sm-none">{{ cust.member_id }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="d-none d-sm-table-cell">
+                <span class="badge-code">{{ cust.member_id || '-' }}</span>
+              </td>
+              <td>
+                <a *ngIf="cust.mobile_no" [href]="'tel:' + cust.mobile_no" class="phone-link">
+                  <i class="fas fa-phone-alt phone-icon"></i>
+                  <span>{{ cust.mobile_no }}</span>
+                </a>
+                <span *ngIf="!cust.mobile_no" class="text-muted">-</span>
+              </td>
+              <td>
+                <span
+                  class="status-pill"
+                  [class.status-active]="!cust.account_status || cust.account_status === 'Active' || cust.account_status === 'Approved'"
+                  [class.status-pending]="cust.account_status === 'Pending'"
+                  [class.status-inactive]="cust.account_status === 'Inactive' || cust.account_status === 'Suspended'"
+                >
+                  <i class="fas fa-circle status-dot"></i>
+                  {{ cust.account_status || 'Active' }}
+                </span>
+              </td>
+              <td class="text-muted small">
+                {{ cust.created_at ? (cust.created_at | date:'dd MMM yyyy') : '-' }}
+              </td>
+              <td class="text-end">
+                <button
+                  type="button"
+                  class="btn-xs btn-book"
+                  (click)="bookForCustomer(cust)"
+                  title="Book Plot for this Customer"
+                >
+                  <i class="fas fa-plus"></i>
+                  <span>Book Plot</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <div *ngIf="recentSales.length > 0" class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>Booking Serial</th>
-            <th>Buyer Name</th>
-            <th>Plot / Site</th>
-            <th>Area (Gaj)</th>
-            <th>Sale Type</th>
-            <th>Associate Approval</th>
-            <th>Advance Paid</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of recentSales">
-            <td><strong class="text-success">{{ row.booking_serial }}</strong></td>
-            <td>{{ row.customer_name }}</td>
-            <td>Plot {{ row.plot_number }} ({{ row.site_name }})</td>
-            <td>{{ row.plot_size_gaj || '-' }}</td>
-            <td>
-              <span [class]="row.sale_type === 'SELF_PURCHASE' ? 'badge-self' : 'badge-cust'">
-                {{ row.sale_type === 'SELF_PURCHASE' ? 'Self Purchase' : 'Customer Sale' }}
-              </span>
-            </td>
-            <td>
-              <span
-                [class.badge-pending]="row.associate_approval_status === 'Pending'"
-                [class.badge-approved]="row.associate_approval_status === 'Approved'"
-                [class.badge-rejected]="row.associate_approval_status === 'Rejected'"
-              >
-                {{ row.associate_approval_status }}
-              </span>
-            </td>
-            <td><strong>₹{{ (row.advance_amount || 0) | number }}</strong></td>
-            <td><small class="text-muted">{{ row.created_at | date:'dd MMM yyyy' }}</small></td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- TAB 2: RECENT BOOKINGS / SALES -->
+    <div *ngIf="activeTab === 'sales'" class="panel-body">
+      <!-- Empty State -->
+      <div *ngIf="recentSales.length === 0" class="empty-state">
+        <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
+        <p class="empty-title">No bookings initiated yet</p>
+        <p class="empty-desc">Click "Book Plot" to initiate a sale for yourself or one of your customers.</p>
+        <a routerLink="/team-member/book-plot" class="btn-xs btn-amber mt-2">
+          <i class="fas fa-plus-circle"></i>
+          <span>Book a Plot</span>
+        </a>
+      </div>
+
+      <!-- Recent Sales Table -->
+      <div *ngIf="recentSales.length > 0" class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Serial</th>
+              <th>Customer</th>
+              <th>Plot & Site</th>
+              <th>Area</th>
+              <th>Advance</th>
+              <th>Approval</th>
+              <th>Date</th>
+              <th class="text-end">Invoice</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of recentSales">
+              <td>
+                <strong class="serial-num">{{ row.booking_serial }}</strong>
+              </td>
+              <td>
+                <div class="cust-name-cell">
+                  <span>{{ row.customer_name }}</span>
+                  <span class="badge-type" [class.badge-self]="row.sale_type === 'SELF_PURCHASE'">
+                    {{ row.sale_type === 'SELF_PURCHASE' ? 'Self' : 'Customer' }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="plot-info">
+                  <span class="plot-tag">Plot {{ row.plot_number }}</span>
+                  <span class="site-tag">{{ row.site_name }}</span>
+                </div>
+              </td>
+              <td>{{ row.plot_size_gaj || '-' }} Gaj</td>
+              <td>
+                <strong class="text-dark">₹{{ (row.advance_amount || 0) | number }}</strong>
+              </td>
+              <td>
+                <span
+                  class="status-pill"
+                  [class.status-active]="row.associate_approval_status === 'Approved'"
+                  [class.status-pending]="row.associate_approval_status === 'Pending'"
+                  [class.status-inactive]="row.associate_approval_status === 'Rejected'"
+                >
+                  <i class="fas fa-circle status-dot"></i>
+                  {{ row.associate_approval_status || 'Pending' }}
+                </span>
+              </td>
+              <td class="text-muted small">
+                {{ row.created_at | date:'dd MMM yyyy' }}
+              </td>
+              <td class="text-end">
+                <a
+                  [routerLink]="['/team-member/invoice', row.booking_id || row.id]"
+                  class="btn-xs btn-outline-info"
+                  title="View Invoice"
+                >
+                  <i class="fas fa-file-invoice"></i>
+                  <span>Invoice</span>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
