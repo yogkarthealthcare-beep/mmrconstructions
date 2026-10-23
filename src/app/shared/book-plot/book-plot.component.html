@@ -197,9 +197,9 @@
         <!-- Team Member Panel (/team-member/book-plot) -->
         <div *ngIf="isTeamMember" class="step-content">
           <div class="form-group mb-0">
-            <label class="form-label d-flex justify-content-between align-items-center">
+            <label class="form-label d-flex justify-content-between align-items-baseline mb-1.5">
               <span>Select Buyer / Customer <span class="text-danger">*</span></span>
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-11" *ngIf="selectedTeamMemberBuyerKey === 'SELF'">
+              <span class="badge self-booking-badge" *ngIf="selectedTeamMemberBuyerKey === 'SELF'">
                 <i class="fas fa-user-check me-1"></i> Self Booking
               </span>
             </label>
@@ -220,7 +220,7 @@
               </optgroup>
             </select>
             <div class="form-helper-text mt-1 text-muted fs-12">
-              Select your own account for Self Booking, or choose any customer registered under you.
+              Choose yourself (Self) or a customer under you.
             </div>
             <div *ngIf="loadingCustomers" class="text-muted small mt-1">
               <i class="fas fa-spinner fa-spin me-1"></i> Loading your registered customers...
@@ -306,9 +306,9 @@
           <!-- WORKFLOW B: Self / Direct Booking -->
           <div *ngIf="bookingForMode === 'SELF_DIRECT'" class="workflow-content">
             <div class="form-group">
-              <label class="form-label d-flex justify-content-between align-items-center">
+              <label class="form-label d-flex justify-content-between align-items-baseline mb-1.5">
                 <span>Select Booking Entity / Customer <span class="text-danger">*</span></span>
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-11" *ngIf="selectedSelfOrDirectKey === 'SELF'">
+                <span class="badge self-booking-badge" *ngIf="selectedSelfOrDirectKey === 'SELF'">
                   <i class="fas fa-user-check me-1"></i> Self Booking
                 </span>
               </label>
@@ -327,7 +327,7 @@
                 </optgroup>
               </select>
               <div class="form-helper-text mt-1 text-muted fs-12">
-                Choose your own Associate account for Self booking or select a direct customer.
+                Choose yourself (Self) or a customer under you.
               </div>
             </div>
           </div>
@@ -369,10 +369,10 @@
                 <label class="form-label">
                   Booking Area (Gaj) <span class="text-danger">*</span>
                 </label>
-                <div class="input-group">
+                <div class="unified-input-group">
                   <input
                     type="number"
-                    class="form-control"
+                    class="unified-input"
                     [(ngModel)]="bookingAreaGaj"
                     (ngModelChange)="onGajCalculationChange()"
                     placeholder="e.g. {{ plotAreaGaj || 1 }}"
@@ -380,7 +380,7 @@
                     step="any"
                     required
                   />
-                  <span class="input-group-text">Gaj</span>
+                  <span class="unified-suffix">Gaj</span>
                 </div>
                 <div class="form-helper-text mt-1 text-muted fs-12">
                   Plot Total: {{ plotAreaGaj }} Gaj
@@ -391,11 +391,11 @@
                 <label class="form-label">
                   Rate per Gaj <span class="text-danger">*</span>
                 </label>
-                <div class="input-group">
-                  <span class="input-group-text">₹</span>
+                <div class="unified-input-group">
+                  <span class="unified-prefix">₹</span>
                   <input
                     type="number"
-                    class="form-control"
+                    class="unified-input"
                     [(ngModel)]="ratePerGaj"
                     (ngModelChange)="onGajCalculationChange()"
                     placeholder="Rate / Gaj"
@@ -403,17 +403,12 @@
                     step="any"
                     required
                   />
-                  <span class="input-group-text">/ Gaj</span>
+                  <span class="unified-suffix">/ Gaj</span>
                 </div>
                 <div class="form-helper-text mt-1 text-muted fs-12">
                   Agreed Rate per Gaj
                 </div>
               </div>
-            </div>
-
-            <!-- 1-line clean conversion text -->
-            <div class="unit-conversion-line mb-3">
-              = {{ bookingAreaSqft || 0 }} sq ft &#64; ₹{{ (ratePerSqft || 0) | number:'1.2-2' }}/sq ft
             </div>
           </div>
 
@@ -424,10 +419,10 @@
                 <label class="form-label">
                   Booking Area (Sq. Ft) <span class="text-danger">*</span>
                 </label>
-                <div class="input-group">
+                <div class="unified-input-group">
                   <input
                     type="number"
-                    class="form-control"
+                    class="unified-input"
                     [(ngModel)]="bookingAreaSqft"
                     (ngModelChange)="onSqftCalculationChange()"
                     placeholder="e.g. {{ plotAreaSqft || 9 }}"
@@ -435,7 +430,7 @@
                     step="any"
                     required
                   />
-                  <span class="input-group-text">sq ft</span>
+                  <span class="unified-suffix">sq ft</span>
                 </div>
                 <div class="form-helper-text mt-1 text-muted fs-12">
                   Plot Total: {{ plotAreaSqft }} sq ft
@@ -446,11 +441,11 @@
                 <label class="form-label">
                   Rate per Sq. Ft <span class="text-danger">*</span>
                 </label>
-                <div class="input-group">
-                  <span class="input-group-text">₹</span>
+                <div class="unified-input-group">
+                  <span class="unified-prefix">₹</span>
                   <input
                     type="number"
-                    class="form-control"
+                    class="unified-input"
                     [(ngModel)]="ratePerSqft"
                     (ngModelChange)="onSqftCalculationChange()"
                     placeholder="Rate / sq ft"
@@ -458,44 +453,46 @@
                     step="0.01"
                     required
                   />
-                  <span class="input-group-text">/ sq ft</span>
+                  <span class="unified-suffix">/ sq ft</span>
                 </div>
                 <div class="form-helper-text mt-1 text-muted fs-12">
                   Agreed Rate per Sq. Ft
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- 1-line clean conversion text -->
-            <div class="unit-conversion-line mb-3">
-              = {{ bookingAreaGaj || 0 }} Gaj &#64; ₹{{ (ratePerGaj || 0) | number:'1.2-2' }}/Gaj
+          <!-- Merged Calculation & Conversion Helper (Plain text 13px, dark grey, no colored box) -->
+          <div class="merged-pricing-helper mb-3">
+            <div>
+              <strong>Calculation:</strong>
+              <ng-container *ngIf="pricingUnit === 'GAJ'">
+                {{ bookingAreaGaj || 0 }} Gaj &times; ₹{{ (ratePerGaj || 0) | number }} = ₹{{ totalPlotPrice | number }}
+              </ng-container>
+              <ng-container *ngIf="pricingUnit === 'SQFT'">
+                {{ bookingAreaSqft || 0 }} sq ft &times; ₹{{ (ratePerSqft || 0) | number:'1.0-2' }} = ₹{{ totalPlotPrice | number }}
+              </ng-container>
+            </div>
+            <div class="equivalent-line mt-0.5">
+              <ng-container *ngIf="pricingUnit === 'GAJ'">
+                = {{ bookingAreaSqft || 0 }} sq ft &#64; ₹{{ (ratePerSqft || 0) | number:'1.2-2' }}/sq ft
+              </ng-container>
+              <ng-container *ngIf="pricingUnit === 'SQFT'">
+                = {{ bookingAreaGaj || 0 }} Gaj &#64; ₹{{ (ratePerGaj || 0) | number:'1.2-2' }}/Gaj
+              </ng-container>
             </div>
           </div>
 
-          <!-- Short calculation line -->
-          <div class="calculation-line mb-3">
-            <span class="text-muted">Calculation:</span>
-            <span class="fw-semibold text-dark">
-              <ng-container *ngIf="pricingUnit === 'GAJ'">
-                {{ bookingAreaGaj || 0 }} Gaj &times; ₹{{ (ratePerGaj || 0) | number }}
-              </ng-container>
-              <ng-container *ngIf="pricingUnit === 'SQFT'">
-                {{ bookingAreaSqft || 0 }} sq ft &times; ₹{{ (ratePerSqft || 0) | number:'1.0-2' }}
-              </ng-container>
-              = ₹{{ totalPlotPrice | number }}
-            </span>
-          </div>
-
-          <!-- Total Plot Price (Agreed) - LARGEST & MOST PROMINENT FIELD -->
-          <div class="total-plot-price-box mb-2">
+          <!-- Total Plot Price (Agreed) - LARGEST & MOST PROMINENT FIELD (56px, 24px font, bold, ₹ prefix) -->
+          <div class="form-group mb-2">
             <label class="form-label fw-bold text-dark mb-1.5 fs-14">
               Total Plot Price (Agreed) <span class="text-danger">*</span>
             </label>
-            <div class="input-group total-price-input-group">
-              <span class="input-group-text rupee-symbol">₹</span>
+            <div class="unified-input-group prominent-price">
+              <span class="unified-prefix">₹</span>
               <input
                 type="number"
-                class="form-control total-price-input"
+                class="unified-input"
                 [(ngModel)]="customPlotPrice"
                 (ngModelChange)="onCustomPlotPriceInput()"
                 placeholder="Total Plot Price"
@@ -604,11 +601,11 @@
               {{ paymentMode === 'ONE_TIME' ? 'Payment Amount' : (paymentMode === 'EMI' ? 'Down Payment Amount' : 'Advance / Initial Amount') }}
               <span class="text-danger">*</span>
             </label>
-            <div class="input-group">
-              <span class="input-group-text">₹</span>
+            <div class="unified-input-group">
+              <span class="unified-prefix">₹</span>
               <input
                 type="number"
-                class="form-control fw-bold"
+                class="unified-input fw-bold"
                 [(ngModel)]="agreedAmount"
                 (ngModelChange)="onAgreedAmountChange()"
                 [placeholder]="paymentMode === 'ONE_TIME' ? 'Full Plot Value' : 'Enter amount (min 10,000)'"
@@ -793,19 +790,19 @@
 
     <!-- Drawer Footer (Sticky Action Bar) -->
     <div class="drawer-footer">
-      <div class="drawer-footer-status d-flex justify-content-between align-items-center mb-2">
-        <span class="text-muted fs-13">Remaining Balance:</span>
+      <div class="drawer-footer-status d-flex justify-content-between align-items-center mb-1.5">
+        <span class="text-muted fs-13">Remaining:</span>
         <span class="fw-bold text-danger fs-14">₹{{ remainingBalance | number }}</span>
       </div>
 
-      <div *ngIf="validationError && selectedPlot" class="alert alert-warning py-1.5 px-2.5 fs-12 mb-2 d-flex align-items-center">
+      <div *ngIf="validationError && selectedPlot" class="alert alert-warning py-1 px-2.5 fs-12 mb-1.5 d-flex align-items-center">
         <i class="fas fa-info-circle me-1.5 flex-shrink-0 text-warning"></i>
         <span>{{ validationError }}</span>
       </div>
 
       <button
         type="button"
-        class="btn btn-success w-100 py-2.5 fs-15 fw-bold submit-booking-btn shadow-sm"
+        class="btn btn-success w-100 submit-booking-btn shadow-sm"
         [disabled]="isSubmitDisabled() || submitting"
         (click)="submitBooking()">
         <i *ngIf="submitting" class="fas fa-spinner fa-spin me-2"></i>

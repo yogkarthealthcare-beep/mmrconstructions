@@ -1421,7 +1421,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 24px;
+  padding: 24px 24px 120px 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -1430,7 +1430,7 @@
 
 @media (max-width: 640px) {
   .drawer-body {
-    padding: 16px;
+    padding: 16px 16px 130px 16px;
     gap: 20px;
   }
 }
@@ -1494,11 +1494,11 @@
 
 .form-control,
 .form-select {
-  min-height: 44px;
-  height: 44px;
+  min-height: 48px;
+  height: 48px;
   border: 1.5px solid #cbd5e1;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   font-size: 14px;
   color: #0f172a;
   background-color: #ffffff;
@@ -1519,29 +1519,145 @@
   outline: none;
 }
 
-.input-group .form-control {
-  border-radius: 0;
-}
-
-.input-group .form-control:first-child {
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
-}
-
-.input-group .form-control:last-child {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
-}
-
-.input-group-text {
-  min-height: 44px;
-  height: 44px;
-  background: #f8fafc;
+/* ── Unified Input Group (Equal Height 48px, Single Border, Subtle Addons) ── */
+.unified-input-group {
+  display: flex;
+  align-items: stretch;
+  height: 48px;
+  min-height: 48px;
   border: 1.5px solid #cbd5e1;
-  color: #475569;
-  font-size: 13px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.unified-input-group:focus-within {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.unified-input-group .unified-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  padding: 0 14px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 0 12px;
+  color: #0f172a;
+  background: transparent;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .unified-input-group .unified-input {
+    font-size: 16px;
+  }
+}
+
+.unified-input-group .unified-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.unified-input-group .unified-prefix,
+.unified-input-group .unified-suffix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+  border: none;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.unified-input-group .unified-prefix {
+  border-right: 1px solid #e2e8f0;
+}
+
+.unified-input-group .unified-suffix {
+  border-left: 1px solid #e2e8f0;
+}
+
+/* ── Total Plot Price (Agreed) - Largest & Most Prominent (56px, 24px font) ── */
+.unified-input-group.prominent-price {
+  height: 56px;
+  min-height: 56px;
+  border: 2px solid #86efac;
+  background: #ffffff;
+}
+
+.unified-input-group.prominent-price:focus-within {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.22);
+}
+
+.unified-input-group.prominent-price .unified-input {
+  font-size: 24px;
+  font-weight: 700;
+  color: #166534;
+  padding: 0 16px;
+}
+
+@media (max-width: 640px) {
+  .unified-input-group.prominent-price .unified-input {
+    font-size: 20px;
+  }
+}
+
+.unified-input-group.prominent-price .unified-prefix {
+  background: #dcfce7;
+  color: #166534;
+  font-size: 24px;
+  font-weight: 800;
+  padding: 0 18px;
+  border-right: 1.5px solid #86efac;
+}
+
+/* ── Merged Pricing Helper (Plain Text, 13px, Dark Grey, No Box) ──── */
+.merged-pricing-helper {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.5;
+  background: transparent;
+  border: none;
+  padding: 2px 0 0 0;
+}
+
+.merged-pricing-helper strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.merged-pricing-helper .equivalent-line {
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+/* ── Self Booking Badge (Aligned to baseline) ─────────────────────── */
+.self-booking-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .form-helper-text {
@@ -1620,70 +1736,6 @@
   background: #ffffff;
   color: #166534;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.unit-conversion-line {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #0369a1;
-  padding: 7px 12px;
-  background: #f0f9ff;
-  border-radius: 6px;
-  border: 1px solid #bae6fd;
-  line-height: 1.4;
-}
-
-.calculation-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-  padding: 8px 12px;
-  background: #f8fafc;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-/* ── Total Plot Price (Agreed) - Largest & Most Prominent ─────────── */
-.total-plot-price-box {
-  margin-top: 14px;
-  padding: 14px 16px;
-  background: #f0fdf4;
-  border: 2px solid #86efac;
-  border-radius: 10px;
-}
-
-.total-price-input-group {
-  display: flex;
-  align-items: stretch;
-}
-
-.total-price-input-group .rupee-symbol {
-  font-size: 22px;
-  font-weight: 800;
-  color: #166534;
-  background: #dcfce7;
-  border-color: #86efac;
-  padding: 0 16px;
-  min-height: 52px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-}
-
-.total-price-input {
-  font-size: 22px !important;
-  font-weight: 900 !important;
-  color: #166534 !important;
-  min-height: 52px !important;
-  height: 52px !important;
-  border-color: #86efac !important;
-  background-color: #ffffff !important;
-}
-
-.total-price-input:focus {
-  border-color: #16a34a !important;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25) !important;
 }
 
 /* ── Step 3: Payment Options ─────────────────────────────────────── */
@@ -1923,10 +1975,10 @@
   word-break: break-word;
 }
 
-/* ── Sticky Action Bar at Bottom ────────────────────────────────── */
+/* ── Sticky Action Bar at Bottom (Compact Height) ──────────────── */
 .drawer-footer {
-  padding: 16px 24px;
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding: 12px 24px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
   border-top: 1px solid #e2e8f0;
   background: #ffffff;
   flex-shrink: 0;
@@ -1935,23 +1987,24 @@
 
 @media (max-width: 640px) {
   .drawer-footer {
-    padding: 14px 16px;
-    padding-bottom: max(14px, env(safe-area-inset-bottom));
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 }
 
 .submit-booking-btn {
-  height: 48px;
-  border-radius: 10px;
+  height: 44px;
+  border-radius: 8px;
   background: linear-gradient(135deg, #16a34a, #15803d);
   border: none;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 800;
   letter-spacing: 0.2px;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.2);
 }
 
 .submit-booking-btn:hover:not(:disabled) {
@@ -1964,4 +2017,5 @@
   background: #cbd5e1;
   opacity: 0.8;
   cursor: not-allowed;
+  box-shadow: none;
 }
