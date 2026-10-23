@@ -25,8 +25,11 @@ export class BookingInvoiceComponent implements OnInit {
   ngOnInit() {
     this.bookingId = this.route.snapshot.paramMap.get('id') || '';
     const shouldPrint = this.route.snapshot.queryParamMap.get('print') === 'true';
+    const isAdmin = typeof window !== 'undefined' && Boolean(
+      sessionStorage.getItem('mmr_admin_token') || localStorage.getItem('mmr_admin_token')
+    );
 
-    this.api.get(`/api/invoice/${this.bookingId}`).subscribe({
+    this.api.get(`/api/invoice/${this.bookingId}`, {}, isAdmin).subscribe({
       next: (res: any) => {
         this.loading = false;
         if (res.success) {
@@ -85,7 +88,10 @@ export class BookingInvoiceComponent implements OnInit {
 
   downloadPdf() {
     const invNum = this.invoice?.invoice_number || this.bookingId;
-    this.api.getBlob(`/api/invoice/${invNum}/pdf`).subscribe({
+    const isAdmin = typeof window !== 'undefined' && Boolean(
+      sessionStorage.getItem('mmr_admin_token') || localStorage.getItem('mmr_admin_token')
+    );
+    this.api.getBlob(`/api/invoice/${invNum}/pdf`, isAdmin).subscribe({
       next: (blob: Blob) => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');

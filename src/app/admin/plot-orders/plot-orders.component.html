@@ -192,19 +192,20 @@
               <!-- Col 4: Invoice -->
               <td>
                 <div *ngIf="order.invoice_number" class="d-flex align-items-center gap-1">
-                  <button
-                    class="btn-inv-link"
-                    (click)="openInvoice(order)"
-                    title="View / Print Invoice"
+                  <a
+                    [href]="'/invoice/' + order.invoice_number"
+                    target="_blank"
+                    class="btn-inv-link text-decoration-none"
+                    title="View / Print Invoice (Opens in new tab)"
                   >
                     <i class="fas fa-file-invoice text-primary me-1"></i>
                     <span class="font-mono">{{ order.invoice_number }}</span>
-                  </button>
+                  </a>
                 </div>
                 <div *ngIf="!order.invoice_number">
                   <button
                     class="btn-gen-inv"
-                    (click)="generateInvoice(order)"
+                    (click)="generateInvoice(order, true)"
                     [disabled]="actionLoading"
                     title="Generate Invoice Record"
                   >
