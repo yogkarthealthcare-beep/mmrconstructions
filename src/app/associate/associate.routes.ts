@@ -78,6 +78,11 @@ export const ASSOCIATE_ROUTES: Routes = [
     title: 'Book a Plot'
   },
   { 
+    path: 'plot-orders', 
+    loadComponent: () => import('../admin/plot-orders/plot-orders.component').then(m => m.AdminPlotOrdersComponent),
+    title: 'Plot Booking Orders'
+  },
+  { 
     path: 'network-tree', 
     loadComponent: () => import('../shared/mlm-tree/mlm-tree.component').then(m => m.MlmTreeComponent), 
     data: { audience: 'associate' }, 

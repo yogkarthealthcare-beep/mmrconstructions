@@ -145,7 +145,8 @@ export class UserLayoutComponent implements OnInit {
           items: [
             { icon: 'fas fa-th-large', label: 'Dashboard Overview', route: `${p}/dashboard` },
             { icon: 'fas fa-layer-group', label: 'Book a Plot', route: `${p}/book-plot` },
-            { icon: 'fas fa-receipt', label: 'My Sales Pipeline', route: `${p}/sales` },
+            { icon: 'fas fa-receipt', label: 'Plot Orders', route: `${p}/plot-orders`, badge: 'ORDERS' },
+            { icon: 'fas fa-chart-line', label: 'My Sales Pipeline', route: `${p}/sales` },
             { icon: 'fas fa-users', label: 'Attributed Customers', route: `${p}/customers` },
             { icon: 'fas fa-bullhorn', label: 'Referral Tools', route: `${p}/referral` },
             { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` }
@@ -242,6 +243,7 @@ export class UserLayoutComponent implements OnInit {
         expanded: false,
         items: [
           { icon: 'fas fa-layer-group', label: 'Book a Plot', route: `${p}/book-plot` },
+          { icon: 'fas fa-receipt', label: 'Plot Orders', route: `${p}/plot-orders`, badge: 'ORDERS' },
           { icon: 'fas fa-map', label: 'My Booked Plots', route: `${p}/my-plots` },
           { icon: 'fas fa-calendar-check', label: 'EMI Schedule', route: `${p}/emi-history` },
           { icon: 'fas fa-shield-alt', label: 'Buyback Guarantee', route: `${p}/buyback` },

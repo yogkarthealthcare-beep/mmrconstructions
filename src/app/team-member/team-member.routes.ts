@@ -12,6 +12,11 @@ export const TEAM_MEMBER_ROUTES: Routes = [
     loadComponent: () => import('../shared/book-plot/book-plot.component').then(m => m.BookPlotComponent)
   },
   {
+    path: 'plot-orders',
+    loadComponent: () => import('../admin/plot-orders/plot-orders.component').then(m => m.AdminPlotOrdersComponent),
+    title: 'Plot Orders'
+  },
+  {
     path: 'sales',
     loadComponent: () => import('./sales/sales.component').then(m => m.TeamMemberSalesComponent)
   },

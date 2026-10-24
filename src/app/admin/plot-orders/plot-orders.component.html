@@ -12,8 +12,8 @@
         <i class="fas fa-clipboard-check"></i>
       </div>
       <div>
-        <h1 class="header-title">Plot Booking Orders</h1>
-        <p class="header-subtitle">Admin Master Control • Customer & Self-Purchase Booking Requests</p>
+        <h1 class="header-title">{{ pageTitle }}</h1>
+        <p class="header-subtitle">{{ pageSubtitle }}</p>
       </div>
     </div>
     <div class="header-actions">
@@ -131,7 +131,7 @@
             <th style="min-width: 220px; width: 250px;">Buyer Details</th>
             <th style="min-width: 200px; width: 230px;">Pricing & Advance</th>
             <th style="min-width: 135px; width: 140px;">Invoice</th>
-            <th style="min-width: 130px; width: 135px; text-align: center;">Admin Approval</th>
+            <th style="min-width: 130px; width: 135px; text-align: center;">{{ isAdminView ? 'Admin Approval' : 'Approval Status' }}</th>
             <th style="min-width: 86px; width: 86px; text-align: center;">Action</th>
           </tr>
         </thead>
@@ -220,9 +220,9 @@
                 </div>
               </td>
 
-              <!-- Col 5: Admin Approval Inline Dropdown -->
+              <!-- Col 5: Admin Approval Dropdown (Admin) OR Read-only Status Pill (Associate / Team Member) -->
               <td style="text-align: center;">
-                <div class="approval-dropdown-container">
+                <div *ngIf="isAdminView" class="approval-dropdown-container">
                   <select
                     class="form-select form-select-xs status-select"
                     [ngClass]="{
@@ -244,6 +244,24 @@
                   <div *ngIf="statusUpdatingId === order.booking_id" class="status-spinner">
                     <i class="fas fa-spinner fa-spin text-primary"></i>
                   </div>
+                </div>
+
+                <div *ngIf="!isAdminView" class="status-badge-readonly">
+                  <span
+                    class="badge px-2 py-1"
+                    [ngClass]="{
+                      'bg-success-subtle text-success border border-success': order.booking_status === 'Confirmed' || order.booking_status === 'Approved',
+                      'bg-warning-subtle text-warning border border-warning': order.booking_status === 'Pending' || order.booking_status === 'Under Process' || !order.booking_status,
+                      'bg-danger-subtle text-danger border border-danger': order.booking_status === 'Rejected'
+                    }"
+                  >
+                    <i class="fas me-1" [ngClass]="{
+                      'fa-check-circle': order.booking_status === 'Confirmed' || order.booking_status === 'Approved',
+                      'fa-clock': order.booking_status === 'Pending' || order.booking_status === 'Under Process' || !order.booking_status,
+                      'fa-times-circle': order.booking_status === 'Rejected'
+                    }"></i>
+                    {{ order.booking_status || 'Pending Review' }}
+                  </span>
                 </div>
               </td>
 
@@ -563,24 +581,26 @@
         </div>
 
         <div class="footer-right d-flex align-items-center gap-2">
-          <!-- Quick Approve / Reject in Modal -->
-          <button
-            *ngIf="selectedOrder?.booking_status !== 'Confirmed'"
-            class="btn btn-success btn-sm"
-            (click)="onStatusChange(selectedOrder, 'Confirmed')"
-            [disabled]="statusUpdatingId === selectedOrder?.booking_id"
-          >
-            <i class="fas fa-check-circle me-1"></i> Approve Booking
-          </button>
+          <!-- Quick Approve / Reject in Modal (Admin Only) -->
+          <ng-container *ngIf="isAdminView">
+            <button
+              *ngIf="selectedOrder?.booking_status !== 'Confirmed'"
+              class="btn btn-success btn-sm"
+              (click)="onStatusChange(selectedOrder, 'Confirmed')"
+              [disabled]="statusUpdatingId === selectedOrder?.booking_id"
+            >
+              <i class="fas fa-check-circle me-1"></i> Approve Booking
+            </button>
 
-          <button
-            *ngIf="selectedOrder?.booking_status !== 'Rejected'"
-            class="btn btn-danger btn-sm"
-            (click)="onStatusChange(selectedOrder, 'Rejected')"
-            [disabled]="statusUpdatingId === selectedOrder?.booking_id"
-          >
-            <i class="fas fa-times-circle me-1"></i> Reject Booking
-          </button>
+            <button
+              *ngIf="selectedOrder?.booking_status !== 'Rejected'"
+              class="btn btn-danger btn-sm"
+              (click)="onStatusChange(selectedOrder, 'Rejected')"
+              [disabled]="statusUpdatingId === selectedOrder?.booking_id"
+            >
+              <i class="fas fa-times-circle me-1"></i> Reject Booking
+            </button>
+          </ng-container>
 
           <button class="btn btn-secondary btn-sm" (click)="closeModal()">
             Close
@@ -619,7 +639,7 @@
         <div class="modal-header-actions">
           <button
             type="button"
-            class="btn btn-sm btn-outline-primary btn-fullscreen-desk font-xs"
+            class="btn btn-sm btn-outline-primary d-none d-md-inline-flex btn-fullscreen-desk font-xs"
             (click)="openInFullPlotMap(selectedLocationOrder)"
             title="Open Interactive Layout Map in Fullscreen New Tab"
           >
