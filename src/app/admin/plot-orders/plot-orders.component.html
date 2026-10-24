@@ -126,13 +126,13 @@
       <table class="erp-dense-table">
         <thead>
           <tr>
-            <th style="width: 48px; text-align: center;">#</th>
-            <th style="width: 165px;">Order ID & Date</th>
-            <th style="width: 250px;">Buyer Details</th>
-            <th style="width: 230px;">Pricing & Advance</th>
-            <th style="width: 140px;">Invoice</th>
-            <th style="width: 125px; text-align: center;">Admin Approval</th>
-            <th style="width: 75px; text-align: center;">Action</th>
+            <th style="min-width: 44px; width: 48px; text-align: center;">#</th>
+            <th style="min-width: 155px; width: 165px;">Order ID & Date</th>
+            <th style="min-width: 220px; width: 250px;">Buyer Details</th>
+            <th style="min-width: 200px; width: 230px;">Pricing & Advance</th>
+            <th style="min-width: 135px; width: 140px;">Invoice</th>
+            <th style="min-width: 130px; width: 135px; text-align: center;">Admin Approval</th>
+            <th style="min-width: 86px; width: 86px; text-align: center;">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -163,8 +163,8 @@
 
               <!-- Col 2: Buyer Details -->
               <td>
-                <div class="cell-line fw-bold text-dark d-flex align-items-center gap-1">
-                  <span>{{ order.buyer_name || 'Anonymous' }}</span>
+                <div class="cell-line d-flex align-items-baseline flex-wrap gap-1">
+                  <span class="fw-bold text-dark">{{ order.buyer_name || 'Anonymous' }}</span>
                   <span *ngIf="order.buyer_member_id" class="member-tag">({{ order.buyer_member_id }})</span>
                 </div>
                 <div class="cell-sub text-muted">
@@ -247,15 +247,27 @@
                 </div>
               </td>
 
-              <!-- Col 6: Actions (View 👁️ Details) -->
-              <td style="text-align: center;">
-                <button
-                  class="btn-action-icon btn-view"
-                  (click)="viewDetails(order)"
-                  title="View Full Booking & Location Details"
-                >
-                  <i class="fas fa-eye"></i>
-                </button>
+              <!-- Col 6: Actions (View 👁️ Details & Map 📍 Location) -->
+              <td style="text-align: center; white-space: nowrap;">
+                <div class="action-btn-group">
+                  <button
+                    type="button"
+                    class="btn-action-icon btn-view"
+                    (click)="viewDetails(order)"
+                    title="View Full Booking Details"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-action-icon btn-map-loc"
+                    (click)="openPlotLocationModal(order)"
+                    title="View Site Location & Plot Map (Read-Only)"
+                    [disabled]="!order.site_id"
+                  >
+                    <i class="fas fa-map-marked-alt text-emerald"></i>
+                  </button>
+                </div>
               </td>
             </tr>
 
@@ -573,6 +585,286 @@
           <button class="btn btn-secondary btn-sm" (click)="closeModal()">
             Close
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plot Site Location Map Modal (Strictly Read-Only Inspection) -->
+  <div *ngIf="showPlotLocationModal" class="modal-backdrop-custom" (click)="closePlotLocationModal()">
+    <div class="modal-card-custom plot-location-modal-card" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="modal-header-custom">
+        <div class="d-flex align-items-center gap-2">
+          <div class="modal-badge-icon badge-icon-emerald">
+            <i class="fas fa-map-marked-alt"></i>
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <h2 class="modal-title mb-0">
+                Site Location &bull; Plot #{{ selectedLocationOrder?.plot_number }}
+              </h2>
+              <span class="badge bg-secondary-subtle text-secondary border font-xs">
+                <i class="fas fa-lock me-1"></i> Read-Only View
+              </span>
+            </div>
+            <div class="modal-sub">
+              <i class="fas fa-map-pin text-danger me-1"></i>
+              <b>{{ selectedLocationOrder?.site_name }}</b>
+              <span *ngIf="selectedLocationOrder?.site_location"> &bull; {{ selectedLocationOrder?.site_location }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-header-actions">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-primary btn-fullscreen-desk font-xs"
+            (click)="openInFullPlotMap(selectedLocationOrder)"
+            title="Open Interactive Layout Map in Fullscreen New Tab"
+          >
+            <i class="fas fa-external-link-alt"></i> Fullscreen Map
+          </button>
+          <button class="btn-close-custom" (click)="closePlotLocationModal()" aria-label="Close">&times;</button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body-custom p-0">
+        <!-- Notice Strip -->
+        <div class="location-notice-strip">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="notice-pill">
+              <i class="fas fa-eye text-primary me-1"></i> Inspection Mode Only
+            </span>
+            <span class="text-muted font-xs">
+              Showing exact blueprint location for booked unit <b>Plot #{{ selectedLocationOrder?.plot_number }}</b>. No modifications permitted.
+            </span>
+          </div>
+          <button
+            type="button"
+            class="btn-open-full-mobile d-inline-flex d-sm-none"
+            (click)="openInFullPlotMap(selectedLocationOrder)"
+          >
+            <i class="fas fa-external-link-alt me-1"></i> Fullscreen
+          </button>
+        </div>
+
+        <div class="location-modal-layout">
+          <!-- 1. Interactive Map Viewport -->
+          <div class="location-map-wrapper">
+            <!-- Loading Indicator -->
+            <div *ngIf="mapLoading" class="map-overlay-loading">
+              <i class="fas fa-spinner fa-spin fa-2x text-primary mb-2"></i>
+              <div class="fw-semibold">Loading Site Blueprint & Plot Coordinates...</div>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="!mapLoading && mapError" class="map-overlay-error">
+              <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+              <div class="fw-semibold">{{ mapError }}</div>
+              <button class="btn btn-sm btn-primary mt-2" (click)="openPlotLocationModal(selectedLocationOrder)">
+                <i class="fas fa-redo me-1"></i> Retry Loading
+              </button>
+            </div>
+
+            <!-- Map Viewport -->
+            <div
+              *ngIf="!mapLoading && !mapError"
+              class="location-map-viewport"
+              (pointerdown)="onMapPointerDown($event)"
+              (pointermove)="onMapPointerMove($event)"
+              (pointerup)="onMapPointerUp()"
+              (wheel)="onMapWheel($event)"
+            >
+              <!-- Zoom & Pan Controls Floating Widget -->
+              <div class="map-floating-controls">
+                <button type="button" class="btn-zoom" (click)="zoomInMap()" title="Zoom In">
+                  <i class="fas fa-plus"></i>
+                </button>
+                <button type="button" class="btn-zoom" (click)="zoomOutMap()" title="Zoom Out">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <button type="button" class="btn-zoom" (click)="fitAndFocusPlot(targetPlotOnMap)" title="Refocus Target Plot">
+                  <i class="fas fa-crosshairs"></i>
+                </button>
+                <button type="button" class="btn-zoom" (click)="resetMapZoom()" title="Reset Zoom">
+                  <i class="fas fa-compress-arrows-alt"></i>
+                </button>
+              </div>
+
+              <!-- Target Plot Found Badge -->
+              <div class="target-pin-pill" *ngIf="targetPlotOnMap">
+                <span class="pulsing-beacon"></span>
+                <span>Focus: <b>Plot #{{ targetPlotOnMap.plot_number }}</b> ({{ targetPlotOnMap.area_gaj }} Gaj)</span>
+              </div>
+
+              <!-- Map Stage Container -->
+              <div
+                class="location-map-stage"
+                [style.transform]="'translate(' + mapPan.x + 'px, ' + mapPan.y + 'px) scale(' + mapZoom + ')'"
+                [style.width.px]="mapImageWidth"
+                [style.height.px]="mapImageHeight"
+              >
+                <!-- Blueprint Background Image -->
+                <img
+                  *ngIf="mapImageUrl"
+                  [src]="mapImageUrl"
+                  class="location-map-img"
+                  [attr.width]="mapImageWidth"
+                  [attr.height]="mapImageHeight"
+                  alt="Site Plan"
+                  draggable="false"
+                />
+
+                <!-- SVG Polygons Layer -->
+                <svg
+                  class="location-map-svg"
+                  [attr.viewBox]="'0 0 ' + mapImageWidth + ' ' + mapImageHeight"
+                  [attr.width]="mapImageWidth"
+                  [attr.height]="mapImageHeight"
+                >
+                  <g *ngFor="let plot of sitePlots">
+                    <!-- Standard Plot Polygon -->
+                    <polygon
+                      *ngIf="plot.svgPoints"
+                      [attr.points]="plot.svgPoints"
+                      [class.plot-poly-target]="plot.isTarget"
+                      [class.plot-poly-other]="!plot.isTarget"
+                    />
+
+                    <!-- Plot Number Text / Pin -->
+                    <g *ngIf="plot.centroid" [attr.transform]="'translate(' + plot.centroid.x + ',' + plot.centroid.y + ')'">
+                      <!-- Target Plot Pin / Marker -->
+                      <g *ngIf="plot.isTarget">
+                        <circle r="22" class="target-beacon-glow" />
+                        <circle r="10" class="target-beacon-core" />
+                        <rect x="-38" y="-38" width="76" height="22" rx="4" class="target-label-bg" />
+                        <text x="0" y="-23" text-anchor="middle" class="target-label-text">
+                          #{{ plot.plot_number }}
+                        </text>
+                      </g>
+                      <!-- Non-target subtle number -->
+                      <text *ngIf="!plot.isTarget" x="0" y="4" text-anchor="middle" class="subtle-plot-text">
+                        {{ plot.plot_number }}
+                      </text>
+                    </g>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Drag & Zoom Hint Bar -->
+            <div class="map-drag-hint">
+              <i class="fas fa-hand-pointer me-1 text-gold"></i>
+              <span>Drag to pan layout &bull; Scroll / Pinch to zoom &bull; Click <i class="fas fa-crosshairs"></i> to refocus</span>
+            </div>
+          </div>
+
+          <!-- 2. Plot Dossier & Details Section (Fully Responsive) -->
+          <div class="location-dossier-panel">
+            <div class="dossier-section-title">
+              <i class="fas fa-info-circle text-primary me-1.5"></i>
+              <span>Plot & Allotment Dossier</span>
+            </div>
+
+            <!-- Target Plot Highlight Card -->
+            <div class="target-highlight-box">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="plot-number-large">
+                    Plot #{{ selectedLocationOrder?.plot_number }}
+                  </div>
+                  <span class="badge-tag badge-plot-status">
+                    {{ selectedLocationOrder?.plot_status || 'Sold' }}
+                  </span>
+                </div>
+                <span class="font-xs fw-bold text-muted">
+                  {{ selectedLocationOrder?.unit_type || 'Residential Plot' }}
+                </span>
+              </div>
+
+              <div class="spec-mini-grid">
+                <div class="mini-spec-card">
+                  <span class="mini-spec-label">Area (Gaj)</span>
+                  <span class="mini-spec-val">{{ selectedLocationOrder?.plot_area || 0 }} Gaj</span>
+                </div>
+                <div class="mini-spec-card">
+                  <span class="mini-spec-label">Area (Sq. Ft.)</span>
+                  <span class="mini-spec-val">{{ (selectedLocationOrder?.plot_area * 9) || 0 }} Sq.Ft.</span>
+                </div>
+                <div class="mini-spec-card">
+                  <span class="mini-spec-label">Facing</span>
+                  <span class="mini-spec-val">{{ selectedLocationOrder?.facing || 'Standard' }}</span>
+                </div>
+                <div class="mini-spec-card">
+                  <span class="mini-spec-label">Booking Serial</span>
+                  <span class="mini-spec-val text-primary">{{ selectedLocationOrder?.booking_serial || ('#' + selectedLocationOrder?.booking_id) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location & Project Info -->
+            <div class="dossier-info-card">
+              <div class="dossier-card-head">
+                <i class="fas fa-city text-gold me-1.5"></i> Project Site Information
+              </div>
+              <div class="info-row">
+                <span class="info-label">Project Name:</span>
+                <span class="info-val fw-semibold">{{ selectedLocationOrder?.site_name }}</span>
+              </div>
+              <div class="info-row" *ngIf="selectedLocationOrder?.site_location || selectedLocationOrder?.site_city">
+                <span class="info-label">Location / City:</span>
+                <span class="info-val">{{ selectedLocationOrder?.site_location || selectedLocationOrder?.site_city }}</span>
+              </div>
+              <div class="info-row" *ngIf="selectedLocationOrder?.site_address">
+                <span class="info-label">Address:</span>
+                <span class="info-val text-wrap">{{ selectedLocationOrder?.site_address }}</span>
+              </div>
+            </div>
+
+            <!-- Buyer & Booking Info -->
+            <div class="dossier-info-card">
+              <div class="dossier-card-head">
+                <i class="fas fa-user-check text-success me-1.5"></i> Allotment & Buyer Information
+              </div>
+              <div class="info-row">
+                <span class="info-label">Allotted To:</span>
+                <span class="info-val fw-bold text-dark">
+                  {{ selectedLocationOrder?.buyer_name || 'Registered Buyer' }}
+                  <span *ngIf="selectedLocationOrder?.buyer_member_id" class="member-tag">({{ selectedLocationOrder?.buyer_member_id }})</span>
+                </span>
+              </div>
+              <div class="info-row" *ngIf="selectedLocationOrder?.buyer_mobile">
+                <span class="info-label">Mobile:</span>
+                <span class="info-val">{{ selectedLocationOrder?.buyer_mobile }}</span>
+              </div>
+              <div class="info-row" *ngIf="selectedLocationOrder?.total_agreed_price || selectedLocationOrder?.advance_amount">
+                <span class="info-label">Total Agreed:</span>
+                <span class="info-val fw-bold text-success">₹{{ (selectedLocationOrder?.total_agreed_price || 0) | number }}</span>
+              </div>
+              <div class="info-row" *ngIf="selectedLocationOrder?.advance_amount">
+                <span class="info-label">Advance Paid:</span>
+                <span class="info-val font-sm fw-semibold text-emerald">₹{{ selectedLocationOrder?.advance_amount | number }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Booking Date:</span>
+                <span class="info-val">{{ selectedLocationOrder?.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
+              </div>
+            </div>
+
+            <!-- Footer Action Button -->
+            <div class="dossier-footer-actions">
+              <button
+                type="button"
+                class="btn btn-outline-primary w-100 d-inline-flex align-items-center justify-content-center gap-2 py-2"
+                (click)="openInFullPlotMap(selectedLocationOrder)"
+              >
+                <i class="fas fa-external-link-alt"></i>
+                <span>Open Full Interactive Layout Map</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
