@@ -1354,6 +1354,26 @@
   padding-top: 8px;
 }
 
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-fullscreen-desk {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .btn-fullscreen-desk {
+    display: none !important;
+  }
+}
+
 /* ==========================================================================
    Responsive Adaptations (Tablet & Mobile)
    ========================================================================== */
@@ -1363,28 +1383,39 @@
     max-height: 94vh;
   }
 
+  .plot-location-modal-card .modal-body-custom {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    max-height: calc(94vh - 75px);
+  }
+
   .location-modal-layout {
-    grid-template-columns: 1fr;
-    max-height: calc(94vh - 110px);
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    max-height: none !important;
+    overflow: visible !important;
+    height: auto;
   }
 
   .location-map-wrapper {
     border-right: none;
-    border-bottom: 1px solid #e2e8f0;
-    min-height: 300px;
-    height: 320px;
+    border-bottom: 2px solid #e2e8f0;
+    min-height: 280px;
+    height: 280px;
     flex-shrink: 0;
   }
 
   .location-map-viewport {
-    min-height: 280px;
-    height: 280px;
+    min-height: 240px;
+    height: 240px;
   }
 
   .location-dossier-panel {
-    max-height: none;
-    overflow-y: visible;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 14px;
   }
 }
 
@@ -1392,16 +1423,25 @@
   .plot-location-modal-card {
     width: 98vw;
     border-radius: 8px;
+    max-height: 96vh;
+  }
+
+  .plot-location-modal-card .modal-header-custom {
+    padding: 10px 12px;
+  }
+
+  .plot-location-modal-card .modal-title {
+    font-size: 14.5px;
   }
 
   .location-map-wrapper {
-    height: 260px;
-    min-height: 240px;
+    height: 250px;
+    min-height: 250px;
   }
 
   .location-map-viewport {
-    height: 220px;
-    min-height: 220px;
+    height: 210px;
+    min-height: 210px;
   }
 
   .spec-mini-grid {
@@ -1422,7 +1462,7 @@
   }
 
   .plot-number-large {
-    font-size: 14.5px;
+    font-size: 14px;
   }
 }
 
