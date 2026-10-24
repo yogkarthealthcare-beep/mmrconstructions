@@ -93,6 +93,14 @@
   position: relative;
 }
 
+.buyer-box {
+  border-top: 4px solid #15803d;
+}
+
+.seller-box {
+  border-top: 4px solid #0284c7;
+}
+
 .customer-box {
   border-top: 4px solid #15803d;
 }
@@ -169,16 +177,18 @@
   display: inline-block;
 }
 
+.pill-buyer,
 .pill-cust {
-  background: #dcfce7;
+  background: #ecfdf5;
   color: #15803d;
-  border: 1px solid #86efac;
+  border: 1.5px solid #86efac;
 }
 
+.pill-seller,
 .pill-sec {
-  background: #e0f2fe;
-  color: #0369a1;
-  border: 1px solid #7dd3fc;
+  background: #f0f9ff;
+  color: #0284c7;
+  border: 1.5px solid #7dd3fc;
 }
 .pill-assoc {
   background: #ede9fe;
@@ -413,64 +423,102 @@
   color: #075985 !important;
 }
 
-/* Footer (QR, Barcode, Signatory) */
+/* Footer (Dual Signatures: Buyer Left, Center QR/Barcode, Seller Right) */
 .card-footer-bar {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   padding-top: 3px;
   border-top: 1px solid #e2e8f0;
-}
-
-.qr-barcode-wrap {
-  display: flex;
-  align-items: center;
   gap: 6px;
 }
 
-.tiny-qr {
-  width: 44px;
-  height: 44px;
+.sig-box {
+  flex: 1;
+  max-width: 140px;
+}
+
+.buyer-sig-box {
+  text-align: left;
+}
+
+.seller-sig-box {
+  text-align: right;
+}
+
+.sig-space {
+  min-height: 20px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.seller-sig-box .sig-space {
+  justify-content: flex-end;
+}
+
+.sig-placeholder-line {
+  width: 100%;
+  border-bottom: 1.5px dashed #94a3b8;
+  height: 16px;
+  margin-bottom: 2px;
+}
+
+.sign-img {
+  max-height: 20px;
   object-fit: contain;
 }
 
+.sig-title {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.15;
+}
+
+.sig-hindi {
+  font-size: 0.52rem;
+  color: #64748b;
+  line-height: 1.1;
+}
+
+.sig-sub {
+  font-size: 0.56rem;
+  color: #334155;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.qr-barcode-center-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tiny-qr {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.barcode-auth-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .tiny-barcode {
-  max-height: 22px;
-  width: 95px;
+  max-height: 16px;
+  width: 78px;
   object-fit: contain;
 }
 
 .auth-text {
-  font-size: 0.58rem;
+  font-size: 0.5rem;
   color: #64748b;
   margin-top: 1px;
-}
-
-.auth-sign-box {
-  text-align: right;
-}
-
-.sign-space {
-  min-height: 22px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-}
-
-.sign-img {
-  max-height: 22px;
-  object-fit: contain;
-}
-
-.sign-title {
-  font-size: 0.66rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.sign-comp {
-  font-size: 0.58rem;
-  color: #64748b;
+  white-space: nowrap;
 }
 
 .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
@@ -497,7 +545,7 @@
    ========================================================================== */
 @page {
   size: A4 landscape;
-  margin: 4mm 5mm 4mm 5mm;
+  margin: 3mm 4mm;
 }
 
 @media print {
@@ -525,15 +573,21 @@
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
-    padding: 0 !important;
+    padding: 2px 4px !important;
     margin: 0 auto !important;
-    width: 287mm !important;
-    max-width: 287mm !important;
-    height: 200mm !important;
-    max-height: 200mm !important;
+    width: 289mm !important;
+    max-width: 289mm !important;
+    height: 204mm !important;
+    max-height: 204mm !important;
     display: grid !important;
     grid-template-columns: 1fr 14px 1fr !important;
     page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    overflow: hidden !important;
+  }
+
+  .center-cut-divider {
+    display: flex !important;
   }
 
   .notice-box.notice-onetime {
@@ -553,12 +607,13 @@
   }
 }
 
-@media (max-width: 900px) {
-  .landscape-invoice-sheet {
-    grid-template-columns: 1fr;
-    gap: 16px;
+@media (max-width: 1060px) {
+  .invoice-page-landscape {
+    overflow-x: auto;
+    align-items: flex-start;
   }
-  .center-cut-divider {
-    display: none;
+  .landscape-invoice-sheet {
+    min-width: 1040px;
+    margin: 0 auto;
   }
 }

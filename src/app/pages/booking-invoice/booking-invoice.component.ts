@@ -178,12 +178,61 @@ export class BookingInvoiceComponent implements OnInit {
     this.overrideRole = this.isAssociateViewer ? 'admin' : 'associate';
   }
 
+  pdfLoading = false;
+
   print() {
     window.print();
   }
 
-  downloadPdf() {
-    const invNum = this.invoice?.invoice_number || this.bookingId;
+  private loadHtml2Pdf(): Promise<any> {
+    if (typeof window !== 'undefined' && (window as any).html2pdf) {
+      return Promise.resolve((window as any).html2pdf);
+    }
+    return new Promise((resolve, reject) => {
+      if (typeof document === 'undefined') return reject('No document');
+      const existing = document.getElementById('html2pdf-cdn');
+      if (existing) {
+        existing.addEventListener('load', () => resolve((window as any).html2pdf));
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'html2pdf-cdn';
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = () => resolve((window as any).html2pdf);
+      script.onerror = (e) => reject(e);
+      document.head.appendChild(script);
+    });
+  }
+
+  async downloadPdf() {
+    const invNum = this.invoice?.invoice_number || this.bookingId || 'MMR-Invoice';
+    const element = typeof document !== 'undefined' ? document.getElementById('invoice-sheet') : null;
+
+    if (!element) {
+      this.downloadPdfFromBackend(invNum);
+      return;
+    }
+
+    this.pdfLoading = true;
+    try {
+      const html2pdf = await this.loadHtml2Pdf();
+      const opt = {
+        margin: [4, 4, 4, 4],
+        filename: `${invNum}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 1200 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+      await html2pdf().set(opt).from(element).save();
+    } catch (err) {
+      console.warn('Direct html2pdf generation failed, falling back to backend PDF endpoint:', err);
+      this.downloadPdfFromBackend(invNum);
+    } finally {
+      this.pdfLoading = false;
+    }
+  }
+
+  private downloadPdfFromBackend(invNum: string) {
     const isAdmin = typeof window !== 'undefined' && Boolean(
       sessionStorage.getItem('mmr_admin_token') || localStorage.getItem('mmr_admin_token')
     );
@@ -196,8 +245,8 @@ export class BookingInvoiceComponent implements OnInit {
         link.click();
         URL.revokeObjectURL(url);
       },
-      error: (err: any) => {
-        alert(err?.error?.message || 'Failed to download PDF');
+      error: () => {
+        window.print();
       }
     });
   }

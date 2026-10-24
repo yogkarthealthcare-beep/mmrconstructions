@@ -1,4 +1,4 @@
-<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+<div class="panel-loading" *ngIf="loading"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
 <div class="panel-alert panel-alert-error" *ngIf="error">{{ error }}</div>
 
 <section class="invoice-page-landscape" *ngIf="!loading && invoice">
@@ -7,24 +7,25 @@
     <button class="btn btn-green" (click)="print()">
       <i class="fas fa-print me-1"></i> Print Invoice (Landscape 2-Part)
     </button>
-    <button class="btn btn-outline-green" (click)="downloadPdf()">
-      <i class="fas fa-file-pdf me-1"></i> Download PDF
+    <button class="btn btn-outline-green" (click)="downloadPdf()" [disabled]="pdfLoading">
+      <i class="fas me-1" [ngClass]="pdfLoading ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i>
+      {{ pdfLoading ? 'Generating PDF...' : 'Download PDF (Landscape 2-Part)' }}
     </button>
-    <button class="btn btn-outline-primary" (click)="toggleRole()" title="Click to toggle 2nd copy between Admin and Associate copy">
-      <i class="fas fa-sync-alt me-1"></i> 2nd Copy: <strong>{{ secondaryCopyTitle }}</strong>
-    </button>
-    <a routerLink="/" class="btn btn-outline-secondary">Back</a>
+    <a routerLink="/" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
   </div>
 
-  <!-- A4 Landscape Dual-Part Sheet -->
+  <!-- A4 Landscape Dual-Part Sheet (Matches Print and PDF exactly) -->
   <article class="landscape-invoice-sheet" id="invoice-sheet">
 
-    <!-- PART 1: CUSTOMER COPY (LEFT BOX) -->
-    <div class="invoice-box-wrapper customer-box">
+    <!-- PART 1: CUSTOMER / BUYER COPY (LEFT BOX) -->
+    <div class="invoice-box-wrapper buyer-box">
       <ng-container *ngTemplateOutlet="invoiceCard; context: {
-        copyType: 'CUSTOMER COPY',
-        copySubtitle: 'Original for Customer',
-        isPrimary: true
+        copyType: 'BUYER COPY / CUSTOMER COPY',
+        copyHindi: 'क्रेता प्रति',
+        copySubtitle: 'Original for Buyer (Plot Purchaser)',
+        isBuyer: true
       }"></ng-container>
     </div>
 
@@ -33,17 +34,18 @@
       <div class="cut-line"></div>
       <div class="cut-badge">
         <i class="fas fa-cut"></i>
-        <span>CUT HERE</span>
+        <span>✂ CUT HERE / यहाँ से अलग करें</span>
       </div>
       <div class="cut-line"></div>
     </div>
 
-    <!-- PART 2: ADMIN OR ASSOCIATE COPY (RIGHT BOX) -->
-    <div class="invoice-box-wrapper secondary-box" [class.associate-box]="isAssociateViewer" [class.admin-box]="!isAssociateViewer">
+    <!-- PART 2: SELLER / COMPANY COPY (RIGHT BOX) -->
+    <div class="invoice-box-wrapper seller-box">
       <ng-container *ngTemplateOutlet="invoiceCard; context: {
-        copyType: secondaryCopyTitle,
-        copySubtitle: isAssociateViewer ? 'Office Copy (Associate)' : 'Office Copy (Admin)',
-        isPrimary: false
+        copyType: 'SELLER COPY / COMPANY COPY',
+        copyHindi: 'विक्रेता प्रति',
+        copySubtitle: 'Original for Seller (MMR Office)',
+        isBuyer: false
       }"></ng-container>
     </div>
 
@@ -51,7 +53,7 @@
 </section>
 
 <!-- Reusable Single Invoice Copy Template -->
-<ng-template #invoiceCard let-copyType="copyType" let-copySubtitle="copySubtitle" let-isPrimary="isPrimary">
+<ng-template #invoiceCard let-copyType="copyType" let-copyHindi="copyHindi" let-copySubtitle="copySubtitle" let-isBuyer="isBuyer">
   <div class="invoice-card-inner">
 
     <!-- Header & Brand -->
@@ -59,9 +61,9 @@
       <div class="brand-left">
         <img *ngIf="settings?.company_logo" [src]="settings.company_logo" alt="Logo" class="comp-logo" />
         <div>
-          <h2 class="comp-name">{{ settings?.company_name || 'MMR Construction & Developers' }}</h2>
+          <h2 class="comp-name">{{ settings?.company_name || 'MMR Constructions & Developers' }}</h2>
           <div class="comp-subtext">
-            {{ settings?.address || 'Head Office: Main Road, Lucknow, Uttar Pradesh' }}
+            {{ settings?.address || 'Head Office: Main Road, Lucknow, Uttar Pradesh - 226001' }}
           </div>
           <div class="comp-contacts">
             <span><strong>Ph:</strong> {{ settings?.phone || '+91 98765 43210' }}</span>
@@ -72,8 +74,9 @@
       </div>
 
       <div class="copy-tag-area text-end">
-        <div class="copy-pill" [class.pill-cust]="isPrimary" [class.pill-sec]="!isPrimary && !isAssociateViewer" [class.pill-assoc]="!isPrimary && isAssociateViewer">
-          {{ copyType }}
+        <div class="copy-pill" [class.pill-buyer]="isBuyer" [class.pill-seller]="!isBuyer">
+          <span class="copy-en">{{ copyType }}</span>
+          <span class="copy-hi">({{ copyHindi }})</span>
         </div>
         <div class="copy-sub">{{ copySubtitle }}</div>
       </div>
@@ -97,22 +100,24 @@
 
     <!-- Customer & Plot 2-Column Info Box -->
     <div class="details-compact-grid">
-      <!-- Customer Info -->
+      <!-- Buyer / Customer Info -->
       <div class="info-cell">
-        <div class="cell-head"><i class="fas fa-user me-1"></i> CUSTOMER DETAILS</div>
-        <div class="cell-row"><span class="k">Name:</span> <strong class="v">{{ data.customer_name || '-' }}</strong></div>
-        <div class="cell-row" *ngIf="data.father_name"><span class="k">S/O, D/O:</span> <span class="v">{{ data.father_name }}</span></div>
-        <div class="cell-row"><span class="k">Mobile:</span> <span class="v font-mono">{{ data.mobile_no || '-' }}</span></div>
+        <div class="cell-head"><i class="fas fa-user-check me-1"></i> BUYER / CUSTOMER DETAILS (क्रेता विवरण)</div>
+        <div class="cell-row"><span class="k">Buyer Name:</span> <strong class="v text-dark">{{ data.customer_name || '-' }}</strong></div>
+        <div class="cell-row" *ngIf="data.father_name"><span class="k">S/O, W/O, D/O:</span> <span class="v">{{ data.father_name }}</span></div>
+        <div class="cell-row"><span class="k">Mobile No:</span> <span class="v font-mono">{{ data.mobile_no || '-' }}</span></div>
+        <div class="cell-row" *ngIf="data.email"><span class="k">Email:</span> <span class="v">{{ data.email }}</span></div>
         <div class="cell-row" *ngIf="data.address || data.full_address"><span class="k">Address:</span> <span class="v truncate-1">{{ data.address || data.full_address }}</span></div>
       </div>
 
-      <!-- Property Info -->
+      <!-- Property & Seller Info -->
       <div class="info-cell">
-        <div class="cell-head"><i class="fas fa-map-marker-alt me-1"></i> PROPERTY / PLOT DETAILS</div>
+        <div class="cell-head"><i class="fas fa-map-marker-alt me-1"></i> PROPERTY & SELLER (प्लॉट एवं विक्रेता)</div>
         <div class="cell-row"><span class="k">Site / Project:</span> <strong class="v text-primary">{{ data.site_name || '-' }}</strong></div>
         <div class="cell-row"><span class="k">Plot No:</span> <strong class="v text-success font-mono">#{{ data.plot_number || '-' }}</strong> (Block: {{ data.block || 'Main' }})</div>
-        <div class="cell-row"><span class="k">Size / Area:</span> <span class="v fw-bold">{{ data.plot_size || (data.plot_area_sqft ? data.plot_area_sqft + ' Sq.Ft.' : '-') }}</span> (Facing: {{ data.facing || 'East' }})</div>
-        <div class="cell-row" *ngIf="data.associate_name"><span class="k">Associate:</span> <span class="v">{{ data.associate_name }} ({{ data.associate_id || '-' }})</span></div>
+        <div class="cell-row"><span class="k">Size / Area:</span> <span class="v fw-bold">{{ data.plot_size || (data.plot_area ? data.plot_area + ' Gaj' : '-') }}</span> (Facing: {{ data.facing || 'East' }})</div>
+        <div class="cell-row"><span class="k">Seller Company:</span> <span class="v fw-bold text-dark">{{ settings?.company_name || 'MMR Constructions' }}</span></div>
+        <div class="cell-row" *ngIf="data.associate_name || data.team_member_name"><span class="k">Attributed Sales:</span> <span class="v">{{ data.team_member_name || data.associate_name }}</span></div>
       </div>
     </div>
 
@@ -122,25 +127,25 @@
         <thead>
           <tr>
             <th>Description</th>
-            <th class="text-end" style="width: 100px;">Amount (INR)</th>
+            <th class="text-end" style="width: 110px;">Amount (INR)</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Subtotal Plot Price</td>
-            <td class="text-end font-mono">₹{{ (data.total_plot_price || invoice.subtotal || 0) | number }}</td>
+            <td>Agreed Plot Price</td>
+            <td class="text-end font-mono">₹{{ (data.total_plot_price || invoice.subtotal || 0) | number:'1.0-0' }}</td>
           </tr>
           <tr *ngIf="data.discount || invoice.discount">
             <td>Discount Allowed</td>
-            <td class="text-end text-danger font-mono">- ₹{{ (data.discount || invoice.discount || 0) | number }}</td>
+            <td class="text-end text-danger font-mono">- ₹{{ (data.discount || invoice.discount || 0) | number:'1.0-0' }}</td>
           </tr>
           <tr class="row-grand-total">
-            <td><strong>Grand Total Payable</strong></td>
-            <td class="text-end font-mono fw-bold">₹{{ (invoice.grand_total || 0) | number }}</td>
+            <td><strong>Grand Total Plot Value</strong></td>
+            <td class="text-end font-mono fw-bold">₹{{ (invoice.grand_total || data.total_plot_price || 0) | number:'1.0-0' }}</td>
           </tr>
           <tr>
-            <td class="text-success fw-bold">Amount Paid Till Date</td>
-            <td class="text-end text-success font-mono fw-bold">₹{{ ((isOneTime ? (invoice.grand_total || data.total_plot_price || invoice.paid_amount) : invoice.paid_amount) || 0) | number }}</td>
+            <td class="text-success fw-bold">Amount Paid (Advance / Received)</td>
+            <td class="text-end text-success font-mono fw-bold">₹{{ ((isOneTime ? (invoice.grand_total || data.total_plot_price || invoice.paid_amount) : invoice.paid_amount) || 0) | number:'1.0-0' }}</td>
           </tr>
           <tr>
             <td [class.text-success]="isOneTime" [class.text-danger]="!isOneTime && (invoice.balance_amount || 0) > 0" class="fw-bold">
@@ -149,7 +154,7 @@
             </td>
             <td class="text-end font-mono fw-bold" [class.text-success]="isOneTime" [class.text-danger]="!isOneTime && (invoice.balance_amount || 0) > 0">
               <span *ngIf="isOneTime">₹0 (Nil)</span>
-              <span *ngIf="!isOneTime">₹{{ (invoice.balance_amount || 0) | number }}</span>
+              <span *ngIf="!isOneTime">₹{{ (invoice.balance_amount || 0) | number:'1.0-0' }}</span>
             </td>
           </tr>
           <!-- Next Due Date if Part Payment -->
@@ -171,15 +176,15 @@
       </div>
       <div class="pay-item">
         <span class="pay-lbl">Status:</span>
-        <span class="pay-val fw-bold text-success">{{ isOneTime ? 'Paid in Full' : invoice.payment_status }}</span>
+        <span class="pay-val fw-bold text-success">{{ isOneTime ? 'Paid in Full' : (invoice.payment_status || 'Paid') }}</span>
       </div>
-      <div class="pay-item" *ngIf="data.transaction_id">
-        <span class="pay-lbl">Txn ID:</span>
-        <span class="pay-val font-mono">{{ data.transaction_id }}</span>
+      <div class="pay-item" *ngIf="data.transaction_id || invoice.order_id">
+        <span class="pay-lbl">Ref / Txn:</span>
+        <span class="pay-val font-mono">{{ data.transaction_id || invoice.order_id }}</span>
       </div>
     </div>
 
-    <!-- PAYMENT NOTICE BOX (DYNAMIC STYLING: NO RED FOR ONE-TIME, RED FOR PART-WISE, BLUE FOR EMI) -->
+    <!-- Dynamic Payment Notice Box -->
     <div
       class="notice-box"
       [ngClass]="{
@@ -197,28 +202,42 @@
             'fa-info-circle': isEmi
           }"
         ></i>
-        <span>NOTE / महत्वपूर्ण सूचना ({{ noticeDetails.badge }}):</span>
+        <span>NOTE / महत्वपूर्ण निर्देश ({{ noticeDetails.badge }}):</span>
       </div>
       <div class="notice-hindi">{{ noticeDetails.hindi }}</div>
       <div class="notice-english">{{ noticeDetails.english }}</div>
     </div>
 
-    <!-- Card Bottom Footer (QR, Barcode & Signature) -->
+    <!-- Card Bottom Footer (DUAL SIGNATURES: BUYER ON LEFT, QR/BARCODE IN CENTER, SELLER ON RIGHT) -->
     <div class="card-footer-bar">
-      <div class="qr-barcode-wrap">
+      <!-- 1. Buyer's Stamp & Signature -->
+      <div class="sig-box buyer-sig-box">
+        <div class="sig-space">
+          <div class="sig-placeholder-line"></div>
+        </div>
+        <div class="sig-title"><i class="fas fa-signature me-1 text-success"></i>Buyer's Signature / Thumb</div>
+        <div class="sig-hindi">हस्ताक्षर / अँगूठा निशान (क्रेता)</div>
+        <div class="sig-sub truncate-1">{{ data.customer_name || 'Buyer' }}</div>
+      </div>
+
+      <!-- 2. QR Code, Barcode & Security Badge in Center -->
+      <div class="qr-barcode-center-wrap">
         <img *ngIf="qrCode" [src]="qrCode" alt="QR Code" class="tiny-qr" />
-        <div>
+        <div class="barcode-auth-col">
           <img *ngIf="barcode" [src]="barcode" alt="Barcode" class="tiny-barcode" />
-          <div class="auth-text"><i class="fas fa-shield-alt me-1"></i>Verified & Authentic</div>
+          <div class="auth-text"><i class="fas fa-shield-alt me-1 text-success"></i>Verified Tax Invoice</div>
         </div>
       </div>
 
-      <div class="auth-sign-box text-end">
-        <div class="sign-space">
+      <!-- 3. Seller's Stamp & Authorized Signatory -->
+      <div class="sig-box seller-sig-box text-end">
+        <div class="sig-space">
           <img *ngIf="settings?.signature_url" [src]="settings.signature_url" alt="Signature" class="sign-img" />
+          <div *ngIf="!settings?.signature_url" class="sig-placeholder-line"></div>
         </div>
-        <div class="sign-title">Authorized Signatory</div>
-        <div class="sign-comp">{{ settings?.company_name || 'MMR Construction & Developers' }}</div>
+        <div class="sig-title"><i class="fas fa-stamp me-1 text-primary"></i>Seller's Signatory & Stamp</div>
+        <div class="sig-hindi">अधिकृत हस्ताक्षरकर्ता एवं मुहर (विक्रेता)</div>
+        <div class="sig-sub truncate-1">{{ settings?.company_name || 'MMR Constructions' }}</div>
       </div>
     </div>
 

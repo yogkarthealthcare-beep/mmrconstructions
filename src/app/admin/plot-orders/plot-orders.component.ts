@@ -82,6 +82,36 @@ export class AdminPlotOrdersComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
 
+  get isAssociateView(): boolean {
+    const url = this.router.url || '';
+    return url.startsWith('/associate');
+  }
+
+  get isTeamMemberView(): boolean {
+    const url = this.router.url || '';
+    return url.startsWith('/team-member');
+  }
+
+  get isPortalView(): boolean {
+    return this.isAssociateView || this.isTeamMemberView;
+  }
+
+  get isAdminView(): boolean {
+    return !this.isPortalView;
+  }
+
+  get pageTitle(): string {
+    if (this.isTeamMemberView) return 'My Plot Orders';
+    if (this.isAssociateView) return 'Team & Personal Plot Orders';
+    return 'Plot Booking Orders';
+  }
+
+  get pageSubtitle(): string {
+    if (this.isTeamMemberView) return 'Track record of your personal plot bookings and direct customer sales';
+    if (this.isAssociateView) return 'Track record of your personal plot bookings, direct customer sales & team orders';
+    return 'Admin Master Control • Customer & Self-Purchase Booking Requests';
+  }
+
   ngOnInit(): void {
     this.route.queryParams.subscribe((params: any) => {
       if (params.tab && ['ALL', 'PENDING', 'CONFIRMED', 'REJECTED', 'SELF_PURCHASE'].includes(String(params.tab).toUpperCase())) {
@@ -104,7 +134,10 @@ export class AdminPlotOrdersComponent implements OnInit {
       booking_type: this.bookingType
     };
 
-    this.api.get('/api/admin/plot-orders', params, true).subscribe({
+    const endpoint = this.isAdminView ? '/api/admin/plot-orders' : '/api/user/plot-orders';
+    const isAdminCall = this.isAdminView;
+
+    this.api.get(endpoint, params, isAdminCall).subscribe({
       next: (res: any) => {
         this.loading = false;
         if (res.success && res.data) {
@@ -170,6 +203,12 @@ export class AdminPlotOrdersComponent implements OnInit {
 
   // Inline Admin Status Dropdown Handler
   onStatusChange(order: any, targetStatus: string): void {
+    if (!this.isAdminView) {
+      this.showToast('Plot booking approval is managed by MMR Admin.', 'error');
+      this.revertStatus(order);
+      return;
+    }
+
     if (targetStatus === order.booking_status) return;
 
     // Resetting to Choose
@@ -293,7 +332,10 @@ export class AdminPlotOrdersComponent implements OnInit {
     this.showDetailModal = true;
     this.detailLoading = true;
 
-    this.api.get(`/api/admin/plot-orders/${order.booking_id}`, {}, true).subscribe({
+    const endpoint = this.isAdminView ? `/api/admin/plot-orders/${order.booking_id}` : `/api/user/plot-orders/${order.booking_id}`;
+    const isAdminCall = this.isAdminView;
+
+    this.api.get(endpoint, {}, isAdminCall).subscribe({
       next: (res: any) => {
         this.detailLoading = false;
         if (res.success && res.data) {
@@ -565,7 +607,10 @@ export class AdminPlotOrdersComponent implements OnInit {
 
   generateInvoice(order: any, openAfter: boolean = false): void {
     this.actionLoading = true;
-    this.api.post(`/api/admin/plot-orders/${order.booking_id}/generate-invoice`, {}, true).subscribe({
+    const endpoint = this.isAdminView ? `/api/admin/plot-orders/${order.booking_id}/generate-invoice` : `/api/user/plot-orders/${order.booking_id}/generate-invoice`;
+    const isAdminCall = this.isAdminView;
+
+    this.api.post(endpoint, {}, isAdminCall).subscribe({
       next: (res: any) => {
         this.actionLoading = false;
         if (res.success) {
