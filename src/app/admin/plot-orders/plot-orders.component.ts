@@ -94,7 +94,16 @@ export class AdminPlotOrdersComponent implements OnInit {
       next: (res: any) => {
         this.loading = false;
         if (res.success && res.data) {
-          this.orders = res.data.orders || [];
+          const rawOrders = res.data.orders || [];
+          this.orders = rawOrders.map((o: any) => {
+            if (o.booking_status === 'Approved') o.booking_status = 'Confirmed';
+            // Explicitly selected statuses that should display their selected option on page load:
+            const explicitStatuses = ['Confirmed', 'Rejected', 'Under Process', 'Pending'];
+            if (!o.booking_status || !explicitStatuses.includes(o.booking_status)) {
+              o.booking_status = '';
+            }
+            return o;
+          });
           this.metrics = res.data.metrics || this.metrics;
           this.pagination = res.data.pagination || this.pagination;
         } else {
@@ -147,7 +156,27 @@ export class AdminPlotOrdersComponent implements OnInit {
 
   // Inline Admin Status Dropdown Handler
   onStatusChange(order: any, targetStatus: string): void {
-    if (!targetStatus || targetStatus === order.booking_status) return;
+    if (targetStatus === order.booking_status) return;
+
+    // Resetting to Choose
+    if (!targetStatus || targetStatus === '') {
+      Swal.fire({
+        title: 'Reset Approval Status?',
+        text: `Reset Order #${order.booking_serial || order.booking_id} status back to unreviewed (Choose)?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#64748b',
+        confirmButtonText: 'Yes, Reset Status',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.executeStatusUpdate(order, 'Submitted');
+        } else {
+          this.revertStatus(order);
+        }
+      });
+      return;
+    }
 
     const isApprove = targetStatus === 'Confirmed' || targetStatus === 'Approved';
     const isReject = targetStatus === 'Rejected';
@@ -205,7 +234,7 @@ export class AdminPlotOrdersComponent implements OnInit {
   private revertStatus(order: any): void {
     // Triggers change detection refresh for dropdown
     const current = order.booking_status;
-    order.booking_status = '';
+    order.booking_status = null;
     setTimeout(() => { order.booking_status = current; }, 10);
   }
 
@@ -220,8 +249,9 @@ export class AdminPlotOrdersComponent implements OnInit {
       next: (res: any) => {
         this.statusUpdatingId = null;
         if (res.success) {
-          this.showToast(`Order #${order.booking_serial || order.booking_id} updated to ${status}`, 'success');
-          order.booking_status = status;
+          const displayLabel = (status === 'Submitted' || !status) ? 'Choose' : status;
+          this.showToast(`Order #${order.booking_serial || order.booking_id} updated to ${displayLabel}`, 'success');
+          order.booking_status = (status === 'Submitted' || !status) ? '' : status;
           if (status === 'Confirmed') {
             order.associate_approval_status = 'Approved';
           } else if (status === 'Rejected') {
@@ -230,7 +260,7 @@ export class AdminPlotOrdersComponent implements OnInit {
           // Refresh statistics
           this.loadOrders(this.pagination.page);
           if (this.selectedOrder && this.selectedOrder.booking_id === order.booking_id) {
-            this.selectedOrder.booking_status = status;
+            this.selectedOrder.booking_status = (status === 'Submitted' || !status) ? '' : status;
           }
         }
       },
