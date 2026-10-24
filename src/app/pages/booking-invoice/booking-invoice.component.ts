@@ -20,6 +20,9 @@ export class BookingInvoiceComponent implements OnInit {
   bookingId: string = '';
   error: string = '';
 
+  // Allows toggling second copy between Admin Copy and Associate Copy
+  overrideRole: 'admin' | 'associate' | null = null;
+
   constructor(private route: ActivatedRoute, private api: ApiService) {}
 
   ngOnInit() {
@@ -57,17 +60,66 @@ export class BookingInvoiceComponent implements OnInit {
 
   get isOneTime(): boolean {
     const payType = String(this.data?.payment_type || this.data?.payment_method || this.invoice?.payment_method || '').toLowerCase();
-    return Boolean(this.data?.is_one_time || payType.includes('full') || payType.includes('onetime') || payType.includes('one time'));
-  }
-
-  get isPartPayment(): boolean {
-    const payType = String(this.data?.payment_type || this.data?.payment_method || this.invoice?.payment_method || '').toLowerCase();
-    return Boolean(this.data?.is_part_wise || payType.includes('part') || (!this.isOneTime && !this.isEmi && Number(this.invoice?.balance_amount || this.data?.balance_amount || 0) > 0));
+    const invType = String(this.data?.invoice_type || '').toLowerCase();
+    const payStatus = String(this.invoice?.payment_status || this.data?.payment_status || '').toLowerCase();
+    const bal = Number(this.invoice?.balance_amount ?? this.data?.balance_amount ?? 0);
+    return Boolean(
+      this.data?.is_one_time ||
+      payType.includes('full') ||
+      payType.includes('onetime') ||
+      payType.includes('one time') ||
+      payType.includes('one-time') ||
+      invType.includes('full') ||
+      invType.includes('onetime') ||
+      (bal === 0 && !this.isEmi) ||
+      (payStatus === 'completed' && bal === 0 && !this.isEmi) ||
+      (payStatus === 'paid' && bal === 0 && !this.isEmi)
+    );
   }
 
   get isEmi(): boolean {
     const payType = String(this.data?.payment_type || this.data?.payment_method || this.invoice?.payment_method || this.data?.invoice_type || '').toLowerCase();
-    return Boolean(this.data?.is_emi || payType.includes('emi') || payType.includes('installment') || (this.emiSchedules && this.emiSchedules.length > 0));
+    return Boolean(
+      this.data?.is_emi ||
+      payType.includes('emi') ||
+      payType.includes('installment') ||
+      (this.emiSchedules && this.emiSchedules.length > 0)
+    );
+  }
+
+  get isPartPayment(): boolean {
+    if (this.isOneTime || this.isEmi) return false;
+    const payType = String(this.data?.payment_type || this.data?.payment_method || this.invoice?.payment_method || '').toLowerCase();
+    const invType = String(this.data?.invoice_type || '').toLowerCase();
+    const bal = Number(this.invoice?.balance_amount ?? this.data?.balance_amount ?? 0);
+    return Boolean(
+      this.data?.is_part_wise ||
+      payType.includes('part') ||
+      invType.includes('part') ||
+      bal > 0
+    );
+  }
+
+  get noticeDetails(): { badge: string; hindi: string; english: string } {
+    if (this.isOneTime) {
+      return {
+        badge: 'ONE TIME FULL PAYMENT',
+        hindi: 'Invoice ko sambhal kar rakhe. Thanks.',
+        english: 'Please keep this invoice safe. Thanks.'
+      };
+    } else if (this.isEmi) {
+      return {
+        badge: 'INSTALLMENT / EMI PLAN',
+        hindi: 'Invoice ko sambhal kar rakhe payment dispute me apka saathi.',
+        english: 'Keep this invoice safe, your companion in payment disputes.'
+      };
+    } else {
+      return {
+        badge: 'PART-WISE PAYMENT',
+        hindi: 'Remaining amount ko 15 din me settle karna anivarya hai.',
+        english: 'It is mandatory to settle the remaining amount within 15 days.'
+      };
+    }
   }
 
   get emiSchedules(): any[] {
@@ -80,6 +132,50 @@ export class BookingInvoiceComponent implements OnInit {
 
   get nextDueDate(): any {
     return this.data?.part_wise_deadline_at || this.invoice?.part_wise_deadline_at || this.data?.due_date || this.invoice?.next_due_date || null;
+  }
+
+  get isAssociateViewer(): boolean {
+    if (this.overrideRole) {
+      return this.overrideRole === 'associate';
+    }
+    if (typeof window === 'undefined') return false;
+
+    // 1. Explicit query param (e.g. ?copy=associate or ?from=associate or ?role=associate)
+    const qp = (this.route.snapshot.queryParamMap.get('copy') ||
+                this.route.snapshot.queryParamMap.get('from') ||
+                this.route.snapshot.queryParamMap.get('role') || '').toLowerCase();
+    if (qp === 'associate' || qp === 'member') return true;
+    if (qp === 'admin') return false;
+
+    // 2. Referrer check
+    if (typeof document !== 'undefined' && document.referrer) {
+      if (document.referrer.includes('/associate')) return true;
+      if (document.referrer.includes('/admin')) return false;
+    }
+
+    // 3. Current URL check
+    if (window.location.pathname.includes('/associate')) return true;
+    if (window.location.pathname.includes('/admin')) return false;
+
+    // 4. Stored user check
+    const adminToken = sessionStorage.getItem('mmr_admin_token') || localStorage.getItem('mmr_admin_token');
+    const userStr = sessionStorage.getItem('mmr_user') || localStorage.getItem('mmr_user');
+    if (userStr && !adminToken) {
+      try {
+        const u = JSON.parse(userStr);
+        if (u.role === 'associate' || u.role === 'team_member' || u.is_associate) return true;
+      } catch {}
+    }
+
+    return false;
+  }
+
+  get secondaryCopyTitle(): string {
+    return this.isAssociateViewer ? 'ASSOCIATE COPY' : 'ADMIN COPY';
+  }
+
+  toggleRole() {
+    this.overrideRole = this.isAssociateViewer ? 'admin' : 'associate';
   }
 
   print() {

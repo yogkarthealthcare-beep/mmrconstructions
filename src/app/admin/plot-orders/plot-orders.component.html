@@ -90,7 +90,7 @@
         <i class="fas fa-search search-icon"></i>
         <input
           type="text"
-          class="form-control form-control-sm"
+          class="search-input"
           placeholder="Search Order ID, Buyer, Mobile, Plot #, Site, Team Member..."
           [(ngModel)]="search"
           (keyup.enter)="onSearch()"
@@ -126,16 +126,17 @@
       <table class="erp-dense-table">
         <thead>
           <tr>
-            <th style="width: 170px;">Order ID & Date</th>
-            <th style="width: 260px;">Buyer Details</th>
-            <th style="width: 240px;">Pricing & Advance</th>
-            <th style="width: 150px;">Invoice</th>
-            <th style="width: 160px; text-align: center;">Admin Approval</th>
-            <th style="width: 80px; text-align: center;">Action</th>
+            <th style="width: 48px; text-align: center;">#</th>
+            <th style="width: 165px;">Order ID & Date</th>
+            <th style="width: 250px;">Buyer Details</th>
+            <th style="width: 230px;">Pricing & Advance</th>
+            <th style="width: 140px;">Invoice</th>
+            <th style="width: 125px; text-align: center;">Admin Approval</th>
+            <th style="width: 75px; text-align: center;">Action</th>
           </tr>
         </thead>
         <tbody>
-          <ng-container *ngFor="let order of orders; let odd = odd; let even = even">
+          <ng-container *ngFor="let order of orders; let idx = index; let odd = odd; let even = even">
             <!-- Main Row (Always Visible) -->
             <tr
               class="order-main-row"
@@ -145,6 +146,11 @@
               (mouseenter)="hoveredOrderId = order.booking_id"
               (mouseleave)="hoveredOrderId = null"
             >
+              <!-- Col 0: Serial Number (#) -->
+              <td style="text-align: center;">
+                <span class="sno-badge">{{ (pagination.page - 1) * pagination.limit + idx + 1 }}</span>
+              </td>
+
               <!-- Col 1: Order ID & Date -->
               <td>
                 <div class="cell-line font-mono fw-bold text-dark">
@@ -221,17 +227,19 @@
                     class="form-select form-select-xs status-select"
                     [ngClass]="{
                       'status-approved': order.booking_status === 'Confirmed' || order.booking_status === 'Approved',
-                      'status-pending': order.booking_status === 'Pending' || order.booking_status === 'PaymentPending' || order.booking_status === 'Under Process',
-                      'status-rejected': order.booking_status === 'Rejected'
+                      'status-pending': order.booking_status === 'Pending' || order.booking_status === 'Under Process',
+                      'status-rejected': order.booking_status === 'Rejected',
+                      'status-default': !order.booking_status || order.booking_status === ''
                     }"
-                    [ngModel]="order.booking_status"
+                    [(ngModel)]="order.booking_status"
                     (ngModelChange)="onStatusChange(order, $event)"
                     [disabled]="statusUpdatingId === order.booking_id"
                   >
-                    <option value="Confirmed">✓ Approved</option>
-                    <option value="Pending">⏳ Pending</option>
-                    <option value="Under Process">⚙ Under Process</option>
-                    <option value="Rejected">✕ Rejected</option>
+                    <option value="">Choose</option>
+                    <option value="Confirmed">Approved</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Under Process">Under Process</option>
+                    <option value="Rejected">Rejected</option>
                   </select>
                   <div *ngIf="statusUpdatingId === order.booking_id" class="status-spinner">
                     <i class="fas fa-spinner fa-spin text-primary"></i>
@@ -260,7 +268,7 @@
               (mouseenter)="hoveredOrderId = order.booking_id"
               (mouseleave)="hoveredOrderId = null"
             >
-              <td colspan="6" class="hover-subrow-cell">
+              <td colspan="7" class="hover-subrow-cell">
                 <div class="hover-details-strip">
                   <!-- 1. Plot & Site Location -->
                   <div class="hover-item">
@@ -307,7 +315,7 @@
 
           <!-- Empty State -->
           <tr *ngIf="!loading && orders.length === 0">
-            <td colspan="6" class="text-center py-5 text-muted">
+            <td colspan="7" class="text-center py-5 text-muted">
               <i class="fas fa-inbox fa-3x mb-2 text-secondary"></i>
               <div class="fw-semibold">No plot booking orders found</div>
               <div class="font-xs">Try adjusting your filters or search keywords</div>
