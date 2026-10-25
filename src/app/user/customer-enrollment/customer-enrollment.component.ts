@@ -673,7 +673,18 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     });
   }
 
+  private normalizeGenderVal(g: any): string {
+    if (!g) return '';
+    const s = String(g).trim().toUpperCase();
+    if (s === 'M' || s === 'MALE') return 'Male';
+    if (s === 'F' || s === 'FEMALE') return 'Female';
+    if (s === 'OTHER' || s === 'O') return 'Other';
+    return String(g);
+  }
+
   private normalizeCustomerPayloadNames(p: any) {
+    if (p.gender) p.gender = this.normalizeGenderVal(p.gender);
+    if (p.coGender) p.coGender = this.normalizeGenderVal(p.coGender);
     if (p.applicantName) p.applicantName = normalizeHumanName(p.applicantName);
     if (p.fhName) p.fhName = normalizeHumanName(p.fhName);
     if (p.coApplicantName) p.coApplicantName = normalizeHumanName(p.coApplicantName);
@@ -863,7 +874,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       fhName: enroll.fh_name || '',
       dob: formatDateToDDMMYYYY(enroll.date_of_birth),
       age: enroll.age || '',
-      gender: enroll.gender || '',
+      gender: this.normalizeGenderVal(enroll.gender),
       maritalStatus: enroll.marital_status || '',
       nationality: enroll.nationality || 'Indian',
       nationalityOther: enroll.nationality_other || '',
@@ -889,7 +900,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       coRelation: enroll.co_relation || '',
       coDob: formatDateToDDMMYYYY(enroll.co_date_of_birth),
       coAge: enroll.co_age || '',
-      coGender: enroll.co_gender || '',
+      coGender: this.normalizeGenderVal(enroll.co_gender),
       coPan: enroll.co_pan_no || '',
       coAadhar: enroll.co_aadhar_no || '',
       coPresentAddress: enroll.co_present_address || '',
@@ -1023,7 +1034,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
           this.enrollmentForm.patchValue({
             applicantName: u.full_name || sessionUser.full_name || sessionUser.name || regUser.full_name || this.enrollmentForm.get('applicantName')?.value || '',
             dob: formatDateToDDMMYYYY(u.date_of_birth),
-            gender: u.gender || '',
+            gender: this.normalizeGenderVal(u.gender),
             fatherName: u.father_name || '',
             motherName: u.mother_name || '',
             spouseName: u.spouse_name || '',
