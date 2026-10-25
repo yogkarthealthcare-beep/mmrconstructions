@@ -31,51 +31,83 @@
   <!-- Metrics Bar -->
   <div class="metrics-grid">
     <div class="metric-card">
-      <div class="metric-label">
+      <div class="metric-label text-truncate">
         <i class="fas fa-clipboard-list me-1 text-primary"></i> Total Orders
       </div>
-      <div class="metric-value">{{ metrics.total_orders || 0 }}</div>
-      <div class="metric-sub">Orders in settlement flow</div>
+      <div class="metric-value-wrap">
+        <div class="metric-value" [ngClass]="getNumberFitClass(metrics.total_orders)" [title]="metrics.total_orders || 0">
+          {{ metrics.total_orders || 0 }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Orders in settlement flow</div>
     </div>
 
     <div class="metric-card card-pending">
-      <div class="metric-label">
+      <div class="metric-label text-truncate">
         <i class="fas fa-clock me-1 text-warning"></i> Pending Settlement
       </div>
-      <div class="metric-value text-warning">{{ metrics.pending_count || 0 }}</div>
-      <div class="metric-sub">Awaiting admin release</div>
+      <div class="metric-value-wrap">
+        <div class="metric-value text-warning" [ngClass]="getNumberFitClass(metrics.pending_count)" [title]="metrics.pending_count || 0">
+          {{ metrics.pending_count || 0 }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Awaiting admin release</div>
     </div>
 
     <div class="metric-card card-released">
-      <div class="metric-label">
+      <div class="metric-label text-truncate">
         <i class="fas fa-check-circle me-1 text-success"></i> Released & Settled
       </div>
-      <div class="metric-value text-success">{{ metrics.released_count || 0 }}</div>
-      <div class="metric-sub">Commissions credited</div>
+      <div class="metric-value-wrap">
+        <div class="metric-value text-success" [ngClass]="getNumberFitClass(metrics.released_count)" [title]="metrics.released_count || 0">
+          {{ metrics.released_count || 0 }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Commissions credited</div>
     </div>
 
     <div class="metric-card card-cancelled">
-      <div class="metric-label">
+      <div class="metric-label text-truncate">
         <i class="fas fa-ban me-1 text-danger"></i> Cancelled
       </div>
-      <div class="metric-value text-danger">{{ metrics.cancelled_count || 0 }}</div>
-      <div class="metric-sub">Settlement voided</div>
+      <div class="metric-value-wrap">
+        <div class="metric-value text-danger" [ngClass]="getNumberFitClass(metrics.cancelled_count)" [title]="metrics.cancelled_count || 0">
+          {{ metrics.cancelled_count || 0 }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Settlement voided</div>
     </div>
 
     <div class="metric-card card-received">
-      <div class="metric-label">
+      <div class="metric-label text-truncate">
         <i class="fas fa-money-bill-wave me-1 text-info"></i> Amount Received
       </div>
-      <div class="metric-value text-info">₹{{ (metrics.total_received_amount || 0) | number:'1.0-0' }}</div>
-      <div class="metric-sub">Funds verified by company</div>
+      <div class="metric-value-wrap">
+        <div
+          class="metric-value text-info"
+          [ngClass]="getNumberFitClass(metrics.total_received_amount)"
+          [title]="'₹' + ((metrics.total_received_amount || 0) | number:'1.0-0')"
+        >
+          ₹{{ (metrics.total_received_amount || 0) | number:'1.0-0' }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Funds verified by company</div>
     </div>
 
     <div class="metric-card card-settled">
-      <div class="metric-label">
+      <div class="metric-label text-truncate">
         <i class="fas fa-coins me-1 text-emerald"></i> Settled Value
       </div>
-      <div class="metric-value text-emerald">₹{{ (metrics.total_settled_amount || 0) | number:'1.0-0' }}</div>
-      <div class="metric-sub">Disbursed plot volume</div>
+      <div class="metric-value-wrap">
+        <div
+          class="metric-value text-emerald"
+          [ngClass]="getNumberFitClass(metrics.total_settled_amount)"
+          [title]="'₹' + ((metrics.total_settled_amount || 0) | number:'1.0-0')"
+        >
+          ₹{{ (metrics.total_settled_amount || 0) | number:'1.0-0' }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Disbursed plot volume</div>
     </div>
   </div>
 
@@ -145,8 +177,60 @@
   </div>
 
   <!-- Settlement Orders Table -->
-  <div *ngIf="!loading && orders.length > 0" class="table-card">
-    <div class="table-responsive">
+  <div *ngIf="!loading && orders.length > 0" class="table-card" [class.landscape-fullscreen-active]="isLandscapeMode" [class.landscape-rotated]="isRotatedLandscape">
+    
+    <!-- Landscape Full View Top Bar -->
+    <div *ngIf="isLandscapeMode" class="landscape-topbar">
+      <div class="d-flex align-items-center gap-2">
+        <div class="landscape-badge">
+          <i class="fas fa-arrows-left-right-to-line me-1"></i> Fullscreen Extended Mode
+        </div>
+        <span class="fs-12 text-muted d-none d-sm-inline">
+          Full horizontal view • Release column is pinned on the right
+        </span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline-dark rotate-btn" (click)="toggleRotateLandscape()" title="Rotate Table 90 degrees">
+          <i class="fas fa-rotate me-1"></i> {{ isRotatedLandscape ? 'Portrait (0°)' : 'Landscape (90°)' }}
+        </button>
+        <button type="button" class="btn btn-sm btn-danger px-3 close-extend-btn" (click)="toggleLandscapeMode()">
+          <i class="fas fa-times me-1"></i> Exit Full View
+        </button>
+      </div>
+    </div>
+
+    <!-- Table Header Tools Bar -->
+    <div class="table-card-header d-flex align-items-center justify-content-between p-2 px-3 border-bottom bg-light flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="fw-700 text-dark fs-13">
+          <i class="fas fa-receipt text-primary me-1"></i> Settlement Orders
+        </span>
+        <span class="badge bg-secondary-subtle text-secondary fs-11">
+          {{ pagination.total || orders.length }} Records
+        </span>
+      </div>
+
+      <!-- Mobile Extend / Landscape Button -->
+      <div class="d-flex align-items-center gap-2">
+        <button
+          type="button"
+          class="btn btn-sm btn-primary mobile-extend-btn d-inline-flex align-items-center gap-1 shadow-sm"
+          (click)="toggleLandscapeMode()"
+          title="Open Table in Fullscreen Landscape Mode"
+        >
+          <i class="fas fa-up-right-and-down-left-from-center me-1"></i>
+          <span>Extend Table (Landscape)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Scroll Hint -->
+    <div class="mobile-scroll-indicator d-md-none">
+      <i class="fas fa-arrows-left-right me-1 text-primary"></i>
+      <span>Swipe horizontally to view all table columns</span>
+    </div>
+
+    <div class="table-responsive settlement-scroll-container">
       <table class="table table-hover settlement-table align-middle">
         <thead>
           <tr>
@@ -162,110 +246,168 @@
             <th class="col-received text-end">Amount Received</th>
             <th class="col-paystatus text-center">Payment Status</th>
             <th class="col-settlestatus text-center">Settlement Status</th>
-            <th class="col-actions text-center">Actions</th>
+            <th class="col-actions text-center sticky-action-header">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let order of orders" [class.row-released]="order.settlement_status === 'Released'">
             <!-- Order ID -->
             <td class="col-order">
-              <span class="order-id-badge">{{ order.booking_serial || ('BK-' + order.booking_id) }}</span>
-              <div *ngIf="order.booking_type === 'SELF_PURCHASE' || order.is_self_purchase" class="sub-badge self-badge">
-                Self Purchase
-              </div>
-              <div *ngIf="order.is_company_direct" class="sub-badge direct-badge">
-                Company Direct
+              <div class="cell-stack">
+                <span class="order-id-badge nowrap-text">{{ order.booking_serial || ('BK-' + order.booking_id) }}</span>
+                <div *ngIf="order.booking_type === 'SELF_PURCHASE' || order.is_self_purchase" class="sub-badge self-badge nowrap-text">
+                  Self Purchase
+                </div>
+                <div *ngIf="order.is_company_direct" class="sub-badge direct-badge nowrap-text">
+                  Company Direct
+                </div>
               </div>
             </td>
 
             <!-- Booking Date -->
             <td class="col-date">
-              <div class="date-text">{{ order.booking_date | date:'dd MMM yyyy' }}</div>
-              <div class="text-muted fs-11">{{ order.booking_date | date:'hh:mm a' }}</div>
+              <div class="cell-stack">
+                <div class="date-text nowrap-text">{{ order.booking_date | date:'dd MMM yyyy' }}</div>
+                <div class="text-muted fs-11 nowrap-text">{{ order.booking_date | date:'hh:mm a' }}</div>
+              </div>
             </td>
 
             <!-- Site / Plot -->
             <td class="col-site">
-              <div class="site-name fw-600">{{ order.site_name || 'MMR City' }}</div>
-              <div class="plot-tag">
-                Plot #<strong>{{ order.plot_number }}</strong>
-                <span *ngIf="order.plot_area" class="text-muted fs-11">({{ order.plot_area }} {{ order.area_unit || 'Gaj' }})</span>
+              <div class="cell-stack">
+                <div class="site-name-single nowrap-text" [title]="order.site_name || 'MMR City'">
+                  <i class="fas fa-city me-1 text-slate fs-11"></i>{{ order.site_name || 'MMR City' }}
+                </div>
+                <div class="plot-tag nowrap-text">
+                  Plot #<strong>{{ order.plot_number }}</strong>
+                  <span *ngIf="order.plot_area" class="text-muted fs-11">({{ order.plot_area }} {{ order.area_unit || 'Gaj' }})</span>
+                </div>
+                <div *ngIf="order.site_city" class="text-muted fs-11 nowrap-text">
+                  <i class="fas fa-location-dot me-1 text-slate fs-10"></i>{{ order.site_city }}
+                </div>
               </div>
             </td>
 
             <!-- Buyer -->
             <td class="col-buyer">
-              <div class="person-name fw-600 text-dark">{{ order.buyer_name || 'Customer' }}</div>
-              <div class="person-id text-muted">ID: {{ order.buyer_member_id || ('USR-' + order.buyer_user_id) }}</div>
-              <div *ngIf="order.buyer_mobile" class="text-muted fs-11">
-                <i class="fas fa-phone-alt me-1 text-slate"></i>{{ order.buyer_mobile }}
+              <div class="cell-stack">
+                <div class="person-name-single text-dark nowrap-text" [title]="order.buyer_name || 'Customer'">
+                  <i class="fas fa-user me-1 text-slate fs-11"></i>{{ order.buyer_name || 'Customer' }}
+                </div>
+                <div class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-id-card me-1 text-slate fs-10"></i>ID: {{ order.buyer_member_id || ('USR-' + order.buyer_user_id) }}
+                </div>
+                <div *ngIf="order.buyer_mobile" class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-phone-alt me-1 text-slate fs-10"></i><a [href]="'tel:' + order.buyer_mobile" class="contact-link">{{ order.buyer_mobile }}</a>
+                </div>
+                <div *ngIf="order.buyer_email" class="person-detail-single text-muted nowrap-text" [title]="order.buyer_email">
+                  <i class="fas fa-envelope me-1 text-slate fs-10"></i><a [href]="'mailto:' + order.buyer_email" class="contact-link">{{ order.buyer_email }}</a>
+                </div>
               </div>
             </td>
 
             <!-- Seller -->
             <td class="col-seller">
-              <div *ngIf="order.seller_name; else noSeller">
-                <div class="person-name fw-500">{{ order.seller_name }}</div>
-                <div class="person-id text-muted">{{ order.seller_member_id || ('USR-' + order.sold_by_user_id) }}</div>
-                <span class="role-pill" [ngClass]="order.seller_user_type === 'Team Member' ? 'pill-tm' : 'pill-assoc'">
-                  {{ order.seller_user_type || 'Seller' }}
-                </span>
+              <div *ngIf="order.seller_name; else noSeller" class="cell-stack">
+                <div class="person-name-single text-dark nowrap-text" [title]="order.seller_name">
+                  <i class="fas fa-user-tie me-1 text-slate fs-11"></i>{{ order.seller_name }}
+                </div>
+                <div class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-id-card me-1 text-slate fs-10"></i>ID: {{ order.seller_member_id || ('USR-' + order.sold_by_user_id) }}
+                </div>
+                <div *ngIf="order.seller_mobile" class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-phone-alt me-1 text-slate fs-10"></i><a [href]="'tel:' + order.seller_mobile" class="contact-link">{{ order.seller_mobile }}</a>
+                </div>
+                <div *ngIf="order.seller_email" class="person-detail-single text-muted nowrap-text" [title]="order.seller_email">
+                  <i class="fas fa-envelope me-1 text-slate fs-10"></i><a [href]="'mailto:' + order.seller_email" class="contact-link">{{ order.seller_email }}</a>
+                </div>
+                <div>
+                  <span class="role-pill nowrap-text" [ngClass]="order.seller_user_type === 'Team Member' ? 'pill-tm' : 'pill-assoc'">
+                    {{ order.seller_user_type || 'Seller' }}
+                  </span>
+                </div>
               </div>
               <ng-template #noSeller>
-                <span class="text-muted fs-12 italic">Company Direct</span>
+                <span class="text-muted fs-12 fst-italic nowrap-text">Company Direct</span>
               </ng-template>
             </td>
 
             <!-- T Member -->
             <td class="col-tm">
-              <div *ngIf="order.team_member_name; else noTm">
-                <div class="person-name fw-500 text-primary-dark">{{ order.team_member_name }}</div>
-                <div class="person-id text-muted">{{ order.team_member_member_id || ('TM-' + order.team_member_user_id) }}</div>
+              <div *ngIf="order.team_member_name; else noTm" class="cell-stack">
+                <div class="person-name-single text-primary-dark nowrap-text" [title]="order.team_member_name">
+                  <i class="fas fa-user-gear me-1 text-primary-dark fs-11"></i>{{ order.team_member_name }}
+                </div>
+                <div class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-id-card me-1 text-slate fs-10"></i>ID: {{ order.team_member_member_id || ('TM-' + order.team_member_user_id) }}
+                </div>
+                <div *ngIf="order.team_member_mobile" class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-phone-alt me-1 text-slate fs-10"></i><a [href]="'tel:' + order.team_member_mobile" class="contact-link">{{ order.team_member_mobile }}</a>
+                </div>
+                <div *ngIf="order.team_member_email" class="person-detail-single text-muted nowrap-text" [title]="order.team_member_email">
+                  <i class="fas fa-envelope me-1 text-slate fs-10"></i><a [href]="'mailto:' + order.team_member_email" class="contact-link">{{ order.team_member_email }}</a>
+                </div>
               </div>
               <ng-template #noTm>
-                <span class="text-muted fs-12">—</span>
+                <span class="text-muted fs-12 nowrap-text">—</span>
               </ng-template>
             </td>
 
-            <!-- SOC8 / Associate -->
+            <!-- SOC / Associate -->
             <td class="col-soc">
-              <div *ngIf="order.associate_name; else noAssoc">
-                <div class="person-name fw-500 text-indigo-dark">{{ order.associate_name }}</div>
-                <div class="person-id text-muted">{{ order.associate_member_id || ('ASC-' + order.effective_associate_user_id) }}</div>
+              <div *ngIf="order.associate_name; else noAssoc" class="cell-stack">
+                <div class="person-name-single text-indigo-dark nowrap-text" [title]="order.associate_name">
+                  <i class="fas fa-user-shield me-1 text-indigo-dark fs-11"></i>{{ order.associate_name }}
+                </div>
+                <div class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-id-card me-1 text-slate fs-10"></i>ID: {{ order.associate_member_id || ('ASC-' + order.effective_associate_user_id) }}
+                </div>
+                <div *ngIf="order.associate_mobile" class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-phone-alt me-1 text-slate fs-10"></i><a [href]="'tel:' + order.associate_mobile" class="contact-link">{{ order.associate_mobile }}</a>
+                </div>
+                <div *ngIf="order.associate_email" class="person-detail-single text-muted nowrap-text" [title]="order.associate_email">
+                  <i class="fas fa-envelope me-1 text-slate fs-10"></i><a [href]="'mailto:' + order.associate_email" class="contact-link">{{ order.associate_email }}</a>
+                </div>
               </div>
               <ng-template #noAssoc>
-                <span class="text-muted fs-12">—</span>
+                <span class="text-muted fs-12 nowrap-text">—</span>
               </ng-template>
             </td>
 
             <!-- Referral ID -->
             <td class="col-referral">
-              <span class="referral-chip">
-                <i class="fas fa-link me-1 text-gold"></i>
-                {{ order.referral_id || 'MMR00001 (Direct)' }}
-              </span>
-              <div *ngIf="order.sponsor_name" class="fs-11 text-muted mt-1">
-                {{ order.sponsor_name }}
+              <div class="cell-stack">
+                <span class="referral-chip nowrap-text">
+                  <i class="fas fa-link me-1 text-gold"></i>
+                  {{ order.referral_id || 'MMR00001 (Direct)' }}
+                </span>
+                <div *ngIf="order.sponsor_name" class="person-detail-single text-muted fs-11 mt-1 nowrap-text" [title]="order.sponsor_name">
+                  <i class="fas fa-user-check me-1 text-slate fs-10"></i>{{ order.sponsor_name }}
+                </div>
               </div>
             </td>
 
             <!-- Plot Price -->
             <td class="col-price text-end">
-              <div class="fw-700 text-dark">₹{{ (order.total_plot_price || 0) | number:'1.0-0' }}</div>
-              <div class="text-muted fs-11">{{ order.payment_type || 'FullPayment' }}</div>
+              <div class="cell-stack text-end">
+                <div class="fw-700 text-dark nowrap-text">₹{{ (order.total_plot_price || 0) | number:'1.0-0' }}</div>
+                <div class="text-muted fs-11 nowrap-text">{{ order.payment_type || 'FullPayment' }}</div>
+              </div>
             </td>
 
             <!-- Amount Received -->
             <td class="col-received text-end">
-              <div class="fw-700 text-emerald">₹{{ (order.amount_received || 0) | number:'1.0-0' }}</div>
-              <div *ngIf="order.remaining_balance > 0" class="text-muted fs-11">
-                Bal: ₹{{ order.remaining_balance | number:'1.0-0' }}
+              <div class="cell-stack text-end">
+                <div class="fw-700 text-emerald nowrap-text">₹{{ (order.amount_received || 0) | number:'1.0-0' }}</div>
+                <div *ngIf="order.remaining_balance > 0" class="text-muted fs-11 nowrap-text">
+                  Bal: ₹{{ order.remaining_balance | number:'1.0-0' }}
+                </div>
               </div>
             </td>
 
             <!-- Payment Status -->
             <td class="col-paystatus text-center">
-              <span class="status-badge" [ngClass]="{
+              <span class="status-badge nowrap-text" [ngClass]="{
                 'badge-paid': order.payment_status === 'Paid',
                 'badge-advance': order.payment_status === 'Partially Paid' || order.payment_status === 'Advance Received',
                 'badge-unpaid': order.payment_status === 'Unpaid' || !order.payment_status
@@ -276,42 +418,44 @@
 
             <!-- Settlement Status -->
             <td class="col-settlestatus text-center">
-              <span class="settle-pill" [ngClass]="{
-                'pill-pending': order.settlement_status === 'Pending' || !order.settlement_status,
-                'pill-released': order.settlement_status === 'Released',
-                'pill-cancelled': order.settlement_status === 'Cancelled'
-              }">
-                <i class="fas me-1" [ngClass]="{
-                  'fa-clock': order.settlement_status === 'Pending' || !order.settlement_status,
-                  'fa-check-circle': order.settlement_status === 'Released',
-                  'fa-ban': order.settlement_status === 'Cancelled'
-                }"></i>
-                {{ order.settlement_status || 'Pending' }}
-              </span>
-              <div *ngIf="order.settlement_reference" class="fs-10 text-muted mt-1 font-monospace">
-                {{ order.settlement_reference }}
+              <div class="cell-stack align-items-center">
+                <span class="settle-pill nowrap-text" [ngClass]="{
+                  'pill-pending': order.settlement_status === 'Pending' || !order.settlement_status,
+                  'pill-released': order.settlement_status === 'Released',
+                  'pill-cancelled': order.settlement_status === 'Cancelled'
+                }">
+                  <i class="fas me-1" [ngClass]="{
+                    'fa-clock': order.settlement_status === 'Pending' || !order.settlement_status,
+                    'fa-check-circle': order.settlement_status === 'Released',
+                    'fa-ban': order.settlement_status === 'Cancelled'
+                  }"></i>
+                  {{ order.settlement_status || 'Pending' }}
+                </span>
+                <div *ngIf="order.settlement_reference" class="fs-10 text-muted mt-1 font-monospace nowrap-text">
+                  {{ order.settlement_reference }}
+                </div>
               </div>
             </td>
 
-            <!-- Actions -->
-            <td class="col-actions text-center">
+            <!-- Actions (Fixed / Sticky on Right) -->
+            <td class="col-actions text-center sticky-action-cell">
               <div class="btn-group-actions">
                 <!-- Release Payment Button -->
                 <button
                   type="button"
-                  class="btn btn-release btn-sm"
+                  class="btn btn-release btn-sm nowrap-text"
                   [disabled]="order.settlement_status === 'Released' || order.amount_received <= 0"
                   (click)="openReleaseModal(order)"
                   [title]="order.settlement_status === 'Released' ? 'Already Released' : 'Calculate & Release Payment Settlement'"
                 >
                   <i class="fas fa-hand-holding-dollar me-1"></i>
-                  {{ order.settlement_status === 'Released' ? 'Released' : 'Release Payment' }}
+                  {{ order.settlement_status === 'Released' ? 'Released' : 'Release' }}
                 </button>
 
                 <!-- View Breakdown / Audit -->
                 <button
                   type="button"
-                  class="btn btn-outline-info btn-sm"
+                  class="btn btn-outline-info btn-sm btn-icon"
                   (click)="openReleaseModal(order)"
                   title="View Recipient Distribution Breakdown"
                 >
@@ -322,7 +466,7 @@
                 <button
                   *ngIf="order.settlement_status === 'Pending'"
                   type="button"
-                  class="btn btn-outline-danger btn-sm"
+                  class="btn btn-outline-danger btn-sm btn-icon"
                   (click)="openCancelModal(order)"
                   title="Cancel Settlement Request"
                 >

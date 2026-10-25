@@ -68,11 +68,48 @@ export class AdminPaymentSettlementComponent implements OnInit {
   showDetailModal = false;
   detailOrder: any = null;
 
+  // Mobile Landscape / Fullscreen Mode
+  isLandscapeMode = false;
+  isRotatedLandscape = false;
+
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
 
   ngOnInit(): void {
     this.loadOrders(1);
+  }
+
+  toggleLandscapeMode(): void {
+    this.isLandscapeMode = !this.isLandscapeMode;
+    if (this.isLandscapeMode) {
+      try {
+        if (typeof screen !== 'undefined' && screen.orientation && (screen.orientation as any).lock) {
+          (screen.orientation as any).lock('landscape').catch(() => {});
+        }
+      } catch (e) {}
+    } else {
+      this.isRotatedLandscape = false;
+      try {
+        if (typeof screen !== 'undefined' && screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      } catch (e) {}
+    }
+  }
+
+  toggleRotateLandscape(): void {
+    this.isRotatedLandscape = !this.isRotatedLandscape;
+  }
+
+  getNumberFitClass(val: number | string | undefined | null): string {
+    if (val === undefined || val === null) return 'digits-normal';
+    const num = Number(val);
+    const str = !isNaN(num) ? Math.round(num).toLocaleString('en-IN') : String(val);
+    const len = str.length;
+    if (len >= 12) return 'digits-xxl';
+    if (len >= 10) return 'digits-xl';
+    if (len >= 7) return 'digits-lg';
+    return 'digits-normal';
   }
 
   loadOrders(page: number = 1): void {
