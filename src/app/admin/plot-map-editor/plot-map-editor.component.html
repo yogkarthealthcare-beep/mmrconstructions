@@ -273,6 +273,7 @@
           <g
             *ngFor="let plot of filteredPlots; trackBy: trackPlot"
             class="plot-overlay"
+            [class.active]="selectedPlot?.plot_id === plot.plot_id || selectedPlotIds.has(+plot.plot_id)"
             [class.unsaved]="dirtyPlotIds.has(plot.plot_id)"
             [ngClass]="detectionConfidenceClass(plot)">
             <polygon

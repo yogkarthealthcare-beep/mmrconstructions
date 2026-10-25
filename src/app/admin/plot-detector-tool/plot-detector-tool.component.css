@@ -147,6 +147,7 @@
 }
 
 .detector-stage text.plot-label {
+  display: none;
   fill: #0f172a;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-weight: 700;
@@ -154,6 +155,23 @@
   dominant-baseline: middle;
   pointer-events: none;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95), 0 0 4px rgba(255, 255, 255, 0.9);
+}
+
+.detector-stage text.sold-out-badge-text {
+  display: none;
+}
+
+.detector-stage .plot-group:hover text.plot-label,
+.detector-stage .plot-group:hover text.sold-out-badge-text,
+.detector-stage .plot-group.selected text.plot-label,
+.detector-stage .plot-group.selected text.sold-out-badge-text {
+  display: block;
+}
+
+.detector-stage .plot-group:hover .plot-polygon {
+  stroke: #2563eb !important;
+  stroke-width: 2.5 !important;
+  filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.4));
 }
 
 .detector-stage text.selected-label {
@@ -495,4 +513,11 @@
 .fw-600 { font-weight: 600 !important; }
 .fw-700 { font-weight: 700 !important; }
 .fw-800 { font-weight: 800 !important; }
+
+@media (max-width: 991px) {
+  .detector-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 

@@ -619,33 +619,69 @@
 
 /* Status select pill */
 .status-select-pill {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  height: 22px;
-  border-radius: 12px;
-  border: 1px solid #cbd5e1;
-  background-color: #ffffff;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  padding: 2px 8px !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+}
+
+.status-select-pill option {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* SVG Plot Boundaries & Density Overlap Fix */
+.plot-group {
   cursor: pointer;
-  text-transform: uppercase;
 }
 
-.status-select-pill.status-available {
-  border-color: #86efac;
-  color: #15803d;
-  background: #f0fdf4;
+.plot-group polygon {
+  transition: all 0.15s ease;
 }
 
-.status-select-pill.status-booked {
-  border-color: #fde047;
-  color: #a16207;
-  background: #fefce8;
+.plot-group:hover polygon,
+.plot-group.is-hovered polygon {
+  stroke: #ffffff !important;
+  stroke-width: 0.8 !important;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.9));
 }
 
-.status-select-pill.status-sold {
-  border-color: #fca5a5;
-  color: #b91c1c;
-  background: #fef2f2;
+.plot-group polygon.active-polygon,
+.plot-group.is-selected polygon {
+  stroke: #f9df9f !important;
+  stroke-width: 0.9 !important;
+  filter: drop-shadow(0 0 3px rgba(249, 223, 159, 0.95));
+}
+
+/* Hide permanent text labels by default to prevent dense overlapping blob */
+.plot-group text {
+  display: none;
+  pointer-events: none;
+}
+
+/* Only display text label on hover or when selected */
+.plot-group:hover text,
+.plot-group.is-hovered text,
+.plot-group.is-selected text {
+  display: block !important;
+}
+
+.plot-canvas-hover-card {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  animation: fadeInCard 0.15s ease-out;
+}
+
+@keyframes fadeInCard {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ── MODALS (erp-modal-design.html Standards) ────────────── */

@@ -570,10 +570,7 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
   }
 
   shouldShowLabel(plot: AdminSalesPlot): boolean {
-    if (!plot.bbox) return true;
-    const screenWidth = plot.bbox.width * this.zoom;
-    const screenHeight = plot.bbox.height * this.zoom;
-    return screenWidth > 24 && screenHeight > 16;
+    return (this.hoveredPlot?.plot_id === plot.plot_id || this.selectedPlot?.plot_id === plot.plot_id);
   }
 
   // ── Interaction & Selection ─────────────────────────────────────────
