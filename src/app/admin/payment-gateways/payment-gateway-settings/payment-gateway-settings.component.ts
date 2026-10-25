@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { AdminPaymentGatewayService } from '../../../services/admin-payment-gateway.service';
 import { PaymentGatewayAdmin, PaymentSettings } from '../../../services/payment.types';
 import { PaymentGatewayListComponent } from '../payment-gateway-list/payment-gateway-list.component';
 import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
-import { LoadingButtonComponent } from '../../../shared/components/loading-button/loading-button.component';
 
 @Component({
   selector: 'app-payment-gateway-settings',
@@ -14,10 +12,8 @@ import { LoadingButtonComponent } from '../../../shared/components/loading-butto
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     PaymentGatewayListComponent,
-    ConfirmationDialogComponent,
-    LoadingButtonComponent
+    ConfirmationDialogComponent
   ],
   templateUrl: './payment-gateway-settings.component.html',
   styleUrls: ['./payment-gateway-settings.component.css']
@@ -29,11 +25,21 @@ export class PaymentGatewaySettingsComponent implements OnInit {
   supportedGateways: Array<'razorpay' | 'cashfree' | 'payu'> = ['razorpay', 'cashfree', 'payu'];
   savingGateway: Record<'razorpay' | 'cashfree' | 'payu', boolean> = { razorpay: false, cashfree: false, payu: false };
   secretVisible: Record<'razorpay' | 'cashfree' | 'payu', boolean> = { razorpay: false, cashfree: false, payu: false };
+
+  // UPI QR 1 & QR 2 Configuration State
+  upiQrs: any[] = [];
+  qrForms: Record<'qr1' | 'qr2', FormGroup> = {} as Record<'qr1' | 'qr2', FormGroup>;
+  qrFilePreviews: Record<'qr1' | 'qr2', string | null> = { qr1: null, qr2: null };
+  qrSelectedFiles: Record<'qr1' | 'qr2', File | null> = { qr1: null, qr2: null };
+  savingQr: Record<'qr1' | 'qr2', boolean> = { qr1: false, qr2: false };
   
   loading = false;
   savingGlobal = false;
   errorMessage = '';
   successMessage = '';
+
+  // Layout & Tab navigation
+  activeViewTab: 'all' | 'upi' | 'razorpay' | 'cashfree' | 'payu' = 'all';
 
   // Confirmation Modal state
   dialogOpen = false;
@@ -105,6 +111,25 @@ export class PaymentGatewaySettingsComponent implements OnInit {
         priority: [3],
       })
     };
+
+    this.qrForms = {
+      qr1: this.fb.group({
+        qr_code_key: ['qr1'],
+        label: ['Primary UPI QR (HDFC Bank)', [Validators.required]],
+        upi_id: ['', [Validators.required]],
+        qr_image_url: [''],
+        is_active: [true],
+        is_primary: [true]
+      }),
+      qr2: this.fb.group({
+        qr_code_key: ['qr2'],
+        label: ['Secondary UPI QR (ICICI Bank)', [Validators.required]],
+        upi_id: ['', [Validators.required]],
+        qr_image_url: [''],
+        is_active: [true],
+        is_primary: [false]
+      })
+    };
   }
 
   loadData() {
@@ -126,6 +151,30 @@ export class PaymentGatewaySettingsComponent implements OnInit {
         this.patchGatewayForms();
         this.loadGlobalSettings();
       }
+    });
+
+    // Fetch UPI QR configs
+    this.adminService.getUpiQrConfigs().subscribe({
+      next: (res: any) => {
+        const rows = res?.data || (Array.isArray(res) ? res : []);
+        this.upiQrs = rows;
+        rows.forEach((r: any) => {
+          const key = (r.qr_code_key || '').toLowerCase() as 'qr1' | 'qr2';
+          if (this.qrForms[key]) {
+            this.qrForms[key].patchValue({
+              label: r.label,
+              upi_id: r.upi_id,
+              qr_image_url: r.qr_image_url,
+              is_active: Boolean(r.is_active),
+              is_primary: Boolean(r.is_primary)
+            });
+            if (r.qr_image_url) {
+              this.qrFilePreviews[key] = r.qr_image_url;
+            }
+          }
+        });
+      },
+      error: (err) => console.error('Failed to load UPI QR configs', err)
     });
   }
 
@@ -406,6 +455,67 @@ export class PaymentGatewaySettingsComponent implements OnInit {
   closeDialog() {
     this.dialogOpen = false;
     this.pendingAction = null;
+  }
+
+  onQrFileSelected(key: 'qr1' | 'qr2', event: any) {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.qrSelectedFiles[key] = file;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.qrFilePreviews[key] = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  setPrimaryQr(key: 'qr1' | 'qr2') {
+    this.qrForms.qr1.patchValue({ is_primary: key === 'qr1' });
+    this.qrForms.qr2.patchValue({ is_primary: key === 'qr2' });
+  }
+
+  saveUpiQr(key: 'qr1' | 'qr2') {
+    const form = this.qrForms[key];
+    if (form.invalid) {
+      form.markAllAsTouched();
+      this.errorMessage = `Please enter Label and UPI ID for ${key.toUpperCase()}.`;
+      return;
+    }
+
+    this.savingQr[key] = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const val = form.value;
+    const fd = new FormData();
+    fd.append('qr_code_key', key);
+    fd.append('label', val.label);
+    fd.append('upi_id', val.upi_id);
+    fd.append('is_active', String(val.is_active));
+    fd.append('is_primary', String(val.is_primary));
+    if (val.qr_image_url) {
+      fd.append('qr_image_url', val.qr_image_url);
+    }
+    if (this.qrSelectedFiles[key]) {
+      fd.append('qr_image', this.qrSelectedFiles[key] as File);
+    }
+
+    this.adminService.saveUpiQrConfig(fd).subscribe({
+      next: (res: any) => {
+        this.savingQr[key] = false;
+        if (res.success || res.status === 'success') {
+          this.successMessage = `${val.label || key.toUpperCase()} configuration saved successfully.`;
+          this.showToast();
+          this.loadData();
+        } else {
+          this.errorMessage = res.message || `Failed to save ${key.toUpperCase()} configuration.`;
+        }
+      },
+      error: (err) => {
+        this.savingQr[key] = false;
+        this.errorMessage = err?.error?.message || `Failed to save ${key.toUpperCase()} configuration.`;
+      }
+    });
   }
 
   private showToast() {

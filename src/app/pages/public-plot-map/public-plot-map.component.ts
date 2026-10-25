@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { getPlotStyle, shouldShowSoldText, getPlotStatusLabel } from '../../shared/plot-status.config';
 import { getUnitTypeConfig } from '../../shared/unit-types.config';
+import { UpiQrPaymentComponent, UpiPaymentDetails } from '../../shared/upi-qr-payment/upi-qr-payment.component';
 import Swal from 'sweetalert2';
 
 export interface PublicPlot {
@@ -38,7 +39,7 @@ export interface SiteInfo {
 @Component({
   selector: 'app-public-plot-map',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, UpiQrPaymentComponent],
   templateUrl: './public-plot-map.component.html',
   styleUrls: ['./public-plot-map.component.css']
 })
@@ -84,6 +85,39 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     rate_per_gaj: 0,
     rate_per_sqft: 0
   };
+
+  upiDetails: UpiPaymentDetails | null = null;
+
+  onUpiPaymentChange(d: UpiPaymentDetails): void {
+    this.upiDetails = d;
+  }
+
+  // ── Indian Currency & Formatting ────────────────────────────────────
+  formatInr(amount: number | null | undefined): string {
+    if (amount == null || isNaN(amount) || amount <= 0) return 'Price on request';
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount);
+  }
+
+  formatDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return 'Recently';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  }
+
+  trackByPlotId(_idx: number, plot: PublicPlot): number {
+    return plot.plot_id;
+  }
 
   // Map Dimensions & Transform
   imageWidth = 2000;
@@ -908,128 +942,83 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
 
     this.bookingSubmitting = true;
 
-    const payload = {
-      plot_id: this.selectedPlot.plot_id,
-      payment_type: this.bookingForm.payment_type === 'DownPayment' ? 'PartWise' : this.bookingForm.payment_type,
-      installment_plan_id: this.bookingForm.payment_type === 'EMI' ? (this.bookingForm.installment_plan_id || undefined) : undefined,
-      advance_amount: Number(this.bookingForm.advance_amount),
-      custom_plot_price: this.effectivePlotPrice,
-      notes: this.bookingForm.notes || undefined
-    };
+    const executeBooking = (proofUrl?: string) => {
+      const payload: any = {
+        plot_id: this.selectedPlot!.plot_id,
+        site_id: this.siteId,
+        payment_type: this.bookingForm.payment_type === 'DownPayment' ? 'PartWise' : this.bookingForm.payment_type,
+        installment_plan_id: this.bookingForm.payment_type === 'EMI' ? (this.bookingForm.installment_plan_id || undefined) : undefined,
+        advance_amount: Number(this.bookingForm.advance_amount),
+        custom_plot_price: this.effectivePlotPrice,
+        notes: this.bookingForm.notes || undefined,
+        payment_method: 'UPI / QR Code',
+        payer_name: this.upiDetails?.payer_name || undefined,
+        utr_number: this.upiDetails?.utr_number || undefined,
+        qr_code_key: this.upiDetails?.qr_code_key || undefined,
+        payment_proof_url: proofUrl || undefined
+      };
 
-    this.api.createBooking(payload).subscribe({
-      next: (res: any) => {
-        this.bookingSubmitting = false;
-        this.showBookingModal = false;
+      this.api.createBooking(payload).subscribe({
+        next: (res: any) => {
+          this.bookingSubmitting = false;
+          this.showBookingModal = false;
 
-        const booking = res?.data || res?.booking || {};
-        const serial = booking.booking_serial || `BK-${this.selectedPlot?.plot_number}`;
-        const isPendingApproval = booking.booking_status === 'Pending Admin Price Approval';
+          const booking = res?.data || res?.booking || {};
+          const serial = booking.booking_serial || `BK-${this.selectedPlot?.plot_number}`;
+          const isPendingApproval = booking.booking_status === 'Pending Admin Price Approval';
 
-        // Immediately update local plot status to IN_PROCESS
-        if (this.selectedPlot) {
-          this.selectedPlot.public_status = 'IN_PROCESS';
-          const inMap = this.plots.find(p => p.plot_id === this.selectedPlot?.plot_id);
-          if (inMap) inMap.public_status = 'IN_PROCESS';
-        }
+          // Immediately update local plot status to IN_PROCESS (Orange)
+          if (this.selectedPlot) {
+            this.selectedPlot.public_status = 'IN_PROCESS';
+            const inMap = this.plots.find(p => p.plot_id === this.selectedPlot?.plot_id);
+            if (inMap) inMap.public_status = 'IN_PROCESS';
+          }
 
-        if (isPendingApproval) {
           Swal.fire({
-            icon: 'info',
-            title: 'बुकिंग दर्ज! रेट एडमिन अप्रूवल में है',
+            icon: 'success',
+            title: 'UPI पेमेंट व बुकिंग दर्ज!',
             html: `
               <div style="text-align: left; font-size: 14px; line-height: 1.6;">
-                <p><strong>Booking Serial:</strong> <span style="color: #0f3d2e; font-weight: 700;">${serial}</span></p>
-                <p><strong>प्रस्तावित कुल कीमत:</strong> ₹${this.effectivePlotPrice.toLocaleString('en-IN')}</p>
-                <p><strong>स्टेटस:</strong> <span class="badge bg-warning text-dark">Pending Admin Price Approval</span></p>
-                <div class="alert alert-warning mt-2 fs-12">
-                  <i class="fas fa-clock me-1"></i> आपका प्रस्तावित रेट एडमिन पैनल में अनुमोदन हेतु भेज दिया गया है। एडमिन द्वारा रेट मंज़ूर (Approve) होने के बाद आपका अंतिम EMI / पेमेंट शेड्यूल सक्रिय होगा।
+                <p><strong>Booking Ref:</strong> <span style="color: #065f46; font-weight: 700;">${serial}</span></p>
+                <p><strong>Payer Name:</strong> ${this.upiDetails?.payer_name || 'Customer'}</p>
+                <p><strong>UTR / Ref No:</strong> ${this.upiDetails?.utr_number || 'Under Verification'}</p>
+                <p><strong>Plot Status:</strong> <span class="badge bg-warning text-dark">Processing (Orange)</span></p>
+                <div class="alert alert-info mt-2 fs-12">
+                  <i class="fas fa-info-circle me-1"></i> आपका UPI पेमेंट प्रूफ MMR Accounts टीम के पास पहुँच गया है। UTR वेरिफिकेशन के बाद प्लॉट <strong>Booked (Green)</strong> में बदल जाएगा।
                 </div>
               </div>
             `,
-            showCancelButton: true,
-            confirmButtonColor: '#0f3d2e',
-            cancelButtonColor: '#d4a843',
-            confirmButtonText: '<i class="fas fa-list me-1"></i> My Bookings',
-            cancelButtonText: 'Stay on Map'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              this.router.navigate(['/customer/my-plots']);
-            }
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#065f46'
           });
-        } else {
-          Swal.fire({
-            icon: 'success',
-            title: 'Booking Confirmed!',
-            html: `
-              <div style="text-align: left; font-size: 14px; line-height: 1.6;">
-                <p><strong>Booking Serial:</strong> <span style="color: #0f3d2e; font-weight: 700;">${serial}</span></p>
-                <p><strong>Plot Unit:</strong> ${this.selectedPlot?.plot_number} (${this.selectedPlot?.unit_type})</p>
-                <p>Your booking has been registered. Our admin team will review and confirm your documentation shortly.</p>
-              </div>
-            `,
-            showCancelButton: true,
-            confirmButtonColor: '#0f3d2e',
-            cancelButtonColor: '#d4a843',
-            confirmButtonText: '<i class="fas fa-list me-1"></i> My Bookings',
-            cancelButtonText: 'Stay on Map'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              this.router.navigate(['/customer/my-plots']);
-            }
-          });
-        }
-      },
-      error: (err: any) => {
-        this.bookingSubmitting = false;
-        const msg = err?.error?.message || 'Unable to submit booking. Please try again.';
-
-        if (err?.status === 409) {
+        },
+        error: (err: any) => {
+          this.bookingSubmitting = false;
           Swal.fire({
             icon: 'error',
-            title: 'Plot Unavailable',
-            text: msg,
-            confirmButtonColor: '#d4a843'
-          }).then(() => {
-            this.showBookingModal = false;
-            this.loadPlotMap(false);
-          });
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Booking Error',
-            text: msg,
-            confirmButtonColor: '#d4a843'
+            title: 'Booking Submission Failed',
+            text: err?.error?.message || err?.message || 'Failed to submit booking. Please check details.',
+            confirmButtonColor: '#dc2626'
           });
         }
-      }
-    });
-  }
-
-  // ── Indian Currency & Formatting ────────────────────────────────────
-  formatInr(amount: number | null | undefined): string {
-    if (amount == null || isNaN(amount) || amount <= 0) return 'Price on request';
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount);
-  }
-
-  formatDate(dateStr: string | null | undefined): string {
-    if (!dateStr) return 'Recently';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
       });
-    } catch {
-      return dateStr;
-    }
-  }
+    };
 
-  trackByPlotId(_idx: number, plot: PublicPlot): number {
-    return plot.plot_id;
+    if (this.upiDetails?.proof_file) {
+      const fd = new FormData();
+      fd.append('proof_image', this.upiDetails.proof_file);
+      this.api.post('/api/payment/upload-proof', fd).subscribe({
+        next: (upRes: any) => {
+          const proofUrl = upRes?.data?.url || upRes?.url;
+          executeBooking(proofUrl);
+        },
+        error: () => {
+          // If pre-upload fails, proceed with booking
+          executeBooking();
+        }
+      });
+    } else {
+      executeBooking();
+    }
   }
 }

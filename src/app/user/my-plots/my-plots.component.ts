@@ -5,11 +5,12 @@ import { AuthService } from '../../services/auth.service';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BankDetailsComponent } from '../../shared/components/bank-details/bank-details.component';
+import { UpiQrPaymentComponent, UpiPaymentDetails } from '../../shared/upi-qr-payment/upi-qr-payment.component';
 
 @Component({
   selector: 'app-my-plots',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, BankDetailsComponent],
+  imports: [CommonModule, RouterLink, FormsModule, BankDetailsComponent, UpiQrPaymentComponent],
   templateUrl: './my-plots.component.html',
   styleUrls: ['./my-plots.component.css']
 })
@@ -364,9 +365,20 @@ export class MyPlotsComponent implements OnInit {
     this.paymentProofData = {
       payment_mode: 'UPI',
       reference_number: '',
+      payer_name: '',
+      qr_code_key: 'qr1',
       amount: defaultAmount,
       proof_file: null
     };
+  }
+
+  onUpiProofDetailsChange(details: UpiPaymentDetails) {
+    this.paymentProofData.reference_number = details.utr_number;
+    this.paymentProofData.payer_name = details.payer_name;
+    this.paymentProofData.qr_code_key = details.qr_code_key;
+    if (details.proof_file) {
+      this.paymentProofData.proof_file = details.proof_file;
+    }
   }
 
   onFileSelected(event: any) {
@@ -392,6 +404,9 @@ export class MyPlotsComponent implements OnInit {
     form.append('payment_proof', this.paymentProofData.proof_file);
     form.append('payment_mode', this.paymentProofData.payment_mode || 'UPI');
     form.append('transaction_reference', this.paymentProofData.reference_number || '');
+    form.append('utr_number', this.paymentProofData.reference_number || '');
+    form.append('payer_name', this.paymentProofData.payer_name || '');
+    form.append('qr_code_key', this.paymentProofData.qr_code_key || 'qr1');
     form.append('amount', this.paymentProofData.amount.toString());
 
     const targetEmiId = this.paymentModalBooking.nextEmi ? this.paymentModalBooking.nextEmi.emi_id : this.paymentModalBooking.booking_id;

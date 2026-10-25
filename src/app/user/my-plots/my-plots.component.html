@@ -463,25 +463,42 @@
         <input type="number" class="form-control form-control-sm" [(ngModel)]="paymentProofData.amount" name="amount" required placeholder="e.g. 15000" />
       </div>
 
-      <div class="mb-2">
+      <div class="mb-3">
         <label class="form-label fs-11 fw-700 text-dark mb-1">Payment Mode *</label>
         <select class="form-select form-select-sm" [(ngModel)]="paymentProofData.payment_mode" name="payment_mode">
-          <option value="UPI">UPI / GooglePay / PhonePe / Paytm</option>
+          <option value="UPI">UPI / GooglePay / PhonePe / Paytm (QR Payment)</option>
           <option value="BankTransfer">Bank Transfer / NEFT / RTGS / IMPS</option>
           <option value="Cheque">Cheque / Demand Draft</option>
           <option value="Cash">Cash Deposit at Office</option>
         </select>
       </div>
 
-      <div class="mb-2">
-        <label class="form-label fs-11 fw-700 text-dark mb-1">Transaction Ref / UTR / Cheque #</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="paymentProofData.reference_number" name="reference_number" placeholder="e.g. UPI Ref / UTR 12-digit number" />
+      <!-- UPI QR Code Section -->
+      <div *ngIf="paymentProofData.payment_mode === 'UPI'" class="mb-3">
+        <app-upi-qr-payment
+          [advanceAmount]="paymentProofData.amount"
+          [isDarkTheme]="false"
+          (paymentDetailsChange)="onUpiProofDetailsChange($event)">
+        </app-upi-qr-payment>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label fs-11 fw-700 text-dark mb-1">Upload Receipt / Screenshot *</label>
-        <input type="file" class="form-control form-control-sm" accept="image/*,.pdf" (change)="onFileSelected($event)" required />
-        <div class="form-text fs-10 text-muted">Supports JPG, PNG, PDF (Max 5MB)</div>
+      <!-- Other Payment Modes -->
+      <div *ngIf="paymentProofData.payment_mode !== 'UPI'">
+        <div class="mb-2">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Payer / Account Holder Name *</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="paymentProofData.payer_name" name="payer_name" placeholder="Name of person who made the payment" />
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Transaction Ref / Cheque # *</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="paymentProofData.reference_number" name="reference_number" placeholder="e.g. Bank Ref / Cheque Number" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Upload Receipt / Cheque Photo *</label>
+          <input type="file" class="form-control form-control-sm" accept="image/*,.pdf" (change)="onFileSelected($event)" />
+          <div class="form-text fs-10 text-muted">Supports JPG, PNG, PDF (Max 5MB)</div>
+        </div>
       </div>
 
       <div class="alert alert-warning p-2 fs-11 rounded-3 mb-3 d-flex align-items-center gap-2">

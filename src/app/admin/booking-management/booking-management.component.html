@@ -444,6 +444,18 @@
                 <span class="info-cell-label">Payment Method</span>
                 <strong class="info-cell-val">{{ selected.payment_method || selected.payment_type || 'Cash' }}</strong>
               </div>
+              <div class="info-cell" *ngIf="selected.payer_name">
+                <span class="info-cell-label">Payer / Sender</span>
+                <strong class="info-cell-val text-primary"><i class="fas fa-user-check me-1"></i>{{ selected.payer_name }}</strong>
+              </div>
+              <div class="info-cell" *ngIf="selected.utr_number || selected.transaction_ref">
+                <span class="info-cell-label">UTR / Trans Ref</span>
+                <strong class="info-cell-val font-monospace"><code>{{ selected.utr_number || selected.transaction_ref }}</code></strong>
+              </div>
+              <div class="info-cell" *ngIf="selected.qr_code_key">
+                <span class="info-cell-label">Paid via QR</span>
+                <strong class="info-cell-val"><span class="badge bg-purple">{{ selected.qr_code_key | uppercase }}</span></strong>
+              </div>
               <div class="info-cell">
                 <span class="info-cell-label">Plot Status</span>
                 <strong class="info-cell-val badge-status-text">{{ selected.plot?.plot_status || 'Booked' }}</strong>
@@ -542,8 +554,12 @@
                       <td>
                         <code>{{ pay.payment_serial || pay.utr_number || pay.transaction_ref || ('#' + pay.payment_id) }}</code>
                         <div class="fs-10 text-muted">{{ pay.payment_date | date:'dd MMM yyyy' }}</div>
+                        <div *ngIf="pay.payer_name" class="fs-10 text-primary fw-semibold mt-0.5"><i class="fas fa-user-check me-1"></i>Payer: {{ pay.payer_name }}</div>
                       </td>
-                      <td>{{ pay.payment_mode }}</td>
+                      <td>
+                        {{ pay.payment_mode }}
+                        <div *ngIf="pay.qr_code_key" class="fs-9 text-muted mt-0.5"><span class="badge bg-light border text-purple">{{ pay.qr_code_key | uppercase }}</span></div>
+                      </td>
                       <td class="fw-bold" [ngClass]="pay.payment_status === 'Approved' ? 'text-emerald' : 'text-amber'">
                         ₹{{ pay.gross_amount || pay.amount | number:'1.0-0' }}
                       </td>
@@ -581,6 +597,8 @@
                   </div>
                   <div class="proof-meta">
                     <span class="proof-type">{{ proof.file_type || ('Slip #' + (pIdx + 1)) }}</span>
+                    <div *ngIf="proof.payer_name" class="fs-10 text-dark fw-bold mt-0.5"><i class="fas fa-user-check me-1"></i>{{ proof.payer_name }}</div>
+                    <div *ngIf="proof.utr_number" class="fs-10 text-muted">UTR: <code>{{ proof.utr_number }}</code></div>
                     <a [href]="proof.file_path || proof.file_url || proof.url" target="_blank" rel="noopener" class="btn-proof-download">
                       <i class="fas fa-download"></i>
                     </a>

@@ -292,9 +292,10 @@
   height: 8px;
   border-radius: 50%;
 }
-.swatch-avail { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
-.swatch-inproc { background: #eab308; box-shadow: 0 0 6px #eab308; }
-.swatch-sold { background: #f43f5e; box-shadow: 0 0 6px #f43f5e; }
+.swatch-avail { background: #0284c7; box-shadow: 0 0 6px #0284c7; }
+.swatch-inproc { background: #ea580c; box-shadow: 0 0 6px #ea580c; }
+.swatch-booked { background: #16a34a; box-shadow: 0 0 6px #16a34a; }
+.swatch-sold { background: #dc2626; box-shadow: 0 0 6px #dc2626; }
 
 .legend-title {
   font-size: 0.68rem;
@@ -927,6 +928,26 @@
   border-radius: 16px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
   padding: 24px;
+  /* Slim & subtle green scrollbar that blends invisibly into modal */
+  scrollbar-width: thin;
+  scrollbar-color: #0e3727 transparent;
+}
+
+.booking-dialog-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.booking-dialog-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.booking-dialog-card::-webkit-scrollbar-thumb {
+  background: #0e3727;
+  border-radius: 4px;
+}
+
+.booking-dialog-card::-webkit-scrollbar-thumb:hover {
+  background: #145038;
 }
 
 .dialog-header {
@@ -957,11 +978,11 @@
 .btn-dialog-close {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: #ffffff;
   font-size: 1.3rem;
   cursor: pointer;
 }
-.btn-dialog-close:hover { color: #ffffff; }
+.btn-dialog-close:hover { color: #d4a843; }
 
 .booking-plot-summary {
   display: grid;
@@ -981,12 +1002,86 @@
 
 .summary-col .lbl {
   font-size: 0.7rem;
-  color: #94a3b8;
+  color: #ffffff;
+  opacity: 0.92;
 }
 
 .summary-col .val {
   font-size: 0.88rem;
   color: #ffffff;
+}
+
+.valuation-card-box {
+  background: rgba(212, 168, 67, 0.08);
+  border: 1px solid rgba(212, 168, 67, 0.5) !important;
+}
+
+/* ── Plot Input Group Alignment & Theme ──────────────────────────── */
+.plot-input-group {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.plot-input-group:focus-within {
+  border-color: #d4a843 !important;
+  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.25) !important;
+}
+
+.plot-input-addon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-right: 1px solid #e2e8f0;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.plot-input-control {
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+  height: 38px;
+  padding: 6px 12px;
+  border: none !important;
+  outline: none !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.plot-input-control::placeholder {
+  color: #94a3b8;
+  font-weight: normal;
+}
+
+.plot-input-group-lg .plot-input-addon {
+  padding: 0 16px;
+  background: #e2e8f0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.plot-input-group-lg .plot-input-control {
+  height: 44px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a !important;
 }
 
 .payment-plan-grid {
@@ -1027,28 +1122,35 @@
 
 .plan-desc {
   font-size: 0.74rem;
-  color: #94a3b8;
+  color: #ffffff;
+  opacity: 0.9;
   margin-top: 2px;
 }
 
 .form-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #cbd5e1;
+  color: #ffffff;
   margin-bottom: 5px;
 }
 
 .form-control {
-  background: rgba(0, 0, 0, 0.35) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  color: #ffffff !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
   border-radius: 8px !important;
-  font-size: 0.85rem !important;
+  font-size: 0.88rem !important;
+}
+
+.form-control:read-only {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  border-color: #cbd5e1 !important;
 }
 
 .form-control:focus {
   border-color: #d4a843 !important;
-  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.2) !important;
+  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.25) !important;
 }
 
 .bg-dark-green {

@@ -57,4 +57,25 @@ export class AdminPaymentGatewayService {
   getAuditLogs(params: any = {}): Observable<{ success: boolean; data: PaymentAuditLog[] }> {
     return this.api.get('/api/admin/payment-gateways/audit-logs', params, true);
   }
+
+  /**
+   * Fetches all UPI QR configurations (QR1, QR2).
+   */
+  getUpiQrConfigs(): Observable<{ success: boolean; data: any[] }> {
+    return this.api.get('/api/admin/payment-gateways/upi-qr', {}, true);
+  }
+
+  /**
+   * Saves or updates a UPI QR configuration with optional image upload.
+   */
+  saveUpiQrConfig(formData: FormData): Observable<{ success: boolean; data: any; message: string }> {
+    return this.api.post('/api/admin/payment-gateways/upi-qr', formData, true);
+  }
+
+  /**
+   * Retrieves active UPI QR configurations for customer booking flow.
+   */
+  getActiveUpiQrs(): Observable<{ success: boolean; data: any[] }> {
+    return this.api.get('/api/payment/active-upi-qrs', {}, false);
+  }
 }

@@ -1,3 +1,4 @@
+<!-- Public CAD Plot Map & Interactive Layout View -->
 <div class="public-plot-map-wrapper">
   <!-- Top Bar -->
   <header class="map-topbar">
@@ -482,64 +483,63 @@
 
         <form (ngSubmit)="submitBooking()">
           <!-- Customer Proposed Rate & Valuation Section -->
-          <div class="p-3 mb-3 rounded-8 bg-amber-50 border border-warning">
+          <div class="p-3 mb-3 rounded-8 valuation-card-box border border-warning">
             <div class="d-flex justify-content-between align-items-center mb-1">
-              <label class="form-label fw-800 fs-13 text-dark mb-0">
-                <i class="fas fa-tag text-warning-emphasis me-1"></i>आपका प्रस्तावित रेट (Proposed Valuation) <span class="text-danger">*</span>
+              <label class="form-label fw-800 fs-13 text-white mb-0">
+                <i class="fas fa-tag text-warning me-1"></i>आपका प्रस्तावित रेट (Proposed Valuation) <span class="text-danger">*</span>
               </label>
-              <span class="badge bg-warning text-dark fs-10">Admin Approval Required</span>
+              <span class="badge bg-warning text-dark fs-10 fw-bold">Admin Approval Required</span>
             </div>
-            <p class="fs-11 text-muted mb-2">
+            <p class="fs-11 text-white mb-2" style="opacity: 0.92;">
               प्लॉट का रेट प्रति गज या प्रति sq ft में दर्ज करें। दोनों वैल्यू एक-दूसरे के अनुसार स्वतः अपडेट होंगी।
             </p>
 
             <div class="row g-2 mb-2">
               <div class="col-6">
-                <label class="form-label fs-11 fw-700 text-muted mb-1">रेट प्रति गज (₹/Gaj)</label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white fw-bold">₹</span>
+                <label class="form-label fs-11 fw-700 text-white mb-1">रेट प्रति गज (₹/Gaj)</label>
+                <div class="plot-input-group">
+                  <span class="plot-input-addon">₹</span>
                   <input
-                    type="number"
-                    class="form-control fw-bold fs-12 text-dark"
+                    type="text"
+                    inputmode="numeric"
+                    class="plot-input-control"
                     [(ngModel)]="bookingForm.rate_per_gaj"
                     name="rate_per_gaj"
                     (ngModelChange)="onProposedRateGajChange()"
                     placeholder="₹8,000 / गज"
-                    min="1"
                   />
                 </div>
               </div>
 
               <div class="col-6">
-                <label class="form-label fs-11 fw-700 text-muted mb-1">रेट प्रति Sq.Ft (₹/sq ft)</label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white fw-bold">₹</span>
+                <label class="form-label fs-11 fw-700 text-white mb-1">रेट प्रति Sq.Ft (₹/sq ft)</label>
+                <div class="plot-input-group">
+                  <span class="plot-input-addon">₹</span>
                   <input
-                    type="number"
-                    class="form-control fw-bold fs-12 text-dark"
+                    type="text"
+                    inputmode="decimal"
+                    class="plot-input-control"
                     [(ngModel)]="bookingForm.rate_per_sqft"
                     name="rate_per_sqft"
                     (ngModelChange)="onProposedRateSqftChange()"
                     placeholder="Auto (₹/9)"
-                    min="1"
-                    step="0.01"
                   />
                 </div>
               </div>
             </div>
 
             <div class="mb-2">
-              <label class="form-label fs-11 fw-700 text-muted mb-1">कुल प्रस्तावित कीमत (Total Value):</label>
-              <div class="input-group">
-                <span class="input-group-text fw-bold bg-white text-dark">₹</span>
+              <label class="form-label fs-11 fw-700 text-white mb-1">कुल प्रस्तावित कीमत (Total Value):</label>
+              <div class="plot-input-group plot-input-group-lg">
+                <span class="plot-input-addon plot-input-addon-lg">₹</span>
                 <input
-                  type="number"
-                  class="form-control fw-800 fs-15 text-dark"
+                  type="text"
+                  inputmode="numeric"
+                  class="plot-input-control plot-input-control-lg"
                   [(ngModel)]="bookingForm.proposed_price"
                   name="proposed_price"
                   (ngModelChange)="onProposedPriceChange()"
                   placeholder="न्यूनतम ₹2,00,000"
-                  min="200000"
                   required
                 />
               </div>
@@ -557,7 +557,7 @@
 
           <!-- Customer Profile Summary -->
           <div class="form-row mb-3">
-            <label class="form-label">Customer Name</label>
+            <label class="form-label text-white">Customer Name</label>
             <input
               type="text"
               class="form-control"
@@ -569,7 +569,7 @@
 
           <div class="row g-2 mb-3">
             <div class="col-sm-6">
-              <label class="form-label">Mobile Number</label>
+              <label class="form-label text-white">Mobile Number</label>
               <input
                 type="text"
                 class="form-control"
@@ -579,7 +579,7 @@
               />
             </div>
             <div class="col-sm-6">
-              <label class="form-label">Email Address</label>
+              <label class="form-label text-white">Email Address</label>
               <input
                 type="email"
                 class="form-control"
@@ -592,7 +592,7 @@
 
           <!-- Payment Plan Options -->
           <div class="mb-3">
-            <label class="form-label">Select Payment Preference</label>
+            <label class="form-label text-white">Select Payment Preference</label>
             <div class="payment-plan-grid">
               <label class="payment-plan-card" [class.selected]="bookingForm.payment_type === 'EMI'">
                 <input
@@ -605,7 +605,7 @@
                 />
                 <div class="plan-header">
                   <i class="fas fa-calendar-alt text-gold"></i>
-                  <strong>Easy EMI Plan</strong>
+                  <strong class="text-white">Easy EMI Plan</strong>
                 </div>
                 <div class="plan-desc">12, 24, 36, or 60 Months flexible tenure</div>
               </label>
@@ -621,7 +621,7 @@
                 />
                 <div class="plan-header">
                   <i class="fas fa-percentage text-gold"></i>
-                  <strong>Part-Wise (3 Mo)</strong>
+                  <strong class="text-white">Part-Wise (3 Mo)</strong>
                 </div>
                 <div class="plan-desc">25% Advance + remaining balance in 3 months</div>
               </label>
@@ -637,7 +637,7 @@
                 />
                 <div class="plan-header">
                   <i class="fas fa-money-check-alt text-gold"></i>
-                  <strong>One-Time Full</strong>
+                  <strong class="text-white">One-Time Full</strong>
                 </div>
                 <div class="plan-desc">Direct registry &amp; immediate possession</div>
               </label>
@@ -645,25 +645,25 @@
           </div>
 
           <!-- EMI Tenure Plan Selector & Live Preview -->
-          <div class="mb-3 p-3 bg-light rounded-8 border" *ngIf="bookingForm.payment_type === 'EMI'">
-            <label class="form-label fs-12 fw-700 text-dark mb-2">Select EMI Tenure Plan:</label>
+          <div class="mb-3 p-3 bg-dark-green rounded-8 border border-warning" *ngIf="bookingForm.payment_type === 'EMI'">
+            <label class="form-label fs-12 fw-700 text-white mb-2">Select EMI Tenure Plan:</label>
             <div class="d-flex gap-2 flex-wrap mb-2">
               <button 
                 type="button" 
                 class="btn btn-sm" 
                 *ngFor="let plan of activeInstallmentPlans"
-                [ngClass]="bookingForm.installment_plan_id === plan.id ? 'btn-dark fw-800' : 'btn-outline-secondary'"
+                [ngClass]="bookingForm.installment_plan_id === plan.id ? 'btn-gold fw-800' : 'btn-outline-light'"
                 (click)="onPlanSelect(plan.id)">
                 {{ plan.tenure_months }} Months ({{ plan.interest_percent }}% Int)
               </button>
             </div>
             <div *ngIf="selectedPlanPreview" class="p-2.5 bg-white rounded-6 border fs-11 text-dark">
               <div class="d-flex justify-content-between mb-1">
-                <span class="text-muted">Min Down Payment ({{ selectedPlan?.down_payment_percent }}%):</span>
+                <span class="text-dark fw-600">Min Down Payment ({{ selectedPlan?.down_payment_percent }}%):</span>
                 <strong>₹{{ (selectedPlanPreview.price * selectedPlan?.down_payment_percent / 100) | number }}</strong>
               </div>
               <div class="d-flex justify-content-between mb-1">
-                <span class="text-muted">Flat Interest ({{ selectedPlan?.interest_percent }}%):</span>
+                <span class="text-dark fw-600">Flat Interest ({{ selectedPlan?.interest_percent }}%):</span>
                 <span class="text-warning fw-700">+₹{{ selectedPlanPreview.interestAmount | number }}</span>
               </div>
               <div class="d-flex justify-content-between border-top pt-1">
@@ -682,25 +682,33 @@
 
           <!-- Advance Booking Token Amount -->
           <div class="mb-3">
-            <label class="form-label">Advance Booking Amount (INR) <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text bg-dark-green text-gold">₹</span>
+            <label class="form-label text-white">Advance Booking Amount (INR) <span class="text-danger">*</span></label>
+            <div class="plot-input-group">
+              <span class="plot-input-addon">₹</span>
               <input
-                type="number"
-                class="form-control"
+                type="text"
+                inputmode="numeric"
+                class="plot-input-control"
                 [(ngModel)]="bookingForm.advance_amount"
                 name="advance_amount"
-                min="1000"
-                step="1000"
                 required
               />
             </div>
-            <small class="text-muted">Minimum token advance to reserve unit: ₹51,000</small>
+            <small class="text-white mt-1 d-block" style="opacity: 0.88;">Minimum token advance to reserve unit: ₹51,000</small>
+          </div>
+
+          <!-- Instant UPI QR Payment Section -->
+          <div class="mb-3">
+            <app-upi-qr-payment
+              [advanceAmount]="bookingForm.advance_amount"
+              [isDarkTheme]="true"
+              (paymentDetailsChange)="onUpiPaymentChange($event)"
+            ></app-upi-qr-payment>
           </div>
 
           <!-- Notes -->
           <div class="mb-4">
-            <label class="form-label">Special Requests / Remarks (Optional)</label>
+            <label class="form-label text-white">Special Requests / Remarks (Optional)</label>
             <textarea
               class="form-control"
               rows="2"
@@ -711,7 +719,7 @@
           </div>
 
           <div class="dialog-actions">
-            <button type="button" class="btn btn-outline-secondary" (click)="closeBookingModal()">
+            <button type="button" class="btn btn-outline-light text-white" (click)="closeBookingModal()">
               Cancel
             </button>
             <button type="submit" class="btn btn-gold btn-submit-booking" [disabled]="bookingSubmitting || !isPriceEligible">
