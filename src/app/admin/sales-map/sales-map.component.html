@@ -115,7 +115,7 @@
   </div>
 
   <!-- MAIN WORKSPACE: SIDEBAR + SVG MAP CANVAS + RIGHT DRAWER -->
-  <div class="sales-workspace-container rounded-8 border bg-white shadow-xs" *ngIf="!loading && !error">
+  <div class="sales-workspace-container rounded-8 border bg-white shadow-xs" [class.drawer-open]="selectedPlot !== null" *ngIf="!loading && !error">
     
     <!-- LEFT FILTER SIDEBAR (Compact ERP Standard 260px) -->
     <aside class="sales-map-sidebar border-end" [class.mobile-open]="mobileFiltersOpen">
@@ -379,35 +379,35 @@
       <div class="drawer-body p-2.5">
         
         <!-- Key Facts 2-Column Grid -->
-        <div class="row g-2 mb-2.5">
+        <div class="row g-2.5 mb-3">
           <div class="col-6">
-            <div class="p-2 rounded-6 bg-light border">
-              <div class="fs-9.5 text-muted fw-700 text-uppercase">Area (Sq.Ft / Gaj)</div>
-              <div class="fs-12 fw-800 text-dark">{{ selectedPlot.area_sqft }} <small>Sq.Ft</small> ({{ selectedPlot.area_gaj }} Gaj)</div>
+            <div class="info-tile">
+              <div class="fs-10 text-muted fw-700 text-uppercase mb-1">Area (Sq.Ft / Gaj)</div>
+              <div class="fs-13 fw-800 text-dark">{{ selectedPlot.area_sqft }} <small>Sq.Ft</small> ({{ selectedPlot.area_gaj }} Gaj)</div>
             </div>
           </div>
           <div class="col-6">
-            <div class="p-2 rounded-6 bg-light border">
-              <div class="fs-9.5 text-muted fw-700 text-uppercase">Base Valuation</div>
-              <div class="fs-12 fw-800 text-dark">₹{{ (selectedPlot.price || 0) | number }}</div>
+            <div class="info-tile">
+              <div class="fs-10 text-muted fw-700 text-uppercase mb-1">Base Valuation</div>
+              <div class="fs-13 fw-800 text-dark">₹{{ (selectedPlot.price || 0) | number }}</div>
             </div>
           </div>
         </div>
 
         <!-- OCCUPANCY & BUYER DOSSIER SECTION -->
-        <div class="buyer-dossier-card p-2.5 rounded-6 mb-2.5 border" [class.bg-white]="selectedPlot.status !== 'Vacant'" [class.bg-light]="selectedPlot.status === 'Vacant'">
-          <div class="fs-10.5 fw-700 text-muted text-uppercase mb-1.5 d-flex align-items-center justify-content-between">
-            <span><i class="fas fa-id-card-alt me-1 text-gold"></i> Buyer &amp; Allotment Dossier</span>
-            <span *ngIf="selectedPlot.active_booking_serial" class="badge bg-gold text-dark fs-9.5">
+        <div class="buyer-dossier-card rounded-12 mb-3 border" [class.bg-white]="selectedPlot.status !== 'Vacant'" [class.bg-light]="selectedPlot.status === 'Vacant'">
+          <div class="fs-11 fw-700 text-muted text-uppercase p-3 pb-2 d-flex align-items-center justify-content-between border-bottom">
+            <span><i class="fas fa-id-card-alt me-1.5 text-gold"></i> Buyer &amp; Allotment Dossier</span>
+            <span *ngIf="selectedPlot.active_booking_serial" class="badge bg-gold text-dark fs-10">
               {{ selectedPlot.active_booking_serial }}
             </span>
           </div>
 
           <!-- Vacant Case -->
-          <div *ngIf="selectedPlot.status === 'Vacant'" class="text-center py-3 text-muted">
-            <i class="fas fa-check-circle text-success fs-3 mb-1.5 d-block"></i>
-            <div class="fs-11.5 fw-700 text-dark">Plot is Vacant &amp; Available</div>
-            <div class="fs-10.5 text-muted">Ready for booking application from customer or associate portal</div>
+          <div *ngIf="selectedPlot.status === 'Vacant'" class="dossier-empty-state text-muted">
+            <i class="fas fa-check-circle text-success mb-2 d-block"></i>
+            <div class="fs-13 fw-700 text-dark">Plot is Vacant &amp; Available</div>
+            <div class="fs-11 text-muted">Ready for booking application from customer or associate portal</div>
           </div>
 
           <!-- Occupied Case -->

@@ -177,13 +177,14 @@
 
 .site-select-wrap > i {
   color: #166534;
-  font-size: 13px;
-  left: 14px;
+  left: 16px;
   pointer-events: none;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 1;
+  z-index: 5;
+  font-size: 15px;
+  color: #166534;
 }
 
 .site-select {
@@ -192,9 +193,11 @@
   border-radius: 10px;
   color: #0f172a;
   font-weight: 800;
-  min-height: 44px;
-  padding-left: 40px;
-  padding-right: 42px;
+  height: 44px !important;
+  min-height: 44px !important;
+  padding-left: 48px !important;
+  padding-right: 44px !important;
+  box-sizing: border-box;
 }
 
 .site-select:focus {
@@ -633,36 +636,208 @@
   color: #b91c1c;
 }
 
-.toolbar-toggle,
-.grid-size,
-.number-seed,
-.zoom-readout {
+/* ── TOP HORIZONTAL WORKSPACE SETTINGS TOOLBAR ──────────────── */
+.editor-top-tools {
   align-items: center;
-  background: #fff;
-  border: 1px solid #dbe3ea;
-  border-radius: 7px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.editor-top-tools .number-seed,
+.editor-top-tools .toolbar-toggle,
+.editor-top-tools .grid-size,
+.editor-top-tools .zoom-readout,
+.editor-top-tools .toolbar-select,
+.editor-top-tools .toolbar-search,
+.editor-top-tools .keyboard-mode {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
   color: #334155;
   display: inline-flex;
   flex: 0 0 auto;
-  font-size: 11px;
-  font-weight: 800;
-  gap: 4px;
-  justify-content: flex-start;
-  line-height: 1.15;
-  min-height: 34px;
-  overflow: hidden;
-  padding: 6px 8px;
-  text-align: left;
-  white-space: nowrap;
-  width: 100%;
+  font-size: 11.5px;
+  font-weight: 700;
+  gap: 6px;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 12px;
+  width: auto !important;
+  box-sizing: border-box;
 }
 
-.number-seed {
-  align-items: stretch;
+.editor-top-tools .number-seed {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-top-tools .number-seed input {
+  height: 28px;
+  width: 80px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 8px;
+  background: #ffffff;
+}
+
+.editor-top-tools .toolbar-search {
+  position: relative;
+  padding-left: 28px;
+}
+
+.editor-top-tools .toolbar-search i {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.editor-top-tools .toolbar-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 12px;
+  color: #0f172a;
+  width: 110px;
+}
+
+/* ── RIGHT PLOT LIST SIDEBAR ────────────────────────────────── */
+.plot-sidebar {
+  width: 320px;
+  min-width: 300px;
+  max-width: 360px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
   flex-direction: column;
-  gap: 3px;
+  box-sizing: border-box;
+}
+
+.plot-sidebar-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.plot-sidebar-filters .search-input,
+.plot-sidebar-filters .status-filter-select {
+  height: 40px !important;
+  min-height: 40px !important;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 12px;
+  border: 1px solid #cbd5e1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.plot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.plot-card-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  gap: 10px;
+}
+
+.plot-card-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.plot-card-item.active {
+  background: #f0fdf4;
+  border-color: #10b981;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.plot-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
-  white-space: normal;
+}
+
+.status-indicator-box {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.plot-details-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.plot-code {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.plot-area-subtext {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.plot-status-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.plot-status-pill-select {
+  min-width: 115px !important;
+  max-width: 135px;
+  height: 32px !important;
+  padding: 0 8px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.plot-status-pill-select:focus {
+  border-color: #10b981 !important;
+  outline: none;
 }
 
 .editor-toolbar [title] {
