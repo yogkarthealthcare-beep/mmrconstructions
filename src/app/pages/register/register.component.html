@@ -334,15 +334,15 @@
           <div *ngIf="fStep===3" class="q-step">
             <h5 style="font-family:var(--ff-display);margin-bottom:20px;">Personal Information</h5>
             <div class="row g-3">
-              <div class="col-sm-6"><label class="f-label">Full Name *</label><input type="text" class="f-input" placeholder="Letters only (e.g. Rahul Sharma)" [(ngModel)]="fForm.full_name" name="fname" (blur)="onNameBlur('full_name')"/></div>
-              <div class="col-sm-6"><label class="f-label">Father's Name *</label><input type="text" class="f-input" placeholder="Letters only" [(ngModel)]="fForm.father_name" name="ffname" (blur)="onNameBlur('father_name')"/></div>
+              <div class="col-sm-6"><label class="f-label">Full Name *</label><input type="text" class="f-input" placeholder="Letters only (e.g. Rahul Sharma)" [(ngModel)]="fForm.full_name" name="fname" (input)="onNameInput('full_name', $event)" (blur)="onNameBlur('full_name')"/></div>
+              <div class="col-sm-6"><label class="f-label">Father's Name *</label><input type="text" class="f-input" placeholder="Letters only" [(ngModel)]="fForm.father_name" name="ffname" (input)="onNameInput('father_name', $event)" (blur)="onNameBlur('father_name')"/></div>
               <div class="col-sm-6"><label class="f-label">Date of Birth * (Min. 18 Years)</label><input type="date" class="f-input" [max]="maxAdultDob" [(ngModel)]="fForm.date_of_birth" name="fdob"/></div>
               <div class="col-sm-6"><label class="f-label">Gender *</label>
                 <select class="f-select" [(ngModel)]="fForm.gender" name="fgender">
                   <option value="">Select</option><option>Male</option><option>Female</option><option>Other</option>
                 </select>
               </div>
-              <div class="col-sm-6"><label class="f-label">Email</label><input type="email" class="f-input" [(ngModel)]="fForm.email" name="femail"/></div>
+              <div class="col-sm-6"><label class="f-label">Email</label><input type="email" class="f-input" [(ngModel)]="fForm.email" (input)="onEmailInput($event)" name="femail"/></div>
             </div>
             <div class="d-flex gap-2 mt-4">
               <button class="btn btn-outline-green flex-fill" (click)="fPrev()"><i class="fas fa-arrow-left me-1"></i>Back</button>

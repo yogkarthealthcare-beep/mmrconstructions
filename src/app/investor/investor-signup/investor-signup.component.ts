@@ -55,17 +55,61 @@ export class InvestorSignupComponent implements OnInit {
     }
   }
 
+  onFullNameInput(event: any) {
+    const input = event.target as HTMLInputElement;
+    let val = (input.value || '').replace(/[^a-zA-Z\s]/g, '');
+    val = val.replace(/^\s+/, '');
+    val = val.replace(/\s{2,}/g, ' ');
+    input.value = val;
+    this.form.full_name = val;
+  }
+
+  onFullNameBlur() {
+    if (this.form.full_name) {
+      this.form.full_name = this.form.full_name.trim();
+    }
+  }
+
+  onEmailInput(event: any) {
+    const input = event.target as HTMLInputElement;
+    let val = (input.value || '').replace(/[^a-zA-Z0-9@.]/g, '').trim();
+    input.value = val;
+    this.form.email = val;
+  }
+
+  onEmailBlur() {
+    if (this.form.email) {
+      this.form.email = this.form.email.trim();
+    }
+  }
+
+  onMobileInput(event: any) {
+    const input = event.target as HTMLInputElement;
+    let val = (input.value || '').replace(/\D/g, '').slice(0, 10);
+    input.value = val;
+    this.form.mobile_number = val;
+  }
+
   signup() {
-    if (!this.form.full_name.trim() || !this.form.mobile_number.trim() || !this.form.email.trim() || !this.form.password) {
+    this.form.full_name = (this.form.full_name || '').trim();
+    this.form.email = (this.form.email || '').trim();
+    this.form.mobile_number = (this.form.mobile_number || '').replace(/\D/g, '').slice(0, 10);
+
+    if (!this.form.full_name || !this.form.mobile_number || !this.form.email || !this.form.password) {
       this.errorMessage = 'Please fill in all mandatory fields (Full Name, Mobile, Email, Password).';
       return;
     }
-    if (!/^\S+@\S+\.\S+$/.test(this.form.email.trim())) {
-      this.errorMessage = 'Please enter a valid email address.';
+    if (!/^[a-zA-Z]+(\s[a-zA-Z]+)*$/.test(this.form.full_name)) {
+      this.errorMessage = 'Full Name can only contain letters and single spaces (no numbers or special characters).';
       return;
     }
-    if (!/^\d{10}$/.test(this.form.mobile_number.replace(/\D/g, ''))) {
-      this.errorMessage = 'Please enter a valid 10 digit mobile number.';
+    const emailStrictRegex = /^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)+$/;
+    if (!emailStrictRegex.test(this.form.email)) {
+      this.errorMessage = 'Please enter a valid email address (only letters, numbers, @ and dot allowed; no dash or special characters).';
+      return;
+    }
+    if (!/^[6-9]\d{9}$/.test(this.form.mobile_number)) {
+      this.errorMessage = 'Please enter a valid 10 digit mobile number starting with 6, 7, 8, or 9.';
       return;
     }
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(this.form.password)) {

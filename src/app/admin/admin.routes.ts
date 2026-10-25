@@ -161,6 +161,11 @@ export const ADMIN_ROUTES: Routes = [
     title: 'View Receipt'
   },
   { 
+    path: 'receipts/:id', 
+    loadComponent: () => import('./receipts/receipt-view/receipt-view.component').then(m => m.ReceiptViewComponent),
+    title: 'View Receipt'
+  },
+  { 
     path: 'orders-mgmt', 
     loadComponent: () => import('./orders-mgmt/orders-mgmt.component').then(m => m.AdminOrdersMgmtComponent) 
   },
@@ -271,5 +276,10 @@ export const ADMIN_ROUTES: Routes = [
     path: 'referral', 
     loadComponent: () => import('./referral/admin-referral.component').then(m => m.AdminReferralComponent),
     title: 'Executive Referral Links — MMR Admin'
+  },
+  { 
+    path: 'user-guide', 
+    loadComponent: () => import('./user-guide/user-guide.component').then(m => m.UserGuideComponent),
+    title: 'Admin User Guide — MMR Constructions'
   },
 ];

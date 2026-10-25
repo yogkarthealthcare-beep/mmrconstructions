@@ -63,6 +63,17 @@ export class ReceiptListComponent implements OnInit {
   selectedAmountInWords = '';
   showViewModal = false;
 
+  settings: any = {
+    company_name: 'MMR Construction & Developers',
+    company_logo: '',
+    address: 'Tribhuvan Kheda, Sheshpur, Unnao, Uttar Pradesh, India, 209801',
+    cin: 'U68200UP2025PTC229203',
+    gst_number: '09AATCM6753A1Z5',
+    phone: '+91 95111 19879',
+    email: 'official@mmrconstructions.in',
+    signature_url: ''
+  };
+
   // Cancel Confirmation Modal
   receiptToCancel: Receipt | null = null;
   cancelReason = '';
@@ -76,6 +87,27 @@ export class ReceiptListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadReceipts();
+    this.api.get('/api/admin/invoice-settings', {}, true).subscribe({
+      next: (res: any) => {
+        if (res.success && res.data && res.data.company_name) {
+          this.settings = { ...this.settings, ...res.data };
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  getBalance(receipt: any): number {
+    if (!receipt) return 0;
+    const total = Number(receipt.receipt_amount || 0);
+    const paid = Number(receipt.paid_amount || 0);
+    return Math.max(0, total - paid);
+  }
+
+  getQrUrl(receipt: any): string {
+    if (!receipt) return '';
+    const data = `Receipt No: ${receipt.receipt_no || ''}\nSerial No: #${receipt.serial_no || ''}\nCustomer: ${receipt.customer_name || ''}\nAmount Paid: INR ${receipt.paid_amount || 0}\nDate: ${receipt.receipt_date || ''}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=100x100&margin=0&data=${encodeURIComponent(data)}`;
   }
 
   @HostListener('document:click', ['$event'])

@@ -77,4 +77,11 @@ export interface CustomerLookupItem {
   mobile_no: string;
   email?: string;
   user_type?: string;
+  referred_by_user_id?: number | null;
+  sponsor_user_id?: number | null;
+  sponsor_id?: number | null;
+  sponsor_member_id?: string | null;
+  sponsor_name?: string | null;
+  sponsor_mobile?: string | null;
+  sponsor_role?: string | null;
 }

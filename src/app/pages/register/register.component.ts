@@ -195,6 +195,22 @@ export class RegisterComponent implements OnInit {
     }
   }
 
+  onNameInput(fieldName: string, event: any) {
+    const inp = event.target as HTMLInputElement;
+    let val = (inp.value || '').replace(/[^a-zA-Z\s]/g, '');
+    val = val.replace(/^\s+/, '');
+    val = val.replace(/\s{2,}/g, ' ');
+    inp.value = val;
+    this.fForm[fieldName] = val;
+  }
+
+  onEmailInput(event: any) {
+    const inp = event.target as HTMLInputElement;
+    let val = (inp.value || '').replace(/[^a-zA-Z0-9@.]/g, '').trim();
+    inp.value = val;
+    this.fForm.email = val;
+  }
+
   onNameBlur(fieldName: string) {
     if (this.fForm[fieldName]) {
       this.fForm[fieldName] = normalizeHumanName(this.fForm[fieldName]);

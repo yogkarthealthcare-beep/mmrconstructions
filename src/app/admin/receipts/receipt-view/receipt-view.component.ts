@@ -17,6 +17,18 @@ export class ReceiptViewComponent implements OnInit {
   auditLogs: any[] = [];
   receiptId: string = '';
   error = '';
+  pdfLoading = false;
+
+  settings: any = {
+    company_name: 'MMR Construction & Developers',
+    company_logo: '',
+    address: 'Tribhuvan Kheda, Sheshpur, Unnao, Uttar Pradesh, India, 209801',
+    cin: 'U68200UP2025PTC229203',
+    gst_number: '09AATCM6753A1Z5',
+    phone: '+91 95111 19879',
+    email: 'official@mmrconstructions.in',
+    signature_url: ''
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -27,6 +39,17 @@ export class ReceiptViewComponent implements OnInit {
     this.receiptId = this.route.snapshot.paramMap.get('id') || '';
     const shouldPrint = this.route.snapshot.queryParamMap.get('print') === 'true';
 
+    // 1. Fetch Company Invoice Settings
+    this.api.get('/api/admin/invoice-settings', {}, true).subscribe({
+      next: (res: any) => {
+        if (res.success && res.data && res.data.company_name) {
+          this.settings = { ...this.settings, ...res.data };
+        }
+      },
+      error: () => {}
+    });
+
+    // 2. Fetch Receipt Details
     if (this.receiptId) {
       this.api.adminGetReceiptById(this.receiptId).subscribe({
         next: (res: any) => {
@@ -49,6 +72,19 @@ export class ReceiptViewComponent implements OnInit {
         }
       });
     }
+  }
+
+  getBalance(receipt: any): number {
+    if (!receipt) return 0;
+    const total = Number(receipt.receipt_amount || 0);
+    const paid = Number(receipt.paid_amount || 0);
+    return Math.max(0, total - paid);
+  }
+
+  getQrUrl(receipt: any): string {
+    if (!receipt) return '';
+    const data = `Receipt No: ${receipt.receipt_no || ''}\nSerial No: #${receipt.serial_no || ''}\nCustomer: ${receipt.customer_name || ''}\nAmount Paid: INR ${receipt.paid_amount || 0}\nDate: ${receipt.receipt_date || ''}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=100x100&margin=0&data=${encodeURIComponent(data)}`;
   }
 
   numberToWordsHelper(num: number): string {
@@ -78,7 +114,55 @@ export class ReceiptViewComponent implements OnInit {
     window.print();
   }
 
-  downloadPdf(): void {
+  private loadHtml2Pdf(): Promise<any> {
+    if (typeof window !== 'undefined' && (window as any).html2pdf) {
+      return Promise.resolve((window as any).html2pdf);
+    }
+    return new Promise((resolve, reject) => {
+      if (typeof document === 'undefined') return reject('No document');
+      const existing = document.getElementById('html2pdf-cdn');
+      if (existing) {
+        existing.addEventListener('load', () => resolve((window as any).html2pdf));
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'html2pdf-cdn';
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = () => resolve((window as any).html2pdf);
+      script.onerror = (e) => reject(e);
+      document.head.appendChild(script);
+    });
+  }
+
+  async downloadPdf(): Promise<void> {
+    if (!this.receipt) return;
+    const invNum = this.receipt?.receipt_no || `Receipt-${this.receiptId}`;
+    const element = typeof document !== 'undefined' ? document.getElementById('receipt-sheet') : null;
+
+    if (!element) {
+      this.downloadPdfFromBackend();
+      return;
+    }
+
+    this.pdfLoading = true;
+    try {
+      const html2pdf = await this.loadHtml2Pdf();
+      const opt = {
+        margin: [4, 4, 4, 4],
+        filename: `Receipt-${invNum.replace(/[\/\\]/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 1200 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+      await html2pdf().set(opt).from(element).save();
+    } catch (err) {
+      this.downloadPdfFromBackend();
+    } finally {
+      this.pdfLoading = false;
+    }
+  }
+
+  private downloadPdfFromBackend(): void {
     if (!this.receipt) return;
     this.api.adminGetReceiptPdfBlob(this.receipt.id).subscribe({
       next: (blob: Blob) => {
@@ -90,7 +174,7 @@ export class ReceiptViewComponent implements OnInit {
         URL.revokeObjectURL(url);
       },
       error: () => {
-        alert('Failed to download PDF receipt.');
+        window.print();
       }
     });
   }
