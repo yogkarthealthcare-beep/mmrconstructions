@@ -646,20 +646,42 @@
             </select>
           </div>
 
-          <!-- Instant UPI QR Payment Section -->
+          <!-- Instant UPI QR Payment Section (Click to Open Scanner) -->
           <div class="mb-3" *ngIf="paymentMethod === 'UPI / QR Code'">
-            <app-upi-qr-payment
-              [advanceAmount]="agreedAmount || advanceAmount"
-              [isDarkTheme]="false"
-              (paymentDetailsChange)="onUpiPaymentChange($event)"
-            ></app-upi-qr-payment>
+            <div class="p-2.5 rounded-8 bg-light border border-success">
+              <div class="d-flex align-items-center justify-content-between mb-1.5">
+                <span class="fs-12 fw-700 text-dark">
+                  <i class="fab fa-google-pay text-success me-1"></i> Scan &amp; Pay via UPI
+                </span>
+                <button
+                  type="button"
+                  class="btn btn-xs btn-outline-success py-0.5 px-2 fs-11"
+                  (click)="toggleUpiQrScanner()"
+                >
+                  <i class="fas" [ngClass]="showUpiQrScanner ? 'fa-eye-slash me-1' : 'fa-qrcode me-1'"></i>
+                  {{ showUpiQrScanner ? 'Hide QR' : 'Click to Open QR Scanner' }}
+                </button>
+              </div>
+              <div *ngIf="showUpiQrScanner" class="mt-2">
+                <app-upi-qr-payment
+                  [advanceAmount]="agreedAmount || advanceAmount"
+                  [isDarkTheme]="false"
+                  (paymentDetailsChange)="onUpiPaymentChange($event)"
+                ></app-upi-qr-payment>
+              </div>
+              <div *ngIf="!showUpiQrScanner" class="p-2 rounded bg-white text-center cursor-pointer border border-dashed" (click)="toggleUpiQrScanner()">
+                <i class="fas fa-qrcode fs-18 text-success d-block mb-1"></i>
+                <span class="fs-11 text-dark fw-600">Scan &amp; Pay via GPay / PhonePe / Paytm</span>
+                <span class="fs-10 text-muted d-block mt-0.5">(Click here to view official QR Code &amp; UPI ID)</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Collapsible Authorized Company Bank Details -->
-          <details class="company-bank-accordion mb-3">
+          <!-- Authorized Company Bank Details (Always Open & Prominent) -->
+          <details class="company-bank-accordion mb-3" open>
             <summary class="bank-accordion-header">
               <span class="fw-semibold text-dark fs-13 d-flex align-items-center gap-1.5">
-                <i class="fas fa-university text-primary"></i> View Company Bank Details
+                <i class="fas fa-university text-primary"></i> Authorized Company Bank Account
               </span>
               <span class="badge bg-success-subtle text-success fs-11">Verified Current A/C</span>
             </summary>
@@ -667,16 +689,16 @@
               <div class="bank-key-val-list fs-13">
                 <div class="bank-row">
                   <span class="text-muted">A/C Name:</span>
-                  <span class="fw-bold text-dark">MMR CONSTRUCTIONS PRIVATE LIMITED</span>
+                  <span class="fw-bold text-dark">{{ companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED' }}</span>
                 </div>
                 <div class="bank-row">
                   <span class="text-muted">Bank Name:</span>
-                  <span class="fw-bold text-dark">HDFC Bank Ltd.</span>
+                  <span class="fw-bold text-dark">{{ companyBankSettings?.bank_name || 'HDFC Bank Ltd.' }}</span>
                 </div>
                 <div class="bank-row align-items-center">
                   <span class="text-muted">A/C Number:</span>
                   <span class="fw-bold text-dark d-flex align-items-center gap-2">
-                    <code>50200088921832</code>
+                    <code>{{ companyBankSettings?.account_number || '50200088921832' }}</code>
                     <button
                       type="button"
                       class="btn btn-outline-secondary btn-xs py-0.5 px-2"
@@ -687,9 +709,23 @@
                     </button>
                   </span>
                 </div>
-                <div class="bank-row">
+                <div class="bank-row align-items-center">
                   <span class="text-muted">IFSC Code:</span>
-                  <span class="fw-bold text-dark"><code>HDFC0001234</code></span>
+                  <span class="fw-bold text-dark d-flex align-items-center gap-2">
+                    <code>{{ companyBankSettings?.ifsc_code || 'HDFC0001234' }}</code>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary btn-xs py-0.5 px-2"
+                      (click)="copyIfsc()"
+                      title="Copy IFSC">
+                      <i class="fas" [class.fa-copy]="!copiedIfsc" [class.fa-check]="copiedIfsc"></i>
+                      <span class="ms-1">{{ copiedIfsc ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </span>
+                </div>
+                <div class="bank-row" *ngIf="companyBankSettings?.branch_name">
+                  <span class="text-muted">Branch:</span>
+                  <span class="fw-bold text-dark">{{ companyBankSettings.branch_name }}</span>
                 </div>
               </div>
             </div>

@@ -10,6 +10,7 @@ import { BookingAttributionApiService } from '../../services/booking-attribution
 import { BookableCustomer } from '../../services/booking-attribution.types';
 import { getPlotStyle, shouldShowSoldText, getPlotStatusLabel } from '../plot-status.config';
 import { UpiQrPaymentComponent, UpiPaymentDetails } from '../upi-qr-payment/upi-qr-payment.component';
+import { AdminPaymentGatewayService } from '../../services/admin-payment-gateway.service';
 import Swal from 'sweetalert2';
 
 type MapPoint = { x: number; y: number };
@@ -123,6 +124,9 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   advanceAmount: number = 50000;
   notes: string = '';
   copiedBankAC = false;
+  copiedIfsc = false;
+  showUpiQrScanner = false;
+  companyBankSettings: any = null;
 
   upiDetails: UpiPaymentDetails | null = null;
 
@@ -131,13 +135,49 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   }
 
   copyBankAC(): void {
-    const ac = '50200088921832';
+    const ac = this.companyBankSettings?.account_number || '50200088921832';
     if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(ac).then(() => {
         this.copiedBankAC = true;
         setTimeout(() => (this.copiedBankAC = false), 2000);
       }).catch(() => {});
     }
+  }
+
+  copyIfsc(): void {
+    const ifsc = this.companyBankSettings?.ifsc_code || 'HDFC0001234';
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(ifsc).then(() => {
+        this.copiedIfsc = true;
+        setTimeout(() => (this.copiedIfsc = false), 2000);
+      }).catch(() => {});
+    }
+  }
+
+  toggleUpiQrScanner(): void {
+    this.showUpiQrScanner = !this.showUpiQrScanner;
+  }
+
+  loadCompanyBankSettings(): void {
+    this.paymentService.getCompanyBankDetailsPublic().subscribe({
+      next: (res: any) => {
+        const data = res?.data || res;
+        if (data) {
+          this.companyBankSettings = data;
+          const methods: string[] = [];
+          if (data.enable_bank_transfer !== false) methods.push('Bank Transfer / NEFT / RTGS');
+          if (data.enable_primary_upi !== false || data.enable_secondary_upi !== false) methods.push('UPI / QR Code');
+          if (data.enable_payment_gateway) methods.push('Online Payment Gateway');
+          if (methods.length > 0) {
+            this.allowedPaymentMethods = methods;
+            if (!methods.includes(this.paymentMethod)) {
+              this.paymentMethod = methods[0];
+            }
+          }
+        }
+      },
+      error: (err) => console.warn('Failed to load company bank settings in book-plot', err)
+    });
   }
 
   // EMI installment plans state
@@ -163,12 +203,14 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private api: ApiService,
     private attributionApi: BookingAttributionApiService,
+    private paymentService: AdminPaymentGatewayService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.currentUser = this.auth.getUser();
+    this.loadCompanyBankSettings();
 
     // Default booking mode
     const qTeamMemberId = this.route.snapshot.queryParamMap.get('teamMemberId');

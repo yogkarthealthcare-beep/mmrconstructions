@@ -78,4 +78,26 @@ export class AdminPaymentGatewayService {
   getActiveUpiQrs(): Observable<{ success: boolean; data: any[] }> {
     return this.api.get('/api/payment/active-upi-qrs', {}, false);
   }
+
+  /**
+   * Public endpoint: Retrieves company bank details & active booking payment method flags.
+   */
+  getCompanyBankDetailsPublic(): Observable<{ success: boolean; data: any }> {
+    return this.api.get('/api/payment/company-bank-details', {}, false);
+  }
+
+  /**
+   * Admin endpoint: Retrieves company bank details & active booking payment method flags.
+   */
+  getCompanyBankSettingsAdmin(): Observable<{ success: boolean; data: any }> {
+    return this.api.get('/api/admin/payment-gateways/company-bank-details', {}, true);
+  }
+
+  /**
+   * Admin endpoint: Saves/updates company bank details & active booking payment method flags.
+   */
+  saveCompanyBankSettingsAdmin(settings: any): Observable<{ success: boolean; data: any; message: string }> {
+    return this.api.post('/api/admin/payment-gateways/company-bank-details', settings, true);
+  }
 }
+

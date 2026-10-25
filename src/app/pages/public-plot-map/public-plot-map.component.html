@@ -482,54 +482,130 @@
         </div>
 
         <form (ngSubmit)="submitBooking()">
-          <!-- Customer Proposed Rate & Valuation Section -->
-          <div class="p-3 mb-3 rounded-8 valuation-card-box border border-warning">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <label class="form-label fw-800 fs-13 text-white mb-0">
+          <!-- Customer Proposed Rate & Valuation Section with 2-Tab Unit Switcher -->
+          <div class="p-2.5 mb-3 rounded-8 valuation-card-box border border-warning">
+            <div class="d-flex justify-content-between align-items-center mb-1.5 flex-wrap gap-1">
+              <label class="form-label fw-800 fs-12 text-white mb-0">
                 <i class="fas fa-tag text-warning me-1"></i>आपका प्रस्तावित रेट (Proposed Valuation) <span class="text-danger">*</span>
               </label>
               <span class="badge bg-warning text-dark fs-10 fw-bold">Admin Approval Required</span>
             </div>
-            <p class="fs-11 text-white mb-2" style="opacity: 0.92;">
-              प्लॉट का रेट प्रति गज या प्रति sq ft में दर्ज करें। दोनों वैल्यू एक-दूसरे के अनुसार स्वतः अपडेट होंगी।
-            </p>
 
-            <div class="row g-2 mb-2">
+            <!-- Extra-Small Unit Selection Tabs (Gaj vs Sq.Ft) -->
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="fs-11 text-white" style="opacity: 0.92;">कैलकुलेशन यूनिट चुनें:</span>
+              <div class="btn-group btn-group-xs" role="group">
+                <button
+                  type="button"
+                  class="btn btn-xs py-1 px-2.5 fs-11 fw-700"
+                  [ngClass]="calculationUnit === 'GAJ' ? 'btn-gold' : 'btn-outline-light text-white'"
+                  (click)="setCalculationUnit('GAJ')"
+                >
+                  <i class="fas fa-ruler-combined me-1"></i> गज (Gaj)
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-xs py-1 px-2.5 fs-11 fw-700"
+                  [ngClass]="calculationUnit === 'SQFT' ? 'btn-gold' : 'btn-outline-light text-white'"
+                  (click)="setCalculationUnit('SQFT')"
+                >
+                  <i class="fas fa-vector-square me-1"></i> स्क्वेयर फीट (Sq.Ft)
+                </button>
+              </div>
+            </div>
+
+            <!-- Tab 1: गज (Gaj) Inputs -->
+            <div class="row g-2 mb-2" *ngIf="calculationUnit === 'GAJ'">
               <div class="col-6">
-                <label class="form-label fs-11 fw-700 text-white mb-1">रेट प्रति गज (₹/Gaj)</label>
+                <label class="form-label fs-11 fw-700 text-white mb-1">
+                  कितने गज लेना है (Area Gaj)
+                </label>
                 <div class="plot-input-group">
-                  <span class="plot-input-addon">₹</span>
+                  <span class="plot-input-addon text-white fs-11">Gaj</span>
                   <input
                     type="text"
                     inputmode="numeric"
                     class="plot-input-control"
-                    [(ngModel)]="bookingForm.rate_per_gaj"
-                    name="rate_per_gaj"
-                    (ngModelChange)="onProposedRateGajChange()"
-                    placeholder="₹8,000 / गज"
+                    [(ngModel)]="inputAreaGaj"
+                    name="inputAreaGaj"
+                    (ngModelChange)="onGajInputChange()"
+                    placeholder="उदा. 100"
+                    required
                   />
                 </div>
               </div>
 
               <div class="col-6">
-                <label class="form-label fs-11 fw-700 text-white mb-1">रेट प्रति Sq.Ft (₹/sq ft)</label>
+                <label class="form-label fs-11 fw-700 text-white mb-1">
+                  रेट प्रति गज (₹/Gaj)
+                </label>
                 <div class="plot-input-group">
-                  <span class="plot-input-addon">₹</span>
+                  <span class="plot-input-addon text-white fs-11">₹</span>
                   <input
                     type="text"
-                    inputmode="decimal"
+                    inputmode="numeric"
                     class="plot-input-control"
-                    [(ngModel)]="bookingForm.rate_per_sqft"
-                    name="rate_per_sqft"
-                    (ngModelChange)="onProposedRateSqftChange()"
-                    placeholder="Auto (₹/9)"
+                    [(ngModel)]="inputRateGaj"
+                    name="inputRateGaj"
+                    (ngModelChange)="onGajInputChange()"
+                    placeholder="उदा. 8000"
+                    required
                   />
                 </div>
               </div>
             </div>
 
+            <!-- Tab 2: स्क्वेयर फीट (Sq.Ft) Inputs -->
+            <div class="row g-2 mb-2" *ngIf="calculationUnit === 'SQFT'">
+              <div class="col-6">
+                <label class="form-label fs-11 fw-700 text-white mb-1">
+                  कितना Sq.Ft लेना है (Area Sq.Ft)
+                </label>
+                <div class="plot-input-group">
+                  <span class="plot-input-addon text-white fs-11">Sq.Ft</span>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    class="plot-input-control"
+                    [(ngModel)]="inputAreaSqft"
+                    name="inputAreaSqft"
+                    (ngModelChange)="onSqftInputChange()"
+                    placeholder="उदा. 900"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="col-6">
+                <label class="form-label fs-11 fw-700 text-white mb-1">
+                  रेट प्रति Sq.Ft (₹/sq ft)
+                </label>
+                <div class="plot-input-group">
+                  <span class="plot-input-addon text-white fs-11">₹</span>
+                  <input
+                    type="text"
+                    inputmode="decimal"
+                    class="plot-input-control"
+                    [(ngModel)]="inputRateSqft"
+                    name="inputRateSqft"
+                    (ngModelChange)="onSqftInputChange()"
+                    placeholder="उदा. 888.89"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Total Plot Value (Area × Rate) -->
             <div class="mb-2">
-              <label class="form-label fs-11 fw-700 text-white mb-1">कुल प्रस्तावित कीमत (Total Value):</label>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label fs-11 fw-700 text-white mb-0">
+                  कुल प्रस्तावित कीमत (Total Value):
+                </label>
+                <small class="fs-10 text-white opacity-75">
+                  {{ calculationUnit === 'GAJ' ? (inputAreaGaj + ' गज × ₹' + inputRateGaj) : (inputAreaSqft + ' Sq.Ft × ₹' + inputRateSqft) }}
+                </small>
+              </div>
               <div class="plot-input-group plot-input-group-lg">
                 <span class="plot-input-addon plot-input-addon-lg">₹</span>
                 <input
@@ -697,13 +773,146 @@
             <small class="text-white mt-1 d-block" style="opacity: 0.88;">Minimum token advance to reserve unit: ₹51,000</small>
           </div>
 
-          <!-- Instant UPI QR Payment Section -->
+          <!-- Dynamic Payment Method Selection (Controlled by Admin Checkboxes) -->
           <div class="mb-3">
-            <app-upi-qr-payment
-              [advanceAmount]="bookingForm.advance_amount"
-              [isDarkTheme]="true"
-              (paymentDetailsChange)="onUpiPaymentChange($event)"
-            ></app-upi-qr-payment>
+            <label class="form-label text-white fs-11 fw-700 mb-1.5">
+              <i class="fas fa-credit-card text-gold me-1"></i> भुगतान का माध्यम चुनें (Payment Method):
+            </label>
+
+            <!-- Extra-small Payment Method Tabs -->
+            <div class="d-flex gap-1.5 flex-wrap mb-2.5">
+              <!-- Tab: UPI QR -->
+              <button
+                type="button"
+                *ngIf="companyBankSettings?.enable_primary_upi !== false || companyBankSettings?.enable_secondary_upi !== false"
+                class="btn btn-xs py-1 px-2 fs-11 fw-700"
+                [ngClass]="selectedPaymentTab === 'UPI' ? 'btn-gold' : 'btn-outline-light text-white'"
+                (click)="selectedPaymentTab = 'UPI'"
+              >
+                <i class="fas fa-qrcode me-1"></i> UPI QR (Scan &amp; Pay)
+              </button>
+
+              <!-- Tab: Bank Transfer -->
+              <button
+                type="button"
+                *ngIf="companyBankSettings?.enable_bank_transfer !== false"
+                class="btn btn-xs py-1 px-2 fs-11 fw-700"
+                [ngClass]="selectedPaymentTab === 'BANK_TRANSFER' ? 'btn-gold' : 'btn-outline-light text-white'"
+                (click)="selectedPaymentTab = 'BANK_TRANSFER'"
+              >
+                <i class="fas fa-university me-1"></i> Bank Transfer (NEFT/RTGS)
+              </button>
+
+              <!-- Tab: Online Gateway -->
+              <button
+                type="button"
+                *ngIf="companyBankSettings?.enable_payment_gateway"
+                class="btn btn-xs py-1 px-2 fs-11 fw-700"
+                [ngClass]="selectedPaymentTab === 'GATEWAY' ? 'btn-gold' : 'btn-outline-light text-white'"
+                (click)="selectedPaymentTab = 'GATEWAY'"
+              >
+                <i class="fas fa-credit-card me-1"></i> Online Payment
+              </button>
+            </div>
+
+            <!-- View 1: UPI QR Payment (Click to Open Scanner) -->
+            <div *ngIf="selectedPaymentTab === 'UPI'" class="p-2.5 rounded-8 bg-dark-green border border-success">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fs-11 fw-700 text-white">
+                  <i class="fab fa-google-pay text-emerald me-1"></i> UPI Instant Payment
+                </span>
+                <button
+                  type="button"
+                  class="btn btn-xs btn-outline-warning text-white py-0.5 px-2 fs-10"
+                  (click)="toggleUpiQrScanner()"
+                >
+                  <i class="fas" [ngClass]="showUpiQrScanner ? 'fa-eye-slash me-1' : 'fa-qrcode me-1'"></i>
+                  {{ showUpiQrScanner ? 'Hide Scanner' : 'Click to Open QR Scanner' }}
+                </button>
+              </div>
+
+              <!-- Scanner appears ONLY when user clicks the box / button -->
+              <div *ngIf="showUpiQrScanner" class="mt-2">
+                <app-upi-qr-payment
+                  [advanceAmount]="bookingForm.advance_amount"
+                  [isDarkTheme]="true"
+                  (paymentDetailsChange)="onUpiPaymentChange($event)"
+                ></app-upi-qr-payment>
+              </div>
+              <div *ngIf="!showUpiQrScanner" class="p-2 rounded bg-white-10 text-center cursor-pointer" (click)="toggleUpiQrScanner()">
+                <i class="fas fa-qrcode fs-18 text-gold d-block mb-1"></i>
+                <span class="fs-11 text-white fw-600">Scan &amp; Pay via GPay / PhonePe / Paytm</span>
+                <span class="fs-10 text-white-50 d-block mt-0.5">(Click here to view official QR Code &amp; UPI ID)</span>
+              </div>
+            </div>
+
+            <!-- View 2: Authorized Company Bank Account Details (Always Visible on Bank Transfer Tab) -->
+            <div *ngIf="selectedPaymentTab === 'BANK_TRANSFER'" class="p-2.5 rounded-8 bg-dark-green border border-warning">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fs-11 fw-700 text-white text-uppercase">
+                  <i class="fas fa-university text-warning me-1"></i> Official Company Bank Account
+                </span>
+                <span class="badge bg-success text-white fs-10">Verified Current A/C</span>
+              </div>
+
+              <div class="bank-details-grid fs-11 text-white mb-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                <div>
+                  <span class="opacity-75 fs-10 d-block">Account Name:</span>
+                  <strong class="fs-11">{{ companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED' }}</strong>
+                </div>
+                <div>
+                  <span class="opacity-75 fs-10 d-block">Bank Name:</span>
+                  <strong class="fs-11">{{ companyBankSettings?.bank_name || 'HDFC Bank Ltd.' }}</strong>
+                </div>
+                <div>
+                  <span class="opacity-75 fs-10 d-block">Account Number:</span>
+                  <span class="d-flex align-items-center gap-1.5 font-mono fw-bold text-gold fs-12">
+                    {{ companyBankSettings?.account_number || '50200088921832' }}
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline-light py-0 px-1 fs-9"
+                      (click)="copyBankAc()"
+                      title="Copy A/C Number"
+                    >
+                      <i class="fas" [class.fa-check]="copiedBankAc" [class.fa-copy]="!copiedBankAc"></i>
+                      <span>{{ copiedBankAc ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </span>
+                </div>
+                <div>
+                  <span class="opacity-75 fs-10 d-block">IFSC Code:</span>
+                  <span class="d-flex align-items-center gap-1.5 font-mono fw-bold text-gold fs-12">
+                    {{ companyBankSettings?.ifsc_code || 'HDFC0001234' }}
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline-light py-0 px-1 fs-9"
+                      (click)="copyIfsc()"
+                      title="Copy IFSC"
+                    >
+                      <i class="fas" [class.fa-check]="copiedIfsc" [class.fa-copy]="!copiedIfsc"></i>
+                      <span>{{ copiedIfsc ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </span>
+                </div>
+                <div class="grid-col-span-2" style="grid-column: span 2;" *ngIf="companyBankSettings?.branch_name">
+                  <span class="opacity-75 fs-10 d-block">Branch:</span>
+                  <span class="fs-11">{{ companyBankSettings?.branch_name }}</span>
+                </div>
+              </div>
+
+              <!-- Strictly No Cash Alert -->
+              <div class="alert alert-danger py-1 px-2 fs-10 mb-0 d-flex align-items-center border-0 text-white" style="background: rgba(220, 38, 38, 0.85);">
+                <i class="fas fa-ban me-1.5 fs-12 text-warning"></i>
+                <span><strong>Strictly No Cash Policy:</strong> Company client se cash accept nahi karti. Payment sirf official company account ya UPI se karein.</span>
+              </div>
+            </div>
+
+            <!-- View 3: Online Gateway Tab -->
+            <div *ngIf="selectedPaymentTab === 'GATEWAY'" class="p-2.5 rounded-8 bg-dark-green border border-primary text-center">
+              <i class="fas fa-shield-alt text-gold fs-16 mb-1 d-block"></i>
+              <span class="fs-11 text-white fw-700 d-block">Instant Secure Payment Gateway</span>
+              <p class="fs-10 text-white opacity-85 mb-0">Booking submit hone par aapko secure payment gateway (Cards / NetBanking) par redirect kiya jayega.</p>
+            </div>
           </div>
 
           <!-- Notes -->

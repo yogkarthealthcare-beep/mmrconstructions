@@ -47,6 +47,10 @@ export class PaymentGatewaySettingsComponent implements OnInit {
   dialogMessage = '';
   pendingAction: (() => void) | null = null;
 
+  // Company Bank Account Form & Payment Method Checkbox Controls
+  bankForm!: FormGroup;
+  savingBank = false;
+
   constructor(
     private fb: FormBuilder,
     private adminService: AdminPaymentGatewayService
@@ -130,6 +134,18 @@ export class PaymentGatewaySettingsComponent implements OnInit {
         is_primary: [false]
       })
     };
+
+    this.bankForm = this.fb.group({
+      account_name: ['MMR CONSTRUCTIONS PRIVATE LIMITED', [Validators.required]],
+      bank_name: ['HDFC Bank Ltd.', [Validators.required]],
+      account_number: ['50200088921832', [Validators.required]],
+      ifsc_code: ['HDFC0001234', [Validators.required]],
+      branch_name: ['Civil Lines, Kanpur'],
+      enable_primary_upi: [true],
+      enable_secondary_upi: [true],
+      enable_bank_transfer: [true],
+      enable_payment_gateway: [true]
+    });
   }
 
   loadData() {
@@ -176,6 +192,9 @@ export class PaymentGatewaySettingsComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load UPI QR configs', err)
     });
+
+    // Fetch company bank settings & payment method checkboxes
+    this.loadCompanyBankSettings();
   }
 
   private mergeSupportedGateways(rows: PaymentGatewayAdmin[]): PaymentGatewayAdmin[] {
@@ -514,6 +533,53 @@ export class PaymentGatewaySettingsComponent implements OnInit {
       error: (err) => {
         this.savingQr[key] = false;
         this.errorMessage = err?.error?.message || `Failed to save ${key.toUpperCase()} configuration.`;
+      }
+    });
+  }
+
+  loadCompanyBankSettings() {
+    this.adminService.getCompanyBankSettingsAdmin().subscribe({
+      next: (res: any) => {
+        const data = res?.data || res;
+        if (data && data.account_name) {
+          this.bankForm.patchValue({
+            account_name: data.account_name,
+            bank_name: data.bank_name,
+            account_number: data.account_number,
+            ifsc_code: data.ifsc_code,
+            branch_name: data.branch_name,
+            enable_primary_upi: data.enable_primary_upi !== undefined ? data.enable_primary_upi : true,
+            enable_secondary_upi: data.enable_secondary_upi !== undefined ? data.enable_secondary_upi : true,
+            enable_bank_transfer: data.enable_bank_transfer !== undefined ? data.enable_bank_transfer : true,
+            enable_payment_gateway: data.enable_payment_gateway !== undefined ? data.enable_payment_gateway : true
+          });
+        }
+      },
+      error: (err) => {
+        console.warn('Failed to load bank settings', err);
+      }
+    });
+  }
+
+  saveCompanyBankSettings() {
+    if (this.bankForm.invalid) {
+      this.bankForm.markAllAsTouched();
+      this.errorMessage = 'Please fill all mandatory company bank account fields.';
+      return;
+    }
+    this.savingBank = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.adminService.saveCompanyBankSettingsAdmin(this.bankForm.value).subscribe({
+      next: (res: any) => {
+        this.savingBank = false;
+        this.successMessage = 'Company bank account details and booking payment method visibility updated successfully.';
+        this.showToast();
+      },
+      error: (err) => {
+        this.savingBank = false;
+        this.errorMessage = err?.error?.message || 'Failed to update company bank settings.';
       }
     });
   }

@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { getPlotStyle, shouldShowSoldText, getPlotStatusLabel } from '../../shared/plot-status.config';
 import { getUnitTypeConfig } from '../../shared/unit-types.config';
 import { UpiQrPaymentComponent, UpiPaymentDetails } from '../../shared/upi-qr-payment/upi-qr-payment.component';
+import { AdminPaymentGatewayService } from '../../services/admin-payment-gateway.service';
 import Swal from 'sweetalert2';
 
 export interface PublicPlot {
@@ -88,6 +89,20 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
 
   upiDetails: UpiPaymentDetails | null = null;
 
+  // ── 2-Tab Unit Calculation (Gaj vs Sq.Ft) ──
+  calculationUnit: 'GAJ' | 'SQFT' = 'GAJ';
+  inputAreaGaj: number = 0;
+  inputRateGaj: number = 8000;
+  inputAreaSqft: number = 0;
+  inputRateSqft: number = 888.89;
+
+  // ── Dynamic Payment Tabs & Company Bank Details ──
+  companyBankSettings: any = null;
+  selectedPaymentTab: 'UPI' | 'BANK_TRANSFER' | 'GATEWAY' = 'UPI';
+  showUpiQrScanner = false;
+  copiedBankAc = false;
+  copiedIfsc = false;
+
   onUpiPaymentChange(d: UpiPaymentDetails): void {
     this.upiDetails = d;
   }
@@ -144,6 +159,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     private router: Router,
     private api: ApiService,
     public auth: AuthService,
+    private paymentService: AdminPaymentGatewayService,
     private cdr: ChangeDetectorRef,
     private location: Location
   ) {}
@@ -167,6 +183,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
 
     this.loadPlotMap(true);
     this.loadInstallmentPlans();
+    this.loadCompanyBankSettings();
     this.setupPolling();
   }
 
@@ -815,12 +832,114 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     this.onPaymentTypeChange();
   }
 
+  setCalculationUnit(unit: 'GAJ' | 'SQFT'): void {
+    this.calculationUnit = unit;
+    if (unit === 'GAJ') {
+      if (this.inputAreaSqft && !this.inputAreaGaj) {
+        this.inputAreaGaj = Math.round((this.inputAreaSqft / 9) * 100) / 100;
+      }
+      this.recalculateFromGaj();
+    } else {
+      if (this.inputAreaGaj && !this.inputAreaSqft) {
+        this.inputAreaSqft = Math.round((this.inputAreaGaj * 9) * 100) / 100;
+      }
+      this.recalculateFromSqft();
+    }
+  }
+
+  onGajInputChange(): void {
+    this.recalculateFromGaj();
+  }
+
+  onSqftInputChange(): void {
+    this.recalculateFromSqft();
+  }
+
+  private recalculateFromGaj(): void {
+    const gaj = Number(this.inputAreaGaj || 0);
+    const rate = Number(this.inputRateGaj || 0);
+    const total = Math.round(gaj * rate);
+    this.bookingForm.proposed_price = total;
+    this.bookingForm.rate_per_gaj = rate;
+    this.inputAreaSqft = Math.round((gaj * 9) * 100) / 100;
+    this.inputRateSqft = Math.round((rate / 9) * 100) / 100;
+    this.bookingForm.rate_per_sqft = this.inputRateSqft;
+    this.onPaymentTypeChange();
+  }
+
+  private recalculateFromSqft(): void {
+    const sqft = Number(this.inputAreaSqft || 0);
+    const rate = Number(this.inputRateSqft || 0);
+    const total = Math.round(sqft * rate);
+    this.bookingForm.proposed_price = total;
+    this.bookingForm.rate_per_sqft = rate;
+    this.inputAreaGaj = Math.round((sqft / 9) * 100) / 100;
+    this.inputRateGaj = Math.round((rate * 9) * 100) / 100;
+    this.bookingForm.rate_per_gaj = this.inputRateGaj;
+    this.onPaymentTypeChange();
+  }
+
+  toggleUpiQrScanner(): void {
+    this.showUpiQrScanner = !this.showUpiQrScanner;
+  }
+
+  copyBankAc(): void {
+    const ac = this.companyBankSettings?.account_number || '50200088921832';
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(ac).then(() => {
+        this.copiedBankAc = true;
+        setTimeout(() => this.copiedBankAc = false, 2500);
+      });
+    }
+  }
+
+  copyIfsc(): void {
+    const ifsc = this.companyBankSettings?.ifsc_code || 'HDFC0001234';
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(ifsc).then(() => {
+        this.copiedIfsc = true;
+        setTimeout(() => this.copiedIfsc = false, 2500);
+      });
+    }
+  }
+
+  loadCompanyBankSettings(): void {
+    this.paymentService.getCompanyBankDetailsPublic().subscribe({
+      next: (res: any) => {
+        const data = res?.data || res;
+        if (data) {
+          this.companyBankSettings = data;
+          if (data.enable_primary_upi || data.enable_secondary_upi) {
+            this.selectedPaymentTab = 'UPI';
+          } else if (data.enable_bank_transfer) {
+            this.selectedPaymentTab = 'BANK_TRANSFER';
+          } else if (data.enable_payment_gateway) {
+            this.selectedPaymentTab = 'GATEWAY';
+          }
+        }
+      },
+      error: (err) => console.warn('Failed to load company bank details', err)
+    });
+  }
+
   onProposedPriceChange(): void {
     const price = Number(this.bookingForm.proposed_price || 0);
-    const areaGaj = Number(this.selectedPlot?.area_gaj || 0);
-    if (price > 0 && areaGaj > 0) {
-      this.bookingForm.rate_per_gaj = Math.round((price / areaGaj) * 100) / 100;
-      this.bookingForm.rate_per_sqft = Math.round((price / (areaGaj * 9)) * 100) / 100;
+    if (this.calculationUnit === 'GAJ') {
+      const gaj = Number(this.inputAreaGaj || 0);
+      if (price > 0 && gaj > 0) {
+        this.inputRateGaj = Math.round((price / gaj) * 100) / 100;
+        this.bookingForm.rate_per_gaj = this.inputRateGaj;
+        this.inputRateSqft = Math.round((this.inputRateGaj / 9) * 100) / 100;
+        this.bookingForm.rate_per_sqft = this.inputRateSqft;
+      }
+    } else {
+      const sqft = Number(this.inputAreaSqft || 0);
+      if (price > 0 && sqft > 0) {
+        this.inputRateSqft = Math.round((price / sqft) * 100) / 100;
+        this.bookingForm.rate_per_sqft = this.inputRateSqft;
+        this.inputRateGaj = Math.round((this.inputRateSqft * 9) * 100) / 100;
+        this.bookingForm.rate_per_gaj = this.inputRateGaj;
+      }
     }
     this.onPaymentTypeChange();
   }
@@ -828,7 +947,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
   openBookingModal(plot: PublicPlot): void {
     const user = this.auth.getUser() || {};
     const basePrice = Number(plot.price || 0);
-    const areaGaj = Number(plot.area_gaj || 0);
+    const areaGaj = Number(plot.area_gaj || (plot.area_sqft ? Math.round(plot.area_sqft / 9) : 100)) || 100;
 
     const defaultPlan = this.activeInstallmentPlans.length > 0 ? this.activeInstallmentPlans[0] : null;
     this.selectedPlan = defaultPlan;
@@ -841,6 +960,15 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     const initialRateGaj = basePrice > 0 && areaGaj > 0 ? Math.round((basePrice / areaGaj) * 100) / 100 : 8000;
     const initialRateSqft = Math.round((initialRateGaj / 9) * 100) / 100;
 
+    this.inputAreaGaj = areaGaj;
+    this.inputRateGaj = initialRateGaj;
+    this.inputAreaSqft = Math.round(areaGaj * 9 * 100) / 100;
+    this.inputRateSqft = initialRateSqft;
+    const initialTotal = Math.round(this.inputAreaGaj * this.inputRateGaj);
+
+    this.calculationUnit = 'GAJ';
+    this.showUpiQrScanner = false;
+
     this.bookingForm = {
       customer_name: user.full_name || '',
       mobile_no: user.mobile_no || '',
@@ -849,7 +977,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
       installment_plan_id: defaultPlan ? defaultPlan.id : null,
       advance_amount: minAdvance,
       notes: '',
-      proposed_price: basePrice > 0 ? basePrice : (areaGaj > 0 ? Math.round(areaGaj * initialRateGaj) : 200000),
+      proposed_price: Math.max(200000, initialTotal),
       rate_per_gaj: initialRateGaj,
       rate_per_sqft: initialRateSqft
     };
@@ -951,7 +1079,9 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
         advance_amount: Number(this.bookingForm.advance_amount),
         custom_plot_price: this.effectivePlotPrice,
         notes: this.bookingForm.notes || undefined,
-        payment_method: 'UPI / QR Code',
+        payment_method: this.selectedPaymentTab === 'BANK_TRANSFER' 
+          ? 'Bank Transfer / NEFT / RTGS' 
+          : (this.selectedPaymentTab === 'GATEWAY' ? 'Online Payment Gateway' : 'UPI / QR Code'),
         payer_name: this.upiDetails?.payer_name || undefined,
         utr_number: this.upiDetails?.utr_number || undefined,
         qr_code_key: this.upiDetails?.qr_code_key || undefined,
