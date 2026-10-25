@@ -786,7 +786,8 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     this.api.getInstallmentPlans().subscribe({
       next: (res: any) => {
         if (res?.success && Array.isArray(res.data)) {
-          this.activeInstallmentPlans = res.data;
+          // Exclude 60 month plan as requested by user
+          this.activeInstallmentPlans = res.data.filter((p: any) => Number(p.tenure_months) !== 60);
         }
       },
       error: () => {}

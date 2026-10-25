@@ -724,14 +724,16 @@
           <div class="mb-3 p-3 bg-dark-green rounded-8 border border-warning" *ngIf="bookingForm.payment_type === 'EMI'">
             <label class="form-label fs-12 fw-700 text-white mb-2">Select EMI Tenure Plan:</label>
             <div class="d-flex gap-1.5 flex-wrap mb-2">
-              <button 
-                type="button" 
-                class="btn btn-xs py-0.5 px-2 fs-10 fw-700" 
-                *ngFor="let plan of activeInstallmentPlans"
-                [ngClass]="bookingForm.installment_plan_id === plan.id ? 'btn-gold fw-800' : 'btn-outline-light'"
-                (click)="onPlanSelect(plan.id)">
-                {{ plan.tenure_months }} Months ({{ plan.interest_percent }}% Int)
-              </button>
+              <ng-container *ngFor="let plan of activeInstallmentPlans">
+                <button 
+                  type="button" 
+                  *ngIf="plan.tenure_months != 60"
+                  class="btn btn-xs py-0.5 px-2 fs-10 fw-700 emi-plan-btn" 
+                  [ngClass]="bookingForm.installment_plan_id === plan.id ? 'btn-gold fw-800' : 'btn-outline-light text-white'"
+                  (click)="onPlanSelect(plan.id)">
+                  {{ plan.tenure_months }} Months ({{ plan.interest_percent }}% Int)
+                </button>
+              </ng-container>
             </div>
             <div *ngIf="selectedPlanPreview" class="p-2.5 bg-white rounded-6 border fs-11 text-dark">
               <div class="d-flex justify-content-between mb-1">
@@ -779,13 +781,13 @@
               <i class="fas fa-credit-card text-gold me-1"></i> भुगतान का माध्यम चुनें (Payment Method):
             </label>
 
-            <!-- Extra-small Payment Method Tabs -->
-            <div class="d-flex gap-1.5 flex-wrap mb-2.5">
+            <!-- Extra-small Payment Method Tabs in ONE Single Row -->
+            <div class="payment-tabs-row mb-2.5">
               <!-- Tab: UPI QR -->
               <button
                 type="button"
                 *ngIf="companyBankSettings?.enable_primary_upi !== false || companyBankSettings?.enable_secondary_upi !== false"
-                class="btn btn-xs py-1 px-2 fs-11 fw-700"
+                class="btn btn-xs py-1 px-1.5 fs-10 fw-700 payment-tab-btn"
                 [ngClass]="selectedPaymentTab === 'UPI' ? 'btn-gold' : 'btn-outline-light text-white'"
                 (click)="selectedPaymentTab = 'UPI'"
               >
@@ -796,7 +798,7 @@
               <button
                 type="button"
                 *ngIf="companyBankSettings?.enable_bank_transfer !== false"
-                class="btn btn-xs py-1 px-2 fs-11 fw-700"
+                class="btn btn-xs py-1 px-1.5 fs-10 fw-700 payment-tab-btn"
                 [ngClass]="selectedPaymentTab === 'BANK_TRANSFER' ? 'btn-gold' : 'btn-outline-light text-white'"
                 (click)="selectedPaymentTab = 'BANK_TRANSFER'"
               >
@@ -807,7 +809,7 @@
               <button
                 type="button"
                 *ngIf="companyBankSettings?.enable_payment_gateway"
-                class="btn btn-xs py-1 px-2 fs-11 fw-700"
+                class="btn btn-xs py-1 px-1.5 fs-10 fw-700 payment-tab-btn"
                 [ngClass]="selectedPaymentTab === 'GATEWAY' ? 'btn-gold' : 'btn-outline-light text-white'"
                 (click)="selectedPaymentTab = 'GATEWAY'"
               >
