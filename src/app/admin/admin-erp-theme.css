@@ -309,20 +309,20 @@
 }
 
 /* ── 6. COMPACT SEARCH & FILTER CONTROLS ──────────────────────────────────── */
-.panel-shell .form-control:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
-.panel-shell .form-select,
-.panel-shell .f-input:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
-.panel-shell .f-select,
+.panel-shell .form-control:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input):not(.rm-input-search):not(.site-select),
+.panel-shell .form-select:not(.site-select),
+.panel-shell .f-input:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input):not(.rm-input-search):not(.site-select),
+.panel-shell .f-select:not(.site-select),
 .panel-shell .rm-input:not(.rm-input-search),
-.panel-shell .inp:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
+.panel-shell .inp:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input):not(.rm-input-search):not(.site-select),
 .panel-shell .sel,
-.panel-shell input[type="text"]:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
+.panel-shell input[type="text"]:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input):not(.rm-input-search):not(.site-select),
 .panel-shell input[type="number"],
 .panel-shell input[type="email"],
 .panel-shell input[type="date"],
-.panel-shell input[type="search"]:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input),
+.panel-shell input[type="search"]:not(.f-input-search):not(.customer-search-field):not(.search-field):not(.search-input):not(.rm-input-search):not(.site-select),
 .panel-shell input[type="tel"],
-.panel-shell select {
+.panel-shell select:not(.site-select) {
   height: var(--h-xs, 26px) !important;
   min-height: var(--h-xs, 26px) !important;
   padding: 0 8px !important;
@@ -336,6 +336,12 @@
   min-width: 0 !important;
 }
 
+/* Form selects need room on right for dropdown arrow */
+.panel-shell .form-select,
+.panel-shell select {
+  padding-right: 22px !important;
+}
+
 /* Ensure all search input fields with icons maintain generous left padding */
 .panel-shell .search-input-wrap input,
 .panel-shell .search-input-wrapper input,
@@ -344,7 +350,9 @@
 .panel-shell input.search-input,
 .panel-shell .search-box input,
 .panel-shell .filter-search-box input,
-.panel-shell .input-with-icon input {
+.panel-shell .input-with-icon input,
+.panel-shell .rm-input-search,
+.panel-shell input.rm-input-search {
   height: 36px !important;
   min-height: 36px !important;
   padding-left: 38px !important;
@@ -456,7 +464,7 @@
 }
 
 .panel-shell .search,
-.panel-shell .search-box,
+.panel-shell .search-box:not(.plot-sidebar-filters .search-box),
 .panel-shell .filter-search-box {
   position: relative !important;
   flex: 1 1 220px !important;
@@ -1746,6 +1754,115 @@ body.modal-open .panel-shell td:focus-within,
     width: 100% !important;
     border-collapse: collapse !important;
   }
+}
+
+/* ── 22. PLOT MAP EDITOR FIXES (SITE-SELECT & PLOT-SIDEBAR-FILTERS) ──────── */
+.panel-shell .site-select-wrap {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  max-width: 520px !important;
+}
+
+.panel-shell .site-select-wrap > i {
+  position: absolute !important;
+  left: 14px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #166534 !important;
+  font-size: 15px !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+.panel-shell .site-select-wrap input.site-select,
+.panel-shell input.site-select {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding-left: 42px !important;
+  padding-right: 38px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  box-sizing: border-box !important;
+}
+
+.panel-shell .site-select-wrap .site-select-caret {
+  position: absolute !important;
+  right: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  height: 30px !important;
+  width: 30px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: none !important;
+  color: #166534 !important;
+  cursor: pointer !important;
+  z-index: 5 !important;
+}
+
+.panel-shell .plot-sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.panel-shell .plot-sidebar-filters {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+  flex: 0 0 auto !important;
+}
+
+.panel-shell .plot-sidebar-filters .search-box {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.panel-shell .plot-sidebar-filters .search-box input,
+.panel-shell .plot-sidebar-filters .search-input {
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 11.5px !important;
+  padding-left: 32px !important;
+  padding-right: 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  width: 100% !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+.panel-shell .plot-sidebar-filters .status-filter-select {
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 11.5px !important;
+  padding: 0 24px 0 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  width: 100% !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+  margin-bottom: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.panel-shell .plot-sidebar .plot-list {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
 }
 
 
