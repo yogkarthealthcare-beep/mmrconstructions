@@ -97,6 +97,16 @@ export const ADMIN_ROUTES: Routes = [
     title: 'Plot Booking Orders' 
   },
   { 
+    path: 'payment-settlement', 
+    loadComponent: () => import('./payment-settlement/payment-settlement.component').then(m => m.AdminPaymentSettlementComponent),
+    title: 'Plot Orders Payment Settlement' 
+  },
+  { 
+    path: 'plot-orders/payment-settlement', 
+    redirectTo: 'payment-settlement',
+    pathMatch: 'full'
+  },
+  { 
     path: 'unattributed-bookings', 
     loadComponent: () => import('./unattributed-bookings/unattributed-bookings.component').then(m => m.AdminUnattributedBookingsComponent),
     title: 'Unattributed Bookings Resolution' 

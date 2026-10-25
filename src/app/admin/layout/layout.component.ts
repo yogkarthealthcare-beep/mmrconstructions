@@ -56,10 +56,11 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     {
       label: 'PLOT ORDERS',
       icon: 'fas fa-clipboard-check',
-      directLink: '/admin/plot-orders',
-      badge: 'NEW',
       expanded: false,
-      items: []
+      items: [
+        { icon: 'fas fa-clipboard-list', label: 'Plot Orders', route: '/admin/plot-orders' },
+        { icon: 'fas fa-file-invoice-dollar', label: 'Payment Settlement', route: '/admin/payment-settlement', badge: 'NEW' },
+      ]
     },
     {
       label: 'CUSTOMER',

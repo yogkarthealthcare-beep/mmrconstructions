@@ -690,6 +690,7 @@
 
             <!-- Map Viewport -->
             <div
+              #mapViewport
               *ngIf="!mapLoading && !mapError"
               class="location-map-viewport"
               (pointerdown)="onMapPointerDown($event)"
@@ -705,18 +706,24 @@
                 <button type="button" class="btn-zoom" (click)="zoomOutMap()" title="Zoom Out">
                   <i class="fas fa-minus"></i>
                 </button>
-                <button type="button" class="btn-zoom" (click)="fitAndFocusPlot(targetPlotOnMap)" title="Refocus Target Plot">
+                <button type="button" class="btn-zoom" (click)="fitAndFocusPlot(targetPlotOnMap)" title="Focus Booked Plot #{{ targetPlotOnMap?.plot_number }}">
                   <i class="fas fa-crosshairs"></i>
                 </button>
-                <button type="button" class="btn-zoom" (click)="resetMapZoom()" title="Reset Zoom">
-                  <i class="fas fa-compress-arrows-alt"></i>
+                <button type="button" class="btn-zoom" (click)="fitCompleteMap()" title="Fit Complete Map to Screen">
+                  <i class="fas fa-expand-arrows-alt"></i>
                 </button>
               </div>
 
               <!-- Target Plot Found Badge -->
-              <div class="target-pin-pill" *ngIf="targetPlotOnMap">
+              <div
+                class="target-pin-pill cursor-pointer"
+                *ngIf="targetPlotOnMap"
+                (click)="fitAndFocusPlot(targetPlotOnMap)"
+                title="Click to zoom into Plot #{{ targetPlotOnMap.plot_number }}"
+              >
                 <span class="pulsing-beacon"></span>
                 <span>Focus: <b>Plot #{{ targetPlotOnMap.plot_number }}</b> ({{ targetPlotOnMap.area_gaj }} Gaj)</span>
+                <i class="fas fa-search-plus ms-1 font-xs text-emerald" style="opacity: 0.85;"></i>
               </div>
 
               <!-- Map Stage Container -->
@@ -867,7 +874,15 @@
                 <span class="info-label">Advance Paid:</span>
                 <span class="info-val font-sm fw-semibold text-emerald">₹{{ selectedLocationOrder?.advance_amount | number }}</span>
               </div>
-              <div class="info-row">
+              <div class="info-row" *ngIf="(selectedLocationOrder?.total_agreed_price - selectedLocationOrder?.advance_amount) > 0">
+                <span class="info-label">Balance Due:</span>
+                <span class="info-val font-sm fw-bold text-danger">₹{{ (selectedLocationOrder?.total_agreed_price - selectedLocationOrder?.advance_amount) | number }}</span>
+              </div>
+              <div class="info-row" *ngIf="(selectedLocationOrder?.total_agreed_price - selectedLocationOrder?.advance_amount) <= 0 && selectedLocationOrder?.total_agreed_price > 0">
+                <span class="info-label">Payment Status:</span>
+                <span class="badge bg-success text-white font-xs px-2 py-0.5">Fully Paid</span>
+              </div>
+              <div class="info-row" *ngIf="selectedLocationOrder?.created_at">
                 <span class="info-label">Booking Date:</span>
                 <span class="info-val">{{ selectedLocationOrder?.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
               </div>

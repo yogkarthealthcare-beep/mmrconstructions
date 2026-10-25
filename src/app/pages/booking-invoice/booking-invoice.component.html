@@ -61,14 +61,15 @@
       <div class="brand-left">
         <img *ngIf="settings?.company_logo" [src]="settings.company_logo" alt="Logo" class="comp-logo" />
         <div>
-          <h2 class="comp-name">{{ settings?.company_name || 'MMR Constructions & Developers' }}</h2>
+          <h2 class="comp-name">{{ settings?.company_name || 'MMR Construction & Developers' }}</h2>
           <div class="comp-subtext">
-            {{ settings?.address || 'Head Office: Main Road, Lucknow, Uttar Pradesh - 226001' }}
+            {{ settings?.address || 'Tribhuvan Kheda, Sheshpur, Unnao, Uttar Pradesh, India, 209801' }}
           </div>
           <div class="comp-contacts">
-            <span><strong>Ph:</strong> {{ settings?.phone || '+91 98765 43210' }}</span>
-            <span><strong>Email:</strong> {{ settings?.email || 'info@mmrconstructions.com' }}</span>
-            <span *ngIf="settings?.gst_number"><strong>GSTIN:</strong> {{ settings.gst_number }}</span>
+            <span><strong>CIN:</strong> {{ settings?.cin || 'U68200UP2025PTC229203' }}</span>
+            <span><strong>GSTIN:</strong> {{ settings?.gst_number || '09AATCM6753A1Z5' }}</span>
+            <span><strong>Ph:</strong> {{ settings?.phone || '+91 95111 19879' }}</span>
+            <span><strong>Email:</strong> {{ settings?.email || 'official@mmrconstructions.in' }}</span>
           </div>
         </div>
       </div>
@@ -222,10 +223,14 @@
 
       <!-- 2. QR Code, Barcode & Security Badge in Center -->
       <div class="qr-barcode-center-wrap">
-        <img *ngIf="qrCode" [src]="qrCode" alt="QR Code" class="tiny-qr" />
+        <a *ngIf="verifyUrl" [href]="verifyUrl" target="_blank" title="Scan or click to download verified invoice PDF">
+          <img *ngIf="qrCode" [src]="qrCode" alt="QR Code" class="tiny-qr cursor-pointer" />
+        </a>
+        <img *ngIf="!verifyUrl && qrCode" [src]="qrCode" alt="QR Code" class="tiny-qr" />
         <div class="barcode-auth-col">
           <img *ngIf="barcode" [src]="barcode" alt="Barcode" class="tiny-barcode" />
           <div class="auth-text"><i class="fas fa-shield-alt me-1 text-success"></i>Verified Tax Invoice</div>
+          <div class="font-2xs text-muted" style="font-size: 7.5px; line-height: 1.1;">Scan QR to Download PDF</div>
         </div>
       </div>
 
