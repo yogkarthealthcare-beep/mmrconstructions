@@ -484,7 +484,7 @@
         <form (ngSubmit)="submitBooking()">
           <!-- Customer Proposed Rate & Valuation Section with 2-Tab Unit Switcher -->
           <div class="mb-3 rounded-8 valuation-card-box border border-warning">
-            <div class="d-flex justify-content-between align-items-center mb-1.5 flex-wrap gap-1">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-1 admin-badge-row">
               <label class="form-label fw-800 fs-12 text-white mb-0">
                 <i class="fas fa-tag text-warning me-1"></i>आपका प्रस्तावित रेट (Proposed Valuation) <span class="text-danger">*</span>
               </label>
@@ -606,12 +606,12 @@
                   {{ calculationUnit === 'GAJ' ? (inputAreaGaj + ' गज × ₹' + inputRateGaj) : (inputAreaSqft + ' Sq.Ft × ₹' + inputRateSqft) }}
                 </small>
               </div>
-              <div class="plot-input-group plot-input-group-lg">
-                <span class="plot-input-addon plot-input-addon-lg text-dark fw-bold">₹</span>
+              <div class="plot-input-group">
+                <span class="plot-input-addon text-dark fw-bold">₹</span>
                 <input
                   type="text"
                   inputmode="numeric"
-                  class="plot-input-control plot-input-control-lg"
+                  class="plot-input-control"
                   [(ngModel)]="bookingForm.proposed_price"
                   name="proposed_price"
                   (ngModelChange)="onProposedPriceChange()"
@@ -632,33 +632,33 @@
           </div>
 
           <!-- Customer Profile Summary -->
-          <div class="form-row mb-3">
-            <label class="form-label text-white">Customer Name</label>
+          <div class="form-row mb-2">
+            <label class="form-label text-white fs-11">Customer Name</label>
             <input
               type="text"
-              class="form-control"
+              class="form-control form-control-sm fs-11"
               [(ngModel)]="bookingForm.customer_name"
               name="customer_name"
               readonly
             />
           </div>
 
-          <div class="row g-2 mb-3">
+          <div class="row g-2 mb-2.5">
             <div class="col-sm-6">
-              <label class="form-label text-white">Mobile Number</label>
+              <label class="form-label text-white fs-11">Mobile Number</label>
               <input
                 type="text"
-                class="form-control"
+                class="form-control form-control-sm fs-11"
                 [(ngModel)]="bookingForm.mobile_no"
                 name="mobile_no"
                 readonly
               />
             </div>
             <div class="col-sm-6">
-              <label class="form-label text-white">Email Address</label>
+              <label class="form-label text-white fs-11">Email Address</label>
               <input
                 type="email"
-                class="form-control"
+                class="form-control form-control-sm fs-11"
                 [(ngModel)]="bookingForm.email"
                 name="email"
                 readonly
@@ -723,10 +723,10 @@
           <!-- EMI Tenure Plan Selector & Live Preview -->
           <div class="mb-3 p-3 bg-dark-green rounded-8 border border-warning" *ngIf="bookingForm.payment_type === 'EMI'">
             <label class="form-label fs-12 fw-700 text-white mb-2">Select EMI Tenure Plan:</label>
-            <div class="d-flex gap-2 flex-wrap mb-2">
+            <div class="d-flex gap-1.5 flex-wrap mb-2">
               <button 
                 type="button" 
-                class="btn btn-sm" 
+                class="btn btn-xs py-0.5 px-2 fs-10 fw-700" 
                 *ngFor="let plan of activeInstallmentPlans"
                 [ngClass]="bookingForm.installment_plan_id === plan.id ? 'btn-gold fw-800' : 'btn-outline-light'"
                 (click)="onPlanSelect(plan.id)">
@@ -916,10 +916,10 @@
           </div>
 
           <!-- Notes -->
-          <div class="mb-4">
-            <label class="form-label text-white">Special Requests / Remarks (Optional)</label>
+          <div class="mb-3">
+            <label class="form-label text-white fs-11">Special Requests / Remarks (Optional)</label>
             <textarea
-              class="form-control"
+              class="form-control form-control-sm fs-11"
               rows="2"
               [(ngModel)]="bookingForm.notes"
               name="notes"
@@ -928,10 +928,10 @@
           </div>
 
           <div class="dialog-actions">
-            <button type="button" class="btn btn-outline-light text-white" (click)="closeBookingModal()">
+            <button type="button" class="btn btn-xs btn-outline-light text-white py-1 px-3 fs-11" (click)="closeBookingModal()">
               Cancel
             </button>
-            <button type="submit" class="btn btn-gold btn-submit-booking" [disabled]="bookingSubmitting || !isPriceEligible">
+            <button type="submit" class="btn btn-xs btn-gold btn-submit-booking py-1 px-3 fs-11 fw-bold" [disabled]="bookingSubmitting || !isPriceEligible">
               <span *ngIf="!bookingSubmitting"><i class="fas fa-check-circle me-1.5"></i> Confirm & Submit Booking</span>
               <span *ngIf="bookingSubmitting"><span class="spinner-border spinner-border-sm me-1"></span> Processing...</span>
             </button>
