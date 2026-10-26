@@ -606,9 +606,10 @@
 </div>
 
 <!-- INSTALLMENT SCHEDULE (EMI TRACKER) MODAL -->
-<div *ngIf="selectedInstallmentBooking" class="modal-backdrop-custom">
-  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border max-w-750">
-    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+<div *ngIf="selectedInstallmentBooking" class="modal-backdrop-custom" (click)="closeInstallmentModal()">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border modal-installment-card" (click)="$event.stopPropagation()">
+    <!-- Sticky Header -->
+    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3 flex-shrink-0">
       <div>
         <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
           <span class="badge bg-success text-white fs-12 fw-700">
@@ -627,16 +628,18 @@
           <i class="fas fa-city text-gold me-1"></i>{{ selectedInstallmentBooking.site_name }} &bull; Plan: <strong>{{ selectedInstallmentBooking.payment_type || 'EMI Schedule' }}</strong>
         </div>
       </div>
-      <button type="button" class="btn-close" (click)="closeInstallmentModal()"></button>
+      <button type="button" class="btn-close" (click)="closeInstallmentModal()" aria-label="Close"></button>
     </div>
 
-    <!-- Notice Before Admin Approval (Task 3) -->
-    <div *ngIf="!selectedInstallmentBooking.isApproved" class="alert alert-warning p-3 rounded-3 mb-3 d-flex align-items-center gap-2">
-      <i class="fas fa-clock text-warning fs-4"></i>
-      <div class="fw-bold fs-13 text-dark">
-        Installments will be generated after admin approval.
+    <!-- Scrollable Body with Internal Scrolling -->
+    <div class="modal-installment-body flex-grow-1">
+      <!-- Notice Before Admin Approval (Task 3) -->
+      <div *ngIf="!selectedInstallmentBooking.isApproved" class="alert alert-warning p-3 rounded-3 mb-3 d-flex align-items-center gap-2">
+        <i class="fas fa-clock text-warning fs-4"></i>
+        <div class="fw-bold fs-13 text-dark">
+          Installments will be generated after admin approval.
+        </div>
       </div>
-    </div>
 
     <!-- Financial Breakdown Tiles -->
     <div class="row g-2 mb-3 text-center">
@@ -693,7 +696,7 @@
     </div>
 
     <!-- Installment Records Table / List -->
-    <div *ngIf="!loadingInstallments" class="table-responsive max-h-350 overflow-y-auto mb-3 border rounded-3">
+    <div *ngIf="!loadingInstallments" class="table-responsive installment-table-wrap mb-3 border rounded-3">
       <table class="table table-hover align-middle mb-0 font-sm">
         <thead class="table-light sticky-top">
           <tr>
@@ -768,8 +771,10 @@
         </tbody>
       </table>
     </div>
+    </div> <!-- /modal-installment-body -->
 
-    <div class="d-flex justify-content-end">
+    <!-- Sticky Footer (ALWAYS VISIBLE!) -->
+    <div class="d-flex justify-content-end pt-3 border-top mt-2 flex-shrink-0">
       <button type="button" class="btn btn-secondary btn-sm px-4" (click)="closeInstallmentModal()">Close</button>
     </div>
   </div>
