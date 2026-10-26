@@ -13,7 +13,7 @@
       </div>
 
       <!-- Action Tabs -->
-      <div class="tab-switcher">
+      <div class="tab-switcher" *ngIf="!isSelfTeamMember">
         <button 
           type="button"
           class="tab-btn" 
@@ -278,7 +278,7 @@
                   </p>
                 </div>
               </div>
-              <div class="slot-target-select-wrap">
+              <div class="slot-target-select-wrap" *ngIf="!isSelfTeamMember">
                 <label for="slotSelectDropdown" class="slot-select-label">Change Slot:</label>
                 <select 
                   id="slotSelectDropdown"
@@ -288,7 +288,7 @@
                   [ngModelOptions]="{standalone: true}"
                 >
                   <option *ngFor="let s of availableSlots()" [value]="s.slotNumber">
-                    Slot #{{ s.slotNumber }} (Available)
+                    {{ s.status === 'empty' ? 'Slot #' + s.slotNumber + ' (Available)' : 'Slot #' + s.slotNumber + ' - ' + (s.member?.full_name || 'Member') + ' (Pending Form)' }}
                   </option>
                   <option *ngIf="targetSlotNumber && !isSlotAvailable(targetSlotNumber)" [value]="targetSlotNumber">
                     Slot #{{ targetSlotNumber }} (Selected)

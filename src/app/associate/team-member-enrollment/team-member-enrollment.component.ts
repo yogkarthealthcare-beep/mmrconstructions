@@ -138,7 +138,8 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       if (member) {
         const rawStatus = String(member.status || '').toLowerCase();
         if (rawStatus === 'approved' || rawStatus === 'active') {
-          status = 'approved';
+          // If member has not completed final submission, mark status as pending enrollment
+          status = member.is_final_submitted ? 'approved' : 'pending';
         } else if (rawStatus === 'rejected') {
           status = 'rejected';
         } else if (rawStatus === 'inactive' || rawStatus === 'blocked') {
@@ -167,7 +168,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   });
 
   availableSlots = computed(() => {
-    return this.slots().filter(s => s.status === 'empty');
+    return this.slots().filter(s => s.status === 'empty' || (s.member && !s.member.is_final_submitted));
   });
 
   isSlotAvailable(num: number): boolean {
@@ -175,14 +176,25 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   getFirstAvailableSlot(): number | null {
-    const emptySlot = this.slots().find(s => s.status === 'empty');
-    return emptySlot ? emptySlot.slotNumber : (this.slots().length > 0 ? 1 : null);
+    const slot = this.slots().find(s => s.status === 'empty' || (s.member && !s.member.is_final_submitted));
+    return slot ? slot.slotNumber : (this.slots().length > 0 ? 1 : null);
   }
 
   onSlotSelected(slotNum: any): void {
     const num = Number(slotNum);
     if (num >= 1 && num <= 10) {
       this.targetSlotNumber = num;
+      const targetSlot = this.slots().find(s => s.slotNumber === num);
+      if (targetSlot?.member && !targetSlot.member.is_final_submitted) {
+        this.resumeDraftMember(targetSlot.member);
+        this.isEditing.set(true);
+        this.isReviewMode.set(false);
+        this.enrollmentForm.enable();
+        this.enrollmentForm.get('associateId')?.disable();
+        this.enrollmentForm.get('associateName')?.disable();
+      } else if (targetSlot?.status === 'empty') {
+        this.cleanFormForNewEnrollment(num);
+      }
     }
   }
 
@@ -201,6 +213,8 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     private route: ActivatedRoute
   ) {}
 
+  isSelfTeamMember = false;
+
   ngOnInit(): void {
     // Purge any stale test user data from local/session storage
     try {
@@ -215,13 +229,44 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     } catch {}
 
     const user = this.auth.getUser();
-    this.associateId = Number(user?.user_id || user?.id || 0);
-    this.associateMemberId = user?.member_id || (this.associateId ? `MMR-ASC-${String(this.associateId).padStart(5, '0')}` : '');
-    this.associateName = user?.full_name || '';
+    if (this.auth.isTeamMember()) {
+      this.isSelfTeamMember = true;
+      this.activeTab = 'enroll';
+      this.targetUserId = Number(user?.user_id || user?.id || 0);
+      const sponsorId = Number(user?.sponsor_user_id || 0);
+      this.associateId = sponsorId;
+      this.associateMemberId = (sponsorId ? `MMR-ASC-${String(sponsorId).padStart(5, '0')}` : '');
+      this.associateName = user?.sponsor_name || 'Associate';
 
-    this.initForm();
-    this.fetchPrefillData();
-    this.loadTeamMembersList();
+      this.initForm();
+      this.enrollmentForm.patchValue({
+        fullName: user?.full_name || '',
+        mobileNo: user?.mobile_no || '',
+        emailId: user?.email || '',
+        associateId: this.associateMemberId,
+        associateName: this.associateName
+      });
+      if (sponsorId) {
+        this.fetchPrefillData();
+      }
+      this.api.get(`/api/team-members/${this.targetUserId}`).subscribe({
+        next: (res: any) => {
+          if (res?.success && res?.data) {
+            this.resumeDraftMember(res.data);
+          }
+        },
+        error: () => {}
+      });
+      setTimeout(() => this.initSignaturePads(), 150);
+    } else {
+      this.associateId = Number(user?.user_id || user?.id || 0);
+      this.associateMemberId = user?.member_id || (this.associateId ? `MMR-ASC-${String(this.associateId).padStart(5, '0')}` : '');
+      this.associateName = user?.full_name || '';
+
+      this.initForm();
+      this.fetchPrefillData();
+      this.loadTeamMembersList();
+    }
 
     // Check for query parameters passed from quick registration
     this.route.queryParams.subscribe(params => {
@@ -898,7 +943,12 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
         this.isReviewMode.set(false);
         this.isEditing.set(false);
         this.enrollmentForm.disable();
-        this.loadTeamMembersList();
+        if (this.isSelfTeamMember) {
+          this.auth.setEnrollmentCompleted();
+          setTimeout(() => {
+            this.router.navigate(['/team-member/dashboard']);
+          }, 1500);
+        }
         Swal.fire({
           icon: 'success',
           title: 'Enrollment Finalized & Locked!',
@@ -998,11 +1048,19 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     this.uploadedApplicantSigUrl = member.applicant_signature_url || null;
     this.uploadedAssociateSigUrl = member.associate_signature_url || null;
 
-    this.isFinalSubmitted.set(isFinal);
-    this.isReviewMode.set(!isFinal);
-    this.isEditing.set(false);
-
-    this.enrollmentForm.disable();
+    if (!isFinal) {
+      this.isFinalSubmitted.set(false);
+      this.isReviewMode.set(false);
+      this.isEditing.set(true);
+      this.enrollmentForm.enable();
+      this.enrollmentForm.get('associateId')?.disable();
+      this.enrollmentForm.get('associateName')?.disable();
+    } else {
+      this.isFinalSubmitted.set(true);
+      this.isReviewMode.set(false);
+      this.isEditing.set(false);
+      this.enrollmentForm.disable();
+    }
 
     this.activeTab = 'enroll';
     setTimeout(() => this.initSignaturePads(), 150);

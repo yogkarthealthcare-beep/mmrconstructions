@@ -593,7 +593,12 @@ export class AuthService {
     const user = this.getUser();
     if (!user) return false;
     const type = String(user.user_type || user.role || '').toLowerCase().trim();
-    if (type === 'team member' || type.includes('team member') || type === 'teammember') return true;
+    if (type === 'team member' || type.includes('team member') || type === 'teammember') {
+      if (user.is_enrolled === true || user.isEnrolled === true || user.is_final_submitted === true || user.isFinalSubmitted === true) return true;
+      const tmStatus = String(user.enrollment_status || user.enrollmentStatus || user.status || '').toLowerCase().trim();
+      if (tmStatus === 'completed' || tmStatus === 'submitted') return true;
+      return false;
+    }
     const status = String(user.enrollment_status || user.enrollmentStatus || '').toLowerCase().trim();
     if (status === 'completed' || status === 'submitted') return true;
     if (user.is_enrolled === true || user.isEnrolled === true || user.enrollment_form_submitted === true || user.enrollment_completed === true) return true;

@@ -2,7 +2,11 @@ import { Routes } from '@angular/router';
 
 export const TEAM_MEMBER_ROUTES: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'enrollment', redirectTo: 'dashboard', pathMatch: 'full' },
+  {
+    path: 'enrollment',
+    loadComponent: () => import('../associate/team-member-enrollment/team-member-enrollment.component').then(m => m.TeamMemberEnrollmentComponent),
+    title: 'Team Member Enrollment — MMR Construction'
+  },
   {
     path: 'dashboard',
     loadComponent: () => import('./dashboard/dashboard.component').then(m => m.TeamMemberDashboardComponent)

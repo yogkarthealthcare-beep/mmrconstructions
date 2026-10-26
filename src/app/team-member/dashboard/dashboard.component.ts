@@ -36,6 +36,10 @@ export class TeamMemberDashboardComponent implements OnInit {
   totalSalesValue = 0;
   totalGajSold = 0;
 
+  get isEnrollmentPending(): boolean {
+    return !this.auth.isEnrollmentCompleted();
+  }
+
   constructor(
     private auth: AuthService,
     private attributionApi: BookingAttributionApiService,
