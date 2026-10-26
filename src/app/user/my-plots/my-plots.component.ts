@@ -132,8 +132,9 @@ export class MyPlotsComponent implements OnInit {
 
   processBookings(rawBookings: any[]) {
     this.bookings = rawBookings.map((b: any) => {
+      const isApproved = (b.booking_status === 'Confirmed' || b.booking_status === 'Approved');
       const totalPrice = Number(b.total_amount || b.base_price || b.total_price || 0);
-      const advancePaid = Number(b.advance_amount || b.paid_amount || b.total_paid || 0);
+      const advancePaid = Number(b.advance_amount || b.paid_amount || 0);
       
       const plotEmis = this.emis.filter((e: any) => 
         e.booking_id === b.booking_id || 
@@ -143,9 +144,12 @@ export class MyPlotsComponent implements OnInit {
       const confirmedPaidEmis = plotEmis.filter((e: any) => e.emi_status === 'Paid');
       const emiPaidSum = confirmedPaidEmis.reduce((s: number, e: any) => s + Number(e.paid_amount || e.emi_amount || 0), 0);
       
-      const confirmedPaid = Math.max(advancePaid + emiPaidSum, Number(b.total_paid || 0), advancePaid);
-      const unpaidAmount = Math.max(0, totalPrice - confirmedPaid);
-      const progressPercent = totalPrice > 0 ? Math.min(100, Math.round((confirmedPaid / totalPrice) * 100)) : (confirmedPaid > 0 ? 100 : 0);
+      // TASK 1: Count advance in Confirmed Paid only when the booking is approved/confirmed.
+      // Otherwise show it as "Under Verification". Pending orders do not count toward final Outstanding.
+      const confirmedPaid = isApproved ? (advancePaid + emiPaidSum) : emiPaidSum;
+      const underVerificationAmount = isApproved ? 0 : advancePaid;
+      const unpaidAmount = isApproved ? Math.max(0, totalPrice - confirmedPaid) : 0;
+      const progressPercent = (isApproved && totalPrice > 0) ? Math.min(100, Math.round((confirmedPaid / totalPrice) * 100)) : 0;
       
       const pendingEmis = plotEmis.filter((e: any) => e.emi_status === 'Pending' || e.emi_status === 'Overdue' || e.emi_status === 'ProofSubmitted');
       const nextEmi = pendingEmis.length > 0 ? pendingEmis[0] : null;
@@ -154,6 +158,9 @@ export class MyPlotsComponent implements OnInit {
       const isBuybackPending = this.buybackApplications.some((a: any) => a.booking_id === b.booking_id && a.buyback_status === 'Pending');
 
       let computedStatus = b.booking_status || 'Allocated';
+      if (computedStatus === 'PaymentPending') {
+        computedStatus = 'Payment Pending';
+      }
       if (isBuybackApproved || b.booking_status === 'Sold') {
         computedStatus = 'Sold';
       } else if (isBuybackPending) {
@@ -163,7 +170,9 @@ export class MyPlotsComponent implements OnInit {
       }
 
       let financialStatus = 'Partial Paid';
-      if (unpaidAmount === 0 && totalPrice > 0) {
+      if (!isApproved) {
+        financialStatus = 'Under Verification';
+      } else if (unpaidAmount === 0 && totalPrice > 0) {
         financialStatus = 'Fully Paid';
       } else if (confirmedPaid === 0) {
         financialStatus = 'Unpaid';
@@ -171,8 +180,17 @@ export class MyPlotsComponent implements OnInit {
         financialStatus = 'Overdue';
       }
 
+      // TASK 2: Area display logic: if area is missing or 0 show null ('—'), otherwise show value
+      const rawArea = b.plot_area != null ? Number(b.plot_area) : null;
+      const displayArea = (rawArea !== null && rawArea > 0) ? rawArea : null;
+      const displayAreaUnit = b.area_unit || 'Gaj';
+
       return {
         ...b,
+        plot_area: displayArea,
+        area_unit: displayAreaUnit,
+        isApproved,
+        underVerificationAmount,
         plot_number: b.plot_number || 'Plot',
         site_name: b.site_name || 'MMR Green Valley',
         location: b.location || b.city || 'Lucknow / Unnao Highway, UP',
@@ -231,6 +249,10 @@ export class MyPlotsComponent implements OnInit {
 
   get totalUnpaidSum(): number {
     return this.bookings.reduce((sum, b) => sum + Number(b.unpaidAmount || 0), 0);
+  }
+
+  get totalPendingSum(): number {
+    return this.bookings.reduce((sum, b) => sum + Number(b.underVerificationAmount || 0), 0);
   }
 
   get filteredBookings(): any[] {

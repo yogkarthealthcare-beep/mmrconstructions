@@ -67,6 +67,9 @@
       </div>
       <div class="stat-value text-gold-dark">₹{{ totalPaidSum | number }}</div>
       <div class="stat-label">Total Confirmed Paid</div>
+      <div *ngIf="totalPendingSum > 0" class="fs-10 text-muted mt-0.5" title="Payments currently under admin verification">
+        <i class="fas fa-clock text-warning me-1"></i>Pending Approval: ₹{{ totalPendingSum | number }}
+      </div>
       <div class="stat-footer text-warning d-flex align-items-center gap-1">
         <i class="fas fa-shield-alt me-1"></i>Verified Payments
       </div>
@@ -186,7 +189,7 @@
             <span class="sbadge" 
                   [class.sbadge-green]="b.computedStatus==='Confirmed'||b.computedStatus==='Active'"
                   [class.sbadge-blue]="b.computedStatus==='Allocated'||b.computedStatus==='Buyback In Review'"
-                  [class.sbadge-yellow]="b.computedStatus==='PaymentPending'||b.computedStatus==='InProcess'||b.computedStatus==='Pending'"
+                  [class.sbadge-yellow]="b.computedStatus==='Payment Pending'||b.computedStatus==='PaymentPending'||b.computedStatus==='InProcess'||b.computedStatus==='Pending'"
                   [class.sbadge-purple]="b.computedStatus==='Waitlisted'"
                   [class.sbadge-red]="b.computedStatus==='Sold'||b.computedStatus==='Cancelled'">
               <i *ngIf="b.computedStatus==='Waitlisted'" class="fas fa-clock me-1"></i>
@@ -196,7 +199,7 @@
             <span class="sbadge fs-10" 
                   [class.sbadge-green]="b.financialStatus==='Fully Paid'" 
                   [class.sbadge-yellow]="b.financialStatus==='Partial Paid'"
-                  [class.sbadge-gray]="b.financialStatus==='Unpaid'"
+                  [class.sbadge-gray]="b.financialStatus==='Unpaid'||b.financialStatus==='Under Verification'"
                   [class.sbadge-red]="b.financialStatus==='Overdue'">
               {{ b.financialStatus }}
             </span>
@@ -208,6 +211,18 @@
 
         <!-- Body & Spec Details -->
         <div class="p-3 bg-white">
+          <!-- Admin Approval Pending Notice (Task 1) -->
+          <div *ngIf="!b.isApproved && b.computedStatus !== 'Sold' && b.computedStatus !== 'Cancelled' && b.computedStatus !== 'Waitlisted'" 
+               class="alert alert-warning p-2 px-3 fs-12 rounded-3 mb-3 border border-warning d-flex align-items-center gap-2">
+            <i class="fas fa-clock text-warning fs-5 flex-shrink-0"></i>
+            <div>
+              <strong class="text-dark d-block">Admin approval pending. Payment under verification.</strong>
+              <span class="text-muted fs-11" *ngIf="b.underVerificationAmount > 0">
+                Advance Amount Submitted: <strong>₹{{ b.underVerificationAmount | number }}</strong> (will count as Confirmed Paid once approved)
+              </span>
+            </div>
+          </div>
+
           <!-- Waitlist Alert Banner (If Waitlisted) -->
           <div *ngIf="b.computedStatus === 'Waitlisted'" class="alert alert-warning p-2 px-3 fs-12 rounded-3 mb-3 border border-warning">
             <div class="d-flex align-items-start gap-2">
@@ -240,7 +255,14 @@
             <div class="col-6 col-sm-3">
               <div class="spec-tile p-2">
                 <div class="spec-lbl">Plot Area</div>
-                <div class="spec-val text-success">{{ b.plot_area || '—' }} <small>Gaj</small></div>
+                <div class="spec-val text-success">
+                  <ng-container *ngIf="b.plot_area; else noPlotArea">
+                    {{ b.plot_area }} <small>{{ b.area_unit || 'Gaj' }}</small>
+                  </ng-container>
+                  <ng-template #noPlotArea>
+                    —
+                  </ng-template>
+                </div>
               </div>
             </div>
             <div class="col-6 col-sm-3">
@@ -273,6 +295,11 @@
               <div class="col-4 border-end">
                 <div class="fs-10 text-uppercase text-emerald fw-700">Confirmed Paid</div>
                 <div class="fs-13 fw-800 text-success">₹{{ b.confirmedPaid | number }}</div>
+                <div *ngIf="!b.isApproved && b.underVerificationAmount > 0" class="mt-0.5">
+                  <span class="badge bg-warning-subtle text-dark border border-warning px-1 py-0 fs-9">
+                    Under Verification: ₹{{ b.underVerificationAmount | number }}
+                  </span>
+                </div>
               </div>
               <div class="col-4">
                 <div class="fs-10 text-uppercase text-danger fw-700">Unpaid Balance</div>

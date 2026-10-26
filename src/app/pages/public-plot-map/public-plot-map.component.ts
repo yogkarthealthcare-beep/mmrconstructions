@@ -1134,6 +1134,8 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
         advance_amount: Number(this.bookingForm.advance_amount),
         custom_plot_price: this.effectivePlotPrice,
         notes: this.bookingForm.notes || undefined,
+        plot_area: this.calculationUnit === 'SQFT' ? (this.inputAreaSqft || undefined) : (this.inputAreaGaj || undefined),
+        area_unit: this.calculationUnit === 'SQFT' ? 'Sq.Ft' : 'Gaj',
         payment_method: this.selectedPaymentTab === 'BANK_TRANSFER' 
           ? 'Bank Transfer / NEFT / RTGS' 
           : (this.selectedPaymentTab === 'GATEWAY' ? 'Online Payment Gateway' : 'UPI / QR Code'),

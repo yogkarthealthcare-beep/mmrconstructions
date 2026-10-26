@@ -1408,7 +1408,9 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       list_price: basePriceNum > 0 ? basePriceNum : null,
       price_overridden: basePriceNum > 0 && Math.abs(this.totalPlotPrice - basePriceNum) > 0.01,
       rate_per_gaj: this.ratePerGaj,
-      rate_per_sqft: this.ratePerSqft
+      rate_per_sqft: this.ratePerSqft,
+      plot_area: this.pricingUnit === 'SQFT' ? (this.bookingAreaSqft || this.selectedPlot?.plot_area || undefined) : (this.bookingAreaGaj || this.selectedPlot?.plot_area || undefined),
+      area_unit: this.pricingUnit === 'SQFT' ? 'Sq.Ft' : 'Gaj'
     };
 
     if (this.buyerType === 'ON_BEHALF' && this.selectedCustomer) {
