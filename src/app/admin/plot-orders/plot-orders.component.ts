@@ -210,10 +210,12 @@ export class AdminPlotOrdersComponent implements OnInit {
       return;
     }
 
-    if (targetStatus === order.booking_status) return;
+    const currentStatus = order?.booking_status || '';
+    if (targetStatus === currentStatus) return;
+    if ((targetStatus === 'Submitted' || !targetStatus) && (currentStatus === '' || currentStatus === 'Submitted')) return;
 
     // Resetting to Choose
-    if (!targetStatus || targetStatus === '') {
+    if (!targetStatus || targetStatus === '' || targetStatus === 'Submitted') {
       Swal.fire({
         title: 'Reset Approval Status?',
         text: `Reset Order #${order.booking_serial || order.booking_id} status back to unreviewed (Choose)?`,
@@ -286,36 +288,48 @@ export class AdminPlotOrdersComponent implements OnInit {
   }
 
   private revertStatus(order: any): void {
-    // Triggers change detection refresh for dropdown
+    if (!order) return;
     const current = order.booking_status;
-    order.booking_status = null;
-    setTimeout(() => { order.booking_status = current; }, 10);
+    order.booking_status = '__revert__';
+    setTimeout(() => { order.booking_status = current; }, 20);
   }
 
   private executeStatusUpdate(order: any, status: string, reason?: string): void {
-    this.statusUpdatingId = order.booking_id;
+    const bookingId = order?.booking_id || order?.order?.booking_id || this.selectedOrder?.booking_id;
+    if (!bookingId) {
+      this.showToast('Invalid booking ID', 'error');
+      return;
+    }
+    this.statusUpdatingId = bookingId;
 
-    this.api.patch(`/api/admin/plot-orders/${order.booking_id}/status`, {
+    this.api.patch(`/api/admin/plot-orders/${bookingId}/status`, {
       status,
-      reason,
-      remarks: reason
+      reason: reason ? String(reason).trim() : '',
+      remarks: reason ? String(reason).trim() : ''
     }, true).subscribe({
       next: (res: any) => {
         this.statusUpdatingId = null;
         if (res.success) {
           const displayLabel = (status === 'Submitted' || !status) ? 'Choose' : status;
-          this.showToast(`Order #${order.booking_serial || order.booking_id} updated to ${displayLabel}`, 'success');
-          order.booking_status = (status === 'Submitted' || !status) ? '' : status;
-          if (status === 'Confirmed') {
-            order.associate_approval_status = 'Approved';
-          } else if (status === 'Rejected') {
-            order.associate_approval_status = 'Rejected';
+          this.showToast(`Order #${order?.booking_serial || bookingId} updated to ${displayLabel}`, 'success');
+          if (order) {
+            order.booking_status = (status === 'Submitted' || !status) ? '' : status;
+            if (status === 'Confirmed') {
+              order.associate_approval_status = 'Approved';
+            } else if (status === 'Rejected') {
+              order.associate_approval_status = 'Rejected';
+            }
           }
-          // Refresh statistics
-          this.loadOrders(this.pagination.page);
-          if (this.selectedOrder && this.selectedOrder.booking_id === order.booking_id) {
+          if (this.selectedOrder && (this.selectedOrder.booking_id === bookingId || this.selectedOrder.booking_id === order?.booking_id)) {
             this.selectedOrder.booking_status = (status === 'Submitted' || !status) ? '' : status;
+            if (status === 'Confirmed') {
+              this.selectedOrder.associate_approval_status = 'Approved';
+            } else if (status === 'Rejected') {
+              this.selectedOrder.associate_approval_status = 'Rejected';
+            }
           }
+          // Refresh statistics and list
+          this.loadOrders(this.pagination.page);
         }
       },
       error: (err: any) => {
