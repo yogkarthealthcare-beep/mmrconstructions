@@ -1,0 +1,742 @@
+<div class="settlement-page-shell">
+  <!-- Toast Notification -->
+  <div *ngIf="toastMessage" class="toast-bar" [ngClass]="toastType">
+    <i class="fas" [ngClass]="toastType === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'"></i>
+    <span>{{ toastMessage }}</span>
+  </div>
+
+  <!-- Page Header -->
+  <div class="settlement-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <i class="fas fa-file-invoice-dollar"></i>
+      </div>
+      <div>
+        <h1 class="header-title">Payment Settlement & Commission Distribution</h1>
+        <p class="header-subtitle">
+          Admin Master Control • Authorize and release commission disbursements for eligible plot bookings
+        </p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline-secondary btn-sm" (click)="resetFilters()" title="Reload data">
+        <i class="fas fa-sync-alt me-1"></i> Refresh
+      </button>
+      <button class="btn btn-primary btn-sm" (click)="exportData()" title="Export CSV Report">
+        <i class="fas fa-file-export me-1"></i> Export CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Metrics Bar -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label text-truncate">
+        <i class="fas fa-clipboard-list me-1 text-primary"></i> Total Orders
+      </div>
+      <div class="metric-value-wrap">
+        <div class="metric-value" [ngClass]="getNumberFitClass(metrics.total_orders)" [title]="metrics.total_orders || 0">
+          {{ metrics.total_orders || 0 }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Orders in settlement flow</div>
+    </div>
+
+    <div class="metric-card card-pending">
+      <div class="metric-label text-truncate">
+        <i class="fas fa-clock me-1 text-warning"></i> Pending Settlement
+      </div>
+      <div class="metric-value-wrap">
+        <div class="metric-value text-warning" [ngClass]="getNumberFitClass(metrics.pending_count)" [title]="metrics.pending_count || 0">
+          {{ metrics.pending_count || 0 }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Awaiting admin release</div>
+    </div>
+
+    <div class="metric-card card-released">
+      <div class="metric-label text-truncate">
+        <i class="fas fa-check-circle me-1 text-success"></i> Released & Settled
+      </div>
+      <div class="metric-value-wrap">
+        <div class="metric-value text-success" [ngClass]="getNumberFitClass(metrics.released_count)" [title]="metrics.released_count || 0">
+          {{ metrics.released_count || 0 }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Commissions credited</div>
+    </div>
+
+    <div class="metric-card card-cancelled">
+      <div class="metric-label text-truncate">
+        <i class="fas fa-ban me-1 text-danger"></i> Cancelled
+      </div>
+      <div class="metric-value-wrap">
+        <div class="metric-value text-danger" [ngClass]="getNumberFitClass(metrics.cancelled_count)" [title]="metrics.cancelled_count || 0">
+          {{ metrics.cancelled_count || 0 }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Settlement voided</div>
+    </div>
+
+    <div class="metric-card card-received">
+      <div class="metric-label text-truncate">
+        <i class="fas fa-money-bill-wave me-1 text-info"></i> Amount Received
+      </div>
+      <div class="metric-value-wrap">
+        <div
+          class="metric-value text-info"
+          [ngClass]="getNumberFitClass(metrics.total_received_amount)"
+          [title]="'₹' + ((metrics.total_received_amount || 0) | number:'1.0-0')"
+        >
+          ₹{{ (metrics.total_received_amount || 0) | number:'1.0-0' }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Funds verified by company</div>
+    </div>
+
+    <div class="metric-card card-settled">
+      <div class="metric-label text-truncate">
+        <i class="fas fa-coins me-1 text-emerald"></i> Settled Value
+      </div>
+      <div class="metric-value-wrap">
+        <div
+          class="metric-value text-emerald"
+          [ngClass]="getNumberFitClass(metrics.total_settled_amount)"
+          [title]="'₹' + ((metrics.total_settled_amount || 0) | number:'1.0-0')"
+        >
+          ₹{{ (metrics.total_settled_amount || 0) | number:'1.0-0' }}
+        </div>
+      </div>
+      <div class="metric-sub text-truncate">Disbursed plot volume</div>
+    </div>
+  </div>
+
+  <!-- Filter & Quick-Tabs Bar -->
+  <div class="filter-controls-card">
+    <div class="tabs-row">
+      <button class="tab-btn" [class.active]="activeTab === 'ALL'" (click)="setTab('ALL')">
+        All Orders ({{ metrics.total_orders || 0 }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'PENDING'" (click)="setTab('PENDING')">
+        <i class="fas fa-clock text-warning me-1"></i> Pending ({{ metrics.pending_count || 0 }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'RELEASED'" (click)="setTab('RELEASED')">
+        <i class="fas fa-check-circle text-success me-1"></i> Released ({{ metrics.released_count || 0 }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'CANCELLED'" (click)="setTab('CANCELLED')">
+        <i class="fas fa-ban text-danger me-1"></i> Cancelled ({{ metrics.cancelled_count || 0 }})
+      </button>
+    </div>
+
+    <div class="search-filter-row">
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="form-control form-control-sm search-input"
+          placeholder="Search by Order ID, Buyer, Referral ID, Seller, SOC, Plot..."
+          [(ngModel)]="search"
+          (keyup.enter)="onSearch()"
+        />
+        <button *ngIf="search" class="clear-search-btn" (click)="search=''; onSearch()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-primary btn-sm px-3" (click)="onSearch()">
+          <i class="fas fa-filter me-1"></i> Filter
+        </button>
+        <button class="btn btn-light btn-sm px-3" (click)="resetFilters()">
+          <i class="fas fa-undo me-1"></i> Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2 fs-13">Loading payment settlements...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && orders.length === 0" class="empty-state-card text-center py-5">
+    <div class="empty-icon-wrap">
+      <i class="fas fa-folder-open text-muted"></i>
+    </div>
+    <h5 class="empty-title mt-3">No Payment Settlements Found</h5>
+    <p class="empty-subtitle text-muted fs-13">
+      No plot booking orders match the current settlement status or search criteria.
+    </p>
+    <button class="btn btn-outline-primary btn-sm mt-2" (click)="resetFilters()">
+      Reset All Filters
+    </button>
+  </div>
+
+  <!-- Settlement Orders Table -->
+  <div *ngIf="!loading && orders.length > 0" class="table-card" [class.landscape-fullscreen-active]="isLandscapeMode" [class.landscape-rotated]="isRotatedLandscape">
+    
+    <!-- Landscape Full View Top Bar -->
+    <div *ngIf="isLandscapeMode" class="landscape-topbar">
+      <div class="d-flex align-items-center gap-2">
+        <div class="landscape-badge">
+          <i class="fas fa-arrows-left-right-to-line me-1"></i> Fullscreen Extended Mode
+        </div>
+        <span class="fs-12 text-muted d-none d-sm-inline">
+          Full horizontal view • Release column is pinned on the right
+        </span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline-dark rotate-btn" (click)="toggleRotateLandscape()" title="Rotate Table 90 degrees">
+          <i class="fas fa-rotate me-1"></i> {{ isRotatedLandscape ? 'Portrait (0°)' : 'Landscape (90°)' }}
+        </button>
+        <button type="button" class="btn btn-sm btn-danger px-3 close-extend-btn" (click)="toggleLandscapeMode()">
+          <i class="fas fa-times me-1"></i> Exit Full View
+        </button>
+      </div>
+    </div>
+
+    <!-- Table Header Tools Bar -->
+    <div class="table-card-header d-flex align-items-center justify-content-between p-2 px-3 border-bottom bg-light flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="fw-700 text-dark fs-13">
+          <i class="fas fa-receipt text-primary me-1"></i> Settlement Orders
+        </span>
+        <span class="badge bg-secondary-subtle text-secondary fs-11">
+          {{ pagination.total || orders.length }} Records
+        </span>
+      </div>
+
+      <!-- Mobile Extend / Landscape Button -->
+      <div class="d-flex align-items-center gap-2">
+        <button
+          type="button"
+          class="btn btn-sm btn-primary mobile-extend-btn d-inline-flex align-items-center gap-1 shadow-sm"
+          (click)="toggleLandscapeMode()"
+          title="Open Table in Fullscreen Landscape Mode"
+        >
+          <i class="fas fa-up-right-and-down-left-from-center me-1"></i>
+          <span>Extend Table (Landscape)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Scroll Hint -->
+    <div class="mobile-scroll-indicator d-md-none">
+      <i class="fas fa-arrows-left-right me-1 text-primary"></i>
+      <span>Swipe horizontally to view all table columns</span>
+    </div>
+
+    <div class="table-responsive settlement-scroll-container">
+      <table class="table table-hover settlement-table align-middle">
+        <thead>
+          <tr>
+            <th class="col-order">Order ID</th>
+            <th class="col-date">Booking Date</th>
+            <th class="col-site">Site / Plot</th>
+            <th class="col-buyer">Buyer / Customer</th>
+            <th class="col-seller">Seller</th>
+            <th class="col-tm">T Member</th>
+            <th class="col-soc">SOC / Associate</th>
+            <th class="col-referral">Referral ID</th>
+            <th class="col-price text-end">Plot Price</th>
+            <th class="col-received text-end">Amount Received</th>
+            <th class="col-paystatus text-center">Payment Status</th>
+            <th class="col-settlestatus text-center">Settlement Status</th>
+            <th class="col-actions text-center sticky-action-header">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of orders" [class.row-released]="order.settlement_status === 'Released'">
+            <!-- Order ID -->
+            <td class="col-order">
+              <div class="cell-stack">
+                <span class="order-id-badge nowrap-text">{{ order.booking_serial || ('BK-' + order.booking_id) }}</span>
+                <div *ngIf="order.booking_type === 'SELF_PURCHASE' || order.is_self_purchase" class="sub-badge self-badge nowrap-text">
+                  Self Purchase
+                </div>
+                <div *ngIf="order.is_company_direct" class="sub-badge direct-badge nowrap-text">
+                  Company Direct
+                </div>
+              </div>
+            </td>
+
+            <!-- Booking Date -->
+            <td class="col-date">
+              <div class="cell-stack">
+                <div class="date-text nowrap-text">{{ order.booking_date | date:'dd MMM yyyy' }}</div>
+                <div class="text-muted fs-11 nowrap-text">{{ order.booking_date | date:'hh:mm a' }}</div>
+              </div>
+            </td>
+
+            <!-- Site / Plot -->
+            <td class="col-site">
+              <div class="cell-stack">
+                <div class="site-name-single nowrap-text" [title]="order.site_name || 'MMR City'">
+                  <i class="fas fa-city me-1 text-slate fs-11"></i>{{ order.site_name || 'MMR City' }}
+                </div>
+                <div class="plot-tag nowrap-text">
+                  Plot #<strong>{{ order.plot_number }}</strong>
+                  <span *ngIf="order.plot_area" class="text-muted fs-11">({{ order.plot_area }} {{ order.area_unit || 'Gaj' }})</span>
+                </div>
+                <div *ngIf="order.site_city" class="text-muted fs-11 nowrap-text">
+                  <i class="fas fa-location-dot me-1 text-slate fs-10"></i>{{ order.site_city }}
+                </div>
+              </div>
+            </td>
+
+            <!-- Buyer -->
+            <td class="col-buyer">
+              <div class="cell-stack">
+                <div class="person-name-single text-dark nowrap-text" [title]="order.buyer_name || 'Customer'">
+                  <i class="fas fa-user me-1 text-slate fs-11"></i>{{ order.buyer_name || 'Customer' }}
+                </div>
+                <div class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-id-card me-1 text-slate fs-10"></i>ID: {{ order.buyer_member_id || ('USR-' + order.buyer_user_id) }}
+                </div>
+                <div *ngIf="order.buyer_mobile" class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-phone-alt me-1 text-slate fs-10"></i><a [href]="'tel:' + order.buyer_mobile" class="contact-link">{{ order.buyer_mobile }}</a>
+                </div>
+                <div *ngIf="order.buyer_email" class="person-detail-single text-muted nowrap-text" [title]="order.buyer_email">
+                  <i class="fas fa-envelope me-1 text-slate fs-10"></i><a [href]="'mailto:' + order.buyer_email" class="contact-link">{{ order.buyer_email }}</a>
+                </div>
+              </div>
+            </td>
+
+            <!-- Seller -->
+            <td class="col-seller">
+              <div *ngIf="order.seller_name; else noSeller" class="cell-stack">
+                <div class="person-name-single text-dark nowrap-text" [title]="order.seller_name">
+                  <i class="fas fa-user-tie me-1 text-slate fs-11"></i>{{ order.seller_name }}
+                </div>
+                <div class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-id-card me-1 text-slate fs-10"></i>ID: {{ order.seller_member_id || ('USR-' + order.sold_by_user_id) }}
+                </div>
+                <div *ngIf="order.seller_mobile" class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-phone-alt me-1 text-slate fs-10"></i><a [href]="'tel:' + order.seller_mobile" class="contact-link">{{ order.seller_mobile }}</a>
+                </div>
+                <div *ngIf="order.seller_email" class="person-detail-single text-muted nowrap-text" [title]="order.seller_email">
+                  <i class="fas fa-envelope me-1 text-slate fs-10"></i><a [href]="'mailto:' + order.seller_email" class="contact-link">{{ order.seller_email }}</a>
+                </div>
+                <div>
+                  <span class="role-pill nowrap-text" [ngClass]="order.seller_user_type === 'Team Member' ? 'pill-tm' : 'pill-assoc'">
+                    {{ order.seller_user_type || 'Seller' }}
+                  </span>
+                </div>
+              </div>
+              <ng-template #noSeller>
+                <span class="text-muted fs-12 fst-italic nowrap-text">Company Direct</span>
+              </ng-template>
+            </td>
+
+            <!-- T Member -->
+            <td class="col-tm">
+              <div *ngIf="order.team_member_name; else noTm" class="cell-stack">
+                <div class="person-name-single text-primary-dark nowrap-text" [title]="order.team_member_name">
+                  <i class="fas fa-user-gear me-1 text-primary-dark fs-11"></i>{{ order.team_member_name }}
+                </div>
+                <div class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-id-card me-1 text-slate fs-10"></i>ID: {{ order.team_member_member_id || ('TM-' + order.team_member_user_id) }}
+                </div>
+                <div *ngIf="order.team_member_mobile" class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-phone-alt me-1 text-slate fs-10"></i><a [href]="'tel:' + order.team_member_mobile" class="contact-link">{{ order.team_member_mobile }}</a>
+                </div>
+                <div *ngIf="order.team_member_email" class="person-detail-single text-muted nowrap-text" [title]="order.team_member_email">
+                  <i class="fas fa-envelope me-1 text-slate fs-10"></i><a [href]="'mailto:' + order.team_member_email" class="contact-link">{{ order.team_member_email }}</a>
+                </div>
+              </div>
+              <ng-template #noTm>
+                <span class="text-muted fs-12 nowrap-text">—</span>
+              </ng-template>
+            </td>
+
+            <!-- SOC / Associate -->
+            <td class="col-soc">
+              <div *ngIf="order.associate_name; else noAssoc" class="cell-stack">
+                <div class="person-name-single text-indigo-dark nowrap-text" [title]="order.associate_name">
+                  <i class="fas fa-user-shield me-1 text-indigo-dark fs-11"></i>{{ order.associate_name }}
+                </div>
+                <div class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-id-card me-1 text-slate fs-10"></i>ID: {{ order.associate_member_id || ('ASC-' + order.effective_associate_user_id) }}
+                </div>
+                <div *ngIf="order.associate_mobile" class="person-detail-single text-muted nowrap-text">
+                  <i class="fas fa-phone-alt me-1 text-slate fs-10"></i><a [href]="'tel:' + order.associate_mobile" class="contact-link">{{ order.associate_mobile }}</a>
+                </div>
+                <div *ngIf="order.associate_email" class="person-detail-single text-muted nowrap-text" [title]="order.associate_email">
+                  <i class="fas fa-envelope me-1 text-slate fs-10"></i><a [href]="'mailto:' + order.associate_email" class="contact-link">{{ order.associate_email }}</a>
+                </div>
+              </div>
+              <ng-template #noAssoc>
+                <span class="text-muted fs-12 nowrap-text">—</span>
+              </ng-template>
+            </td>
+
+            <!-- Referral ID -->
+            <td class="col-referral">
+              <div class="cell-stack">
+                <span class="referral-chip nowrap-text">
+                  <i class="fas fa-link me-1 text-gold"></i>
+                  {{ order.referral_id || 'MMR00001 (Direct)' }}
+                </span>
+                <div *ngIf="order.sponsor_name" class="person-detail-single text-muted fs-11 mt-1 nowrap-text" [title]="order.sponsor_name">
+                  <i class="fas fa-user-check me-1 text-slate fs-10"></i>{{ order.sponsor_name }}
+                </div>
+              </div>
+            </td>
+
+            <!-- Plot Price -->
+            <td class="col-price text-end">
+              <div class="cell-stack text-end">
+                <div class="fw-700 text-dark nowrap-text">₹{{ (order.total_plot_price || 0) | number:'1.0-0' }}</div>
+                <div class="text-muted fs-11 nowrap-text">{{ order.payment_type || 'FullPayment' }}</div>
+              </div>
+            </td>
+
+            <!-- Amount Received -->
+            <td class="col-received text-end">
+              <div class="cell-stack text-end">
+                <div class="fw-700 text-emerald nowrap-text">₹{{ (order.amount_received || 0) | number:'1.0-0' }}</div>
+                <div *ngIf="order.remaining_balance > 0" class="text-muted fs-11 nowrap-text">
+                  Bal: ₹{{ order.remaining_balance | number:'1.0-0' }}
+                </div>
+              </div>
+            </td>
+
+            <!-- Payment Status -->
+            <td class="col-paystatus text-center">
+              <span class="status-badge nowrap-text" [ngClass]="{
+                'badge-paid': order.payment_status === 'Paid',
+                'badge-advance': order.payment_status === 'Partially Paid' || order.payment_status === 'Advance Received',
+                'badge-unpaid': order.payment_status === 'Unpaid' || !order.payment_status
+              }">
+                {{ order.payment_status || 'Pending' }}
+              </span>
+            </td>
+
+            <!-- Settlement Status -->
+            <td class="col-settlestatus text-center">
+              <div class="cell-stack align-items-center">
+                <span class="settle-pill nowrap-text" [ngClass]="{
+                  'pill-pending': order.settlement_status === 'Pending' || !order.settlement_status,
+                  'pill-released': order.settlement_status === 'Released',
+                  'pill-cancelled': order.settlement_status === 'Cancelled'
+                }">
+                  <i class="fas me-1" [ngClass]="{
+                    'fa-clock': order.settlement_status === 'Pending' || !order.settlement_status,
+                    'fa-check-circle': order.settlement_status === 'Released',
+                    'fa-ban': order.settlement_status === 'Cancelled'
+                  }"></i>
+                  {{ order.settlement_status || 'Pending' }}
+                </span>
+                <div *ngIf="order.settlement_reference" class="fs-10 text-muted mt-1 font-monospace nowrap-text">
+                  {{ order.settlement_reference }}
+                </div>
+              </div>
+            </td>
+
+            <!-- Actions (Fixed / Sticky on Right) -->
+            <td class="col-actions text-center sticky-action-cell">
+              <div class="btn-group-actions">
+                <!-- Release Payment Button -->
+                <button
+                  type="button"
+                  class="btn btn-release btn-sm nowrap-text"
+                  [disabled]="order.settlement_status === 'Released' || order.amount_received <= 0"
+                  (click)="openReleaseModal(order)"
+                  [title]="order.settlement_status === 'Released' ? 'Already Released' : 'Calculate & Release Payment Settlement'"
+                >
+                  <i class="fas fa-hand-holding-dollar me-1"></i>
+                  {{ order.settlement_status === 'Released' ? 'Released' : 'Release' }}
+                </button>
+
+                <!-- View Breakdown / Audit -->
+                <button
+                  type="button"
+                  class="btn btn-outline-info btn-sm btn-icon"
+                  (click)="openReleaseModal(order)"
+                  title="View Recipient Distribution Breakdown"
+                ><i class="fas fa-eye"></i></button>
+
+                <!-- Cancel Settlement Button -->
+                <button
+                  *ngIf="order.settlement_status === 'Pending'"
+                  type="button"
+                  class="btn btn-outline-danger btn-sm btn-icon"
+                  (click)="openCancelModal(order)"
+                  title="Cancel Settlement Request"
+                ><i class="fas fa-times"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="card-footer bg-white border-top py-2">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="text-muted fs-12">
+          Showing {{ orders.length }} of {{ pagination.total || orders.length }} settlement records
+        </div>
+        <app-admin-pagination
+          [currentPage]="pagination.page"
+          [totalItems]="pagination.total"
+          [pageSize]="pagination.limit"
+          (pageChange)="loadOrders($event)"
+        ></app-admin-pagination>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: RELEASE PAYMENT SETTLEMENT CONFIRMATION & BREAKDOWN                -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showReleaseModal" class="modal-backdrop-custom">
+    <div class="modal-dialog-custom">
+      <div class="modal-content-custom">
+        <!-- Header -->
+        <div class="modal-header-custom d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <div class="modal-icon-badge">
+              <i class="fas fa-hand-holding-dollar"></i>
+            </div>
+            <div>
+              <h5 class="modal-title mb-0">
+                {{ settlementPreview?.isHistorical ? 'Settlement Breakdown Record' : 'Release Payment Settlement' }}
+              </h5>
+              <p class="modal-subtitle mb-0 text-muted fs-12">
+                Order {{ selectedOrder?.booking_serial || ('#' + selectedOrder?.booking_id) }} • Verified Commission Distribution
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-custom" (click)="closeReleaseModal()" aria-label="Close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body-custom">
+          <!-- Loading State -->
+          <div *ngIf="previewLoading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2 fs-13">Calculating recipient commission breakdown using active formula...</p>
+          </div>
+
+          <div *ngIf="!previewLoading && settlementPreview">
+            <!-- Order Snapshot Cards -->
+            <div class="preview-summary-grid mb-3">
+              <div class="preview-card">
+                <span class="preview-label">Buyer / Customer</span>
+                <span class="preview-value">{{ selectedOrder?.buyer_name || 'Customer' }}</span>
+                <span class="preview-sub">ID: {{ selectedOrder?.buyer_member_id || selectedOrder?.buyer_user_id }}</span>
+              </div>
+              <div class="preview-card">
+                <span class="preview-label">Site &amp; Plot</span>
+                <span class="preview-value">{{ selectedOrder?.site_name }}</span>
+                <span class="preview-sub">Plot #{{ selectedOrder?.plot_number }} ({{ selectedOrder?.plot_area }} Gaj)</span>
+              </div>
+              <div class="preview-card">
+                <span class="preview-label">Total Plot Price</span>
+                <span class="preview-value fw-700">₹{{ (settlementPreview.totalPlotPrice || 0) | number:'1.0-0' }}</span>
+                <span class="preview-sub">Agreed value</span>
+              </div>
+              <div class="preview-card bg-emerald-light">
+                <span class="preview-label text-emerald-dark">Amount Received by Company</span>
+                <span class="preview-value fw-700 text-emerald-dark">₹{{ (settlementPreview.amountReceived || 0) | number:'1.0-0' }}</span>
+                <span class="preview-sub text-emerald-dark">Settlement Calculation Base</span>
+              </div>
+            </div>
+
+            <!-- Ineligible Notice Banner -->
+            <div *ngIf="!settlementPreview.eligibleForRelease && !settlementPreview.isHistorical" class="alert alert-warning d-flex align-items-center gap-2 mb-3">
+              <i class="fas fa-exclamation-triangle fs-16"></i>
+              <div>
+                <strong>Settlement Cannot Be Released:</strong>
+                {{ settlementPreview.ineligibleReason || 'This order is not eligible for release.' }}
+              </div>
+            </div>
+
+            <!-- Historical Released Banner -->
+            <div *ngIf="settlementPreview.isHistorical" class="alert alert-success d-flex align-items-center gap-2 mb-3">
+              <i class="fas fa-check-circle fs-16"></i>
+              <div>
+                <strong>Settlement Already Released:</strong>
+                Settlement Ref: <code>{{ settlementPreview.settlementReference }}</code> on {{ settlementPreview.releasedAt | date:'medium' }}.
+              </div>
+            </div>
+
+            <!-- Commission Pool Info -->
+            <div class="commission-math-banner mb-3">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div>
+                  <span class="badge bg-primary text-white me-2">Verified Formula</span>
+                  <span class="text-dark fw-600">Total Pool: {{ settlementPreview.poolRate }}%</span>
+                  <span class="text-muted ms-2 fs-12">(50% Seller Direct + 50% Team/Associate Pool)</span>
+                </div>
+                <div class="text-end">
+                  <span class="text-muted fs-12 me-1">Total Pool Amount:</span>
+                  <span class="fw-700 text-dark">₹{{ (settlementPreview.poolAmount || 0) | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recipient Breakdown Table -->
+            <div class="table-responsive mb-3 border rounded">
+              <table class="table table-sm table-bordered align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Recipient</th>
+                    <th>Role / Attribution</th>
+                    <th>User ID / Member ID</th>
+                    <th class="text-center">Share %</th>
+                    <th class="text-end">Payable Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of settlementPreview.recipients">
+                    <td>
+                      <div class="fw-600">{{ r.name }}</div>
+                      <div class="text-muted fs-11">{{ r.user_type }}</div>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'bg-info text-dark': r.role?.includes('Seller'),
+                        'bg-indigo text-white': r.role === 'AssociateLeader',
+                        'bg-secondary text-white': r.role === 'TeamMember'
+                      }">
+                        {{ r.role_label || r.role }}
+                      </span>
+                    </td>
+                    <td><code>{{ r.member_id || r.user_id }}</code></td>
+                    <td class="text-center fw-600">{{ r.percentage }}%</td>
+                    <td class="text-end fw-700 text-emerald">₹{{ (r.amount || 0) | number:'1.2-2' }}</td>
+                  </tr>
+
+                  <!-- If no recipients (e.g. Company Direct or Self Purchase) -->
+                  <tr *ngIf="settlementPreview.recipients.length === 0">
+                    <td colspan="5" class="text-center py-3 text-muted">
+                      <em>{{ settlementPreview.notes || 'No external commission payable. 100% of proceeds retained by MMR Constructions & Developers Pvt. Ltd.' }}</em>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot class="table-light fw-600">
+                  <tr>
+                    <td colspan="4" class="text-end">Total Distributed to Recipients:</td>
+                    <td class="text-end text-success fw-700">₹{{ (settlementPreview.totalDistributionAmount || 0) | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" class="text-end text-muted">MMR Company Retained Share (from received amount):</td>
+                    <td class="text-end text-muted">₹{{ (settlementPreview.companyShareFromReceived || 0) | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr class="table-active">
+                    <td colspan="4" class="text-end">Total Received (Verification Check):</td>
+                    <td class="text-end fw-800 text-dark">₹{{ (settlementPreview.amountReceived || 0) | number:'1.2-2' }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- Optional Remarks -->
+            <div *ngIf="!settlementPreview.isHistorical && settlementPreview.eligibleForRelease" class="mb-3">
+              <label class="form-label fs-12 fw-600 text-dark">Admin Settlement Remarks / Voucher Reference</label>
+              <textarea
+                class="form-control form-control-sm"
+                rows="2"
+                placeholder="Optional internal remarks or voucher reference..."
+                [(ngModel)]="releaseRemarks"
+              ></textarea>
+            </div>
+
+            <!-- Audit Notice -->
+            <div class="safety-notice-box">
+              <i class="fas fa-shield-alt text-success me-2"></i>
+              <span class="fs-11 text-muted">
+                <strong>Safety Verification:</strong>
+                Releasing this settlement executes an authorized settlement instruction in the internal ledger and credits recipient wallets. It prevents duplicate payouts via canonical event keys and maintains a tamper-proof audit trail.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer-custom d-flex align-items-center justify-content-between">
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeReleaseModal()">
+            Close
+          </button>
+
+          <button
+            *ngIf="!settlementPreview?.isHistorical && settlementPreview?.eligibleForRelease"
+            type="button"
+            class="btn btn-success btn-sm px-4"
+            [disabled]="isReleasing || previewLoading"
+            (click)="confirmReleasePayment()"
+          >
+            <i class="fas fa-check-circle me-1" *ngIf="!isReleasing"></i>
+            <span *ngIf="isReleasing" class="spinner-border spinner-border-sm me-1" role="status"></span>
+            {{ isReleasing ? 'Executing Release...' : 'Confirm & Release Settlement' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CANCEL SETTLEMENT REQUEST                                          -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showCancelModal" class="modal-backdrop-custom">
+    <div class="modal-dialog-custom modal-sm-custom">
+      <div class="modal-content-custom">
+        <div class="modal-header-custom bg-danger-light d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <div class="modal-icon-badge bg-danger text-white">
+              <i class="fas fa-ban"></i>
+            </div>
+            <div>
+              <h5 class="modal-title mb-0 text-danger">Cancel Settlement</h5>
+              <p class="modal-subtitle mb-0 text-muted fs-12">
+                Order {{ orderToCancel?.booking_serial || ('#' + orderToCancel?.booking_id) }}
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-custom" (click)="closeCancelModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body-custom">
+          <p class="fs-13 text-dark">
+            Are you sure you want to cancel the settlement request for this order? Any pending commission calculations will be voided.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label fs-12 fw-600 text-dark">Cancellation Reason <span class="text-danger">*</span></label>
+            <textarea
+              class="form-control form-control-sm"
+              rows="3"
+              placeholder="Provide reason for cancelling settlement (mandatory)..."
+              [(ngModel)]="cancelReason"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer-custom d-flex align-items-center justify-content-between">
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeCancelModal()">
+            Go Back
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger btn-sm"
+            [disabled]="isCancelling || !cancelReason.trim()"
+            (click)="confirmCancelSettlement()"
+          >
+            <span *ngIf="isCancelling" class="spinner-border spinner-border-sm me-1"></span>
+            {{ isCancelling ? 'Cancelling...' : 'Confirm Cancellation' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

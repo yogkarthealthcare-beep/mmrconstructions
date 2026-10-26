@@ -5,11 +5,12 @@ import { AuthService } from '../../services/auth.service';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BankDetailsComponent } from '../../shared/components/bank-details/bank-details.component';
+import { UpiQrPaymentComponent, UpiPaymentDetails } from '../../shared/upi-qr-payment/upi-qr-payment.component';
 
 @Component({
   selector: 'app-my-plots',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, BankDetailsComponent],
+  imports: [CommonModule, RouterLink, FormsModule, BankDetailsComponent, UpiQrPaymentComponent],
   templateUrl: './my-plots.component.html',
   styleUrls: ['./my-plots.component.css']
 })
@@ -42,12 +43,17 @@ export class MyPlotsComponent implements OnInit {
     message: ''
   };
 
-  // Payment Proof Modal
+  // Payment Proof Modal (Tasks 4 & 5)
   paymentModalBooking: any = null;
   paymentProofSubmitting = false;
+  activePaymentTab: 'UPI' | 'BankTransfer' = 'UPI';
+  unpaidInstallments: any[] = [];
+  selectedInstallmentEmiId: number | null = null;
   paymentProofData: any = {
     payment_mode: 'UPI',
     reference_number: '',
+    payer_name: '',
+    qr_code_key: 'qr1',
     amount: '',
     proof_file: null as File | null
   };
@@ -131,6 +137,17 @@ export class MyPlotsComponent implements OnInit {
 
   processBookings(rawBookings: any[]) {
     this.bookings = rawBookings.map((b: any) => {
+      const rawStatus = String(b.booking_status || '').trim();
+      const statusLower = rawStatus.toLowerCase();
+      
+      // FIX A: Approved-type statuses restored to original formula
+      const approvedStatuses = ['confirmed', 'approved', 'booked', 'completed', 'fullypaid', 'fully paid', 'active', 'allocated'];
+      const isApproved = approvedStatuses.includes(statusLower);
+
+      // Pending-type statuses for Under Verification and pending notice
+      const pendingStatuses = ['paymentpending', 'payment pending', 'pending', 'under process', 'underprocess', 'submitted', 'inprocess', 'in process'];
+      const isPending = !isApproved && pendingStatuses.includes(statusLower);
+
       const totalPrice = Number(b.total_amount || b.base_price || b.total_price || 0);
       const advancePaid = Number(b.advance_amount || b.paid_amount || b.total_paid || 0);
       
@@ -142,9 +159,17 @@ export class MyPlotsComponent implements OnInit {
       const confirmedPaidEmis = plotEmis.filter((e: any) => e.emi_status === 'Paid');
       const emiPaidSum = confirmedPaidEmis.reduce((s: number, e: any) => s + Number(e.paid_amount || e.emi_amount || 0), 0);
       
-      const confirmedPaid = Math.max(advancePaid + emiPaidSum, Number(b.total_paid || 0), advancePaid);
-      const unpaidAmount = Math.max(0, totalPrice - confirmedPaid);
-      const progressPercent = totalPrice > 0 ? Math.min(100, Math.round((confirmedPaid / totalPrice) * 100)) : (confirmedPaid > 0 ? 100 : 0);
+      // FIX A: For APPROVED bookings restore the ORIGINAL formula exactly
+      const confirmedPaid = isApproved 
+        ? Math.max(advancePaid + emiPaidSum, Number(b.total_paid || 0), advancePaid)
+        : emiPaidSum;
+
+      // New Under Verification applies ONLY to genuinely pending bookings
+      const underVerificationAmount = isPending ? advancePaid : 0;
+      const unpaidAmount = isApproved ? Math.max(0, totalPrice - confirmedPaid) : (isPending ? 0 : Math.max(0, totalPrice - confirmedPaid));
+      const progressPercent = (totalPrice > 0 && confirmedPaid > 0) 
+        ? Math.min(100, Math.round((confirmedPaid / totalPrice) * 100)) 
+        : (confirmedPaid > 0 ? 100 : 0);
       
       const pendingEmis = plotEmis.filter((e: any) => e.emi_status === 'Pending' || e.emi_status === 'Overdue' || e.emi_status === 'ProofSubmitted');
       const nextEmi = pendingEmis.length > 0 ? pendingEmis[0] : null;
@@ -153,6 +178,9 @@ export class MyPlotsComponent implements OnInit {
       const isBuybackPending = this.buybackApplications.some((a: any) => a.booking_id === b.booking_id && a.buyback_status === 'Pending');
 
       let computedStatus = b.booking_status || 'Allocated';
+      if (computedStatus === 'PaymentPending') {
+        computedStatus = 'Payment Pending';
+      }
       if (isBuybackApproved || b.booking_status === 'Sold') {
         computedStatus = 'Sold';
       } else if (isBuybackPending) {
@@ -162,7 +190,9 @@ export class MyPlotsComponent implements OnInit {
       }
 
       let financialStatus = 'Partial Paid';
-      if (unpaidAmount === 0 && totalPrice > 0) {
+      if (isPending) {
+        financialStatus = 'Under Verification';
+      } else if (unpaidAmount === 0 && totalPrice > 0) {
         financialStatus = 'Fully Paid';
       } else if (confirmedPaid === 0) {
         financialStatus = 'Unpaid';
@@ -170,8 +200,18 @@ export class MyPlotsComponent implements OnInit {
         financialStatus = 'Overdue';
       }
 
+      // TASK 2: Area display logic: if area is missing or 0 show null ('—'), otherwise show value
+      const rawArea = b.plot_area != null ? Number(b.plot_area) : null;
+      const displayArea = (rawArea !== null && rawArea > 0) ? rawArea : null;
+      const displayAreaUnit = b.area_unit || 'Gaj';
+
       return {
         ...b,
+        plot_area: displayArea,
+        area_unit: displayAreaUnit,
+        isApproved,
+        isPending,
+        underVerificationAmount,
         plot_number: b.plot_number || 'Plot',
         site_name: b.site_name || 'MMR Green Valley',
         location: b.location || b.city || 'Lucknow / Unnao Highway, UP',
@@ -230,6 +270,10 @@ export class MyPlotsComponent implements OnInit {
 
   get totalUnpaidSum(): number {
     return this.bookings.reduce((sum, b) => sum + Number(b.unpaidAmount || 0), 0);
+  }
+
+  get totalPendingSum(): number {
+    return this.bookings.reduce((sum, b) => sum + Number(b.underVerificationAmount || 0), 0);
   }
 
   get filteredBookings(): any[] {
@@ -357,16 +401,72 @@ export class MyPlotsComponent implements OnInit {
     });
   }
 
-  // Payment Proof Modal Controls
+  // Payment Proof Modal Controls (Tasks 4 & 5)
   openPaymentModal(booking: any) {
     this.paymentModalBooking = booking;
-    const defaultAmount = booking.nextEmi ? booking.nextEmi.emi_amount : (booking.unpaidAmount > 0 ? booking.unpaidAmount : '');
-    this.paymentProofData = {
-      payment_mode: 'UPI',
-      reference_number: '',
-      amount: defaultAmount,
-      proof_file: null
-    };
+    this.activePaymentTab = 'UPI';
+
+    const isEmi = booking.payment_type === 'EMI' || (booking.plotEmis && booking.plotEmis.length > 0);
+    if (isEmi && booking.plotEmis && booking.plotEmis.length > 0) {
+      this.unpaidInstallments = booking.plotEmis.filter((e: any) => e.emi_status !== 'Paid');
+      const selectable = this.unpaidInstallments.find((e: any) => e.emi_status !== 'ProofSubmitted');
+      const defaultInstallment = selectable || this.unpaidInstallments[0] || null;
+      this.selectedInstallmentEmiId = defaultInstallment ? Number(defaultInstallment.emi_id) : null;
+      const defaultAmount = defaultInstallment ? defaultInstallment.emi_amount : (booking.nextEmi ? booking.nextEmi.emi_amount : (booking.unpaidAmount > 0 ? booking.unpaidAmount : ''));
+
+      this.paymentProofData = {
+        payment_mode: 'UPI',
+        reference_number: '',
+        payer_name: '',
+        qr_code_key: 'qr1',
+        amount: defaultAmount,
+        proof_file: null
+      };
+    } else {
+      this.unpaidInstallments = [];
+      this.selectedInstallmentEmiId = null;
+      const defaultAmount = booking.nextEmi ? booking.nextEmi.emi_amount : (booking.unpaidAmount > 0 ? booking.unpaidAmount : '');
+      this.paymentProofData = {
+        payment_mode: 'UPI',
+        reference_number: '',
+        payer_name: '',
+        qr_code_key: 'qr1',
+        amount: defaultAmount,
+        proof_file: null
+      };
+    }
+  }
+
+  selectPaymentTab(tab: 'UPI' | 'BankTransfer') {
+    this.activePaymentTab = tab;
+    this.paymentProofData.payment_mode = tab === 'UPI' ? 'UPI' : 'BankTransfer';
+  }
+
+  onPaymentModeChange(mode: string) {
+    this.paymentProofData.payment_mode = mode;
+    if (mode === 'UPI') {
+      this.activePaymentTab = 'UPI';
+    } else {
+      this.activePaymentTab = 'BankTransfer';
+    }
+  }
+
+  onInstallmentChange(emiId: any) {
+    const id = Number(emiId);
+    this.selectedInstallmentEmiId = id;
+    const selected = this.unpaidInstallments.find((e: any) => Number(e.emi_id) === id);
+    if (selected && selected.emi_amount) {
+      this.paymentProofData.amount = selected.emi_amount;
+    }
+  }
+
+  onUpiProofDetailsChange(details: UpiPaymentDetails) {
+    this.paymentProofData.reference_number = details.utr_number;
+    this.paymentProofData.payer_name = details.payer_name;
+    this.paymentProofData.qr_code_key = details.qr_code_key;
+    if (details.proof_file) {
+      this.paymentProofData.proof_file = details.proof_file;
+    }
   }
 
   onFileSelected(event: any) {
@@ -392,9 +492,12 @@ export class MyPlotsComponent implements OnInit {
     form.append('payment_proof', this.paymentProofData.proof_file);
     form.append('payment_mode', this.paymentProofData.payment_mode || 'UPI');
     form.append('transaction_reference', this.paymentProofData.reference_number || '');
+    form.append('utr_number', this.paymentProofData.reference_number || '');
+    form.append('payer_name', this.paymentProofData.payer_name || '');
+    form.append('qr_code_key', this.paymentProofData.qr_code_key || 'qr1');
     form.append('amount', this.paymentProofData.amount.toString());
 
-    const targetEmiId = this.paymentModalBooking.nextEmi ? this.paymentModalBooking.nextEmi.emi_id : this.paymentModalBooking.booking_id;
+    const targetEmiId = this.selectedInstallmentEmiId || (this.paymentModalBooking.nextEmi ? this.paymentModalBooking.nextEmi.emi_id : this.paymentModalBooking.booking_id);
 
     this.api.uploadEmiProof(targetEmiId, form).subscribe({
       next: (res: any) => {

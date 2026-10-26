@@ -200,7 +200,7 @@ export class ApiService {
   getPublicSitesSummary()       { return this.get('/api/public/sites/availability-summary'); }
   getPublicPlotMap(siteId: number) { return this.get(`/api/public/sites/${siteId}/plot-map`); }
   getSite(id: number)           { return this.get(`/api/sites/${id}`); }
-  getSitePlots(id: number, q: any = {}) { return this.get(`/api/sites/${id}/plots`, q); }
+  getSitePlots(id: number | string, q: any = {}) { return this.get(`/api/sites/${id}/plots`, q); }
   getPlot(id: number)           { return this.get(`/api/plots/${id}`); }
   getSiteDocuments(id: number)   { return this.get(`/api/sites/${id}/documents`); }
   getSiteMap(id: number)         { return this.get(`/api/sites/${id}/map`); }
@@ -676,6 +676,7 @@ export class ApiService {
   adminDeleteReceipt(id: string | number, reason = '') { return this.delete(`/api/admin/receipts/${id}`, true); }
   adminGetReceiptPdfBlob(id: string | number) { return this.getBlob(`/api/admin/receipts/${id}/pdf`, true); }
   adminGetReceiptPrintData(id: string | number) { return this.get(`/api/admin/receipts/${id}/print`, {}, true); }
+
 
   // ── UNIFIED PAYMENT MANAGEMENT SYSTEM ─────────────────────
   // Customer

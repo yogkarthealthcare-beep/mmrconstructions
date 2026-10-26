@@ -6,6 +6,8 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { getPlotStyle, shouldShowSoldText, getPlotStatusLabel } from '../../shared/plot-status.config';
 import { getUnitTypeConfig } from '../../shared/unit-types.config';
+import { UpiQrPaymentComponent, UpiPaymentDetails } from '../../shared/upi-qr-payment/upi-qr-payment.component';
+import { AdminPaymentGatewayService } from '../../services/admin-payment-gateway.service';
 import Swal from 'sweetalert2';
 
 export interface PublicPlot {
@@ -38,7 +40,7 @@ export interface SiteInfo {
 @Component({
   selector: 'app-public-plot-map',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, UpiQrPaymentComponent],
   templateUrl: './public-plot-map.component.html',
   styleUrls: ['./public-plot-map.component.css']
 })
@@ -85,6 +87,56 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     rate_per_sqft: 0
   };
 
+  upiDetails: UpiPaymentDetails | null = null;
+
+  // ── 2-Tab Unit Calculation (Gaj vs Sq.Ft) ──
+  calculationUnit: 'GAJ' | 'SQFT' = 'GAJ';
+  inputAreaGaj: number = 0;
+  inputRateGaj: number = 8000;
+  inputAreaSqft: number = 0;
+  inputRateSqft: number = 888.89;
+
+  // ── Dynamic Payment Tabs & Company Bank Details ──
+  companyBankSettings: any = null;
+  selectedPaymentTab: 'UPI' | 'BANK_TRANSFER' | 'GATEWAY' = 'UPI';
+  showUpiQrScanner = false;
+  copiedBankAc = false;
+  copiedIfsc = false;
+  copiedAccountName = false;
+  copiedBankName = false;
+  copiedBranch = false;
+
+  onUpiPaymentChange(d: UpiPaymentDetails): void {
+    this.upiDetails = d;
+  }
+
+  // ── Indian Currency & Formatting ────────────────────────────────────
+  formatInr(amount: number | null | undefined): string {
+    if (amount == null || isNaN(amount) || amount <= 0) return 'Price on request';
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount);
+  }
+
+  formatDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return 'Recently';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  }
+
+  trackByPlotId(_idx: number, plot: PublicPlot): number {
+    return plot.plot_id;
+  }
+
   // Map Dimensions & Transform
   imageWidth = 2000;
   imageHeight = 1637;
@@ -110,6 +162,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     private router: Router,
     private api: ApiService,
     public auth: AuthService,
+    private paymentService: AdminPaymentGatewayService,
     private cdr: ChangeDetectorRef,
     private location: Location
   ) {}
@@ -133,6 +186,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
 
     this.loadPlotMap(true);
     this.loadInstallmentPlans();
+    this.loadCompanyBankSettings();
     this.setupPolling();
   }
 
@@ -735,7 +789,8 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     this.api.getInstallmentPlans().subscribe({
       next: (res: any) => {
         if (res?.success && Array.isArray(res.data)) {
-          this.activeInstallmentPlans = res.data;
+          // Exclude 60 month plan as requested by user
+          this.activeInstallmentPlans = res.data.filter((p: any) => Number(p.tenure_months) !== 60);
         }
       },
       error: () => {}
@@ -781,12 +836,165 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     this.onPaymentTypeChange();
   }
 
+  setCalculationUnit(unit: 'GAJ' | 'SQFT'): void {
+    this.calculationUnit = unit;
+    if (unit === 'GAJ') {
+      if (this.inputAreaSqft && !this.inputAreaGaj) {
+        this.inputAreaGaj = Math.round((this.inputAreaSqft / 9) * 100) / 100;
+      }
+      this.recalculateFromGaj();
+    } else {
+      if (this.inputAreaGaj && !this.inputAreaSqft) {
+        this.inputAreaSqft = Math.round((this.inputAreaGaj * 9) * 100) / 100;
+      }
+      this.recalculateFromSqft();
+    }
+  }
+
+  onGajInputChange(): void {
+    this.recalculateFromGaj();
+  }
+
+  onSqftInputChange(): void {
+    this.recalculateFromSqft();
+  }
+
+  private recalculateFromGaj(): void {
+    const gaj = Number(this.inputAreaGaj || 0);
+    const rate = Number(this.inputRateGaj || 0);
+    const total = Math.round(gaj * rate);
+    this.bookingForm.proposed_price = total;
+    this.bookingForm.rate_per_gaj = rate;
+    this.inputAreaSqft = Math.round((gaj * 9) * 100) / 100;
+    this.inputRateSqft = Math.round((rate / 9) * 100) / 100;
+    this.bookingForm.rate_per_sqft = this.inputRateSqft;
+    this.onPaymentTypeChange();
+  }
+
+  private recalculateFromSqft(): void {
+    const sqft = Number(this.inputAreaSqft || 0);
+    const rate = Number(this.inputRateSqft || 0);
+    const total = Math.round(sqft * rate);
+    this.bookingForm.proposed_price = total;
+    this.bookingForm.rate_per_sqft = rate;
+    this.inputAreaGaj = Math.round((sqft / 9) * 100) / 100;
+    this.inputRateGaj = Math.round((rate * 9) * 100) / 100;
+    this.bookingForm.rate_per_gaj = this.inputRateGaj;
+    this.onPaymentTypeChange();
+  }
+
+  toggleUpiQrScanner(): void {
+    this.showUpiQrScanner = !this.showUpiQrScanner;
+  }
+
+  copyAccountName(): void {
+    const name = this.companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED';
+    this.copyTextToClipboard(name, 'name');
+  }
+
+  copyBankName(): void {
+    const bank = this.companyBankSettings?.bank_name || 'HDFC Bank Ltd.';
+    this.copyTextToClipboard(bank, 'bank');
+  }
+
+  copyBankAc(): void {
+    const ac = this.companyBankSettings?.account_number || '50200088921832';
+    this.copyTextToClipboard(ac, 'ac');
+  }
+
+  copyIfsc(): void {
+    const ifsc = this.companyBankSettings?.ifsc_code || 'HDFC0001234';
+    this.copyTextToClipboard(ifsc, 'ifsc');
+  }
+
+  copyBranch(): void {
+    const branch = this.companyBankSettings?.branch_name || 'Civil Lines, Kanpur';
+    this.copyTextToClipboard(branch, 'branch');
+  }
+
+  private copyTextToClipboard(text: string, type: 'name' | 'bank' | 'ac' | 'ifsc' | 'branch'): void {
+    if (!text) return;
+    const markSuccess = () => {
+      if (type === 'name') {
+        this.copiedAccountName = true;
+        setTimeout(() => (this.copiedAccountName = false), 2500);
+      } else if (type === 'bank') {
+        this.copiedBankName = true;
+        setTimeout(() => (this.copiedBankName = false), 2500);
+      } else if (type === 'ac') {
+        this.copiedBankAc = true;
+        setTimeout(() => (this.copiedBankAc = false), 2500);
+      } else if (type === 'ifsc') {
+        this.copiedIfsc = true;
+        setTimeout(() => (this.copiedIfsc = false), 2500);
+      } else if (type === 'branch') {
+        this.copiedBranch = true;
+        setTimeout(() => (this.copiedBranch = false), 2500);
+      }
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(markSuccess).catch(() => {
+        this.fallbackCopy(text) && markSuccess();
+      });
+    } else {
+      this.fallbackCopy(text) && markSuccess();
+    }
+  }
+
+  private fallbackCopy(text: string): boolean {
+    try {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      const res = document.execCommand('copy');
+      document.body.removeChild(el);
+      return res;
+    } catch {
+      return false;
+    }
+  }
+
+  loadCompanyBankSettings(): void {
+    this.paymentService.getCompanyBankDetailsPublic().subscribe({
+      next: (res: any) => {
+        const data = res?.data || res;
+        if (data) {
+          this.companyBankSettings = data;
+          if (data.enable_primary_upi || data.enable_secondary_upi) {
+            this.selectedPaymentTab = 'UPI';
+          } else if (data.enable_bank_transfer) {
+            this.selectedPaymentTab = 'BANK_TRANSFER';
+          } else if (data.enable_payment_gateway) {
+            this.selectedPaymentTab = 'GATEWAY';
+          }
+        }
+      },
+      error: (err) => console.warn('Failed to load company bank details', err)
+    });
+  }
+
   onProposedPriceChange(): void {
     const price = Number(this.bookingForm.proposed_price || 0);
-    const areaGaj = Number(this.selectedPlot?.area_gaj || 0);
-    if (price > 0 && areaGaj > 0) {
-      this.bookingForm.rate_per_gaj = Math.round((price / areaGaj) * 100) / 100;
-      this.bookingForm.rate_per_sqft = Math.round((price / (areaGaj * 9)) * 100) / 100;
+    if (this.calculationUnit === 'GAJ') {
+      const gaj = Number(this.inputAreaGaj || 0);
+      if (price > 0 && gaj > 0) {
+        this.inputRateGaj = Math.round((price / gaj) * 100) / 100;
+        this.bookingForm.rate_per_gaj = this.inputRateGaj;
+        this.inputRateSqft = Math.round((this.inputRateGaj / 9) * 100) / 100;
+        this.bookingForm.rate_per_sqft = this.inputRateSqft;
+      }
+    } else {
+      const sqft = Number(this.inputAreaSqft || 0);
+      if (price > 0 && sqft > 0) {
+        this.inputRateSqft = Math.round((price / sqft) * 100) / 100;
+        this.bookingForm.rate_per_sqft = this.inputRateSqft;
+        this.inputRateGaj = Math.round((this.inputRateSqft * 9) * 100) / 100;
+        this.bookingForm.rate_per_gaj = this.inputRateGaj;
+      }
     }
     this.onPaymentTypeChange();
   }
@@ -794,7 +1002,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
   openBookingModal(plot: PublicPlot): void {
     const user = this.auth.getUser() || {};
     const basePrice = Number(plot.price || 0);
-    const areaGaj = Number(plot.area_gaj || 0);
+    const areaGaj = Number(plot.area_gaj || (plot.area_sqft ? Math.round(plot.area_sqft / 9) : 100)) || 100;
 
     const defaultPlan = this.activeInstallmentPlans.length > 0 ? this.activeInstallmentPlans[0] : null;
     this.selectedPlan = defaultPlan;
@@ -807,6 +1015,15 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     const initialRateGaj = basePrice > 0 && areaGaj > 0 ? Math.round((basePrice / areaGaj) * 100) / 100 : 8000;
     const initialRateSqft = Math.round((initialRateGaj / 9) * 100) / 100;
 
+    this.inputAreaGaj = areaGaj;
+    this.inputRateGaj = initialRateGaj;
+    this.inputAreaSqft = Math.round(areaGaj * 9 * 100) / 100;
+    this.inputRateSqft = initialRateSqft;
+    const initialTotal = Math.round(this.inputAreaGaj * this.inputRateGaj);
+
+    this.calculationUnit = 'GAJ';
+    this.showUpiQrScanner = true;
+
     this.bookingForm = {
       customer_name: user.full_name || '',
       mobile_no: user.mobile_no || '',
@@ -815,7 +1032,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
       installment_plan_id: defaultPlan ? defaultPlan.id : null,
       advance_amount: minAdvance,
       notes: '',
-      proposed_price: basePrice > 0 ? basePrice : (areaGaj > 0 ? Math.round(areaGaj * initialRateGaj) : 200000),
+      proposed_price: Math.max(200000, initialTotal),
       rate_per_gaj: initialRateGaj,
       rate_per_sqft: initialRateSqft
     };
@@ -908,128 +1125,87 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
 
     this.bookingSubmitting = true;
 
-    const payload = {
-      plot_id: this.selectedPlot.plot_id,
-      payment_type: this.bookingForm.payment_type === 'DownPayment' ? 'PartWise' : this.bookingForm.payment_type,
-      installment_plan_id: this.bookingForm.payment_type === 'EMI' ? (this.bookingForm.installment_plan_id || undefined) : undefined,
-      advance_amount: Number(this.bookingForm.advance_amount),
-      custom_plot_price: this.effectivePlotPrice,
-      notes: this.bookingForm.notes || undefined
-    };
+    const executeBooking = (proofUrl?: string) => {
+      const payload: any = {
+        plot_id: this.selectedPlot!.plot_id,
+        site_id: this.siteId,
+        payment_type: this.bookingForm.payment_type === 'DownPayment' ? 'PartWise' : this.bookingForm.payment_type,
+        installment_plan_id: this.bookingForm.payment_type === 'EMI' ? (this.bookingForm.installment_plan_id || undefined) : undefined,
+        advance_amount: Number(this.bookingForm.advance_amount),
+        custom_plot_price: this.effectivePlotPrice,
+        notes: this.bookingForm.notes || undefined,
+        plot_area: this.calculationUnit === 'SQFT' ? (this.inputAreaSqft || undefined) : (this.inputAreaGaj || undefined),
+        area_unit: this.calculationUnit === 'SQFT' ? 'Sq.Ft' : 'Gaj',
+        payment_method: this.selectedPaymentTab === 'BANK_TRANSFER' 
+          ? 'Bank Transfer / NEFT / RTGS' 
+          : (this.selectedPaymentTab === 'GATEWAY' ? 'Online Payment Gateway' : 'UPI / QR Code'),
+        payer_name: this.upiDetails?.payer_name || undefined,
+        utr_number: this.upiDetails?.utr_number || undefined,
+        qr_code_key: this.upiDetails?.qr_code_key || undefined,
+        payment_proof_url: proofUrl || undefined
+      };
 
-    this.api.createBooking(payload).subscribe({
-      next: (res: any) => {
-        this.bookingSubmitting = false;
-        this.showBookingModal = false;
+      this.api.createBooking(payload).subscribe({
+        next: (res: any) => {
+          this.bookingSubmitting = false;
+          this.showBookingModal = false;
 
-        const booking = res?.data || res?.booking || {};
-        const serial = booking.booking_serial || `BK-${this.selectedPlot?.plot_number}`;
-        const isPendingApproval = booking.booking_status === 'Pending Admin Price Approval';
+          const booking = res?.data || res?.booking || {};
+          const serial = booking.booking_serial || `BK-${this.selectedPlot?.plot_number}`;
+          const isPendingApproval = booking.booking_status === 'Pending Admin Price Approval';
 
-        // Immediately update local plot status to IN_PROCESS
-        if (this.selectedPlot) {
-          this.selectedPlot.public_status = 'IN_PROCESS';
-          const inMap = this.plots.find(p => p.plot_id === this.selectedPlot?.plot_id);
-          if (inMap) inMap.public_status = 'IN_PROCESS';
-        }
+          // Immediately update local plot status to IN_PROCESS (Orange)
+          if (this.selectedPlot) {
+            this.selectedPlot.public_status = 'IN_PROCESS';
+            const inMap = this.plots.find(p => p.plot_id === this.selectedPlot?.plot_id);
+            if (inMap) inMap.public_status = 'IN_PROCESS';
+          }
 
-        if (isPendingApproval) {
           Swal.fire({
-            icon: 'info',
-            title: 'बुकिंग दर्ज! रेट एडमिन अप्रूवल में है',
+            icon: 'success',
+            title: 'UPI पेमेंट व बुकिंग दर्ज!',
             html: `
               <div style="text-align: left; font-size: 14px; line-height: 1.6;">
-                <p><strong>Booking Serial:</strong> <span style="color: #0f3d2e; font-weight: 700;">${serial}</span></p>
-                <p><strong>प्रस्तावित कुल कीमत:</strong> ₹${this.effectivePlotPrice.toLocaleString('en-IN')}</p>
-                <p><strong>स्टेटस:</strong> <span class="badge bg-warning text-dark">Pending Admin Price Approval</span></p>
-                <div class="alert alert-warning mt-2 fs-12">
-                  <i class="fas fa-clock me-1"></i> आपका प्रस्तावित रेट एडमिन पैनल में अनुमोदन हेतु भेज दिया गया है। एडमिन द्वारा रेट मंज़ूर (Approve) होने के बाद आपका अंतिम EMI / पेमेंट शेड्यूल सक्रिय होगा।
+                <p><strong>Booking Ref:</strong> <span style="color: #065f46; font-weight: 700;">${serial}</span></p>
+                <p><strong>Payer Name:</strong> ${this.upiDetails?.payer_name || 'Customer'}</p>
+                <p><strong>UTR / Ref No:</strong> ${this.upiDetails?.utr_number || 'Under Verification'}</p>
+                <p><strong>Plot Status:</strong> <span class="badge bg-warning text-dark">Processing (Orange)</span></p>
+                <div class="alert alert-info mt-2 fs-12">
+                  <i class="fas fa-info-circle me-1"></i> आपका UPI पेमेंट प्रूफ MMR Accounts टीम के पास पहुँच गया है। UTR वेरिफिकेशन के बाद प्लॉट <strong>Booked (Green)</strong> में बदल जाएगा।
                 </div>
               </div>
             `,
-            showCancelButton: true,
-            confirmButtonColor: '#0f3d2e',
-            cancelButtonColor: '#d4a843',
-            confirmButtonText: '<i class="fas fa-list me-1"></i> My Bookings',
-            cancelButtonText: 'Stay on Map'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              this.router.navigate(['/customer/my-plots']);
-            }
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#065f46'
           });
-        } else {
-          Swal.fire({
-            icon: 'success',
-            title: 'Booking Confirmed!',
-            html: `
-              <div style="text-align: left; font-size: 14px; line-height: 1.6;">
-                <p><strong>Booking Serial:</strong> <span style="color: #0f3d2e; font-weight: 700;">${serial}</span></p>
-                <p><strong>Plot Unit:</strong> ${this.selectedPlot?.plot_number} (${this.selectedPlot?.unit_type})</p>
-                <p>Your booking has been registered. Our admin team will review and confirm your documentation shortly.</p>
-              </div>
-            `,
-            showCancelButton: true,
-            confirmButtonColor: '#0f3d2e',
-            cancelButtonColor: '#d4a843',
-            confirmButtonText: '<i class="fas fa-list me-1"></i> My Bookings',
-            cancelButtonText: 'Stay on Map'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              this.router.navigate(['/customer/my-plots']);
-            }
-          });
-        }
-      },
-      error: (err: any) => {
-        this.bookingSubmitting = false;
-        const msg = err?.error?.message || 'Unable to submit booking. Please try again.';
-
-        if (err?.status === 409) {
+        },
+        error: (err: any) => {
+          this.bookingSubmitting = false;
           Swal.fire({
             icon: 'error',
-            title: 'Plot Unavailable',
-            text: msg,
-            confirmButtonColor: '#d4a843'
-          }).then(() => {
-            this.showBookingModal = false;
-            this.loadPlotMap(false);
-          });
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Booking Error',
-            text: msg,
-            confirmButtonColor: '#d4a843'
+            title: 'Booking Submission Failed',
+            text: err?.error?.message || err?.message || 'Failed to submit booking. Please check details.',
+            confirmButtonColor: '#dc2626'
           });
         }
-      }
-    });
-  }
-
-  // ── Indian Currency & Formatting ────────────────────────────────────
-  formatInr(amount: number | null | undefined): string {
-    if (amount == null || isNaN(amount) || amount <= 0) return 'Price on request';
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount);
-  }
-
-  formatDate(dateStr: string | null | undefined): string {
-    if (!dateStr) return 'Recently';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
       });
-    } catch {
-      return dateStr;
-    }
-  }
+    };
 
-  trackByPlotId(_idx: number, plot: PublicPlot): number {
-    return plot.plot_id;
+    if (this.upiDetails?.proof_file) {
+      const fd = new FormData();
+      fd.append('proof_image', this.upiDetails.proof_file);
+      this.api.post('/api/payment/upload-proof', fd).subscribe({
+        next: (upRes: any) => {
+          const proofUrl = upRes?.data?.url || upRes?.url;
+          executeBooking(proofUrl);
+        },
+        error: () => {
+          // If pre-upload fails, proceed with booking
+          executeBooking();
+        }
+      });
+    } else {
+      executeBooking();
+    }
   }
 }

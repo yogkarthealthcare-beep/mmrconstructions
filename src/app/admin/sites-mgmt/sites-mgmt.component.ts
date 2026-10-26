@@ -50,6 +50,7 @@ export class SitesMgmtComponent implements OnInit {
 
   isInteractive = true;
   selectedPlot: any = null;
+  hoveredPlot: any = null;
 
   // --- FILTER & SEARCH ---
   plotFilter = 'all';
@@ -616,7 +617,31 @@ export class SitesMgmtComponent implements OnInit {
   }
 
   selectPlot(plot: any) {
-    this.selectedPlot = plot;
+    if (this.selectedPlot?.plot_id === plot?.plot_id) {
+      this.selectedPlot = null;
+    } else {
+      this.selectedPlot = plot;
+    }
+  }
+
+  onPlotHover(plot: any) {
+    this.hoveredPlot = plot;
+  }
+
+  onPlotLeave() {
+    this.hoveredPlot = null;
+  }
+
+  getPlotStatusSelectValue(status: string): string {
+    if (!status) return 'Vacant';
+    const s = String(status).trim();
+    const l = s.toLowerCase();
+    if (l === 'vacant') return 'Vacant';
+    if (l === 'available') return 'Available';
+    if (l === 'booked') return 'Booked';
+    if (l === 'sold') return 'Sold';
+    if (l === 'hold' || l === 'inprocess' || l === 'paymentpending') return 'Hold';
+    return s;
   }
 
   closeModals() {

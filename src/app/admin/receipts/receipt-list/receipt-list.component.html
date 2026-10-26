@@ -375,9 +375,9 @@
     <div class="modal-content-card">
       <div class="modal-header-compact d-flex justify-content-between align-items-center no-print">
         <div class="d-flex align-items-center gap-2">
-          <i class="fas fa-receipt text-gold fs-5"></i>
+          <i class="fas fa-file-invoice-dollar text-gold fs-5"></i>
           <div>
-            <h3 class="modal-hero-title mb-0 fs-13 text-white">Official Receipt (A4 Landscape - 2 Copies)</h3>
+            <h3 class="modal-hero-title mb-0 fs-13 text-white">Official Administrative Receipt (A4 Landscape - 2 Copies)</h3>
             <div class="modal-hero-sub fs-10">Receipt #{{ selectedReceipt.receipt_no }} (Customer Copy &amp; Company Copy)</div>
           </div>
         </div>
@@ -385,243 +385,40 @@
       </div>
 
       <div class="modal-body-compact p-3 bg-light" style="max-height: 82vh; overflow-y: auto;">
-        <!-- Dual Copy Landscape Container (2 Copies on 1 A4 Landscape Sheet) -->
-        <div class="receipt-dual-landscape-wrapper">
-          
-          <!-- COPY 1: CUSTOMER COPY -->
-          <div class="receipt-paper receipt-copy-card">
-            <!-- Header -->
-            <div class="receipt-head text-center">
-              <h2 class="company-title">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</h2>
-              <p class="company-address">00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India</p>
-              <p class="company-contact">Email: support&#64;mmrconstructions.in | Contact: 9511119879</p>
-              <div class="d-flex align-items-center justify-content-center gap-1.5 my-1">
-                <span class="receipt-badge-title">PAYMENT RECEIPT</span>
-                <span class="receipt-copy-badge customer-badge">CUSTOMER COPY</span>
-              </div>
-            </div>
+        <!-- Dual Copy Landscape Container (Matches Reference Invoice) -->
+        <article class="landscape-invoice-sheet" id="receipt-sheet-modal">
 
-            <!-- Meta Grid -->
-            <div class="receipt-meta-grid">
-              <div><strong>Receipt No:</strong> {{ selectedReceipt.receipt_no }}</div>
-              <div><strong>Date:</strong> {{ selectedReceipt.receipt_date | date:'dd/MM/yyyy' }}</div>
-              <div><span class="serial-highlight"><strong>Serial No:</strong> {{ selectedReceipt.serial_no }}</span></div>
-              <div><strong>Plotting Place:</strong> {{ selectedReceipt.plotting_place || '00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India' }}</div>
-            </div>
-
-            <hr class="receipt-divider" />
-
-            <!-- Table -->
-            <table class="table table-bordered receipt-table">
-              <tbody>
-                <tr>
-                  <td class="lbl">Customer Name:</td>
-                  <td class="val fw-bold">{{ selectedReceipt.customer_name }}</td>
-                  <td class="lbl">Mobile No:</td>
-                  <td class="val">{{ selectedReceipt.mobile_no }}</td>
-                </tr>
-                <tr>
-                  <td class="lbl">R.O.P. (S/o, D/o, W/o):</td>
-                  <td class="val">{{ selectedReceipt.r_o_p || '—' }}</td>
-                  <td class="lbl">Plot No:</td>
-                  <td class="val fw-bold">{{ selectedReceipt.plot_no || '—' }}</td>
-                </tr>
-                <tr>
-                  <td class="lbl">Plot Area:</td>
-                  <td class="val">{{ selectedReceipt.plot_area || '—' }}</td>
-                  <td class="lbl">Payment Mode:</td>
-                  <td class="val"><span class="badge bg-success fs-9 py-0.5 px-1.5">{{ selectedReceipt.payment_mode }}</span></td>
-                </tr>
-                <tr>
-                  <td class="lbl">Payment Type:</td>
-                  <td class="val">
-                    <span class="badge fs-9 py-0.5 px-1.5" [ngClass]="{'bg-primary': selectedReceipt.payment_type==='Cash', 'bg-info': selectedReceipt.payment_type==='Cheque', 'bg-purple': selectedReceipt.payment_type==='UPI'}">
-                      {{ selectedReceipt.payment_type }}
-                    </span>
-                  </td>
-                  <td class="lbl">Amount Depositor:</td>
-                  <td class="val">{{ selectedReceipt.amount_depositor_name || '—' }}</td>
-                </tr>
-                <tr *ngIf="selectedReceipt.payment_type === 'Cheque'">
-                  <td class="lbl">Cheque No &amp; Date:</td>
-                  <td class="val">{{ selectedReceipt.cheque_no }} ({{ selectedReceipt.cheque_date | date:'dd/MM/yyyy' }})</td>
-                  <td class="lbl">Bank Name:</td>
-                  <td class="val">{{ selectedReceipt.bank_name }}</td>
-                </tr>
-                <tr>
-                  <td class="lbl">Advisor Name:</td>
-                  <td class="val">{{ selectedReceipt.advisor_name || '—' }}</td>
-                  <td class="lbl">Advisor Mobile:</td>
-                  <td class="val">{{ selectedReceipt.advisor_mobile || '—' }}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <!-- Financial Figures -->
-            <div class="receipt-amount-box">
-              <div class="row text-center g-0">
-                <div class="col-4">
-                  <div class="amt-lbl">Receipt Amount</div>
-                  <div class="amt-val text-secondary">₹{{ selectedReceipt.receipt_amount | number:'1.2-2' }}</div>
-                </div>
-                <div class="col-4">
-                  <div class="amt-lbl">Paid Amount</div>
-                  <div class="amt-val text-success fw-bold">₹{{ selectedReceipt.paid_amount | number:'1.2-2' }}</div>
-                </div>
-                <div class="col-4">
-                  <div class="amt-lbl">Inward Amount</div>
-                  <div class="amt-val text-info">₹{{ selectedReceipt.inward_amount | number:'1.2-2' }}</div>
-                </div>
-              </div>
-              <div class="amount-words-line">
-                <strong>Amount in Words: </strong>
-                <span class="text-success fst-italic">{{ selectedAmountInWords }}</span>
-              </div>
-            </div>
-
-            <div *ngIf="selectedReceipt.notes" class="receipt-notes">
-              <strong>Notes / Terms:</strong> {{ selectedReceipt.notes }}
-            </div>
-
-            <div class="terms-disclaimer">
-              * This receipt is a verified acknowledgment of payment for MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED. All payments via cheque are subject to clearance.
-            </div>
-
-            <!-- Signatures -->
-            <div class="receipt-signatures">
-              <div class="signature-box text-center">
-                <div class="sig-line"></div>
-                <div class="sig-label">Depositor's Signature</div>
-              </div>
-              <div class="signature-box text-center">
-                <div class="sig-line"></div>
-                <div class="sig-label">Authorized Signatory</div>
-                <div class="sig-sub">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</div>
-              </div>
-            </div>
+          <!-- PART 1: CUSTOMER / BUYER COPY (LEFT BOX) -->
+          <div class="invoice-box-wrapper buyer-box" [class.cancelled-receipt]="selectedReceipt.status === 'Cancelled'">
+            <ng-container *ngTemplateOutlet="receiptModalCard; context: {
+              copyType: 'BUYER COPY / CUSTOMER COPY',
+              copyHindi: 'क्रेता प्रति',
+              copySubtitle: 'Original for Customer (Receipt Holder)',
+              isBuyer: true
+            }"></ng-container>
           </div>
 
-          <!-- CENTER CUTTING DIVIDER -->
-          <div class="receipt-cut-divider">
+          <!-- CENTER VERTICAL CUT SEPARATOR -->
+          <div class="center-cut-divider">
             <div class="cut-line"></div>
-            <div class="cut-scissor" title="Cut Here"><i class="fas fa-cut"></i></div>
+            <div class="cut-badge">
+              <i class="fas fa-cut"></i>
+              <span>✂ CUT HERE / यहाँ से अलग करें</span>
+            </div>
             <div class="cut-line"></div>
           </div>
 
-          <!-- COPY 2: COMPANY / OFFICE COPY -->
-          <div class="receipt-paper receipt-copy-card">
-            <!-- Header -->
-            <div class="receipt-head text-center">
-              <h2 class="company-title">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</h2>
-              <p class="company-address">00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India</p>
-              <p class="company-contact">Email: support&#64;mmrconstructions.in | Contact: 9511119879</p>
-              <div class="d-flex align-items-center justify-content-center gap-1.5 my-1">
-                <span class="receipt-badge-title">PAYMENT RECEIPT</span>
-                <span class="receipt-copy-badge company-badge">COMPANY / OFFICE COPY</span>
-              </div>
-            </div>
-
-            <!-- Meta Grid -->
-            <div class="receipt-meta-grid">
-              <div><strong>Receipt No:</strong> {{ selectedReceipt.receipt_no }}</div>
-              <div><strong>Date:</strong> {{ selectedReceipt.receipt_date | date:'dd/MM/yyyy' }}</div>
-              <div><span class="serial-highlight"><strong>Serial No:</strong> {{ selectedReceipt.serial_no }}</span></div>
-              <div><strong>Plotting Place:</strong> {{ selectedReceipt.plotting_place || '00, TRIBHUVAN KHEDA, SHESHPUR, Unnao, Uttar Pradesh - 209801, India' }}</div>
-            </div>
-
-            <hr class="receipt-divider" />
-
-            <!-- Table -->
-            <table class="table table-bordered receipt-table">
-              <tbody>
-                <tr>
-                  <td class="lbl">Customer Name:</td>
-                  <td class="val fw-bold">{{ selectedReceipt.customer_name }}</td>
-                  <td class="lbl">Mobile No:</td>
-                  <td class="val">{{ selectedReceipt.mobile_no }}</td>
-                </tr>
-                <tr>
-                  <td class="lbl">R.O.P. (S/o, D/o, W/o):</td>
-                  <td class="val">{{ selectedReceipt.r_o_p || '—' }}</td>
-                  <td class="lbl">Plot No:</td>
-                  <td class="val fw-bold">{{ selectedReceipt.plot_no || '—' }}</td>
-                </tr>
-                <tr>
-                  <td class="lbl">Plot Area:</td>
-                  <td class="val">{{ selectedReceipt.plot_area || '—' }}</td>
-                  <td class="lbl">Payment Mode:</td>
-                  <td class="val"><span class="badge bg-success fs-9 py-0.5 px-1.5">{{ selectedReceipt.payment_mode }}</span></td>
-                </tr>
-                <tr>
-                  <td class="lbl">Payment Type:</td>
-                  <td class="val">
-                    <span class="badge fs-9 py-0.5 px-1.5" [ngClass]="{'bg-primary': selectedReceipt.payment_type==='Cash', 'bg-info': selectedReceipt.payment_type==='Cheque', 'bg-purple': selectedReceipt.payment_type==='UPI'}">
-                      {{ selectedReceipt.payment_type }}
-                    </span>
-                  </td>
-                  <td class="lbl">Amount Depositor:</td>
-                  <td class="val">{{ selectedReceipt.amount_depositor_name || '—' }}</td>
-                </tr>
-                <tr *ngIf="selectedReceipt.payment_type === 'Cheque'">
-                  <td class="lbl">Cheque No &amp; Date:</td>
-                  <td class="val">{{ selectedReceipt.cheque_no }} ({{ selectedReceipt.cheque_date | date:'dd/MM/yyyy' }})</td>
-                  <td class="lbl">Bank Name:</td>
-                  <td class="val">{{ selectedReceipt.bank_name }}</td>
-                </tr>
-                <tr>
-                  <td class="lbl">Advisor Name:</td>
-                  <td class="val">{{ selectedReceipt.advisor_name || '—' }}</td>
-                  <td class="lbl">Advisor Mobile:</td>
-                  <td class="val">{{ selectedReceipt.advisor_mobile || '—' }}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <!-- Financial Figures -->
-            <div class="receipt-amount-box">
-              <div class="row text-center g-0">
-                <div class="col-4">
-                  <div class="amt-lbl">Receipt Amount</div>
-                  <div class="amt-val text-secondary">₹{{ selectedReceipt.receipt_amount | number:'1.2-2' }}</div>
-                </div>
-                <div class="col-4">
-                  <div class="amt-lbl">Paid Amount</div>
-                  <div class="amt-val text-success fw-bold">₹{{ selectedReceipt.paid_amount | number:'1.2-2' }}</div>
-                </div>
-                <div class="col-4">
-                  <div class="amt-lbl">Inward Amount</div>
-                  <div class="amt-val text-info">₹{{ selectedReceipt.inward_amount | number:'1.2-2' }}</div>
-                </div>
-              </div>
-              <div class="amount-words-line">
-                <strong>Amount in Words: </strong>
-                <span class="text-success fst-italic">{{ selectedAmountInWords }}</span>
-              </div>
-            </div>
-
-            <div *ngIf="selectedReceipt.notes" class="receipt-notes">
-              <strong>Notes / Terms:</strong> {{ selectedReceipt.notes }}
-            </div>
-
-            <div class="terms-disclaimer">
-              * This receipt is a verified acknowledgment of payment for MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED. All payments via cheque are subject to clearance.
-            </div>
-
-            <!-- Signatures -->
-            <div class="receipt-signatures">
-              <div class="signature-box text-center">
-                <div class="sig-line"></div>
-                <div class="sig-label">Depositor's Signature</div>
-              </div>
-              <div class="signature-box text-center">
-                <div class="sig-line"></div>
-                <div class="sig-label">Authorized Signatory</div>
-                <div class="sig-sub">MMRCONSTRUCTION AND DEVELOPERS PRIVATE LIMITED</div>
-              </div>
-            </div>
+          <!-- PART 2: SELLER / COMPANY COPY (RIGHT BOX) -->
+          <div class="invoice-box-wrapper seller-box" [class.cancelled-receipt]="selectedReceipt.status === 'Cancelled'">
+            <ng-container *ngTemplateOutlet="receiptModalCard; context: {
+              copyType: 'SELLER COPY / COMPANY COPY',
+              copyHindi: 'विक्रेता प्रति',
+              copySubtitle: 'Original for Company (MMR Office Record)',
+              isBuyer: false
+            }"></ng-container>
           </div>
 
-        </div>
+        </article>
       </div>
 
       <div class="modal-footer-compact bg-light p-2 d-flex justify-content-between align-items-center no-print">
@@ -630,7 +427,7 @@
           <button type="button" class="btn btn-outline-success btn-xs" (click)="downloadPdf(selectedReceipt)">
             <i class="fas fa-file-pdf me-1"></i> Download PDF
           </button>
-          <button type="button" class="btn btn-gold btn-xs" (click)="printReceipt(selectedReceipt)">
+          <button type="button" class="btn btn-green btn-xs text-white" style="background:#15803d; border-color:#15803d;" (click)="printReceipt(selectedReceipt)">
             <i class="fas fa-print me-1"></i> Print A4 Landscape (2 Copies)
           </button>
         </div>
@@ -638,6 +435,207 @@
     </div>
   </div>
 </div>
+
+<!-- Reusable Modal Receipt Card Template -->
+<ng-template #receiptModalCard let-copyType="copyType" let-copyHindi="copyHindi" let-copySubtitle="copySubtitle" let-isBuyer="isBuyer">
+  <div class="invoice-card-inner" *ngIf="selectedReceipt">
+
+    <!-- Watermark if cancelled -->
+    <div *ngIf="selectedReceipt.status === 'Cancelled'" class="cancelled-watermark">
+      CANCELLED
+    </div>
+
+    <!-- 1. Header & Brand -->
+    <div class="card-header-bar">
+      <div class="brand-left">
+        <img *ngIf="settings?.company_logo" [src]="settings.company_logo" alt="Logo" class="comp-logo" />
+        <div>
+          <h2 class="comp-name">{{ settings?.company_name || 'MMR Construction & Developers' }}</h2>
+          <div class="comp-subtext">
+            {{ settings?.address || 'Tribhuvan Kheda, Sheshpur, Unnao, Uttar Pradesh, India, 209801' }}
+          </div>
+          <div class="comp-contacts">
+            <span><strong>CIN:</strong> {{ settings?.cin || 'U68200UP2025PTC229203' }}</span>
+            <span><strong>GSTIN:</strong> {{ settings?.gst_number || '09AATCM6753A1Z5' }}</span>
+            <span><strong>Ph:</strong> {{ settings?.phone || '+91 95111 19879' }}</span>
+            <span><strong>Email:</strong> {{ settings?.email || 'support@mmrconstructions.in' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="copy-tag-area text-end">
+        <div class="copy-pill" [class.pill-buyer]="isBuyer" [class.pill-seller]="!isBuyer">
+          <span class="copy-en">{{ copyType }}</span>
+          <span class="copy-hi">({{ copyHindi }})</span>
+        </div>
+        <div class="copy-sub">{{ copySubtitle }}</div>
+      </div>
+    </div>
+
+    <!-- 2. Receipt Meta Strip -->
+    <div class="meta-strip">
+      <div class="meta-item">
+        <span class="m-lbl">RECEIPT NO:</span>
+        <span class="m-val font-mono fw-bold text-success">{{ selectedReceipt.receipt_no }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="m-lbl">DATE:</span>
+        <span class="m-val fw-bold">{{ selectedReceipt.receipt_date | date:'dd MMM yyyy' }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="m-lbl">SERIAL NO:</span>
+        <span class="m-val font-mono fw-bold text-primary">#{{ selectedReceipt.serial_no }}</span>
+      </div>
+    </div>
+
+    <!-- 3. Customer & Plot 2-Column Info Box -->
+    <div class="details-compact-grid">
+      <!-- Buyer / Customer Info -->
+      <div class="info-cell">
+        <div class="cell-head"><i class="fas fa-user-check me-1"></i> BUYER / CUSTOMER DETAILS (क्रेता विवरण)</div>
+        <div class="cell-row"><span class="k">Buyer Name:</span> <strong class="v text-dark">{{ selectedReceipt.customer_name || '-' }}</strong></div>
+        <div class="cell-row" *ngIf="selectedReceipt.r_o_p"><span class="k">S/O, W/O, D/O:</span> <span class="v">{{ selectedReceipt.r_o_p }}</span></div>
+        <div class="cell-row"><span class="k">Mobile No:</span> <span class="v font-mono">{{ selectedReceipt.mobile_no || '-' }}</span></div>
+        <div class="cell-row" *ngIf="selectedReceipt.amount_depositor_name"><span class="k">Depositor:</span> <span class="v">{{ selectedReceipt.amount_depositor_name }}</span></div>
+        <div class="cell-row" *ngIf="selectedReceipt.plotting_place"><span class="k">Plotting Place:</span> <span class="v truncate-1">{{ selectedReceipt.plotting_place }}</span></div>
+      </div>
+
+      <!-- Property & Seller Info -->
+      <div class="info-cell">
+        <div class="cell-head"><i class="fas fa-map-marker-alt me-1"></i> PROPERTY &amp; SELLER (प्लॉट एवं विक्रेता)</div>
+        <div class="cell-row"><span class="k">Site / Project:</span> <strong class="v text-primary">{{ selectedReceipt.plotting_place ? (selectedReceipt.plotting_place.split(',')[0] || 'MMR City') : 'NEW M.M.R. CITY' }}</strong></div>
+        <div class="cell-row"><span class="k">Plot No:</span> <strong class="v text-success font-mono">#{{ selectedReceipt.plot_no || '-' }}</strong></div>
+        <div class="cell-row"><span class="k">Size / Area:</span> <span class="v fw-bold">{{ selectedReceipt.plot_area ? (selectedReceipt.plot_area + (selectedReceipt.plot_area.toLowerCase().includes('gaj') ? '' : ' Gaj')) : '-' }}</span></div>
+        <div class="cell-row"><span class="k">Seller Company:</span> <span class="v fw-bold text-dark">{{ settings?.company_name || 'MMR Construction & Developers' }}</span></div>
+        <div class="cell-row" *ngIf="selectedReceipt.advisor_name"><span class="k">Advisor / Sales:</span> <span class="v">{{ selectedReceipt.advisor_name }} <span *ngIf="selectedReceipt.advisor_mobile" class="font-mono text-muted">({{ selectedReceipt.advisor_mobile }})</span></span></div>
+      </div>
+    </div>
+
+    <!-- 4. Financial Breakdown Table -->
+    <div class="fin-table-wrapper">
+      <table class="fin-compact-table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th class="text-end" style="width: 120px;">Amount (INR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Receipt Amount (Agreed / Total Bill)</td>
+            <td class="text-end font-mono">₹{{ (selectedReceipt.receipt_amount || 0) | number:'1.2-2' }}</td>
+          </tr>
+          <tr *ngIf="selectedReceipt.inward_amount && selectedReceipt.inward_amount !== selectedReceipt.paid_amount">
+            <td>Inward Amount (Received to Bank / Treasury)</td>
+            <td class="text-end font-mono">₹{{ (selectedReceipt.inward_amount || 0) | number:'1.2-2' }}</td>
+          </tr>
+          <tr class="row-grand-total">
+            <td class="text-success fw-bold">Amount Paid (Advance / Received)</td>
+            <td class="text-end text-success font-mono fw-bold">₹{{ (selectedReceipt.paid_amount || 0) | number:'1.2-2' }}</td>
+          </tr>
+          <tr>
+            <td [class.text-success]="getBalance(selectedReceipt) <= 0" [class.text-danger]="getBalance(selectedReceipt) > 0" class="fw-bold">
+              Remaining Balance Amount
+              <span *ngIf="getBalance(selectedReceipt) <= 0" class="badge-nil ms-1">PAID IN FULL</span>
+            </td>
+            <td class="text-end font-mono fw-bold" [class.text-success]="getBalance(selectedReceipt) <= 0" [class.text-danger]="getBalance(selectedReceipt) > 0">
+              <span *ngIf="getBalance(selectedReceipt) <= 0">₹0 (Nil)</span>
+              <span *ngIf="getBalance(selectedReceipt) > 0">₹{{ getBalance(selectedReceipt) | number:'1.2-2' }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 5. Payment Mode & Status Bar -->
+    <div class="payment-badge-bar">
+      <div class="pay-item">
+        <span class="pay-lbl">Payment Mode:</span>
+        <span class="pay-val text-success fw-bold"><i class="fas fa-check-circle me-1"></i>{{ selectedReceipt.payment_mode || 'Full Payment' }}</span>
+      </div>
+      <div class="pay-item">
+        <span class="pay-lbl">Payment Type:</span>
+        <span class="pay-val text-primary fw-bold font-mono">{{ selectedReceipt.payment_type || 'Cash' }}</span>
+      </div>
+      <div class="pay-item">
+        <span class="pay-lbl">Status:</span>
+        <span class="pay-val fw-bold" [ngClass]="selectedReceipt.status === 'Cancelled' ? 'text-danger' : 'text-success'">
+          {{ selectedReceipt.status || 'Active' }}
+        </span>
+      </div>
+      <div class="pay-item" *ngIf="selectedReceipt.payment_type === 'Cheque' && selectedReceipt.cheque_no">
+        <span class="pay-lbl">Cheque / Bank:</span>
+        <span class="pay-val font-mono">{{ selectedReceipt.cheque_no }} ({{ selectedReceipt.bank_name || 'Bank' }})</span>
+      </div>
+    </div>
+
+    <!-- 6. Dynamic Payment Notice Box -->
+    <div
+      class="notice-box"
+      [ngClass]="{
+        'notice-onetime': selectedReceipt.status !== 'Cancelled' && getBalance(selectedReceipt) <= 0,
+        'notice-part': selectedReceipt.status === 'Cancelled' || (selectedReceipt.payment_mode === 'Installment' || getBalance(selectedReceipt) > 0),
+        'notice-emi': selectedReceipt.payment_mode === 'Installment' && selectedReceipt.status !== 'Cancelled'
+      }"
+    >
+      <div class="notice-title">
+        <i
+          class="fas me-1"
+          [ngClass]="{
+            'fa-check-circle': selectedReceipt.status !== 'Cancelled' && getBalance(selectedReceipt) <= 0,
+            'fa-exclamation-triangle': selectedReceipt.status === 'Cancelled',
+            'fa-info-circle': selectedReceipt.status !== 'Cancelled' && getBalance(selectedReceipt) > 0
+          }"
+        ></i>
+        <span>NOTE / महत्वपूर्ण निर्देश:</span>
+        <span class="ms-1 fw-bold">Amount in Words: {{ selectedAmountInWords }}</span>
+      </div>
+      <div class="notice-hindi" *ngIf="selectedReceipt.status !== 'Cancelled'">
+        यह रसीद MMR कंस्ट्रक्शन एंड डेवलपर्स प्राइवेट लिमिटेड द्वारा अधिकृत पावती है। चेक भुगतान निकासी के अधीन है।
+      </div>
+      <div class="notice-hindi text-danger" *ngIf="selectedReceipt.status === 'Cancelled'">
+        यह रसीद प्रशासनिक रूप से निरस्त (Cancelled) कर दी गई है।
+      </div>
+      <div class="notice-english">
+        This receipt is a verified acknowledgment of inward payment. All cheque payments are subject to bank clearance.
+      </div>
+    </div>
+
+    <!-- 7. Card Bottom Footer (DUAL SIGNATURES: BUYER ON LEFT, QR/SECURITY IN CENTER, SELLER ON RIGHT) -->
+    <div class="card-footer-bar">
+      <!-- 1. Buyer's / Depositor's Signature -->
+      <div class="sig-box buyer-sig-box">
+        <div class="sig-space">
+          <div class="sig-placeholder-line"></div>
+        </div>
+        <div class="sig-title"><i class="fas fa-signature me-1 text-success"></i>Depositor / Customer Signature</div>
+        <div class="sig-hindi">हस्ताक्षर / अँगूठा निशान (जमाकर्ता)</div>
+        <div class="sig-sub truncate-1">{{ selectedReceipt.amount_depositor_name || selectedReceipt.customer_name || 'Customer' }}</div>
+      </div>
+
+      <!-- 2. QR Code & Security Badge in Center -->
+      <div class="qr-barcode-center-wrap">
+        <img [src]="getQrUrl(selectedReceipt)" alt="QR Code" class="tiny-qr" />
+        <div class="barcode-auth-col">
+          <div class="auth-text"><i class="fas fa-shield-alt me-1 text-success"></i>Verified Official Receipt</div>
+          <div class="font-2xs text-muted" style="font-size: 7.5px; line-height: 1.1;">Scan to Verify Receipt</div>
+        </div>
+      </div>
+
+      <!-- 3. Seller's Stamp & Authorized Signatory -->
+      <div class="sig-box seller-sig-box text-end">
+        <div class="sig-space">
+          <img *ngIf="settings?.signature_url" [src]="settings.signature_url" alt="Signature" class="sign-img" />
+          <div *ngIf="!settings?.signature_url" class="sig-placeholder-line"></div>
+        </div>
+        <div class="sig-title"><i class="fas fa-stamp me-1 text-primary"></i>Seller's Signatory &amp; Stamp</div>
+        <div class="sig-hindi">अधिकृत हस्ताक्षरकर्ता एवं मुहर (विक्रेता)</div>
+        <div class="sig-sub truncate-1">{{ settings?.company_name || 'MMR Constructions' }}</div>
+      </div>
+    </div>
+
+  </div>
+</ng-template>
 
 <!-- ======================================================== -->
 <!-- CANCEL CONFIRMATION MODAL                                -->

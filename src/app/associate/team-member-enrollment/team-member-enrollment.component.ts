@@ -94,6 +94,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
 
   // Current logged in associate
   associateId: number = 0;
+  associateMemberId: string = '';
   associateName: string = '';
 
   // Prefill target user ID & assigned slot from quick registration
@@ -215,6 +216,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
 
     const user = this.auth.getUser();
     this.associateId = Number(user?.user_id || user?.id || 0);
+    this.associateMemberId = user?.member_id || (this.associateId ? `MMR-ASC-${String(this.associateId).padStart(5, '0')}` : '');
     this.associateName = user?.full_name || '';
 
     this.initForm();
@@ -246,7 +248,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
 
   initForm(): void {
     this.enrollmentForm = this.fb.group({
-      associateId: [{ value: this.associateId || '', disabled: true }, Validators.required],
+      associateId: [{ value: this.associateMemberId || this.associateId || '', disabled: true }, Validators.required],
       associateName: [{ value: this.associateName || '', disabled: true }, Validators.required],
       fullName: ['', [Validators.required, humanNameValidator(), Validators.minLength(2), Validators.maxLength(150)]],
       fatherHusbandName: ['', [Validators.required, humanNameValidator(), Validators.minLength(2), Validators.maxLength(150)]],
@@ -293,8 +295,11 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
           if (d.associateName) {
             this.associateName = d.associateName;
           }
+          if (d.memberId) {
+            this.associateMemberId = d.memberId;
+          }
           this.enrollmentForm.patchValue({
-            associateId: d.associateId || this.associateId,
+            associateId: this.associateMemberId || d.memberId || (this.associateId ? `MMR-ASC-${String(this.associateId).padStart(5, '0')}` : d.associateId),
             associateName: this.associateName
           });
         }
@@ -318,7 +323,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     this.isEditing.set(false);
 
     this.enrollmentForm.reset({
-      associateId: this.associateId,
+      associateId: this.associateMemberId || this.associateId,
       associateName: this.associateName,
       fullName: '',
       fatherHusbandName: '',

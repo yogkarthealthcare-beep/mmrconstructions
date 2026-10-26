@@ -207,6 +207,9 @@
               <small *ngIf="item.utr_number" class="text-muted d-block fs-9 mt-0.5">
                 <code class="utr-code-pill">UTR: {{ item.utr_number }}</code>
               </small>
+              <small *ngIf="item.payer_name" class="text-primary d-block fs-9 mt-0.5 fw-semibold" title="Payer / Sender Bank Account Name">
+                <i class="fas fa-user-check me-1"></i>{{ item.payer_name }}
+              </small>
             </td>
 
             <!-- Customer -->
@@ -236,6 +239,9 @@
             <!-- Mode -->
             <td class="fit">
               <span class="chip chip-blue">{{ item.payment_mode }}</span>
+              <small *ngIf="item.qr_code_key" class="d-block fs-9 text-purple fw-bold mt-0.5">
+                <span class="badge bg-light border text-purple">{{ item.qr_code_key | uppercase }}</span>
+              </small>
             </td>
 
             <!-- Purpose -->
@@ -265,6 +271,10 @@
             <!-- Actions -->
             <td class="fit text-end pe-3">
               <div class="d-inline-flex align-items-center gap-1">
+                <!-- View Proof Screenshot -->
+                <a *ngIf="item.payment_proof_url || item.proof_url || item.proof_file" [href]="item.payment_proof_url || item.proof_url || item.proof_file" target="_blank" rel="noopener" class="btn btn-outline-info btn-xs py-0.5 px-1.5" title="View Payment Proof Screenshot">
+                  <i class="fas fa-image"></i>
+                </a>
                 <!-- Approve / Reject for Pending -->
                 <button *ngIf="item.payment_status !== 'Approved'" class="btn btn-emerald btn-xs py-0.5 px-2" (click)="approvePayment(item)" title="Approve & Allocate">
                   <i class="fas fa-check me-1"></i> Approve

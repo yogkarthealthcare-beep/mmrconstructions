@@ -130,6 +130,7 @@
             <th style="min-width: 155px; width: 165px;">Order ID & Date</th>
             <th style="min-width: 220px; width: 250px;">Buyer Details</th>
             <th style="min-width: 200px; width: 230px;">Pricing & Advance</th>
+            <th style="min-width: 160px; width: 180px;">Payment Proof</th>
             <th style="min-width: 135px; width: 140px;">Invoice</th>
             <th style="min-width: 130px; width: 135px; text-align: center;">{{ isAdminView ? 'Admin Approval' : 'Approval Status' }}</th>
             <th style="min-width: 86px; width: 86px; text-align: center;">Action</th>
@@ -195,6 +196,33 @@
                 </div>
               </td>
 
+              <!-- Col 3.5: Payment Proof (Task 6: booking_payment_proofs only) -->
+              <td>
+                <div *ngIf="order.proof_url" class="d-flex align-items-center gap-2">
+                  <button type="button" 
+                          class="btn btn-xs btn-outline-primary d-flex align-items-center gap-1 py-1 px-2"
+                          (click)="openProofPreview(order)"
+                          title="Preview Payment Receipt / Proof">
+                    <i class="fas fa-receipt text-primary"></i>
+                    <span>View</span>
+                  </button>
+                  <div class="font-xs">
+                    <div class="fw-bold text-dark text-truncate" style="max-width: 130px;" [title]="order.proof_payer || order.buyer_name">
+                      {{ order.proof_payer || order.buyer_name || 'Payer' }}
+                    </div>
+                    <div class="text-muted font-mono" *ngIf="order.proof_utr" [title]="order.proof_utr">
+                      UTR: {{ order.proof_utr }}
+                    </div>
+                    <div class="text-success fw-bold font-mono">
+                      ₹{{ (order.proof_amount || order.advance_amount || 0) | number:'1.0-0' }} • <span class="text-secondary fw-normal">{{ order.proof_mode || 'UPI' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="!order.proof_url" class="text-muted font-xs fst-italic">
+                  No proof
+                </div>
+              </td>
+
               <!-- Col 4: Invoice -->
               <td>
                 <div *ngIf="order.invoice_number" class="d-flex align-items-center gap-1">
@@ -231,7 +259,7 @@
                       'status-rejected': order.booking_status === 'Rejected',
                       'status-default': !order.booking_status || order.booking_status === ''
                     }"
-                    [(ngModel)]="order.booking_status"
+                    [ngModel]="order.booking_status"
                     (ngModelChange)="onStatusChange(order, $event)"
                     [disabled]="statusUpdatingId === order.booking_id"
                   >
@@ -298,7 +326,7 @@
               (mouseenter)="hoveredOrderId = order.booking_id"
               (mouseleave)="hoveredOrderId = null"
             >
-              <td colspan="7" class="hover-subrow-cell">
+              <td colspan="8" class="hover-subrow-cell">
                 <div class="hover-details-strip">
                   <!-- 1. Plot & Site Location -->
                   <div class="hover-item">
@@ -345,7 +373,7 @@
 
           <!-- Empty State -->
           <tr *ngIf="!loading && orders.length === 0">
-            <td colspan="7" class="text-center py-5 text-muted">
+            <td colspan="8" class="text-center py-5 text-muted">
               <i class="fas fa-inbox fa-3x mb-2 text-secondary"></i>
               <div class="fw-semibold">No plot booking orders found</div>
               <div class="font-xs">Try adjusting your filters or search keywords</div>
@@ -690,6 +718,7 @@
 
             <!-- Map Viewport -->
             <div
+              #mapViewport
               *ngIf="!mapLoading && !mapError"
               class="location-map-viewport"
               (pointerdown)="onMapPointerDown($event)"
@@ -705,18 +734,24 @@
                 <button type="button" class="btn-zoom" (click)="zoomOutMap()" title="Zoom Out">
                   <i class="fas fa-minus"></i>
                 </button>
-                <button type="button" class="btn-zoom" (click)="fitAndFocusPlot(targetPlotOnMap)" title="Refocus Target Plot">
+                <button type="button" class="btn-zoom" (click)="fitAndFocusPlot(targetPlotOnMap)" title="Focus Booked Plot #{{ targetPlotOnMap?.plot_number }}">
                   <i class="fas fa-crosshairs"></i>
                 </button>
-                <button type="button" class="btn-zoom" (click)="resetMapZoom()" title="Reset Zoom">
-                  <i class="fas fa-compress-arrows-alt"></i>
+                <button type="button" class="btn-zoom" (click)="fitCompleteMap()" title="Fit Complete Map to Screen">
+                  <i class="fas fa-expand-arrows-alt"></i>
                 </button>
               </div>
 
               <!-- Target Plot Found Badge -->
-              <div class="target-pin-pill" *ngIf="targetPlotOnMap">
+              <div
+                class="target-pin-pill cursor-pointer"
+                *ngIf="targetPlotOnMap"
+                (click)="fitAndFocusPlot(targetPlotOnMap)"
+                title="Click to zoom into Plot #{{ targetPlotOnMap.plot_number }}"
+              >
                 <span class="pulsing-beacon"></span>
                 <span>Focus: <b>Plot #{{ targetPlotOnMap.plot_number }}</b> ({{ targetPlotOnMap.area_gaj }} Gaj)</span>
+                <i class="fas fa-search-plus ms-1 font-xs text-emerald" style="opacity: 0.85;"></i>
               </div>
 
               <!-- Map Stage Container -->
@@ -867,7 +902,15 @@
                 <span class="info-label">Advance Paid:</span>
                 <span class="info-val font-sm fw-semibold text-emerald">₹{{ selectedLocationOrder?.advance_amount | number }}</span>
               </div>
-              <div class="info-row">
+              <div class="info-row" *ngIf="(selectedLocationOrder?.total_agreed_price - selectedLocationOrder?.advance_amount) > 0">
+                <span class="info-label">Balance Due:</span>
+                <span class="info-val font-sm fw-bold text-danger">₹{{ (selectedLocationOrder?.total_agreed_price - selectedLocationOrder?.advance_amount) | number }}</span>
+              </div>
+              <div class="info-row" *ngIf="(selectedLocationOrder?.total_agreed_price - selectedLocationOrder?.advance_amount) <= 0 && selectedLocationOrder?.total_agreed_price > 0">
+                <span class="info-label">Payment Status:</span>
+                <span class="badge bg-success text-white font-xs px-2 py-0.5">Fully Paid</span>
+              </div>
+              <div class="info-row" *ngIf="selectedLocationOrder?.created_at">
                 <span class="info-label">Booking Date:</span>
                 <span class="info-val">{{ selectedLocationOrder?.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
               </div>
@@ -890,3 +933,35 @@
     </div>
   </div>
 </div>
+
+<!-- PAYMENT PROOF PREVIEW MODAL (Task 6) -->
+<div *ngIf="previewProofOrder" 
+     class="modal-backdrop-custom" 
+     style="position: fixed; inset: 0; background: rgba(15,23,42,0.7); z-index: 1200; display: flex; align-items: center; justify-content: center; padding: 20px;">
+  <div class="bg-white rounded-3 shadow-lg p-4" style="max-width: 550px; width: 100%; max-height: 90vh; overflow-y: auto;">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+      <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-receipt text-success me-2"></i>Payment Proof Details</h6>
+      <button type="button" class="btn-close" (click)="closeProofPreview()"></button>
+    </div>
+    <div class="mb-3 bg-light p-3 rounded-2 border">
+      <div class="fs-12 text-muted mb-1">Order: <strong class="text-dark">#{{ previewProofOrder.booking_serial || previewProofOrder.booking_id }}</strong> (Plot #{{ previewProofOrder.plot_number }})</div>
+      <div class="fs-12 text-muted mb-1">Payer Name: <strong class="text-dark">{{ previewProofOrder.proof_payer || previewProofOrder.buyer_name || 'N/A' }}</strong></div>
+      <div class="fs-12 text-muted mb-1" *ngIf="previewProofOrder.proof_utr">Transaction / UTR: <strong class="font-mono text-dark">{{ previewProofOrder.proof_utr }}</strong></div>
+      <div class="fs-12 text-muted mb-0">Amount: <strong class="text-success font-mono">₹{{ (previewProofOrder.proof_amount || previewProofOrder.advance_amount) | number }}</strong> &bull; Mode: <strong class="text-dark">{{ previewProofOrder.proof_mode || 'UPI' }}</strong></div>
+    </div>
+    <div class="text-center p-2 bg-light rounded border mb-3">
+      <a [href]="previewProofOrder.proof_url" target="_blank" title="Click to view original file in full size">
+        <img [src]="previewProofOrder.proof_url" class="img-fluid rounded shadow-sm" style="max-height: 400px; object-fit: contain;" alt="Payment Proof" />
+      </a>
+      <div class="mt-2">
+        <a [href]="previewProofOrder.proof_url" target="_blank" class="btn btn-sm btn-outline-primary">
+          <i class="fas fa-external-link-alt me-1"></i> Open Original Document
+        </a>
+      </div>
+    </div>
+    <div class="text-end">
+      <button type="button" class="btn btn-secondary btn-sm" (click)="closeProofPreview()">Close</button>
+    </div>
+  </div>
+</div>
+

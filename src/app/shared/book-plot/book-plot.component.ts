@@ -9,6 +9,8 @@ import { ApiService } from '../../services/api.service';
 import { BookingAttributionApiService } from '../../services/booking-attribution-api.service';
 import { BookableCustomer } from '../../services/booking-attribution.types';
 import { getPlotStyle, shouldShowSoldText, getPlotStatusLabel } from '../plot-status.config';
+import { UpiQrPaymentComponent, UpiPaymentDetails } from '../upi-qr-payment/upi-qr-payment.component';
+import { AdminPaymentGatewayService } from '../../services/admin-payment-gateway.service';
 import Swal from 'sweetalert2';
 
 type MapPoint = { x: number; y: number };
@@ -17,7 +19,7 @@ export type AssociateBookingMode = 'DIRECT_CUSTOMER' | 'TEAM_MEMBER_CUSTOMER' | 
 @Component({
   selector: 'app-book-plot',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, UpiQrPaymentComponent],
   templateUrl: './book-plot.component.html',
   styleUrls: ['./book-plot.component.css']
 })
@@ -101,11 +103,12 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   ratePerGaj: number | null = null;
   ratePerSqft: number | null = null;
 
-  // Status items legend (Pink = In Progress, Red = Booked/Sold, Green = Available)
+  // Status items legend (Available = Sky Blue, Processing = Orange, Booked = Green, Sold = Red)
   readonly statusItems = [
-    { status: 'Available', label: 'Available (उपलब्ध)', color: '#16a34a' },
-    { status: 'Processing', label: 'In-Process (पिंक / प्रोसेसिंग)', color: '#ec4899' },
-    { status: 'Booked', label: 'Booked / Sold (रेड / बुक्ड)', color: '#dc2626' }
+    { status: 'Available', label: 'Available (उपलब्ध / स्काई ब्लू)', color: '#0284c7' },
+    { status: 'Processing', label: 'Processing (ऑरेंज / प्रोसेसिंग)', color: '#ea580c' },
+    { status: 'Booked', label: 'Booked (ग्रीन / बुक्ड)', color: '#16a34a' },
+    { status: 'Sold', label: 'Sold Out (रेड / सोल्ड)', color: '#dc2626' }
   ];
 
   // 3-Mode Payment System: One-Time, Part-Wise, EMI
@@ -121,15 +124,96 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   advanceAmount: number = 50000;
   notes: string = '';
   copiedBankAC = false;
+  copiedIfsc = false;
+  copiedAccountName = false;
+  copiedBankName = false;
+  copiedBranch = false;
+  showUpiQrScanner = true;
+  companyBankSettings: any = null;
+
+  upiDetails: UpiPaymentDetails | null = null;
+
+  onUpiPaymentChange(d: UpiPaymentDetails): void {
+    this.upiDetails = d;
+  }
+
+  copyAccountName(): void {
+    const name = this.companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED';
+    this.copyClipboardText(name, 'name');
+  }
+
+  copyBankName(): void {
+    const bank = this.companyBankSettings?.bank_name || 'HDFC Bank Ltd.';
+    this.copyClipboardText(bank, 'bank');
+  }
 
   copyBankAC(): void {
-    const ac = '50200088921832';
-    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(ac).then(() => {
+    const ac = this.companyBankSettings?.account_number || '50200088921832';
+    this.copyClipboardText(ac, 'ac');
+  }
+
+  copyIfsc(): void {
+    const ifsc = this.companyBankSettings?.ifsc_code || 'HDFC0001234';
+    this.copyClipboardText(ifsc, 'ifsc');
+  }
+
+  copyBranch(): void {
+    const branch = this.companyBankSettings?.branch_name || 'Civil Lines, Kanpur';
+    this.copyClipboardText(branch, 'branch');
+  }
+
+  private copyClipboardText(text: string, type: 'name' | 'bank' | 'ac' | 'ifsc' | 'branch'): void {
+    if (!text) return;
+    const onSuccess = () => {
+      if (type === 'name') {
+        this.copiedAccountName = true;
+        setTimeout(() => (this.copiedAccountName = false), 2000);
+      } else if (type === 'bank') {
+        this.copiedBankName = true;
+        setTimeout(() => (this.copiedBankName = false), 2000);
+      } else if (type === 'ac') {
         this.copiedBankAC = true;
         setTimeout(() => (this.copiedBankAC = false), 2000);
-      }).catch(() => {});
+      } else if (type === 'ifsc') {
+        this.copiedIfsc = true;
+        setTimeout(() => (this.copiedIfsc = false), 2000);
+      } else if (type === 'branch') {
+        this.copiedBranch = true;
+        setTimeout(() => (this.copiedBranch = false), 2000);
+      }
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(onSuccess).catch(() => onSuccess());
+    } else {
+      onSuccess();
     }
+  }
+
+  toggleUpiQrScanner(): void {
+    this.showUpiQrScanner = !this.showUpiQrScanner;
+  }
+
+  loadCompanyBankSettings(): void {
+    this.paymentService.getCompanyBankDetailsPublic().subscribe({
+      next: (res: any) => {
+        const data = res?.data || res;
+        if (data) {
+          this.companyBankSettings = data;
+          const methods: string[] = [];
+          if (data.enable_bank_transfer !== false) methods.push('Bank Transfer / NEFT / RTGS');
+          if (data.enable_primary_upi !== false || data.enable_secondary_upi !== false) methods.push('UPI / QR Code');
+          if (data.enable_payment_gateway) methods.push('Online Payment Gateway');
+          if (methods.length > 0) {
+            this.allowedPaymentMethods = methods;
+            if (!methods.includes(this.paymentMethod)) {
+              this.paymentMethod = methods[0];
+            }
+          }
+        }
+      },
+      error: (err) => console.warn('Failed to load company bank settings in book-plot', err)
+    });
   }
 
   // EMI installment plans state
@@ -155,12 +239,14 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private api: ApiService,
     private attributionApi: BookingAttributionApiService,
+    private paymentService: AdminPaymentGatewayService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.currentUser = this.auth.getUser();
+    this.loadCompanyBankSettings();
 
     // Default booking mode
     const qTeamMemberId = this.route.snapshot.queryParamMap.get('teamMemberId');
@@ -727,7 +813,8 @@ export class BookPlotComponent implements OnInit, OnDestroy {
 
   isBookable(plot: any): boolean {
     if (!plot) return false;
-    return this.normalizedStatus(plot.plot_status || plot.status) === 'Available';
+    const st = this.normalizedStatus(plot.plot_status || plot.status);
+    return st === 'Available' || st === 'Processing' || st === 'InProcess' || st === 'Hold';
   }
 
   get availableCount(): number {
@@ -1321,7 +1408,9 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       list_price: basePriceNum > 0 ? basePriceNum : null,
       price_overridden: basePriceNum > 0 && Math.abs(this.totalPlotPrice - basePriceNum) > 0.01,
       rate_per_gaj: this.ratePerGaj,
-      rate_per_sqft: this.ratePerSqft
+      rate_per_sqft: this.ratePerSqft,
+      plot_area: this.pricingUnit === 'SQFT' ? (this.bookingAreaSqft || this.selectedPlot?.plot_area || undefined) : (this.bookingAreaGaj || this.selectedPlot?.plot_area || undefined),
+      area_unit: this.pricingUnit === 'SQFT' ? 'Sq.Ft' : 'Gaj'
     };
 
     if (this.buyerType === 'ON_BEHALF' && this.selectedCustomer) {
@@ -1331,40 +1420,74 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.attributionApi.createAttributedBooking(payload, this.isAssociate).subscribe({
-      next: (res: any) => {
-        this.submitting = false;
-        this.bookingSuccess = true;
-        this.confirmedBooking = res?.data || res?.booking || res || {};
-        this.isDrawerOpen = false;
-
-        const nextStatus = this.paymentMode === 'ONE_TIME' ? 'Booked' : 'Processing';
-        this.plots = this.plots.map(p =>
-          p.plot_id === this.selectedPlot.plot_id
-            ? { ...p, plot_status: nextStatus }
-            : p
-        );
-        if (this.selectedPlot) {
-          this.selectedPlot.plot_status = nextStatus;
-        }
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Plot Booking Confirmed!',
-          text: `Booking Serial: ${this.confirmedBooking?.booking_serial || 'Generated'} for ${this.buyerType === 'ON_BEHALF' ? this.selectedCustomer?.full_name : this.currentUser?.full_name}`,
-          confirmButtonColor: '#166534'
-        });
-      },
-      error: (err: any) => {
-        this.submitting = false;
-        Swal.fire({
-          icon: 'error',
-          title: 'Booking Submission Failed',
-          text: err.message || err.error?.message || 'Unable to submit booking. Please check details and try again.',
-          confirmButtonColor: '#166534'
-        });
+    const sendBooking = (proofUrl?: string) => {
+      if (this.paymentMethod === 'UPI / QR Code') {
+        payload.payer_name = this.upiDetails?.payer_name || undefined;
+        payload.utr_number = this.upiDetails?.utr_number || undefined;
+        payload.qr_code_key = this.upiDetails?.qr_code_key || undefined;
+        payload.payment_proof_url = proofUrl || undefined;
       }
-    });
+
+      this.attributionApi.createAttributedBooking(payload, this.isAssociate).subscribe({
+        next: (res: any) => {
+          this.submitting = false;
+          this.bookingSuccess = true;
+          this.confirmedBooking = res?.data || res?.booking || res || {};
+          this.isDrawerOpen = false;
+
+          const nextStatus = 'Processing';
+          this.plots = this.plots.map(p =>
+            p.plot_id === this.selectedPlot.plot_id
+              ? { ...p, plot_status: nextStatus }
+              : p
+          );
+          if (this.selectedPlot) {
+            this.selectedPlot.plot_status = nextStatus;
+          }
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Plot Booking Request Submitted!',
+            html: `
+              <div style="text-align: left; font-size: 14px; line-height: 1.6;">
+                <p><strong>Booking Ref:</strong> <span style="color: #065f46; font-weight: 700;">${this.confirmedBooking?.booking_serial || 'Generated'}</span></p>
+                <p><strong>Buyer:</strong> ${this.buyerType === 'ON_BEHALF' ? this.selectedCustomer?.full_name : this.currentUser?.full_name}</p>
+                <p><strong>Plot Status:</strong> <span class="badge bg-warning text-dark">Processing (Orange)</span></p>
+                <div class="alert alert-info mt-2 fs-12">
+                  <i class="fas fa-shield-alt me-1"></i> Payment proof and booking request submitted. Status will transition to <strong>Booked (Green)</strong> upon MMR Accounts verification.
+                </div>
+              </div>
+            `,
+            confirmButtonColor: '#166534'
+          });
+        },
+        error: (err: any) => {
+          this.submitting = false;
+          Swal.fire({
+            icon: 'error',
+            title: 'Booking Submission Failed',
+            text: err.message || err.error?.message || 'Unable to submit booking. Please check details and try again.',
+            confirmButtonColor: '#166534'
+          });
+        }
+      });
+    };
+
+    if (this.paymentMethod === 'UPI / QR Code' && this.upiDetails?.proof_file) {
+      const fd = new FormData();
+      fd.append('proof_image', this.upiDetails.proof_file);
+      this.api.post('/api/payment/upload-proof', fd).subscribe({
+        next: (upRes: any) => {
+          const proofUrl = upRes?.data?.url || upRes?.url;
+          sendBooking(proofUrl);
+        },
+        error: () => {
+          sendBooking();
+        }
+      });
+    } else {
+      sendBooking();
+    }
   }
 
   resetForm(): void {

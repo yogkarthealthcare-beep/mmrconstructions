@@ -1,0 +1,204 @@
+<div class="user-guide-container">
+  <!-- Top Hero Banner -->
+  <div class="admin-hero-card d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="hero-icon-box">
+        <i class="fas fa-book-open"></i>
+      </div>
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge-gold-pill">OPERATIONS MANUAL</span>
+          <span class="badge-emerald-pill">ADMIN CONSOLE</span>
+        </div>
+        <h1 class="admin-hero-title">Admin Panel User Guide & Operations Manual</h1>
+        <p class="admin-hero-sub">
+          Official standard operating procedures, navigation paths, and verified operational guidelines for managing sites, plots, customer accounts, KYC approvals, receipts, and commission settlements.
+        </p>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap text-nowrap">
+      <div class="topics-counter-card">
+        <span class="counter-num">15</span>
+        <span class="counter-lbl">Core Modules</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Category Filters Bar -->
+  <div class="filter-controls-card">
+    <div class="row g-2 align-items-center">
+      <div class="col-12 col-md-5">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            class="form-control guide-search-input"
+            placeholder="Search workflows, menus, actions, or Hindi titles..."
+            [(ngModel)]="searchTerm"
+          />
+          <button
+            *ngIf="searchTerm"
+            class="btn-clear-search"
+            (click)="searchTerm = ''"
+            title="Clear search"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="col-12 col-md-7">
+        <div class="category-pills-scroll d-flex align-items-center gap-1.5">
+          <button
+            *ngFor="let cat of categories"
+            type="button"
+            class="category-pill-btn"
+            [class.active]="selectedCategory === cat.id"
+            (click)="setCategory(cat.id)"
+          >
+            <i [class]="cat.icon + ' me-1'"></i>
+            <span>{{ cat.label }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Topics Grid / Accordion Area -->
+  <div class="topics-list-container">
+    <div *ngIf="filteredTopics.length === 0" class="empty-results-card text-center py-5">
+      <i class="fas fa-search fa-3x text-muted mb-3"></i>
+      <h5 class="fw-bold text-dark mb-1">No operational workflows found</h5>
+      <p class="text-muted fs-13 mb-3">No topics match your search query "{{ searchTerm }}". Try another term or reset filters.</p>
+      <button class="btn btn-sm btn-outline-success" (click)="searchTerm = ''; selectedCategory = 'all'">
+        Reset Filters
+      </button>
+    </div>
+
+    <div *ngFor="let topic of filteredTopics" class="guide-topic-card" [class.is-expanded]="activeTopicId === topic.id || activeTopicId === -1">
+      <!-- Topic Header Row -->
+      <div class="topic-header-row" (click)="toggleTopic(topic.id)">
+        <div class="d-flex align-items-start gap-3">
+          <div class="topic-icon-badge" [ngClass]="topic.badgeClass">
+            <i [class]="topic.icon"></i>
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+              <span class="topic-module-badge" [ngClass]="topic.badgeClass">{{ topic.badge }}</span>
+              <span class="topic-cat-badge">{{ topic.categoryLabel }}</span>
+              <span class="topic-nav-path">
+                <i class="fas fa-location-arrow text-warning me-1"></i>
+                <code>{{ topic.menuPath }}</code>
+              </span>
+            </div>
+            <h2 class="topic-title">
+              {{ topic.id }}. {{ topic.title }}
+              <span class="topic-hindi-title">({{ topic.hindiTitle }})</span>
+            </h2>
+            <p class="topic-desc mb-0">{{ topic.description }}</p>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-auto">
+          <a
+            [routerLink]="topic.route"
+            class="btn-open-module"
+            (click)="$event.stopPropagation()"
+            title="Jump to this page in Admin"
+          >
+            <i class="fas fa-external-link-alt me-1"></i>
+            <span class="d-none d-sm-inline">Open Page</span>
+          </a>
+          <button type="button" class="btn-toggle-accordion" aria-label="Toggle Topic Details">
+            <i class="fas" [class.fa-chevron-up]="activeTopicId === topic.id || activeTopicId === -1" [class.fa-chevron-down]="activeTopicId !== topic.id && activeTopicId !== -1"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Expandable Topic Content Area -->
+      <div class="topic-body-area" *ngIf="activeTopicId === topic.id || activeTopicId === -1">
+        <div class="workflow-summary-box mb-3">
+          <div class="section-subheading">
+            <i class="fas fa-list-check text-success me-1.5"></i>
+            <span>Verified Operational Procedure (Overview)</span>
+          </div>
+          <ul class="workflow-steps-list">
+            <li *ngFor="let step of topic.keyWorkflows; let idx = index">
+              <span class="step-num-bullet">{{ idx + 1 }}</span>
+              <span class="step-text">{{ step }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Documentation Scaffold Cards -->
+        <div class="row g-2">
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="detail-stub-card">
+              <div class="stub-header">
+                <i class="fas fa-route text-primary me-1.5"></i>
+                <span>Navigation Path</span>
+              </div>
+              <div class="stub-content">
+                <div class="stub-path">{{ topic.menuPath }}</div>
+                <div class="stub-route">Route: <code>{{ topic.route }}</code></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="detail-stub-card">
+              <div class="stub-header">
+                <i class="fas fa-user-shield text-warning me-1.5"></i>
+                <span>Role & Permissions</span>
+              </div>
+              <div class="stub-content">
+                <div class="fw-bold text-dark fs-12">Admin / SuperAdmin</div>
+                <div class="text-muted fs-11">Protected by AdminGuard</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="detail-stub-card">
+              <div class="stub-header">
+                <i class="fas fa-check-double text-success me-1.5"></i>
+                <span>Implementation Status</span>
+              </div>
+              <div class="stub-content">
+                <span class="badge bg-success-subtle text-success fs-11 fw-bold">Implemented & Verified</span>
+                <div class="text-muted fs-11 mt-1">Live in current build</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="detail-stub-card">
+              <div class="stub-header">
+                <i class="fas fa-file-pen text-info me-1.5"></i>
+                <span>Detailed Instructions</span>
+              </div>
+              <div class="stub-content">
+                <span class="text-primary fw-bold fs-11">Ready for Step-by-Step SOP</span>
+                <div class="text-muted fs-11">Placeholder structure prepared</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Future Step-by-Step Container Placeholder -->
+        <div class="detailed-sop-placeholder mt-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="fs-12 fw-bold text-dark d-flex align-items-center gap-1.5">
+              <i class="fas fa-clipboard-list text-emerald"></i>
+              <span>Comprehensive Step-by-Step Instructions</span>
+            </div>
+            <span class="badge bg-secondary-subtle text-secondary fs-10 fw-bold">PHASE 2 CONTENT AREA</span>
+          </div>
+          <div class="placeholder-notice">
+            <i class="fas fa-info-circle text-primary me-2"></i>
+            <span>Detailed step-by-step screenshots, input validation criteria, troubleshooting tips, and status mutation rules for <strong>{{ topic.title }}</strong> will be rendered in this section.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

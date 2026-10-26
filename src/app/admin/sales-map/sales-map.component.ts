@@ -543,9 +543,10 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
   // ── Plot Styling Helpers ────────────────────────────────────────────
   getPlotColor(plot: AdminSalesPlot): string {
     const s = String(plot?.status || '').toLowerCase();
-    if (s === 'sold' || s === 'booked') return '#dc2626'; // Red
-    if (s === 'inprocess' || s === 'processing' || s === 'hold' || s === 'reserved') return '#ec4899'; // Pink
-    return '#16a34a'; // Green (Vacant)
+    if (s === 'sold') return '#dc2626'; // Red
+    if (s === 'booked' || s === 'confirmed') return '#16a34a'; // Green (Confirmed Booking)
+    if (s === 'inprocess' || s === 'processing' || s === 'hold' || s === 'reserved') return '#ea580c'; // Orange (Pending)
+    return '#0284c7'; // Sky Blue (Vacant / Available)
   }
 
   getPlotFillOpacity(plot: AdminSalesPlot): number {
@@ -558,9 +559,10 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
     if (this.selectedPlot && this.selectedPlot.plot_id === plot.plot_id) return '#1e40af';
     if (this.hoveredPlot && this.hoveredPlot.plot_id === plot.plot_id) return '#0f172a';
     const s = String(plot?.status || '').toLowerCase();
-    if (s === 'sold' || s === 'booked') return '#dc2626';
-    if (s === 'inprocess' || s === 'processing' || s === 'hold' || s === 'reserved') return '#db2777';
-    return '#16a34a';
+    if (s === 'sold') return '#b91c1c';
+    if (s === 'booked' || s === 'confirmed') return '#15803d';
+    if (s === 'inprocess' || s === 'processing' || s === 'hold' || s === 'reserved') return '#c2410c';
+    return '#0369a1';
   }
 
   getPlotStrokeWidth(plot: AdminSalesPlot): number {
@@ -570,10 +572,7 @@ export class AdminSalesMapComponent implements OnInit, OnDestroy {
   }
 
   shouldShowLabel(plot: AdminSalesPlot): boolean {
-    if (!plot.bbox) return true;
-    const screenWidth = plot.bbox.width * this.zoom;
-    const screenHeight = plot.bbox.height * this.zoom;
-    return screenWidth > 24 && screenHeight > 16;
+    return (this.hoveredPlot?.plot_id === plot.plot_id || this.selectedPlot?.plot_id === plot.plot_id);
   }
 
   // ── Interaction & Selection ─────────────────────────────────────────

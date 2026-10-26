@@ -1,0 +1,169 @@
+<div class="upi-qr-container" [class.dark-theme]="isDarkTheme">
+  <!-- QR Option Tabs (if more than 1 active QR) -->
+  <div class="qr-tabs-wrapper mb-3" *ngIf="activeQrs.length > 1">
+    <div class="qr-tabs-nav">
+      <button
+        type="button"
+        class="qr-tab-btn"
+        *ngFor="let qr of activeQrs"
+        [class.active]="selectedQrKey === qr.qr_code_key"
+        (click)="selectQr(qr.qr_code_key)"
+      >
+        <i class="fas fa-qrcode me-1.5"></i>
+        <span>{{ qr.label || qr.qr_code_key.toUpperCase() }}</span>
+        <span *ngIf="qr.is_primary" class="primary-pill">Primary</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- QR Visual Presentation Box -->
+  <div class="qr-display-card p-3 rounded-4 mb-3">
+    <div class="row g-3 align-items-center">
+      <div class="col-auto text-center mx-auto mx-sm-0">
+        <div class="qr-code-frame">
+          <img
+            [src]="getQrImageUrl()"
+            alt="UPI QR Code"
+            class="qr-main-img img-fluid"
+          />
+          <div class="qr-scan-hint">
+            <i class="fas fa-camera text-emerald me-1"></i>
+            <span>Scan with any UPI App</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm">
+        <div class="qr-info-block">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge-app-pill gpay"><i class="fab fa-google-pay"></i> GPay</span>
+            <span class="badge-app-pill phonepe">PhonePe</span>
+            <span class="badge-app-pill paytm">Paytm</span>
+            <span class="badge-app-pill bhim">BHIM</span>
+          </div>
+
+          <h6 class="qr-dest-name mb-1">
+            {{ selectedQr?.label || 'MMR Constructions Pvt Ltd' }}
+          </h6>
+          <p class="fs-11 text-muted mb-2">
+            Company Official Current Account UPI. No surcharge / gateway convenience fees.
+          </p>
+
+          <!-- Copyable UPI ID Box -->
+          <div class="upi-id-copy-box">
+            <div class="upi-val">
+              <span class="lbl-mini">UPI ID:</span>
+              <strong class="font-mono text-emerald">{{ selectedQr?.upi_id || 'mmrconstructions@hdfcbank' }}</strong>
+            </div>
+            <button
+              type="button"
+              class="btn-copy-upi"
+              (click)="copyUpiId()"
+              title="Copy UPI ID"
+            >
+              <i class="fas" [class.fa-check]="copiedUpi" [class.fa-copy]="!copiedUpi"></i>
+              <span>{{ copiedUpi ? 'Copied!' : 'Copy' }}</span>
+            </button>
+          </div>
+
+          <div *ngIf="advanceAmount > 0" class="advance-suggest-badge mt-2">
+            <span>Pay Exact Amount:</span>
+            <strong class="text-gold">₹{{ advanceAmount | number }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mandatory Payment Proof & Verification Fields -->
+  <div class="payment-fields-card p-3 rounded-3 mb-2">
+    <div class="d-flex align-items-center gap-1.5 mb-2.5">
+      <i class="fas fa-shield-alt text-warning"></i>
+      <span class="fs-12 fw-700 section-title">Payment Verification Details (Mandatory)</span>
+    </div>
+
+    <!-- Payer / Sender Name Field -->
+    <div class="mb-3">
+      <label class="form-label fs-11 fw-700 field-label mb-1">
+        Payer / Sender Name (पैसा भेजने वाले का नाम) <span class="text-danger">*</span>
+      </label>
+      <input
+        type="text"
+        class="form-control form-control-sm field-input"
+        [(ngModel)]="payerName"
+        (ngModelChange)="onFieldChange()"
+        placeholder="Name as registered in bank or UPI account"
+        required
+      />
+      <small class="field-hint">
+        Enter the actual bank account holder's name who made the UPI payment (not necessarily the buyer).
+      </small>
+    </div>
+
+    <!-- Transaction ID / UTR Field -->
+    <div class="mb-3">
+      <label class="form-label fs-11 fw-700 field-label mb-1">
+        UPI Reference / Transaction UTR No. <span class="text-danger">*</span>
+      </label>
+      <input
+        type="text"
+        class="form-control form-control-sm field-input font-mono"
+        [(ngModel)]="utrNumber"
+        (ngModelChange)="onFieldChange()"
+        placeholder="e.g. 429182910291 or UPI Ref ID"
+        required
+      />
+      <small class="field-hint">
+        Found on the payment success screen in GPay, PhonePe, Paytm, or your banking app.
+      </small>
+    </div>
+
+    <!-- Screenshot Upload / Camera Capture -->
+    <div class="mb-2">
+      <label class="form-label fs-11 fw-700 field-label mb-1">
+        Payment Screenshot / Receipt <span class="text-danger">*</span>
+      </label>
+
+      <!-- Preview state if file selected -->
+      <div *ngIf="proofPreviewUrl" class="proof-preview-banner p-2 rounded-3 mb-2 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <img [src]="proofPreviewUrl" alt="Proof Preview" class="proof-thumb rounded-2" />
+          <div>
+            <strong class="fs-11 text-success d-block">
+              <i class="fas fa-check-circle me-1"></i> Screenshot Attached
+            </strong>
+            <span class="fs-10 text-muted">{{ proofFile?.name || 'receipt.jpg' }}</span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" (click)="removeProof()">
+          <i class="fas fa-times me-1"></i> Replace
+        </button>
+      </div>
+
+      <!-- Upload input when no file is chosen -->
+      <div *ngIf="!proofPreviewUrl" class="upload-trigger-zone p-3 rounded-3 text-center border-dashed">
+        <i class="fas fa-cloud-upload-alt text-muted fs-3 mb-1"></i>
+        <div class="fs-12 fw-700 mb-1">Tap to capture or upload payment receipt</div>
+        <div class="fs-10 text-muted mb-2">Supports mobile camera capture, gallery & desktop image file</div>
+        <label class="btn btn-sm btn-outline-primary px-3 py-1 cursor-pointer mb-0">
+          <i class="fas fa-camera me-1"></i> Take Photo / Select Image
+          <input
+            type="file"
+            class="d-none"
+            accept="image/*"
+            capture="environment"
+            (change)="onFileSelected($event)"
+          />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verification Flow Security Alert -->
+  <div class="verification-notice-strip p-2 px-3 rounded-3 d-flex align-items-center gap-2 fs-11">
+    <i class="fas fa-info-circle flex-shrink-0 text-warning"></i>
+    <span>
+      Plot status will remain <strong>Processing (Orange)</strong> until our Accounts team verifies the UTR. A plot is officially confirmed as <strong>Booked (Green)</strong> only after verification.
+    </span>
+  </div>
+</div>

@@ -292,9 +292,10 @@
   height: 8px;
   border-radius: 50%;
 }
-.swatch-avail { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
-.swatch-inproc { background: #eab308; box-shadow: 0 0 6px #eab308; }
-.swatch-sold { background: #f43f5e; box-shadow: 0 0 6px #f43f5e; }
+.swatch-avail { background: #0284c7; box-shadow: 0 0 6px #0284c7; }
+.swatch-inproc { background: #ea580c; box-shadow: 0 0 6px #ea580c; }
+.swatch-booked { background: #16a34a; box-shadow: 0 0 6px #16a34a; }
+.swatch-sold { background: #dc2626; box-shadow: 0 0 6px #dc2626; }
 
 .legend-title {
   font-size: 0.68rem;
@@ -927,6 +928,26 @@
   border-radius: 16px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
   padding: 24px;
+  /* Slim & subtle green scrollbar that blends invisibly into modal */
+  scrollbar-width: thin;
+  scrollbar-color: #0e3727 transparent;
+}
+
+.booking-dialog-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.booking-dialog-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.booking-dialog-card::-webkit-scrollbar-thumb {
+  background: #0e3727;
+  border-radius: 4px;
+}
+
+.booking-dialog-card::-webkit-scrollbar-thumb:hover {
+  background: #145038;
 }
 
 .dialog-header {
@@ -957,11 +978,11 @@
 .btn-dialog-close {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: #ffffff;
   font-size: 1.3rem;
   cursor: pointer;
 }
-.btn-dialog-close:hover { color: #ffffff; }
+.btn-dialog-close:hover { color: #d4a843; }
 
 .booking-plot-summary {
   display: grid;
@@ -981,12 +1002,173 @@
 
 .summary-col .lbl {
   font-size: 0.7rem;
-  color: #94a3b8;
+  color: #ffffff;
+  opacity: 0.92;
 }
 
 .summary-col .val {
   font-size: 0.88rem;
   color: #ffffff;
+}
+
+.valuation-card-box {
+  background: rgba(212, 168, 67, 0.08);
+  border: 1px solid rgba(212, 168, 67, 0.5) !important;
+}
+
+/* ── Plot Input Group Alignment & Theme ──────────────────────────── */
+.plot-input-group {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.plot-input-group:focus-within {
+  border-color: #d4a843 !important;
+  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.25) !important;
+}
+
+.valuation-card-box {
+  padding: 16px 18px !important;
+  background: rgba(0, 0, 0, 0.25) !important;
+  border-radius: 10px !important;
+}
+
+/* Admin badge row margin below badge */
+.admin-badge-row {
+  margin-bottom: 1rem !important; /* m-1 margin bottom as requested */
+}
+
+/* Hover fixes for Gaj & Sq.Ft tabs, Payment method tabs, and EMI buttons */
+.unit-tab-btn,
+.payment-tab-btn,
+.emi-plan-btn {
+  transition: all 0.2s ease-in-out !important;
+}
+
+.unit-tab-btn.btn-gold,
+.payment-tab-btn.btn-gold,
+.emi-plan-btn.btn-gold {
+  background: #d4a843 !important;
+  border-color: #d4a843 !important;
+  color: #07150e !important;
+}
+
+.unit-tab-btn.btn-gold:hover,
+.unit-tab-btn.btn-gold:focus,
+.payment-tab-btn.btn-gold:hover,
+.payment-tab-btn.btn-gold:focus,
+.emi-plan-btn.btn-gold:hover,
+.emi-plan-btn.btn-gold:focus {
+  background: #eab308 !important; /* Soft lighter yellow/gold, NEVER white */
+  border-color: #facc15 !important;
+  color: #07150e !important;
+}
+
+.unit-tab-btn.btn-outline-light,
+.payment-tab-btn.btn-outline-light,
+.emi-plan-btn.btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  color: #ffffff !important;
+  background: transparent !important;
+}
+
+.unit-tab-btn.btn-outline-light:hover,
+.unit-tab-btn.btn-outline-light:focus,
+.payment-tab-btn.btn-outline-light:hover,
+.payment-tab-btn.btn-outline-light:focus,
+.emi-plan-btn.btn-outline-light:hover,
+.emi-plan-btn.btn-outline-light:focus {
+  background: rgba(212, 168, 67, 0.25) !important; /* Soft golden tint, NOT pure white */
+  border-color: #d4a843 !important;
+  color: #fef08a !important; /* High contrast bright soft yellow */
+}
+
+/* ── Payment Method Tabs in ONE Single Row ── */
+.payment-tabs-row {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  scrollbar-width: none;
+}
+
+.payment-tabs-row::-webkit-scrollbar {
+  display: none;
+}
+
+.payment-tab-btn {
+  flex: 1 1 0 !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 5px 6px !important;
+  font-size: 0.72rem !important;
+  border-radius: 6px !important;
+}
+
+/* ── X-Small Inputs & Textboxes in Modal ── */
+.plot-input-addon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px !important;
+  padding: 0 8px !important;
+  background: #e2e8f0 !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-size: 0.76rem !important;
+  border-right: 1px solid #cbd5e1 !important;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.plot-input-control {
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 3px 8px !important;
+  border: none !important;
+  outline: none !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 0.78rem !important;
+  font-weight: 700;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.plot-input-control::placeholder {
+  color: #94a3b8;
+  font-weight: normal;
+}
+
+.plot-input-group-lg .plot-input-addon {
+  height: 30px !important;
+  padding: 0 8px !important;
+  background: #e2e8f0 !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+}
+
+.plot-input-group-lg .plot-input-control {
+  height: 30px !important;
+  min-height: 30px !important;
+  font-size: 0.78rem !important;
+  font-weight: 800;
+  color: #0f172a !important;
 }
 
 .payment-plan-grid {
@@ -1027,28 +1209,44 @@
 
 .plan-desc {
   font-size: 0.74rem;
-  color: #94a3b8;
+  color: #ffffff;
+  opacity: 0.9;
   margin-top: 2px;
 }
 
 .form-label {
-  font-size: 0.8rem;
+  font-size: 0.74rem !important;
   font-weight: 600;
-  color: #cbd5e1;
-  margin-bottom: 5px;
+  color: #ffffff;
+  margin-bottom: 3px !important;
 }
 
 .form-control {
-  background: rgba(0, 0, 0, 0.35) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  color: #ffffff !important;
-  border-radius: 8px !important;
-  font-size: 0.85rem !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  border-radius: 6px !important;
+  font-size: 0.78rem !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 3px 8px !important;
+}
+
+.booking-dialog-card textarea.form-control {
+  height: auto !important;
+  min-height: 48px !important;
+  padding: 4px 8px !important;
+}
+
+.form-control:read-only {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  border-color: #cbd5e1 !important;
 }
 
 .form-control:focus {
   border-color: #d4a843 !important;
-  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.2) !important;
+  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.25) !important;
 }
 
 .bg-dark-green {
@@ -1056,12 +1254,24 @@
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
+/* ── X-Small Dialog Buttons ── */
 .dialog-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.dialog-actions .btn {
+  font-size: 0.75rem !important;
+  padding: 4px 12px !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  border-radius: 5px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-submit-booking {
@@ -1069,10 +1279,11 @@
   color: #07150e !important;
   font-weight: 800 !important;
   border: none !important;
-  padding: 10px 22px !important;
-  min-height: 44px;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 14px rgba(212, 168, 67, 0.35) !important;
+  padding: 4px 14px !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  border-radius: 5px !important;
+  box-shadow: 0 2px 6px rgba(212, 168, 67, 0.3) !important;
 }
 
 /* ── Responsive Mobile & Tablet Media Queries ──────────────────────────── */
@@ -1258,4 +1469,57 @@
     height: 30px;
   }
 }
+
+/* Extra-small (xs) tab & button utilities */
+.btn-xs {
+  padding: 3px 8px;
+  font-size: 11px;
+  line-height: 1.2;
+  border-radius: 5px;
+}
+
+.btn-group-xs > .btn {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.fs-9 {
+  font-size: 9px !important;
+}
+
+.fs-10 {
+  font-size: 10px !important;
+}
+
+.fs-11 {
+  font-size: 11px !important;
+}
+
+.fs-12 {
+  font-size: 12px !important;
+}
+
+.bg-white-10 {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  transition: all 0.2s ease;
+}
+
+.bg-white-10:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #d4a843;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.bank-item-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+
 

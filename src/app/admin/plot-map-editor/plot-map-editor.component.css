@@ -172,49 +172,62 @@
 .site-select-wrap {
   max-width: 520px;
   position: relative;
+  display: flex;
+  align-items: center;
   z-index: 20;
 }
 
 .site-select-wrap > i {
-  color: #166534;
-  font-size: 13px;
-  left: 14px;
-  pointer-events: none;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
+  color: #166534 !important;
+  left: 14px !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 5 !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
 }
 
+.site-select-wrap input.site-select,
 .site-select {
-  background: #f8fafc;
-  border-color: #dbe3ea;
-  border-radius: 10px;
-  color: #0f172a;
-  font-weight: 800;
-  min-height: 44px;
-  padding-left: 40px;
-  padding-right: 42px;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding-left: 42px !important;
+  padding-right: 38px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
+.site-select-wrap input.site-select:focus,
 .site-select:focus {
-  background: #fff;
-  border-color: var(--clr-primary);
-  box-shadow: 0 0 0 3px rgba(26, 92, 58, .1);
+  background: #ffffff !important;
+  border-color: var(--clr-primary, #10b981) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, .15) !important;
 }
 
 .site-select-caret {
-  align-items: center;
-  background: transparent;
-  border: 0;
-  color: #166534;
-  display: inline-flex;
-  height: 38px;
-  justify-content: center;
-  position: absolute;
-  right: 4px;
-  top: 3px;
-  width: 38px;
+  align-items: center !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: #166534 !important;
+  display: inline-flex !important;
+  height: 30px !important;
+  width: 30px !important;
+  justify-content: center !important;
+  position: absolute !important;
+  right: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  cursor: pointer !important;
+  z-index: 5 !important;
 }
 
 .site-select-wrap.open .site-select-caret i {
@@ -633,36 +646,234 @@
   color: #b91c1c;
 }
 
-.toolbar-toggle,
-.grid-size,
-.number-seed,
-.zoom-readout {
+/* ── TOP HORIZONTAL WORKSPACE SETTINGS TOOLBAR ──────────────── */
+.editor-top-tools {
   align-items: center;
-  background: #fff;
-  border: 1px solid #dbe3ea;
-  border-radius: 7px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.editor-top-tools .number-seed,
+.editor-top-tools .toolbar-toggle,
+.editor-top-tools .grid-size,
+.editor-top-tools .zoom-readout,
+.editor-top-tools .toolbar-select,
+.editor-top-tools .toolbar-search,
+.editor-top-tools .keyboard-mode {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
   color: #334155;
   display: inline-flex;
   flex: 0 0 auto;
-  font-size: 11px;
-  font-weight: 800;
-  gap: 4px;
-  justify-content: flex-start;
-  line-height: 1.15;
-  min-height: 34px;
-  overflow: hidden;
-  padding: 6px 8px;
-  text-align: left;
-  white-space: nowrap;
-  width: 100%;
+  font-size: 11.5px;
+  font-weight: 700;
+  gap: 6px;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 12px;
+  width: auto !important;
+  box-sizing: border-box;
 }
 
-.number-seed {
-  align-items: stretch;
+.editor-top-tools .number-seed {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-top-tools .number-seed input {
+  height: 28px;
+  width: 80px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 8px;
+  background: #ffffff;
+}
+
+.editor-top-tools .toolbar-search {
+  position: relative;
+  padding-left: 28px;
+}
+
+.editor-top-tools .toolbar-search i {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.editor-top-tools .toolbar-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 12px;
+  color: #0f172a;
+  width: 110px;
+}
+
+/* ── RIGHT PLOT LIST SIDEBAR ────────────────────────────────── */
+.plot-sidebar {
+  width: 320px;
+  min-width: 300px;
+  max-width: 360px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
   flex-direction: column;
-  gap: 3px;
+  box-sizing: border-box;
+}
+
+.plot-sidebar-filters {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+  flex: 0 0 auto !important;
+}
+
+.plot-sidebar-filters .search-box {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.plot-sidebar-filters .search-box input,
+.plot-sidebar-filters .search-input {
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 11.5px !important;
+  padding-left: 32px !important;
+  padding-right: 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  width: 100% !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+.plot-sidebar-filters .status-filter-select {
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 11.5px !important;
+  padding: 0 24px 0 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  width: 100% !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+  margin-bottom: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.plot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.plot-card-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  gap: 10px;
+}
+
+.plot-card-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.plot-card-item.active {
+  background: #f0fdf4;
+  border-color: #10b981;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.plot-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
-  white-space: normal;
+}
+
+.status-indicator-box {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.plot-details-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.plot-code {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.plot-area-subtext {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.plot-status-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.plot-status-pill-select {
+  min-width: 115px !important;
+  max-width: 135px;
+  height: 32px !important;
+  padding: 0 8px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.plot-status-pill-select:focus {
+  border-color: #10b981 !important;
+  outline: none;
 }
 
 .editor-toolbar [title] {
@@ -1030,7 +1241,8 @@
   filter: drop-shadow(0 1px 2px rgba(37, 99, 235, .55));
 }
 
-.map-stage text {
+.map-stage .plot-overlay text {
+  display: none;
   dominant-baseline: middle;
   fill: #fff;
   font-weight: 900;
@@ -1040,6 +1252,11 @@
   paint-order: stroke;
   stroke: rgba(15, 23, 42, .45);
   stroke-width: .18px;
+}
+
+.map-stage .plot-overlay:hover text,
+.map-stage .plot-overlay.active text {
+  display: block;
 }
 
 .plot-dimension-label {
@@ -1701,12 +1918,20 @@
   color: #475569;
 }
 
+.plot-sidebar-filters .search-box {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  margin-bottom: 0 !important;
+}
+
 .plot-sidebar-filters .search-input {
   border-radius: 6px;
   border: 1px solid #cbd5e1;
-  padding: 4px 8px;
-  font-size: 11px;
-  height: 28px;
+  padding-left: 32px !important;
+  padding-right: 10px !important;
+  font-size: 11.5px;
+  height: 32px !important;
+  min-height: 32px !important;
   width: 100%;
   background: #ffffff;
   box-sizing: border-box;
@@ -1715,13 +1940,15 @@
 .plot-sidebar-filters .status-filter-select {
   border-radius: 6px;
   border: 1px solid #cbd5e1;
-  padding: 3px 6px;
-  font-size: 11px;
-  height: 28px;
+  padding: 0 24px 0 10px !important;
+  font-size: 11.5px;
+  height: 32px !important;
+  min-height: 32px !important;
   width: 100%;
   background: #ffffff;
   color: #334155;
   font-weight: 600;
+  margin-bottom: 0 !important;
   box-sizing: border-box;
 }
 

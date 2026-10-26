@@ -67,6 +67,9 @@
       </div>
       <div class="stat-value text-gold-dark">₹{{ totalPaidSum | number }}</div>
       <div class="stat-label">Total Confirmed Paid</div>
+      <div *ngIf="totalPendingSum > 0" class="fs-10 text-muted mt-0.5" title="Payments currently under admin verification">
+        <i class="fas fa-clock text-warning me-1"></i>Pending Approval: ₹{{ totalPendingSum | number }}
+      </div>
       <div class="stat-footer text-warning d-flex align-items-center gap-1">
         <i class="fas fa-shield-alt me-1"></i>Verified Payments
       </div>
@@ -186,7 +189,7 @@
             <span class="sbadge" 
                   [class.sbadge-green]="b.computedStatus==='Confirmed'||b.computedStatus==='Active'"
                   [class.sbadge-blue]="b.computedStatus==='Allocated'||b.computedStatus==='Buyback In Review'"
-                  [class.sbadge-yellow]="b.computedStatus==='PaymentPending'||b.computedStatus==='InProcess'||b.computedStatus==='Pending'"
+                  [class.sbadge-yellow]="b.computedStatus==='Payment Pending'||b.computedStatus==='PaymentPending'||b.computedStatus==='InProcess'||b.computedStatus==='Pending'"
                   [class.sbadge-purple]="b.computedStatus==='Waitlisted'"
                   [class.sbadge-red]="b.computedStatus==='Sold'||b.computedStatus==='Cancelled'">
               <i *ngIf="b.computedStatus==='Waitlisted'" class="fas fa-clock me-1"></i>
@@ -196,7 +199,7 @@
             <span class="sbadge fs-10" 
                   [class.sbadge-green]="b.financialStatus==='Fully Paid'" 
                   [class.sbadge-yellow]="b.financialStatus==='Partial Paid'"
-                  [class.sbadge-gray]="b.financialStatus==='Unpaid'"
+                  [class.sbadge-gray]="b.financialStatus==='Unpaid'||b.financialStatus==='Under Verification'"
                   [class.sbadge-red]="b.financialStatus==='Overdue'">
               {{ b.financialStatus }}
             </span>
@@ -208,6 +211,18 @@
 
         <!-- Body & Spec Details -->
         <div class="p-3 bg-white">
+          <!-- Admin Approval Pending Notice (Task 1 / Fix A) -->
+          <div *ngIf="b.isPending" 
+               class="alert alert-warning p-2 px-3 fs-12 rounded-3 mb-3 border border-warning d-flex align-items-center gap-2">
+            <i class="fas fa-clock text-warning fs-5 flex-shrink-0"></i>
+            <div>
+              <strong class="text-dark d-block">Admin approval pending. Payment under verification.</strong>
+              <span class="text-muted fs-11" *ngIf="b.underVerificationAmount > 0">
+                Advance Amount Submitted: <strong>₹{{ b.underVerificationAmount | number }}</strong> (will count as Confirmed Paid once approved)
+              </span>
+            </div>
+          </div>
+
           <!-- Waitlist Alert Banner (If Waitlisted) -->
           <div *ngIf="b.computedStatus === 'Waitlisted'" class="alert alert-warning p-2 px-3 fs-12 rounded-3 mb-3 border border-warning">
             <div class="d-flex align-items-start gap-2">
@@ -240,7 +255,14 @@
             <div class="col-6 col-sm-3">
               <div class="spec-tile p-2">
                 <div class="spec-lbl">Plot Area</div>
-                <div class="spec-val text-success">{{ b.plot_area || '—' }} <small>Gaj</small></div>
+                <div class="spec-val text-success">
+                  <ng-container *ngIf="b.plot_area; else noPlotArea">
+                    {{ b.plot_area }} <small>{{ b.area_unit || 'Gaj' }}</small>
+                  </ng-container>
+                  <ng-template #noPlotArea>
+                    —
+                  </ng-template>
+                </div>
               </div>
             </div>
             <div class="col-6 col-sm-3">
@@ -273,6 +295,11 @@
               <div class="col-4 border-end">
                 <div class="fs-10 text-uppercase text-emerald fw-700">Confirmed Paid</div>
                 <div class="fs-13 fw-800 text-success">₹{{ b.confirmedPaid | number }}</div>
+                <div *ngIf="!b.isApproved && b.underVerificationAmount > 0" class="mt-0.5">
+                  <span class="badge bg-warning-subtle text-dark border border-warning px-1 py-0 fs-9">
+                    Under Verification: ₹{{ b.underVerificationAmount | number }}
+                  </span>
+                </div>
               </div>
               <div class="col-4">
                 <div class="fs-10 text-uppercase text-danger fw-700">Unpaid Balance</div>
@@ -443,9 +470,9 @@
   </div>
 </div>
 
-<!-- PAYMENT PROOF SUBMISSION MODAL -->
+<!-- PAYMENT PROOF SUBMISSION MODAL (Tasks 4 & 5) -->
 <div *ngIf="paymentModalBooking" class="modal-backdrop-custom">
-  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border max-w-500">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border modal-payment-card">
     <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
       <div>
         <h5 class="fw-700 text-dark mb-0"><i class="fas fa-upload text-gold me-2"></i>Submit Payment Proof</h5>
@@ -454,34 +481,87 @@
       <button type="button" class="btn-close" (click)="paymentModalBooking = null"></button>
     </div>
 
-    <!-- BANK DETAILS FOR PAYMENT -->
-    <app-bank-details [compact]="true"></app-bank-details>
+    <!-- TABS: UPI / QR Code & Bank Transfer (Task 5) -->
+    <ul class="nav nav-pills nav-fill mb-3 bg-light p-1 rounded-3 border">
+      <li class="nav-item">
+        <button type="button" 
+                class="nav-link btn-sm py-1.5 fw-bold" 
+                [class.active]="activePaymentTab === 'UPI'" 
+                (click)="selectPaymentTab('UPI')">
+          <i class="fas fa-qrcode me-1.5"></i> UPI / QR Code
+        </button>
+      </li>
+      <li class="nav-item">
+        <button type="button" 
+                class="nav-link btn-sm py-1.5 fw-bold" 
+                [class.active]="activePaymentTab === 'BankTransfer'" 
+                (click)="selectPaymentTab('BankTransfer')">
+          <i class="fas fa-university me-1.5"></i> Bank Transfer
+        </button>
+      </li>
+    </ul>
+
+    <!-- BANK DETAILS FOR PAYMENT (Visible ONLY on Bank Transfer tab) -->
+    <div *ngIf="activePaymentTab === 'BankTransfer'" class="mb-3">
+      <app-bank-details [compact]="true"></app-bank-details>
+    </div>
 
     <form (ngSubmit)="submitPaymentProof()">
+      <!-- Installment Dropdown for EMI (Task 4) -->
+      <div class="mb-2" *ngIf="paymentModalBooking.payment_type === 'EMI' && unpaidInstallments.length > 0">
+        <label class="form-label fs-11 fw-700 text-dark mb-1">Select Installment *</label>
+        <select class="form-select form-select-sm" [ngModel]="selectedInstallmentEmiId" (ngModelChange)="onInstallmentChange($event)" name="installment_id">
+          <option *ngFor="let inst of unpaidInstallments" 
+                  [value]="inst.emi_id" 
+                  [disabled]="inst.emi_status === 'ProofSubmitted'">
+            Installment #{{ inst.installment_no }} (₹{{ (inst.emi_amount || 0) | number }}) - Due {{ inst.due_date | date:'dd MMM yyyy' }}
+            <ng-container *ngIf="inst.emi_status === 'ProofSubmitted'"> - Under Verification</ng-container>
+          </option>
+        </select>
+        <div class="form-text fs-10 text-muted">Oldest unpaid installment is selected by default.</div>
+      </div>
+
       <div class="mb-2">
         <label class="form-label fs-11 fw-700 text-dark mb-1">Amount Paid (₹) *</label>
         <input type="number" class="form-control form-control-sm" [(ngModel)]="paymentProofData.amount" name="amount" required placeholder="e.g. 15000" />
       </div>
 
-      <div class="mb-2">
+      <div class="mb-3">
         <label class="form-label fs-11 fw-700 text-dark mb-1">Payment Mode *</label>
-        <select class="form-select form-select-sm" [(ngModel)]="paymentProofData.payment_mode" name="payment_mode">
-          <option value="UPI">UPI / GooglePay / PhonePe / Paytm</option>
+        <select class="form-select form-select-sm" [ngModel]="paymentProofData.payment_mode" (ngModelChange)="onPaymentModeChange($event)" name="payment_mode">
+          <option value="UPI">UPI / GooglePay / PhonePe / Paytm (QR Payment)</option>
           <option value="BankTransfer">Bank Transfer / NEFT / RTGS / IMPS</option>
           <option value="Cheque">Cheque / Demand Draft</option>
           <option value="Cash">Cash Deposit at Office</option>
         </select>
       </div>
 
-      <div class="mb-2">
-        <label class="form-label fs-11 fw-700 text-dark mb-1">Transaction Ref / UTR / Cheque #</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="paymentProofData.reference_number" name="reference_number" placeholder="e.g. UPI Ref / UTR 12-digit number" />
+      <!-- UPI QR Code Section (Visible ONLY on UPI tab / UPI mode) -->
+      <div *ngIf="activePaymentTab === 'UPI'" class="mb-3">
+        <app-upi-qr-payment
+          [advanceAmount]="paymentProofData.amount"
+          [isDarkTheme]="false"
+          (paymentDetailsChange)="onUpiProofDetailsChange($event)">
+        </app-upi-qr-payment>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label fs-11 fw-700 text-dark mb-1">Upload Receipt / Screenshot *</label>
-        <input type="file" class="form-control form-control-sm" accept="image/*,.pdf" (change)="onFileSelected($event)" required />
-        <div class="form-text fs-10 text-muted">Supports JPG, PNG, PDF (Max 5MB)</div>
+      <!-- Bank Transfer / Other Payment Modes -->
+      <div *ngIf="activePaymentTab === 'BankTransfer'">
+        <div class="mb-2">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Payer / Account Holder Name *</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="paymentProofData.payer_name" name="payer_name" placeholder="Name of person who made the payment" />
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Transaction Ref / Cheque # *</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="paymentProofData.reference_number" name="reference_number" placeholder="e.g. Bank Ref / Cheque Number" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fs-11 fw-700 text-dark mb-1">Upload Receipt / Cheque Photo *</label>
+          <input type="file" class="form-control form-control-sm" accept="image/*,.pdf" (change)="onFileSelected($event)" />
+          <div class="form-text fs-10 text-muted">Supports JPG, PNG, PDF (Max 5MB)</div>
+        </div>
       </div>
 
       <div class="alert alert-warning p-2 fs-11 rounded-3 mb-3 d-flex align-items-center gap-2">
@@ -526,9 +606,10 @@
 </div>
 
 <!-- INSTALLMENT SCHEDULE (EMI TRACKER) MODAL -->
-<div *ngIf="selectedInstallmentBooking" class="modal-backdrop-custom">
-  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border max-w-750">
-    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+<div *ngIf="selectedInstallmentBooking" class="modal-backdrop-custom" (click)="closeInstallmentModal()">
+  <div class="modal-card-custom p-4 bg-white rounded-4 shadow-lg border modal-installment-card" (click)="$event.stopPropagation()">
+    <!-- Sticky Header -->
+    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3 flex-shrink-0">
       <div>
         <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
           <span class="badge bg-success text-white fs-12 fw-700">
@@ -537,14 +618,28 @@
           <span class="badge bg-light text-dark border fs-12 fw-600 font-mono">
             {{ selectedInstallmentBooking.booking_serial || ('BK-' + selectedInstallmentBooking.booking_id) }}
           </span>
+          <!-- Summary Badge (Task 3) -->
+          <span class="badge bg-light text-dark border fs-12 fw-700">
+            Paid {{ selectedInstallmentBooking.paidInstallmentsCount || 0 }} / Unpaid {{ ((selectedInstallmentBooking.totalInstallments || installmentSchedules.length || 0) - (selectedInstallmentBooking.paidInstallmentsCount || 0)) }}
+          </span>
         </div>
         <h5 class="fw-800 text-dark mb-0 font-display">Installment Schedule &amp; EMI Tracker</h5>
         <div class="fs-12 text-muted mt-1">
           <i class="fas fa-city text-gold me-1"></i>{{ selectedInstallmentBooking.site_name }} &bull; Plan: <strong>{{ selectedInstallmentBooking.payment_type || 'EMI Schedule' }}</strong>
         </div>
       </div>
-      <button type="button" class="btn-close" (click)="closeInstallmentModal()"></button>
+      <button type="button" class="btn-close" (click)="closeInstallmentModal()" aria-label="Close"></button>
     </div>
+
+    <!-- Scrollable Body with Internal Scrolling -->
+    <div class="modal-installment-body flex-grow-1">
+      <!-- Notice Before Admin Approval (Task 3) -->
+      <div *ngIf="!selectedInstallmentBooking.isApproved" class="alert alert-warning p-3 rounded-3 mb-3 d-flex align-items-center gap-2">
+        <i class="fas fa-clock text-warning fs-4"></i>
+        <div class="fw-bold fs-13 text-dark">
+          Installments will be generated after admin approval.
+        </div>
+      </div>
 
     <!-- Financial Breakdown Tiles -->
     <div class="row g-2 mb-3 text-center">
@@ -574,17 +669,17 @@
       </div>
     </div>
 
-    <!-- Color Legend -->
+    <!-- Color Legend (Task 3: Green Paid / Yellow Unpaid) -->
     <div class="p-2 px-3 rounded-3 mb-3 bg-light border d-flex align-items-center justify-content-between flex-wrap gap-2 fs-11">
       <div class="d-flex align-items-center gap-3">
         <span><strong>Status Legend:</strong></span>
         <span class="d-inline-flex align-items-center gap-1">
           <span class="badge bg-success">&nbsp;</span>
-          <strong class="text-success">Green: Paid &amp; Completed</strong>
+          <strong class="text-success">Paid</strong>
         </span>
         <span class="d-inline-flex align-items-center gap-1">
-          <span class="badge bg-secondary">&nbsp;</span>
-          <span class="text-muted">Gray: Due / Upcoming</span>
+          <span class="badge bg-warning text-dark">&nbsp;</span>
+          <strong class="text-warning">Unpaid</strong>
         </span>
       </div>
       <a [routerLink]="['/invoice', selectedInstallmentBooking.invoice_number || selectedInstallmentBooking.booking_serial || selectedInstallmentBooking.booking_id]"
@@ -601,7 +696,7 @@
     </div>
 
     <!-- Installment Records Table / List -->
-    <div *ngIf="!loadingInstallments" class="table-responsive max-h-350 overflow-y-auto mb-3 border rounded-3">
+    <div *ngIf="!loadingInstallments" class="table-responsive installment-table-wrap mb-3 border rounded-3">
       <table class="table table-hover align-middle mb-0 font-sm">
         <thead class="table-light sticky-top">
           <tr>
@@ -617,14 +712,18 @@
           <tr *ngIf="installmentSchedules.length === 0">
             <td colspan="6" class="text-center py-4 text-muted">
               <i class="fas fa-info-circle text-gold fs-4 mb-2 d-block"></i>
-              No active EMI schedules found for this booking.
+              <span *ngIf="!selectedInstallmentBooking.isApproved" class="fw-bold text-dark">Installments will be generated after admin approval.</span>
+              <span *ngIf="selectedInstallmentBooking.isApproved">No active EMI schedules found for this booking.</span>
             </td>
           </tr>
           <tr *ngFor="let emi of installmentSchedules" 
-              [style.background-color]="emi.emi_status === 'Paid' ? '#dcfce7' : '#f8fafc'">
+              [style.background-color]="emi.emi_status === 'Paid' ? '#dcfce7' : '#fefce8'">
             <!-- Installment Number -->
             <td class="text-center fw-bold">
-              <span class="badge" [class.bg-success]="emi.emi_status === 'Paid'" [class.bg-secondary]="emi.emi_status !== 'Paid'">
+              <span class="badge" 
+                    [class.bg-success]="emi.emi_status === 'Paid'" 
+                    [class.bg-warning]="emi.emi_status !== 'Paid'"
+                    [class.text-dark]="emi.emi_status !== 'Paid'">
                 #{{ emi.installment_no }}
               </span>
             </td>
@@ -643,13 +742,13 @@
               </span>
               <span *ngIf="!emi.paid_date" class="text-muted fs-11">—</span>
             </td>
-            <!-- Status Badge: Green if Paid, Gray if Due -->
+            <!-- Status Badge (Task 3): Green Paid / Yellow Unpaid -->
             <td class="text-center">
               <span *ngIf="emi.emi_status === 'Paid'" class="badge bg-success text-white px-2 py-1">
                 <i class="fas fa-check me-1"></i> Paid
               </span>
-              <span *ngIf="emi.emi_status !== 'Paid'" class="badge bg-secondary text-light px-2 py-1">
-                Due
+              <span *ngIf="emi.emi_status !== 'Paid'" class="badge bg-warning text-dark border border-warning px-2 py-1">
+                Unpaid
               </span>
             </td>
             <!-- Invoice / Receipt Button -->
@@ -672,8 +771,10 @@
         </tbody>
       </table>
     </div>
+    </div> <!-- /modal-installment-body -->
 
-    <div class="d-flex justify-content-end">
+    <!-- Sticky Footer (ALWAYS VISIBLE!) -->
+    <div class="d-flex justify-content-end pt-3 border-top mt-2 flex-shrink-0">
       <button type="button" class="btn btn-secondary btn-sm px-4" (click)="closeInstallmentModal()">Close</button>
     </div>
   </div>

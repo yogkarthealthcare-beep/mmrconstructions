@@ -60,9 +60,10 @@ export class SiteMapComponent implements OnInit, OnDestroy {
   private refreshTimer: ReturnType<typeof setInterval> | null = null;
 
   readonly statusItems = [
-    { status: 'Available', label: 'Available', color: '#16a34a' },
-    { status: 'Processing', label: 'In Progress (Pink)', color: '#ec4899' },
-    { status: 'Booked', label: 'Booked / Sold (Red)', color: '#dc2626' },
+    { status: 'Available', label: 'Available', color: '#0284c7' },
+    { status: 'Processing', label: 'In Progress (Orange)', color: '#ea580c' },
+    { status: 'Booked', label: 'Confirmed Booking (Green)', color: '#16a34a' },
+    { status: 'Sold', label: 'Sold Out (Red)', color: '#dc2626' },
   ];
 
   constructor(
@@ -543,7 +544,8 @@ export class SiteMapComponent implements OnInit, OnDestroy {
   }
 
   isBookable(plot: any) {
-    return this.normalizedStatus(plot?.plot_status) === 'Available';
+    const s = this.normalizedStatus(plot?.plot_status);
+    return s === 'Available' || s === 'Processing';
   }
 
   statusMessage(plot: any) {

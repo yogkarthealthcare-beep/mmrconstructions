@@ -1,14 +1,21 @@
-/* ── RECEIPT VIEW MATCHING EXACT DUAL-COPY LANDSCAPE THEME ── */
+/* ==========================================================================
+   ADMINISTRATIVE RECEIPT VIEW - MATCHING REFERENCE INVOICE DESIGN
+   ========================================================================== */
+
+:host {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #1e293b;
+  -webkit-font-smoothing: antialiased;
+}
 
 .receipt-management-shell {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: #111827;
   width: 100%;
   max-width: 100%;
   margin: 0;
 }
 
-/* 1. Header */
+/* Header */
 .rm-header {
   background: #ffffff;
   border: 1px solid var(--clr-border, #e2e8f0);
@@ -48,10 +55,10 @@
 }
 
 .rm-back-btn {
-  height: 24px !important;
-  width: 24px !important;
+  height: 26px !important;
+  width: 26px !important;
   padding: 0 !important;
-  border-radius: 4px !important;
+  border-radius: 5px !important;
   font-size: 11px !important;
   display: inline-flex;
   align-items: center;
@@ -59,14 +66,14 @@
 }
 
 .rm-btn-apply {
-  background: var(--clr-primary-dk, #064e3b);
+  background: #15803d;
   color: #ffffff;
   font-size: 11.5px;
   font-weight: 600;
   height: 26px !important;
-  padding: 0 10px !important;
+  padding: 0 12px !important;
   border-radius: 5px !important;
-  border: 1px solid var(--clr-primary-dk, #064e3b);
+  border: 1px solid #15803d;
   display: inline-flex;
   align-items: center;
   cursor: pointer;
@@ -74,7 +81,7 @@
 }
 
 .rm-btn-apply:hover {
-  background: var(--clr-primary-dk, #043a2c);
+  background: #166534;
   color: #ffffff;
 }
 
@@ -89,7 +96,7 @@
   justify-content: center;
 }
 
-/* 2. Panel Cards */
+/* Panel Cards */
 .rm-panel-card {
   background: #ffffff;
   border: 1px solid var(--clr-border, #e5e7eb);
@@ -97,39 +104,87 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
-/* ── Dual Copy Landscape Container ── */
-.receipt-dual-landscape-wrapper {
+/* Receipt Wrapper */
+.receipt-wrapper {
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 14px;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
 }
 
-@media screen and (max-width: 1100px) {
-  .receipt-dual-landscape-wrapper {
-    flex-direction: column !important;
-    gap: 16px !important;
-  }
-  .receipt-cut-divider {
-    display: none !important;
-  }
-  .receipt-copy-card {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
+/* ==========================================================================
+   LANDSCAPE A4 INVOICE SHEET (MATCHES BOOKING INVOICE EXACTLY)
+   ========================================================================== */
+.landscape-invoice-sheet {
+  background: #ffffff;
+  width: 100%;
+  max-width: 1240px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.08);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr 20px 1fr;
+  gap: 0;
+  align-items: stretch;
 }
 
-.receipt-copy-card {
-  flex: 1 1 0;
-  min-width: 0;
-  background: #ffffff;
-  border: 1.5px solid #064e3b;
-  border-radius: 8px;
-  padding: 1.1rem 1.25rem;
-  box-sizing: border-box;
+/* Center Cut Line Divider */
+.center-cut-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   position: relative;
+  padding: 0 2px;
+}
+
+.cut-line {
+  flex: 1;
+  width: 1px;
+  border-left: 1.5px dashed #94a3b8;
+}
+
+.cut-badge {
+  background: #ffffff;
+  border: 1px dashed #64748b;
+  border-radius: 12px;
+  padding: 6px 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+  font-size: 10px;
+  margin: 6px 0;
+}
+
+.cut-badge span {
+  writing-mode: vertical-rl;
+  font-size: 8px;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+/* Individual Invoice Box Wrapper */
+.invoice-box-wrapper {
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  background: #ffffff;
+  position: relative;
+}
+
+.buyer-box {
+  border-top: 4px solid #15803d;
+}
+
+.seller-box {
+  border-top: 4px solid #0284c7;
 }
 
 .cancelled-receipt {
@@ -139,10 +194,10 @@
 
 .cancelled-watermark {
   position: absolute;
-  top: 40%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%) rotate(-25deg);
-  font-size: 3.5rem;
+  font-size: 3.2rem;
   font-weight: 900;
   color: rgba(239, 68, 68, 0.12);
   pointer-events: none;
@@ -150,247 +205,393 @@
   z-index: 10;
 }
 
-.receipt-cut-divider {
+.invoice-card-inner {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.receipt-cut-divider .cut-line {
-  flex: 1;
-  width: 0;
-  border-left: 1.5px dashed #94a3b8;
-}
-
-.receipt-cut-divider .cut-scissor {
-  color: #64748b;
-  font-size: 13px;
-  padding: 6px 0;
-  transform: rotate(90deg);
-}
-
-.receipt-copy-badge {
-  display: inline-block;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
-  border-radius: 4px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.customer-badge {
-  background: #ecfdf5;
-  color: #065f46;
-  border: 1px solid #10b981;
-}
-
-.company-badge {
-  background: #eff6ff;
-  color: #1e40af;
-  border: 1px solid #3b82f6;
-}
-
-.receipt-head .company-title {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 0.88rem;
-  font-weight: 800;
-  color: #064e3b;
-  margin-bottom: 0.12rem;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
-}
-
-.receipt-head .company-address,
-.receipt-head .company-contact,
-.receipt-head .company-sub {
-  font-size: 0.67rem;
-  color: #475569;
-  margin-bottom: 0.05rem;
-  line-height: 1.25;
-}
-
-.receipt-badge-title {
-  display: inline-block;
-  background: #064e3b;
-  color: #ffffff;
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 0.16rem 0.65rem;
-  border-radius: 4px;
-  letter-spacing: 0.06em;
-}
-
-.serial-highlight {
-  background: #e0f2fe;
-  color: #0284c7;
-  padding: 1px 6px;
-  border-radius: 4px;
-  display: inline-block;
-  font-weight: 700;
-}
-
-.receipt-meta-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.18rem 0.6rem;
-  color: #1e293b;
-  font-size: 0.75rem;
-  line-height: 1.25;
-}
-
-.receipt-divider {
-  border-top: 1px solid #064e3b;
-  opacity: 0.25;
-  margin: 0.45rem 0;
-}
-
-.receipt-table {
-  margin-bottom: 0.35rem;
-  border-color: #cbd5e1;
-}
-
-.receipt-table td {
-  padding: 0.25rem 0.4rem;
-  font-size: 0.72rem;
-  vertical-align: middle;
-  line-height: 1.2;
-}
-
-.receipt-table .lbl {
-  width: 25%;
-  background: #f8fafc;
-  color: #334155;
-  font-weight: 600;
-}
-
-.receipt-table .val {
-  width: 25%;
-  color: #0f172a;
-}
-
-.bg-purple {
-  background: #7c3aed !important;
-  color: #ffffff !important;
-}
-
-.receipt-amount-box {
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  padding: 0.35rem 0.6rem;
-  border-radius: 6px;
-  margin-bottom: 0.35rem;
-}
-
-.receipt-amount-box .amt-lbl {
-  font-size: 0.66rem;
-  color: #64748b;
-  font-weight: 600;
-  line-height: 1.1;
-}
-
-.receipt-amount-box .amt-val {
-  font-size: 0.88rem;
-  line-height: 1.2;
-}
-
-.receipt-amount-box .amt-val.text-success {
-  color: #16a34a !important;
-  font-weight: 800;
-}
-
-.amount-words-line {
-  border-top: 1px dashed #86efac;
-  padding-top: 0.25rem;
-  margin-top: 0.25rem;
-  font-size: 0.7rem;
-  line-height: 1.2;
-  color: #166534;
-}
-
-.receipt-notes {
-  font-size: 0.66rem;
-  color: #64748b;
-  margin-bottom: 0.25rem;
-  line-height: 1.2;
-}
-
-.terms-disclaimer {
-  font-size: 0.62rem;
-  color: #64748b;
-  font-style: italic;
-  margin-top: 0.3rem;
-  line-height: 1.25;
-}
-
-/* ── Signature Section with Generous Top Breathing Space ── */
-.receipt-signatures {
-  margin-top: 32px;
-  padding-top: 10px;
-  display: flex;
+  gap: 6px;
+  height: 100%;
   justify-content: space-between;
 }
 
-.signature-box {
-  width: 140px;
+/* Header & Brand */
+.card-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 5px;
 }
 
-.sig-line {
-  border-top: 1.2px solid #334155;
-  margin-bottom: 0.2rem;
+.brand-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
 }
 
-.sig-label {
-  font-size: 0.7rem;
+.comp-logo {
+  max-height: 34px;
+  max-width: 75px;
+  object-fit: contain;
+}
+
+.comp-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.comp-subtext {
+  font-size: 0.62rem;
+  color: #64748b;
+  line-height: 1.25;
+}
+
+.comp-contacts {
+  font-size: 0.6rem;
+  color: #64748b;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 1px;
+}
+
+.copy-tag-area {
+  flex-shrink: 0;
+}
+
+.copy-pill {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.pill-buyer {
+  background: #ecfdf5;
+  color: #15803d;
+  border: 1.5px solid #86efac;
+}
+
+.pill-seller {
+  background: #f0f9ff;
+  color: #0284c7;
+  border: 1.5px solid #7dd3fc;
+}
+
+.copy-sub {
+  font-size: 0.58rem;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+/* Meta Strip */
+.meta-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.68rem;
+}
+
+.m-lbl {
+  color: #64748b;
+  font-size: 0.6rem;
   font-weight: 700;
+  margin-right: 4px;
+}
+
+/* Details Grid */
+.details-compact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.info-cell {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 4px 7px;
+  font-size: 0.67rem;
+}
+
+.cell-head {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 2px;
+}
+
+.cell-row {
+  display: flex;
+  gap: 4px;
+  line-height: 1.3;
+  margin-bottom: 1.5px;
+}
+
+.cell-row .k {
+  color: #64748b;
+  font-size: 0.62rem;
+  min-width: 48px;
+}
+
+.cell-row .v {
   color: #0f172a;
 }
 
-.sig-sub {
-  font-size: 0.6rem;
+.truncate-1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Financial Table */
+.fin-table-wrapper {
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fin-compact-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.68rem;
+}
+
+.fin-compact-table th {
+  background: #f1f5f9;
+  padding: 3px 8px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.fin-compact-table td {
+  padding: 2.5px 8px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+.row-grand-total {
+  background-color: #f8fafc;
+  font-weight: 700;
+  border-top: 1.5px solid #0f172a !important;
+  border-bottom: 1.5px solid #0f172a !important;
+}
+
+.badge-nil {
+  background: #15803d;
+  color: #ffffff;
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+/* Payment Badge Bar */
+.payment-badge-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 0.65rem;
+}
+
+.pay-lbl {
   color: #64748b;
+  margin-right: 4px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 991px) {
-  .receipt-dual-landscape-wrapper {
-    flex-direction: column;
-  }
-
-  .receipt-cut-divider {
-    width: 100%;
-    height: 20px;
-    flex-direction: row;
-  }
-
-  .receipt-cut-divider .cut-line {
-    flex: 1;
-    height: 0;
-    width: auto;
-    border-top: 1.5px dashed #94a3b8;
-    border-left: none;
-  }
-
-  .receipt-cut-divider .cut-scissor {
-    transform: rotate(0deg);
-    padding: 0 8px;
-  }
+/* Dynamic Payment Notice Box */
+.notice-box {
+  border-radius: 5px !important;
+  padding: 4px 8px !important;
+  line-height: 1.35 !important;
+  box-sizing: border-box !important;
 }
 
-/* ======================================================== */
-/* PRINT STYLES - A4 LANDSCAPE DUAL COPIES (NO BLACK SHADOW) */
-/* ======================================================== */
+.notice-title {
+  font-size: 0.64rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.4px !important;
+  margin-bottom: 2px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.notice-hindi {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+}
+
+.notice-english {
+  font-size: 0.63rem !important;
+  font-weight: 500 !important;
+  line-height: 1.25 !important;
+}
+
+/* Notice Color Variations */
+.notice-box.notice-onetime {
+  background-color: #f0fdf4 !important;
+  border: 1.5px solid #16a34a !important;
+  color: #15803d !important;
+}
+.notice-box.notice-onetime .notice-title { color: #16a34a !important; }
+.notice-box.notice-onetime .notice-hindi { color: #15803d !important; }
+.notice-box.notice-onetime .notice-english { color: #166534 !important; }
+
+.notice-box.notice-part {
+  background-color: #fef2f2 !important;
+  border: 1.5px solid #dc2626 !important;
+  color: #b91c1c !important;
+}
+.notice-box.notice-part .notice-title { color: #dc2626 !important; }
+.notice-box.notice-part .notice-hindi { color: #b91c1c !important; }
+.notice-box.notice-part .notice-english { color: #dc2626 !important; }
+
+.notice-box.notice-emi {
+  background-color: #f0f9ff !important;
+  border: 1.5px solid #0284c7 !important;
+  color: #0369a1 !important;
+}
+.notice-box.notice-emi .notice-title { color: #0284c7 !important; }
+.notice-box.notice-emi .notice-hindi { color: #0369a1 !important; }
+.notice-box.notice-emi .notice-english { color: #075985 !important; }
+
+/* Footer (Dual Signatures: Buyer Left, Center QR, Seller Right) */
+.card-footer-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-top: 3px;
+  border-top: 1px solid #e2e8f0;
+  gap: 6px;
+}
+
+.sig-box {
+  flex: 1;
+  max-width: 140px;
+}
+
+.buyer-sig-box {
+  text-align: left;
+}
+
+.seller-sig-box {
+  text-align: right;
+}
+
+.sig-space {
+  min-height: 20px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.seller-sig-box .sig-space {
+  justify-content: flex-end;
+}
+
+.sig-placeholder-line {
+  width: 100%;
+  border-bottom: 1.5px dashed #94a3b8;
+  height: 16px;
+  margin-bottom: 2px;
+}
+
+.sign-img {
+  max-height: 22px;
+  object-fit: contain;
+}
+
+.sig-title {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.15;
+}
+
+.sig-hindi {
+  font-size: 0.52rem;
+  color: #64748b;
+  line-height: 1.1;
+}
+
+.sig-sub {
+  font-size: 0.56rem;
+  color: #334155;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.qr-barcode-center-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tiny-qr {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.barcode-auth-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-text {
+  font-size: 0.52rem;
+  color: #64748b;
+  margin-top: 1px;
+  white-space: nowrap;
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* ==========================================================================
+   PRINT ENGINE - FORCED LANDSCAPE PERFECT FIT
+   ========================================================================== */
+@page {
+  size: A4 landscape;
+  margin: 3mm 4mm;
+}
+
 @media print {
-  @page {
-    size: A4 landscape;
-    margin: 6mm 6mm 6mm 6mm;
+  html, body {
+    width: 297mm !important;
+    height: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  /* 1. Hide non-printable elements */
   .no-print,
   .toast-popup,
   .rm-header,
@@ -411,20 +612,6 @@
     box-shadow: none !important;
   }
 
-  /* 2. Reset containers & prevent browser dark overlay */
-  html, body {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    color: #111827 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    height: auto !important;
-    overflow: visible !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
   .panel-shell,
   .panel-main,
   .panel-content,
@@ -440,126 +627,51 @@
     overflow: visible !important;
   }
 
-  /* 3. Dual Copy Landscape Sheet Layout */
-  .receipt-dual-landscape-wrapper {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: stretch !important;
-    justify-content: space-between !important;
-    gap: 8mm !important;
-    width: 100% !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    box-sizing: border-box !important;
-    margin: 0 auto !important;
-  }
-
-  .receipt-copy-card {
-    flex: 1 1 0 !important;
-    width: 48% !important;
-    background: #ffffff !important;
-    border: 1.5px solid #064e3b !important;
-    border-radius: 8px !important;
-    padding: 0.75rem 0.95rem !important;
-    box-sizing: border-box !important;
+  .landscape-invoice-sheet {
     box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 2px 4px !important;
+    margin: 0 auto !important;
+    width: 289mm !important;
+    max-width: 289mm !important;
+    height: 204mm !important;
+    max-height: 204mm !important;
+    display: grid !important;
+    grid-template-columns: 1fr 14px 1fr !important;
     page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    page-break-after: avoid !important;
+    overflow: hidden !important;
   }
 
-  /* 4. Center Perforation Line */
-  .receipt-cut-divider {
+  .center-cut-divider {
     display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 18px !important;
-    height: auto !important;
-    flex-shrink: 0 !important;
   }
 
-  .receipt-cut-divider .cut-line {
-    flex: 1 !important;
-    width: 0 !important;
-    height: auto !important;
-    border-left: 1.5px dashed #94a3b8 !important;
-    border-top: none !important;
+  .notice-box.notice-onetime {
+    background-color: #f0fdf4 !important;
+    border: 1.5px solid #16a34a !important;
+    color: #15803d !important;
   }
-
-  .receipt-cut-divider .cut-scissor {
-    color: #64748b !important;
-    font-size: 13px !important;
-    padding: 4px 0 !important;
-    transform: rotate(90deg) !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  .notice-box.notice-part {
+    background-color: #fef2f2 !important;
+    border: 1.5px solid #dc2626 !important;
+    color: #b91c1c !important;
   }
-
-  /* 5. Exact Color Rendering for Badges & Highlights */
-  .receipt-head .company-title {
-    color: #064e3b !important;
+  .notice-box.notice-emi {
+    background-color: #f0f9ff !important;
+    border: 1.5px solid #0284c7 !important;
+    color: #0369a1 !important;
   }
+}
 
-  .receipt-badge-title {
-    background: #064e3b !important;
-    color: #ffffff !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+@media (max-width: 1060px) {
+  .receipt-wrapper {
+    overflow-x: auto;
+    align-items: flex-start;
   }
-
-  .receipt-copy-badge.customer-badge {
-    background: #ecfdf5 !important;
-    color: #065f46 !important;
-    border: 1px solid #10b981 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .receipt-copy-badge.company-badge {
-    background: #eff6ff !important;
-    color: #1e40af !important;
-    border: 1px solid #3b82f6 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .serial-highlight {
-    background: #e0f2fe !important;
-    color: #0284c7 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .receipt-table {
-    border-color: #cbd5e1 !important;
-  }
-
-  .receipt-table td.lbl {
-    background: #f8fafc !important;
-    color: #334155 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .receipt-amount-box {
-    background: #f0fdf4 !important;
-    border: 1px solid #86efac !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  .receipt-amount-box .amt-val.text-success {
-    color: #16a34a !important;
-  }
-
-  .amount-words-line {
-    border-top: 1px dashed #86efac !important;
-    color: #166534 !important;
-  }
-
-  .sig-line {
-    border-top: 1.2px solid #334155 !important;
+  .landscape-invoice-sheet {
+    min-width: 1040px;
+    margin: 0 auto;
   }
 }

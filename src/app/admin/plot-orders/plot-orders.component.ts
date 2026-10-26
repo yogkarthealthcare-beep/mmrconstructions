@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -78,9 +78,19 @@ export class AdminPlotOrdersComponent implements OnInit {
   isPointerDown = false;
   pointerStart = { x: 0, y: 0 };
   panStart = { x: 0, y: 0 };
+  @ViewChild('mapViewport') mapViewportRef?: ElementRef<HTMLElement>;
 
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
+
+  // Payment Proof Preview Modal (Task 6)
+  previewProofOrder: any = null;
+  openProofPreview(order: any) {
+    this.previewProofOrder = order;
+  }
+  closeProofPreview() {
+    this.previewProofOrder = null;
+  }
 
   get isAssociateView(): boolean {
     const url = this.router.url || '';
@@ -209,10 +219,12 @@ export class AdminPlotOrdersComponent implements OnInit {
       return;
     }
 
-    if (targetStatus === order.booking_status) return;
+    const currentStatus = order?.booking_status || '';
+    if (targetStatus === currentStatus) return;
+    if ((targetStatus === 'Submitted' || !targetStatus) && (currentStatus === '' || currentStatus === 'Submitted')) return;
 
     // Resetting to Choose
-    if (!targetStatus || targetStatus === '') {
+    if (!targetStatus || targetStatus === '' || targetStatus === 'Submitted') {
       Swal.fire({
         title: 'Reset Approval Status?',
         text: `Reset Order #${order.booking_serial || order.booking_id} status back to unreviewed (Choose)?`,
@@ -285,36 +297,48 @@ export class AdminPlotOrdersComponent implements OnInit {
   }
 
   private revertStatus(order: any): void {
-    // Triggers change detection refresh for dropdown
+    if (!order) return;
     const current = order.booking_status;
-    order.booking_status = null;
-    setTimeout(() => { order.booking_status = current; }, 10);
+    order.booking_status = '__revert__';
+    setTimeout(() => { order.booking_status = current; }, 20);
   }
 
   private executeStatusUpdate(order: any, status: string, reason?: string): void {
-    this.statusUpdatingId = order.booking_id;
+    const bookingId = order?.booking_id || order?.order?.booking_id || this.selectedOrder?.booking_id;
+    if (!bookingId) {
+      this.showToast('Invalid booking ID', 'error');
+      return;
+    }
+    this.statusUpdatingId = bookingId;
 
-    this.api.patch(`/api/admin/plot-orders/${order.booking_id}/status`, {
+    this.api.patch(`/api/admin/plot-orders/${bookingId}/status`, {
       status,
-      reason,
-      remarks: reason
+      reason: reason ? String(reason).trim() : '',
+      remarks: reason ? String(reason).trim() : ''
     }, true).subscribe({
       next: (res: any) => {
         this.statusUpdatingId = null;
         if (res.success) {
           const displayLabel = (status === 'Submitted' || !status) ? 'Choose' : status;
-          this.showToast(`Order #${order.booking_serial || order.booking_id} updated to ${displayLabel}`, 'success');
-          order.booking_status = (status === 'Submitted' || !status) ? '' : status;
-          if (status === 'Confirmed') {
-            order.associate_approval_status = 'Approved';
-          } else if (status === 'Rejected') {
-            order.associate_approval_status = 'Rejected';
+          this.showToast(`Order #${order?.booking_serial || bookingId} updated to ${displayLabel}`, 'success');
+          if (order) {
+            order.booking_status = (status === 'Submitted' || !status) ? '' : status;
+            if (status === 'Confirmed') {
+              order.associate_approval_status = 'Approved';
+            } else if (status === 'Rejected') {
+              order.associate_approval_status = 'Rejected';
+            }
           }
-          // Refresh statistics
-          this.loadOrders(this.pagination.page);
-          if (this.selectedOrder && this.selectedOrder.booking_id === order.booking_id) {
+          if (this.selectedOrder && (this.selectedOrder.booking_id === bookingId || this.selectedOrder.booking_id === order?.booking_id)) {
             this.selectedOrder.booking_status = (status === 'Submitted' || !status) ? '' : status;
+            if (status === 'Confirmed') {
+              this.selectedOrder.associate_approval_status = 'Approved';
+            } else if (status === 'Rejected') {
+              this.selectedOrder.associate_approval_status = 'Rejected';
+            }
           }
+          // Refresh statistics and list
+          this.loadOrders(this.pagination.page);
         }
       },
       error: (err: any) => {
@@ -382,8 +406,11 @@ export class AdminPlotOrdersComponent implements OnInit {
           this.processModalPlots(rawPlots, order);
           this.mapLoading = false;
           setTimeout(() => {
-            this.fitAndFocusPlot(this.targetPlotOnMap);
+            this.fitCompleteMap();
           }, 80);
+          setTimeout(() => {
+            this.fitCompleteMap();
+          }, 260);
         });
       },
       error: () => {
@@ -399,8 +426,11 @@ export class AdminPlotOrdersComponent implements OnInit {
               this.processModalPlots(rawPlots, order);
               this.mapLoading = false;
               setTimeout(() => {
-                this.fitAndFocusPlot(this.targetPlotOnMap);
+                this.fitCompleteMap();
               }, 80);
+              setTimeout(() => {
+                this.fitCompleteMap();
+              }, 260);
             });
           },
           error: () => {
@@ -419,31 +449,55 @@ export class AdminPlotOrdersComponent implements OnInit {
     this.targetPlotOnMap = null;
   }
 
+  fitCompleteMap(): void {
+    const el = this.mapViewportRef?.nativeElement;
+    const viewportW = el && el.clientWidth > 0 ? el.clientWidth : 620;
+    const viewportH = el && el.clientHeight > 0 ? el.clientHeight : 440;
+
+    const imgW = this.mapImageWidth > 0 ? this.mapImageWidth : 2000;
+    const imgH = this.mapImageHeight > 0 ? this.mapImageHeight : 1637;
+
+    const pad = 16;
+    const availW = Math.max(viewportW - pad * 2, 80);
+    const availH = Math.max(viewportH - pad * 2, 80);
+
+    const scale = Math.min(availW / imgW, availH / imgH);
+    this.mapZoom = Number(scale.toFixed(4));
+
+    const renderedW = imgW * this.mapZoom;
+    const renderedH = imgH * this.mapZoom;
+
+    this.mapPan = {
+      x: Math.round((viewportW - renderedW) / 2),
+      y: Math.round((viewportH - renderedH) / 2)
+    };
+  }
+
   fitAndFocusPlot(plot: any): void {
     if (plot && plot.centroid && plot.centroid.x > 0) {
+      const el = this.mapViewportRef?.nativeElement;
+      const viewportW = el && el.clientWidth > 0 ? el.clientWidth : 620;
+      const viewportH = el && el.clientHeight > 0 ? el.clientHeight : 440;
       this.mapZoom = 1.75;
-      const viewportW = 600;
-      const viewportH = 360;
       this.mapPan = {
-        x: viewportW / 2 - plot.centroid.x * this.mapZoom,
-        y: viewportH / 2 - plot.centroid.y * this.mapZoom
+        x: Math.round(viewportW / 2 - plot.centroid.x * this.mapZoom),
+        y: Math.round(viewportH / 2 - plot.centroid.y * this.mapZoom)
       };
     } else {
-      this.resetMapZoom();
+      this.fitCompleteMap();
     }
   }
 
   resetMapZoom(): void {
-    this.mapZoom = 1;
-    this.mapPan = { x: 0, y: 0 };
+    this.fitCompleteMap();
   }
 
   zoomInMap(): void {
-    this.mapZoom = Math.min(this.mapZoom * 1.3, 5);
+    this.mapZoom = Math.min(Number((this.mapZoom * 1.3).toFixed(4)), 5);
   }
 
   zoomOutMap(): void {
-    this.mapZoom = Math.max(this.mapZoom / 1.3, 0.4);
+    this.mapZoom = Math.max(Number((this.mapZoom / 1.3).toFixed(4)), 0.08);
   }
 
   onMapPointerDown(e: PointerEvent): void {
@@ -470,7 +524,18 @@ export class AdminPlotOrdersComponent implements OnInit {
   onMapWheel(e: WheelEvent): void {
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-    this.mapZoom = Math.max(0.4, Math.min(6, this.mapZoom * factor));
+    const newZoom = Math.max(0.08, Math.min(6, this.mapZoom * factor));
+    const el = this.mapViewportRef?.nativeElement;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      this.mapPan = {
+        x: Math.round(mouseX - (mouseX - this.mapPan.x) * (newZoom / this.mapZoom)),
+        y: Math.round(mouseY - (mouseY - this.mapPan.y) * (newZoom / this.mapZoom))
+      };
+    }
+    this.mapZoom = Number(newZoom.toFixed(4));
   }
 
   openInFullPlotMap(order: any): void {

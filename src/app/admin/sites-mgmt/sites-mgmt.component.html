@@ -14,20 +14,21 @@
       </div>
 
       <div class="d-flex align-items-center gap-1.5 ms-auto flex-wrap">
-        <!-- SITE INTERACTIVE TOGGLE SWITCH -->
-        <div class="site-mode-toggle-pill" [class.mode-active]="isInteractive">
+        <!-- SITE INTERACTIVE TOGGLE SWITCH (PERMANENTLY LOCKED ON & DISABLED) -->
+        <div class="site-mode-toggle-pill mode-active" style="opacity: 0.9; cursor: not-allowed;" title="Plot Mode is permanently enabled">
           <span class="mode-text">
-            <i class="fas" [ngClass]="isInteractive ? 'fa-bolt text-gold me-1' : 'fa-image text-white-50 me-1'"></i>
-            {{ isInteractive ? 'Plot Mode: ON' : 'Plot Mode: OFF' }}
+            <i class="fas fa-bolt text-gold me-1"></i>
+            Plot Mode: ON
           </span>
           <div class="form-check form-switch mb-0 p-0">
             <input
-              class="form-check-input cursor-pointer"
+              class="form-check-input"
               type="checkbox"
               role="switch"
-              [checked]="isInteractive"
-              (change)="toggleInteractiveMode($any($event.target).checked)"
-              title="Toggle Property &amp; Plot Mode">
+              [checked]="true"
+              disabled
+              style="cursor: not-allowed; pointer-events: none;"
+              title="Plot Mode is permanently enabled">
           </div>
         </div>
 
@@ -319,6 +320,35 @@
               <div class="fs-11 mt-1 text-white">Loading Layout Image...</div>
             </div>
 
+            <!-- FLOATING HOVER / SELECTED PLOT DETAILS OVERLAY CARD -->
+            <div *ngIf="hoveredPlot || selectedPlot"
+                 class="plot-canvas-hover-card position-absolute top-0 start-0 m-2 p-2 shadow rounded-6"
+                 style="background: rgba(6, 43, 24, 0.94); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(201, 168, 76, 0.55); z-index: 10; min-width: 210px; max-width: 270px; pointer-events: none; color: #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.35);">
+              <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                <div class="d-flex align-items-center gap-1.5">
+                  <i class="fas fa-th text-gold fs-12"></i>
+                  <span class="fw-bold fs-12 text-white">Plot #{{ (hoveredPlot || selectedPlot)?.plot_number }}</span>
+                </div>
+                <span class="chip"
+                  [class.chip-ok]="(hoveredPlot || selectedPlot)?.plot_status==='Available'||(hoveredPlot || selectedPlot)?.plot_status==='Vacant'"
+                  [class.chip-warn]="(hoveredPlot || selectedPlot)?.plot_status==='Booked'||(hoveredPlot || selectedPlot)?.plot_status==='InProcess'||(hoveredPlot || selectedPlot)?.plot_status==='PaymentPending'||(hoveredPlot || selectedPlot)?.plot_status==='Hold'"
+                  [class.chip-err]="(hoveredPlot || selectedPlot)?.plot_status==='Sold'">
+                  {{ (hoveredPlot || selectedPlot)?.plot_status || 'Vacant' }}
+                </span>
+              </div>
+              <div class="d-flex align-items-center justify-content-between text-white-50 fs-11 mb-0.5">
+                <span>Area: <strong class="text-white">{{ (hoveredPlot || selectedPlot)?.sqft || 1000 }} sq.ft</strong></span>
+                <span>Facing: <strong class="text-white">{{ (hoveredPlot || selectedPlot)?.facing_direction || 'East' }}</strong></span>
+              </div>
+              <div class="d-flex align-items-center justify-content-between fs-11">
+                <span class="text-white-50">Rate: ₹{{ (hoveredPlot || selectedPlot)?.rate_per_sqft || 1200 }}/sqft</span>
+                <span class="fw-bold text-gold">₹{{ (((hoveredPlot || selectedPlot)?.sqft || 1000) * ((hoveredPlot || selectedPlot)?.rate_per_sqft || 1200)) | number:'1.0-0' }}</span>
+              </div>
+              <div *ngIf="(hoveredPlot || selectedPlot)?.khasra_number" class="fs-10 text-white-50 mt-1 border-top border-secondary pt-0.5">
+                Khasra: <span class="text-white fw-bold">{{ (hoveredPlot || selectedPlot)?.khasra_number }}</span>
+              </div>
+            </div>
+
             <svg
               *ngIf="siteMapUrl; else noSiteImageStage"
               class="w-100 h-100 d-block"
@@ -337,33 +367,39 @@
 
               <!-- SITE PLOT BOUNDARIES OVERLAY LAYER -->
               <g class="plot-overlay-svg">
-                <g *ngFor="let p of filteredPlots" class="plot-group">
+                <g *ngFor="let p of filteredPlots"
+                   class="plot-group"
+                   [class.is-hovered]="hoveredPlot?.plot_id === p.plot_id"
+                   [class.is-selected]="selectedPlot?.plot_id === p.plot_id">
                   <polygon
                     *ngIf="p._polygonPoints"
                     [attr.points]="p._polygonPoints"
                     [attr.fill]="plotStyle(p.plot_status).fill"
-                    [attr.stroke]="plotStyle(p.plot_status).stroke"
-                    stroke-width="0.35"
+                    [attr.stroke]="(selectedPlot?.plot_id === p.plot_id || hoveredPlot?.plot_id === p.plot_id) ? '#ffffff' : plotStyle(p.plot_status).stroke"
+                    [attr.stroke-width]="(selectedPlot?.plot_id === p.plot_id || hoveredPlot?.plot_id === p.plot_id) ? '0.75' : '0.35'"
                     [class.active-polygon]="selectedPlot?.plot_id === p.plot_id"
+                    (mouseenter)="onPlotHover(p)"
+                    (mouseleave)="onPlotLeave()"
                     (click)="selectPlot(p)"
-                    style="cursor: pointer; transition: fill-opacity 0.2s, stroke-width 0.2s;">
+                    style="cursor: pointer; transition: all 0.15s ease;">
                     <title>Plot #{{ p.plot_number }} ({{ p.sqft || 1000 }} sq.ft) — Status: {{ p.plot_status || 'Vacant' }}</title>
                   </polygon>
 
+                  <!-- PLOT DETAILS ONLY SHOWN ON HOVER OR SELECTION -->
                   <text
-                    *ngIf="p._polygonPoints"
+                    *ngIf="p._polygonPoints && (hoveredPlot?.plot_id === p.plot_id || selectedPlot?.plot_id === p.plot_id)"
                     [attr.x]="p._labelPoint?.x || 0"
                     [attr.y]="shouldShowSoldOut(p) ? ((p._labelPoint?.y || 0) - 0.7) : (p._labelPoint?.y || 0)"
                     text-anchor="middle"
                     dominant-baseline="central"
                     fill="#ffffff"
                     font-size="2"
-                    font-weight="700"
-                    style="pointer-events: none; text-shadow: 0 1px 3px rgba(0,0,0,0.85);">
+                    font-weight="800"
+                    style="pointer-events: none; text-shadow: 0 1px 4px rgba(0,0,0,0.95); filter: drop-shadow(0 0 2px rgba(0,0,0,0.9));">
                     {{ p.plot_number }}
                   </text>
                   <text
-                    *ngIf="p._polygonPoints && shouldShowSoldOut(p)"
+                    *ngIf="p._polygonPoints && shouldShowSoldOut(p) && (hoveredPlot?.plot_id === p.plot_id || selectedPlot?.plot_id === p.plot_id)"
                     [attr.x]="p._labelPoint?.x || 0"
                     [attr.y]="(p._labelPoint?.y || 0) + 1.1"
                     text-anchor="middle"
@@ -371,7 +407,7 @@
                     fill="#fee2e2"
                     font-size="1.1"
                     font-weight="800"
-                    style="pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.9);">
+                    style="pointer-events: none; text-shadow: 0 1px 3px rgba(0,0,0,0.95);">
                     SOLD OUT
                   </text>
                 </g>
@@ -497,15 +533,15 @@
                 <td class="text-end">
                   <select
                     class="status-select-pill"
-                    [ngModel]="p.plot_status"
+                    [ngModel]="getPlotStatusSelectValue(p.plot_status)"
                     (change)="changePlotStatus(p, $any($event.target).value)"
-                    [class.status-available]="p.plot_status==='Available'||p.plot_status==='Vacant'"
-                    [class.status-booked]="p.plot_status==='Booked'||p.plot_status==='Hold'||p.plot_status==='PaymentPending'"
-                    [class.status-sold]="p.plot_status==='Sold'">
-                    <option value="Available">Available</option>
-                    <option value="Booked">Booked</option>
-                    <option value="Sold">Sold</option>
-                    <option value="Hold">Hold</option>
+                    style="color: #0f172a !important; background-color: #ffffff !important; font-weight: 700; border: 1px solid #cbd5e1; height: 26px; padding: 2px 8px; border-radius: 6px;"
+                    title="Change Plot Status">
+                    <option value="Vacant" style="color: #0f172a; background: #ffffff;">Vacant</option>
+                    <option value="Available" style="color: #0f172a; background: #ffffff;">Available</option>
+                    <option value="Booked" style="color: #0f172a; background: #ffffff;">Booked</option>
+                    <option value="Sold" style="color: #0f172a; background: #ffffff;">Sold</option>
+                    <option value="Hold" style="color: #0f172a; background: #ffffff;">Hold</option>
                   </select>
                 </td>
               </tr>

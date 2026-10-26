@@ -287,8 +287,103 @@ export class SignupComponent implements OnInit {
     });
   }
 
-  onMobileInput(value: string) {
-    this.form.mobile_no = value.replace(/\D/g, '').slice(0, 10);
+  onFullNameInput(event: any) {
+    const input = event.target as HTMLInputElement;
+    // Strictly letters (A-Z, a-z) and single spaces. Remove numbers and special characters immediately.
+    let val = (input.value || '').replace(/[^a-zA-Z\s]/g, '');
+    val = val.replace(/^\s+/, '');
+    val = val.replace(/\s{2,}/g, ' ');
+    input.value = val;
+    this.form.full_name = val;
+    if (this.v['full_name']) {
+      this.validateFullName();
+    }
+  }
+
+  onFullNameBlur() {
+    if (this.form.full_name) {
+      this.form.full_name = this.form.full_name.trim();
+    }
+    this.validateFullName();
+  }
+
+  validateFullName(): boolean {
+    const name = (this.form.full_name || '').trim();
+    if (!name) {
+      this.v['full_name'] = 'Full Name is required.';
+      return false;
+    }
+    if (!/^[a-zA-Z]+(\s[a-zA-Z]+)*$/.test(name)) {
+      this.v['full_name'] = 'Full Name can only contain letters and spaces (no numbers or special characters).';
+      return false;
+    }
+    if (name.length < 2) {
+      this.v['full_name'] = 'Full Name must be at least 2 characters long.';
+      return false;
+    }
+    delete this.v['full_name'];
+    return true;
+  }
+
+  onEmailInput(event: any) {
+    const input = event.target as HTMLInputElement;
+    // Strictly letters, numbers, @, and . only (no dash, underscore, or special characters)
+    let val = (input.value || '').replace(/[^a-zA-Z0-9@.]/g, '').trim();
+    input.value = val;
+    this.form.email = val;
+    if (this.v['email']) {
+      this.validateEmail();
+    }
+  }
+
+  onEmailBlur() {
+    if (this.form.email) {
+      this.form.email = this.form.email.trim();
+    }
+    this.validateEmail();
+  }
+
+  validateEmail(): boolean {
+    const email = (this.form.email || '').trim();
+    if (!email) {
+      this.v['email'] = 'Email Address is required.';
+      return false;
+    }
+    // Only letters, digits, @ and . allowed; no dashes, underscores, or symbols
+    const emailStrictRegex = /^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)+$/;
+    if (!emailStrictRegex.test(email)) {
+      this.v['email'] = 'Enter a valid email (only letters, numbers, @ and dot allowed; no dash or special characters).';
+      return false;
+    }
+    delete this.v['email'];
+    return true;
+  }
+
+  onMobileInput(valueOrEvent: any) {
+    let val = typeof valueOrEvent === 'string' ? valueOrEvent : (valueOrEvent?.target?.value || '');
+    val = val.replace(/\D/g, '').slice(0, 10);
+    this.form.mobile_no = val;
+    if (this.v['mobile_no']) {
+      this.validateMobile();
+    }
+  }
+
+  onMobileBlur() {
+    this.validateMobile();
+  }
+
+  validateMobile(): boolean {
+    const mobile = (this.form.mobile_no || '').trim();
+    if (!mobile) {
+      this.v['mobile_no'] = 'Mobile Number is required.';
+      return false;
+    }
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+      this.v['mobile_no'] = 'Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.';
+      return false;
+    }
+    delete this.v['mobile_no'];
+    return true;
   }
 
   // ── Password Strength Calculation ──
@@ -338,23 +433,13 @@ export class SignupComponent implements OnInit {
     this.v = {};
 
     // 1. Full Name
-    if (!this.form.full_name.trim()) {
-      this.v['full_name'] = 'Full Name is required.';
-    }
+    this.validateFullName();
 
     // 2. Email Address
-    if (!this.form.email.trim()) {
-      this.v['email'] = 'Email Address is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email.trim())) {
-      this.v['email'] = 'Enter a valid email address.';
-    }
+    this.validateEmail();
 
     // 3. Mobile Number
-    if (!this.form.mobile_no) {
-      this.v['mobile_no'] = 'Mobile Number is required.';
-    } else if (!/^[6-9]\d{9}$/.test(this.form.mobile_no)) {
-      this.v['mobile_no'] = 'Enter a valid 10-digit mobile number.';
-    }
+    this.validateMobile();
 
     // 4. Password Requirements
     if (!this.form.password) {

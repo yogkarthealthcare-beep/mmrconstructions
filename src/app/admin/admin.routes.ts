@@ -97,6 +97,16 @@ export const ADMIN_ROUTES: Routes = [
     title: 'Plot Booking Orders' 
   },
   { 
+    path: 'payment-settlement', 
+    loadComponent: () => import('./payment-settlement/payment-settlement.component').then(m => m.AdminPaymentSettlementComponent),
+    title: 'Plot Orders Payment Settlement' 
+  },
+  { 
+    path: 'plot-orders/payment-settlement', 
+    redirectTo: 'payment-settlement',
+    pathMatch: 'full'
+  },
+  { 
     path: 'unattributed-bookings', 
     loadComponent: () => import('./unattributed-bookings/unattributed-bookings.component').then(m => m.AdminUnattributedBookingsComponent),
     title: 'Unattributed Bookings Resolution' 
@@ -147,6 +157,11 @@ export const ADMIN_ROUTES: Routes = [
   },
   { 
     path: 'receipts/view/:id', 
+    loadComponent: () => import('./receipts/receipt-view/receipt-view.component').then(m => m.ReceiptViewComponent),
+    title: 'View Receipt'
+  },
+  { 
+    path: 'receipts/:id', 
     loadComponent: () => import('./receipts/receipt-view/receipt-view.component').then(m => m.ReceiptViewComponent),
     title: 'View Receipt'
   },
@@ -261,5 +276,10 @@ export const ADMIN_ROUTES: Routes = [
     path: 'referral', 
     loadComponent: () => import('./referral/admin-referral.component').then(m => m.AdminReferralComponent),
     title: 'Executive Referral Links — MMR Admin'
+  },
+  { 
+    path: 'user-guide', 
+    loadComponent: () => import('./user-guide/user-guide.component').then(m => m.UserGuideComponent),
+    title: 'Admin User Guide — MMR Constructions'
   },
 ];

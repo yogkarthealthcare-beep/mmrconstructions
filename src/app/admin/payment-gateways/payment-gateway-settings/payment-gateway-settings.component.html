@@ -1,425 +1,1007 @@
-<div class="payment-gateways-container">
-  <!-- Page Header -->
-  <div class="pg-header-wrapper">
-    <div class="d-flex align-items-center gap-3">
-      <div class="header-badge-icon">
-        <i class="fas fa-credit-card"></i>
+<div class="pg-dashboard-container">
+  <!-- Page Header (Stripe SaaS Style) -->
+  <div class="pg-hero-header">
+    <div class="pg-hero-left">
+      <div class="pg-hero-icon-box">
+        <i class="fas fa-wallet"></i>
       </div>
       <div>
-        <h3 class="pg-title">Payment Gateway Command Center</h3>
-        <p class="pg-sub">Configure primary payment routes, API keys, webhook secrets, and auto-fallback logic</p>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <h2 class="pg-hero-title">Payment Gateways & Routing</h2>
+          <span class="pg-badge-live">
+            <span class="live-pulse-dot"></span> LIVE ROUTING
+          </span>
+        </div>
+        <p class="pg-hero-desc">Manage direct UPI QR collection accounts, online gateway API credentials, auto-failover, and checkout rules.</p>
       </div>
     </div>
-    <div>
-      <span class="security-tag">
-        <i class="fas fa-shield-alt"></i> ENCRYPTED ROUTING ENGINE
+    <div class="pg-hero-right">
+      <span class="security-chip">
+        <i class="fas fa-shield-halved text-emerald"></i>
+        <span>TLS 1.3 &bull; AES-256 Vault Encrypted</span>
       </span>
     </div>
   </div>
 
-  <!-- Quick Metrics Overview Bar -->
-  <div class="metrics-row" *ngIf="!loading">
-    <div class="metric-card">
-      <div class="metric-icon-wrap metric-icon-emerald">
-        <i class="fas fa-satellite-dish"></i>
+  <!-- Metric KPI Cards (4 Tiles) -->
+  <div class="pg-metrics-grid" *ngIf="!loading">
+    <div class="metric-saas-card">
+      <div class="m-card-header">
+        <span class="m-card-label">Active Gateways</span>
+        <div class="m-card-icon emerald"><i class="fas fa-satellite-dish"></i></div>
       </div>
-      <div>
-        <p class="metric-label">Active Gateways</p>
-        <h4 class="metric-value">
-          <span class="status-dot-active"></span>
-          {{ activeGatewaysCount }} / {{ gateways.length || 3 }} Active
-        </h4>
+      <div class="m-card-value-row">
+        <h3 class="m-card-value">{{ activeGatewaysCount }} <span class="m-card-sub">/ {{ gateways.length || 3 }} Active</span></h3>
       </div>
-    </div>
-
-    <div class="metric-card">
-      <div class="metric-icon-wrap metric-icon-blue">
-        <i class="fas fa-star"></i>
-      </div>
-      <div>
-        <p class="metric-label">Primary Default</p>
-        <h4 class="metric-value text-capitalize">
-          {{ primaryDefaultName || 'Not Selected' }}
-        </h4>
+      <div class="m-card-footer text-emerald">
+        <i class="fas fa-circle-check me-1"></i> Customer checkout operational
       </div>
     </div>
 
-    <div class="metric-card">
-      <div class="metric-icon-wrap metric-icon-purple">
-        <i class="fas fa-users-cog"></i>
+    <div class="metric-saas-card">
+      <div class="m-card-header">
+        <span class="m-card-label">Default Primary Route</span>
+        <div class="m-card-icon blue"><i class="fas fa-star"></i></div>
       </div>
-      <div>
-        <p class="metric-label">User Selection</p>
-        <h4 class="metric-value">
-          {{ globalForm.get('user_gateway_selection')?.value ? 'Enabled' : 'Disabled' }}
-        </h4>
+      <div class="m-card-value-row">
+        <h3 class="m-card-value text-capitalize">{{ primaryDefaultName || 'None Selected' }}</h3>
+      </div>
+      <div class="m-card-footer text-muted">
+        <i class="fas fa-bolt me-1 text-gold"></i> Default for direct payments
       </div>
     </div>
 
-    <div class="metric-card">
-      <div class="metric-icon-wrap metric-icon-amber">
-        <i class="fas fa-random"></i>
+    <div class="metric-saas-card">
+      <div class="m-card-header">
+        <span class="m-card-label">Customer Choice</span>
+        <div class="m-card-icon purple"><i class="fas fa-sliders"></i></div>
       </div>
-      <div>
-        <p class="metric-label">Fallback Routing</p>
-        <h4 class="metric-value">
-          {{ globalForm.get('fallback_gateway')?.value ? 'Auto Reroute' : 'Off' }}
-        </h4>
+      <div class="m-card-value-row">
+        <h3 class="m-card-value">{{ globalForm.get('user_gateway_selection')?.value ? 'Enabled' : 'Disabled' }}</h3>
+      </div>
+      <div class="m-card-footer text-purple">
+        <i class="fas fa-users me-1"></i> {{ globalForm.get('user_gateway_selection')?.value ? 'User can pick gateway' : 'Single default enforced' }}
+      </div>
+    </div>
+
+    <div class="metric-saas-card">
+      <div class="m-card-header">
+        <span class="m-card-label">Failover Auto-Reroute</span>
+        <div class="m-card-icon amber"><i class="fas fa-shuffle"></i></div>
+      </div>
+      <div class="m-card-value-row">
+        <h3 class="m-card-value">{{ globalForm.get('fallback_gateway')?.value ? 'Active' : 'Off' }}</h3>
+      </div>
+      <div class="m-card-footer text-amber">
+        <i class="fas fa-shield-heart me-1"></i> {{ globalForm.get('fallback_gateway')?.value ? 'Zero-downtime fallback' : 'Manual switch only' }}
       </div>
     </div>
   </div>
 
-  <!-- Alert messages -->
-  <div *ngIf="errorMessage" class="alert-custom alert-custom-danger mb-4">
-    <i class="fas fa-exclamation-circle me-2"></i>
-    <div>{{ errorMessage }}</div>
+  <!-- Alert Banners -->
+  <div *ngIf="errorMessage" class="saas-alert alert-error mb-3">
+    <div class="alert-icon"><i class="fas fa-circle-exclamation"></i></div>
+    <div class="alert-content">
+      <strong>Configuration Error</strong>
+      <p>{{ errorMessage }}</p>
+    </div>
+    <button type="button" class="alert-close" (click)="errorMessage = ''">&times;</button>
   </div>
 
-  <div *ngIf="successMessage" class="alert-custom alert-custom-success mb-4">
-    <i class="fas fa-check-circle me-2"></i>
-    <div>{{ successMessage }}</div>
+  <div *ngIf="successMessage" class="saas-alert alert-success mb-3">
+    <div class="alert-icon"><i class="fas fa-circle-check"></i></div>
+    <div class="alert-content">
+      <strong>Success</strong>
+      <p>{{ successMessage }}</p>
+    </div>
+    <button type="button" class="alert-close" (click)="successMessage = ''">&times;</button>
   </div>
 
-  <!-- Loading state -->
-  <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-emerald" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
-    <p class="mt-3 text-muted fw-semibold fs-14">Loading payment gateway configurations...</p>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="saas-loading-state">
+    <div class="spinner-border text-primary" role="status"></div>
+    <h5>Loading Payment Configurations...</h5>
+    <p>Decrypting secure routing endpoints and account credentials</p>
   </div>
 
-  <div class="row g-4" *ngIf="!loading">
-    <!-- Left column: Global Configuration form -->
-    <div class="col-lg-4">
-      <div class="panel-card-modern">
-        <div class="card-header-bar">
-          <h5 class="card-header-title">
-            <i class="fas fa-sliders-h"></i> Routing & Rules
-          </h5>
-          <span class="badge bg-light text-dark border">Global Rules</span>
+  <!-- Main Content Area -->
+  <ng-container *ngIf="!loading">
+    <!-- View Navigation Tabs (Modern SaaS Pill Tabs) -->
+    <div class="pg-nav-pills-bar">
+      <div class="pg-tabs-list">
+        <button
+          type="button"
+          class="pg-tab-btn"
+          [class.active]="activeViewTab === 'all'"
+          (click)="activeViewTab = 'all'"
+        >
+          <i class="fas fa-grid-2 me-1.5"></i> All Gateways
+        </button>
+        <button
+          type="button"
+          class="pg-tab-btn"
+          [class.active]="activeViewTab === 'upi'"
+          (click)="activeViewTab = 'upi'"
+        >
+          <i class="fas fa-qrcode me-1.5 text-success"></i> Direct UPI QR (Zero Fees)
+        </button>
+        <button
+          type="button"
+          class="pg-tab-btn"
+          [class.active]="activeViewTab === 'razorpay'"
+          (click)="activeViewTab = 'razorpay'"
+        >
+          <img src="https://rzp-mobile.s3.amazonaws.com/images/rzp.png" alt="Razorpay" class="tab-mini-logo me-1.5" /> Razorpay
+        </button>
+        <button
+          type="button"
+          class="pg-tab-btn"
+          [class.active]="activeViewTab === 'cashfree'"
+          (click)="activeViewTab = 'cashfree'"
+        >
+          <img src="https://cashfree.com/favicon.ico" alt="Cashfree" class="tab-mini-logo me-1.5" /> Cashfree
+        </button>
+        <button
+          type="button"
+          class="pg-tab-btn"
+          [class.active]="activeViewTab === 'payu'"
+          (click)="activeViewTab = 'payu'"
+        >
+          <img src="https://payu.in/favicon.ico" alt="PayU" class="tab-mini-logo me-1.5" /> PayU
+        </button>
+      </div>
+
+      <div class="pg-tabs-actions">
+        <button type="button" class="btn-refresh-data" (click)="loadData()" title="Reload from server">
+          <i class="fas fa-rotate"></i> Sync
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 1: GLOBAL ROUTING & CONTROLS + SUMMARY TABLE                     -->
+    <!-- ========================================================================= -->
+    <div class="row g-3 mb-4" *ngIf="activeViewTab === 'all'">
+      <!-- Global Controls Card -->
+      <div class="col-lg-4">
+        <div class="saas-card h-100">
+          <div class="saas-card-header">
+            <div class="d-flex align-items-center gap-2">
+              <div class="header-icon-chip"><i class="fas fa-sliders text-primary"></i></div>
+              <div>
+                <h5 class="saas-card-title">Routing Rules</h5>
+                <span class="saas-card-sub">Global checkout behavior</span>
+              </div>
+            </div>
+            <span class="badge bg-light text-dark border">Engine</span>
+          </div>
+
+          <div class="saas-card-body">
+            <form [formGroup]="globalForm" (ngSubmit)="saveGlobalSettings()">
+              <!-- Toggle 1 -->
+              <div class="setting-toggle-row">
+                <div class="toggle-text">
+                  <span class="toggle-title">User Gateway Selection</span>
+                  <span class="toggle-desc">Allow buyers to pick between active gateways at checkout.</span>
+                </div>
+                <div class="form-check form-switch m-0">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="user_gateway_selection"
+                    formControlName="user_gateway_selection"
+                  />
+                </div>
+              </div>
+
+              <!-- Toggle 2 -->
+              <div class="setting-toggle-row">
+                <div class="toggle-text">
+                  <span class="toggle-title">Auto Failover Fallback</span>
+                  <span class="toggle-desc">Automatically switch to secondary gateway if primary fails.</span>
+                </div>
+                <div class="form-check form-switch m-0">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="fallback_gateway"
+                    formControlName="fallback_gateway"
+                  />
+                </div>
+              </div>
+
+              <!-- Default Primary Gateway Selector -->
+              <div class="form-group mb-3">
+                <label class="saas-field-label" for="default_gateway">Primary Default Gateway</label>
+                <div class="select-wrapper">
+                  <select
+                    id="default_gateway"
+                    class="saas-input saas-select"
+                    formControlName="default_gateway"
+                  >
+                    <option value="">-- Select Default Route --</option>
+                    <option
+                      *ngFor="let gw of gateways"
+                      [value]="gw.gateway_name"
+                      [disabled]="gw.status !== 'active'"
+                    >
+                      {{ gw.display_name }} ({{ gw.status | uppercase }})
+                    </option>
+                  </select>
+                  <i class="fas fa-chevron-down select-chevron"></i>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                class="saas-btn-primary w-100 justify-content-center mt-2"
+                [disabled]="savingGlobal"
+              >
+                <i [class]="savingGlobal ? 'fas fa-spinner fa-spin' : 'fas fa-check'"></i>
+                <span>{{ savingGlobal ? 'Saving Settings...' : 'Save Global Rules' }}</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Priority & Status Table Component -->
+      <div class="col-lg-8">
+        <app-payment-gateway-list
+          [gateways]="gateways"
+          [defaultGateway]="globalForm.get('default_gateway')?.value"
+          (toggleStatus)="handleToggleStatus($event)"
+          (setDefault)="handleSetDefault($event)"
+          (updatePriority)="handleUpdatePriority($event)"
+        ></app-payment-gateway-list>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 1.5: COMPANY OFFICIAL BANK ACCOUNT & BOOKING PAYMENT METHOD CONTROLS -->
+    <!-- ========================================================================= -->
+    <div class="section-container mb-4" *ngIf="activeViewTab === 'all' || activeViewTab === 'upi'">
+      <div class="section-header-row mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <div class="section-icon-chip bg-primary-subtle text-primary">
+            <i class="fas fa-university"></i>
+          </div>
+          <div>
+            <h4 class="section-title">Company Bank Account & Booking Payment Methods</h4>
+            <p class="section-subtitle">Manage official NEFT/IMPS bank details and control which payment method tabs appear in the Plot Booking popup.</p>
+          </div>
+        </div>
+        <span class="badge bg-primary-subtle text-primary border border-primary px-2.5 py-1 fs-11 fw-700">
+          <i class="fas fa-sliders-h me-1"></i> Live Booking Controls
+        </span>
+      </div>
+
+      <form [formGroup]="bankForm" (ngSubmit)="saveCompanyBankSettings()">
+        <div class="row g-3">
+          <!-- Card 1: Official Bank Account Details -->
+          <div class="col-lg-7">
+            <div class="saas-card h-100">
+              <div class="saas-card-header">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="qr-brand-chip qr-chip-blue">
+                    <i class="fas fa-building-columns"></i>
+                  </div>
+                  <div>
+                    <h5 class="saas-card-title">Official Bank Account Details</h5>
+                    <span class="saas-card-sub">Displayed in booking popup when Bank Transfer is enabled</span>
+                  </div>
+                </div>
+                <span class="badge bg-success-subtle text-success fs-10 fw-bold">Verified Current A/C</span>
+              </div>
+
+              <div class="saas-card-body">
+                <div class="row g-2.5 mb-2.5">
+                  <div class="col-sm-6">
+                    <label class="saas-field-label">Account Holder Name *</label>
+                    <input type="text" class="saas-input" formControlName="account_name" placeholder="e.g. MMR CONSTRUCTIONS PRIVATE LIMITED" />
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="saas-field-label">Bank Name *</label>
+                    <input type="text" class="saas-input" formControlName="bank_name" placeholder="e.g. HDFC Bank Ltd." />
+                  </div>
+                </div>
+
+                <div class="row g-2.5 mb-2.5">
+                  <div class="col-sm-6">
+                    <label class="saas-field-label">Account Number *</label>
+                    <input type="text" class="saas-input font-mono" formControlName="account_number" placeholder="e.g. 50200088921832" />
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="saas-field-label">IFSC Code *</label>
+                    <input type="text" class="saas-input font-mono text-uppercase" formControlName="ifsc_code" placeholder="e.g. HDFC0001234" maxlength="11" />
+                  </div>
+                </div>
+
+                <div class="form-group mb-3">
+                  <label class="saas-field-label">Bank Branch (City / Area)</label>
+                  <input type="text" class="saas-input" formControlName="branch_name" placeholder="e.g. Civil Lines, Kanpur" />
+                </div>
+
+                <button type="submit" class="saas-btn-primary w-100 justify-content-center" [disabled]="savingBank">
+                  <i [class]="savingBank ? 'fas fa-spinner fa-spin me-1.5' : 'fas fa-save me-1.5'"></i>
+                  <span>{{ savingBank ? 'Saving Bank Details...' : 'Save Bank Details' }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Booking Popup Payment Methods Checkboxes -->
+          <div class="col-lg-5">
+            <div class="saas-card h-100">
+              <div class="saas-card-header">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="qr-brand-chip qr-chip-green">
+                    <i class="fas fa-layer-group"></i>
+                  </div>
+                  <div>
+                    <h5 class="saas-card-title">Booking Popup Payment Tabs</h5>
+                    <span class="saas-card-sub">Checkboxes dictate visible tabs for buyers</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="saas-card-body">
+                <p class="fs-11 text-muted mb-3">
+                  Only the payment methods checked below will be displayed in the Plot Booking popup. Unchecked options will be hidden automatically.
+                </p>
+
+                <!-- Checkbox 1: Primary UPI QR -->
+                <div class="setting-toggle-row mb-2">
+                  <div>
+                    <span class="toggle-title"><i class="fas fa-qrcode text-emerald me-1.5"></i> Primary UPI QR</span>
+                    <span class="toggle-desc">Show Main HDFC Bank UPI QR scanner tab in popup.</span>
+                  </div>
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" formControlName="enable_primary_upi" id="chkPrimaryUpi" />
+                  </div>
+                </div>
+
+                <!-- Checkbox 2: Secondary UPI QR -->
+                <div class="setting-toggle-row mb-2">
+                  <div>
+                    <span class="toggle-title"><i class="fas fa-qrcode text-primary me-1.5"></i> Secondary UPI QR</span>
+                    <span class="toggle-desc">Show Backup/Alternate UPI QR scanner tab in popup.</span>
+                  </div>
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" formControlName="enable_secondary_upi" id="chkSecondaryUpi" />
+                  </div>
+                </div>
+
+                <!-- Checkbox 3: Bank Transfer -->
+                <div class="setting-toggle-row mb-2">
+                  <div>
+                    <span class="toggle-title"><i class="fas fa-university text-primary me-1.5"></i> Bank Transfer (NEFT/RTGS)</span>
+                    <span class="toggle-desc">Show official Company Bank Account & IFSC details tab.</span>
+                  </div>
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" formControlName="enable_bank_transfer" id="chkBankTransfer" />
+                  </div>
+                </div>
+
+                <!-- Checkbox 4: Online Payment Gateway -->
+                <div class="setting-toggle-row mb-3">
+                  <div>
+                    <span class="toggle-title"><i class="fas fa-credit-card text-purple me-1.5"></i> Online Gateway (Cards/NetBanking)</span>
+                    <span class="toggle-desc">Show Razorpay/Cashfree/PayU online checkout tab.</span>
+                  </div>
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" formControlName="enable_payment_gateway" id="chkGateway" />
+                  </div>
+                </div>
+
+                <button type="submit" class="saas-btn-success w-100 justify-content-center" [disabled]="savingBank">
+                  <i [class]="savingBank ? 'fas fa-spinner fa-spin me-1.5' : 'fas fa-check-double me-1.5'"></i>
+                  <span>{{ savingBank ? 'Updating Visibility...' : 'Apply Tab Visibility Settings' }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 2: DIRECT BANK UPI QR CODES (QR 1 & QR 2)                         -->
+    <!-- ========================================================================= -->
+    <div class="section-container mb-4" *ngIf="activeViewTab === 'all' || activeViewTab === 'upi'">
+      <div class="section-header-row mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <div class="section-icon-chip bg-emerald-subtle text-emerald">
+            <i class="fas fa-qrcode"></i>
+          </div>
+          <div>
+            <h4 class="section-title">Company UPI QR Accounts (Direct Bank Transfer)</h4>
+            <p class="section-subtitle">Zero payment gateway fees. Used for customer advance submissions with mandatory UTR & Payer name verification.</p>
+          </div>
+        </div>
+        <span class="badge bg-emerald-subtle text-emerald border border-emerald px-2.5 py-1 fs-11 fw-700">
+          <i class="fas fa-circle-check me-1"></i> Active in Booking Flows
+        </span>
+      </div>
+
+      <div class="row g-3">
+        <!-- QR 1 Configuration Card -->
+        <div class="col-lg-6">
+          <div class="saas-card h-100" [class.is-primary-card]="qrForms.qr1.get('is_primary')?.value">
+            <div class="saas-card-header">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="qr-brand-chip qr-chip-blue">QR 1</div>
+                <div>
+                  <h5 class="saas-card-title">{{ qrForms.qr1.get('label')?.value || 'Primary UPI QR' }}</h5>
+                  <span class="saas-card-sub">Bank Account UPI Route 1</span>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-1.5">
+                <span class="status-indicator-badge" [class.active]="qrForms.qr1.get('is_active')?.value">
+                  <span class="status-dot"></span>
+                  {{ qrForms.qr1.get('is_active')?.value ? 'Active' : 'Inactive' }}
+                </span>
+                <span *ngIf="qrForms.qr1.get('is_primary')?.value" class="primary-star-badge" title="Primary default QR for checkout">
+                  <i class="fas fa-star me-1 text-gold"></i> PRIMARY
+                </span>
+              </div>
+            </div>
+
+            <div class="saas-card-body">
+              <form [formGroup]="qrForms.qr1" (ngSubmit)="saveUpiQr('qr1')">
+                <!-- QR Image Preview & Upload Box -->
+                <div class="qr-upload-strip mb-3">
+                  <div class="qr-image-frame">
+                    <img *ngIf="qrFilePreviews.qr1" [src]="qrFilePreviews.qr1" alt="QR 1 Preview" class="qr-img-fit" />
+                    <div *ngIf="!qrFilePreviews.qr1" class="qr-empty-placeholder">
+                      <i class="fas fa-qrcode"></i>
+                      <span>No QR Uploaded</span>
+                    </div>
+                  </div>
+                  <div class="qr-file-controls">
+                    <label class="saas-field-label">Upload Standee / Bank QR Code</label>
+                    <input type="file" class="saas-file-input" accept="image/*" (change)="onQrFileSelected('qr1', $event)" />
+                    <span class="helper-text"><i class="fas fa-info-circle me-1"></i> High-resolution PNG or JPG recommended</span>
+                  </div>
+                </div>
+
+                <!-- Label -->
+                <div class="form-group mb-2.5">
+                  <label class="saas-field-label">Display Label *</label>
+                  <input type="text" class="saas-input" formControlName="label" placeholder="e.g. HDFC Current Account (Main Collection)" />
+                </div>
+
+                <!-- UPI ID -->
+                <div class="form-group mb-2.5">
+                  <label class="saas-field-label">UPI ID / VPA *</label>
+                  <div class="saas-input-group">
+                    <span class="saas-input-prefix"><i class="fas fa-at"></i></span>
+                    <input
+                      type="text"
+                      class="saas-input-grouped font-mono"
+                      formControlName="upi_id"
+                      placeholder="mmrconstructions@hdfcbank"
+                    />
+                  </div>
+                </div>
+
+                <!-- Active Toggle Switch Box -->
+                <div class="switch-box-compact mb-3">
+                  <div>
+                    <span class="switch-box-title">Active for Bookings</span>
+                    <span class="switch-box-desc">Allow customers to choose this QR during plot advance payment.</span>
+                  </div>
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" formControlName="is_active" id="qr1ActiveSwitch" />
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card-action-row">
+                  <button
+                    type="button"
+                    class="saas-btn-outline flex-fill"
+                    (click)="setPrimaryQr('qr1')"
+                    [disabled]="qrForms.qr1.get('is_primary')?.value"
+                  >
+                    <i class="fas fa-star text-gold me-1.5"></i>
+                    {{ qrForms.qr1.get('is_primary')?.value ? 'Current Primary' : 'Set as Primary' }}
+                  </button>
+                  <button
+                    type="submit"
+                    class="saas-btn-success flex-fill"
+                    [disabled]="savingQr.qr1"
+                  >
+                    <i [class]="savingQr.qr1 ? 'fas fa-spinner fa-spin me-1.5' : 'fas fa-floppy-disk me-1.5'"></i>
+                    {{ savingQr.qr1 ? 'Saving...' : 'Save QR 1' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
 
-        <div class="card-body-padding">
-          <form [formGroup]="globalForm" (ngSubmit)="saveGlobalSettings()">
-            <!-- Toggle 1: User Gateway Selection -->
-            <div class="toggle-control-item">
-              <div>
-                <span class="tci-title">User Gateway Selection</span>
-                <span class="tci-desc">Allow customers to choose between active payment options at checkout.</span>
+        <!-- QR 2 Configuration Card -->
+        <div class="col-lg-6">
+          <div class="saas-card h-100" [class.is-primary-card]="qrForms.qr2.get('is_primary')?.value">
+            <div class="saas-card-header">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="qr-brand-chip qr-chip-purple">QR 2</div>
+                <div>
+                  <h5 class="saas-card-title">{{ qrForms.qr2.get('label')?.value || 'Secondary UPI QR' }}</h5>
+                  <span class="saas-card-sub">Bank Account UPI Route 2</span>
+                </div>
               </div>
-              <div class="form-check form-switch m-0">
-                <input
-                  type="checkbox"
-                  class="form-check-input"
-                  id="user_gateway_selection"
-                  formControlName="user_gateway_selection"
-                />
-              </div>
-            </div>
-
-            <!-- Toggle 2: Fallback Gateway Enabled -->
-            <div class="toggle-control-item">
-              <div>
-                <span class="tci-title">Automatic Fallback</span>
-                <span class="tci-desc">Automatically reroute checkouts if the primary gateway fails.</span>
-              </div>
-              <div class="form-check form-switch m-0">
-                <input
-                  type="checkbox"
-                  class="form-check-input"
-                  id="fallback_gateway"
-                  formControlName="fallback_gateway"
-                />
+              <div class="d-flex align-items-center gap-1.5">
+                <span class="status-indicator-badge" [class.active]="qrForms.qr2.get('is_active')?.value">
+                  <span class="status-dot"></span>
+                  {{ qrForms.qr2.get('is_active')?.value ? 'Active' : 'Inactive' }}
+                </span>
+                <span *ngIf="qrForms.qr2.get('is_primary')?.value" class="primary-star-badge" title="Primary default QR for checkout">
+                  <i class="fas fa-star me-1 text-gold"></i> PRIMARY
+                </span>
               </div>
             </div>
 
-            <!-- Select 1: Default Primary Gateway -->
-            <div class="form-group mb-3">
-              <label class="f-label-custom" for="default_gateway">Primary Default Gateway</label>
-              <select
-                id="default_gateway"
-                class="f-select-custom"
-                formControlName="default_gateway"
+            <div class="saas-card-body">
+              <form [formGroup]="qrForms.qr2" (ngSubmit)="saveUpiQr('qr2')">
+                <!-- QR Image Preview & Upload Box -->
+                <div class="qr-upload-strip mb-3">
+                  <div class="qr-image-frame">
+                    <img *ngIf="qrFilePreviews.qr2" [src]="qrFilePreviews.qr2" alt="QR 2 Preview" class="qr-img-fit" />
+                    <div *ngIf="!qrFilePreviews.qr2" class="qr-empty-placeholder">
+                      <i class="fas fa-qrcode"></i>
+                      <span>No QR Uploaded</span>
+                    </div>
+                  </div>
+                  <div class="qr-file-controls">
+                    <label class="saas-field-label">Upload Standee / Bank QR Code</label>
+                    <input type="file" class="saas-file-input" accept="image/*" (change)="onQrFileSelected('qr2', $event)" />
+                    <span class="helper-text"><i class="fas fa-info-circle me-1"></i> High-resolution PNG or JPG recommended</span>
+                  </div>
+                </div>
+
+                <!-- Label -->
+                <div class="form-group mb-2.5">
+                  <label class="saas-field-label">Display Label *</label>
+                  <input type="text" class="saas-input" formControlName="label" placeholder="e.g. ICICI Bank Collection Account" />
+                </div>
+
+                <!-- UPI ID -->
+                <div class="form-group mb-2.5">
+                  <label class="saas-field-label">UPI ID / VPA *</label>
+                  <div class="saas-input-group">
+                    <span class="saas-input-prefix"><i class="fas fa-at"></i></span>
+                    <input
+                      type="text"
+                      class="saas-input-grouped font-mono"
+                      formControlName="upi_id"
+                      placeholder="mmrconstructions@icici"
+                    />
+                  </div>
+                </div>
+
+                <!-- Active Toggle Switch Box -->
+                <div class="switch-box-compact mb-3">
+                  <div>
+                    <span class="switch-box-title">Active for Bookings</span>
+                    <span class="switch-box-desc">Allow customers to choose this QR during plot advance payment.</span>
+                  </div>
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" formControlName="is_active" id="qr2ActiveSwitch" />
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card-action-row">
+                  <button
+                    type="button"
+                    class="saas-btn-outline flex-fill"
+                    (click)="setPrimaryQr('qr2')"
+                    [disabled]="qrForms.qr2.get('is_primary')?.value"
+                  >
+                    <i class="fas fa-star text-gold me-1.5"></i>
+                    {{ qrForms.qr2.get('is_primary')?.value ? 'Current Primary' : 'Set as Primary' }}
+                  </button>
+                  <button
+                    type="submit"
+                    class="saas-btn-success flex-fill"
+                    [disabled]="savingQr.qr2"
+                  >
+                    <i [class]="savingQr.qr2 ? 'fas fa-spinner fa-spin me-1.5' : 'fas fa-floppy-disk me-1.5'"></i>
+                    {{ savingQr.qr2 ? 'Saving...' : 'Save QR 2' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 3: ONLINE PAYMENT GATEWAYS (RAZORPAY, CASHFREE, PAYU)             -->
+    <!-- ========================================================================= -->
+    <div class="section-container mb-4" *ngIf="activeViewTab === 'all' || activeViewTab === 'razorpay' || activeViewTab === 'cashfree' || activeViewTab === 'payu'">
+      <div class="section-header-row mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <div class="section-icon-chip bg-primary-subtle text-primary">
+            <i class="fas fa-credit-card"></i>
+          </div>
+          <div>
+            <h4 class="section-title">Online Payment Gateways & API Credentials</h4>
+            <p class="section-subtitle">Configured for cards, net banking, and automatic gateway settlements. Can be toggled to Inactive to direct all users to UPI QR.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-Column Balanced Grid (Equal Heights & Identical Field Alignment) -->
+      <div class="row g-3">
+        <!-- 1. RAZORPAY CARD -->
+        <div class="col-xl-4 col-md-6" *ngIf="activeViewTab === 'all' || activeViewTab === 'razorpay'">
+          <form
+            class="saas-gateway-card h-100"
+            [formGroup]="gatewayForms.razorpay"
+            (ngSubmit)="saveGatewayConfig('razorpay')"
+          >
+            <!-- Card Header -->
+            <div class="gw-card-header">
+              <div class="gw-brand-info">
+                <div class="gw-brand-logo-tile brand-razorpay">
+                  <img src="https://rzp-mobile.s3.amazonaws.com/images/rzp.png" alt="Razorpay" class="gw-logo-fit" />
+                </div>
+                <div>
+                  <h5 class="gw-brand-title">Razorpay</h5>
+                  <span class="gw-brand-sub">Cards, NetBanking, UPI Gateway</span>
+                </div>
+              </div>
+              <span class="status-indicator-badge" [class.active]="gatewayForms.razorpay.get('status')?.value === 'active'">
+                <span class="status-dot"></span>
+                {{ gatewayForms.razorpay.get('status')?.value === 'active' ? 'Active' : 'Maintenance' }}
+              </span>
+            </div>
+
+            <!-- Card Body with Standardized Form Layout -->
+            <div class="gw-card-body">
+              <!-- Field 1: Public Key / Key ID -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="razorpay_key_id">Key ID *</label>
+                <div class="input-with-icon-left">
+                  <i class="fas fa-key icon-left"></i>
+                  <input
+                    id="razorpay_key_id"
+                    type="text"
+                    class="saas-input has-icon-left"
+                    formControlName="public_key"
+                    placeholder="rzp_live_..."
+                  />
+                </div>
+                <span class="saas-field-error" *ngIf="gatewayForms.razorpay.get('public_key')?.touched && gatewayForms.razorpay.get('public_key')?.invalid">Key ID is required.</span>
+              </div>
+
+              <!-- Field 2: Secret Key -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="razorpay_secret_key">Secret Key *</label>
+                <div class="input-with-icon-right">
+                  <input
+                    id="razorpay_secret_key"
+                    class="saas-input has-icon-right font-mono"
+                    formControlName="secret_key"
+                    [type]="secretVisible.razorpay ? 'text' : 'password'"
+                    placeholder="Enter or update secret key"
+                  />
+                  <button type="button" class="btn-toggle-secret" (click)="toggleSecret('razorpay')" title="Toggle visibility">
+                    <i [class]="secretVisible.razorpay ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                  </button>
+                </div>
+                <span class="saas-field-error" *ngIf="gatewayForms.razorpay.get('secret_key')?.touched && gatewayForms.razorpay.get('secret_key')?.invalid">Secret Key is required.</span>
+              </div>
+
+              <!-- Field 3: Callback URL -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="razorpay_callback_url">Callback URL</label>
+                <input
+                  id="razorpay_callback_url"
+                  type="text"
+                  class="saas-input font-mono text-muted fs-11"
+                  formControlName="callback_url"
+                  placeholder="https://api.mmrconstructions.in/api/payment/verify"
+                />
+              </div>
+
+              <!-- Field 4: Webhook URL -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="razorpay_webhook_url">Webhook URL</label>
+                <input
+                  id="razorpay_webhook_url"
+                  type="text"
+                  class="saas-input font-mono text-muted fs-11"
+                  formControlName="webhook_url"
+                  placeholder="https://api.mmrconstructions.in/api/payment/razorpay/webhook"
+                />
+              </div>
+
+              <!-- Field 5 & 6: Two Columns (Environment & Status) -->
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="saas-field-label" for="razorpay_environment">Environment</label>
+                  <div class="select-wrapper">
+                    <select id="razorpay_environment" class="saas-input saas-select" formControlName="environment_mode">
+                      <option value="test">Test Mode</option>
+                      <option value="live">Live Production</option>
+                    </select>
+                    <i class="fas fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="saas-field-label" for="razorpay_status">Status</label>
+                  <div class="select-wrapper">
+                    <select id="razorpay_status" class="saas-input saas-select" formControlName="status">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                    <i class="fas fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Action Button -->
+              <button
+                type="submit"
+                class="saas-btn-submit razorpay w-100"
+                [disabled]="savingGateway.razorpay"
               >
-                <option value="">-- Select Default Gateway --</option>
-                <option
-                  *ngFor="let gw of gateways"
-                  [value]="gw.gateway_name"
-                  [disabled]="gw.status !== 'active'"
-                >
-                  {{ gw.display_name }} ({{ gw.status | uppercase }})
-                </option>
-              </select>
+                <i [class]="savingGateway.razorpay ? 'fas fa-spinner fa-spin me-1.5' : 'fas fa-floppy-disk me-1.5'"></i>
+                {{ savingGateway.razorpay ? 'Saving Credentials...' : 'Save Razorpay Settings' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 2. CASHFREE CARD (Fixed: No Large Banner, Exactly Aligned with Razorpay/PayU) -->
+        <div class="col-xl-4 col-md-6" *ngIf="activeViewTab === 'all' || activeViewTab === 'cashfree'">
+          <form
+            class="saas-gateway-card h-100"
+            [formGroup]="gatewayForms.cashfree"
+            (ngSubmit)="saveGatewayConfig('cashfree')"
+          >
+            <!-- Card Header -->
+            <div class="gw-card-header">
+              <div class="gw-brand-info">
+                <div class="gw-brand-logo-tile brand-cashfree">
+                  <img src="https://cashfree.com/favicon.ico" alt="Cashfree" class="gw-logo-fit" />
+                </div>
+                <div>
+                  <h5 class="gw-brand-title">Cashfree</h5>
+                  <span class="gw-brand-sub">Instant Settlement & Webhooks</span>
+                </div>
+              </div>
+              <span class="status-indicator-badge" [class.active]="gatewayForms.cashfree.get('status')?.value === 'active'">
+                <span class="status-dot"></span>
+                {{ gatewayForms.cashfree.get('status')?.value === 'active' ? 'Active' : 'Maintenance' }}
+              </span>
             </div>
 
-            <!-- Save button -->
-            <button
-              type="submit"
-              class="btn-brand-save payu w-100 justify-content-center mt-2"
-              [disabled]="savingGlobal"
-            >
-              <ng-container *ngIf="!savingGlobal">
-                <i class="fas fa-save"></i> Save Global Settings
-              </ng-container>
-              <ng-container *ngIf="savingGlobal">
-                <span class="spinner-border spinner-border-sm me-2"></span> Saving...
-              </ng-container>
-            </button>
+            <!-- Card Body with Standardized Form Layout -->
+            <div class="gw-card-body">
+              <!-- Field 1: App ID / Client ID -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="cashfree_client_id">App ID / Client ID *</label>
+                <div class="input-with-icon-left">
+                  <i class="fas fa-id-badge icon-left"></i>
+                  <input
+                    id="cashfree_client_id"
+                    type="text"
+                    class="saas-input has-icon-left"
+                    formControlName="public_key"
+                    placeholder="Enter Cashfree App ID"
+                  />
+                </div>
+                <span class="saas-field-error" *ngIf="gatewayForms.cashfree.get('public_key')?.touched && gatewayForms.cashfree.get('public_key')?.invalid">Client ID is required.</span>
+              </div>
+
+              <!-- Field 2: Client Secret -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="cashfree_client_secret">Client Secret *</label>
+                <div class="input-with-icon-right">
+                  <input
+                    id="cashfree_client_secret"
+                    class="saas-input has-icon-right font-mono"
+                    formControlName="client_secret"
+                    [type]="secretVisible.cashfree ? 'text' : 'password'"
+                    placeholder="Enter or update client secret"
+                  />
+                  <button type="button" class="btn-toggle-secret" (click)="toggleSecret('cashfree')" title="Toggle visibility">
+                    <i [class]="secretVisible.cashfree ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                  </button>
+                </div>
+                <span class="saas-field-error" *ngIf="gatewayForms.cashfree.get('client_secret')?.touched && gatewayForms.cashfree.get('client_secret')?.invalid">Client Secret is required.</span>
+              </div>
+
+              <!-- Field 3: Callback URL -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="cashfree_callback_url">Callback URL</label>
+                <input
+                  id="cashfree_callback_url"
+                  type="text"
+                  class="saas-input font-mono text-muted fs-11"
+                  formControlName="callback_url"
+                  placeholder="https://api.mmrconstructions.in/api/wallet/verify-callback"
+                />
+              </div>
+
+              <!-- Field 4: Webhook URL -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="cashfree_webhook_url">Webhook URL</label>
+                <input
+                  id="cashfree_webhook_url"
+                  type="text"
+                  class="saas-input font-mono text-muted fs-11"
+                  formControlName="webhook_url"
+                  placeholder="https://api.mmrconstructions.in/api/payment/cashfree/webhook"
+                />
+              </div>
+
+              <!-- Field 5 & 6: Two Columns (Environment & Status) -->
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="saas-field-label" for="cashfree_environment">Environment</label>
+                  <div class="select-wrapper">
+                    <select id="cashfree_environment" class="saas-input saas-select" formControlName="environment_mode">
+                      <option value="sandbox">Sandbox Test</option>
+                      <option value="production">Production Live</option>
+                    </select>
+                    <i class="fas fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="saas-field-label" for="cashfree_status">Status</label>
+                  <div class="select-wrapper">
+                    <select id="cashfree_status" class="saas-input saas-select" formControlName="status">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                    <i class="fas fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Action Button -->
+              <button
+                type="submit"
+                class="saas-btn-submit cashfree w-100"
+                [disabled]="savingGateway.cashfree"
+              >
+                <i [class]="savingGateway.cashfree ? 'fas fa-spinner fa-spin me-1.5' : 'fas fa-floppy-disk me-1.5'"></i>
+                {{ savingGateway.cashfree ? 'Saving Credentials...' : 'Save Cashfree Settings' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 3. PAYU CARD -->
+        <div class="col-xl-4 col-md-6" *ngIf="activeViewTab === 'all' || activeViewTab === 'payu'">
+          <form
+            class="saas-gateway-card h-100"
+            [formGroup]="gatewayForms.payu"
+            (ngSubmit)="saveGatewayConfig('payu')"
+          >
+            <!-- Card Header -->
+            <div class="gw-card-header">
+              <div class="gw-brand-info">
+                <div class="gw-brand-logo-tile brand-payu">
+                  <img src="https://payu.in/favicon.ico" alt="PayU" class="gw-logo-fit" />
+                </div>
+                <div>
+                  <h5 class="gw-brand-title">PayU Payments</h5>
+                  <span class="gw-brand-sub">Direct Card & Merchant Gateway</span>
+                </div>
+              </div>
+              <span class="status-indicator-badge" [class.active]="gatewayForms.payu.get('status')?.value === 'active'">
+                <span class="status-dot"></span>
+                {{ gatewayForms.payu.get('status')?.value === 'active' ? 'Active' : 'Maintenance' }}
+              </span>
+            </div>
+
+            <!-- Card Body with Standardized Form Layout -->
+            <div class="gw-card-body">
+              <!-- Field 1: Merchant Key -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="payu_merchant_key">Merchant Key *</label>
+                <div class="input-with-icon-left">
+                  <i class="fas fa-fingerprint icon-left"></i>
+                  <input
+                    id="payu_merchant_key"
+                    type="text"
+                    class="saas-input has-icon-left"
+                    formControlName="public_key"
+                    placeholder="Enter PayU Merchant Key"
+                  />
+                </div>
+                <span class="saas-field-error" *ngIf="gatewayForms.payu.get('public_key')?.touched && gatewayForms.payu.get('public_key')?.invalid">Merchant Key is required.</span>
+              </div>
+
+              <!-- Field 2: Salt / Secret -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="payu_salt">Salt / Secret *</label>
+                <div class="input-with-icon-right">
+                  <input
+                    id="payu_salt"
+                    class="saas-input has-icon-right font-mono"
+                    formControlName="secret_key"
+                    [type]="secretVisible.payu ? 'text' : 'password'"
+                    placeholder="Enter or update PayU salt"
+                  />
+                  <button type="button" class="btn-toggle-secret" (click)="toggleSecret('payu')" title="Toggle visibility">
+                    <i [class]="secretVisible.payu ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                  </button>
+                </div>
+                <span class="saas-field-error" *ngIf="gatewayForms.payu.get('secret_key')?.touched && gatewayForms.payu.get('secret_key')?.invalid">Salt is required.</span>
+              </div>
+
+              <!-- Field 3: Callback URL -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="payu_callback_url">Callback URL</label>
+                <input
+                  id="payu_callback_url"
+                  type="text"
+                  class="saas-input font-mono text-muted fs-11"
+                  formControlName="callback_url"
+                  placeholder="https://api.mmrconstructions.in/api/payment/payu/verify"
+                />
+              </div>
+
+              <!-- Field 4: Webhook URL (Added for visual alignment with Razorpay & Cashfree) -->
+              <div class="form-group mb-2.5">
+                <label class="saas-field-label" for="payu_webhook_url">Webhook / S2S URL</label>
+                <input
+                  id="payu_webhook_url"
+                  type="text"
+                  class="saas-input font-mono text-muted fs-11"
+                  formControlName="webhook_url"
+                  placeholder="https://api.mmrconstructions.in/api/payment/payu/webhook"
+                />
+              </div>
+
+              <!-- Field 5 & 6: Two Columns (Environment & Status) -->
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="saas-field-label" for="payu_environment">Environment</label>
+                  <div class="select-wrapper">
+                    <select id="payu_environment" class="saas-input saas-select" formControlName="environment_mode">
+                      <option value="test">Test Mode</option>
+                      <option value="live">Live Mode</option>
+                    </select>
+                    <i class="fas fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="saas-field-label" for="payu_status">Status</label>
+                  <div class="select-wrapper">
+                    <select id="payu_status" class="saas-input saas-select" formControlName="status">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                    <i class="fas fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Action Button -->
+              <button
+                type="submit"
+                class="saas-btn-submit payu w-100"
+                [disabled]="savingGateway.payu"
+              >
+                <i [class]="savingGateway.payu ? 'fas fa-spinner fa-spin me-1.5' : 'fas fa-floppy-disk me-1.5'"></i>
+                {{ savingGateway.payu ? 'Saving Credentials...' : 'Save PayU Settings' }}
+              </button>
+            </div>
           </form>
         </div>
       </div>
     </div>
-
-    <!-- Right column: List of payment gateways -->
-    <div class="col-lg-8">
-      <app-payment-gateway-list
-        [gateways]="gateways"
-        [defaultGateway]="globalForm.get('default_gateway')?.value"
-        (toggleStatus)="handleToggleStatus($event)"
-        (setDefault)="handleSetDefault($event)"
-        (updatePriority)="handleUpdatePriority($event)"
-      ></app-payment-gateway-list>
-    </div>
-  </div>
-
-  <!-- Gateway API Credentials Forms Grid -->
-  <div class="gateway-config-grid" *ngIf="!loading">
-    <!-- Razorpay Config Card -->
-    <form
-      class="gateway-brand-card card-razorpay"
-      [formGroup]="gatewayForms.razorpay"
-      (ngSubmit)="saveGatewayConfig('razorpay')"
-    >
-      <div class="gateway-brand-head">
-        <div class="gateway-brand-badge">
-          <div class="brand-icon-box icon-razorpay">
-            <img src="https://rzp-mobile.s3.amazonaws.com/images/rzp.png" alt="Razorpay" class="brand-logo-img-head" />
-          </div>
-          <div>
-            <h5 class="brand-title-name">Razorpay Integration</h5>
-            <p class="brand-title-desc">UPI, NetBanking, Credit/Debit Cards</p>
-          </div>
-        </div>
-        <span class="status-pill-custom" [ngClass]="gatewayForms.razorpay.get('status')?.value === 'active' ? 'active' : 'inactive'">
-          {{ gatewayForms.razorpay.get('status')?.value | uppercase }}
-        </span>
-      </div>
-
-      <div class="gateway-form-body">
-        <div class="gateway-fields-row">
-          <div>
-            <label class="f-label-custom" for="razorpay_key_id">Key ID</label>
-            <input id="razorpay_key_id" class="f-select-custom" formControlName="public_key" placeholder="rzp_live_..." />
-            <span class="field-error-text" *ngIf="gatewayForms.razorpay.get('public_key')?.touched && gatewayForms.razorpay.get('public_key')?.invalid">Key ID is required.</span>
-          </div>
-
-          <div>
-            <label class="f-label-custom" for="razorpay_secret_key">Secret Key</label>
-            <div class="input-box-secret">
-              <input
-                id="razorpay_secret_key"
-                class="f-select-custom"
-                formControlName="secret_key"
-                [type]="secretVisible.razorpay ? 'text' : 'password'"
-                placeholder="Enter or update secret"
-              />
-              <button type="button" class="secret-toggle-btn" (click)="toggleSecret('razorpay')">
-                <i [class]="secretVisible.razorpay ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-              </button>
-            </div>
-            <span class="field-error-text" *ngIf="gatewayForms.razorpay.get('secret_key')?.touched && gatewayForms.razorpay.get('secret_key')?.invalid">Secret Key is required.</span>
-          </div>
-
-          <div class="gateway-field-full">
-            <label class="f-label-custom" for="razorpay_callback_url">Callback URL</label>
-            <input id="razorpay_callback_url" class="f-select-custom" formControlName="callback_url" placeholder="https://api.mmrconstructions.in/api/wallet/add-fund/verify-callback" />
-          </div>
-
-          <div class="gateway-field-full">
-            <label class="f-label-custom" for="razorpay_webhook_url">Webhook URL</label>
-            <input id="razorpay_webhook_url" class="f-select-custom" formControlName="webhook_url" placeholder="https://api.mmrconstructions.in/api/payment/razorpay/webhook" />
-          </div>
-
-          <div>
-            <label class="f-label-custom" for="razorpay_environment">Environment Mode</label>
-            <select id="razorpay_environment" class="f-select-custom" formControlName="environment_mode">
-              <option value="test">Test Mode</option>
-              <option value="live">Live Production</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="f-label-custom" for="razorpay_status">Gateway Status</label>
-            <select id="razorpay_status" class="f-select-custom" formControlName="status">
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="card-footer-action">
-          <button type="submit" class="btn-brand-save razorpay" [disabled]="savingGateway.razorpay">
-            <i class="fas fa-save"></i> {{ savingGateway.razorpay ? 'Saving...' : 'Save Razorpay Credentials' }}
-          </button>
-        </div>
-      </div>
-    </form>
-
-    <!-- Cashfree Config Card -->
-    <form
-      class="gateway-brand-card card-cashfree"
-      [formGroup]="gatewayForms.cashfree"
-      (ngSubmit)="saveGatewayConfig('cashfree')"
-    >
-      <div class="gateway-brand-head">
-        <div class="gateway-brand-badge">
-          <div class="brand-icon-box icon-cashfree">
-            <img src="https://cashfree.com/favicon.ico" alt="Cashfree" class="brand-logo-img-head" />
-          </div>
-          <div>
-            <h5 class="brand-title-name">Cashfree Payments</h5>
-            <p class="brand-title-desc">Instant Settlement & Auto Refund Routing</p>
-          </div>
-        </div>
-        <span class="status-pill-custom" [ngClass]="gatewayForms.cashfree.get('status')?.value === 'active' ? 'active' : 'inactive'">
-          {{ gatewayForms.cashfree.get('status')?.value | uppercase }}
-        </span>
-      </div>
-
-      <div class="gateway-form-body">
-        <div class="gateway-fields-row">
-          <div>
-            <label class="f-label-custom" for="cashfree_client_id">App ID / Client ID</label>
-            <input id="cashfree_client_id" class="f-select-custom" formControlName="public_key" placeholder="Enter Cashfree App ID" />
-            <span class="field-error-text" *ngIf="gatewayForms.cashfree.get('public_key')?.touched && gatewayForms.cashfree.get('public_key')?.invalid">Client ID is required.</span>
-          </div>
-
-          <div>
-            <label class="f-label-custom" for="cashfree_client_secret">Client Secret</label>
-            <div class="input-box-secret">
-              <input
-                id="cashfree_client_secret"
-                class="f-select-custom"
-                formControlName="client_secret"
-                [type]="secretVisible.cashfree ? 'text' : 'password'"
-                placeholder="Enter or update client secret"
-              />
-              <button type="button" class="secret-toggle-btn" (click)="toggleSecret('cashfree')">
-                <i [class]="secretVisible.cashfree ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-              </button>
-            </div>
-            <span class="field-error-text" *ngIf="gatewayForms.cashfree.get('client_secret')?.touched && gatewayForms.cashfree.get('client_secret')?.invalid">Client Secret is required.</span>
-          </div>
-
-          <div class="gateway-field-full">
-            <label class="f-label-custom" for="cashfree_callback_url">Callback URL</label>
-            <input id="cashfree_callback_url" class="f-select-custom" formControlName="callback_url" placeholder="https://api.mmrconstructions.in/api/wallet/add-fund/verify-callback" />
-          </div>
-
-          <div class="gateway-field-full">
-            <label class="f-label-custom" for="cashfree_webhook_url">Webhook URL</label>
-            <input id="cashfree_webhook_url" class="f-select-custom" formControlName="webhook_url" placeholder="https://api.mmrconstructions.in/api/payment/cashfree/webhook" />
-          </div>
-
-          <div>
-            <label class="f-label-custom" for="cashfree_environment">Environment Mode</label>
-            <select id="cashfree_environment" class="f-select-custom" formControlName="environment_mode">
-              <option value="sandbox">Sandbox Test</option>
-              <option value="production">Production Live</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="f-label-custom" for="cashfree_status">Gateway Status</label>
-            <select id="cashfree_status" class="f-select-custom" formControlName="status">
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="card-footer-action">
-          <button type="submit" class="btn-brand-save cashfree" [disabled]="savingGateway.cashfree">
-            <i class="fas fa-save"></i> {{ savingGateway.cashfree ? 'Saving...' : 'Save Cashfree Credentials' }}
-          </button>
-        </div>
-      </div>
-    </form>
-
-    <!-- PayU Config Card -->
-    <form
-      class="gateway-brand-card card-payu"
-      [formGroup]="gatewayForms.payu"
-      (ngSubmit)="saveGatewayConfig('payu')"
-    >
-      <div class="gateway-brand-head">
-        <div class="gateway-brand-badge">
-          <div class="brand-icon-box icon-payu">
-            <img src="https://payu.in/favicon.ico" alt="PayU" class="brand-logo-img-head" />
-          </div>
-          <div>
-            <h5 class="brand-title-name">PayU Payment Gateway</h5>
-            <p class="brand-title-desc">Direct Card & Merchant Key Routing</p>
-          </div>
-        </div>
-        <span class="status-pill-custom" [ngClass]="gatewayForms.payu.get('status')?.value === 'active' ? 'active' : 'inactive'">
-          {{ gatewayForms.payu.get('status')?.value | uppercase }}
-        </span>
-      </div>
-
-      <div class="gateway-form-body">
-        <div class="gateway-fields-row">
-          <div>
-            <label class="f-label-custom" for="payu_merchant_key">Merchant Key</label>
-            <input id="payu_merchant_key" class="f-select-custom" formControlName="public_key" placeholder="Enter Merchant Key" />
-            <span class="field-error-text" *ngIf="gatewayForms.payu.get('public_key')?.touched && gatewayForms.payu.get('public_key')?.invalid">Merchant Key is required.</span>
-          </div>
-
-          <div>
-            <label class="f-label-custom" for="payu_salt">Salt / Secret</label>
-            <div class="input-box-secret">
-              <input
-                id="payu_salt"
-                class="f-select-custom"
-                formControlName="secret_key"
-                [type]="secretVisible.payu ? 'text' : 'password'"
-                placeholder="Enter or update PayU salt"
-              />
-              <button type="button" class="secret-toggle-btn" (click)="toggleSecret('payu')">
-                <i [class]="secretVisible.payu ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-              </button>
-            </div>
-            <span class="field-error-text" *ngIf="gatewayForms.payu.get('secret_key')?.touched && gatewayForms.payu.get('secret_key')?.invalid">Salt is required.</span>
-          </div>
-
-          <div class="gateway-field-full">
-            <label class="f-label-custom" for="payu_callback_url">Callback URL</label>
-            <input id="payu_callback_url" class="f-select-custom" formControlName="callback_url" placeholder="https://api.mmrconstructions.in/api/payment/payu/verify" />
-          </div>
-
-          <div>
-            <label class="f-label-custom" for="payu_environment">Environment Mode</label>
-            <select id="payu_environment" class="f-select-custom" formControlName="environment_mode">
-              <option value="test">Test Mode</option>
-              <option value="live">Live Mode</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="f-label-custom" for="payu_status">Gateway Status</label>
-            <select id="payu_status" class="f-select-custom" formControlName="status">
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="card-footer-action">
-          <button type="submit" class="btn-brand-save payu" [disabled]="savingGateway.payu">
-            <i class="fas fa-save"></i> {{ savingGateway.payu ? 'Saving...' : 'Save PayU Credentials' }}
-          </button>
-        </div>
-      </div>
-    </form>
-  </div>
+  </ng-container>
 
   <!-- Action confirmation dialog -->
   <app-confirmation-dialog

@@ -32,6 +32,8 @@ export class ReceiptFormComponent implements OnInit {
     receipt_date: new Date().toISOString().split('T')[0],
     plot_no: '',
     plot_area: '',
+    plot_id: null,
+    site_id: null,
     customer_id: null,
     customer_name: '',
     mobile_no: '',
@@ -54,6 +56,29 @@ export class ReceiptFormComponent implements OnInit {
     notes: '',
   };
 
+  selectedCustomerSponsor: any = null;
+
+  // Site & Plot Selection Modal (Phase 4)
+  showPlotModal = false;
+  loadingSites = false;
+  sites: any[] = [];
+  selectedSite: any = null;
+  loadingPlots = false;
+  plots: any[] = [];
+  selectedPlot: any = null;
+  plotStatusFilter = 'ALL';
+
+  settings: any = {
+    company_name: 'MMR Construction & Developers',
+    company_logo: '',
+    address: 'Tribhuvan Kheda, Sheshpur, Unnao, Uttar Pradesh, India, 209801',
+    cin: 'U68200UP2025PTC229203',
+    gst_number: '09AATCM6753A1Z5',
+    phone: '+91 95111 19879',
+    email: 'official@mmrconstructions.in',
+    signature_url: ''
+  };
+
   constructor(
     private api: ApiService,
     private router: Router
@@ -61,6 +86,14 @@ export class ReceiptFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadNextReceiptNumber();
+    this.api.get('/api/admin/invoice-settings', {}, true).subscribe({
+      next: (res: any) => {
+        if (res.success && res.data && res.data.company_name) {
+          this.settings = { ...this.settings, ...res.data };
+        }
+      },
+      error: () => {}
+    });
   }
 
   loadNextReceiptNumber(): void {
@@ -110,12 +143,122 @@ export class ReceiptFormComponent implements OnInit {
     this.form.mobile_no = cust.mobile_no;
     this.customerSearchQuery = `${cust.full_name} (${cust.mobile_no})`;
     this.showCustomerDropdown = false;
+
+    // Phase 2: Retrieve verified sponsor/referral from DB
+    if (cust.sponsor_name || cust.sponsor_id) {
+      this.selectedCustomerSponsor = {
+        name: cust.sponsor_name,
+        member_id: cust.sponsor_member_id,
+        mobile: cust.sponsor_mobile,
+        role: cust.sponsor_role || 'Associate',
+        id: cust.sponsor_id
+      };
+      this.form.advisor_name = cust.sponsor_name;
+      this.form.advisor_mobile = cust.sponsor_mobile || '';
+    } else {
+      this.selectedCustomerSponsor = {
+        isDirect: true,
+        label: 'Individual Customer (Company Direct — No Referral Commission)'
+      };
+      this.form.advisor_name = '';
+      this.form.advisor_mobile = '';
+    }
   }
 
   clearCustomerSelection(): void {
     this.form.customer_id = null;
     this.customerSearchQuery = '';
     this.showCustomerDropdown = false;
+    this.selectedCustomerSponsor = null;
+  }
+
+  // ── Site & Plot Picker Modal ──
+  openPlotPickerModal(): void {
+    this.showPlotModal = true;
+    if (this.sites.length === 0) {
+      this.loadSites();
+    }
+  }
+
+  closePlotPickerModal(): void {
+    this.showPlotModal = false;
+  }
+
+  loadSites(): void {
+    this.loadingSites = true;
+    this.api.getSites().subscribe({
+      next: (res: any) => {
+        this.loadingSites = false;
+        this.sites = res.data || (Array.isArray(res) ? res : []);
+      },
+      error: () => {
+        this.loadingSites = false;
+        this.showToast('Failed to load property sites', 'danger');
+      }
+    });
+  }
+
+  onSelectSite(site: any): void {
+    this.selectedSite = site;
+    this.loadingPlots = true;
+    this.plots = [];
+    const siteId = site.site_id || site.id;
+    this.api.getSitePlots(siteId).subscribe({
+      next: (res: any) => {
+        this.loadingPlots = false;
+        this.plots = res.data || (Array.isArray(res) ? res : []);
+      },
+      error: () => {
+        this.loadingPlots = false;
+        this.showToast('Failed to load plots for selected site', 'danger');
+      }
+    });
+  }
+
+  backToSitesList(): void {
+    this.selectedSite = null;
+    this.plots = [];
+  }
+
+  get filteredPlots(): any[] {
+    if (this.plotStatusFilter === 'ALL') return this.plots;
+    return this.plots.filter((p: any) => String(p.plot_status || 'Vacant').toLowerCase() === this.plotStatusFilter.toLowerCase());
+  }
+
+  onSelectPlot(plot: any): void {
+    const status = String(plot.plot_status || 'Vacant').toLowerCase();
+    if (!['vacant', 'available'].includes(status)) {
+      this.showToast(`Plot #${plot.plot_number} is ${plot.plot_status}. Only vacant plots can be selected.`, 'danger');
+      return;
+    }
+
+    this.selectedPlot = plot;
+    this.form.plot_id = plot.plot_id;
+    this.form.site_id = this.selectedSite?.site_id || this.selectedSite?.id || plot.site_id;
+    this.form.plot_no = plot.plot_number;
+    this.form.plot_area = plot.plot_area ? `${plot.plot_area} Gaj` : '';
+
+    const siteName = this.selectedSite?.site_name || 'MMR City';
+    const siteAddr = this.selectedSite?.full_address || this.selectedSite?.city || 'Unnao, UP';
+    this.form.plotting_place = `${siteName}, ${siteAddr}`;
+
+    if (plot.base_price && (!this.form.receipt_amount || this.form.receipt_amount === 0)) {
+      this.form.receipt_amount = Number(plot.base_price);
+    }
+
+    this.showToast(`Selected Plot #${plot.plot_number} (${siteName})`, 'success');
+    this.closePlotPickerModal();
+  }
+
+  getBalance(): number {
+    const tot = Number(this.form.receipt_amount || this.form.paid_amount || 0);
+    const paid = Number(this.form.paid_amount || 0);
+    return Math.max(0, tot - paid);
+  }
+
+  getQrUrl(): string {
+    const recNo = encodeURIComponent(this.form.receipt_no || 'MMR-REC-PREVIEW');
+    return `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://mmrconstructions.in/admin/receipts?verify=${recNo}`;
   }
 
   onPaidAmountChange(): void {

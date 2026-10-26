@@ -56,10 +56,11 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     {
       label: 'PLOT ORDERS',
       icon: 'fas fa-clipboard-check',
-      directLink: '/admin/plot-orders',
-      badge: 'NEW',
       expanded: false,
-      items: []
+      items: [
+        { icon: 'fas fa-clipboard-list', label: 'Plot Orders', route: '/admin/plot-orders' },
+        { icon: 'fas fa-file-invoice-dollar', label: 'Payment Settlement', route: '/admin/payment-settlement', badge: 'NEW' },
+      ]
     },
     {
       label: 'CUSTOMER',
@@ -132,9 +133,8 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-plus-circle', label: '2. Add New Site Area', route: '/admin/new-site-area' },
         { icon: 'fas fa-drafting-compass', label: '3. CAD Plot Detector (DXF Upload)', route: '/admin/plot-detector-tool', badge: 'CAD' },
         { icon: 'fas fa-draw-polygon', label: '4. Edit / Modify Plots (Map Editor)', route: '/admin/plot-map-editor', badge: 'EDIT' },
-        { icon: 'fas fa-layer-group', label: '5. Site Gallery', route: '/admin/site-gallery' },
-        { icon: 'fas fa-calculator', label: '6. EMI Calculator Mgmt', route: '/admin/emi-calculator-mgmt' },
-        { icon: 'fas fa-map-marked-alt', label: '7. Admin Sales Map', route: '/admin/sales-map', badge: 'SALES' },
+        { icon: 'fas fa-calculator', label: '5. EMI Calculator Mgmt', route: '/admin/emi-calculator-mgmt' },
+        { icon: 'fas fa-map-marked-alt', label: '6. Admin Sales Map', route: '/admin/sales-map', badge: 'SALES' },
       ]
     },
     {
@@ -172,12 +172,43 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     private api: ApiService
   ) {}
 
+  getCurrentPath(urlOverride?: string): { path: string; queryParams: Record<string, string> } {
+    let url = urlOverride || this.router.url;
+    if (!url || url === '/' || url === '') {
+      if (typeof window !== 'undefined' && window.location) {
+        url = window.location.pathname + window.location.search;
+      }
+    }
+    if (!url) {
+      return { path: '', queryParams: {} };
+    }
+
+    try {
+      const [pathPart, queryPart] = url.split('?');
+      const cleanPath = (pathPart || '').split('#')[0];
+      const queryParams: Record<string, string> = {};
+      if (queryPart) {
+        const searchParams = new URLSearchParams(queryPart.split('#')[0]);
+        searchParams.forEach((val, key) => {
+          queryParams[key] = val;
+        });
+      }
+      return { path: cleanPath, queryParams };
+    } catch (e) {
+      return { path: url, queryParams: {} };
+    }
+  }
+
   isTestOtpActive(): boolean {
-    return this.router.url.includes('/admin/test-otp');
+    return this.getCurrentPath().path.startsWith('/admin/test-otp');
   }
 
   isPlotBookingProcessActive(): boolean {
-    return this.router.url.includes('/admin/plot-booking-process');
+    return this.getCurrentPath().path.startsWith('/admin/plot-booking-process');
+  }
+
+  isUserGuideActive(): boolean {
+    return this.getCurrentPath().path.startsWith('/admin/user-guide');
   }
 
   filteredNavGroups: NavGroup[] = [];
@@ -186,13 +217,20 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     this.auth.adminUser$.subscribe(u => this.adminUser = u);
     this.updateNavGroups();
 
-    this.checkActiveGroup(this.router.url);
+    // Check active group immediately on init
+    this.checkActiveGroup();
+
+    // Defer checks to catch any initial router state resolution
+    setTimeout(() => this.checkActiveGroup(), 0);
+    setTimeout(() => this.checkActiveGroup(), 100);
+    setTimeout(() => this.checkActiveGroup(), 300);
 
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.closeDropdowns();
-      this.checkActiveGroup(event.urlAfterRedirects || event.url);
+      const currentUrl = event.urlAfterRedirects || event.url;
+      this.checkActiveGroup(currentUrl);
     });
   }
 
@@ -235,41 +273,64 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   isDirectGroupActive(group: NavGroup): boolean {
     if (!group.directLink) return false;
-    return this.router.url.startsWith(group.directLink);
+    const { path } = this.getCurrentPath();
+    return path === group.directLink || path.startsWith(group.directLink + '/');
   }
 
-  isItemActive(item: NavItem): boolean {
-    try {
-      const urlTree = this.router.parseUrl(this.router.url);
-      const primary = urlTree.root.children['primary'];
-      const currentPath = primary ? '/' + primary.segments.map(s => s.path).join('/') : '';
+  isGroupActive(group: NavGroup, urlOverride?: string): boolean {
+    if (group.directLink) {
+      return this.isDirectGroupActive(group);
+    }
+    return !!group.items && group.items.some(item => this.isItemActive(item, urlOverride));
+  }
 
+  isItemActive(item: NavItem, urlOverride?: string): boolean {
+    try {
+      const { path: currentPath, queryParams: currentQuery } = this.getCurrentPath(urlOverride);
+      if (!currentPath) return false;
+
+      // 1. If item requires specific query parameters
       if (item.queryParams && Object.keys(item.queryParams).length > 0) {
         if (currentPath !== item.route) return false;
-        return Object.keys(item.queryParams).every(k => urlTree.queryParams[k] === item.queryParams![k]);
+        return Object.keys(item.queryParams).every(k => String(currentQuery[k]) === String(item.queryParams![k]));
       }
 
+      // 2. Exact route match
       if (currentPath === item.route) {
-        if (!urlTree.queryParams || Object.keys(urlTree.queryParams).length === 0) {
-          return true;
+        // If the URL has query parameters, check if a sibling specifically matched them
+        if (currentQuery && Object.keys(currentQuery).length > 0) {
+          const hasSpecificSibling = this.filteredNavGroups.some(g =>
+            g.items.some(i => i !== item && i.route === item.route && i.queryParams &&
+              Object.keys(i.queryParams).every(k => String(currentQuery[k]) === String(i.queryParams![k])))
+          );
+          if (hasSpecificSibling) return false;
         }
-        // If current URL has specific query params, only match if no sibling item has those specific params
-        const otherSpecificMatch = this.filteredNavGroups.some(g =>
-          g.items.some(i => i !== item && i.route === item.route && i.queryParams && Object.keys(i.queryParams).every(k => urlTree.queryParams[k] === i.queryParams![k]))
-        );
-        return !otherSpecificMatch;
+        return true;
       }
 
-      return currentPath.startsWith(item.route + '/');
+      // 3. Child/nested route prefix match (e.g., currentPath is '/admin/sites/edit/5' and item is '/admin/sites')
+      if (currentPath.startsWith(item.route + '/')) {
+        // Check if another item in any group is an exact match or a longer matching prefix
+        const hasBetterMatch = this.filteredNavGroups.some(g =>
+          g.items.some(i => i !== item && (
+            currentPath === i.route ||
+            (currentPath.startsWith(i.route + '/') && i.route.length > item.route.length)
+          ))
+        );
+        return !hasBetterMatch;
+      }
+
+      return false;
     } catch (e) {
-      return this.router.url.includes(item.route);
+      const { path } = this.getCurrentPath(urlOverride);
+      return path.includes(item.route);
     }
   }
 
-  checkActiveGroup(currentUrl: string) {
+  checkActiveGroup(urlOverride?: string) {
     let matchedGroup: NavGroup | null = null;
     for (const group of this.filteredNavGroups) {
-      if (group.items.some(item => this.isItemActive(item))) {
+      if (!group.directLink && group.items.some(item => this.isItemActive(item, urlOverride))) {
         matchedGroup = group;
         break;
       }
@@ -281,6 +342,9 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       this.rawNavGroups.forEach(group => {
         group.expanded = (group.label === matchedGroup!.label);
       });
+    } else if (this.isUserGuideActive() || this.isTestOtpActive() || this.isPlotBookingProcessActive()) {
+      this.filteredNavGroups.forEach(group => group.expanded = false);
+      this.rawNavGroups.forEach(group => group.expanded = false);
     }
   }
 

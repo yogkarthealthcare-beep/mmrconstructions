@@ -1,3 +1,4 @@
+<!-- Public CAD Plot Map & Interactive Layout View -->
 <div class="public-plot-map-wrapper">
   <!-- Top Bar -->
   <header class="map-topbar">
@@ -481,65 +482,140 @@
         </div>
 
         <form (ngSubmit)="submitBooking()">
-          <!-- Customer Proposed Rate & Valuation Section -->
-          <div class="p-3 mb-3 rounded-8 bg-amber-50 border border-warning">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <label class="form-label fw-800 fs-13 text-dark mb-0">
-                <i class="fas fa-tag text-warning-emphasis me-1"></i>आपका प्रस्तावित रेट (Proposed Valuation) <span class="text-danger">*</span>
+          <!-- Customer Proposed Rate & Valuation Section with 2-Tab Unit Switcher -->
+          <div class="mb-3 rounded-8 valuation-card-box border border-warning">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-1 admin-badge-row">
+              <label class="form-label fw-800 fs-12 text-white mb-0">
+                <i class="fas fa-tag text-warning me-1"></i>आपका प्रस्तावित रेट (Proposed Valuation) <span class="text-danger">*</span>
               </label>
-              <span class="badge bg-warning text-dark fs-10">Admin Approval Required</span>
+              <span class="badge bg-warning text-dark fs-10 fw-bold">Admin Approval Required</span>
             </div>
-            <p class="fs-11 text-muted mb-2">
-              प्लॉट का रेट प्रति गज या प्रति sq ft में दर्ज करें। दोनों वैल्यू एक-दूसरे के अनुसार स्वतः अपडेट होंगी।
-            </p>
 
-            <div class="row g-2 mb-2">
+            <!-- Extra-Small Unit Selection Tabs (Gaj vs Sq.Ft) -->
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="fs-11 text-white" style="opacity: 0.92;">कैलकुलेशन यूनिट चुनें:</span>
+              <div class="btn-group btn-group-xs" role="group">
+                <button
+                  type="button"
+                  class="btn btn-xs py-1 px-2.5 fs-11 fw-700 unit-tab-btn"
+                  [ngClass]="calculationUnit === 'GAJ' ? 'btn-gold' : 'btn-outline-light text-white'"
+                  (click)="setCalculationUnit('GAJ')"
+                >
+                  <i class="fas fa-ruler-combined me-1"></i> गज (Gaj)
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-xs py-1 px-2.5 fs-11 fw-700 unit-tab-btn"
+                  [ngClass]="calculationUnit === 'SQFT' ? 'btn-gold' : 'btn-outline-light text-white'"
+                  (click)="setCalculationUnit('SQFT')"
+                >
+                  <i class="fas fa-vector-square me-1"></i> स्क्वेयर फीट (Sq.Ft)
+                </button>
+              </div>
+            </div>
+
+            <!-- Tab 1: गज (Gaj) Inputs -->
+            <div class="row g-2 mb-2" *ngIf="calculationUnit === 'GAJ'">
               <div class="col-6">
-                <label class="form-label fs-11 fw-700 text-muted mb-1">रेट प्रति गज (₹/Gaj)</label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white fw-bold">₹</span>
+                <label class="form-label fs-11 fw-700 text-white mb-1">
+                  कितने गज लेना है (Area Gaj)
+                </label>
+                <div class="plot-input-group">
+                  <span class="plot-input-addon text-dark fw-bold fs-11">Gaj</span>
                   <input
-                    type="number"
-                    class="form-control fw-bold fs-12 text-dark"
-                    [(ngModel)]="bookingForm.rate_per_gaj"
-                    name="rate_per_gaj"
-                    (ngModelChange)="onProposedRateGajChange()"
-                    placeholder="₹8,000 / गज"
-                    min="1"
+                    type="text"
+                    inputmode="numeric"
+                    class="plot-input-control"
+                    [(ngModel)]="inputAreaGaj"
+                    name="inputAreaGaj"
+                    (ngModelChange)="onGajInputChange()"
+                    placeholder="उदा. 100"
+                    required
                   />
                 </div>
               </div>
 
               <div class="col-6">
-                <label class="form-label fs-11 fw-700 text-muted mb-1">रेट प्रति Sq.Ft (₹/sq ft)</label>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white fw-bold">₹</span>
+                <label class="form-label fs-11 fw-700 text-white mb-1">
+                  रेट प्रति गज (₹/Gaj)
+                </label>
+                <div class="plot-input-group">
+                  <span class="plot-input-addon text-dark fw-bold fs-11">₹</span>
                   <input
-                    type="number"
-                    class="form-control fw-bold fs-12 text-dark"
-                    [(ngModel)]="bookingForm.rate_per_sqft"
-                    name="rate_per_sqft"
-                    (ngModelChange)="onProposedRateSqftChange()"
-                    placeholder="Auto (₹/9)"
-                    min="1"
-                    step="0.01"
+                    type="text"
+                    inputmode="numeric"
+                    class="plot-input-control"
+                    [(ngModel)]="inputRateGaj"
+                    name="inputRateGaj"
+                    (ngModelChange)="onGajInputChange()"
+                    placeholder="उदा. 8000"
+                    required
                   />
                 </div>
               </div>
             </div>
 
+            <!-- Tab 2: स्क्वेयर फीट (Sq.Ft) Inputs -->
+            <div class="row g-2 mb-2" *ngIf="calculationUnit === 'SQFT'">
+              <div class="col-6">
+                <label class="form-label fs-11 fw-700 text-white mb-1">
+                  कितना Sq.Ft लेना है (Area Sq.Ft)
+                </label>
+                <div class="plot-input-group">
+                  <span class="plot-input-addon text-dark fw-bold fs-11">Sq.Ft</span>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    class="plot-input-control"
+                    [(ngModel)]="inputAreaSqft"
+                    name="inputAreaSqft"
+                    (ngModelChange)="onSqftInputChange()"
+                    placeholder="उदा. 900"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="col-6">
+                <label class="form-label fs-11 fw-700 text-white mb-1">
+                  रेट प्रति Sq.Ft (₹/sq ft)
+                </label>
+                <div class="plot-input-group">
+                  <span class="plot-input-addon text-dark fw-bold fs-11">₹</span>
+                  <input
+                    type="text"
+                    inputmode="decimal"
+                    class="plot-input-control"
+                    [(ngModel)]="inputRateSqft"
+                    name="inputRateSqft"
+                    (ngModelChange)="onSqftInputChange()"
+                    placeholder="उदा. 888.89"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Total Plot Value (Area × Rate) -->
             <div class="mb-2">
-              <label class="form-label fs-11 fw-700 text-muted mb-1">कुल प्रस्तावित कीमत (Total Value):</label>
-              <div class="input-group">
-                <span class="input-group-text fw-bold bg-white text-dark">₹</span>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label fs-11 fw-700 text-white mb-0">
+                  कुल प्रस्तावित कीमत (Total Value):
+                </label>
+                <small class="fs-10 text-white opacity-75">
+                  {{ calculationUnit === 'GAJ' ? (inputAreaGaj + ' गज × ₹' + inputRateGaj) : (inputAreaSqft + ' Sq.Ft × ₹' + inputRateSqft) }}
+                </small>
+              </div>
+              <div class="plot-input-group">
+                <span class="plot-input-addon text-dark fw-bold">₹</span>
                 <input
-                  type="number"
-                  class="form-control fw-800 fs-15 text-dark"
+                  type="text"
+                  inputmode="numeric"
+                  class="plot-input-control"
                   [(ngModel)]="bookingForm.proposed_price"
                   name="proposed_price"
                   (ngModelChange)="onProposedPriceChange()"
                   placeholder="न्यूनतम ₹2,00,000"
-                  min="200000"
                   required
                 />
               </div>
@@ -556,33 +632,33 @@
           </div>
 
           <!-- Customer Profile Summary -->
-          <div class="form-row mb-3">
-            <label class="form-label">Customer Name</label>
+          <div class="form-row mb-2">
+            <label class="form-label text-white fs-11">Customer Name</label>
             <input
               type="text"
-              class="form-control"
+              class="form-control form-control-sm fs-11"
               [(ngModel)]="bookingForm.customer_name"
               name="customer_name"
               readonly
             />
           </div>
 
-          <div class="row g-2 mb-3">
+          <div class="row g-2 mb-2.5">
             <div class="col-sm-6">
-              <label class="form-label">Mobile Number</label>
+              <label class="form-label text-white fs-11">Mobile Number</label>
               <input
                 type="text"
-                class="form-control"
+                class="form-control form-control-sm fs-11"
                 [(ngModel)]="bookingForm.mobile_no"
                 name="mobile_no"
                 readonly
               />
             </div>
             <div class="col-sm-6">
-              <label class="form-label">Email Address</label>
+              <label class="form-label text-white fs-11">Email Address</label>
               <input
                 type="email"
-                class="form-control"
+                class="form-control form-control-sm fs-11"
                 [(ngModel)]="bookingForm.email"
                 name="email"
                 readonly
@@ -592,7 +668,7 @@
 
           <!-- Payment Plan Options -->
           <div class="mb-3">
-            <label class="form-label">Select Payment Preference</label>
+            <label class="form-label text-white">Select Payment Preference</label>
             <div class="payment-plan-grid">
               <label class="payment-plan-card" [class.selected]="bookingForm.payment_type === 'EMI'">
                 <input
@@ -605,7 +681,7 @@
                 />
                 <div class="plan-header">
                   <i class="fas fa-calendar-alt text-gold"></i>
-                  <strong>Easy EMI Plan</strong>
+                  <strong class="text-white">Easy EMI Plan</strong>
                 </div>
                 <div class="plan-desc">12, 24, 36, or 60 Months flexible tenure</div>
               </label>
@@ -621,7 +697,7 @@
                 />
                 <div class="plan-header">
                   <i class="fas fa-percentage text-gold"></i>
-                  <strong>Part-Wise (3 Mo)</strong>
+                  <strong class="text-white">Part-Wise (3 Mo)</strong>
                 </div>
                 <div class="plan-desc">25% Advance + remaining balance in 3 months</div>
               </label>
@@ -637,7 +713,7 @@
                 />
                 <div class="plan-header">
                   <i class="fas fa-money-check-alt text-gold"></i>
-                  <strong>One-Time Full</strong>
+                  <strong class="text-white">One-Time Full</strong>
                 </div>
                 <div class="plan-desc">Direct registry &amp; immediate possession</div>
               </label>
@@ -645,25 +721,27 @@
           </div>
 
           <!-- EMI Tenure Plan Selector & Live Preview -->
-          <div class="mb-3 p-3 bg-light rounded-8 border" *ngIf="bookingForm.payment_type === 'EMI'">
-            <label class="form-label fs-12 fw-700 text-dark mb-2">Select EMI Tenure Plan:</label>
-            <div class="d-flex gap-2 flex-wrap mb-2">
-              <button 
-                type="button" 
-                class="btn btn-sm" 
-                *ngFor="let plan of activeInstallmentPlans"
-                [ngClass]="bookingForm.installment_plan_id === plan.id ? 'btn-dark fw-800' : 'btn-outline-secondary'"
-                (click)="onPlanSelect(plan.id)">
-                {{ plan.tenure_months }} Months ({{ plan.interest_percent }}% Int)
-              </button>
+          <div class="mb-3 p-3 bg-dark-green rounded-8 border border-warning" *ngIf="bookingForm.payment_type === 'EMI'">
+            <label class="form-label fs-12 fw-700 text-white mb-2">Select EMI Tenure Plan:</label>
+            <div class="d-flex gap-1.5 flex-wrap mb-2">
+              <ng-container *ngFor="let plan of activeInstallmentPlans">
+                <button 
+                  type="button" 
+                  *ngIf="plan.tenure_months != 60"
+                  class="btn btn-xs py-0.5 px-2 fs-10 fw-700 emi-plan-btn" 
+                  [ngClass]="bookingForm.installment_plan_id === plan.id ? 'btn-gold fw-800' : 'btn-outline-light text-white'"
+                  (click)="onPlanSelect(plan.id)">
+                  {{ plan.tenure_months }} Months ({{ plan.interest_percent }}% Int)
+                </button>
+              </ng-container>
             </div>
             <div *ngIf="selectedPlanPreview" class="p-2.5 bg-white rounded-6 border fs-11 text-dark">
               <div class="d-flex justify-content-between mb-1">
-                <span class="text-muted">Min Down Payment ({{ selectedPlan?.down_payment_percent }}%):</span>
+                <span class="text-dark fw-600">Min Down Payment ({{ selectedPlan?.down_payment_percent }}%):</span>
                 <strong>₹{{ (selectedPlanPreview.price * selectedPlan?.down_payment_percent / 100) | number }}</strong>
               </div>
               <div class="d-flex justify-content-between mb-1">
-                <span class="text-muted">Flat Interest ({{ selectedPlan?.interest_percent }}%):</span>
+                <span class="text-dark fw-600">Flat Interest ({{ selectedPlan?.interest_percent }}%):</span>
                 <span class="text-warning fw-700">+₹{{ selectedPlanPreview.interestAmount | number }}</span>
               </div>
               <div class="d-flex justify-content-between border-top pt-1">
@@ -682,27 +760,203 @@
 
           <!-- Advance Booking Token Amount -->
           <div class="mb-3">
-            <label class="form-label">Advance Booking Amount (INR) <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text bg-dark-green text-gold">₹</span>
+            <label class="form-label text-white">Advance Booking Amount (INR) <span class="text-danger">*</span></label>
+            <div class="plot-input-group">
+              <span class="plot-input-addon">₹</span>
               <input
-                type="number"
-                class="form-control"
+                type="text"
+                inputmode="numeric"
+                class="plot-input-control"
                 [(ngModel)]="bookingForm.advance_amount"
                 name="advance_amount"
-                min="1000"
-                step="1000"
                 required
               />
             </div>
-            <small class="text-muted">Minimum token advance to reserve unit: ₹51,000</small>
+            <small class="text-white mt-1 d-block" style="opacity: 0.88;">Minimum token advance to reserve unit: ₹51,000</small>
+          </div>
+
+          <!-- Dynamic Payment Method Selection (Controlled by Admin Checkboxes) -->
+          <div class="mb-3">
+            <label class="form-label text-white fs-11 fw-700 mb-1.5">
+              <i class="fas fa-credit-card text-gold me-1"></i> भुगतान का माध्यम चुनें (Payment Method):
+            </label>
+
+            <!-- Extra-small Payment Method Tabs in ONE Single Row -->
+            <div class="payment-tabs-row mb-2.5">
+              <!-- Tab: UPI QR -->
+              <button
+                type="button"
+                *ngIf="companyBankSettings?.enable_primary_upi !== false || companyBankSettings?.enable_secondary_upi !== false"
+                class="btn btn-xs py-1 px-1.5 fs-10 fw-700 payment-tab-btn"
+                [ngClass]="selectedPaymentTab === 'UPI' ? 'btn-gold' : 'btn-outline-light text-white'"
+                (click)="selectedPaymentTab = 'UPI'"
+              >
+                <i class="fas fa-qrcode me-1"></i> UPI QR (Scan &amp; Pay)
+              </button>
+
+              <!-- Tab: Bank Transfer -->
+              <button
+                type="button"
+                *ngIf="companyBankSettings?.enable_bank_transfer !== false"
+                class="btn btn-xs py-1 px-1.5 fs-10 fw-700 payment-tab-btn"
+                [ngClass]="selectedPaymentTab === 'BANK_TRANSFER' ? 'btn-gold' : 'btn-outline-light text-white'"
+                (click)="selectedPaymentTab = 'BANK_TRANSFER'"
+              >
+                <i class="fas fa-university me-1"></i> Bank Transfer (NEFT/RTGS)
+              </button>
+
+              <!-- Tab: Online Gateway -->
+              <button
+                type="button"
+                *ngIf="companyBankSettings?.enable_payment_gateway"
+                class="btn btn-xs py-1 px-1.5 fs-10 fw-700 payment-tab-btn"
+                [ngClass]="selectedPaymentTab === 'GATEWAY' ? 'btn-gold' : 'btn-outline-light text-white'"
+                (click)="selectedPaymentTab = 'GATEWAY'"
+              >
+                <i class="fas fa-credit-card me-1"></i> Online Payment
+              </button>
+            </div>
+
+            <!-- View 1: UPI QR Payment (Directly Visible on Tab Select) -->
+            <div *ngIf="selectedPaymentTab === 'UPI'" class="p-2.5 rounded-8 bg-dark-green border border-success">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fs-11 fw-700 text-white">
+                  <i class="fab fa-google-pay text-emerald me-1"></i> UPI Instant Payment (Scan &amp; Pay)
+                </span>
+                <span class="badge bg-success text-white fs-10">
+                  <i class="fas fa-check-circle me-1"></i> Official QR
+                </span>
+              </div>
+
+              <!-- Scanner appears directly without any hide/show button -->
+              <div class="mt-1">
+                <app-upi-qr-payment
+                  [advanceAmount]="bookingForm.advance_amount"
+                  [isDarkTheme]="true"
+                  (paymentDetailsChange)="onUpiPaymentChange($event)"
+                ></app-upi-qr-payment>
+              </div>
+            </div>
+
+            <!-- View 2 & 3: Online Payment / Authorized Company Bank Account Details -->
+            <div *ngIf="selectedPaymentTab === 'GATEWAY' || selectedPaymentTab === 'BANK_TRANSFER'" class="p-2.5 rounded-8 bg-dark-green border border-warning">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fs-11 fw-700 text-white text-uppercase">
+                  <i class="fas fa-university text-warning me-1"></i> Official Company Bank Account (Online Payment)
+                </span>
+                <span class="badge bg-success text-white fs-10">Verified Current A/C</span>
+              </div>
+
+              <div class="bank-details-grid fs-11 text-white mb-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                <!-- Account Name / Owner -->
+                <div class="bank-item-box">
+                  <span class="opacity-75 fs-10 d-block">Account Name (ओनर का नाम):</span>
+                  <div class="d-flex align-items-center justify-content-between gap-1.5 mt-0.5">
+                    <strong class="fs-11 text-truncate" [title]="companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED'">
+                      {{ companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED' }}
+                    </strong>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline-light py-0 px-1.5 fs-9 flex-shrink-0"
+                      (click)="copyAccountName()"
+                      title="Copy Account Holder Name"
+                    >
+                      <i class="fas" [class.fa-check]="copiedAccountName" [class.fa-copy]="!copiedAccountName"></i>
+                      <span class="ms-1">{{ copiedAccountName ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Bank Name -->
+                <div class="bank-item-box">
+                  <span class="opacity-75 fs-10 d-block">Bank Name (बैंक का नाम):</span>
+                  <div class="d-flex align-items-center justify-content-between gap-1.5 mt-0.5">
+                    <strong class="fs-11 text-truncate" [title]="companyBankSettings?.bank_name || 'HDFC Bank Ltd.'">
+                      {{ companyBankSettings?.bank_name || 'HDFC Bank Ltd.' }}
+                    </strong>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline-light py-0 px-1.5 fs-9 flex-shrink-0"
+                      (click)="copyBankName()"
+                      title="Copy Bank Name"
+                    >
+                      <i class="fas" [class.fa-check]="copiedBankName" [class.fa-copy]="!copiedBankName"></i>
+                      <span class="ms-1">{{ copiedBankName ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Account Number -->
+                <div class="bank-item-box">
+                  <span class="opacity-75 fs-10 d-block">Account Number (अकाउंट नंबर):</span>
+                  <div class="d-flex align-items-center justify-content-between gap-1.5 mt-0.5 font-mono fw-bold text-gold fs-12">
+                    <span>{{ companyBankSettings?.account_number || '50200088921832' }}</span>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline-light py-0 px-1.5 fs-9 flex-shrink-0"
+                      (click)="copyBankAc()"
+                      title="Copy A/C Number"
+                    >
+                      <i class="fas" [class.fa-check]="copiedBankAc" [class.fa-copy]="!copiedBankAc"></i>
+                      <span class="ms-1">{{ copiedBankAc ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- IFSC Code -->
+                <div class="bank-item-box">
+                  <span class="opacity-75 fs-10 d-block">IFSC Code (आईएफएससी कोड):</span>
+                  <div class="d-flex align-items-center justify-content-between gap-1.5 mt-0.5 font-mono fw-bold text-gold fs-12">
+                    <span>{{ companyBankSettings?.ifsc_code || 'HDFC0001234' }}</span>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline-light py-0 px-1.5 fs-9 flex-shrink-0"
+                      (click)="copyIfsc()"
+                      title="Copy IFSC Code"
+                    >
+                      <i class="fas" [class.fa-check]="copiedIfsc" [class.fa-copy]="!copiedIfsc"></i>
+                      <span class="ms-1">{{ copiedIfsc ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Branch / SWIFT -->
+                <div class="bank-item-box" style="grid-column: span 2;">
+                  <span class="opacity-75 fs-10 d-block">Branch / SWIFT (शाखा / स्विफ्ट):</span>
+                  <div class="d-flex align-items-center justify-content-between gap-1.5 mt-0.5">
+                    <span class="fs-11 text-white text-truncate">{{ companyBankSettings?.branch_name || 'Civil Lines, Kanpur' }}</span>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline-light py-0 px-1.5 fs-9 flex-shrink-0"
+                      (click)="copyBranch()"
+                      title="Copy Branch / SWIFT"
+                    >
+                      <i class="fas" [class.fa-check]="copiedBranch" [class.fa-copy]="!copiedBranch"></i>
+                      <span class="ms-1">{{ copiedBranch ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Direct Online Payment Hint -->
+              <div class="p-1.5 rounded bg-white-10 text-white-50 fs-10 mb-2 d-flex align-items-center gap-1.5">
+                <i class="fas fa-info-circle text-gold fs-12 flex-shrink-0"></i>
+                <span>NetBanking / IMPS / NEFT / RTGS या बैंक ऐप से सीधे उपरोक्त बैंक खाते में ऑनलाइन पेमेंट ट्रांसफर करके बुकिंग सबमिट करें।</span>
+              </div>
+
+              <!-- Strictly No Cash Alert -->
+              <div class="alert alert-danger py-1 px-2 fs-10 mb-0 d-flex align-items-center border-0 text-white" style="background: rgba(220, 38, 38, 0.85);">
+                <i class="fas fa-ban me-1.5 fs-12 text-warning flex-shrink-0"></i>
+                <span><strong>Strictly No Cash Policy:</strong> Company client se cash accept nahi karti. Payment sirf official company account ya UPI se karein.</span>
+              </div>
+            </div>
           </div>
 
           <!-- Notes -->
-          <div class="mb-4">
-            <label class="form-label">Special Requests / Remarks (Optional)</label>
+          <div class="mb-3">
+            <label class="form-label text-white fs-11">Special Requests / Remarks (Optional)</label>
             <textarea
-              class="form-control"
+              class="form-control form-control-sm fs-11"
               rows="2"
               [(ngModel)]="bookingForm.notes"
               name="notes"
@@ -711,10 +965,10 @@
           </div>
 
           <div class="dialog-actions">
-            <button type="button" class="btn btn-outline-secondary" (click)="closeBookingModal()">
+            <button type="button" class="btn btn-xs btn-outline-light text-white py-1 px-3 fs-11" (click)="closeBookingModal()">
               Cancel
             </button>
-            <button type="submit" class="btn btn-gold btn-submit-booking" [disabled]="bookingSubmitting || !isPriceEligible">
+            <button type="submit" class="btn btn-xs btn-gold btn-submit-booking py-1 px-3 fs-11 fw-bold" [disabled]="bookingSubmitting || !isPriceEligible">
               <span *ngIf="!bookingSubmitting"><i class="fas fa-check-circle me-1.5"></i> Confirm & Submit Booking</span>
               <span *ngIf="bookingSubmitting"><span class="spinner-border spinner-border-sm me-1"></span> Processing...</span>
             </button>
