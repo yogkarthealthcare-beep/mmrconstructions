@@ -102,6 +102,9 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
   showUpiQrScanner = false;
   copiedBankAc = false;
   copiedIfsc = false;
+  copiedAccountName = false;
+  copiedBankName = false;
+  copiedBranch = false;
 
   onUpiPaymentChange(d: UpiPaymentDetails): void {
     this.upiDetails = d;
@@ -884,23 +887,74 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     this.showUpiQrScanner = !this.showUpiQrScanner;
   }
 
+  copyAccountName(): void {
+    const name = this.companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED';
+    this.copyTextToClipboard(name, 'name');
+  }
+
+  copyBankName(): void {
+    const bank = this.companyBankSettings?.bank_name || 'HDFC Bank Ltd.';
+    this.copyTextToClipboard(bank, 'bank');
+  }
+
   copyBankAc(): void {
     const ac = this.companyBankSettings?.account_number || '50200088921832';
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(ac).then(() => {
-        this.copiedBankAc = true;
-        setTimeout(() => this.copiedBankAc = false, 2500);
-      });
-    }
+    this.copyTextToClipboard(ac, 'ac');
   }
 
   copyIfsc(): void {
     const ifsc = this.companyBankSettings?.ifsc_code || 'HDFC0001234';
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(ifsc).then(() => {
+    this.copyTextToClipboard(ifsc, 'ifsc');
+  }
+
+  copyBranch(): void {
+    const branch = this.companyBankSettings?.branch_name || 'Civil Lines, Kanpur';
+    this.copyTextToClipboard(branch, 'branch');
+  }
+
+  private copyTextToClipboard(text: string, type: 'name' | 'bank' | 'ac' | 'ifsc' | 'branch'): void {
+    if (!text) return;
+    const markSuccess = () => {
+      if (type === 'name') {
+        this.copiedAccountName = true;
+        setTimeout(() => (this.copiedAccountName = false), 2500);
+      } else if (type === 'bank') {
+        this.copiedBankName = true;
+        setTimeout(() => (this.copiedBankName = false), 2500);
+      } else if (type === 'ac') {
+        this.copiedBankAc = true;
+        setTimeout(() => (this.copiedBankAc = false), 2500);
+      } else if (type === 'ifsc') {
         this.copiedIfsc = true;
-        setTimeout(() => this.copiedIfsc = false, 2500);
+        setTimeout(() => (this.copiedIfsc = false), 2500);
+      } else if (type === 'branch') {
+        this.copiedBranch = true;
+        setTimeout(() => (this.copiedBranch = false), 2500);
+      }
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(markSuccess).catch(() => {
+        this.fallbackCopy(text) && markSuccess();
       });
+    } else {
+      this.fallbackCopy(text) && markSuccess();
+    }
+  }
+
+  private fallbackCopy(text: string): boolean {
+    try {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      const res = document.execCommand('copy');
+      document.body.removeChild(el);
+      return res;
+    } catch {
+      return false;
     }
   }
 
@@ -968,7 +1022,7 @@ export class PublicPlotMapComponent implements OnInit, OnDestroy {
     const initialTotal = Math.round(this.inputAreaGaj * this.inputRateGaj);
 
     this.calculationUnit = 'GAJ';
-    this.showUpiQrScanner = false;
+    this.showUpiQrScanner = true;
 
     this.bookingForm = {
       customer_name: user.full_name || '',

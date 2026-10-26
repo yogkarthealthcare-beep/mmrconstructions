@@ -817,103 +817,138 @@
               </button>
             </div>
 
-            <!-- View 1: UPI QR Payment (Click to Open Scanner) -->
+            <!-- View 1: UPI QR Payment (Directly Visible on Tab Select) -->
             <div *ngIf="selectedPaymentTab === 'UPI'" class="p-2.5 rounded-8 bg-dark-green border border-success">
               <div class="d-flex align-items-center justify-content-between mb-2">
                 <span class="fs-11 fw-700 text-white">
-                  <i class="fab fa-google-pay text-emerald me-1"></i> UPI Instant Payment
+                  <i class="fab fa-google-pay text-emerald me-1"></i> UPI Instant Payment (Scan &amp; Pay)
                 </span>
-                <button
-                  type="button"
-                  class="btn btn-xs btn-outline-warning text-white py-0.5 px-2 fs-10"
-                  (click)="toggleUpiQrScanner()"
-                >
-                  <i class="fas" [ngClass]="showUpiQrScanner ? 'fa-eye-slash me-1' : 'fa-qrcode me-1'"></i>
-                  {{ showUpiQrScanner ? 'Hide Scanner' : 'Click to Open QR Scanner' }}
-                </button>
+                <span class="badge bg-success text-white fs-10">
+                  <i class="fas fa-check-circle me-1"></i> Official QR
+                </span>
               </div>
 
-              <!-- Scanner appears ONLY when user clicks the box / button -->
-              <div *ngIf="showUpiQrScanner" class="mt-2">
+              <!-- Scanner appears directly without any hide/show button -->
+              <div class="mt-1">
                 <app-upi-qr-payment
                   [advanceAmount]="bookingForm.advance_amount"
                   [isDarkTheme]="true"
                   (paymentDetailsChange)="onUpiPaymentChange($event)"
                 ></app-upi-qr-payment>
               </div>
-              <div *ngIf="!showUpiQrScanner" class="p-2 rounded bg-white-10 text-center cursor-pointer" (click)="toggleUpiQrScanner()">
-                <i class="fas fa-qrcode fs-18 text-gold d-block mb-1"></i>
-                <span class="fs-11 text-white fw-600">Scan &amp; Pay via GPay / PhonePe / Paytm</span>
-                <span class="fs-10 text-white-50 d-block mt-0.5">(Click here to view official QR Code &amp; UPI ID)</span>
-              </div>
             </div>
 
-            <!-- View 2: Authorized Company Bank Account Details (Always Visible on Bank Transfer Tab) -->
-            <div *ngIf="selectedPaymentTab === 'BANK_TRANSFER'" class="p-2.5 rounded-8 bg-dark-green border border-warning">
+            <!-- View 2 & 3: Online Payment / Authorized Company Bank Account Details -->
+            <div *ngIf="selectedPaymentTab === 'GATEWAY' || selectedPaymentTab === 'BANK_TRANSFER'" class="p-2.5 rounded-8 bg-dark-green border border-warning">
               <div class="d-flex align-items-center justify-content-between mb-2">
                 <span class="fs-11 fw-700 text-white text-uppercase">
-                  <i class="fas fa-university text-warning me-1"></i> Official Company Bank Account
+                  <i class="fas fa-university text-warning me-1"></i> Official Company Bank Account (Online Payment)
                 </span>
                 <span class="badge bg-success text-white fs-10">Verified Current A/C</span>
               </div>
 
               <div class="bank-details-grid fs-11 text-white mb-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                <div>
-                  <span class="opacity-75 fs-10 d-block">Account Name:</span>
-                  <strong class="fs-11">{{ companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED' }}</strong>
-                </div>
-                <div>
-                  <span class="opacity-75 fs-10 d-block">Bank Name:</span>
-                  <strong class="fs-11">{{ companyBankSettings?.bank_name || 'HDFC Bank Ltd.' }}</strong>
-                </div>
-                <div>
-                  <span class="opacity-75 fs-10 d-block">Account Number:</span>
-                  <span class="d-flex align-items-center gap-1.5 font-mono fw-bold text-gold fs-12">
-                    {{ companyBankSettings?.account_number || '50200088921832' }}
+                <!-- Account Name / Owner -->
+                <div class="bank-item-box">
+                  <span class="opacity-75 fs-10 d-block">Account Name (ओनर का नाम):</span>
+                  <div class="d-flex align-items-center justify-content-between gap-1.5 mt-0.5">
+                    <strong class="fs-11 text-truncate" [title]="companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED'">
+                      {{ companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED' }}
+                    </strong>
                     <button
                       type="button"
-                      class="btn btn-xs btn-outline-light py-0 px-1 fs-9"
+                      class="btn btn-xs btn-outline-light py-0 px-1.5 fs-9 flex-shrink-0"
+                      (click)="copyAccountName()"
+                      title="Copy Account Holder Name"
+                    >
+                      <i class="fas" [class.fa-check]="copiedAccountName" [class.fa-copy]="!copiedAccountName"></i>
+                      <span class="ms-1">{{ copiedAccountName ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Bank Name -->
+                <div class="bank-item-box">
+                  <span class="opacity-75 fs-10 d-block">Bank Name (बैंक का नाम):</span>
+                  <div class="d-flex align-items-center justify-content-between gap-1.5 mt-0.5">
+                    <strong class="fs-11 text-truncate" [title]="companyBankSettings?.bank_name || 'HDFC Bank Ltd.'">
+                      {{ companyBankSettings?.bank_name || 'HDFC Bank Ltd.' }}
+                    </strong>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline-light py-0 px-1.5 fs-9 flex-shrink-0"
+                      (click)="copyBankName()"
+                      title="Copy Bank Name"
+                    >
+                      <i class="fas" [class.fa-check]="copiedBankName" [class.fa-copy]="!copiedBankName"></i>
+                      <span class="ms-1">{{ copiedBankName ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Account Number -->
+                <div class="bank-item-box">
+                  <span class="opacity-75 fs-10 d-block">Account Number (अकाउंट नंबर):</span>
+                  <div class="d-flex align-items-center justify-content-between gap-1.5 mt-0.5 font-mono fw-bold text-gold fs-12">
+                    <span>{{ companyBankSettings?.account_number || '50200088921832' }}</span>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline-light py-0 px-1.5 fs-9 flex-shrink-0"
                       (click)="copyBankAc()"
                       title="Copy A/C Number"
                     >
                       <i class="fas" [class.fa-check]="copiedBankAc" [class.fa-copy]="!copiedBankAc"></i>
-                      <span>{{ copiedBankAc ? 'Copied' : 'Copy' }}</span>
+                      <span class="ms-1">{{ copiedBankAc ? 'Copied' : 'Copy' }}</span>
                     </button>
-                  </span>
+                  </div>
                 </div>
-                <div>
-                  <span class="opacity-75 fs-10 d-block">IFSC Code:</span>
-                  <span class="d-flex align-items-center gap-1.5 font-mono fw-bold text-gold fs-12">
-                    {{ companyBankSettings?.ifsc_code || 'HDFC0001234' }}
+
+                <!-- IFSC Code -->
+                <div class="bank-item-box">
+                  <span class="opacity-75 fs-10 d-block">IFSC Code (आईएफएससी कोड):</span>
+                  <div class="d-flex align-items-center justify-content-between gap-1.5 mt-0.5 font-mono fw-bold text-gold fs-12">
+                    <span>{{ companyBankSettings?.ifsc_code || 'HDFC0001234' }}</span>
                     <button
                       type="button"
-                      class="btn btn-xs btn-outline-light py-0 px-1 fs-9"
+                      class="btn btn-xs btn-outline-light py-0 px-1.5 fs-9 flex-shrink-0"
                       (click)="copyIfsc()"
-                      title="Copy IFSC"
+                      title="Copy IFSC Code"
                     >
                       <i class="fas" [class.fa-check]="copiedIfsc" [class.fa-copy]="!copiedIfsc"></i>
-                      <span>{{ copiedIfsc ? 'Copied' : 'Copy' }}</span>
+                      <span class="ms-1">{{ copiedIfsc ? 'Copied' : 'Copy' }}</span>
                     </button>
-                  </span>
+                  </div>
                 </div>
-                <div class="grid-col-span-2" style="grid-column: span 2;" *ngIf="companyBankSettings?.branch_name">
-                  <span class="opacity-75 fs-10 d-block">Branch:</span>
-                  <span class="fs-11">{{ companyBankSettings?.branch_name }}</span>
+
+                <!-- Branch / SWIFT -->
+                <div class="bank-item-box" style="grid-column: span 2;">
+                  <span class="opacity-75 fs-10 d-block">Branch / SWIFT (शाखा / स्विफ्ट):</span>
+                  <div class="d-flex align-items-center justify-content-between gap-1.5 mt-0.5">
+                    <span class="fs-11 text-white text-truncate">{{ companyBankSettings?.branch_name || 'Civil Lines, Kanpur' }}</span>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-outline-light py-0 px-1.5 fs-9 flex-shrink-0"
+                      (click)="copyBranch()"
+                      title="Copy Branch / SWIFT"
+                    >
+                      <i class="fas" [class.fa-check]="copiedBranch" [class.fa-copy]="!copiedBranch"></i>
+                      <span class="ms-1">{{ copiedBranch ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
                 </div>
+              </div>
+
+              <!-- Direct Online Payment Hint -->
+              <div class="p-1.5 rounded bg-white-10 text-white-50 fs-10 mb-2 d-flex align-items-center gap-1.5">
+                <i class="fas fa-info-circle text-gold fs-12 flex-shrink-0"></i>
+                <span>NetBanking / IMPS / NEFT / RTGS या बैंक ऐप से सीधे उपरोक्त बैंक खाते में ऑनलाइन पेमेंट ट्रांसफर करके बुकिंग सबमिट करें।</span>
               </div>
 
               <!-- Strictly No Cash Alert -->
               <div class="alert alert-danger py-1 px-2 fs-10 mb-0 d-flex align-items-center border-0 text-white" style="background: rgba(220, 38, 38, 0.85);">
-                <i class="fas fa-ban me-1.5 fs-12 text-warning"></i>
+                <i class="fas fa-ban me-1.5 fs-12 text-warning flex-shrink-0"></i>
                 <span><strong>Strictly No Cash Policy:</strong> Company client se cash accept nahi karti. Payment sirf official company account ya UPI se karein.</span>
               </div>
-            </div>
-
-            <!-- View 3: Online Gateway Tab -->
-            <div *ngIf="selectedPaymentTab === 'GATEWAY'" class="p-2.5 rounded-8 bg-dark-green border border-primary text-center">
-              <i class="fas fa-shield-alt text-gold fs-16 mb-1 d-block"></i>
-              <span class="fs-11 text-white fw-700 d-block">Instant Secure Payment Gateway</span>
-              <p class="fs-10 text-white opacity-85 mb-0">Booking submit hone par aapko secure payment gateway (Cards / NetBanking) par redirect kiya jayega.</p>
             </div>
           </div>
 

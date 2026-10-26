@@ -125,7 +125,10 @@ export class BookPlotComponent implements OnInit, OnDestroy {
   notes: string = '';
   copiedBankAC = false;
   copiedIfsc = false;
-  showUpiQrScanner = false;
+  copiedAccountName = false;
+  copiedBankName = false;
+  copiedBranch = false;
+  showUpiQrScanner = true;
   companyBankSettings: any = null;
 
   upiDetails: UpiPaymentDetails | null = null;
@@ -134,23 +137,56 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     this.upiDetails = d;
   }
 
+  copyAccountName(): void {
+    const name = this.companyBankSettings?.account_name || 'MMR CONSTRUCTIONS PRIVATE LIMITED';
+    this.copyClipboardText(name, 'name');
+  }
+
+  copyBankName(): void {
+    const bank = this.companyBankSettings?.bank_name || 'HDFC Bank Ltd.';
+    this.copyClipboardText(bank, 'bank');
+  }
+
   copyBankAC(): void {
     const ac = this.companyBankSettings?.account_number || '50200088921832';
-    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(ac).then(() => {
-        this.copiedBankAC = true;
-        setTimeout(() => (this.copiedBankAC = false), 2000);
-      }).catch(() => {});
-    }
+    this.copyClipboardText(ac, 'ac');
   }
 
   copyIfsc(): void {
     const ifsc = this.companyBankSettings?.ifsc_code || 'HDFC0001234';
-    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(ifsc).then(() => {
+    this.copyClipboardText(ifsc, 'ifsc');
+  }
+
+  copyBranch(): void {
+    const branch = this.companyBankSettings?.branch_name || 'Civil Lines, Kanpur';
+    this.copyClipboardText(branch, 'branch');
+  }
+
+  private copyClipboardText(text: string, type: 'name' | 'bank' | 'ac' | 'ifsc' | 'branch'): void {
+    if (!text) return;
+    const onSuccess = () => {
+      if (type === 'name') {
+        this.copiedAccountName = true;
+        setTimeout(() => (this.copiedAccountName = false), 2000);
+      } else if (type === 'bank') {
+        this.copiedBankName = true;
+        setTimeout(() => (this.copiedBankName = false), 2000);
+      } else if (type === 'ac') {
+        this.copiedBankAC = true;
+        setTimeout(() => (this.copiedBankAC = false), 2000);
+      } else if (type === 'ifsc') {
         this.copiedIfsc = true;
         setTimeout(() => (this.copiedIfsc = false), 2000);
-      }).catch(() => {});
+      } else if (type === 'branch') {
+        this.copiedBranch = true;
+        setTimeout(() => (this.copiedBranch = false), 2000);
+      }
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(onSuccess).catch(() => onSuccess());
+    } else {
+      onSuccess();
     }
   }
 
