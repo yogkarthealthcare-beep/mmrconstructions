@@ -22,6 +22,15 @@ export const enrollmentGuard: CanActivateFn = (_route, state) => {
   }
 
   if (auth.isTeamMember()) {
+    if (url.includes('/enrollment')) {
+      return true;
+    }
+    if (!auth.isEnrollmentCompleted()) {
+      if (auth.isEnrollmentSkippedThisSession()) {
+        return true;
+      }
+      return router.createUrlTree(['/team-member/enrollment']);
+    }
     if (url.startsWith('/associate') || url.startsWith('/customer') || url.startsWith('/user')) {
       return router.createUrlTree(['/team-member/dashboard']);
     }
@@ -158,6 +167,16 @@ export const teamMemberGuard: CanActivateFn = (_route, state) => {
   if (!auth.isTeamMember()) {
     const prefix = auth.getUserRolePrefix();
     return router.createUrlTree([`${prefix}/dashboard`]);
+  }
+  const url = state.url.toLowerCase();
+  if (url.includes('/enrollment')) {
+    return true;
+  }
+  if (!auth.isEnrollmentCompleted()) {
+    if (auth.isEnrollmentSkippedThisSession()) {
+      return true;
+    }
+    return router.createUrlTree(['/team-member/enrollment']);
   }
   return true;
 };

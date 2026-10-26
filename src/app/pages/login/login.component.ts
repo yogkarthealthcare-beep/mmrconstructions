@@ -105,7 +105,9 @@ export class LoginComponent implements OnInit {
             targetEnrollment = '/associate/enrollment';
           } else if (userType.includes('investor')) {
             targetEnrollment = '/investor/enrollment';
-          } else if (!userType.includes('team member') && !userType.includes('admin')) {
+          } else if (userType.includes('team member')) {
+            targetEnrollment = '/team-member/enrollment';
+          } else if (!userType.includes('admin')) {
             targetEnrollment = '/customer/enrollment';
           }
 
