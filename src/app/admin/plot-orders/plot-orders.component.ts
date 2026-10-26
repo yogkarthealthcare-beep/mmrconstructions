@@ -83,6 +83,15 @@ export class AdminPlotOrdersComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
 
+  // Payment Proof Preview Modal (Task 6)
+  previewProofOrder: any = null;
+  openProofPreview(order: any) {
+    this.previewProofOrder = order;
+  }
+  closeProofPreview() {
+    this.previewProofOrder = null;
+  }
+
   get isAssociateView(): boolean {
     const url = this.router.url || '';
     return url.startsWith('/associate');
