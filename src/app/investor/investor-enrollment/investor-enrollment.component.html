@@ -31,14 +31,14 @@
       <h2 class="form-title" style="margin: 0;">Investor Enrollment Form</h2>
     </div>
 
-    <!-- Status Banner when submitted but not finalized -->
-    <div *ngIf="isSubmitted && !isFinalSubmitted && !isEditing" class="locked-banner" style="background: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; color: #92400e; padding: 14px 20px; border-radius: 8px; margin: 15px 0 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <!-- 1. Review Banner (Submitted, not yet Final Submitted, not rejected, not approved) -->
+    <div *ngIf="isSubmitted && !isFinalSubmitted && !isEditing && appStatus !== 'Rejected' && appStatus !== 'Approved'" class="locked-banner" style="background: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; color: #92400e; padding: 14px 20px; border-radius: 8px; margin: 15px 0 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
       <div style="display: flex; align-items: center; gap: 12px;">
         <i class="fas fa-info-circle" style="font-size: 24px; color: #d97706;"></i>
         <div>
-          <div style="font-weight: 700; font-size: 15px; color: #92400e;">Enrollment Saved (Read-Only Mode) / फॉर्म सहेजा गया है (केवल पढ़ने योग्य)</div>
+          <div style="font-weight: 700; font-size: 15px; color: #92400e;">Submitted – Review karke Final Submit karein / फॉर्म सहेजा गया है</div>
           <div style="font-size: 13px; color: #b45309; margin-top: 3px;">
-            Your investor enrollment is saved. Click <strong>Edit</strong> to modify details, or click <strong>Final Submit</strong> to permanently lock the enrollment.
+            Aapka form review mode mein hai. Badlav ke liye <strong>Edit</strong> dabayein, ya admin approval ke liye bhejne hetu <strong>Final Submit</strong> dabayein.
           </div>
         </div>
       </div>
@@ -58,16 +58,14 @@
       </div>
     </div>
 
-    <!-- Permanently Locked Banner when Final Submitted -->
-    <div *ngIf="isFinalSubmitted" class="locked-banner" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #16a34a; color: #166534; padding: 14px 20px; border-radius: 8px; margin: 15px 0 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <!-- 2. Pending Approval Banner (Final Submitted) -->
+    <div *ngIf="isFinalSubmitted && appStatus !== 'Approved' && appStatus !== 'Rejected'" class="locked-banner" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #16a34a; color: #166534; padding: 14px 20px; border-radius: 8px; margin: 15px 0 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <i class="fas fa-check-circle" style="font-size: 24px; color: #16a34a;"></i>
+        <i class="fas fa-clock" style="font-size: 24px; color: #16a34a;"></i>
         <div>
-          <div style="font-weight: 700; font-size: 15px; color: #14532d;">Enrollment Finalized &amp; Locked / नामांकन अंतिम रूप से जमा एवं सुरक्षित</div>
+          <div style="font-weight: 700; font-size: 15px; color: #14532d;">Pending Approval / स्वीकृति लंबित</div>
           <div style="font-size: 13px; color: #166534; margin-top: 3px;">
-            This form has been permanently finalized and cannot be edited. For assistance, contact MMR Support: 
-            <a href="tel:9511119879" style="color: #14532d; font-weight: bold; text-decoration: underline;">9511119879</a> | 
-            <a href="tel:8429823067" style="color: #14532d; font-weight: bold; text-decoration: underline;">8429823067</a>
+            Aapka form admin approval ke liye bhej diya gaya hai aur lock hai. Kripya verification ka intezar karein.
           </div>
         </div>
       </div>
@@ -81,12 +79,46 @@
       </div>
     </div>
 
+    <!-- 3. Approved Banner -->
+    <div *ngIf="appStatus === 'Approved'" class="locked-banner" style="background: #ecfdf5; border: 1px solid #a7f3d0; border-left: 5px solid #059669; color: #065f46; padding: 14px 20px; border-radius: 8px; margin: 15px 0 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-check-circle" style="font-size: 24px; color: #059669;"></i>
+        <div>
+          <div style="font-weight: 700; font-size: 15px; color: #065f46;">Approved / नामांकन स्वीकृत</div>
+          <div style="font-size: 13px; color: #047857; margin-top: 3px;">
+            Badhai ho! Aapka investor enrollment form admin dwara approve kar diya gaya hai.
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px;" class="no-print">
+        <button type="button" (click)="goToDashboard()" style="background: #1e3a8a; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+          <i class="fas fa-th-large"></i> Go to Dashboard
+        </button>
+        <button type="button" (click)="downloadPdf()" [disabled]="printing" style="background: #14532d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+          <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i> Download PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. Rejected Banner (Allows edit) -->
+    <div *ngIf="appStatus === 'Rejected'" class="locked-banner" style="background: #fef2f2; border: 1px solid #fecaca; border-left: 5px solid #dc2626; color: #991b1b; padding: 14px 20px; border-radius: 8px; margin: 15px 0 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #dc2626;"></i>
+        <div>
+          <div style="font-weight: 700; font-size: 15px; color: #991b1b;">Rejected / नामांकन अस्वीकृत</div>
+          <div style="font-size: 13px; color: #b91c1c; margin-top: 3px;">
+            <strong>Reason:</strong> {{ rejectionReason || 'KYC / Documents Incomplete' }}. Kripya neeche diye gaye form mein zaroori sudhar karke dobara Submit karein.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="photo-box" [class.invalid-photo]="!photoDataUrl && enrollmentForm.touched" title="Click to attach passport size photo (JPG, PNG <= 100 KB)" (click)="photoInput.click()">
       <ng-container *ngIf="photoDataUrl; else photoPlaceholder">
         <img [src]="photoDataUrl" alt="Passport Photo">
       </ng-container>
       <ng-template #photoPlaceholder>
-        Please Affix<br>Passport Size<br>Photograph <span style="color:red; font-size: 18px; font-weight: bold;">*</span><br>
+        Please Affix<br>Passport Size<br>Photograph <span class="req-star">*</span><br>
         <span style="font-size: 9px; color: #16a34a; font-weight: 600;">(JPG/PNG &le; 100 KB)</span>
       </ng-template>
       <input type="file" #photoInput accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display:none;" (change)="onPhotoChange($event)">
@@ -106,20 +138,20 @@
       <h2>1. Personal Particulars</h2>
 
       <div class="row3">
-        <div class="field"><label>Name of Investor — First Name</label><input type="text" formControlName="invFirstName" required></div>
+        <div class="field"><label>Name of Investor — First Name <span class="req-star">*</span></label><input type="text" formControlName="invFirstName" required></div>
         <div class="field"><label>Middle Name</label><input type="text" formControlName="invMiddleName"></div>
-        <div class="field"><label>Surname</label><input type="text" formControlName="invSurname"></div>
+        <div class="field"><label>Surname <span class="req-star">*</span></label><input type="text" formControlName="invSurname" required></div>
       </div>
 
       <div class="row3">
-        <div class="field"><label>Father's / Husband's — First Name</label><input type="text" formControlName="fhFirstName"></div>
+        <div class="field"><label>Father's / Husband's — First Name <span class="req-star">*</span></label><input type="text" formControlName="fhFirstName" required></div>
         <div class="field"><label>Middle Name</label><input type="text" formControlName="fhMiddleName"></div>
-        <div class="field"><label>Surname</label><input type="text" formControlName="fhSurname"></div>
+        <div class="field"><label>Surname <span class="req-star">*</span></label><input type="text" formControlName="fhSurname" required></div>
       </div>
 
       <div class="row3">
         <div class="field">
-          <label>Date of Birth (DD/MM/YYYY) (18+ Years) <span class="text-danger">*</span></label>
+          <label>Date of Birth (DD/MM/YYYY) (18+ Years) <span class="req-star">*</span></label>
           <div class="date-input-wrapper" style="position: relative; display: flex; align-items: center;">
             <input
               type="text"
@@ -148,9 +180,9 @@
         </div>
         <div class="field"><label>Age (Auto-calculated)</label><input type="number" formControlName="age" readonly style="background:#f8f9fa;"></div>
         <div class="field">
-          <label>Religion <span class="text-danger">*</span></label>
+          <label>Religion</label>
           <select formControlName="religion">
-            <option value="">Select Religion</option>
+            <option value="">Select Religion (Optional)</option>
             <option *ngFor="let r of religionsList" [value]="r">{{ r }}</option>
           </select>
         </div>
@@ -180,18 +212,18 @@
         </fieldset>
       </div>
 
-      <div class="field"><label>Permanent Address</label><textarea formControlName="address" rows="2" placeholder="Permanent House No., Street"></textarea></div>
+      <div class="field"><label>Permanent Address <span class="req-star">*</span></label><textarea formControlName="address" rows="2" placeholder="Permanent House No., Street" required></textarea></div>
 
       <div class="row3">
-        <div class="field"><label>City</label><input type="text" formControlName="city"></div>
+        <div class="field"><label>City <span class="req-star">*</span></label><input type="text" formControlName="city" required></div>
         <div class="field">
-          <label>State <span class="text-danger">*</span></label>
-          <select formControlName="state">
+          <label>State <span class="req-star">*</span></label>
+          <select formControlName="state" required>
             <option value="">Select State</option>
             <option *ngFor="let s of statesList" [value]="s">{{ s }}</option>
           </select>
         </div>
-        <div class="field"><label>Pin Code</label><input type="text" formControlName="pinCode" maxlength="6" placeholder="6-digit PIN"></div>
+        <div class="field"><label>Pin Code <span class="req-star">*</span></label><input type="text" formControlName="pinCode" maxlength="6" placeholder="6-digit PIN" required></div>
       </div>
 
       <div style="margin: 12px 0 8px; display: flex; align-items: center; gap: 8px; background: #f0f7ff; padding: 8px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
@@ -201,29 +233,32 @@
         </label>
       </div>
 
-      <div class="field"><label>Correspondence / Local Address</label><textarea formControlName="corrAddress" rows="2" placeholder="Local House No., Street"></textarea></div>
+      <div class="field">
+        <label>Correspondence / Local Address <span class="req-star" *ngIf="!enrollmentForm.get('sameAsPermanent')?.value">*</span></label>
+        <textarea formControlName="corrAddress" rows="2" placeholder="Local House No., Street"></textarea>
+      </div>
 
       <div class="row3">
-        <div class="field"><label>City</label><input type="text" formControlName="corrCity"></div>
+        <div class="field"><label>City <span class="req-star" *ngIf="!enrollmentForm.get('sameAsPermanent')?.value">*</span></label><input type="text" formControlName="corrCity"></div>
         <div class="field">
-          <label>State <span class="text-danger">*</span></label>
+          <label>State <span class="req-star" *ngIf="!enrollmentForm.get('sameAsPermanent')?.value">*</span></label>
           <select formControlName="corrState">
             <option value="">Select State</option>
             <option *ngFor="let s of statesList" [value]="s">{{ s }}</option>
           </select>
         </div>
-        <div class="field"><label>Pin Code</label><input type="text" formControlName="corrPinCode" maxlength="6" placeholder="6-digit PIN"></div>
+        <div class="field"><label>Pin Code <span class="req-star" *ngIf="!enrollmentForm.get('sameAsPermanent')?.value">*</span></label><input type="text" formControlName="corrPinCode" maxlength="6" placeholder="6-digit PIN"></div>
       </div>
 
       <div class="row3">
-        <div class="field"><label>Mobile No. <span class="text-danger">*</span></label><input type="tel" formControlName="mobile" maxlength="10" placeholder="10-digit Mobile No." required></div>
-        <div class="field"><label>Alt. Tel. No.</label><input type="tel" formControlName="altTel" maxlength="10" placeholder="10-digit Mobile No."></div>
-        <div class="field"><label>Email ID</label><input type="email" formControlName="email" placeholder="example@email.com"></div>
+        <div class="field"><label>Mobile No. <span class="req-star">*</span></label><input type="tel" formControlName="mobile" maxlength="10" placeholder="10-digit Mobile No." required></div>
+        <div class="field"><label>Alt. Tel. No.</label><input type="tel" formControlName="altTel" maxlength="10" placeholder="10-digit Mobile No. (Optional)"></div>
+        <div class="field"><label>Email ID <span class="req-star">*</span></label><input type="email" formControlName="email" placeholder="example@email.com" required></div>
       </div>
 
       <div class="row2">
-        <div class="field"><label>PAN Card No.</label><input type="text" formControlName="pan" maxlength="10" style="text-transform:uppercase"></div>
-        <div class="field"><label>Aadhar Card No. (12 Digits)</label><input type="text" formControlName="aadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>
+        <div class="field"><label>PAN Card No. <span class="req-star">*</span></label><input type="text" formControlName="pan" maxlength="10" style="text-transform:uppercase" required></div>
+        <div class="field"><label>Aadhar Card No. (12 Digits) <span class="req-star">*</span></label><input type="text" formControlName="aadhar" maxlength="12" placeholder="12-digit Aadhaar No." required></div>
       </div>
     </section>
 
@@ -231,12 +266,12 @@
     <section class="block">
       <h2>2. Investment &amp; Bank Details</h2>
       <div class="row2">
-        <div class="field"><label>Investment Amount (₹)</label><input type="text" inputmode="numeric" formControlName="amount" placeholder="Enter Investment Amount"></div>
+        <div class="field"><label>Investment Amount (₹) <span class="req-star">*</span></label><input type="text" inputmode="numeric" formControlName="amount" placeholder="Enter Investment Amount" required></div>
         <div class="field"><label>In Words (Auto-filled)</label><input type="text" formControlName="amountWords" readonly style="background:#f8f9fa; font-weight: 500;" placeholder="Amount in words"></div>
       </div>
 
       <fieldset class="inline-choices">
-        <legend>Mode of Payment</legend>
+        <legend>Mode of Payment <span class="req-star">*</span></legend>
         <div class="choice-wrap">
           <label><input type="radio" formControlName="paymentMode" value="Cash"> Cash</label>
           <label><input type="radio" formControlName="paymentMode" value="Cheque"> Cheque</label>
@@ -245,16 +280,16 @@
         </div>
       </fieldset>
 
-      <div class="row2">
-        <div class="field"><label>Txn / Cheque No.</label><input type="text" formControlName="txnNo"></div>
-        <div class="field"><label>Date</label><input type="date" formControlName="txnDate"></div>
+      <div class="row2" *ngIf="enrollmentForm.get('paymentMode')?.value !== 'Cash'">
+        <div class="field"><label>Txn / Cheque No. <span class="req-star">*</span></label><input type="text" formControlName="txnNo"></div>
+        <div class="field"><label>Date <span class="req-star">*</span></label><input type="date" formControlName="txnDate"></div>
       </div>
       <div class="row3" style="margin-top: 12px;">
-        <div class="field"><label>Bank &amp; Branch</label><input type="text" formControlName="bankBranch" placeholder="e.g. State Bank of India - Main Branch"></div>
-        <div class="field"><label>Account Number</label><input type="text" formControlName="accountNumber" placeholder="Bank Account Number"></div>
+        <div class="field"><label>Bank &amp; Branch <span class="req-star">*</span></label><input type="text" formControlName="bankBranch" placeholder="e.g. State Bank of India - Main Branch" required></div>
+        <div class="field"><label>Account Number <span class="req-star">*</span></label><input type="text" formControlName="accountNumber" placeholder="Bank Account Number" required></div>
         <div class="field">
-          <label>IFSC Code</label>
-          <input type="text" formControlName="ifscCode" placeholder="e.g. SBIN0001234" style="text-transform: uppercase" (input)="onIfscInput($event)">
+          <label>IFSC Code <span class="req-star">*</span></label>
+          <input type="text" formControlName="ifscCode" placeholder="e.g. SBIN0001234" style="text-transform: uppercase" (input)="onIfscInput($event)" required>
           <div *ngIf="ifscLoading" style="font-size: 11px; color: #777; margin-top: 2px;"><i class="fas fa-spinner fa-spin"></i> Fetching bank details...</div>
           <div *ngIf="ifscSuccess" style="font-size: 11px; color: #2c5c39; margin-top: 2px;"><i class="fas fa-check-circle"></i> Bank details fetched successfully</div>
           <div *ngIf="ifscError" style="font-size: 11px; color: #b3261e; margin-top: 2px;"><i class="fas fa-times-circle"></i> {{ ifscError }}</div>
@@ -264,7 +299,7 @@
 
     <!-- ============ 3. NOMINEE DETAILS ============ -->
     <section class="block">
-      <h2>3. Nominee Details</h2>
+      <h2>3. Nominee Details <span style="font-size: 12px; color: #64748b; font-weight: normal;">(Optional - Agar bharein to sabhi fields bharein aur total 100% ho)</span></h2>
       <table class="nominee-table">
         <thead>
           <tr>
@@ -273,18 +308,25 @@
             <th>Relationship</th>
             <th style="width:70px;">Age</th>
             <th style="width:110px;">Proportion (%)</th>
-            <th style="width:50px;"></th>
+            <th style="width:80px; text-align: center;">Action</th>
           </tr>
         </thead>
         <tbody formArrayName="nominees">
           <tr *ngFor="let nominee of nominees.controls; let i=index" [formGroupName]="i">
             <td>{{i+1}}.</td>
-            <td><input type="text" formControlName="name"></td>
-            <td><input type="text" formControlName="relationship"></td>
-            <td><input type="number" formControlName="age"></td>
-            <td><input type="number" formControlName="proportion"></td>
-            <td>
-              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeNominee(i)" *ngIf="nominees.length > 1" style="border:none;background:none;color:red;">&times;</button>
+            <td><input type="text" formControlName="name" placeholder="Nominee Name"></td>
+            <td><input type="text" formControlName="relationship" placeholder="Relation"></td>
+            <td><input type="number" formControlName="age" placeholder="Age"></td>
+            <td><input type="number" formControlName="proportion" placeholder="1-100"></td>
+            <td style="text-align: center;">
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeNominee(i)" style="padding: 2px 8px; font-size: 11.5px; border-radius: 4px;">
+                <i class="fas fa-trash-alt me-1"></i>Remove
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="nominees.length === 0">
+            <td colspan="6" style="text-align: center; color: #64748b; font-size: 12.5px; padding: 10px;">
+              Koi nominee add nahi kiya gaya hai (Optional). Agar nominee add karna chahein to neeche button dabayein.
             </td>
           </tr>
         </tbody>
@@ -322,27 +364,27 @@
       <label class="agree-line" style="display: flex; align-items: flex-start; gap: 8px;">
         <input type="checkbox" formControlName="declarationCheck" required style="margin-top: 3px;">
         <span style="display: inline-block;">
-          <span style="font-size: 14px; font-weight: 500;">I/We confirm the above declaration is true and correct, and agree to abide by the Terms &amp; Conditions of M.M.R. Construction &amp; Developers Private Limited. <span style="color:red; font-size:18px; font-weight:bold;">*</span></span>
-          <span style="display: block; font-size: 12.5px; color: #555; margin-top: 4px; font-weight: normal; line-height: 1.4;">मैं/हम पुष्टि करते हैं कि उपरोक्त घोषणा सत्य और सही है, और एम.एम.आर. कंस्ट्रक्शन एंड डेवलपर्स प्राइवेट लिमिटेड के नियमों और शर्तों का पालन करने के लिए सहमत हैं। <span style="color:red; font-size:16px; font-weight:bold;">*</span></span>
+          <span style="font-size: 14px; font-weight: 500;">I/We confirm the above declaration is true and correct, and agree to abide by the Terms &amp; Conditions of M.M.R. Construction &amp; Developers Private Limited. <span class="req-star">*</span></span>
+          <span style="display: block; font-size: 12.5px; color: #555; margin-top: 4px; font-weight: normal; line-height: 1.4;">मैं/हम पुष्टि करते हैं कि उपरोक्त घोषणा सत्य और सही है, और एम.एम.आर. कंस्ट्रक्शन एंड डेवलपर्स प्राइवेट लिमिटेड के नियमों और शर्तों का पालन करने के लिए सहमत हैं। <span class="req-star">*</span></span>
         </span>
       </label>
 
       <div class="row3" style="align-items: flex-end;">
         <div class="field"><label>Date (Auto-filled)</label><input type="date" formControlName="declDate" readonly style="background:#f8f9fa;"></div>
-        <div class="field"><label>Place <span class="text-danger">*</span></label><input type="text" formControlName="declPlace" placeholder="City / Place of Signing"></div>
+        <div class="field"><label>Place <span class="req-star">*</span></label><input type="text" formControlName="declPlace" placeholder="City / Place of Signing" required></div>
         <div class="field">
           <label style="display: flex; align-items: center; justify-content: space-between;">
-            <span>Signature of Investor <span class="text-danger">*</span></span>
+            <span>Signature of Investor <span class="req-star">*</span></span>
             <span style="font-size: 11px; color: #16a34a; font-weight: 600;">(JPG, PNG &le; 50 KB)</span>
           </label>
-          <div class="signature-upload-wrapper" style="border: 1.5px dashed #cbd5e1; border-radius: 6px; background: #fafbfa; padding: 6px; text-align: center; cursor: pointer; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center;" (click)="!isFinalSubmitted && declSigInput.click()">
+          <div class="signature-upload-wrapper" style="border: 1.5px dashed #cbd5e1; border-radius: 6px; background: #fafbfa; padding: 6px; text-align: center; cursor: pointer; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center;" (click)="(!isFinalSubmitted || appStatus === 'Rejected') && declSigInput.click()">
             <ng-container *ngIf="declSignatureDataUrl; else declSignPlaceholder">
               <img [src]="declSignatureDataUrl" alt="Signature of Investor" style="max-height: 70px; max-width: 100%; object-fit: contain;">
             </ng-container>
             <ng-template #declSignPlaceholder>
               <div style="color: #64748b; font-size: 11.5px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
                 <i class="fas fa-file-signature" style="font-size: 18px; color: #16a34a;"></i>
-                <span>Click to Upload Signature (JPG, PNG &le; 50 KB) <span style="color: red; font-weight: bold;">*</span></span>
+                <span>Click to Upload Signature (JPG, PNG &le; 50 KB) <span class="req-star">*</span></span>
               </div>
             </ng-template>
             <input
@@ -351,10 +393,10 @@
               (change)="onDeclSignatureChange($event)"
               accept=".jpg,.jpeg,.png,image/jpeg,image/png"
               style="display: none;"
-              [disabled]="isFinalSubmitted"
+              [disabled]="isFinalSubmitted && appStatus !== 'Rejected'"
             >
           </div>
-          <div *ngIf="declSignatureDataUrl && !isFinalSubmitted" style="text-align: right; margin-top: 4px;">
+          <div *ngIf="declSignatureDataUrl && (!isFinalSubmitted || appStatus === 'Rejected')" style="text-align: right; margin-top: 4px;">
             <button type="button" (click)="clearDeclSignature()" style="background: none; border: none; color: #dc2626; font-size: 11px; cursor: pointer; padding: 2px 6px;">
               <i class="fas fa-times"></i> Remove Signature
             </button>
@@ -371,9 +413,9 @@
           <label>Form No. / Investor ID</label>
           <input type="text" [value]="enrollmentForm.get('investorId')?.value" disabled style="background-color: #f4f4f4;">
         </div>
-        <div class="field"><label>First / Sole Investor Name</label><input type="text" formControlName="firstApplicantName"></div>
+        <div class="field"><label>First / Sole Investor Name <span class="req-star">*</span></label><input type="text" formControlName="firstApplicantName" required></div>
       </div>
-      <div class="field"><label>Joint Investor Name (if any)</label><input type="text" formControlName="jointApplicantName"></div>
+      <div class="field"><label>Joint Investor Name (if any)</label><input type="text" formControlName="jointApplicantName" placeholder="Optional"></div>
 
       <div class="sig-grid">
         <div class="sig-block">
@@ -387,7 +429,7 @@
           <div style="display: flex; gap: 8px; justify-content: center; margin-top: 6px;">
             <label class="btn btn-xs" style="background: #f1f5f9; border: 1px solid #cbd5e1; font-size: 11px; cursor: pointer; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
               <i class="fas fa-upload text-success"></i> Upload Sign (JPG/PNG &le; 50KB)
-              <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onSpecimenUpload($event, 1)" style="display: none;" [disabled]="isFinalSubmitted">
+              <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onSpecimenUpload($event, 1)" style="display: none;" [disabled]="isFinalSubmitted && appStatus !== 'Rejected'">
             </label>
             <button type="button" class="sig-clear" (click)="clearSignature(1)">Clear</button>
           </div>
@@ -399,11 +441,11 @@
               <img [src]="sigJointUploaded" alt="Joint Specimen Signature" style="max-height: 100px; max-width: 100%; object-fit: contain;">
             </div>
           </div>
-          <div class="cap">Specimen Signature (Joint Applicant)</div>
+          <div class="cap">Specimen Signature (Joint Applicant - Optional)</div>
           <div style="display: flex; gap: 8px; justify-content: center; margin-top: 6px;">
             <label class="btn btn-xs" style="background: #f1f5f9; border: 1px solid #cbd5e1; font-size: 11px; cursor: pointer; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
               <i class="fas fa-upload text-success"></i> Upload Sign (JPG/PNG &le; 50KB)
-              <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onSpecimenUpload($event, 2)" style="display: none;" [disabled]="isFinalSubmitted">
+              <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onSpecimenUpload($event, 2)" style="display: none;" [disabled]="isFinalSubmitted && appStatus !== 'Rejected'">
             </label>
             <button type="button" class="sig-clear" (click)="clearSignature(2)">Clear</button>
           </div>
@@ -420,21 +462,12 @@
 
           <div class="field"><label>Application Status</label></div>
           <div class="radio-row">
-            <label><input type="radio" formControlName="appStatus" value="Approved"> Approved</label>
-            <label><input type="radio" formControlName="appStatus" value="Rejected"> Rejected</label>
-            <label><input type="radio" formControlName="appStatus" value="Hold/Pending KYC"> Hold / Pending KYC</label>
+            <label><input type="radio" [checked]="appStatus === 'Approved'" value="Approved"> Approved</label>
+            <label><input type="radio" [checked]="appStatus === 'Rejected'" value="Rejected"> Rejected</label>
+            <label><input type="radio" [checked]="appStatus === 'Hold/Pending KYC' || (!appStatus && isFinalSubmitted)" value="Hold/Pending KYC"> Hold / Pending KYC</label>
           </div>
 
-          <div class="field"><label>Verified By (Name &amp; Emp Code)</label><input type="text" formControlName="verifiedBy" placeholder="Admin / Office Staff only"></div>
-
-          <div class="field"><label>Payment Realization Status</label></div>
-          <div class="radio-row">
-            <label><input type="radio" formControlName="paymentStatus" value="Cleared"> Cleared</label>
-            <label><input type="radio" formControlName="paymentStatus" value="Bounced"> Bounced</label>
-            <span style="margin-left:8px;">Date: <input type="date" formControlName="paymentStatusDate" style="border:none;border-bottom:1px solid #999;background:transparent;"></span>
-          </div>
-
-          <div class="field"><label>Authorized Signatory (with Stamp)</label><input type="text" formControlName="authorizedSignatory" placeholder="Company Authorized Signatory"></div>
+          <div class="field"><label>Verified By (Name &amp; Emp Code)</label><input type="text" formControlName="branchCode" readonly placeholder="Admin / Office Staff only"></div>
         </fieldset>
       </div>
     </section>
@@ -447,11 +480,11 @@
       </button>
     </div>
 
-    <!-- Actions Row (Submitted / Saved state) -->
+    <!-- Actions Row (Submitted / Review state) -->
     <div class="success-banner no-print" *ngIf="isSubmitted && !isEditing" style="background: #e6f4ea; color: #137333; padding: 18px; border-radius: 8px; font-weight: bold; text-align: center; margin: 25px 0; border: 1px solid #c3e6cb; font-size: 15px; display: flex; flex-direction: column; align-items: center; gap: 14px; justify-content: center;">
       <div>
         <i class="fas" [class.fa-lock]="isFinalSubmitted" [class.fa-check-circle]="!isFinalSubmitted" style="margin-right: 6px;"></i>
-        <span>{{ isFinalSubmitted ? 'Investor Enrollment Finalized & Locked (Read-Only Mode)' : 'Investor Enrollment Saved (Read-Only Mode)' }}</span>
+        <span>{{ isFinalSubmitted ? 'Investor Enrollment Finalized & Locked (Read-Only Mode)' : 'Investor Enrollment Saved (Review Stage - Read-Only Mode)' }}</span>
       </div>
       <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
         <!-- Edit Button (Only if NOT Final Submitted) -->
@@ -491,36 +524,4 @@
     Website: <a href="https://mmrconstructions.in/" target="_blank">https://mmrconstructions.in/</a> &nbsp;|&nbsp;
     Email: <a href="mailto:mmrconstructions&#64;hotmail.com">mmrconstructions&#64;hotmail.com</a>
   </footer>
-</div>
-
-<!-- ============ MODAL: Terms & Conditions confirmation ============ -->
-<div class="modal-overlay" *ngIf="showModal">
-  <div class="modal-box">
-    <h3>Terms & Conditions of Investment</h3>
-    <div class="hindi-note">Submit karne se pehle neeche diye gaye terms & conditions dhyaan se padhein aur checkbox par tick karein.</div>
-    <div class="modal-terms">
-      <ol>
-        <li>Any individual who has attained the age of 18 years, HUF, Partnership Firm, LLP, or Corporate Body registered in India is eligible to invest.</li>
-        <li>The investor must submit self-attested KYC documents (PAN, Aadhaar, photograph); incomplete or invalid KYC may lead to rejection.</li>
-        <li>Investments shall be accepted only through legitimate banking channels, subject to Income Tax Act, 1961 cash limits.</li>
-        <li>The investor declares that invested funds are from legitimate sources and complies with AML laws of India.</li>
-        <li>Investments are subject to a minimum lock-in period; returns are calculated per the specific investment plan.</li>
-        <li>Pre-mature withdrawal may attract penalty charges; at least 30 days' written notice is mandatory.</li>
-        <li>The investor may nominate one or more persons to receive proceeds in case of demise.</li>
-        <li>All communications will be sent to the registered email/postal address on this form.</li>
-        <li>The Management reserves the right to amend these terms; changes will be communicated officially.</li>
-        <li>Disputes shall be resolved through arbitration, subject to the exclusive jurisdiction of courts in Unnao / Lucknow, Uttar Pradesh.</li>
-      </ol>
-    </div>
-    <label class="modal-agree">
-      <input type="checkbox" [(ngModel)]="modalAgreeCheck">
-      <span>Maine Terms and Conditions dhyaan se padh liye hain / I have read the Terms & Conditions carefully.</span>
-    </label>
-    <div class="modal-btns">
-      <button type="button" class="btn-cancel" (click)="showModal = false">Cancel</button>
-      <button type="button" class="btn-confirm" [disabled]="!modalAgreeCheck || submitting" (click)="confirmAndSubmit()">
-        {{ submitting ? 'Submitting...' : 'Confirm & Submit' }}
-      </button>
-    </div>
-  </div>
 </div>

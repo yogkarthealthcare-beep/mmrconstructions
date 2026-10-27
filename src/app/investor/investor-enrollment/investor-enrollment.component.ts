@@ -9,9 +9,13 @@ import Swal from 'sweetalert2';
 import {
   calculateAgeFromDob,
   numberToIndianWords,
-  MOBILE_PATTERN,
+  INDIAN_MOBILE_10_PATTERN,
   EMAIL_PATTERN,
   AADHAAR_PATTERN,
+  PAN_CARD_PATTERN,
+  PIN_CODE_PATTERN,
+  BANK_ACCOUNT_PATTERN,
+  IFSC_CODE_PATTERN,
   APPROVED_INDIAN_STATES,
   getMaxAdultDobDate,
   adultAgeValidator,
@@ -20,7 +24,8 @@ import {
   parseDDMMYYYYToISO,
   humanNameValidator,
   normalizeHumanName,
-  validateImageUpload
+  validateImageUpload,
+  validateInvestorEnrollmentPayload
 } from '../../shared/utils/form-helpers';
 
 @Component({
@@ -39,9 +44,6 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
 
   enrollmentForm!: FormGroup;
 
-  showModal: boolean = false;
-  modalAgreeCheck: boolean = false;
-
   statesList = APPROVED_INDIAN_STATES;
   religionsList = RELIGIONS_LIST;
   maxAdultDob = getMaxAdultDobDate();
@@ -54,6 +56,8 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
   isSubmitted: boolean = false;
   isFinalSubmitted: boolean = false;
   isEditing: boolean = false;
+  appStatus: string = '';
+  rejectionReason: string = '';
   enrollmentId: string | null = null;
   printing: boolean = false;
 
@@ -109,38 +113,38 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       fhSurname: ['', [Validators.required, humanNameValidator()]],
       dob: ['', [Validators.required, adultAgeValidator(18)]],
       age: ['', Validators.required],
-      gender: ['', Validators.required],
-      religion: ['', Validators.required],
-      occupation: ['', Validators.required],
+      gender: ['M'],
+      religion: [''],
+      occupation: [''],
       occupationOther: [{ value: '', disabled: true }],
       address: ['', Validators.required],
       city: ['', Validators.required],
       state: ['Uttar Pradesh', Validators.required],
-      pinCode: ['', Validators.required],
+      pinCode: ['', [Validators.required, Validators.pattern(PIN_CODE_PATTERN)]],
       sameAsPermanent: [false],
       corrAddress: ['', Validators.required],
       corrCity: ['', Validators.required],
       corrState: ['Uttar Pradesh', Validators.required],
-      corrPinCode: ['', Validators.required],
-      mobile: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
-      altTel: ['', [Validators.pattern(MOBILE_PATTERN)]],
+      corrPinCode: ['', [Validators.required, Validators.pattern(PIN_CODE_PATTERN)]],
+      mobile: ['', [Validators.required, Validators.pattern(INDIAN_MOBILE_10_PATTERN)]],
+      altTel: ['', [Validators.pattern(INDIAN_MOBILE_10_PATTERN)]],
       email: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
-      pan: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
+      pan: ['', [Validators.required, Validators.pattern(PAN_CARD_PATTERN)]],
       aadhar: ['', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]],
-      amount: ['', Validators.required],
+      amount: ['', [Validators.required, Validators.min(1)]],
       amountWords: ['', Validators.required],
       paymentMode: ['', Validators.required],
       txnNo: ['', Validators.required],
       txnDate: ['', Validators.required],
       bankBranch: ['', Validators.required],
-      accountNumber: ['', Validators.required],
-      ifscCode: ['', [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
-      nominees: this.fb.array([this.createNomineeGroup()]),
+      accountNumber: ['', [Validators.required, Validators.pattern(BANK_ACCOUNT_PATTERN)]],
+      ifscCode: ['', [Validators.required, Validators.pattern(IFSC_CODE_PATTERN)]],
+      nominees: this.fb.array([]),
       declDate: [todayStr, Validators.required],
       declPlace: ['', Validators.required],
-      declSignatureName: ['', [humanNameValidator()]],
+      declSignatureName: [''],
       firstApplicantName: ['', [Validators.required, humanNameValidator()]],
-      jointApplicantName: ['', [humanNameValidator()]],
+      jointApplicantName: [''],
       declarationCheck: [false, Validators.requiredTrue]
     });
 
@@ -159,6 +163,50 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       }
       const words = numberToIndianWords(val);
       this.enrollmentForm.get('amountWords')?.setValue(words, { emitEvent: false });
+    });
+
+    // Conditional validator for paymentMode: Cash does not require Txn No / Date
+    this.enrollmentForm.get('paymentMode')?.valueChanges.subscribe(mode => {
+      const txnNoCtrl = this.enrollmentForm.get('txnNo');
+      const txnDateCtrl = this.enrollmentForm.get('txnDate');
+      if (mode === 'Cash') {
+        txnNoCtrl?.clearValidators();
+        txnDateCtrl?.clearValidators();
+      } else {
+        txnNoCtrl?.setValidators([Validators.required]);
+        txnDateCtrl?.setValidators([Validators.required]);
+      }
+      txnNoCtrl?.updateValueAndValidity();
+      txnDateCtrl?.updateValueAndValidity();
+    });
+
+    // Conditional validator for sameAsPermanent
+    this.enrollmentForm.get('sameAsPermanent')?.valueChanges.subscribe(same => {
+      const corrAddressCtrl = this.enrollmentForm.get('corrAddress');
+      const corrCityCtrl = this.enrollmentForm.get('corrCity');
+      const corrStateCtrl = this.enrollmentForm.get('corrState');
+      const corrPinCtrl = this.enrollmentForm.get('corrPinCode');
+
+      if (same) {
+        corrAddressCtrl?.clearValidators();
+        corrCityCtrl?.clearValidators();
+        corrStateCtrl?.clearValidators();
+        corrPinCtrl?.clearValidators();
+
+        corrAddressCtrl?.setValue(this.enrollmentForm.get('address')?.value || '', { emitEvent: false });
+        corrCityCtrl?.setValue(this.enrollmentForm.get('city')?.value || '', { emitEvent: false });
+        corrStateCtrl?.setValue(this.enrollmentForm.get('state')?.value || 'Uttar Pradesh', { emitEvent: false });
+        corrPinCtrl?.setValue(this.enrollmentForm.get('pinCode')?.value || '', { emitEvent: false });
+      } else {
+        corrAddressCtrl?.setValidators([Validators.required]);
+        corrCityCtrl?.setValidators([Validators.required]);
+        corrStateCtrl?.setValidators([Validators.required]);
+        corrPinCtrl?.setValidators([Validators.required, Validators.pattern(PIN_CODE_PATTERN)]);
+      }
+      corrAddressCtrl?.updateValueAndValidity();
+      corrCityCtrl?.updateValueAndValidity();
+      corrStateCtrl?.updateValueAndValidity();
+      corrPinCtrl?.updateValueAndValidity();
     });
 
     this.enrollmentForm.get('address')?.valueChanges.subscribe(val => {
@@ -242,10 +290,10 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
 
   createNomineeGroup(data: any = {}): FormGroup {
     return this.fb.group({
-      name: [data.name || '', Validators.required],
-      relationship: [data.relationship || '', Validators.required],
-      age: [data.age || '', Validators.required],
-      proportion: [data.proportion || '', [Validators.required, Validators.min(1), Validators.max(100)]]
+      name: [data.name || ''],
+      relationship: [data.relationship || ''],
+      age: [data.age || ''],
+      proportion: [data.proportion || '']
     });
   }
 
@@ -254,9 +302,7 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
   }
 
   removeNominee(index: number) {
-    if (this.nominees.length > 1) {
-      this.nominees.removeAt(index);
-    }
+    this.nominees.removeAt(index);
   }
 
   onPhotoChange(event: any) {
@@ -474,11 +520,8 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       firstApplicantName: 'First Applicant Full Name',
       jointApplicantName: 'Joint Applicant Full Name',
       name: 'Nominee Name',
-      relation: 'Nominee Relationship',
-      ageDob: 'Nominee Age / DOB',
-      aadharNo: 'Nominee Aadhaar Number',
-      guardianName: 'Nominee Guardian Name',
-      guardianRelation: 'Nominee Guardian Relationship',
+      relationship: 'Nominee Relationship',
+      proportion: 'Nominee Proportion',
       declarationCheck: 'Declaration Checkbox'
     };
 
@@ -600,16 +643,6 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     }, 100);
   }
 
-  onSubmit() {
-    if (this.enrollmentForm.invalid || !this.photoDataUrl || (!this.declSignatureDataUrl && !this.sigFirstUploaded && this.isCanvasEmpty(this.sigFirstCanvas?.nativeElement))) {
-      this.enrollmentForm.markAllAsTouched();
-      this.focusFirstInvalidControl();
-      return;
-    }
-    this.modalAgreeCheck = false;
-    this.showModal = true;
-  }
-
   private normalizePayloadNames(formData: any): any {
     if (formData.fullName) formData.fullName = normalizeHumanName(formData.fullName);
     if (formData.fatherHusbandName) formData.fatherHusbandName = normalizeHumanName(formData.fatherHusbandName);
@@ -626,10 +659,7 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     return formData;
   }
 
-  public confirmAndSubmit(): void {
-    if (!this.modalAgreeCheck || this.submitting) return;
-
-    this.submitting = true;
+  private buildPayload(isFinal: boolean): any {
     let formData = { ...this.enrollmentForm.getRawValue() };
     formData = this.normalizePayloadNames(formData);
 
@@ -637,9 +667,9 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     formData.photo = this.photoDataUrl || null;
     formData.signature = this.declSignatureDataUrl || this.sigFirstUploaded || null;
     formData.declSignature = this.declSignatureDataUrl || null;
-    formData.is_final_submitted = false;
-    formData.isFinalSubmit = false;
-    
+    formData.is_final_submitted = isFinal;
+    formData.isFinalSubmit = isFinal;
+
     if (this.sigFirstUploaded) {
       formData.signatureFirstApplicant = this.sigFirstUploaded;
     } else if (this.sigFirstCanvas && !this.isCanvasEmpty(this.sigFirstCanvas.nativeElement)) {
@@ -654,29 +684,60 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       formData.signatureJointApplicant = this.sigJointCanvas.nativeElement.toDataURL('image/png');
     }
 
+    return formData;
+  }
+
+  onSubmit() {
+    const rawData = this.buildPayload(false);
+    const validation = validateInvestorEnrollmentPayload(rawData, { isInvestorSubmit: true });
+
+    if (!validation.valid || this.enrollmentForm.invalid) {
+      this.enrollmentForm.markAllAsTouched();
+      this.focusFirstInvalidControl(!rawData.signature);
+      if (validation.firstError) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Validation Error',
+          text: validation.firstError.message,
+          confirmButtonColor: '#dc2626'
+        });
+      }
+      return;
+    }
+
+    // Direct submission into Review stage
+    this.confirmAndSubmit();
+  }
+
+  public confirmAndSubmit(): void {
+    if (this.submitting) return;
+
+    this.submitting = true;
+    const formData = this.buildPayload(false);
+
     this.api.post('/api/investor/enroll', formData).subscribe({
       next: (res: any) => {
         this.submitting = false;
-        this.showModal = false;
         this.isSubmitted = true;
         this.isEditing = false;
         this.isFinalSubmitted = false;
+        this.appStatus = 'Submitted';
         this.enrollmentId = res.data?.id || this.enrollmentId;
         this.auth.setEnrollmentCompleted();
         this.enrollmentForm.disable();
         Swal.fire({
           icon: 'success',
-          title: 'Enrollment Submitted Successfully!',
+          title: 'Enrollment Saved (Review Stage)',
           html: `
             <p style="font-size:14px; color:#475569; margin-bottom:12px;">
-              Your investor enrollment form has been saved and is currently in <strong>Read-Only Mode</strong>.
+              Aapka investor enrollment form review stage mein save ho gaya hai.
             </p>
             <p style="font-size:13px; color:#64748b; margin-bottom:12px;">
-              You can click <strong>Edit</strong> to modify details, or click <strong>Final Submit</strong> to permanently finalize your enrollment.
+              Aap form ko <strong>Edit</strong> kar sakte hain ya review karke <strong>Final Submit</strong> dabayein taaki admin approval ke liye bheja ja sake.
             </p>
           `,
           confirmButtonColor: '#1a5c3a',
-          confirmButtonText: 'OK'
+          confirmButtonText: 'Theek hai / OK'
         });
       },
       error: (err: any) => {
@@ -692,7 +753,7 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
   }
 
   onEdit() {
-    if (this.isFinalSubmitted) {
+    if (this.isFinalSubmitted && this.appStatus !== 'Rejected') {
       Swal.fire({
         icon: 'info',
         title: 'Form Finalized',
@@ -708,18 +769,13 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     this.enrollmentForm.get('declDate')?.disable();
     this.enrollmentForm.get('age')?.disable();
     this.enrollmentForm.get('amountWords')?.disable();
-    this.enrollmentForm.get('appStatus')?.disable();
-    this.enrollmentForm.get('verifiedBy')?.disable();
-    this.enrollmentForm.get('paymentStatus')?.disable();
-    this.enrollmentForm.get('paymentStatusDate')?.disable();
-    this.enrollmentForm.get('authorizedSignatory')?.disable();
   }
 
   onFinalSubmit() {
-    if (this.isFinalSubmitted) return;
+    if (this.isFinalSubmitted && this.appStatus !== 'Rejected') return;
     Swal.fire({
-      title: 'Confirm Final Submission?',
-      text: 'Once finalized, your Investor Enrollment will be permanently locked and you will not be able to edit it anymore.',
+      title: 'Are you sure?',
+      text: 'Final submit ke baad aap form edit nahi kar paoge aur ye admin approval ke liye chala jayega.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#1a5c3a',
@@ -734,44 +790,34 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
   }
 
   private executeFinalSubmit() {
+    const formData = this.buildPayload(true);
+    const validation = validateInvestorEnrollmentPayload(formData, { isInvestorSubmit: true });
+
+    if (!validation.valid) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Failed',
+        text: validation.firstError?.message || 'Kripya sabhi mandatory fields theek se bharein.',
+        confirmButtonColor: '#dc2626'
+      });
+      return;
+    }
+
     this.submitting = true;
-    let formData = { ...this.enrollmentForm.getRawValue() };
-    formData = this.normalizePayloadNames(formData);
-
-    formData.dob = parseDDMMYYYYToISO(formData.dob);
-    formData.photo = this.photoDataUrl || null;
-    formData.signature = this.declSignatureDataUrl || this.sigFirstUploaded || null;
-    formData.declSignature = this.declSignatureDataUrl || null;
-    formData.is_final_submitted = true;
-    formData.isFinalSubmit = true;
-    
-    if (this.sigFirstUploaded) {
-      formData.signatureFirstApplicant = this.sigFirstUploaded;
-    } else if (this.sigFirstCanvas && !this.isCanvasEmpty(this.sigFirstCanvas.nativeElement)) {
-      formData.signatureFirstApplicant = this.sigFirstCanvas.nativeElement.toDataURL('image/png');
-    } else if (this.declSignatureDataUrl) {
-      formData.signatureFirstApplicant = this.declSignatureDataUrl;
-    }
-
-    if (this.sigJointUploaded) {
-      formData.signatureJointApplicant = this.sigJointUploaded;
-    } else if (this.sigJointCanvas && !this.isCanvasEmpty(this.sigJointCanvas.nativeElement)) {
-      formData.signatureJointApplicant = this.sigJointCanvas.nativeElement.toDataURL('image/png');
-    }
-
     this.api.post('/api/investor/enroll', formData).subscribe({
       next: (res: any) => {
         this.submitting = false;
         this.isSubmitted = true;
         this.isFinalSubmitted = true;
         this.isEditing = false;
+        this.appStatus = 'Hold/Pending KYC';
         this.enrollmentId = res.data?.id || this.enrollmentId;
         this.auth.setEnrollmentCompleted();
         this.enrollmentForm.disable();
         Swal.fire({
           icon: 'success',
-          title: 'Investor Enrollment Finalized!',
-          text: 'Your investor enrollment has been permanently finalized and locked.',
+          title: 'Form admin ko bhej diya gaya',
+          text: 'Aapka investor enrollment form safaltapoorvak admin approval ke liye bhej diya gaya hai.',
           confirmButtonColor: '#1a5c3a'
         });
       },
@@ -792,10 +838,10 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
   }
 
   patchSubmittedData(d: any) {
-    this.isSubmitted = true;
-    this.isFinalSubmitted = Boolean(d.is_final_submitted || d.isFinalSubmitted);
-    this.isEditing = false;
     this.enrollmentId = d.id || null;
+    this.appStatus = d.app_status || d.appStatus || 'Hold/Pending KYC';
+    this.rejectionReason = d.rejection_reason || d.rejectionReason || '';
+    this.isFinalSubmitted = Boolean(d.is_final_submitted || d.isFinalSubmitted);
 
     if (d.photo_url) {
       this.photoDataUrl = d.photo_url;
@@ -822,6 +868,8 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       }
     }
 
+    const sameAsPerm = Boolean(d.corr_address === d.address && d.corr_city === d.city && d.corr_pin_code === d.pin_code);
+
     this.enrollmentForm.patchValue({
       formNo: d.form_no || `MMR-INV-${Date.now().toString().slice(-6)}`,
       formDate: d.form_date || new Date().toISOString().split('T')[0],
@@ -837,7 +885,7 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       fhSurname: d.fh_surname || '',
       dob: formatDateToDDMMYYYY(d.dob),
       age: d.age || '',
-      gender: d.gender || '',
+      gender: d.gender || 'M',
       religion: d.religion || '',
       occupation: d.occupation || '',
       occupationOther: d.occupation_other || '',
@@ -845,6 +893,7 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       city: d.city || '',
       state: d.state || 'Uttar Pradesh',
       pinCode: d.pin_code || '',
+      sameAsPermanent: sameAsPerm,
       corrAddress: d.corr_address || d.address || '',
       corrCity: d.corr_city || d.city || '',
       corrState: d.corr_state || d.state || 'Uttar Pradesh',
@@ -867,15 +916,32 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       declPlace: d.decl_place || '',
       declSignatureName: d.decl_signature_name || '',
       firstApplicantName: d.first_applicant_name || '',
-      jointApplicantName: d.joint_applicant_name || '',
-      appStatus: d.app_status || d.appStatus || 'Hold/Pending KYC',
-      verifiedBy: d.verified_by || d.verifiedBy || '',
-      paymentStatus: d.payment_status || d.paymentStatus || '',
-      paymentStatusDate: d.payment_status_date ? String(d.payment_status_date).split('T')[0] : (d.paymentStatusDate || ''),
-      authorizedSignatory: d.authorized_signatory || d.authorizedSignatory || ''
+      jointApplicantName: d.joint_applicant_name || ''
     });
 
-    this.enrollmentForm.disable();
+    if (this.appStatus === 'Rejected') {
+      // Re-enable form for rejected investor so they can fix & re-submit
+      this.isSubmitted = false;
+      this.isFinalSubmitted = false;
+      this.isEditing = true;
+      this.enrollmentForm.enable();
+      this.enrollmentForm.get('formNo')?.disable();
+      this.enrollmentForm.get('formDate')?.disable();
+      this.enrollmentForm.get('declDate')?.disable();
+      this.enrollmentForm.get('age')?.disable();
+      this.enrollmentForm.get('amountWords')?.disable();
+    } else if (this.isFinalSubmitted || this.appStatus === 'Approved') {
+      this.isSubmitted = true;
+      this.isFinalSubmitted = true;
+      this.isEditing = false;
+      this.enrollmentForm.disable();
+    } else {
+      // Review mode (submitted but not finalized)
+      this.isSubmitted = true;
+      this.isFinalSubmitted = false;
+      this.isEditing = false;
+      this.enrollmentForm.disable();
+    }
     this.auth.setEnrollmentCompleted();
   }
 
