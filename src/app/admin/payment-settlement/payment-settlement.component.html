@@ -444,12 +444,12 @@
                 <button
                   type="button"
                   class="btn btn-release btn-sm nowrap-text"
-                  [disabled]="order.settlement_status === 'Released' || order.amount_received <= 0"
+                  [disabled]="(order.settlement_status === 'Released' && order.total_distributed > 0) || order.amount_received <= 0"
                   (click)="openReleaseModal(order)"
-                  [title]="order.settlement_status === 'Released' ? 'Already Released' : 'Calculate & Release Payment Settlement'"
+                  [title]="order.settlement_status === 'Released' && (!order.total_distributed || order.total_distributed == 0) ? 'Re-Distribute Commission' : (order.settlement_status === 'Released' ? 'Already Released' : 'Calculate & Release Payment Settlement')"
                 >
                   <i class="fas fa-hand-holding-dollar me-1"></i>
-                  {{ order.settlement_status === 'Released' ? 'Released' : 'Release' }}
+                  {{ (order.settlement_status === 'Released' && (!order.total_distributed || order.total_distributed == 0)) ? 'Re-Distribute' : (order.settlement_status === 'Released' ? 'Released' : 'Release') }}
                 </button>
 
                 <!-- View Breakdown / Audit -->
