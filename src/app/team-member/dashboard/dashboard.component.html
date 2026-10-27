@@ -43,6 +43,76 @@
     <p class="mt-2 text-muted small">Loading your dashboard performance...</p>
   </div>
 
+  <!-- 4 Core Commission & Wallet Cards (Part 3 A) -->
+  <div *ngIf="!loading" class="comm-overview-section mb-3">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="fs-12 fw-800 text-uppercase letter-spacing-1 text-emerald-dark">
+          <i class="fas fa-coins text-warning me-1"></i> Commission &amp; Payouts
+        </span>
+      </div>
+      <a routerLink="/team-member/commissions" class="view-history-link fs-12 fw-700 text-emerald text-decoration-none">
+        Full History <i class="fas fa-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="comm-kpi-grid">
+      <!-- 1. Total Commission Earned (Clickable -> /team-member/commissions) -->
+      <a routerLink="/team-member/commissions" class="comm-card comm-card-clickable border-gold text-decoration-none" title="Click to view detailed Commission History">
+        <div class="comm-card-icon bg-gold-soft">
+          <i class="fas fa-hand-holding-usd text-warning"></i>
+        </div>
+        <div class="comm-card-content">
+          <div class="d-flex align-items-center justify-content-between">
+            <span class="comm-card-label">Total Commission Earned</span>
+            <span class="comm-card-badge">View History &rarr;</span>
+          </div>
+          <div class="comm-card-val text-dark">₹{{ totalCommissionEarned | number:'1.2-2' }}</div>
+          <span class="comm-card-sub text-muted">All settled earnings</span>
+        </div>
+      </a>
+
+      <!-- 2. Pending Commission -->
+      <div class="comm-card border-amber">
+        <div class="comm-card-icon bg-amber-soft">
+          <i class="fas fa-hourglass-half text-amber"></i>
+        </div>
+        <div class="comm-card-content">
+          <span class="comm-card-label">Pending Commission</span>
+          <div class="comm-card-val text-amber">₹{{ pendingCommission | number:'1.2-2' }}</div>
+          <span class="comm-card-sub text-muted">Awaiting settlement release</span>
+        </div>
+      </div>
+
+      <!-- 3. Available Balance -->
+      <div class="comm-card border-emerald">
+        <div class="comm-card-icon bg-emerald-soft">
+          <i class="fas fa-wallet text-emerald"></i>
+        </div>
+        <div class="comm-card-content">
+          <div class="d-flex align-items-center justify-content-between">
+            <span class="comm-card-label">Available Balance</span>
+            <a routerLink="/team-member/wallet/withdraw" class="withdraw-pill-btn">Withdraw</a>
+          </div>
+          <div class="comm-card-val text-emerald">₹{{ availableBalance | number:'1.2-2' }}</div>
+          <span class="comm-card-sub text-muted">Liquid wallet funds</span>
+        </div>
+      </div>
+
+      <!-- 4. Withdrawn Amount -->
+      <div class="comm-card border-purple">
+        <div class="comm-card-icon bg-purple-soft">
+          <i class="fas fa-money-check-alt text-purple"></i>
+        </div>
+        <div class="comm-card-content">
+          <span class="comm-card-label">Withdrawn Amount</span>
+          <div class="comm-card-val text-purple">₹{{ withdrawnAmount | number:'1.2-2' }}</div>
+          <span class="comm-card-sub text-muted">Disbursed to bank</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 6 Core Metric Cards -->
   <div *ngIf="!loading" class="stats-grid">
     <!-- 1. Active Users -->

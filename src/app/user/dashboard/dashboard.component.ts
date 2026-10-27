@@ -58,6 +58,7 @@ export class UserDashboardComponent implements OnInit {
 
   // Enrollment Status & Support State
   isEnrollmentPending: boolean = false;
+  isEnrollmentRejected: boolean = false;
   hasSubmittedEnrollment: boolean = false;
   enrollmentData: any = null;
 
@@ -74,6 +75,14 @@ export class UserDashboardComponent implements OnInit {
   get isAssociate(): boolean {
     if (this.isTeamMember) return false;
     return this.userData?.user_type === 'Associate' || this.router.url.startsWith('/associate');
+  }
+
+  get enrollmentRoute(): string {
+    return this.isAssociate ? '/associate/enrollment' : '/customer/enrollment';
+  }
+
+  viewSubmittedEnrollmentForm() {
+    this.router.navigate([this.enrollmentRoute]);
   }
 
   // Associate Network Stats (Team Members & Customers)
@@ -206,9 +215,11 @@ export class UserDashboardComponent implements OnInit {
               this.enrollmentData = r.data;
               const st = String(r.data.status || r.data.app_status || r.data.enrollment_status || r.data.application_status || 'pending').toLowerCase();
               this.isEnrollmentPending = (st === 'pending' || st === 'inforequested');
+              this.isEnrollmentRejected = (st === 'rejected' || st === 'cancelled' || st === 'canceled');
             } else {
               this.hasSubmittedEnrollment = false;
               this.isEnrollmentPending = false;
+              this.isEnrollmentRejected = false;
             }
           }).catch(() => {})
         : this.api.getMyCustomerEnrollments().toPromise().then((r: any) => {
@@ -217,9 +228,11 @@ export class UserDashboardComponent implements OnInit {
               this.enrollmentData = r.data[0];
               const st = String(r.data[0].application_status || r.data[0].status || r.data[0].app_status || r.data[0].enrollment_status || 'pending').toLowerCase();
               this.isEnrollmentPending = (st === 'pending' || st.includes('hold') || st === 'inforequested');
+              this.isEnrollmentRejected = (st === 'rejected' || st === 'cancelled' || st === 'canceled');
             } else {
               this.hasSubmittedEnrollment = false;
               this.isEnrollmentPending = false;
+              this.isEnrollmentRejected = false;
             }
           }).catch(() => {})
       );

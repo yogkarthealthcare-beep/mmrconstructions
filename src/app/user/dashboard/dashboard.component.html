@@ -48,7 +48,7 @@
             </span>
             <span>Your {{ isAssociate ? 'Associate' : 'Customer' }} Enrollment Application is Awaiting Admin Approval</span>
           </h5>
-          <a [routerLink]="isAssociate ? '/associate/enrollment' : '/user/customer-enrollment'" class="btn btn-outline-dark btn-xs fw-700">
+          <a [routerLink]="enrollmentRoute" (click)="viewSubmittedEnrollmentForm()" class="btn btn-outline-dark btn-xs fw-700" id="btn-view-submitted-enrollment-pending">
             <i class="fas fa-file-alt me-1 text-gold"></i> View Submitted Form
           </a>
         </div>
@@ -66,6 +66,44 @@
           <span class="text-muted d-none d-md-inline">|</span>
           <a href="https://wa.me/917071951011?text=Hello%20MMR%20Support,%20please%20verify%20and%20approve%20my%20enrollment%20application" target="_blank" class="contact-item text-success text-decoration-none fs-12 fw-700 ms-auto">
             <i class="fab fa-whatsapp me-1 text-success fs-14"></i> Contact Support on WhatsApp for Approval
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REJECTED / CANCELLED ENROLLMENT ALERT BANNER (YELLOW THEMED CARD) -->
+  <div *ngIf="isEnrollmentRejected" class="pending-approval-banner mb-3 p-3 rounded-12 shadow-sm" style="background: #fffbeb !important; border: 1px solid #fde047 !important;">
+    <div class="d-flex align-items-start gap-3 flex-wrap flex-md-nowrap">
+      <div class="pending-badge-icon" style="background: #fef08a !important; color: #854d0e !important;">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+          <h5 class="fw-800 text-dark mb-0 fs-15 d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-warning text-dark px-2 py-1 fs-11" style="background:#fef08a !important; color:#854d0e !important; border:1px solid #fde047;">
+              <i class="fas fa-ban me-1"></i> Enrollment Cancelled / Rejected
+            </span>
+            <span>Your {{ isAssociate ? 'Associate' : 'Customer' }} Enrollment Application has been Cancelled / Rejected by Admin</span>
+          </h5>
+          <a [routerLink]="enrollmentRoute" (click)="viewSubmittedEnrollmentForm()" class="btn btn-outline-dark btn-xs fw-700" id="btn-view-submitted-enrollment-rejected">
+            <i class="fas fa-file-alt me-1 text-gold"></i> View Submitted Form
+          </a>
+        </div>
+        <p class="fs-12 text-muted mb-2.5">
+          Admin ne aapka enrollment form cancel/reject kar diya hai. Kripya kisi bhi jankari ya sudhar (correction) ke liye niche diye gaye MMR Support se contact karein:
+        </p>
+        <div class="support-contact-bar d-flex align-items-center flex-wrap gap-3 p-2 rounded-8 bg-white border">
+          <a href="mailto:mmrconstructionsbuilder@gmail.com" class="contact-item text-dark text-decoration-none fs-12 fw-700">
+            <i class="fas fa-envelope text-gold me-1.5"></i> mmrconstructionsbuilder&#64;gmail.com
+          </a>
+          <span class="text-muted d-none d-md-inline">|</span>
+          <a href="tel:+917071951011" class="contact-item text-dark text-decoration-none fs-12 fw-700">
+            <i class="fas fa-phone-alt text-emerald me-1.5"></i> +91 7071951011 / +91 7071951012
+          </a>
+          <span class="text-muted d-none d-md-inline">|</span>
+          <a href="https://wa.me/917071951011?text=Hello%20MMR%20Support,%20my%20enrollment%20was%20rejected.%20Please%20help." target="_blank" class="contact-item text-success text-decoration-none fs-12 fw-700 ms-auto">
+            <i class="fab fa-whatsapp me-1 text-success fs-14"></i> Contact Support on WhatsApp
           </a>
         </div>
       </div>

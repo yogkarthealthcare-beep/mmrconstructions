@@ -147,9 +147,21 @@ export class UserLayoutComponent implements OnInit {
             { icon: 'fas fa-layer-group', label: 'Book a Plot', route: `${p}/book-plot` },
             { icon: 'fas fa-receipt', label: 'Plot Orders', route: `${p}/plot-orders`, badge: 'ORDERS' },
             { icon: 'fas fa-chart-line', label: 'My Sales Pipeline', route: `${p}/sales` },
+            { icon: 'fas fa-id-card', label: 'Customer Enrollments', route: `${p}/customer-enrollments`, badge: 'NEW' },
             { icon: 'fas fa-users', label: 'Attributed Customers', route: `${p}/customers` },
             { icon: 'fas fa-bullhorn', label: 'Referral Tools', route: `${p}/referral` },
             { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` }
+          ]
+        },
+        {
+          label: 'COMMISSIONS & WALLET',
+          icon: 'fas fa-wallet',
+          expanded: false,
+          items: [
+            { icon: 'fas fa-hand-holding-usd', label: 'My Commissions', route: `${p}/commissions`, badge: 'EARN' },
+            { icon: 'fas fa-wallet', label: 'My Wallet', route: `${p}/wallet`, badge: 'LIVE' },
+            { icon: 'fas fa-arrow-alt-circle-up', label: 'Withdraw Funds', route: `${p}/wallet/withdraw`, badge: 'REQ' },
+            { icon: 'fas fa-list-check', label: 'Withdrawal History', route: `${p}/wallet/withdrawal-history` }
           ]
         },
         {
@@ -168,6 +180,7 @@ export class UserLayoutComponent implements OnInit {
           icon: 'fas fa-user-shield',
           expanded: false,
           items: [
+            { icon: 'fas fa-file-contract', label: 'Enrollment Form', route: `${p}/enrollment` },
             { icon: 'fas fa-user-circle', label: 'Profile & KYC Details', route: `${p}/profile` }
           ]
         }

@@ -16,10 +16,13 @@ import {
   parseDDMMYYYYToISO
 } from '../../shared/utils/form-helpers';
 
+import { RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, VerifiedBadgeComponent],
+  imports: [CommonModule, FormsModule, RouterModule, VerifiedBadgeComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
@@ -35,6 +38,10 @@ export class ProfileComponent implements OnInit {
   statesList = APPROVED_INDIAN_STATES;
   countriesList = COUNTRIES_LIST;
   maxAdultDob = getMaxAdultDobDate();
+
+  get enrollmentUrl(): string {
+    return `${this.auth.getUserRolePrefix()}/enrollment`;
+  }
 
   editable = {
     full_name: '',
@@ -57,7 +64,7 @@ export class ProfileComponent implements OnInit {
     nominee_relationship: ''
   };
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit() {
     this.loadProfile();

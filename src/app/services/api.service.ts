@@ -730,5 +730,16 @@ export class ApiService {
   adminSimulatePayEmi(bookingId: number | string, data: any = {}): Observable<any> {
     return this.post(`/api/admin/bookings/${bookingId}/pay-emi-simulate`, data, true);
   }
+
+  // ── TEAM MEMBER COMMISSIONS & SALES ────────────────────────
+  getTeamMemberCommissionSummary(): Observable<any> {
+    return this.get('/api/team-member/commission-summary');
+  }
+  getTeamMemberCommissions(params: any = {}): Observable<any> {
+    return this.get('/api/team-member/commissions', params);
+  }
+  getTeamMemberSalesTable(params: any = {}): Observable<any> {
+    return this.get('/api/team-member/sales', params);
+  }
 }
 

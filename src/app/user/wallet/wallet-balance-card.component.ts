@@ -176,7 +176,14 @@ export class WalletBalanceCardComponent {
   constructor(private router: Router) {}
 
   walletPath(child: string): string {
-    const prefix = this.router.url.startsWith('/associate') ? '/associate' : '/user';
+    let prefix = '/user';
+    if (this.router.url.startsWith('/team-member')) {
+      prefix = '/team-member';
+    } else if (this.router.url.startsWith('/associate')) {
+      prefix = '/associate';
+    } else if (this.router.url.startsWith('/customer')) {
+      prefix = '/customer';
+    }
     return `${prefix}/wallet/${child}`;
   }
 }

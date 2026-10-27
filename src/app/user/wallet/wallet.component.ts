@@ -72,6 +72,9 @@ export class WalletComponent implements OnInit, OnDestroy {
 
   walletPath(child: string): string {
     const url = this.router.url || '';
+    if (url.startsWith('/team-member')) {
+      return `/team-member/wallet/${child}`;
+    }
     if (url.startsWith('/associate')) {
       return `/associate/wallet/${child}`;
     }

@@ -1,0 +1,287 @@
+<div class="commissions-container">
+  
+  <!-- PAGE HEADER -->
+  <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="header-badge"><i class="fas fa-coins text-warning me-1"></i> COMMISSION TRACKER</span>
+        <span class="header-role">Team Member Portal</span>
+      </div>
+      <h2 class="page-title text-white mb-0">
+        <i class="fas fa-hand-holding-usd text-warning me-2"></i> My Commission History
+      </h2>
+      <p class="page-subtitle text-white-50 mb-0">
+        Review customer-wise sales commissions, settlement approval status, and available payouts.
+      </p>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-light btn-sm fw-600" (click)="loadCommissions()" [disabled]="loading" title="Refresh Data">
+        <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Refresh
+      </button>
+      <button type="button" class="btn btn-warning fw-700 text-dark btn-sm shadow-sm" (click)="requestWithdrawal()">
+        <i class="fas fa-arrow-alt-circle-up me-1"></i> Request Withdrawal
+      </button>
+    </div>
+  </div>
+
+  <!-- TOP 4 KPI SUMMARY CARDS -->
+  <div class="kpi-grid">
+    <!-- Card 1: Total Earned -->
+    <div class="kpi-card border-green">
+      <div class="kpi-icon-wrap bg-green-soft">
+        <i class="fas fa-wallet text-success"></i>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Total Commission Earned</span>
+        <div class="kpi-value text-success">₹{{ summary.total_commission_earned | number:'1.2-2' }}</div>
+        <span class="kpi-sub">Total settled & credited</span>
+      </div>
+    </div>
+
+    <!-- Card 2: Pending Commission -->
+    <div class="kpi-card border-amber">
+      <div class="kpi-icon-wrap bg-amber-soft">
+        <i class="fas fa-hourglass-half text-warning"></i>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Pending Commission</span>
+        <div class="kpi-value text-amber">₹{{ summary.pending_commission | number:'1.2-2' }}</div>
+        <span class="kpi-sub">Awaiting settlement release</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Available Balance -->
+    <div class="kpi-card border-blue">
+      <div class="kpi-icon-wrap bg-blue-soft">
+        <i class="fas fa-coins text-primary"></i>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Available Balance</span>
+        <div class="kpi-value text-primary">₹{{ summary.available_balance | number:'1.2-2' }}</div>
+        <span class="kpi-sub">Withdrawable liquid funds</span>
+      </div>
+    </div>
+
+    <!-- Card 4: Withdrawn Amount -->
+    <div class="kpi-card border-purple">
+      <div class="kpi-icon-wrap bg-purple-soft">
+        <i class="fas fa-check-double text-purple"></i>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Withdrawn Amount</span>
+        <div class="kpi-value text-purple">₹{{ summary.withdrawn_amount | number:'1.2-2' }}</div>
+        <span class="kpi-sub" *ngIf="summary.pending_withdrawal_balance > 0">
+          (₹{{ summary.pending_withdrawal_balance | number:'1.2-2' }} in transit)
+        </span>
+        <span class="kpi-sub" *ngIf="summary.pending_withdrawal_balance === 0">Successfully disbursed</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS & SEARCH TOOLBAR -->
+  <div class="filter-card">
+    <div class="row g-2 align-items-center">
+      <!-- Search Input -->
+      <div class="col-lg-3 col-md-6">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
+          <input
+            type="text"
+            class="form-control form-control-sm border-start-0"
+            placeholder="Search customer, plot, site..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()"
+          >
+          <button *ngIf="searchQuery" class="btn btn-outline-secondary btn-sm" (click)="searchQuery = ''; onSearchChange()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="col-lg-2 col-md-3 col-6">
+        <select class="form-select form-select-sm" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+          <option value="ALL">All Statuses</option>
+          <option value="Pending">Pending Settlement</option>
+          <option value="Settled">Settled</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <!-- From Date -->
+      <div class="col-lg-2 col-md-3 col-6">
+        <input
+          type="date"
+          class="form-control form-control-sm"
+          [(ngModel)]="fromDate"
+          (change)="onFilterChange()"
+          title="From Booking Date"
+        >
+      </div>
+
+      <!-- To Date -->
+      <div class="col-lg-2 col-md-3 col-6">
+        <input
+          type="date"
+          class="form-control form-control-sm"
+          [(ngModel)]="toDate"
+          (change)="onFilterChange()"
+          title="To Booking Date"
+        >
+      </div>
+
+      <!-- Sort By -->
+      <div class="col-lg-2 col-md-3 col-6">
+        <select class="form-select form-select-sm" [(ngModel)]="sortBy" (change)="onFilterChange()">
+          <option value="booking_date">Sort: Booking Date</option>
+          <option value="amount">Sort: Commission Amount</option>
+          <option value="customer">Sort: Customer Name</option>
+        </select>
+      </div>
+
+      <!-- Reset Filters -->
+      <div class="col-lg-1 col-12 text-end">
+        <button type="button" class="btn btn-outline-secondary btn-sm w-100" (click)="resetFilters()" title="Reset Filters">
+          <i class="fas fa-undo me-1"></i> Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" class="text-center py-5 bg-white rounded-12 shadow-sm my-3">
+    <i class="fas fa-spinner fa-spin fa-2x text-success"></i>
+    <p class="mt-2 text-muted small mb-0">Loading your commission records...</p>
+  </div>
+
+  <!-- ERROR ALERT -->
+  <div *ngIf="!loading && errorMsg" class="alert alert-danger d-flex align-items-center gap-2 rounded-12 shadow-sm my-3">
+    <i class="fas fa-exclamation-circle fs-5"></i>
+    <div class="flex-grow-1 fs-13">{{ errorMsg }}</div>
+    <button type="button" class="btn-close" (click)="errorMsg = ''"></button>
+  </div>
+
+  <!-- COMMISSION DATA TABLE CARD -->
+  <div *ngIf="!loading && !errorMsg" class="table-card">
+    
+    <!-- Empty State -->
+    <div *ngIf="commissions.length === 0" class="empty-state text-center py-5">
+      <div class="empty-icon-wrap mb-2">
+        <i class="fas fa-file-invoice-dollar fa-3x text-secondary opacity-50"></i>
+      </div>
+      <h5 class="fw-700 text-dark mb-1">No Commission Records Found</h5>
+      <p class="text-muted small mb-3">No commission entries match your selected criteria or filters.</p>
+      <button class="btn btn-sm btn-outline-success" (click)="resetFilters()">
+        <i class="fas fa-undo me-1"></i> Clear Filters
+      </button>
+    </div>
+
+    <!-- Data Table -->
+    <div *ngIf="commissions.length > 0" class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Plot &amp; Project Site</th>
+            <th>Booking Date</th>
+            <th>Customer Details</th>
+            <th class="text-end">Plot Total Price</th>
+            <th class="text-center">Commission %</th>
+            <th class="text-end">Commission Amount</th>
+            <th class="text-center">Settlement Status</th>
+            <th>Settlement Date</th>
+            <th class="text-end">Receipt / Invoice</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of commissions">
+            <!-- 1. Plot No + Site -->
+            <td>
+              <div class="fw-700 text-dark">Plot {{ c.plot_number }}</div>
+              <small class="text-muted"><i class="fas fa-map-marker-alt text-emerald me-1"></i>{{ c.site_name }} ({{ c.plot_area }} Gaj)</small>
+            </td>
+
+            <!-- 2. Booking Date -->
+            <td>
+              <div class="fw-600 text-dark fs-13">{{ c.booking_date | date:'dd MMM yyyy' }}</div>
+              <small class="text-muted">#{{ c.booking_serial }}</small>
+            </td>
+
+            <!-- 3. Customer Name -->
+            <td>
+              <div class="fw-700 text-dark">{{ c.customer_name }}</div>
+              <small class="text-muted"><i class="fas fa-phone-alt me-1"></i>{{ c.customer_mobile || c.customer_member_id }}</small>
+            </td>
+
+            <!-- 4. Plot Total Price -->
+            <td class="text-end font-monospace fw-700 text-dark">
+              ₹{{ c.plot_total_price | number:'1.2-2' }}
+            </td>
+
+            <!-- 5. Commission % -->
+            <td class="text-center">
+              <span class="pct-pill">{{ c.commission_percentage | number:'1.1-2' }}%</span>
+            </td>
+
+            <!-- 6. Commission Amount -->
+            <td class="text-end font-monospace fw-800 text-success fs-14">
+              + ₹{{ c.commission_amount | number:'1.2-2' }}
+            </td>
+
+            <!-- 7. Settlement Status -->
+            <td class="text-center">
+              <span class="badge" [ngClass]="{
+                'bg-success-subtle text-success border border-success': c.settlement_status === 'Settled',
+                'bg-warning-subtle text-warning-dark border border-warning': c.settlement_status === 'Pending',
+                'bg-danger-subtle text-danger border border-danger': c.settlement_status === 'Cancelled'
+              }">
+                <i class="fas me-1" [ngClass]="{
+                  'fa-check-circle': c.settlement_status === 'Settled',
+                  'fa-hourglass-half': c.settlement_status === 'Pending',
+                  'fa-times-circle': c.settlement_status === 'Cancelled'
+                }"></i>
+                {{ c.settlement_status }}
+              </span>
+            </td>
+
+            <!-- 8. Settlement Date -->
+            <td>
+              <div *ngIf="c.settlement_date" class="fs-12 fw-600 text-dark">
+                {{ c.settlement_date | date:'dd MMM yyyy' }}
+              </div>
+              <span *ngIf="!c.settlement_date" class="text-muted fs-12 italic">Pending Release</span>
+            </td>
+
+            <!-- Actions -->
+            <td class="text-end">
+              <a [routerLink]="['/invoice', c.booking_serial || c.booking_id]" target="_blank" class="btn btn-xs btn-outline-success fw-bold" title="View Customer Invoice">
+                <i class="fas fa-file-invoice"></i>
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION FOOTER -->
+    <div class="table-footer d-flex justify-content-between align-items-center flex-wrap gap-2 p-3 border-top" *ngIf="commissions.length > 0">
+      <div class="text-muted fs-12">
+        Showing {{ ((currentPage - 1) * pageSize) + 1 }} to {{ ((currentPage - 1) * pageSize) + commissions.length }} of {{ totalRecords }} commission records
+      </div>
+
+      <div class="d-flex align-items-center gap-1.5" *ngIf="totalPages > 1">
+        <button type="button" class="btn btn-outline-secondary btn-xs" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <i class="fas fa-chevron-left"></i> Previous
+        </button>
+
+        <span class="fs-12 fw-700 px-2">Page {{ currentPage }} of {{ totalPages }}</span>
+
+        <button type="button" class="btn btn-outline-secondary btn-xs" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

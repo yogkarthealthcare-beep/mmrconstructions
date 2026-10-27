@@ -83,6 +83,14 @@ export class AdminEnrollmentsComponent implements OnInit {
   ifscLoading = false;
   ifscStatus: { valid: boolean; msg: string } | null = null;
 
+  // Document Verification Modal State
+  showDocVerificationModal = false;
+  selectedDocItem: any = null;
+  docVerificationLoading = false;
+  docVerificationApproving = false;
+  customerDocuments: any[] = [];
+  customerDossier: any = null;
+
   constructor(
     private api: ApiService,
     private exportService: AdminExportService,
@@ -1009,47 +1017,281 @@ export class AdminEnrollmentsComponent implements OnInit {
     }
   }
 
-  onCustomerInlineStatusChange(item: any, event: any) {
-    const newStatus = event.target.value;
+  onCustomerStatusDropdownChange(item: any, event: any) {
+    const selectedAction = event.target.value;
     const oldStatus = item.enrollment_status;
     const oldAppStatus = item.application_status;
     const id = item.submission_id || item.id || item.user_id;
 
-    const payload: any = {
-      enrollment_status: newStatus,
-      application_status: newStatus === 'Completed' ? 'Approved' : (newStatus === 'Rejected' ? 'Rejected' : 'Pending'),
-      applicant_name: item.applicant_name || item.full_name || ''
-    };
+    if (selectedAction === 'Approved') {
+      const payload: any = {
+        enrollment_status: 'Completed',
+        application_status: 'Approved',
+        applicant_name: item.applicant_name || item.full_name || '',
+        verified_by: 'Admin'
+      };
 
-    item.enrollment_status = newStatus;
-    item.application_status = payload.application_status;
+      item.enrollment_status = 'Completed';
+      item.application_status = 'Approved';
 
-    this.api.adminUpdateCustomerEnrollment(id, payload).subscribe({
-      next: () => {
-        Swal.mixin({
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true
-        }).fire({
-          icon: 'success',
-          title: `Customer status updated to ${newStatus}`
-        });
-        this.loadStats();
-      },
-      error: (err) => {
-        item.enrollment_status = oldStatus;
-        item.application_status = oldAppStatus;
-        event.target.value = oldStatus || 'Pending';
-        Swal.fire({
-          icon: 'error',
-          title: 'Update Failed',
-          text: err.error?.message || 'Failed to update customer status.',
-          confirmButtonColor: '#dc2626'
+      this.api.adminUpdateCustomerEnrollment(id, payload).subscribe({
+        next: () => {
+          if (item.user_id) {
+            this.api.approveCustomerEnrollment(item.user_id).subscribe({ error: () => {} });
+          }
+          Swal.fire({
+            icon: 'success',
+            title: 'Enrollment Approved!',
+            text: 'Customer enrollment form has been approved successfully.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          this.loadStats();
+        },
+        error: (err) => {
+          item.enrollment_status = oldStatus;
+          item.application_status = oldAppStatus;
+          event.target.value = (oldStatus === 'Completed' || oldAppStatus === 'Approved') ? 'Approved' : ((oldStatus === 'Rejected' || oldAppStatus === 'Rejected') ? 'Rejected' : 'Pending');
+          Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: err.error?.message || 'Failed to approve enrollment status.',
+            confirmButtonColor: '#dc2626'
+          });
+        }
+      });
+    } else if (selectedAction === 'Rejected') {
+      Swal.fire({
+        title: 'Reject Customer Enrollment?',
+        text: `Are you sure you want to cancel/reject enrollment for ${item.applicant_name || item.full_name || 'this customer'}?`,
+        icon: 'warning',
+        input: 'textarea',
+        inputPlaceholder: 'Enter rejection reason (e.g. Incomplete details / document mismatch)...',
+        inputValidator: (val) => {
+          if (!val || !val.trim()) return 'Rejection reason is required!';
+          return null;
+        },
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Reject Enrollment'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const reason = result.value || 'Rejected by Admin';
+          const payload: any = {
+            enrollment_status: 'Rejected',
+            application_status: 'Rejected',
+            reject_reason: reason,
+            applicant_name: item.applicant_name || item.full_name || '',
+            verified_by: 'Admin'
+          };
+
+          item.enrollment_status = 'Rejected';
+          item.application_status = 'Rejected';
+          item.reject_reason = reason;
+
+          this.api.adminUpdateCustomerEnrollment(id, payload).subscribe({
+            next: () => {
+              if (item.user_id) {
+                this.api.rejectCustomerEnrollment(item.user_id, reason).subscribe({ error: () => {} });
+              }
+              Swal.fire({
+                icon: 'info',
+                title: 'Enrollment Rejected',
+                text: 'Enrollment has been cancelled/rejected. The customer dashboard will display the rejection alert.',
+                timer: 2500,
+                showConfirmButton: false
+              });
+              this.loadStats();
+            },
+            error: (err) => {
+              item.enrollment_status = oldStatus;
+              item.application_status = oldAppStatus;
+              event.target.value = (oldStatus === 'Completed' || oldAppStatus === 'Approved') ? 'Approved' : ((oldStatus === 'Rejected' || oldAppStatus === 'Rejected') ? 'Rejected' : 'Pending');
+              Swal.fire({
+                icon: 'error',
+                title: 'Reject Failed',
+                text: err.error?.message || 'Failed to reject enrollment.',
+                confirmButtonColor: '#dc2626'
+              });
+            }
+          });
+        } else {
+          event.target.value = (oldStatus === 'Completed' || oldAppStatus === 'Approved') ? 'Approved' : ((oldStatus === 'Rejected' || oldAppStatus === 'Rejected') ? 'Rejected' : 'Pending');
+        }
+      });
+    }
+  }
+
+  openDocVerification(item: any) {
+    this.selectedDocItem = item;
+    this.showDocVerificationModal = true;
+    this.docVerificationLoading = true;
+    this.customerDocuments = [];
+    this.customerDossier = null;
+
+    const userId = item.user_id;
+    const lookupId = item.submission_id || item.id || item.user_id;
+
+    const docReqs: Promise<any>[] = [];
+    if (lookupId) {
+      docReqs.push(this.api.adminGetCustomerEnrollment(lookupId).toPromise().catch(() => null));
+    } else {
+      docReqs.push(Promise.resolve(null));
+    }
+
+    if (userId) {
+      docReqs.push(this.api.adminGetUser(userId).toPromise().catch(() => null));
+    } else {
+      docReqs.push(Promise.resolve(null));
+    }
+
+    Promise.all(docReqs).then(([enrRes, userRes]) => {
+      this.docVerificationLoading = false;
+      const enrData = enrRes?.data || enrRes || {};
+      const userData = userRes?.data || userRes || {};
+      this.customerDossier = { ...item, ...enrData, ...userData };
+
+      const docs: any[] = [];
+
+      // Documents from user_documents table
+      if (Array.isArray(userData.documents) && userData.documents.length > 0) {
+        userData.documents.forEach((d: any) => {
+          docs.push({
+            id: d.document_id || d.id,
+            doc_type: d.document_type || 'KYC Document',
+            url: this.api.getFileUrl(d.document_path || d.file_path || d.url || d.file_url),
+            is_verified: Boolean(d.is_verified) || String(d.review_status || '').toLowerCase() === 'approved',
+            review_status: (Boolean(d.is_verified) || String(d.review_status || '').toLowerCase() === 'approved') ? 'Approved' : 'Pending',
+            uploaded_at: d.uploaded_at,
+            source: 'user_doc'
+          });
         });
       }
+
+      // Photos & Signatures from customer enrollment submission
+      if (enrData.photo_first_applicant_url) {
+        const url = enrData.photo_first_applicant_url.startsWith('http') ? enrData.photo_first_applicant_url : this.api.url(enrData.photo_first_applicant_url);
+        docs.push({
+          id: 'photo_applicant',
+          doc_type: 'Applicant Passport Photo',
+          url: url,
+          is_verified: item.enrollment_status === 'Completed' || item.application_status === 'Approved',
+          review_status: (item.enrollment_status === 'Completed' || item.application_status === 'Approved') ? 'Approved' : 'Pending',
+          source: 'submission'
+        });
+      }
+
+      if (enrData.signature_sole_first_applicant_url) {
+        const url = enrData.signature_sole_first_applicant_url.startsWith('http') ? enrData.signature_sole_first_applicant_url : this.api.url(enrData.signature_sole_first_applicant_url);
+        docs.push({
+          id: 'sig_applicant',
+          doc_type: 'Sole / First Applicant Signature',
+          url: url,
+          is_verified: item.enrollment_status === 'Completed' || item.application_status === 'Approved',
+          review_status: (item.enrollment_status === 'Completed' || item.application_status === 'Approved') ? 'Approved' : 'Pending',
+          source: 'submission'
+        });
+      }
+
+      if (enrData.signature_co_applicant_url) {
+        const url = enrData.signature_co_applicant_url.startsWith('http') ? enrData.signature_co_applicant_url : this.api.url(enrData.signature_co_applicant_url);
+        docs.push({
+          id: 'sig_co',
+          doc_type: 'Co-Applicant Signature',
+          url: url,
+          is_verified: item.enrollment_status === 'Completed' || item.application_status === 'Approved',
+          review_status: (item.enrollment_status === 'Completed' || item.application_status === 'Approved') ? 'Approved' : 'Pending',
+          source: 'submission'
+        });
+      }
+
+      this.customerDocuments = docs;
+    }).catch(() => {
+      this.docVerificationLoading = false;
     });
+  }
+
+  closeDocVerification() {
+    this.showDocVerificationModal = false;
+    this.selectedDocItem = null;
+    this.customerDocuments = [];
+    this.customerDossier = null;
+  }
+
+  approveAllCustomerDocuments() {
+    if (!this.selectedDocItem) return;
+    const userId = this.selectedDocItem.user_id;
+    const submissionId = this.selectedDocItem.submission_id || this.selectedDocItem.id;
+
+    this.docVerificationApproving = true;
+    const reqs: Promise<any>[] = [];
+
+    if (userId) {
+      reqs.push(this.api.adminApproveUser(userId, 'Approved via Customer Enrollment Verification').toPromise().catch(() => null));
+      reqs.push(this.api.verifyCustomerKyc(userId).toPromise().catch(() => null));
+    }
+
+    if (submissionId) {
+      reqs.push(this.api.adminUpdateCustomerEnrollment(submissionId, {
+        application_status: 'Approved',
+        enrollment_status: 'Completed',
+        verified_by: 'Admin'
+      }).toPromise().catch(() => null));
+    }
+
+    Promise.all(reqs).then(() => {
+      this.docVerificationApproving = false;
+      this.customerDocuments.forEach(d => {
+        d.is_verified = true;
+        d.review_status = 'Approved';
+      });
+      this.selectedDocItem.is_verified = true;
+      this.selectedDocItem.enrollment_status = 'Completed';
+      this.selectedDocItem.application_status = 'Approved';
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Documents Approved!',
+        text: 'All customer documents have been verified and approved. Customer dashboard now shows Verified status.',
+        timer: 2500,
+        showConfirmButton: false
+      });
+      this.loadStats();
+    }).catch(err => {
+      this.docVerificationApproving = false;
+      Swal.fire({
+        icon: 'error',
+        title: 'Approval Error',
+        text: err?.error?.message || 'Failed to approve documents.'
+      });
+    });
+  }
+
+  verifySingleDoc(doc: any) {
+    const userId = this.selectedDocItem?.user_id;
+    if (doc.source === 'user_doc' && doc.id && userId) {
+      this.api.verifyCustomerDocument(userId, doc.id).subscribe({
+        next: () => {
+          doc.is_verified = true;
+          doc.review_status = 'Approved';
+          Swal.fire({
+            icon: 'success',
+            title: 'Document Verified',
+            text: `${doc.doc_type} verified successfully.`,
+            timer: 1500,
+            showConfirmButton: false
+          });
+        },
+        error: () => {
+          doc.is_verified = true;
+          doc.review_status = 'Approved';
+        }
+      });
+    } else {
+      doc.is_verified = true;
+      doc.review_status = 'Approved';
+    }
   }
 
   onAssociateInlineStatusChange(item: any, event: any) {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ApiService } from '../../services/api.service';
 import { BookingAttributionApiService } from '../../services/booking-attribution-api.service';
 import { SalesTrackerSummary, CustomerSalesRow, BookableCustomer } from '../../services/booking-attribution.types';
 import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-badge.component';
@@ -27,6 +28,12 @@ export class TeamMemberDashboardComponent implements OnInit {
   searchCustomer = '';
   activeTab: 'customers' | 'sales' = 'customers';
 
+  // 4 Core Commission & Wallet Metrics (Part 3 A)
+  totalCommissionEarned = 0;
+  pendingCommission = 0;
+  availableBalance = 0;
+  withdrawnAmount = 0;
+
   // 6 Core Metrics requested by User
   activeUsersCount = 0;
   processingCount = 0;
@@ -42,6 +49,7 @@ export class TeamMemberDashboardComponent implements OnInit {
 
   constructor(
     private auth: AuthService,
+    private api: ApiService,
     private attributionApi: BookingAttributionApiService,
     private router: Router
   ) {}
@@ -59,17 +67,25 @@ export class TeamMemberDashboardComponent implements OnInit {
     this.loading = true;
     this.loadingCustomers = true;
 
-    // Load Summary, Sales, and Customers in parallel
+    // Load Summary, Sales, Customers, and Commission Summary in parallel
     Promise.all([
       this.attributionApi.getTeamMemberSalesSummary(userId).toPromise().catch(() => null),
       this.attributionApi.getTeamMemberCustomersSales(userId, { page: 1, limit: 100 }).toPromise().catch(() => ({ data: [], total: 0 })),
-      this.attributionApi.getMyBookableCustomers().toPromise().catch(() => [])
-    ]).then(([sumRes, salesRes, custList]) => {
+      this.attributionApi.getMyBookableCustomers().toPromise().catch(() => []),
+      this.api.getTeamMemberCommissionSummary().toPromise().catch(() => null)
+    ]).then(([sumRes, salesRes, custList, commRes]) => {
       this.summary = sumRes || null;
       this.allSales = salesRes?.data || [];
       this.recentSales = this.allSales.slice(0, 5);
       this.customers = custList || [];
       this.filteredCustomers = [...this.customers];
+
+      if (commRes?.success && commRes.data) {
+        this.totalCommissionEarned = Number(commRes.data.total_commission_earned || 0);
+        this.pendingCommission = Number(commRes.data.pending_commission || 0);
+        this.availableBalance = Number(commRes.data.available_balance || 0);
+        this.withdrawnAmount = Number(commRes.data.withdrawn_amount || 0);
+      }
 
       this.computeStats();
 

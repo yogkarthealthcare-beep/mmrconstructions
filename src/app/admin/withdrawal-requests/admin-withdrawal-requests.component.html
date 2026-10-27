@@ -99,6 +99,7 @@
         <div class="filter-select-wrap">
           <select formControlName="user_role" class="form-select sel-sm" (change)="loadRequests()">
             <option value="">All Roles</option>
+            <option value="Team Member">Team Member</option>
             <option value="Associate">Associate</option>
             <option value="Investor">Investor</option>
             <option value="Customer">Customer</option>
@@ -186,6 +187,7 @@
               <td class="grow">
                 <div class="person">
                   <div class="avatar" [ngClass]="{
+                    'bg-purple-subtle text-purple': r.user_role === 'Team Member',
                     'bg-amber-soft text-warning': r.user_role === 'Associate',
                     'bg-blue-soft text-primary': r.user_role === 'Investor',
                     'bg-emerald-soft text-emerald': r.user_role === 'Customer' || !r.user_role
@@ -206,6 +208,7 @@
               <!-- Role -->
               <td class="fit">
                 <span class="badge" [ngClass]="{
+                  'bg-purple text-white': r.user_role === 'Team Member',
                   'bg-warning text-dark': r.user_role === 'Associate',
                   'bg-primary text-white': r.user_role === 'Investor',
                   'bg-success text-white': r.user_role === 'Customer' || !r.user_role

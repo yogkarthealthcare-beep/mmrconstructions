@@ -407,6 +407,8 @@
                   formControlName="dateOfBirth" 
                   [max]="maxAdultDob"
                   class="form-control"
+                  (keydown)="$event.preventDefault()"
+                  (click)="$any($event.target).showPicker ? $any($event.target).showPicker() : null"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('dateOfBirth')?.errors?.['required'] && enrollmentForm.get('dateOfBirth')?.touched">
