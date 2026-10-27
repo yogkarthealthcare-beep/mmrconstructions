@@ -474,8 +474,8 @@
 
     <!-- Submit Action Row (Editable or First-time) -->
     <div class="submit-wrap no-print" *ngIf="!isSubmitted || isEditing" style="margin-top: 25px;">
-      <button type="submit" class="submit-btn" [disabled]="enrollmentForm.invalid || !photoDataUrl || submitting" style="background-color: #198754; color: white; padding: 12px 28px; font-size: 16px; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px;">
-        <i class="fas fa-save"></i>
+      <button type="submit" class="submit-btn" [disabled]="submitting" style="background-color: #198754; color: white; padding: 12px 28px; font-size: 16px; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fas" [class.fa-spinner]="submitting" [class.fa-spin]="submitting" [class.fa-save]="!submitting"></i>
         <span>{{ submitting ? 'Submitting...' : 'Submit' }}</span>
       </button>
     </div>

@@ -537,10 +537,10 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     return null;
   }
 
-  private focusFirstInvalidControl(isSigMissing = false) {
+  private focusFirstInvalidControl(specificField?: string, specificMsg?: string) {
     setTimeout(() => {
-      // 1. If photo is missing, focus & scroll to photo box first
-      if (!this.photoDataUrl) {
+      // 1. If photo is missing or explicitly targeted
+      if (specificField === 'photo' || (!this.photoDataUrl && !specificField)) {
         const photoEl = document.querySelector('.photo-box') as HTMLElement;
         if (photoEl) {
           photoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -551,24 +551,90 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
             toast: true,
             position: 'top-end',
             icon: 'warning',
-            title: 'Please upload Investor Photo (JPG/PNG <= 100 KB) *',
+            title: specificMsg || 'Please upload Investor Photo (JPG/PNG <= 100 KB) *',
             showConfirmButton: false,
-            timer: 3500
+            timer: 4000
           });
           return;
         }
       }
 
-      // 2. Find first invalid FormControl in the FormGroup tree
-      const invalidInfo = this.getFirstInvalidControlName(this.enrollmentForm);
-      if (invalidInfo) {
+      // 2. If specific field was identified by validator
+      if (specificField) {
+        if (specificField === 'signature' || specificField === 'declSignature') {
+          const sigEl = document.querySelector('.signature-upload-wrapper') as HTMLElement;
+          if (sigEl) {
+            sigEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            sigEl.focus();
+            sigEl.classList.add('pulse-error-highlight');
+            setTimeout(() => sigEl.classList.remove('pulse-error-highlight'), 3000);
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'warning',
+              title: specificMsg || 'Please upload Signature of Investor (JPG/PNG <= 50 KB) *',
+              showConfirmButton: false,
+              timer: 4000
+            });
+            return;
+          }
+        }
+
+        if (specificField === 'declarationCheck') {
+          const chk = document.querySelector('input[formControlName="declarationCheck"]') as HTMLElement;
+          if (chk) {
+            chk.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            chk.focus();
+            chk.classList.add('pulse-error-highlight');
+            setTimeout(() => chk.classList.remove('pulse-error-highlight'), 3000);
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'warning',
+              title: specificMsg || 'Please accept the Declaration checkbox *',
+              showConfirmButton: false,
+              timer: 4000
+            });
+            return;
+          }
+        }
+
         const targetEl = document.querySelector(
-          `[formControlName="${invalidInfo.name}"], input[name="${invalidInfo.name}"], select[name="${invalidInfo.name}"], #${invalidInfo.name}`
+          `[formControlName="${specificField}"].ng-invalid, [formControlName="${specificField}"], input[name="${specificField}"], select[name="${specificField}"], textarea[name="${specificField}"], #${specificField}`
         ) as HTMLElement;
 
         if (targetEl) {
           targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          targetEl.focus();
+          if (typeof targetEl.focus === 'function') {
+            targetEl.focus();
+          }
+          targetEl.classList.add('pulse-error-highlight');
+          setTimeout(() => targetEl.classList.remove('pulse-error-highlight'), 3000);
+
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: specificMsg || `Please fill required field *`,
+            showConfirmButton: false,
+            timer: 4000
+          });
+          return;
+        }
+      }
+
+      // 3. Fallback: Find first invalid FormControl in the FormGroup tree
+      const invalidInfo = this.getFirstInvalidControlName(this.enrollmentForm);
+      if (invalidInfo) {
+        const targetEl = document.querySelector(
+          `[formControlName="${invalidInfo.name}"].ng-invalid, [formControlName="${invalidInfo.name}"], input[name="${invalidInfo.name}"], select[name="${invalidInfo.name}"], #${invalidInfo.name}`
+        ) as HTMLElement;
+
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (typeof targetEl.focus === 'function') {
+            targetEl.focus();
+          }
           targetEl.classList.add('pulse-error-highlight');
           setTimeout(() => targetEl.classList.remove('pulse-error-highlight'), 3000);
 
@@ -578,67 +644,23 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
             icon: 'warning',
             title: `Please fill required field: ${invalidInfo.label} *`,
             showConfirmButton: false,
-            timer: 3500
+            timer: 4000
           });
           return;
         }
       }
 
-      // 3. Declaration check
-      if (!this.enrollmentForm.get('declarationCheck')?.value) {
-        const declEl = document.querySelector('.agree-line') as HTMLElement;
-        if (declEl) {
-          declEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          const chk = declEl.querySelector('input[type="checkbox"]') as HTMLElement;
-          if (chk) {
-            chk.focus();
-            chk.classList.add('pulse-error-highlight');
-            setTimeout(() => chk.classList.remove('pulse-error-highlight'), 3000);
-          }
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'warning',
-            title: 'Please accept the Declaration checkbox *',
-            showConfirmButton: false,
-            timer: 3500
-          });
-          return;
-        }
-      }
-
-      // 4. Fallback: Check any DOM element with .ng-invalid
+      // 4. Fallback: Any element with .ng-invalid
       const invalidControl = document.querySelector(
-        '.ng-invalid[formControlName], input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, .ng-invalid'
+        'input.ng-invalid, select.ng-invalid, textarea.ng-invalid, [formControlName].ng-invalid'
       ) as HTMLElement;
       if (invalidControl) {
         invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         if (typeof invalidControl.focus === 'function') {
           invalidControl.focus();
-          invalidControl.classList.add('pulse-error-highlight');
-          setTimeout(() => invalidControl.classList.remove('pulse-error-highlight'), 3000);
         }
-        return;
-      }
-
-      // 5. If declaration signature is missing
-      if (isSigMissing) {
-        const sigEl = document.querySelector('.signature-upload-wrapper') as HTMLElement;
-        if (sigEl) {
-          sigEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          sigEl.focus();
-          sigEl.classList.add('pulse-error-highlight');
-          setTimeout(() => sigEl.classList.remove('pulse-error-highlight'), 3000);
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'warning',
-            title: 'Please upload Signature of Investor (JPG/PNG <= 50 KB) *',
-            showConfirmButton: false,
-            timer: 3500
-          });
-          return;
-        }
+        invalidControl.classList.add('pulse-error-highlight');
+        setTimeout(() => invalidControl.classList.remove('pulse-error-highlight'), 3000);
       }
     }, 100);
   }
@@ -693,15 +715,9 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
 
     if (!validation.valid || this.enrollmentForm.invalid) {
       this.enrollmentForm.markAllAsTouched();
-      this.focusFirstInvalidControl(!rawData.signature);
-      if (validation.firstError) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Validation Error',
-          text: validation.firstError.message,
-          confirmButtonColor: '#dc2626'
-        });
-      }
+      const firstField = validation.firstError?.field;
+      const firstMsg = validation.firstError?.message;
+      this.focusFirstInvalidControl(firstField, firstMsg);
       return;
     }
 
