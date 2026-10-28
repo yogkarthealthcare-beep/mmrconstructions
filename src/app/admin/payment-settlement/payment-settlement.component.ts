@@ -132,6 +132,8 @@ export class AdminPaymentSettlementComponent implements OnInit {
           this.orders = rawOrders.filter((o: any) => {
             const key = o.booking_id ?? o.booking_serial;
             if (!key || seen.has(key)) return false;
+            if (o.is_self_purchase || o.is_company_direct || o.booking_type === 'SELF_PURCHASE') return false;
+            if (o.buyer_user_type && o.buyer_user_type !== 'Customer') return false;
             seen.add(key);
             return true;
           });
