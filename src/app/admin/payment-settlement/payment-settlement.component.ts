@@ -191,7 +191,19 @@ export class AdminPaymentSettlementComponent implements OnInit {
     this.loadOrders(1);
   }
 
-  openReleaseModal(order: any): void {
+  openReleaseModal(order: any, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      const target = event.currentTarget as HTMLElement;
+      if (target && target.blur) {
+        target.blur();
+      }
+    }
+    if (typeof document !== 'undefined' && document.activeElement) {
+      (document.activeElement as HTMLElement).blur();
+    }
+
     this.selectedOrder = order;
     this.settlementPreview = null;
     this.releaseRemarks = '';
