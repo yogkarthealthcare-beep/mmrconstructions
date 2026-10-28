@@ -390,7 +390,7 @@
             <!-- Plot Price -->
             <td class="col-price text-end">
               <div class="cell-stack text-end">
-                <div class="fw-700 text-dark nowrap-text">₹{{ (order.total_plot_price || 0) | number:'1.0-0' }}</div>
+                <div class="fw-700 text-dark nowrap-text">₹{{ formatMoney(order.total_plot_price) }}</div>
                 <div class="text-muted fs-11 nowrap-text">{{ order.payment_type || 'FullPayment' }}</div>
               </div>
             </td>
@@ -398,9 +398,9 @@
             <!-- Amount Received -->
             <td class="col-received text-end">
               <div class="cell-stack text-end">
-                <div class="fw-700 text-emerald nowrap-text">₹{{ (order.amount_received || 0) | number:'1.0-0' }}</div>
-                <div *ngIf="order.remaining_balance > 0" class="text-muted fs-11 nowrap-text">
-                  Bal: ₹{{ order.remaining_balance | number:'1.0-0' }}
+                <div class="fw-700 text-emerald nowrap-text">₹{{ formatMoney(order.amount_received) }}</div>
+                <div *ngIf="order.remaining_balance && order.remaining_balance > 0" class="text-muted fs-11 nowrap-text">
+                  Bal: ₹{{ formatMoney(order.remaining_balance) }}
                 </div>
               </div>
             </td>
