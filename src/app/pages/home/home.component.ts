@@ -129,7 +129,7 @@ export class HomeComponent implements OnInit {
   ];
 
     whyCards = [
-    { icon: 'fas fa-award', title: '10 Years of Trust', desc: '10 वर्षों से ग्राहकों का अटूट विश्वास। सुरक्षित रियल एस्टेट निवेश एवं 100% पारदर्शी कार्य।' },
+    { icon: 'fas fa-award', title: 'Trusted Developer', desc: 'ग्राहकों का अटूट विश्वास। सुरक्षित रियल एस्टेट निवेश एवं 100% पारदर्शी कार्य।' },
     { icon: 'fas fa-money-bill-wave', title: 'Easy EMI', desc: '₹51,000 down payment से शुरू। ₹3,000/month EMI। Bank finance भी available।' },
     { icon: 'fas fa-map-marked-alt', title: 'Prime Locations', desc: 'Highway, Airport, Station के नजदीक। High appreciation potential वाले plots।' },
     { icon: 'fas fa-building', title: 'Registered Company', desc: 'Govt. Registered Company (CIN: U68200UP2025PTC229203 | GSTIN: 09AATCM6753A1Z5)। Transparent paperwork एवं दाखिला-खारिज।' },
