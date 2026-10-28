@@ -25,38 +25,67 @@ export class InvestorDepositComponent implements OnInit {
     transaction_reference: '',
     payment_screenshot_url: ''
   };
-  selectedScreenshot?: File;
 
+  // Payment methods without online gateway
   paymentMethods = [
-    { value: 'manual_upi', label: 'Manual UPI (QR Code / UPI ID)' },
+    { value: 'manual_upi', label: 'UPI Payment (QR Code / UPI ID)' },
     { value: 'bank_transfer', label: 'Bank Transfer (IMPS / NEFT / RTGS)' },
-    { value: 'offline_cash', label: 'Cash / Cheque / DD (Office Deposit)' },
-    { value: 'online', label: 'Online Payment Gateway' }
+    { value: 'offline_cash', label: 'Cheque / DD / Cash (Office Deposit)' }
   ];
-  gateways = ['razorpay', 'cashfree'];
-  companyUpiId = 'mmrconstructions@upi';
-  companyQrUrl = 'assets/mmr-logo.png';
+
+  // Dynamic UPI QR configs fetched from backend
+  activeQrs: any[] = [];
+  selectedQrKey: string = 'qr1';
+  companyUpiId = 'mmrconstructions@hdfcbank';
+  companyQrUrl = '/assets/images/qr/mmr_qr1.png';
+  companyQrLabel = 'Primary UPI QR (HDFC Bank)';
   copiedUpi = false;
 
-  companyBankDetails = {
-    accountName: 'MMR Construction & Developers',
-    accountNumber: '50200012345678',
-    ifscCode: 'HDFC0001234',
-    bankName: 'HDFC Bank Ltd',
-    branch: 'Civil Lines, Kanpur'
-  };
+  // Screenshot / Camera photo selection
+  selectedScreenshot?: File;
+  screenshotPreviewUrl: string = '';
+
+  // Lightbox preview for deposit history
+  previewDocUrl: string | null = null;
+
+  constructor(public api: ApiService) {}
+
+  ngOnInit() {
+    this.loadDeposits();
+    this.loadActiveUpiQrs();
+  }
+
+  loadActiveUpiQrs() {
+    this.api.get('/api/payment/active-upi-qrs').subscribe({
+      next: (res: any) => {
+        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+          this.activeQrs = res.data;
+          const primary = res.data.find((q: any) => q.is_primary) || res.data[0];
+          if (primary) {
+            this.applyQrConfig(primary);
+          }
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  applyQrConfig(qr: any) {
+    this.selectedQrKey = qr.qr_code_key || 'qr1';
+    if (qr.upi_id) this.companyUpiId = qr.upi_id;
+    if (qr.qr_image_url) this.companyQrUrl = this.api.getFileUrl(qr.qr_image_url);
+    if (qr.label) this.companyQrLabel = qr.label;
+  }
+
+  selectQr(qr: any) {
+    this.applyQrConfig(qr);
+  }
 
   copyUpiId() {
     navigator.clipboard.writeText(this.companyUpiId).then(() => {
       this.copiedUpi = true;
       setTimeout(() => this.copiedUpi = false, 2500);
     }).catch(() => {});
-  }
-
-  constructor(private api: ApiService) {}
-
-  ngOnInit() {
-    this.loadDeposits();
   }
 
   loadDeposits() {
@@ -68,19 +97,54 @@ export class InvestorDepositComponent implements OnInit {
           this.deposits = res.data || [];
         }
       },
-      error: (err: any) => {
+      error: () => {
         this.loading = false;
       }
     });
   }
 
-  submitDeposit() {
-    if (!this.form.amount || Number(this.form.amount) <= 0) {
-      this.errorMessage = 'Please enter a valid deposit amount.';
+  onScreenshotChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMessage = 'फाइल 5 MB से कम होनी चाहिए (Screenshot/file must be 5 MB or less).';
+      input.value = '';
       return;
     }
-    if (this.form.payment_method !== 'online' && !this.form.transaction_reference.trim()) {
-      this.errorMessage = 'Transaction Reference / UTR / Receipt Number is required.';
+
+    this.selectedScreenshot = file;
+    this.errorMessage = '';
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.screenshotPreviewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      this.screenshotPreviewUrl = '';
+    }
+  }
+
+  clearScreenshot(cameraInput?: HTMLInputElement, fileInput?: HTMLInputElement) {
+    this.selectedScreenshot = undefined;
+    this.screenshotPreviewUrl = '';
+    if (cameraInput) cameraInput.value = '';
+    if (fileInput) fileInput.value = '';
+  }
+
+  submitDeposit() {
+    if (!this.form.amount || Number(this.form.amount) <= 0) {
+      this.errorMessage = 'Please enter a valid deposit amount greater than zero.';
+      return;
+    }
+    if (!this.form.transaction_reference.trim()) {
+      const isCheque = this.form.payment_method === 'offline_cash';
+      this.errorMessage = isCheque 
+        ? 'Please enter Cheque Number / DD Number / Receipt Slip Number.'
+        : 'Transaction Reference / UTR Number is required.';
       return;
     }
     if (this.selectedScreenshot && this.selectedScreenshot.size > 5 * 1024 * 1024) {
@@ -95,10 +159,10 @@ export class InvestorDepositComponent implements OnInit {
     const payload = new FormData();
     payload.append('amount', String(this.form.amount));
     payload.append('payment_method', this.form.payment_method);
-    payload.append('gateway', this.form.gateway);
     payload.append('transaction_reference', this.form.transaction_reference.trim());
-    if (this.form.payment_screenshot_url.trim()) payload.append('payment_screenshot_url', this.form.payment_screenshot_url.trim());
-    if (this.selectedScreenshot) payload.append('payment_screenshot', this.selectedScreenshot);
+    if (this.selectedScreenshot) {
+      payload.append('payment_screenshot', this.selectedScreenshot);
+    }
 
     this.api.submitInvestorDepositForm(payload).subscribe({
       next: (res: any) => {
@@ -113,6 +177,7 @@ export class InvestorDepositComponent implements OnInit {
             payment_screenshot_url: ''
           };
           this.selectedScreenshot = undefined;
+          this.screenshotPreviewUrl = '';
           this.loadDeposits();
         } else {
           this.errorMessage = res.message || 'Deposit submission failed.';
@@ -125,9 +190,20 @@ export class InvestorDepositComponent implements OnInit {
     });
   }
 
-  onScreenshotChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this.selectedScreenshot = input.files?.[0];
+  getProofUrl(dep: any): string {
+    if (!dep) return '';
+    if (dep.payment_screenshot_url) {
+      return this.api.getFileUrl(dep.payment_screenshot_url);
+    }
+    return `${this.api.getFileUrl(`/api/investor/deposits/${dep.id}/screenshot`)}`;
+  }
+
+  openPreview(url: string) {
+    this.previewDocUrl = url;
+  }
+
+  closePreview() {
+    this.previewDocUrl = null;
   }
 
   getStatusBadge(status: string): string {
