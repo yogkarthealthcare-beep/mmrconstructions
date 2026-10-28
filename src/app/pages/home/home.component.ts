@@ -53,7 +53,123 @@ export class HomeComponent implements OnInit {
     contact: true
   };
 
-  whyCards = [
+    registrationCards = [
+
+      {
+
+        role: 'Customer',
+
+        tag: 'PLOT BUYER',
+
+        tagIcon: 'fas fa-map-marker-alt',
+
+        icon: 'fas fa-landmark',
+
+        title: 'Customer',
+
+        desc: 'Register to explore plots, track EMI schedules, and book plot allocations.',
+
+        ctaText: 'Register as Customer',
+
+        cardClass: 'card-customer',
+
+        badgeClass: 'badge-customer',
+
+        iconClass: 'icon-customer',
+
+        ctaClass: 'cta-customer',
+
+        route: '/register/customer'
+
+      },
+
+      {
+
+        role: 'Investor',
+
+        tag: 'HIGH RETURN',
+
+        tagIcon: 'fas fa-chart-line',
+
+        icon: 'fas fa-coins',
+
+        title: 'Investor',
+
+        desc: 'Register to invest in prime real-estate projects with high capital growth.',
+
+        ctaText: 'Register as Investor',
+
+        cardClass: 'card-investor',
+
+        badgeClass: 'badge-investor',
+
+        iconClass: 'icon-investor',
+
+        ctaClass: 'cta-investor',
+
+        route: '/register/investor'
+
+      },
+
+      {
+
+        role: 'Associate',
+
+        tag: 'EARN & GROW',
+
+        tagIcon: 'fas fa-handshake',
+
+        icon: 'fas fa-user-tie',
+
+        title: 'Associate',
+
+        desc: 'Register as an associate partner to build network & earn commissions.',
+
+        ctaText: 'Register as Associate',
+
+        cardClass: 'card-associate',
+
+        badgeClass: 'badge-associate',
+
+        iconClass: 'icon-associate',
+
+        ctaClass: 'cta-associate',
+
+        route: '/register/associate'
+
+      },
+
+      {
+
+        role: 'Team Member',
+
+        tag: 'SPONSORED',
+
+        tagIcon: 'fas fa-users',
+
+        icon: 'fas fa-user-friends',
+
+        title: 'Team Member',
+
+        desc: 'Register with a Sponsor/Member ID to join an active associate team.',
+
+        ctaText: 'Register as Team Member',
+
+        cardClass: 'card-teammember',
+
+        badgeClass: 'badge-teammember',
+
+        iconClass: 'icon-teammember',
+
+        ctaClass: 'cta-teammember',
+
+        route: '/register/team-member'
+
+      }
+
+    ];
+
+    whyCards = [
     { icon: 'fas fa-award', title: '10 Years of Trust', desc: '10 वर्षों से ग्राहकों का अटूट विश्वास। सुरक्षित रियल एस्टेट निवेश एवं 100% पारदर्शी कार्य।' },
     { icon: 'fas fa-money-bill-wave', title: 'Easy EMI', desc: '₹51,000 down payment से शुरू। ₹3,000/month EMI। Bank finance भी available।' },
     { icon: 'fas fa-map-marked-alt', title: 'Prime Locations', desc: 'Highway, Airport, Station के नजदीक। High appreciation potential वाले plots।' },
