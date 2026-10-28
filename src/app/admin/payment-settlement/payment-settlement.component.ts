@@ -127,7 +127,14 @@ export class AdminPaymentSettlementComponent implements OnInit {
       next: (res: any) => {
         this.loading = false;
         if (res.success && res.data) {
-          this.orders = res.data.orders || [];
+          const rawOrders: any[] = res.data.orders || [];
+          const seen = new Set<any>();
+          this.orders = rawOrders.filter((o: any) => {
+            const key = o.booking_id ?? o.booking_serial;
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
           this.metrics = res.data.metrics || this.metrics;
           this.pagination = res.data.pagination || this.pagination;
         } else {
@@ -366,6 +373,10 @@ export class AdminPaymentSettlementComponent implements OnInit {
     }));
 
     this.exportService.exportToExcel(dataToExport, columns, `MMR_Plot_Orders_Payment_Settlement_${new Date().toISOString().slice(0,10)}`);
+  }
+
+  trackByBookingId(index: number, order: any): any {
+    return order?.booking_id ?? order?.booking_serial ?? index;
   }
 
   showToast(msg: string, type: 'success' | 'error' = 'success'): void {
