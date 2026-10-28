@@ -91,9 +91,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-users-gear', label: 'Team Member Directory', route: '/admin/team-members', badge: 'NEW' },
         { icon: 'fas fa-id-card', label: 'Associate Enrollments', route: '/admin/enrollments', queryParams: { tab: 'associate' } },
         { icon: 'fas fa-project-diagram', label: 'Network Tree', route: '/admin/network-tree', badge: 'NEW' },
-        { icon: 'fas fa-sitemap', label: 'MLM Network Pages', route: '/admin/mlm-pages' },
         { icon: 'fas fa-hand-holding-usd', label: 'Commissions', route: '/admin/commissions' },
-        { icon: 'fas fa-percent', label: 'Commission Settings', route: '/admin/commission-settings' },
         { icon: 'fas fa-exchange-alt', label: 'Wallet Transactions', route: '/admin/wallet-transactions' },
         { icon: 'fas fa-money-bill-wave', label: 'Withdrawal Requests', route: '/admin/withdrawal-requests', badge: 'REQ' },
         { icon: 'fas fa-bullhorn', label: 'Referral Tools', route: '/admin/referral', badge: 'LINKS' },
@@ -161,6 +159,15 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-key', label: 'Change Password', route: '/admin/change-password' },
         { icon: 'fas fa-database', label: 'Master Data', route: '/admin/master-data', badge: 'MASTER' },
         { icon: 'fas fa-sms', label: 'Test OTP', route: '/admin/test-otp' },
+      ]
+    },
+    {
+      label: 'OTHER',
+      icon: 'fas fa-ellipsis-h',
+      expanded: false,
+      items: [
+        { icon: 'fas fa-sitemap', label: 'MLM Network Pages', route: '/admin/mlm-pages' },
+        { icon: 'fas fa-percent', label: 'Commission Settings', route: '/admin/commission-settings' },
       ]
     }
   ];
