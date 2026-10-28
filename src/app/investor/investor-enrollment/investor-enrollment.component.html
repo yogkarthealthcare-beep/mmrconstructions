@@ -26,7 +26,7 @@
     </div>
   </div>
 
-  <form class="form-body" [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()">
+  <form class="form-body" [class.submitted]="submitted" [formGroup]="enrollmentForm" (ngSubmit)="onSubmit()" novalidate>
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <h2 class="form-title" style="margin: 0;">Investor Enrollment Form</h2>
     </div>
@@ -113,7 +113,7 @@
       </div>
     </div>
 
-    <div class="photo-box" [class.invalid-photo]="!photoDataUrl && enrollmentForm.touched" title="Click to attach passport size photo (JPG, PNG <= 100 KB)" (click)="photoInput.click()">
+    <div class="photo-box" [class.invalid-photo]="(!photoDataUrl) && (submitted || enrollmentForm.touched)" title="Click to attach passport size photo (JPG, PNG <= 100 KB)" (click)="photoInput.click()">
       <ng-container *ngIf="photoDataUrl; else photoPlaceholder">
         <img [src]="photoDataUrl" alt="Passport Photo">
       </ng-container>
@@ -123,14 +123,17 @@
       </ng-template>
       <input type="file" #photoInput accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display:none;" (change)="onPhotoChange($event)">
     </div>
+    <div *ngIf="!photoDataUrl && submitted" class="field-error-msg" style="float: right; clear: right; margin-bottom: 8px;">
+      <i class="fas fa-exclamation-circle"></i> फोटो आवश्यक है (Photo required)
+    </div>
 
     <div class="meta-grid">
       <div class="field"><label>Form No. (Auto-generated)</label><input type="text" formControlName="formNo" readonly style="background:#f8f9fa; font-weight: 600; color: #1e3a8a;"></div>
       <div class="field"><label>Date (Auto-filled)</label><input type="date" formControlName="formDate" readonly style="background:#f8f9fa;"></div>
-      <div class="field"><label>Branch Code</label><input type="text" formControlName="branchCode"></div>
-      <div class="field"><label>Branch Name</label><input type="text" formControlName="branchName"></div>
-      <div class="field"><label>Investor ID</label><input type="text" formControlName="investorId"></div>
-      <div class="field"><label>Project Name</label><input type="text" formControlName="projectName"></div>
+      <div class="field"><label>Branch Code <span style="font-size:11px; color:#888; font-weight:normal;">(Optional)</span></label><input type="text" formControlName="branchCode" placeholder="Branch Code (Optional)"></div>
+      <div class="field"><label>Branch Name <span style="font-size:11px; color:#888; font-weight:normal;">(Optional)</span></label><input type="text" formControlName="branchName" placeholder="Branch Name (Optional)"></div>
+      <div class="field"><label>Investor ID <span style="font-size:11px; color:#888; font-weight:normal;">(Optional)</span></label><input type="text" formControlName="investorId" placeholder="Investor ID (Optional)"></div>
+      <div class="field"><label>Project Name <span style="font-size:11px; color:#888; font-weight:normal;">(Optional)</span></label><input type="text" formControlName="projectName" placeholder="Project Name (Optional)"></div>
     </div>
 
     <!-- ============ 1. PERSONAL PARTICULARS ============ -->
@@ -138,15 +141,31 @@
       <h2>1. Personal Particulars</h2>
 
       <div class="row3">
-        <div class="field"><label>Name of Investor — First Name <span class="req-star">*</span></label><input type="text" formControlName="invFirstName" required></div>
+        <div class="field">
+          <label>Name of Investor — First Name <span class="req-star">*</span></label>
+          <input type="text" formControlName="invFirstName" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('invFirstName')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('invFirstName') }}</div>
+        </div>
         <div class="field"><label>Middle Name</label><input type="text" formControlName="invMiddleName"></div>
-        <div class="field"><label>Surname <span class="req-star">*</span></label><input type="text" formControlName="invSurname" required></div>
+        <div class="field">
+          <label>Surname <span class="req-star">*</span></label>
+          <input type="text" formControlName="invSurname" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('invSurname')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('invSurname') }}</div>
+        </div>
       </div>
 
       <div class="row3">
-        <div class="field"><label>Father's / Husband's — First Name <span class="req-star">*</span></label><input type="text" formControlName="fhFirstName" required></div>
+        <div class="field">
+          <label>Father's / Husband's — First Name <span class="req-star">*</span></label>
+          <input type="text" formControlName="fhFirstName" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('fhFirstName')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('fhFirstName') }}</div>
+        </div>
         <div class="field"><label>Middle Name</label><input type="text" formControlName="fhMiddleName"></div>
-        <div class="field"><label>Surname <span class="req-star">*</span></label><input type="text" formControlName="fhSurname" required></div>
+        <div class="field">
+          <label>Surname <span class="req-star">*</span></label>
+          <input type="text" formControlName="fhSurname" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('fhSurname')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('fhSurname') }}</div>
+        </div>
       </div>
 
       <div class="row3">
@@ -176,7 +195,7 @@
               title="Choose date"
             ></i>
           </div>
-          <span class="text-danger" style="font-size:11px;" *ngIf="enrollmentForm.get('dob')?.errors?.['underAge']">Applicant must be at least 18 years old / आवेदक की आयु कम से कम 18 वर्ष होनी चाहिए</span>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('dob')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('dob') }}</div>
         </div>
         <div class="field"><label>Age (Auto-calculated)</label><input type="number" formControlName="age" readonly style="background:#f8f9fa;"></div>
         <div class="field">
@@ -212,18 +231,31 @@
         </fieldset>
       </div>
 
-      <div class="field"><label>Permanent Address <span class="req-star">*</span></label><textarea formControlName="address" rows="2" placeholder="Permanent House No., Street" required></textarea></div>
+      <div class="field">
+        <label>Permanent Address <span class="req-star">*</span></label>
+        <textarea formControlName="address" rows="2" placeholder="Permanent House No., Street" required></textarea>
+        <div class="field-error-msg" *ngIf="isFieldInvalid('address')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('address') }}</div>
+      </div>
 
       <div class="row3">
-        <div class="field"><label>City <span class="req-star">*</span></label><input type="text" formControlName="city" required></div>
+        <div class="field">
+          <label>City <span class="req-star">*</span></label>
+          <input type="text" formControlName="city" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('city')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('city') }}</div>
+        </div>
         <div class="field">
           <label>State <span class="req-star">*</span></label>
           <select formControlName="state" required>
             <option value="">Select State</option>
             <option *ngFor="let s of statesList" [value]="s">{{ s }}</option>
           </select>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('state')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('state') }}</div>
         </div>
-        <div class="field"><label>Pin Code <span class="req-star">*</span></label><input type="text" formControlName="pinCode" maxlength="6" placeholder="6-digit PIN" required></div>
+        <div class="field">
+          <label>Pin Code <span class="req-star">*</span></label>
+          <input type="text" formControlName="pinCode" maxlength="6" placeholder="6-digit PIN" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('pinCode')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('pinCode') }}</div>
+        </div>
       </div>
 
       <div style="margin: 12px 0 8px; display: flex; align-items: center; gap: 8px; background: #f0f7ff; padding: 8px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
@@ -233,32 +265,58 @@
         </label>
       </div>
 
-      <div class="field">
-        <label>Correspondence / Local Address <span class="req-star" *ngIf="!enrollmentForm.get('sameAsPermanent')?.value">*</span></label>
+      <div class="field" *ngIf="!enrollmentForm.get('sameAsPermanent')?.value">
+        <label>Correspondence / Local Address <span class="req-star">*</span></label>
         <textarea formControlName="corrAddress" rows="2" placeholder="Local House No., Street"></textarea>
+        <div class="field-error-msg" *ngIf="isFieldInvalid('corrAddress')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('corrAddress') }}</div>
       </div>
 
-      <div class="row3">
-        <div class="field"><label>City <span class="req-star" *ngIf="!enrollmentForm.get('sameAsPermanent')?.value">*</span></label><input type="text" formControlName="corrCity"></div>
+      <div class="row3" *ngIf="!enrollmentForm.get('sameAsPermanent')?.value">
         <div class="field">
-          <label>State <span class="req-star" *ngIf="!enrollmentForm.get('sameAsPermanent')?.value">*</span></label>
+          <label>City <span class="req-star">*</span></label>
+          <input type="text" formControlName="corrCity">
+          <div class="field-error-msg" *ngIf="isFieldInvalid('corrCity')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('corrCity') }}</div>
+        </div>
+        <div class="field">
+          <label>State <span class="req-star">*</span></label>
           <select formControlName="corrState">
             <option value="">Select State</option>
             <option *ngFor="let s of statesList" [value]="s">{{ s }}</option>
           </select>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('corrState')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('corrState') }}</div>
         </div>
-        <div class="field"><label>Pin Code <span class="req-star" *ngIf="!enrollmentForm.get('sameAsPermanent')?.value">*</span></label><input type="text" formControlName="corrPinCode" maxlength="6" placeholder="6-digit PIN"></div>
+        <div class="field">
+          <label>Pin Code <span class="req-star">*</span></label>
+          <input type="text" formControlName="corrPinCode" maxlength="6" placeholder="6-digit PIN">
+          <div class="field-error-msg" *ngIf="isFieldInvalid('corrPinCode')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('corrPinCode') }}</div>
+        </div>
       </div>
 
       <div class="row3">
-        <div class="field"><label>Mobile No. <span class="req-star">*</span></label><input type="tel" formControlName="mobile" maxlength="10" placeholder="10-digit Mobile No." required></div>
+        <div class="field">
+          <label>Mobile No. <span class="req-star">*</span></label>
+          <input type="tel" formControlName="mobile" maxlength="10" placeholder="10-digit Mobile No." required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('mobile')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('mobile') }}</div>
+        </div>
         <div class="field"><label>Alt. Tel. No.</label><input type="tel" formControlName="altTel" maxlength="10" placeholder="10-digit Mobile No. (Optional)"></div>
-        <div class="field"><label>Email ID <span class="req-star">*</span></label><input type="email" formControlName="email" placeholder="example@email.com" required></div>
+        <div class="field">
+          <label>Email ID <span class="req-star">*</span></label>
+          <input type="email" formControlName="email" placeholder="example@email.com" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('email')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('email') }}</div>
+        </div>
       </div>
 
       <div class="row2">
-        <div class="field"><label>PAN Card No. <span class="req-star">*</span></label><input type="text" formControlName="pan" maxlength="10" style="text-transform:uppercase" required></div>
-        <div class="field"><label>Aadhar Card No. (12 Digits) <span class="req-star">*</span></label><input type="text" formControlName="aadhar" maxlength="12" placeholder="12-digit Aadhaar No." required></div>
+        <div class="field">
+          <label>PAN Card No. <span class="req-star">*</span></label>
+          <input type="text" formControlName="pan" maxlength="10" style="text-transform:uppercase" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('pan')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('pan') }}</div>
+        </div>
+        <div class="field">
+          <label>Aadhar Card No. (12 Digits) <span class="req-star">*</span></label>
+          <input type="text" formControlName="aadhar" maxlength="12" placeholder="12-digit Aadhaar No." required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('aadhar')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('aadhar') }}</div>
+        </div>
       </div>
     </section>
 
@@ -266,7 +324,11 @@
     <section class="block">
       <h2>2. Investment &amp; Bank Details</h2>
       <div class="row2">
-        <div class="field"><label>Investment Amount (₹) <span class="req-star">*</span></label><input type="text" inputmode="numeric" formControlName="amount" placeholder="Enter Investment Amount" required></div>
+        <div class="field">
+          <label>Investment Amount (₹) <span class="req-star">*</span></label>
+          <input type="text" inputmode="numeric" formControlName="amount" placeholder="Enter Investment Amount" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('amount')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('amount') }}</div>
+        </div>
         <div class="field"><label>In Words (Auto-filled)</label><input type="text" formControlName="amountWords" readonly style="background:#f8f9fa; font-weight: 500;" placeholder="Amount in words"></div>
       </div>
 
@@ -278,18 +340,36 @@
           <label><input type="radio" formControlName="paymentMode" value="DD"> DD</label>
           <label><input type="radio" formControlName="paymentMode" value="NEFT/RTGS/UPI"> NEFT / RTGS / UPI</label>
         </div>
+        <div class="field-error-msg" *ngIf="isFieldInvalid('paymentMode')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('paymentMode') }}</div>
       </fieldset>
 
       <div class="row2" *ngIf="enrollmentForm.get('paymentMode')?.value !== 'Cash'">
-        <div class="field"><label>Txn / Cheque No. <span class="req-star">*</span></label><input type="text" formControlName="txnNo"></div>
-        <div class="field"><label>Date <span class="req-star">*</span></label><input type="date" formControlName="txnDate"></div>
+        <div class="field">
+          <label>Txn / Cheque No. <span class="req-star">*</span></label>
+          <input type="text" formControlName="txnNo">
+          <div class="field-error-msg" *ngIf="isFieldInvalid('txnNo')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('txnNo') }}</div>
+        </div>
+        <div class="field">
+          <label>Date <span class="req-star">*</span></label>
+          <input type="date" formControlName="txnDate">
+          <div class="field-error-msg" *ngIf="isFieldInvalid('txnDate')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('txnDate') }}</div>
+        </div>
       </div>
       <div class="row3" style="margin-top: 12px;">
-        <div class="field"><label>Bank &amp; Branch <span class="req-star">*</span></label><input type="text" formControlName="bankBranch" placeholder="e.g. State Bank of India - Main Branch" required></div>
-        <div class="field"><label>Account Number <span class="req-star">*</span></label><input type="text" formControlName="accountNumber" placeholder="Bank Account Number" required></div>
+        <div class="field">
+          <label>Bank &amp; Branch <span class="req-star">*</span></label>
+          <input type="text" formControlName="bankBranch" placeholder="e.g. State Bank of India - Main Branch" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('bankBranch')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('bankBranch') }}</div>
+        </div>
+        <div class="field">
+          <label>Account Number <span class="req-star">*</span></label>
+          <input type="text" formControlName="accountNumber" placeholder="Bank Account Number" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('accountNumber')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('accountNumber') }}</div>
+        </div>
         <div class="field">
           <label>IFSC Code <span class="req-star">*</span></label>
           <input type="text" formControlName="ifscCode" placeholder="e.g. SBIN0001234" style="text-transform: uppercase" (input)="onIfscInput($event)" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('ifscCode')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('ifscCode') }}</div>
           <div *ngIf="ifscLoading" style="font-size: 11px; color: #777; margin-top: 2px;"><i class="fas fa-spinner fa-spin"></i> Fetching bank details...</div>
           <div *ngIf="ifscSuccess" style="font-size: 11px; color: #2c5c39; margin-top: 2px;"><i class="fas fa-check-circle"></i> Bank details fetched successfully</div>
           <div *ngIf="ifscError" style="font-size: 11px; color: #b3261e; margin-top: 2px;"><i class="fas fa-times-circle"></i> {{ ifscError }}</div>
@@ -361,23 +441,30 @@
         <p style="font-size: 13.5px; color: #555; font-weight: normal; margin-top: 6px; line-height: 1.5;">मैं/हम एतद्द्वारा घोषित करते हैं कि इस निवेशक नामांकन फॉर्म में प्रदान की गई सभी जानकारी मेरे/हमारे सर्वोत्तम ज्ञान और विश्वास के अनुसार सत्य, सही और पूर्ण है। मैं/हम पुष्टि करते हैं कि मैंने/हमने इस दस्तावेज़ के पृष्ठ 2 पर उल्लिखित <b>नियमों और शर्तों</b> को ध्यानपूर्वक पढ़, समझ लिया है और उनके पालन के लिए सहमत हैं। मैं/हम आगे घोषणा करते हैं कि इस निवेश के लिए उपयोग की जाने वाली निधि और इस फॉर्म में उल्लिखित विवरण कानूनी रूप से अर्जित किए गए हैं। मैं/हम कानून द्वारा आवश्यक होने पर मेरे/हमारे विवरण और केवाईसी दस्तावेजों को सत्यापित करने के लिए <b>एम.एम.आर. कंस्ट्रक्शन एंड डेवलपर्स प्राइवेट लिमिटेड</b> को अधिकृत करते हैं।</p>
       </div>
 
-      <label class="agree-line" style="display: flex; align-items: flex-start; gap: 8px;">
+      <label class="agree-line" [class.invalid-check]="(!enrollmentForm.get('declarationCheck')?.value) && submitted" style="display: flex; align-items: flex-start; gap: 8px;">
         <input type="checkbox" formControlName="declarationCheck" required style="margin-top: 3px;">
         <span style="display: inline-block;">
           <span style="font-size: 14px; font-weight: 500;">I/We confirm the above declaration is true and correct, and agree to abide by the Terms &amp; Conditions of M.M.R. Construction &amp; Developers Private Limited. <span class="req-star">*</span></span>
           <span style="display: block; font-size: 12.5px; color: #555; margin-top: 4px; font-weight: normal; line-height: 1.4;">मैं/हम पुष्टि करते हैं कि उपरोक्त घोषणा सत्य और सही है, और एम.एम.आर. कंस्ट्रक्शन एंड डेवलपर्स प्राइवेट लिमिटेड के नियमों और शर्तों का पालन करने के लिए सहमत हैं। <span class="req-star">*</span></span>
         </span>
       </label>
+      <div *ngIf="!enrollmentForm.get('declarationCheck')?.value && submitted" class="field-error-msg" style="margin-top: 6px;">
+        <i class="fas fa-exclamation-circle"></i> घोषणा पर टिक करना अनिवार्य है / Please accept the declaration checkbox
+      </div>
 
       <div class="row3" style="align-items: flex-end;">
         <div class="field"><label>Date (Auto-filled)</label><input type="date" formControlName="declDate" readonly style="background:#f8f9fa;"></div>
-        <div class="field"><label>Place <span class="req-star">*</span></label><input type="text" formControlName="declPlace" placeholder="City / Place of Signing" required></div>
+        <div class="field">
+          <label>Place <span class="req-star">*</span></label>
+          <input type="text" formControlName="declPlace" placeholder="City / Place of Signing" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('declPlace')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('declPlace') }}</div>
+        </div>
         <div class="field">
           <label style="display: flex; align-items: center; justify-content: space-between;">
             <span>Signature of Investor <span class="req-star">*</span></span>
             <span style="font-size: 11px; color: #16a34a; font-weight: 600;">(JPG, PNG &le; 50 KB)</span>
           </label>
-          <div class="signature-upload-wrapper" style="border: 1.5px dashed #cbd5e1; border-radius: 6px; background: #fafbfa; padding: 6px; text-align: center; cursor: pointer; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center;" (click)="(!isFinalSubmitted || appStatus === 'Rejected') && declSigInput.click()">
+          <div class="signature-upload-wrapper" [class.invalid-sig]="(!declSignatureDataUrl && !sigFirstUploaded) && submitted" style="border: 1.5px dashed #cbd5e1; border-radius: 6px; background: #fafbfa; padding: 6px; text-align: center; cursor: pointer; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center;" (click)="(!isFinalSubmitted || appStatus === 'Rejected') && declSigInput.click()">
             <ng-container *ngIf="declSignatureDataUrl; else declSignPlaceholder">
               <img [src]="declSignatureDataUrl" alt="Signature of Investor" style="max-height: 70px; max-width: 100%; object-fit: contain;">
             </ng-container>
@@ -396,6 +483,9 @@
               [disabled]="isFinalSubmitted && appStatus !== 'Rejected'"
             >
           </div>
+          <div *ngIf="!declSignatureDataUrl && !sigFirstUploaded && submitted" class="field-error-msg" style="margin-top: 4px;">
+            <i class="fas fa-exclamation-circle"></i> हस्ताक्षर अपलोड या ड्रा करना अनिवार्य है / Investor signature is required
+          </div>
           <div *ngIf="declSignatureDataUrl && (!isFinalSubmitted || appStatus === 'Rejected')" style="text-align: right; margin-top: 4px;">
             <button type="button" (click)="clearDeclSignature()" style="background: none; border: none; color: #dc2626; font-size: 11px; cursor: pointer; padding: 2px 6px;">
               <i class="fas fa-times"></i> Remove Signature
@@ -411,9 +501,13 @@
       <div class="row2">
         <div class="field">
           <label>Form No. / Investor ID</label>
-          <input type="text" [value]="enrollmentForm.get('investorId')?.value" disabled style="background-color: #f4f4f4;">
+          <input type="text" [value]="enrollmentForm.get('investorId')?.value || enrollmentForm.get('formNo')?.value" disabled style="background-color: #f4f4f4;">
         </div>
-        <div class="field"><label>First / Sole Investor Name <span class="req-star">*</span></label><input type="text" formControlName="firstApplicantName" required></div>
+        <div class="field">
+          <label>First / Sole Investor Name <span class="req-star">*</span></label>
+          <input type="text" formControlName="firstApplicantName" required>
+          <div class="field-error-msg" *ngIf="isFieldInvalid('firstApplicantName')"><i class="fas fa-exclamation-circle"></i> {{ getErrorMessage('firstApplicantName') }}</div>
+        </div>
       </div>
       <div class="field"><label>Joint Investor Name (if any)</label><input type="text" formControlName="jointApplicantName" placeholder="Optional"></div>
 
@@ -474,7 +568,7 @@
 
     <!-- Submit Action Row (Editable or First-time) -->
     <div class="submit-wrap no-print" *ngIf="!isSubmitted || isEditing" style="margin-top: 25px;">
-      <button type="submit" class="submit-btn" [disabled]="submitting" style="background-color: #198754; color: white; padding: 12px 28px; font-size: 16px; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px;">
+      <button type="button" (click)="onSubmit()" class="submit-btn" [disabled]="submitting" id="investorEnrollmentSubmitBtn" style="background-color: #198754; color: white; padding: 12px 28px; font-size: 16px; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px;">
         <i class="fas" [class.fa-spinner]="submitting" [class.fa-spin]="submitting" [class.fa-save]="!submitting"></i>
         <span>{{ submitting ? 'Submitting...' : 'Submit' }}</span>
       </button>

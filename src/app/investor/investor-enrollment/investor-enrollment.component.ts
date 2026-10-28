@@ -53,6 +53,7 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
   sigFirstUploaded: string = '';
   sigJointUploaded: string = '';
   submitting: boolean = false;
+  submitted: boolean = false;
   isSubmitted: boolean = false;
   isFinalSubmitted: boolean = false;
   isEditing: boolean = false;
@@ -101,10 +102,10 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     this.enrollmentForm = this.fb.group({
       formNo: [autoFormNo, Validators.required],
       formDate: [todayStr, Validators.required],
-      branchCode: ['', Validators.required],
-      branchName: ['', Validators.required],
-      investorId: ['', Validators.required],
-      projectName: ['', Validators.required],
+      branchCode: [''],
+      branchName: [''],
+      investorId: [''],
+      projectName: [''],
       invFirstName: ['', [Validators.required, humanNameValidator()]],
       invMiddleName: ['', [humanNameValidator()]],
       invSurname: ['', [Validators.required, humanNameValidator()]],
@@ -147,6 +148,25 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       jointApplicantName: [''],
       declarationCheck: [false, Validators.requiredTrue]
     });
+
+    // Auto-sync full name to firstApplicantName and declSignatureName
+    const syncFullName = () => {
+      const first = (this.enrollmentForm.get('invFirstName')?.value || '').trim();
+      const mid = (this.enrollmentForm.get('invMiddleName')?.value || '').trim();
+      const sur = (this.enrollmentForm.get('invSurname')?.value || '').trim();
+      const full = [first, mid, sur].filter(Boolean).join(' ').trim();
+      if (full) {
+        if (!this.enrollmentForm.get('firstApplicantName')?.value) {
+          this.enrollmentForm.get('firstApplicantName')?.setValue(full, { emitEvent: false });
+        }
+        if (!this.enrollmentForm.get('declSignatureName')?.value) {
+          this.enrollmentForm.get('declSignatureName')?.setValue(full, { emitEvent: false });
+        }
+      }
+    };
+    this.enrollmentForm.get('invFirstName')?.valueChanges.subscribe(syncFullName);
+    this.enrollmentForm.get('invMiddleName')?.valueChanges.subscribe(syncFullName);
+    this.enrollmentForm.get('invSurname')?.valueChanges.subscribe(syncFullName);
 
     // Auto-calculate Age on DOB change
     this.enrollmentForm.get('dob')?.valueChanges.subscribe(val => {
@@ -537,68 +557,89 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     return null;
   }
 
+  isFieldInvalid(name: string): boolean {
+    const ctrl = this.enrollmentForm.get(name);
+    if (!ctrl) return false;
+    return ctrl.invalid && (ctrl.touched || this.submitted);
+  }
+
+  getErrorMessage(name: string): string {
+    const ctrl = this.enrollmentForm.get(name);
+    if (!ctrl || !ctrl.errors) return '';
+    if (ctrl.errors['required'] || ctrl.errors['requiredTrue']) {
+      return 'यह फ़ील्ड भरना आवश्यक है / This field is required';
+    }
+    if (ctrl.errors['underAge']) {
+      return 'आवेदक की आयु 18 वर्ष या अधिक होनी चाहिए / Must be at least 18 years old';
+    }
+    if (ctrl.errors['pattern']) {
+      if (name === 'pinCode' || name === 'corrPinCode') return 'पिन कोड 6 अंकों का होना चाहिए / PIN must be 6 digits';
+      if (name === 'mobile' || name === 'altTel') return '10 अंकों का मान्य मोबाइल नंबर (6-9 से शुरू) / 10-digit mobile';
+      if (name === 'email') return 'मान्य ईमेल पता दर्ज करें / Enter valid email';
+      if (name === 'pan') return 'मान्य पैन कार्ड नंबर (उदा. ABCDE1234F) / Valid PAN required';
+      if (name === 'aadhar') return '12 अंकों का आधार नंबर दर्ज करें / 12-digit Aadhaar required';
+      if (name === 'accountNumber') return 'मान्य बैंक खाता नंबर (9 से 18 अंक) / 9-18 digit account no';
+      if (name === 'ifscCode') return 'मान्य IFSC कोड दर्ज करें (उदा. SBIN0001234)';
+    }
+    if (ctrl.errors['invalidHumanName']) {
+      return 'केवल अक्षर और स्पेस मान्य हैं / Only letters and spaces allowed';
+    }
+    if (ctrl.errors['min']) {
+      return 'राशि 0 से अधिक होनी चाहिए / Amount must be greater than 0';
+    }
+    return 'कृपया सही विवरण दर्ज करें / Please enter valid details';
+  }
+
   private focusFirstInvalidControl(specificField?: string, specificMsg?: string) {
+    const displayMsg = specificMsg || 'कृपया सभी आवश्यक फ़ील्ड सही तरीके से भरें / Please fill all required fields correctly';
+
+    Swal.fire({
+      icon: 'warning',
+      title: 'फ़ॉर्म अधूरा या अमान्य है / Incomplete Form',
+      text: displayMsg,
+      confirmButtonColor: '#1a5c3a',
+      confirmButtonText: 'Theek hai / OK'
+    });
+
     setTimeout(() => {
-      // 1. If photo is missing or explicitly targeted
+      // 1. Photo missing or targeted
       if (specificField === 'photo' || (!this.photoDataUrl && !specificField)) {
         const photoEl = document.querySelector('.photo-box') as HTMLElement;
         if (photoEl) {
           photoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          photoEl.focus();
           photoEl.classList.add('pulse-error-highlight');
-          setTimeout(() => photoEl.classList.remove('pulse-error-highlight'), 3000);
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'warning',
-            title: specificMsg || 'Please upload Investor Photo (JPG/PNG <= 100 KB) *',
-            showConfirmButton: false,
-            timer: 4000
-          });
+          setTimeout(() => photoEl.classList.remove('pulse-error-highlight'), 3500);
           return;
         }
       }
 
-      // 2. If specific field was identified by validator
+      // 2. Signature missing or targeted
+      if (specificField === 'signature' || specificField === 'declSignature') {
+        const sigEl = (document.querySelector('.signature-upload-wrapper') || document.querySelector('.sig-block')) as HTMLElement;
+        if (sigEl) {
+          sigEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          sigEl.classList.add('pulse-error-highlight');
+          setTimeout(() => sigEl.classList.remove('pulse-error-highlight'), 3500);
+          return;
+        }
+      }
+
+      // 3. Declaration Checkbox
+      if (specificField === 'declarationCheck') {
+        const chk = document.querySelector('input[formControlName="declarationCheck"]') as HTMLElement;
+        const agreeLine = document.querySelector('.agree-line') as HTMLElement;
+        if (chk || agreeLine) {
+          const target = agreeLine || chk;
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (chk) chk.focus();
+          target.classList.add('pulse-error-highlight');
+          setTimeout(() => target.classList.remove('pulse-error-highlight'), 3500);
+          return;
+        }
+      }
+
+      // 4. Specific FormControl element
       if (specificField) {
-        if (specificField === 'signature' || specificField === 'declSignature') {
-          const sigEl = document.querySelector('.signature-upload-wrapper') as HTMLElement;
-          if (sigEl) {
-            sigEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            sigEl.focus();
-            sigEl.classList.add('pulse-error-highlight');
-            setTimeout(() => sigEl.classList.remove('pulse-error-highlight'), 3000);
-            Swal.fire({
-              toast: true,
-              position: 'top-end',
-              icon: 'warning',
-              title: specificMsg || 'Please upload Signature of Investor (JPG/PNG <= 50 KB) *',
-              showConfirmButton: false,
-              timer: 4000
-            });
-            return;
-          }
-        }
-
-        if (specificField === 'declarationCheck') {
-          const chk = document.querySelector('input[formControlName="declarationCheck"]') as HTMLElement;
-          if (chk) {
-            chk.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            chk.focus();
-            chk.classList.add('pulse-error-highlight');
-            setTimeout(() => chk.classList.remove('pulse-error-highlight'), 3000);
-            Swal.fire({
-              toast: true,
-              position: 'top-end',
-              icon: 'warning',
-              title: specificMsg || 'Please accept the Declaration checkbox *',
-              showConfirmButton: false,
-              timer: 4000
-            });
-            return;
-          }
-        }
-
         const targetEl = document.querySelector(
           `[formControlName="${specificField}"].ng-invalid, [formControlName="${specificField}"], input[name="${specificField}"], select[name="${specificField}"], textarea[name="${specificField}"], #${specificField}`
         ) as HTMLElement;
@@ -609,21 +650,12 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
             targetEl.focus();
           }
           targetEl.classList.add('pulse-error-highlight');
-          setTimeout(() => targetEl.classList.remove('pulse-error-highlight'), 3000);
-
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'warning',
-            title: specificMsg || `Please fill required field *`,
-            showConfirmButton: false,
-            timer: 4000
-          });
+          setTimeout(() => targetEl.classList.remove('pulse-error-highlight'), 3500);
           return;
         }
       }
 
-      // 3. Fallback: Find first invalid FormControl in the FormGroup tree
+      // 5. Fallback: Find first invalid FormControl in the FormGroup tree
       const invalidInfo = this.getFirstInvalidControlName(this.enrollmentForm);
       if (invalidInfo) {
         const targetEl = document.querySelector(
@@ -636,23 +668,14 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
             targetEl.focus();
           }
           targetEl.classList.add('pulse-error-highlight');
-          setTimeout(() => targetEl.classList.remove('pulse-error-highlight'), 3000);
-
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'warning',
-            title: `Please fill required field: ${invalidInfo.label} *`,
-            showConfirmButton: false,
-            timer: 4000
-          });
+          setTimeout(() => targetEl.classList.remove('pulse-error-highlight'), 3500);
           return;
         }
       }
 
-      // 4. Fallback: Any element with .ng-invalid
+      // 6. Fallback: Any element with .ng-invalid
       const invalidControl = document.querySelector(
-        'input.ng-invalid, select.ng-invalid, textarea.ng-invalid, [formControlName].ng-invalid'
+        '.form-body input.ng-invalid:not([disabled]), .form-body select.ng-invalid:not([disabled]), .form-body textarea.ng-invalid:not([disabled])'
       ) as HTMLElement;
       if (invalidControl) {
         invalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -660,9 +683,9 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
           invalidControl.focus();
         }
         invalidControl.classList.add('pulse-error-highlight');
-        setTimeout(() => invalidControl.classList.remove('pulse-error-highlight'), 3000);
+        setTimeout(() => invalidControl.classList.remove('pulse-error-highlight'), 3500);
       }
-    }, 100);
+    }, 150);
   }
 
   private normalizePayloadNames(formData: any): any {
@@ -695,7 +718,10 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     if (this.sigFirstUploaded) {
       formData.signatureFirstApplicant = this.sigFirstUploaded;
     } else if (this.sigFirstCanvas && !this.isCanvasEmpty(this.sigFirstCanvas.nativeElement)) {
-      formData.signatureFirstApplicant = this.sigFirstCanvas.nativeElement.toDataURL('image/png');
+      const drawn = this.sigFirstCanvas.nativeElement.toDataURL('image/png');
+      formData.signatureFirstApplicant = drawn;
+      if (!formData.signature) formData.signature = drawn;
+      if (!formData.declSignature) formData.declSignature = drawn;
     } else if (this.declSignatureDataUrl) {
       formData.signatureFirstApplicant = this.declSignatureDataUrl;
     }
@@ -710,13 +736,64 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
   }
 
   onSubmit() {
+    this.submitted = true;
+    this.enrollmentForm.markAllAsTouched();
+
+    // Auto-sync firstApplicantName if empty
+    if (!this.enrollmentForm.get('firstApplicantName')?.value) {
+      const first = (this.enrollmentForm.get('invFirstName')?.value || '').trim();
+      const mid = (this.enrollmentForm.get('invMiddleName')?.value || '').trim();
+      const sur = (this.enrollmentForm.get('invSurname')?.value || '').trim();
+      const full = [first, mid, sur].filter(Boolean).join(' ').trim();
+      if (full) {
+        this.enrollmentForm.get('firstApplicantName')?.setValue(full, { emitEvent: false });
+      }
+    }
+
     const rawData = this.buildPayload(false);
     const validation = validateInvestorEnrollmentPayload(rawData, { isInvestorSubmit: true });
 
+    // Custom check: Photo
+    if (!this.photoDataUrl && !rawData.photo && !rawData.photo_url) {
+      validation.errors['photo'] = 'कृपया पासपोर्ट साइज फोटो अपलोड करें (JPG/PNG <= 100 KB) / Please upload Passport Size Photo';
+      if (!validation.firstError) {
+        validation.firstError = { field: 'photo', message: validation.errors['photo'] };
+      }
+      validation.valid = false;
+    }
+
+    // Custom check: Signature
+    const hasSig = Boolean(rawData.signature || rawData.signatureFirstApplicant || this.declSignatureDataUrl || this.sigFirstUploaded || (this.sigFirstCanvas && !this.isCanvasEmpty(this.sigFirstCanvas.nativeElement)));
+    if (!hasSig) {
+      validation.errors['signature'] = 'कृपया हस्ताक्षर अपलोड या ड्रा करें (JPG/PNG <= 50 KB) / Please upload or draw Investor Signature';
+      if (!validation.firstError) {
+        validation.firstError = { field: 'signature', message: validation.errors['signature'] };
+      }
+      validation.valid = false;
+    }
+
+    // Custom check: Declaration Checkbox
+    const isDeclChecked = Boolean(this.enrollmentForm.get('declarationCheck')?.value);
+    if (!isDeclChecked) {
+      validation.errors['declarationCheck'] = 'घोषणा की शर्तों पर टिक करना अनिवार्य है / Please tick the declaration checkbox';
+      if (!validation.firstError) {
+        validation.firstError = { field: 'declarationCheck', message: validation.errors['declarationCheck'] };
+      }
+      validation.valid = false;
+    }
+
     if (!validation.valid || this.enrollmentForm.invalid) {
-      this.enrollmentForm.markAllAsTouched();
-      const firstField = validation.firstError?.field;
-      const firstMsg = validation.firstError?.message;
+      let firstField = validation.firstError?.field;
+      let firstMsg = validation.firstError?.message;
+
+      if (!firstField || !firstMsg) {
+        const invalidInfo = this.getFirstInvalidControlName(this.enrollmentForm);
+        if (invalidInfo) {
+          firstField = invalidInfo.name;
+          firstMsg = `कृपया आवश्यक फ़ील्ड भरें: ${invalidInfo.label} / Please fill required field: ${invalidInfo.label}`;
+        }
+      }
+
       this.focusFirstInvalidControl(firstField, firstMsg);
       return;
     }
