@@ -320,9 +320,21 @@ export class AdminInvestorEnrollmentDetailComponent implements OnInit {
         const data = res.data;
         if (!data) return;
 
-        this.photoDataUrl = data.photo_url || '';
-        this.signatureFirstUrl = data.signature_first_url || data.signature_url || '';
-        this.signatureJointUrl = data.signature_joint_url || '';
+        const cleanUrl = (val: any): string => {
+          if (!val) return '';
+          if (typeof val === 'object') return val.url || val.relativePath || '';
+          if (typeof val === 'string' && val.trim().startsWith('{')) {
+            try {
+              const p = JSON.parse(val.trim());
+              return p.url || p.relativePath || val;
+            } catch {}
+          }
+          return String(val);
+        };
+
+        this.photoDataUrl = cleanUrl(data.photo_url);
+        this.signatureFirstUrl = cleanUrl(data.signature_first_url || data.signature_url);
+        this.signatureJointUrl = cleanUrl(data.signature_joint_url);
         this.workflowStatus = data.app_status || 'Hold/Pending KYC';
 
         let formDate = data.form_date ? new Date(data.form_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];

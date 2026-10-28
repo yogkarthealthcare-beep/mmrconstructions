@@ -936,15 +936,27 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     this.rejectionReason = d.rejection_reason || d.rejectionReason || '';
     this.isFinalSubmitted = Boolean(d.is_final_submitted || d.isFinalSubmitted);
 
+    const cleanUrl = (val: any): string => {
+      if (!val) return "";
+      if (typeof val === "object") return val.url || val.relativePath || "";
+      if (typeof val === "string" && val.trim().startsWith("{")) {
+        try {
+          const p = JSON.parse(val.trim());
+          return p.url || p.relativePath || val;
+        } catch {}
+      }
+      return String(val);
+    };
+
     if (d.photo_url) {
-      this.photoDataUrl = d.photo_url;
+      this.photoDataUrl = cleanUrl(d.photo_url);
     }
     if (d.signature_first_url || d.signature_url || d.signature) {
-      this.declSignatureDataUrl = d.signature_first_url || d.signature_url || d.signature;
+      this.declSignatureDataUrl = cleanUrl(d.signature_first_url || d.signature_url || d.signature);
       this.sigFirstUploaded = this.declSignatureDataUrl;
     }
     if (d.signature_joint_url) {
-      this.sigJointUploaded = d.signature_joint_url;
+      this.sigJointUploaded = cleanUrl(d.signature_joint_url);
     }
 
     // Populate nominees if available
@@ -1104,6 +1116,7 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
           }
 
           this.enrollmentForm.patchValue({
+            investorId: u.member_id || this.enrollmentForm.get('investorId')?.value || '',
             invFirstName: first || this.enrollmentForm.get('invFirstName')?.value || '',
             invMiddleName: middle || this.enrollmentForm.get('invMiddleName')?.value || '',
             invSurname: surname || this.enrollmentForm.get('invSurname')?.value || '',
