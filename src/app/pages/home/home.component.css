@@ -438,25 +438,30 @@
 }
 
 /* ==========================================================================
-   PREMIUM REAL ESTATE REGISTRATION TYPE CARDS REDESIGN
+   PREMIUM REAL ESTATE REGISTRATION TYPE CARDS (Refined Consistent Alignment)
    ========================================================================== */
 .home-reg-section {
   background: linear-gradient(180deg, #f8fafc 0%, #ffffff 50%, #f9fafb 100%);
   border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 34px 0 26px;
   position: relative;
 }
 
-/* Eyebrow Pill */
+/* Section Header */
+.reg-section-header {
+  margin-bottom: 24px;
+}
+
 .reg-eyebrow-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: rgba(6, 43, 24, 0.05);
-  border: 1px solid rgba(6, 43, 24, 0.14);
+  border: 1px solid rgba(6, 43, 24, 0.12);
   color: #062b18;
-  padding: 5px 14px;
+  padding: 4px 13px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -468,7 +473,7 @@
 
 .reg-main-heading {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(1.6rem, 3vw, 2.35rem);
+  font-size: clamp(1.45rem, 2.6vw, 2rem);
   font-weight: 800;
   color: #062b18;
   letter-spacing: -0.015em;
@@ -482,40 +487,46 @@
 }
 
 .reg-main-subtext {
-  font-size: 0.925rem;
+  font-size: 0.875rem;
   color: #64748b;
-  max-width: 640px;
-  line-height: 1.55;
+  max-width: 580px;
+  line-height: 1.5;
   margin-bottom: 0;
 }
 
-/* Main Card Container */
+/* ── 4 CARDS: Uniform Height & Internal Alignment ── */
+.g-xl-35 {
+  --bs-gutter-x: 1.25rem;
+}
+
 .reg-type-card {
   background: #ffffff;
   border: 1.5px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 22px 20px;
+  border-radius: 16px;
+  padding: 18px 16px 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.24s ease;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
   position: relative;
   overflow: hidden;
   outline: none;
   text-decoration: none !important;
+  height: 100%;
 }
 
 .reg-type-card:focus-visible {
   outline: 2px solid #062b18;
-  outline-offset: 3px;
-  box-shadow: 0 0 0 4px rgba(6, 43, 24, 0.15);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(6, 43, 24, 0.15);
 }
 
 .card-inner-top {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .card-header-row {
@@ -523,15 +534,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-height: 38px;
 }
 
 /* Badges */
 .reg-badge-tag {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 3.5px 8.5px;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -539,81 +551,92 @@
 
 /* Squircle Icon Wrap */
 .reg-accent-icon-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease;
+  font-size: 16px;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
 .reg-card-title {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #062b18;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
+/* Card Description (Fixed min-height for baseline consistency) */
 .reg-card-desc {
-  font-size: 12.5px;
+  font-size: 11.5px;
   color: #64748b;
-  line-height: 1.55;
-  margin-bottom: 12px;
-  min-height: 56px;
+  line-height: 1.48;
+  margin-bottom: 10px;
+  min-height: 52px;
 }
 
-/* Perks List */
+/* Perks List (Uniform 2 perks per card) */
 .reg-card-perks {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 0 2px;
+  gap: 5px;
+  padding: 4px 0 2px;
 }
 
 .perk-item {
   display: flex;
   align-items: flex-start;
-  font-size: 11.5px;
+  font-size: 11px;
   color: #334155;
   line-height: 1.35;
   font-weight: 500;
+  min-height: 18px;
 }
 
 .perk-icon {
-  font-size: 11px;
-  margin-top: 2px;
+  font-size: 10.5px;
+  margin-top: 1.5px;
   flex-shrink: 0;
 }
 
-/* CTA Button Styling */
+/* ── Standardized CTA Button ── */
+.card-inner-bottom {
+  border-top: 1px solid #f1f5f9;
+}
+
 .reg-cta-btn {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 12.5px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 11.5px;
   font-weight: 700;
-  transition: all 0.25s ease;
-  min-height: 44px;
+  transition: all 0.22s ease;
+  letter-spacing: 0.01em;
 }
 
 .cta-arrow-circle {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  transition: transform 0.25s ease, background 0.25s ease;
+  font-size: 9.5px;
+  transition: transform 0.22s ease, background 0.22s ease;
+  flex-shrink: 0;
+  margin-left: 6px;
 }
 
 .reg-type-card:hover .cta-arrow-circle {
@@ -622,26 +645,27 @@
 }
 
 .reg-type-card:hover .reg-accent-icon-wrap {
-  transform: scale(1.08) translateY(-2px);
+  transform: scale(1.06);
 }
 
 /* ─────────────────────────────────────────────────────────────
    1. CUSTOMER CARD (Emerald Forest)
    ───────────────────────────────────────────────────────────── */
 .reg-type-card.card-customer {
-  border-top: 4px solid #062b18;
-  background: linear-gradient(180deg, #f8fdfa 0%, #ffffff 40%);
+  border-top: 3.5px solid #062b18;
+  border-color: #d1fae5 #e2e8f0 #e2e8f0 #e2e8f0;
+  background: linear-gradient(180deg, #f8fdfa 0%, #ffffff 45%);
 }
 .badge-customer {
   background: #ecfdf5;
   color: #064e3b;
-  border: 1px solid rgba(6, 78, 59, 0.2);
+  border: 1px solid rgba(6, 78, 59, 0.16);
 }
 .icon-customer {
   background: #f0fdf4;
   color: #062b18;
-  border: 1px solid rgba(6, 43, 24, 0.15);
-  box-shadow: 0 4px 10px rgba(6, 43, 24, 0.08);
+  border: 1px solid rgba(6, 43, 24, 0.12);
+  box-shadow: 0 2px 6px rgba(6, 43, 24, 0.06);
 }
 .card-customer .perk-icon {
   color: #059669;
@@ -649,12 +673,12 @@
 .cta-customer {
   background: #eef6f1;
   color: #062b18;
-  border: 1px solid rgba(6, 43, 24, 0.15);
+  border: 1px solid rgba(6, 43, 24, 0.12);
 }
 .reg-type-card.card-customer:hover {
   border-color: #062b18;
-  transform: translateY(-5px);
-  box-shadow: 0 16px 32px rgba(6, 43, 24, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(6, 43, 24, 0.09);
 }
 .reg-type-card.card-customer:hover .cta-customer {
   background: #062b18;
@@ -666,19 +690,20 @@
    2. INVESTOR CARD (Royal Gold)
    ───────────────────────────────────────────────────────────── */
 .reg-type-card.card-investor {
-  border-top: 4px solid #c9a84c;
-  background: linear-gradient(180deg, #fdfbf5 0%, #ffffff 40%);
+  border-top: 3.5px solid #c9a84c;
+  border-color: #fef3c7 #e2e8f0 #e2e8f0 #e2e8f0;
+  background: linear-gradient(180deg, #fdfbf5 0%, #ffffff 45%);
 }
 .badge-investor {
   background: #fffbeb;
   color: #92400e;
-  border: 1px solid rgba(201, 168, 76, 0.3);
+  border: 1px solid rgba(201, 168, 76, 0.25);
 }
 .icon-investor {
   background: #fdf8eb;
   color: #b38e2e;
-  border: 1px solid rgba(201, 168, 76, 0.3);
-  box-shadow: 0 4px 10px rgba(201, 168, 76, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  box-shadow: 0 2px 6px rgba(201, 168, 76, 0.08);
 }
 .card-investor .perk-icon {
   color: #d97706;
@@ -686,12 +711,12 @@
 .cta-investor {
   background: #fdf8eb;
   color: #92400e;
-  border: 1px solid rgba(201, 168, 76, 0.25);
+  border: 1px solid rgba(201, 168, 76, 0.2);
 }
 .reg-type-card.card-investor:hover {
   border-color: #c9a84c;
-  transform: translateY(-5px);
-  box-shadow: 0 16px 32px rgba(201, 168, 76, 0.16);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(201, 168, 76, 0.12);
 }
 .reg-type-card.card-investor:hover .cta-investor {
   background: #b38e2e;
@@ -703,19 +728,20 @@
    3. ASSOCIATE CARD (Sapphire Blue)
    ───────────────────────────────────────────────────────────── */
 .reg-type-card.card-associate {
-  border-top: 4px solid #0284c7;
-  background: linear-gradient(180deg, #f6faff 0%, #ffffff 40%);
+  border-top: 3.5px solid #0284c7;
+  border-color: #e0f2fe #e2e8f0 #e2e8f0 #e2e8f0;
+  background: linear-gradient(180deg, #f6faff 0%, #ffffff 45%);
 }
 .badge-associate {
   background: #f0f9ff;
   color: #0369a1;
-  border: 1px solid rgba(2, 132, 199, 0.25);
+  border: 1px solid rgba(2, 132, 199, 0.2);
 }
 .icon-associate {
   background: #f0f9ff;
   color: #0284c7;
-  border: 1px solid rgba(2, 132, 199, 0.25);
-  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.1);
+  border: 1px solid rgba(2, 132, 199, 0.2);
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.08);
 }
 .card-associate .perk-icon {
   color: #0284c7;
@@ -723,12 +749,12 @@
 .cta-associate {
   background: #f0f9ff;
   color: #0369a1;
-  border: 1px solid rgba(2, 132, 199, 0.2);
+  border: 1px solid rgba(2, 132, 199, 0.15);
 }
 .reg-type-card.card-associate:hover {
   border-color: #0284c7;
-  transform: translateY(-5px);
-  box-shadow: 0 16px 32px rgba(2, 132, 199, 0.14);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(2, 132, 199, 0.1);
 }
 .reg-type-card.card-associate:hover .cta-associate {
   background: #0284c7;
@@ -737,22 +763,23 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   4. TEAM MEMBER CARD (Modern Teal)
+   4. TEAM MEMBER CARD (Modern Teal - Uniform Balanced Weight)
    ───────────────────────────────────────────────────────────── */
 .reg-type-card.card-teammember {
-  border-top: 4px solid #0d9488;
-  background: linear-gradient(180deg, #f5fcfb 0%, #ffffff 40%);
+  border-top: 3.5px solid #0d9488;
+  border-color: #ccfbf1 #e2e8f0 #e2e8f0 #e2e8f0;
+  background: linear-gradient(180deg, #f5fcfb 0%, #ffffff 45%);
 }
 .badge-teammember {
   background: #f0fdfa;
   color: #0f766e;
-  border: 1px solid rgba(13, 148, 136, 0.25);
+  border: 1px solid rgba(13, 148, 136, 0.2);
 }
 .icon-teammember {
   background: #f0fdfa;
   color: #0d9488;
-  border: 1px solid rgba(13, 148, 136, 0.25);
-  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.1);
+  border: 1px solid rgba(13, 148, 136, 0.2);
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.08);
 }
 .card-teammember .perk-icon {
   color: #0d9488;
@@ -760,12 +787,12 @@
 .cta-teammember {
   background: #f0fdfa;
   color: #0f766e;
-  border: 1px solid rgba(13, 148, 136, 0.2);
+  border: 1px solid rgba(13, 148, 136, 0.15);
 }
 .reg-type-card.card-teammember:hover {
   border-color: #0d9488;
-  transform: translateY(-5px);
-  box-shadow: 0 16px 32px rgba(13, 148, 136, 0.14);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(13, 148, 136, 0.1);
 }
 .reg-type-card.card-teammember:hover .cta-teammember {
   background: #0d9488;
@@ -773,13 +800,31 @@
   border-color: #0d9488;
 }
 
-/* Trust Micro Strip */
+/* ── Compact Bottom Verification Bar ── */
+.reg-footer-trust {
+  margin-top: 22px;
+}
+
+.trust-badge-bar {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 16px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
 .trust-micro-item {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
-  color: #334155;
+  color: #475569;
   display: inline-flex;
   align-items: center;
+  letter-spacing: 0.01em;
 }
 
 .text-emerald {
@@ -788,27 +833,37 @@
 
 .trust-sep {
   color: #cbd5e1;
+  font-size: 11px;
 }
 
-/* Responsive Overrides */
+/* ── Responsive Overrides ── */
 @media (max-width: 991px) {
+  .home-reg-section {
+    padding: 28px 0 22px;
+  }
   .reg-card-desc {
     min-height: auto;
   }
   .reg-type-card {
-    padding: 18px 16px;
+    padding: 16px 14px 14px;
+  }
+  .trust-badge-bar {
+    border-radius: 14px;
+    padding: 8px 14px;
   }
 }
 
 @media (max-width: 576px) {
   .reg-type-card {
-    padding: 16px 14px;
-    border-radius: 16px;
+    padding: 14px 12px 12px;
+    border-radius: 14px;
   }
   .reg-card-title {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
   }
   .reg-cta-btn {
-    padding: 9px 12px;
+    height: 38px;
+    padding: 0 10px;
+    font-size: 11px;
   }
 }

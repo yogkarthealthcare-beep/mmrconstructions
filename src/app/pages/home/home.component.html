@@ -60,16 +60,16 @@
       </div>
     </div>
 
-    <!-- 4 Registration Type Cards in 1 Row (Redesigned Premium UI) -->
-    <section class="home-reg-section py-4 py-lg-5" aria-labelledby="reg-section-heading">
+    <!-- 4 Registration Type Cards in 1 Row (Refined Premium Real Estate UI) -->
+    <section class="home-reg-section" aria-labelledby="reg-section-heading">
       <div class="mmr-container">
         <!-- Section Header -->
-        <div class="reg-section-header text-center mb-4 mb-lg-5">
-          <div class="reg-eyebrow-pill mb-2.5">
+        <div class="reg-section-header text-center">
+          <div class="reg-eyebrow-pill mb-2">
             <i class="fas fa-shield-halved text-gold me-1.5"></i>
             <span>MMR VERIFIED PORTALS • WELCOME TO MMR</span>
           </div>
-          <h2 id="reg-section-heading" class="reg-main-heading mb-2">
+          <h2 id="reg-section-heading" class="reg-main-heading mb-1.5">
             Choose Your <span class="heading-gold-accent">Registration Type</span>
           </h2>
           <p class="reg-main-subtext mx-auto">
@@ -77,13 +77,17 @@
           </p>
         </div>
 
-        <!-- 4 Cards Grid: 4 in 1 row desktop (col-lg-3), 2 per row tablet (col-md-6), 1 per row mobile (col-12) -->
-        <div class="row g-3 g-xl-4 justify-content-center">
-          <div class="col-12 col-sm-6 col-lg-3 d-flex" *ngFor="let card of registrationCards">
-            <div class="reg-type-card {{ card.cardClass }} w-100" [routerLink]="card.route" role="button" tabindex="0" [attr.aria-label]="card.ctaText">
+        <!-- 4 Cards Grid: Desktop 4 in 1 row (col-lg-3), Tablet 2 per row (col-md-6), Mobile 1 per row (col-12) -->
+        <div class="row g-3 g-xl-35 align-items-stretch justify-content-center">
+          <div class="col-12 col-md-6 col-lg-3 d-flex" *ngFor="let card of registrationCards">
+            <div class="reg-type-card {{ card.cardClass }} w-100 d-flex flex-column justify-content-between"
+                 [routerLink]="card.route"
+                 role="button"
+                 tabindex="0"
+                 [attr.aria-label]="card.ctaText">
               <!-- Top Card Region -->
               <div class="card-inner-top">
-                <div class="card-header-row mb-3">
+                <div class="card-header-row mb-2.5">
                   <span class="reg-badge-tag {{ card.badgeClass }}">
                     <i [class]="card.tagIcon + ' me-1'"></i> {{ card.tag }}
                   </span>
@@ -95,7 +99,7 @@
                 <h3 class="reg-card-title">{{ card.title }}</h3>
                 <p class="reg-card-desc">{{ card.desc }}</p>
 
-                <!-- Value Perks Checklist -->
+                <!-- Value Perks Checklist (Equal 2 perks on every card) -->
                 <ul class="reg-card-perks list-unstyled mb-0" *ngIf="card.perks?.length">
                   <li *ngFor="let perk of card.perks" class="perk-item">
                     <i class="fas fa-check-circle perk-icon me-1.5"></i>
@@ -104,11 +108,11 @@
                 </ul>
               </div>
 
-              <!-- Bottom Card Region / Interactive CTA Button -->
-              <div class="card-inner-bottom pt-3 mt-3 border-top">
+              <!-- Bottom Card Region / Standardized CTA Button -->
+              <div class="card-inner-bottom pt-2.5 mt-auto border-top">
                 <div class="reg-cta-btn {{ card.ctaClass }}">
                   <span class="cta-label">{{ card.ctaText }}</span>
-                  <span class="cta-arrow-circle">
+                  <span class="cta-arrow-circle" aria-hidden="true">
                     <i class="fas fa-arrow-right"></i>
                   </span>
                 </div>
@@ -117,14 +121,14 @@
           </div>
         </div>
 
-        <!-- Trust Guarantee Strip below cards -->
-        <div class="reg-footer-trust mt-4 pt-2 text-center">
-          <div class="d-inline-flex flex-wrap align-items-center justify-content-center gap-3 gap-md-4 px-3 py-2 rounded-pill bg-white border shadow-xs">
-            <span class="trust-micro-item"><i class="fas fa-certificate text-emerald me-1"></i> Govt. Registered (CIN: U68200UP2025PTC229203)</span>
+        <!-- Compact Bottom Verification Bar -->
+        <div class="reg-footer-trust text-center">
+          <div class="trust-badge-bar">
+            <span class="trust-micro-item"><i class="fas fa-certificate text-emerald me-1.5"></i> Govt. Registered (CIN: U68200UP2025PTC229203)</span>
             <span class="trust-sep d-none d-sm-inline">•</span>
-            <span class="trust-micro-item"><i class="fas fa-lock text-primary me-1"></i> 100% Legal &amp; Bank Verified</span>
+            <span class="trust-micro-item"><i class="fas fa-shield-alt text-primary me-1.5"></i> 100% Legal &amp; Bank Approved</span>
             <span class="trust-sep d-none d-sm-inline">•</span>
-            <span class="trust-micro-item"><i class="fas fa-bolt text-gold me-1"></i> Instant 6-Digit OTP Verification</span>
+            <span class="trust-micro-item"><i class="fas fa-lock text-gold me-1.5"></i> Instant 6-Digit OTP Verification</span>
           </div>
         </div>
       </div>
