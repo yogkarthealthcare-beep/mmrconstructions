@@ -816,6 +816,16 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
         this.isFinalSubmitted = false;
         this.appStatus = 'Submitted';
         this.enrollmentId = res.data?.id || this.enrollmentId;
+        if (res.data?.photo_url) {
+          this.photoDataUrl = this.formatImageUrl(res.data.photo_url);
+        }
+        if (res.data?.signature_first_url) {
+          this.declSignatureDataUrl = this.formatImageUrl(res.data.signature_first_url);
+          this.sigFirstUploaded = this.declSignatureDataUrl;
+        }
+        if (res.data?.signature_joint_url) {
+          this.sigJointUploaded = this.formatImageUrl(res.data.signature_joint_url);
+        }
         this.auth.setEnrollmentCompleted();
         this.enrollmentForm.disable();
         Swal.fire({
@@ -905,6 +915,16 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
         this.isEditing = false;
         this.appStatus = 'Hold/Pending KYC';
         this.enrollmentId = res.data?.id || this.enrollmentId;
+        if (res.data?.photo_url) {
+          this.photoDataUrl = this.formatImageUrl(res.data.photo_url);
+        }
+        if (res.data?.signature_first_url) {
+          this.declSignatureDataUrl = this.formatImageUrl(res.data.signature_first_url);
+          this.sigFirstUploaded = this.declSignatureDataUrl;
+        }
+        if (res.data?.signature_joint_url) {
+          this.sigJointUploaded = this.formatImageUrl(res.data.signature_joint_url);
+        }
         this.auth.setEnrollmentCompleted();
         this.enrollmentForm.disable();
         Swal.fire({
@@ -930,33 +950,39 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     this.router.navigate(['/investor/dashboard']);
   }
 
+  formatImageUrl(val: any): string {
+    if (!val) return '';
+    let str = val;
+    if (typeof str === 'object') {
+      str = str.url || str.relativePath || '';
+    }
+    if (typeof str === 'string' && str.trim().startsWith('{')) {
+      try {
+        const p = JSON.parse(str.trim());
+        str = p.url || p.relativePath || str;
+      } catch {}
+    }
+    if (typeof str !== 'string') return '';
+    str = str.trim();
+    if (!str || str === '[object Object]' || str === 'null' || str === 'undefined') return '';
+    return this.api.getFileUrl(str);
+  }
+
   patchSubmittedData(d: any) {
     this.enrollmentId = d.id || null;
     this.appStatus = d.app_status || d.appStatus || 'Hold/Pending KYC';
     this.rejectionReason = d.rejection_reason || d.rejectionReason || '';
     this.isFinalSubmitted = Boolean(d.is_final_submitted || d.isFinalSubmitted);
 
-    const cleanUrl = (val: any): string => {
-      if (!val) return "";
-      if (typeof val === "object") return val.url || val.relativePath || "";
-      if (typeof val === "string" && val.trim().startsWith("{")) {
-        try {
-          const p = JSON.parse(val.trim());
-          return p.url || p.relativePath || val;
-        } catch {}
-      }
-      return String(val);
-    };
-
-    if (d.photo_url) {
-      this.photoDataUrl = cleanUrl(d.photo_url);
+    if (d.photo_url || d.profile_picture_url) {
+      this.photoDataUrl = this.formatImageUrl(d.photo_url || d.profile_picture_url);
     }
     if (d.signature_first_url || d.signature_url || d.signature) {
-      this.declSignatureDataUrl = cleanUrl(d.signature_first_url || d.signature_url || d.signature);
+      this.declSignatureDataUrl = this.formatImageUrl(d.signature_first_url || d.signature_url || d.signature);
       this.sigFirstUploaded = this.declSignatureDataUrl;
     }
     if (d.signature_joint_url) {
-      this.sigJointUploaded = cleanUrl(d.signature_joint_url);
+      this.sigJointUploaded = this.formatImageUrl(d.signature_joint_url);
     }
 
     // Populate nominees if available
@@ -1135,6 +1161,10 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
             declSignatureName: u.full_name || nameToSplit || this.enrollmentForm.get('declSignatureName')?.value || '',
             firstApplicantName: u.full_name || nameToSplit || this.enrollmentForm.get('firstApplicantName')?.value || ''
           });
+
+          if (!this.photoDataUrl && u.profile_picture_url) {
+            this.photoDataUrl = this.formatImageUrl(u.profile_picture_url);
+          }
 
           // Trigger lookup if IFSC code is available
           if (u.ifsc_code) {

@@ -6,17 +6,22 @@
         <i class="fas fa-file-invoice"></i>
       </div>
       <div>
-        <h1 class="inv-page-title">KYC &amp; Documents</h1>
+        <h1 class="inv-page-title">KYC &amp; Documents / दस्तावेज़ सत्यापन</h1>
         <p class="inv-page-subtitle">Upload and manage identity proof, address proof, and investment agreements</p>
       </div>
     </div>
-    <div class="inv-page-actions">
+    <div class="inv-page-actions d-flex gap-2 align-items-center">
       <span class="inv-badge inv-badge-gold">
         <i class="fas fa-shield-alt"></i> Official KYC Verification
+      </span>
+      <span class="inv-badge inv-badge-neutral" *ngIf="!loading">
+        <i class="fas fa-check-double text-success me-1"></i>
+        {{ getRequiredUploadedCount() }}/{{ getRequiredCount() }} Mandatory Uploaded
       </span>
     </div>
   </div>
 
+  <!-- Global Alerts -->
   <div *ngIf="message" class="inv-alert inv-alert-success">
     <i class="fas fa-check-circle mt-0.5"></i>
     <div>{{ message }}</div>
@@ -27,126 +32,275 @@
     <div>{{ error }}</div>
   </div>
 
-  <div class="row g-3">
-    <!-- Left Column: Upload Form -->
-    <div class="col-lg-4">
-      <div class="inv-card h-100">
-        <div class="inv-card-header">
-          <div class="inv-card-header-left">
-            <div class="inv-card-header-icon primary">
-              <i class="fas fa-file-upload"></i>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
+    <span class="text-muted small">Loading your documents...</span>
+  </div>
+
+  <!-- Main Document Slots Grid -->
+  <div *ngIf="!loading" class="mb-4">
+    <div class="row g-3">
+      <div class="col-xl-4 col-md-6" *ngFor="let cat of documentCategories">
+        <div class="doc-slot-card" [class.has-doc]="getDocForType(cat.key)" [class.has-pending]="getDocForType(cat.key)?.status === 'pending'" [class.has-approved]="getDocForType(cat.key)?.status === 'approved'" [class.has-rejected]="getDocForType(cat.key)?.status === 'rejected'">
+          <!-- Slot Card Header -->
+          <div class="doc-slot-header">
+            <div class="d-flex align-items-center gap-2">
+              <div class="doc-slot-icon">
+                <i [class]="cat.icon"></i>
+              </div>
+              <div>
+                <h3 class="doc-slot-title mb-0">
+                  {{ cat.label }}
+                  <span *ngIf="cat.required" class="badge-req" title="Mandatory KYC Document">*Required</span>
+                </h3>
+                <span class="doc-slot-hindi">{{ cat.hindiLabel }}</span>
+              </div>
             </div>
-            <div>
-              <h2 class="inv-card-title">Upload Document</h2>
-              <p class="inv-card-desc">Attach verified KYC file</p>
+
+            <!-- Status Pill -->
+            <ng-container *ngIf="getDocForType(cat.key) as doc; else noDocStatus">
+              <span class="status-pill status-approved" *ngIf="doc.status === 'approved'">
+                <i class="fas fa-check-circle"></i> Approved
+              </span>
+              <span class="status-pill status-pending" *ngIf="doc.status === 'pending'">
+                <i class="fas fa-clock"></i> Pending Review
+              </span>
+              <span class="status-pill status-rejected" *ngIf="doc.status === 'rejected'">
+                <i class="fas fa-times-circle"></i> Rejected
+              </span>
+            </ng-container>
+            <ng-template #noDocStatus>
+              <span class="status-pill status-missing">
+                <i class="fas fa-circle-exclamation"></i> Not Uploaded
+              </span>
+            </ng-template>
+          </div>
+
+          <!-- Slot Card Body -->
+          <div class="doc-slot-body">
+            <!-- CASE 1: File is already uploaded -->
+            <ng-container *ngIf="getDocForType(cat.key) as doc">
+              <!-- Image Preview Box -->
+              <div class="doc-preview-wrapper" (click)="openPreviewModal(doc)" title="Click to view full image">
+                <img [src]="getDocUrl(doc)" [alt]="doc.original_file_name" class="doc-preview-img">
+                <div class="doc-preview-overlay">
+                  <i class="fas fa-search-plus"></i> View Full Document
+                </div>
+              </div>
+
+              <!-- File Info -->
+              <div class="doc-meta-info mt-2">
+                <div class="doc-filename text-truncate" [title]="doc.original_file_name">
+                  <i class="fas fa-file-image text-success me-1"></i>
+                  <b>{{ doc.original_file_name }}</b>
+                </div>
+                <div class="doc-submeta d-flex justify-content-between text-muted mt-1">
+                  <span>{{ (doc.file_size_bytes ? (doc.file_size_bytes / 1024).toFixed(0) : '0') }} KB</span>
+                  <span>{{ doc.created_at ? (doc.created_at | date:'dd MMM yyyy, hh:mm a') : '' }}</span>
+                </div>
+              </div>
+
+              <!-- Rejection Reason if any -->
+              <div *ngIf="doc.status === 'rejected' && doc.admin_remarks" class="doc-rejected-alert mt-2">
+                <i class="fas fa-exclamation-triangle text-danger me-1"></i>
+                <span><b>Rejection Reason:</b> {{ doc.admin_remarks }}</span>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="doc-actions-bar mt-3 d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-primary flex-fill" (click)="openPreviewModal(doc)">
+                  <i class="fas fa-eye me-1"></i> View Full
+                </button>
+                <a [href]="getDocUrl(doc)" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open in new window / Download">
+                  <i class="fas fa-external-link-alt"></i>
+                </a>
+
+                <!-- Replace button if pending or rejected -->
+                <label *ngIf="doc.status !== 'approved'" class="btn btn-sm btn-outline-success mb-0" title="Upload replacement file">
+                  <i class="fas fa-sync-alt me-1"></i> Replace
+                  <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onSlotFileChange($event, cat.key)" hidden>
+                </label>
+
+                <!-- Delete button if pending or rejected -->
+                <button *ngIf="doc.status !== 'approved'" type="button" class="btn btn-sm btn-outline-danger" (click)="deleteDocument(doc)" title="Delete document">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </ng-container>
+
+            <!-- CASE 2: No file uploaded yet, or user selected a replacement file -->
+            <div *ngIf="!getDocForType(cat.key) || selectedSlotPreviews[cat.key]">
+              <!-- A) User selected a file (Live preview before saving) -->
+              <div *ngIf="selectedSlotPreviews[cat.key]" class="selected-preview-card">
+                <div class="doc-preview-wrapper live-preview">
+                  <img [src]="selectedSlotPreviews[cat.key]" class="doc-preview-img" alt="Selected Document Preview">
+                  <span class="badge-live-ready">
+                    <i class="fas fa-check"></i> Ready to Upload
+                  </span>
+                </div>
+                <div class="doc-meta-info mt-2">
+                  <div class="doc-filename text-truncate">
+                    <b>{{ getSelectedSlotFileName(cat.key) }}</b>
+                  </div>
+                  <div class="text-muted" style="font-size: 11px;">
+                    Size: {{ getSelectedSlotFileSizeKb(cat.key) }} KB
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                  <button type="button" class="btn btn-sm btn-success flex-fill" [disabled]="slotUploading[cat.key]" (click)="uploadSlotDocument(cat.key)">
+                    <span *ngIf="slotUploading[cat.key]" class="spinner-border spinner-border-sm me-1"></span>
+                    <i *ngIf="!slotUploading[cat.key]" class="fas fa-cloud-upload-alt me-1"></i>
+                    {{ slotUploading[cat.key] ? 'Saving...' : 'Save & Upload' }}
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearSlotSelection(cat.key)" [disabled]="slotUploading[cat.key]">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+
+              <!-- B) Dropzone to pick file -->
+              <div *ngIf="!selectedSlotPreviews[cat.key] && !getDocForType(cat.key)">
+                <label class="doc-dropzone-box" [class.uploading]="slotUploading[cat.key]">
+                  <i class="fas fa-cloud-arrow-up dropzone-icon"></i>
+                  <div class="dropzone-label">Select {{ cat.label }}</div>
+                  <div class="dropzone-subtext">JPG, JPEG, PNG (Max {{ cat.maxKb }} KB)</div>
+                  <span class="dropzone-btn">
+                    <i class="fas fa-folder-open me-1"></i> Choose File
+                  </span>
+                  <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onSlotFileChange($event, cat.key)" hidden>
+                </label>
+              </div>
+            </div>
+
+            <!-- Slot Specific Error Alert -->
+            <div *ngIf="slotErrors[cat.key]" class="slot-alert error mt-2">
+              <i class="fas fa-exclamation-circle me-1"></i> {{ slotErrors[cat.key] }}
+            </div>
+
+            <!-- Slot Specific Success Alert -->
+            <div *ngIf="slotSuccess[cat.key]" class="slot-alert success mt-2">
+              <i class="fas fa-check-circle me-1"></i> {{ slotSuccess[cat.key] }}
             </div>
           </div>
-        </div>
-
-        <div class="inv-card-body">
-          <div class="inv-form-group mb-2">
-            <label class="inv-label" for="docTypeSelect">Document Type <span class="req">*</span></label>
-            <select id="docTypeSelect" class="inv-select" [(ngModel)]="documentType">
-              <option *ngFor="let type of documentTypes" [value]="type.value">{{ type.label }}</option>
-            </select>
-          </div>
-
-          <div class="inv-form-group mb-3">
-            <label class="inv-label">Choose File <span class="req">*</span></label>
-            <input class="inv-input" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onFileChange($event)">
-            <div class="text-muted mt-1" style="font-size: 11px;">
-              Accepted formats: JPG, JPEG, PNG only (Photo &le; 100 KB, Documents &le; 500 KB)
-            </div>
-          </div>
-
-          <button class="inv-btn inv-btn-primary w-100 py-2 mt-2" [disabled]="uploading" (click)="uploadDocument()">
-            <span *ngIf="uploading" class="spinner-border spinner-border-sm me-1.5"></span>
-            <i *ngIf="!uploading" class="fas fa-cloud-upload-alt me-1.5"></i>
-            {{ uploading ? 'Uploading Document...' : 'Upload Document' }}
-          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Right Column: Document List -->
-    <div class="col-lg-8">
-      <div class="inv-card h-100 d-flex flex-column">
-        <div class="inv-card-header">
-          <div class="inv-card-header-left">
-            <div class="inv-card-header-icon gold">
-              <i class="fas fa-folder-open"></i>
-            </div>
-            <div>
-              <h2 class="inv-card-title">Uploaded Documents</h2>
-              <p class="inv-card-desc">History and verification status of submitted documents</p>
-            </div>
-          </div>
-          <span class="inv-badge inv-badge-neutral" *ngIf="!loading">
-            {{ documents.length }} {{ documents.length === 1 ? 'File' : 'Files' }}
-          </span>
+  <!-- Uploaded Documents History Table -->
+  <div *ngIf="!loading && documents.length" class="inv-card mt-4">
+    <div class="inv-card-header d-flex justify-content-between align-items-center">
+      <div class="inv-card-header-left">
+        <div class="inv-card-header-icon gold">
+          <i class="fas fa-history"></i>
         </div>
+        <div>
+          <h2 class="inv-card-title">All Uploaded KYC Documents</h2>
+          <p class="inv-card-desc">History and verification records of submitted files</p>
+        </div>
+      </div>
+      <span class="inv-badge inv-badge-neutral">
+        {{ documents.length }} {{ documents.length === 1 ? 'Record' : 'Records' }}
+      </span>
+    </div>
 
-        <div class="inv-card-body p-0 flex-fill">
-          <div *ngIf="loading" class="text-center py-5">
-            <div class="spinner-border spinner-border-sm text-success me-2"></div>
-            <span class="text-muted small">Loading documents...</span>
-          </div>
+    <div class="inv-table-wrapper">
+      <table class="inv-table">
+        <thead>
+          <tr>
+            <th class="ps-3" style="width: 80px;">Preview</th>
+            <th>Document Type</th>
+            <th>File Name</th>
+            <th>Size</th>
+            <th>Uploaded On</th>
+            <th>Verification Status</th>
+            <th>Admin Remarks</th>
+            <th class="text-end pe-3">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let doc of documents">
+            <td class="ps-3">
+              <div class="table-thumb-wrap" (click)="openPreviewModal(doc)" title="Click to view full">
+                <img [src]="getDocUrl(doc)" [alt]="doc.original_file_name" class="table-thumb-img">
+              </div>
+            </td>
+            <td class="fw-semibold text-dark">
+              <i class="fas fa-file-alt text-success me-1.5"></i>
+              {{ formatDocType(doc.document_type) }}
+            </td>
+            <td>
+              <a [href]="getDocUrl(doc)" target="_blank" class="inv-mono-chip text-primary text-decoration-none">
+                <i class="fas fa-external-link-alt me-1"></i>
+                {{ doc.original_file_name || 'View File' }}
+              </a>
+            </td>
+            <td class="text-muted small">
+              {{ (doc.file_size_bytes ? (doc.file_size_bytes / 1024).toFixed(0) : '0') }} KB
+            </td>
+            <td class="text-muted small">
+              {{ doc.created_at ? (doc.created_at | date:'dd MMM yyyy, hh:mm a') : '-' }}
+            </td>
+            <td>
+              <span class="inv-badge"
+                    [class.inv-badge-approved]="doc.status === 'approved'"
+                    [class.inv-badge-pending]="doc.status === 'pending'"
+                    [class.inv-badge-rejected]="doc.status === 'rejected'">
+                {{ doc.status }}
+              </span>
+            </td>
+            <td class="text-muted small" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="doc.admin_remarks || '-'">
+              {{ doc.admin_remarks || '-' }}
+            </td>
+            <td class="text-end pe-3">
+              <div class="d-inline-flex gap-1">
+                <button type="button" class="btn btn-xs btn-outline-primary" (click)="openPreviewModal(doc)" title="View Full">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <a [href]="getDocUrl(doc)" target="_blank" class="btn btn-xs btn-outline-secondary" title="Open / Download">
+                  <i class="fas fa-download"></i>
+                </a>
+                <button *ngIf="doc.status !== 'approved'" type="button" class="btn btn-xs btn-outline-danger" (click)="deleteDocument(doc)" title="Delete">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-          <div class="inv-table-wrapper" *ngIf="!loading && documents.length">
-            <table class="inv-table">
-              <thead>
-                <tr>
-                  <th class="ps-3">Document Type</th>
-                  <th>File Name</th>
-                  <th>Status</th>
-                  <th>Remarks</th>
-                  <th class="text-end pe-3">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let doc of documents">
-                  <td class="ps-3 text-capitalize small fw-semibold text-dark">
-                    <i class="fas fa-file-alt text-primary me-1.5"></i>
-                    {{ doc.document_type?.replace('_', ' ') }}
-                  </td>
-                  <td>
-                    <a [href]="fileUrl(doc.id)" target="_blank" class="inv-mono-chip text-primary text-decoration-none">
-                      <i class="fas fa-external-link-alt me-1"></i>
-                      {{ doc.original_file_name || 'View File' }}
-                    </a>
-                  </td>
-                  <td>
-                    <span class="inv-badge"
-                          [class.inv-badge-approved]="doc.status === 'approved'"
-                          [class.inv-badge-pending]="doc.status === 'pending'"
-                          [class.inv-badge-rejected]="doc.status === 'rejected'">
-                      {{ doc.status }}
-                    </span>
-                  </td>
-                  <td class="text-muted small" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="doc.admin_remarks || '-'">
-                    {{ doc.admin_remarks || '-' }}
-                  </td>
-                  <td class="text-end pe-3">
-                    <button class="inv-btn inv-btn-sm inv-btn-outline-danger"
-                            [disabled]="doc.status === 'approved'"
-                            (click)="deleteDocument(doc)"
-                            title="Delete unapproved document">
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+  <!-- Lightbox / Fullscreen Preview Modal -->
+  <div *ngIf="previewModalDoc" class="doc-lightbox-backdrop" (click)="closePreviewModal()">
+    <div class="doc-lightbox-modal" (click)="$event.stopPropagation()">
+      <div class="doc-lightbox-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fas fa-file-invoice text-success fs-5"></i>
+          <div>
+            <h5 class="mb-0 text-white font-monospace">{{ formatDocType(previewModalDoc.document_type) }}</h5>
+            <small class="text-white-50">{{ previewModalDoc.original_file_name }}</small>
           </div>
-
-          <!-- Empty State -->
-          <div class="inv-empty-state" *ngIf="!loading && !documents.length">
-            <div class="inv-empty-icon emerald">
-              <i class="fas fa-file-invoice"></i>
-            </div>
-            <div class="inv-empty-title">No documents uploaded yet</div>
-            <p class="inv-empty-desc">Upload your PAN Card, Aadhaar Card, or Bank Statement to complete your investor KYC verification.</p>
-          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <a [href]="getDocUrl(previewModalDoc)" target="_blank" download class="btn btn-sm btn-outline-light">
+            <i class="fas fa-download me-1"></i> Download
+          </a>
+          <button type="button" class="btn btn-sm btn-light" (click)="closePreviewModal()">
+            <i class="fas fa-times"></i> Close
+          </button>
+        </div>
+      </div>
+      <div class="doc-lightbox-content">
+        <img [src]="getDocUrl(previewModalDoc)" [alt]="previewModalDoc.original_file_name" class="doc-lightbox-img">
+      </div>
+      <div class="doc-lightbox-footer">
+        <div class="d-flex justify-content-between align-items-center w-100 text-white-50 small">
+          <span>Status: <b class="text-white text-capitalize">{{ previewModalDoc.status }}</b></span>
+          <span *ngIf="previewModalDoc.admin_remarks" class="text-warning">Remarks: {{ previewModalDoc.admin_remarks }}</span>
+          <span>Uploaded: {{ previewModalDoc.created_at | date:'medium' }}</span>
         </div>
       </div>
     </div>

@@ -314,27 +314,33 @@ export class AdminInvestorEnrollmentDetailComponent implements OnInit {
     this.nominees.removeAt(index);
   }
 
+  formatImageUrl(val: any): string {
+    if (!val) return '';
+    let str = val;
+    if (typeof str === 'object') {
+      str = str.url || str.relativePath || '';
+    }
+    if (typeof str === 'string' && str.trim().startsWith('{')) {
+      try {
+        const p = JSON.parse(str.trim());
+        str = p.url || p.relativePath || str;
+      } catch {}
+    }
+    if (typeof str !== 'string') return '';
+    str = str.trim();
+    if (!str || str === '[object Object]' || str === 'null' || str === 'undefined') return '';
+    return this.api.getFileUrl(str);
+  }
+
   loadEnrollment(id: string) {
     (this.api as any).get(`/api/admin/investor-enrollment/${id}`, {}, true).subscribe({
       next: (res: any) => {
         const data = res.data;
         if (!data) return;
 
-        const cleanUrl = (val: any): string => {
-          if (!val) return '';
-          if (typeof val === 'object') return val.url || val.relativePath || '';
-          if (typeof val === 'string' && val.trim().startsWith('{')) {
-            try {
-              const p = JSON.parse(val.trim());
-              return p.url || p.relativePath || val;
-            } catch {}
-          }
-          return String(val);
-        };
-
-        this.photoDataUrl = cleanUrl(data.photo_url);
-        this.signatureFirstUrl = cleanUrl(data.signature_first_url || data.signature_url);
-        this.signatureJointUrl = cleanUrl(data.signature_joint_url);
+        this.photoDataUrl = this.formatImageUrl(data.photo_url);
+        this.signatureFirstUrl = this.formatImageUrl(data.signature_first_url || data.signature_url);
+        this.signatureJointUrl = this.formatImageUrl(data.signature_joint_url);
         this.workflowStatus = data.app_status || 'Hold/Pending KYC';
 
         let formDate = data.form_date ? new Date(data.form_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
@@ -540,6 +546,15 @@ export class AdminInvestorEnrollmentDetailComponent implements OnInit {
     (this.api as any).put(`/api/admin/investor-enrollment/${this.enrollmentId}`, formData, true).subscribe({
       next: (res: any) => {
         this.submitting = false;
+        if (res?.data) {
+          if (res.data.photo_url) this.photoDataUrl = this.formatImageUrl(res.data.photo_url);
+          if (res.data.signature_first_url || res.data.signature_url) {
+            this.signatureFirstUrl = this.formatImageUrl(res.data.signature_first_url || res.data.signature_url);
+          }
+          if (res.data.signature_joint_url) {
+            this.signatureJointUrl = this.formatImageUrl(res.data.signature_joint_url);
+          }
+        }
         this.workflowStatus = formData.appStatus || this.workflowStatus;
         Swal.fire({
           icon: 'success',
