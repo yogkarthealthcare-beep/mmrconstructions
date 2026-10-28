@@ -53,121 +53,80 @@ export class HomeComponent implements OnInit {
     contact: true
   };
 
-    registrationCards = [
-
-      {
-
-        role: 'Customer',
-
-        tag: 'PLOT BUYER',
-
-        tagIcon: 'fas fa-map-marker-alt',
-
-        icon: 'fas fa-landmark',
-
-        title: 'Customer',
-
-        desc: 'Register to explore plots, track EMI schedules, and book plot allocations.',
-
-        ctaText: 'Register as Customer',
-
-        cardClass: 'card-customer',
-
-        badgeClass: 'badge-customer',
-
-        iconClass: 'icon-customer',
-
-        ctaClass: 'cta-customer',
-
-        route: '/register/customer'
-
-      },
-
-      {
-
-        role: 'Investor',
-
-        tag: 'HIGH RETURN',
-
-        tagIcon: 'fas fa-chart-line',
-
-        icon: 'fas fa-coins',
-
-        title: 'Investor',
-
-        desc: 'Register to invest in prime real-estate projects with high capital growth.',
-
-        ctaText: 'Register as Investor',
-
-        cardClass: 'card-investor',
-
-        badgeClass: 'badge-investor',
-
-        iconClass: 'icon-investor',
-
-        ctaClass: 'cta-investor',
-
-        route: '/register/investor'
-
-      },
-
-      {
-
-        role: 'Associate',
-
-        tag: 'EARN & GROW',
-
-        tagIcon: 'fas fa-handshake',
-
-        icon: 'fas fa-user-tie',
-
-        title: 'Associate',
-
-        desc: 'Register as an associate partner to build network & earn commissions.',
-
-        ctaText: 'Register as Associate',
-
-        cardClass: 'card-associate',
-
-        badgeClass: 'badge-associate',
-
-        iconClass: 'icon-associate',
-
-        ctaClass: 'cta-associate',
-
-        route: '/register/associate'
-
-      },
-
-      {
-
-        role: 'Team Member',
-
-        tag: 'SPONSORED',
-
-        tagIcon: 'fas fa-users',
-
-        icon: 'fas fa-user-friends',
-
-        title: 'Team Member',
-
-        desc: 'Register with a Sponsor/Member ID to join an active associate team.',
-
-        ctaText: 'Register as Team Member',
-
-        cardClass: 'card-teammember',
-
-        badgeClass: 'badge-teammember',
-
-        iconClass: 'icon-teammember',
-
-        ctaClass: 'cta-teammember',
-
-        route: '/register/team-member'
-
-      }
-
-    ];
+      registrationCards = [
+    {
+      role: 'Customer',
+      tag: 'PLOT BUYER',
+      tagIcon: 'fas fa-home',
+      icon: 'fas fa-house-chimney',
+      title: 'Customer',
+      desc: 'Explore approved residential & commercial plots, track EMI schedules, and book plot allocations.',
+      perks: [
+        'Verified clear-title approved plots',
+        'Easy ₹3,000/mo EMI & bank loan'
+      ],
+      ctaText: 'Register as Customer',
+      cardClass: 'card-customer',
+      badgeClass: 'badge-customer',
+      iconClass: 'icon-customer',
+      ctaClass: 'cta-customer',
+      route: '/register/customer'
+    },
+    {
+      role: 'Investor',
+      tag: 'HIGH RETURN',
+      tagIcon: 'fas fa-chart-line',
+      icon: 'fas fa-coins',
+      title: 'Investor',
+      desc: 'Invest in prime highway & development projects with legal security and high capital growth.',
+      perks: [
+        'Legally binding buyback assurance',
+        'High ROI & fast wallet settlements'
+      ],
+      ctaText: 'Register as Investor',
+      cardClass: 'card-investor',
+      badgeClass: 'badge-investor',
+      iconClass: 'icon-investor',
+      ctaClass: 'cta-investor',
+      route: '/register/investor'
+    },
+    {
+      role: 'Associate',
+      tag: 'EARN & GROW',
+      tagIcon: 'fas fa-handshake',
+      icon: 'fas fa-user-tie',
+      title: 'Associate',
+      desc: 'Partner as an official sales partner to build your associate network and earn recurring commissions.',
+      perks: [
+        '12-year progressive commission matrix',
+        'Direct bank & wallet withdrawals'
+      ],
+      ctaText: 'Register as Associate',
+      cardClass: 'card-associate',
+      badgeClass: 'badge-associate',
+      iconClass: 'icon-associate',
+      ctaClass: 'cta-associate',
+      route: '/register/associate'
+    },
+    {
+      role: 'Team Member',
+      tag: 'SPONSORED',
+      tagIcon: 'fas fa-id-badge',
+      icon: 'fas fa-user-friends',
+      title: 'Team Member',
+      desc: 'Join an active associate team using a verified Sponsor ID with full leadership guidance.',
+      perks: [
+        'Instant placement under sponsor',
+        'Dedicated training & marketing tools'
+      ],
+      ctaText: 'Register as Team Member',
+      cardClass: 'card-teammember',
+      badgeClass: 'badge-teammember',
+      iconClass: 'icon-teammember',
+      ctaClass: 'cta-teammember',
+      route: '/register/team-member'
+    }
+  ];
 
     whyCards = [
     { icon: 'fas fa-award', title: '10 Years of Trust', desc: '10 वर्षों से ग्राहकों का अटूट विश्वास। सुरक्षित रियल एस्टेट निवेश एवं 100% पारदर्शी कार्य।' },
