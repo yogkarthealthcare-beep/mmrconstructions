@@ -127,7 +127,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       icon: 'fas fa-building',
       expanded: false,
       items: [
-        { icon: 'fas fa-city', label: '1. Site ManageMent', route: '/admin/sites', badge: 'SITES' },
+        { icon: 'fas fa-city', label: '1. Site ManageMent', route: '/admin/sites' },
         { icon: 'fas fa-plus-circle', label: '2. Add New Site Area', route: '/admin/new-site-area' },
         { icon: 'fas fa-drafting-compass', label: '3. CAD Plot Detector', route: '/admin/plot-detector-tool', badge: 'CAD' },
         { icon: 'fas fa-draw-polygon', label: '4. Edit Modify Plot', route: '/admin/plot-map-editor', badge: 'EDIT' },
