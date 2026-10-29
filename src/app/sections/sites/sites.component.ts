@@ -40,6 +40,24 @@ export class SitesComponent implements OnInit {
 
   sites: SiteGalleryItem[] = [
     {
+      id: 3,
+      site_name: 'Gadan Khera',
+      site_address: 'Unnao',
+      site_image: 'https://api.mmrconstructions.in/uploads/other/gadan-khera/mmr-constructions-site_gallery-gadan-khera-sitegallery-20260916-f3b9f9.webp'
+    },
+    {
+      id: 4,
+      site_name: 'Ajgain Site',
+      site_address: 'Ajgain, Near Highway',
+      site_image: 'https://api.mmrconstructions.in/uploads/other/ajgain-site/mmr-constructions-site_gallery-ajgain-site-sitegallery-20260916-d6a2b6.webp'
+    },
+    {
+      id: 5,
+      site_name: 'Lucknow Site',
+      site_address: 'Near Amousi Airport, Lucknow',
+      site_image: 'https://api.mmrconstructions.in/uploads/other/lucknow-site/mmr-constructions-site_gallery-lucknow-site-sitegallery-20260916-225b26.webp'
+    },
+    {
       id: 1,
       site_name: 'AIMA Site',
       site_address: 'Dhodi Ghaat Road, Rooma, Kanpur',
@@ -50,24 +68,6 @@ export class SitesComponent implements OnInit {
       site_name: 'Tribhuwan Khera',
       site_address: 'Near Jajmau, NH-27, Unnao',
       site_image: 'https://images.unsplash.com/photo-1464082354059-27db6ce50048?w=800&q=80'
-    },
-    {
-      id: 3,
-      site_name: 'Gadan Khera',
-      site_address: 'Unnao',
-      site_image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80'
-    },
-    {
-      id: 4,
-      site_name: 'Ajgain Site',
-      site_address: 'Ajgain, Near Highway',
-      site_image: 'https://images.unsplash.com/photo-1613082410785-22292e8426e0?w=800&q=80'
-    },
-    {
-      id: 6,
-      site_name: 'NEW MMR Site Kanpur',
-      site_address: 'New PAC Lines, Shyam Nagar, Kanpur',
-      site_image: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80'
     }
   ];
 
@@ -147,13 +147,65 @@ export class SitesComponent implements OnInit {
       next: (res: any) => {
         const raw = Array.isArray(res) ? res : (res?.data || []);
         if (Array.isArray(raw) && raw.length > 0) {
-          this.sites = raw.map((item: any, idx: number) => ({
+          const apiSites = raw.map((item: any, idx: number) => ({
             id: item.id || item.site_id || idx + 1,
             category: item.category || 'Plot',
             site_name: item.site_name || `Site ${idx + 1}`,
             site_address: item.site_address || 'Prime Location',
             site_image: this.resolveImageUrl(item.site_image) || this.sites[idx % this.sites.length]?.site_image
           }));
+
+          // Ensure all 5 sites are always populated even if API returns fewer
+          if (apiSites.length < 5) {
+            const existingNames = new Set(apiSites.map((s: any) => String(s.site_name || '').toLowerCase().trim()));
+            const standardFallbacks = [
+              {
+                id: 3,
+                category: 'Plot',
+                site_name: 'Gadan Khera',
+                site_address: 'Unnao',
+                site_image: 'https://api.mmrconstructions.in/uploads/other/gadan-khera/mmr-constructions-site_gallery-gadan-khera-sitegallery-20260916-f3b9f9.webp'
+              },
+              {
+                id: 4,
+                category: 'Plot',
+                site_name: 'Ajgain Site',
+                site_address: 'Ajgain, Near Highway',
+                site_image: 'https://api.mmrconstructions.in/uploads/other/ajgain-site/mmr-constructions-site_gallery-ajgain-site-sitegallery-20260916-d6a2b6.webp'
+              },
+              {
+                id: 5,
+                category: 'Plot',
+                site_name: 'Lucknow Site',
+                site_address: 'Near Amousi Airport, Lucknow',
+                site_image: 'https://api.mmrconstructions.in/uploads/other/lucknow-site/mmr-constructions-site_gallery-lucknow-site-sitegallery-20260916-225b26.webp'
+              },
+              {
+                id: 1,
+                category: 'Plot',
+                site_name: 'AIMA Site',
+                site_address: 'Dhodi Ghaat Road, Rooma, Kanpur',
+                site_image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1000&q=80'
+              },
+              {
+                id: 2,
+                category: 'Plot',
+                site_name: 'Tribhuwan Khera',
+                site_address: 'Near Jajmau, NH-27, Unnao',
+                site_image: 'https://images.unsplash.com/photo-1464082354059-27db6ce50048?w=800&q=80'
+              }
+            ];
+
+            for (const item of standardFallbacks) {
+              if (!existingNames.has(item.site_name.toLowerCase().trim())) {
+                apiSites.push(item);
+                existingNames.add(item.site_name.toLowerCase().trim());
+              }
+              if (apiSites.length >= 5) break;
+            }
+          }
+
+          this.sites = apiSites;
         }
       },
       error: () => {
