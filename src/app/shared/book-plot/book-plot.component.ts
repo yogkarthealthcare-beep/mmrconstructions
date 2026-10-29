@@ -244,6 +244,18 @@ export class BookPlotComponent implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
+  goBack(): void {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      const role = this.currentUser?.role;
+      if (role === 'Admin') this.router.navigate(['/admin/dashboard']);
+      else if (role === 'TeamMember') this.router.navigate(['/team-member/dashboard']);
+      else if (role === 'Associate') this.router.navigate(['/associate/dashboard']);
+      else this.router.navigate(['/user/dashboard']);
+    }
+  }
+
   ngOnInit(): void {
     this.currentUser = this.auth.getUser();
     this.loadCompanyBankSettings();
