@@ -13,31 +13,31 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./verify-otp.component.css'],
 })
 export class VerifyOtpComponent implements OnInit, OnDestroy {
-  email    = '';
-  mobile   = '';
+  email = '';
+  mobile = '';
   userType: 'Customer' | 'Associate' | 'Investor' | 'Team Member' = 'Customer';
 
   otpDigits = ['', '', '', '', '', ''];
 
-  loading       = false;
-  resending     = false;
-  error         = '';
-  verified      = false;
+  loading = false;
+  resending = false;
+  error = '';
+  verified = false;
 
-  resendCooldown  = 0;
+  resendCooldown = 0;
   private _timer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
-    private api:    ApiService,
-    private auth:   AuthService,
+    private api: ApiService,
+    private auth: AuthService,
     private router: Router,
-    private route:  ActivatedRoute,
-  ) {}
+    private route: ActivatedRoute,
+  ) { }
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      this.email    = params['email']  || '';
-      this.mobile   = params['mobile'] || params['mobile_no'] || '';
+      this.email = params['email'] || '';
+      this.mobile = params['mobile'] || params['mobile_no'] || '';
       const typeParam = params['type'];
       this.userType = (typeParam === 'Associate' || typeParam === 'Investor' || typeParam === 'Team Member')
         ? typeParam
@@ -134,7 +134,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   verify() {
     if (!this.otpComplete) { this.error = 'Please enter all 6 digits'; return; }
     this.loading = true;
-    this.error   = '';
+    this.error = '';
 
     this.api.post('/api/auth/verify-email-otp', {
       email: this.email,
@@ -146,7 +146,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
         if (res.success) {
           const userType = res.data?.user?.user_type || res.data?.user_type || this.userType;
           this.verified = true;
-          
+
           if (userType === 'Associate' || userType === 'Team Member') {
             import('sweetalert2').then(Swal => {
               Swal.default.fire({
@@ -184,7 +184,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
       },
       error: (e: any) => {
         this.loading = false;
-        this.error   = e?.error?.message || 'Verification failed. Please try again.';
+        this.error = e?.error?.message || 'Verification failed. Please try again.';
         this.otpDigits = ['', '', '', '', '', ''];
       },
     });
@@ -193,7 +193,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   resend() {
     if (this.resendCooldown > 0 || this.resending) return;
     this.resending = true;
-    this.error     = '';
+    this.error = '';
 
     this.api.post('/api/auth/resend-email-otp', {
       email: this.email,
