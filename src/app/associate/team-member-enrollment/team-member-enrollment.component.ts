@@ -463,23 +463,39 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   onDatepickerSelect(event: any): void {
-    const pickedDate = event.target.value;
+    const pickedDate = event?.target?.value;
     if (pickedDate) {
       const formatted = formatDateToDDMMYYYY(pickedDate);
       this.enrollmentForm.get('dateOfBirth')?.setValue(formatted, { emitEvent: true });
     }
   }
 
+  getIsoDobValue(): string {
+    const val = this.enrollmentForm?.get('dateOfBirth')?.value;
+    if (!val || typeof val !== 'string' || val.length !== 10) return '';
+    try {
+      return parseDDMMYYYYToISO(val) || '';
+    } catch {
+      return '';
+    }
+  }
+
   openDatePicker(picker: HTMLInputElement): void {
     if (!picker) return;
-    if (typeof picker.showPicker === 'function') {
-      try {
+    try {
+      if (typeof picker.showPicker === 'function') {
         picker.showPicker();
         return;
-      } catch (e) {}
+      }
+    } catch (e) {
+      console.warn('picker.showPicker() failed:', e);
     }
-    picker.focus();
-    picker.click();
+    try {
+      picker.focus();
+      picker.click();
+    } catch (e) {
+      console.warn('picker fallback failed:', e);
+    }
   }
 
   onAadharInput(event: any): void {
