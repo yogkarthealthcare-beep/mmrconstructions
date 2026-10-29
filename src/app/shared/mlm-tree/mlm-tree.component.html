@@ -31,7 +31,7 @@
     <span class="text-muted fw-600 me-1"><i class="fas fa-sitemap me-1 text-primary"></i> Path:</span>
     <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
       <button type="button" class="btn btn-xs crumb-pill" [class.active-crumb]="last" (click)="reRootTree(crumb.user_id)">
-        <i *ngIf="crumb.user_id === 'ADMIN' || crumb.user_id === 0" class="fas fa-crown me-1 text-gold"></i>
+        <i *ngIf="crumb.user_id === topRootUserId || crumb.user_id === 'ADMIN' || crumb.user_id === 0" class="fas fa-crown me-1 text-gold"></i>
         <span>{{ crumb.full_name }} ({{ crumb.member_id }})</span>
       </button>
       <i *ngIf="!last" class="fas fa-chevron-right text-muted fs-10 mx-1"></i>
@@ -39,7 +39,7 @@
   </div>
   <div class="d-flex align-items-center gap-2">
     <button type="button" class="btn btn-xs btn-outline-secondary d-flex align-items-center gap-1" *ngIf="!isRootAdminActive" (click)="resetToAdminRoot()">
-      <i class="fas fa-undo me-1"></i> Back to MMR Admin
+      <i class="fas fa-undo me-1"></i> Reset to Top
     </button>
   </div>
 </div>
