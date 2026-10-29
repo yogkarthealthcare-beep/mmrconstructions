@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { AdminPaginationComponent } from '../../shared/admin-pagination/admin-pagination.component';
 import { AdminTableContainerComponent } from '../../shared/admin-table-container/admin-table-container.component';
 import { AdminExportService, ExportColumn } from '../../services/admin-export.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-booking-report',
@@ -566,6 +567,57 @@ export class BookingReportComponent implements OnInit {
   getInitials(name: string): string {
     if (!name) return 'B';
     return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  }
+
+  clearAllInquiries() {
+    Swal.fire({
+      title: 'Clear All Inquiries?',
+      text: 'Are you sure you want to permanently remove all inquiries from the database? This action cannot be undone!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, clear all data!'
+    }).then((result: any) => {
+      if (result.isConfirmed) {
+        this.loading = true;
+        this.api.adminClearAllInquiries().subscribe({
+          next: (res: any) => {
+            this.loading = false;
+            Swal.fire('Cleared!', res?.message || 'All inquiries data removed successfully.', 'success');
+            this.fetchBookingReports();
+          },
+          error: (err: any) => {
+            this.loading = false;
+            Swal.fire('Error', err?.error?.message || 'Failed to clear inquiries', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  deleteInquiry(item: any) {
+    Swal.fire({
+      title: 'Delete Inquiry?',
+      text: `Are you sure you want to permanently delete inquiry from ${item.name || 'this contact'}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result: any) => {
+      if (result.isConfirmed) {
+        this.api.adminDeleteInquiry(item.id).subscribe({
+          next: () => {
+            Swal.fire('Deleted!', 'Inquiry deleted successfully.', 'success');
+            this.fetchBookingReports();
+          },
+          error: (err: any) => {
+            Swal.fire('Error', err?.error?.message || 'Failed to delete inquiry', 'error');
+          }
+        });
+      }
+    });
   }
 
   showToast(msg: string) {
