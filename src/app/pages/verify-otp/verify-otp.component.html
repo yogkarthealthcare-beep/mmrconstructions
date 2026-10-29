@@ -1,8 +1,11 @@
 <div class="auth-page">
 
-  <!-- ══ LEFT PANEL ════════════════════════════ -->
+  <!-- ══ LEFT PANEL (VIBRANT & COLORFUL) ════════════════════════════ -->
   <div class="auth-left">
-    <div>
+    <div class="auth-left-ambient a1"></div>
+    <div class="auth-left-ambient a2"></div>
+
+    <div class="auth-left-content">
       <a routerLink="/" class="brand d-inline-flex mb-4 text-decoration-none">
         <div class="brand-icon me-2"><span>M</span></div>
         <div>
@@ -10,41 +13,61 @@
           <span class="brand-sub" style="font-size:10px;">&amp; Developers Pvt. Ltd.</span>
         </div>
       </a>
-      <h2 style="font-family:var(--ff-display);color:#fff;font-size:1.45rem;margin-bottom:8px;">Verify Your Account</h2>
-      <p style="color:rgba(255,255,255,.8);font-size:12px;line-height:1.6;margin-bottom:12px;">
+
+      <h2 class="left-hero-title">Dual OTP Security</h2>
+      <p class="left-hero-desc">
         Separate 6-digit OTP codes have been sent to your <strong>Email</strong> and <strong>Contact Number</strong>.
       </p>
-      <div class="mt-2">
-        <div class="reg-check">
-          <div class="rci"><i class="fas fa-envelope"></i></div>
-          <span style="color:rgba(255,255,255,.9);font-size:11.5px;">Email OTP verification</span>
+
+      <div class="mt-3 colorful-features">
+        <div class="feat-item feat-blue">
+          <div class="feat-icon"><i class="fas fa-envelope"></i></div>
+          <div class="feat-text">
+            <strong>Email OTP</strong>
+            <span>Sent to your inbox</span>
+          </div>
         </div>
-        <div class="reg-check">
-          <div class="rci"><i class="fas fa-mobile-alt"></i></div>
-          <span style="color:rgba(255,255,255,.9);font-size:11.5px;">Contact SMS OTP verification</span>
+
+        <div class="feat-item feat-purple">
+          <div class="feat-icon"><i class="fas fa-sms"></i></div>
+          <div class="feat-text">
+            <strong>SMS Contact OTP</strong>
+            <span>Sent to your mobile</span>
+          </div>
         </div>
-        <div class="reg-check">
-          <div class="rci"><i class="fas fa-clock"></i></div>
-          <span style="color:rgba(255,255,255,.9);font-size:11.5px;">OTP valid for 10 minutes</span>
+
+        <div class="feat-item feat-amber">
+          <div class="feat-icon"><i class="fas fa-hourglass-half"></i></div>
+          <div class="feat-text">
+            <strong>10 Minutes Validity</strong>
+            <span>Active verification window</span>
+          </div>
         </div>
-        <div class="reg-check">
-          <div class="rci"><i class="fas fa-shield-alt"></i></div>
-          <span style="color:rgba(255,255,255,.9);font-size:11.5px;">Resend available after 60s</span>
+
+        <div class="feat-item feat-emerald">
+          <div class="feat-icon"><i class="fas fa-shield-alt"></i></div>
+          <div class="feat-text">
+            <strong>3 Minutes Cooldown</strong>
+            <span>Secure resend protection</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ══ RIGHT PANEL ════════════════════════════ -->
+  <!-- ══ RIGHT PANEL (COLORFUL ACCENTS) ════════════════════════════ -->
   <div class="auth-right">
     <div class="auth-form-wrap">
 
+      <!-- Colorful Top Gradient Stripe -->
+      <div class="rainbow-stripe"></div>
+
       <!-- ── SUCCESS STATE (All done) ── -->
       <div *ngIf="verified" style="text-align:center;padding:30px 15px;">
-        <div style="width:56px;height:56px;background:var(--clr-primary-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-          <i class="fas fa-check" style="color:var(--clr-primary);font-size:24px;"></i>
+        <div class="success-ring">
+          <i class="fas fa-check"></i>
         </div>
-        <h4 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:8px;">Account Verified!</h4>
+        <h4 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:8px;font-weight:700;">Account Verified!</h4>
         <p style="color:var(--txt-muted);max-width:320px;margin:0 auto 12px;font-size:12px;">
           Your account has been verified successfully. Redirecting to login...
         </p>
@@ -59,11 +82,13 @@
         <!-- Header -->
         <div class="form-compact-header mb-2">
           <div class="d-flex align-items-center justify-content-between">
-            <h4 class="form-title mb-0">Account Verification</h4>
+            <h4 class="form-title mb-0">
+              <i class="fas fa-shield-check text-primary me-1"></i> Account Verification
+            </h4>
             <span class="badge-role">{{ userType }}</span>
           </div>
           <p class="form-subtitle text-muted mb-0">
-            Email और Mobile का अलग-अलग OTP दर्ज करें
+            Email और Mobile का अलग-अलग OTP दर्ज करें (Resend cooldown 3 min)
           </p>
         </div>
 
@@ -80,16 +105,16 @@
         </div>
 
         <!-- ══════════════════════════════════════════ -->
-        <!-- CARD 1: EMAIL VERIFICATION                 -->
+        <!-- CARD 1: EMAIL VERIFICATION (VIBRANT BLUE)  -->
         <!-- ══════════════════════════════════════════ -->
-        <div class="verification-card" [class.is-verified]="emailVerified">
+        <div class="verification-card card-email" [class.is-verified]="emailVerified">
           <div class="vcard-header">
             <div class="vcard-title-wrap">
               <div class="vcard-icon email-icon">
                 <i class="fas fa-envelope"></i>
               </div>
               <div class="vcard-info">
-                <span class="vcard-badge-label">1. Email OTP</span>
+                <span class="vcard-badge-label label-blue">1. Email Verification</span>
                 <span class="vcard-val text-truncate" [title]="email">{{ email || 'No email provided' }}</span>
               </div>
             </div>
@@ -97,7 +122,7 @@
               <span *ngIf="emailVerified" class="status-pill status-verified">
                 <i class="fas fa-check-circle me-1"></i> Verified
               </span>
-              <span *ngIf="!emailVerified && emailOtpRequired" class="status-pill status-pending">
+              <span *ngIf="!emailVerified && emailOtpRequired" class="status-pill status-pending-blue">
                 <i class="fas fa-clock me-1"></i> Pending
               </span>
               <span *ngIf="!emailOtpRequired" class="status-pill status-exempt">
@@ -119,8 +144,8 @@
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-1">
-              <label class="f-label-sm mb-0">Enter Email 6-Digit OTP *</label>
-              <span class="fs-11 text-muted">10 min valid</span>
+              <label class="f-label-sm label-blue mb-0">Enter Email 6-Digit OTP *</label>
+              <span class="fs-11 text-muted"><i class="fas fa-stopwatch me-1 text-primary"></i>10m validity</span>
             </div>
 
             <div class="otp-box-row" (paste)="onOtpPaste('email', $event)">
@@ -130,7 +155,7 @@
                 inputmode="numeric"
                 pattern="[0-9]*"
                 maxlength="1"
-                class="otp-box"
+                class="otp-box box-blue"
                 [value]="d"
                 (input)="onOtpInput('email', $event, i)"
                 (keydown)="onOtpKeydown('email', $event, i)"
@@ -139,13 +164,13 @@
             </div>
 
             <div class="vcard-actions-row mt-2">
-              <button type="button" class="btn btn-green btn-verify-single"
+              <button type="button" class="btn btn-blue-gradient btn-verify-single"
                 (click)="verifyEmail()" [disabled]="!emailOtpComplete || emailLoading">
                 <i [class]="emailLoading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check me-1'"></i>
                 {{ emailLoading ? 'Verifying...' : 'Verify Email' }}
               </button>
 
-              <button type="button" class="btn-resend"
+              <button type="button" class="btn-resend resend-blue"
                 (click)="resendEmail()"
                 [disabled]="emailCooldown > 0 || emailResending">
                 <ng-container *ngIf="emailResending">
@@ -155,24 +180,24 @@
                   <i class="fas fa-redo-alt me-1"></i>Resend OTP
                 </ng-container>
                 <ng-container *ngIf="!emailResending && emailCooldown > 0">
-                  <i class="fas fa-clock me-1"></i>{{ emailCooldown }}s
+                  <i class="fas fa-hourglass-half me-1"></i>Resend in {{ formatTimer(emailCooldown) }}
                 </ng-container>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- ══════════════════════════════════════════ -->
-        <!-- CARD 2: CONTACT NUMBER (SMS) VERIFICATION -->
-        <!-- ══════════════════════════════════════════ -->
-        <div class="verification-card mt-2" [class.is-verified]="mobileVerified">
+        <!-- ════════════════════════════════════════════ -->
+        <!-- CARD 2: CONTACT SMS VERIFICATION (PURPLE)   -->
+        <!-- ════════════════════════════════════════════ -->
+        <div class="verification-card card-purple mt-2" [class.is-verified]="mobileVerified">
           <div class="vcard-header">
             <div class="vcard-title-wrap">
               <div class="vcard-icon mobile-icon">
                 <i class="fas fa-mobile-alt"></i>
               </div>
               <div class="vcard-info">
-                <span class="vcard-badge-label">2. Contact SMS OTP</span>
+                <span class="vcard-badge-label label-purple">2. Contact SMS OTP</span>
                 <span class="vcard-val">{{ mobile ? ('+91 ' + mobile) : 'No contact provided' }}</span>
               </div>
             </div>
@@ -180,7 +205,7 @@
               <span *ngIf="mobileVerified" class="status-pill status-verified">
                 <i class="fas fa-check-circle me-1"></i> Verified
               </span>
-              <span *ngIf="!mobileVerified && smsOtpRequired" class="status-pill status-pending">
+              <span *ngIf="!mobileVerified && smsOtpRequired" class="status-pill status-pending-purple">
                 <i class="fas fa-clock me-1"></i> Pending
               </span>
               <span *ngIf="!smsOtpRequired" class="status-pill status-exempt">
@@ -202,8 +227,8 @@
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-1">
-              <label class="f-label-sm mb-0">Enter Contact 6-Digit OTP *</label>
-              <span class="fs-11 text-muted">10 min valid</span>
+              <label class="f-label-sm label-purple mb-0">Enter Contact 6-Digit OTP *</label>
+              <span class="fs-11 text-muted"><i class="fas fa-stopwatch me-1 text-purple"></i>10m validity</span>
             </div>
 
             <div class="otp-box-row" (paste)="onOtpPaste('mobile', $event)">
@@ -213,7 +238,7 @@
                 inputmode="numeric"
                 pattern="[0-9]*"
                 maxlength="1"
-                class="otp-box"
+                class="otp-box box-purple"
                 [value]="d"
                 (input)="onOtpInput('mobile', $event, i)"
                 (keydown)="onOtpKeydown('mobile', $event, i)"
@@ -222,13 +247,13 @@
             </div>
 
             <div class="vcard-actions-row mt-2">
-              <button type="button" class="btn btn-green btn-verify-single"
+              <button type="button" class="btn btn-purple-gradient btn-verify-single"
                 (click)="verifyMobile()" [disabled]="!mobileOtpComplete || mobileLoading">
                 <i [class]="mobileLoading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check me-1'"></i>
                 {{ mobileLoading ? 'Verifying...' : 'Verify Contact' }}
               </button>
 
-              <button type="button" class="btn-resend"
+              <button type="button" class="btn-resend resend-purple"
                 (click)="resendMobile()"
                 [disabled]="mobileCooldown > 0 || mobileResending">
                 <ng-container *ngIf="mobileResending">
@@ -238,7 +263,7 @@
                   <i class="fas fa-redo-alt me-1"></i>Resend OTP
                 </ng-container>
                 <ng-container *ngIf="!mobileResending && mobileCooldown > 0">
-                  <i class="fas fa-clock me-1"></i>{{ mobileCooldown }}s
+                  <i class="fas fa-hourglass-half me-1"></i>Resend in {{ formatTimer(mobileCooldown) }}
                 </ng-container>
               </button>
             </div>
@@ -260,7 +285,9 @@
         <!-- Back to signup -->
         <p class="text-center fs-12 text-muted mt-3 mb-0">
           Incorrect details?
-          <a routerLink="/signup" [queryParams]="{type: userType}" style="color:var(--clr-primary);font-weight:600;">Go back</a>
+          <a routerLink="/signup" [queryParams]="{type: userType}" class="text-decoration-none fw-bold link-brand">
+            Go back to registration
+          </a>
         </p>
 
       </ng-container>

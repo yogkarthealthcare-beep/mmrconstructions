@@ -34,9 +34,9 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   emailResending = false;
   mobileResending = false;
 
-  // Cooldown timers
-  emailCooldown = 0;
-  mobileCooldown = 0;
+  // 3-minute (180 seconds) Cooldown timers
+  emailCooldown = 180;
+  mobileCooldown = 180;
   private _emailTimer: ReturnType<typeof setInterval> | null = null;
   private _mobileTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -68,6 +68,14 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
         return;
       }
 
+      // Immediately start 3-minute cooldown on initial page load (since OTP was sent during signup)
+      if (this.email) {
+        this.startEmailCooldown(180);
+      }
+      if (this.mobile) {
+        this.startMobileCooldown(180);
+      }
+
       this.fetchOtpStatus();
     });
   }
@@ -75,6 +83,13 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this._emailTimer) clearInterval(this._emailTimer);
     if (this._mobileTimer) clearInterval(this._mobileTimer);
+  }
+
+  formatTimer(sec: number): string {
+    if (sec <= 0) return '00:00';
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
   }
 
   fetchOtpStatus() {
@@ -98,7 +113,6 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
         }
       },
       error: () => {
-        // Fallback default if status route isn't reachable yet
         this.emailOtpRequired = Boolean(this.email);
         this.smsOtpRequired = Boolean(this.mobile);
       }
@@ -236,7 +250,6 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
           this.emailVerified = true;
           const userType = res.data?.user?.user_type || res.data?.user_type || this.userType;
 
-          // Check if registration is completed or if SMS OTP is still needed
           if (res.data?.completed === false || (this.smsOtpRequired && !this.mobileVerified && !res.data?.user)) {
             this.successNotice = '✓ Email verified! Please enter the OTP sent to your contact number to activate your account.';
             this.focusOtp('mobile', 0);
@@ -278,7 +291,6 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
           this.mobileVerified = true;
           const userType = res.data?.user?.user_type || res.data?.user_type || this.userType;
 
-          // Check if registration is completed or if Email OTP is still needed
           if (res.data?.completed === false || (this.emailOtpRequired && !this.emailVerified && !res.data?.user)) {
             this.successNotice = '✓ Contact number verified! Please enter the OTP sent to your email to activate your account.';
             this.focusOtp('email', 0);
@@ -339,7 +351,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
     });
   }
 
-  // --- Resend OTP Actions ---
+  // --- Resend OTP Actions (3 Minutes = 180s Cooldown) ---
   resendEmail() {
     if (this.emailCooldown > 0 || this.emailResending) return;
     this.emailResending = true;
@@ -353,7 +365,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
         this.emailResending = false;
         if (res.success) {
           this.emailOtpDigits = ['', '', '', '', '', ''];
-          this.startEmailCooldown();
+          this.startEmailCooldown(180);
           this.successNotice = 'New OTP sent to your registered email address.';
         } else {
           this.emailError = res.message || 'Could not resend Email OTP.';
@@ -379,7 +391,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
         this.mobileResending = false;
         if (res.success) {
           this.mobileOtpDigits = ['', '', '', '', '', ''];
-          this.startMobileCooldown();
+          this.startMobileCooldown(180);
           this.successNotice = 'New OTP sent via SMS to your contact number.';
         } else {
           this.mobileError = res.message || 'Could not resend SMS OTP.';
@@ -392,8 +404,8 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
     });
   }
 
-  private startEmailCooldown() {
-    this.emailCooldown = 60;
+  private startEmailCooldown(seconds = 180) {
+    this.emailCooldown = seconds;
     if (this._emailTimer) clearInterval(this._emailTimer);
     this._emailTimer = setInterval(() => {
       this.emailCooldown--;
@@ -404,8 +416,8 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  private startMobileCooldown() {
-    this.mobileCooldown = 60;
+  private startMobileCooldown(seconds = 180) {
+    this.mobileCooldown = seconds;
     if (this._mobileTimer) clearInterval(this._mobileTimer);
     this._mobileTimer = setInterval(() => {
       this.mobileCooldown--;
