@@ -3,34 +3,33 @@
   <!-- ══ LEFT PANEL ════════════════════════════ -->
   <div class="auth-left">
     <div>
-      <a routerLink="/" class="brand d-inline-flex mb-5 text-decoration-none">
-        <div class="brand-icon me-3"><span>M</span></div>
+      <a routerLink="/" class="brand d-inline-flex mb-4 text-decoration-none">
+        <div class="brand-icon me-2"><span>M</span></div>
         <div>
-          <span class="brand-name" style="color:#fff;">M.M.R. Construction</span>
-          <span class="brand-sub">&amp; Developers Pvt. Ltd.</span>
+          <span class="brand-name" style="color:#fff;font-size:1.15rem;">M.M.R. Construction</span>
+          <span class="brand-sub" style="font-size:10px;">&amp; Developers Pvt. Ltd.</span>
         </div>
       </a>
-      <h2 style="font-family:var(--ff-display);color:#fff;font-size:1.9rem;margin-bottom:12px;">Verify Your Account</h2>
-      <p style="color:rgba(255,255,255,.8);font-size:13.5px;line-height:1.8;">
-        Separate 6-digit OTP codes have been sent to your <strong>Email</strong> and <strong>Contact Number</strong>.<br/>
-        Please verify both to securely activate your {{ userType }} profile.
+      <h2 style="font-family:var(--ff-display);color:#fff;font-size:1.45rem;margin-bottom:8px;">Verify Your Account</h2>
+      <p style="color:rgba(255,255,255,.8);font-size:12px;line-height:1.6;margin-bottom:12px;">
+        Separate 6-digit OTP codes have been sent to your <strong>Email</strong> and <strong>Contact Number</strong>.
       </p>
-      <div class="mt-4">
+      <div class="mt-2">
         <div class="reg-check">
           <div class="rci"><i class="fas fa-envelope"></i></div>
-          <span style="color:rgba(255,255,255,.9);font-size:13px;">Email OTP verification</span>
+          <span style="color:rgba(255,255,255,.9);font-size:11.5px;">Email OTP verification</span>
         </div>
         <div class="reg-check">
           <div class="rci"><i class="fas fa-mobile-alt"></i></div>
-          <span style="color:rgba(255,255,255,.9);font-size:13px;">Contact Number SMS OTP verification</span>
+          <span style="color:rgba(255,255,255,.9);font-size:11.5px;">Contact SMS OTP verification</span>
         </div>
         <div class="reg-check">
           <div class="rci"><i class="fas fa-clock"></i></div>
-          <span style="color:rgba(255,255,255,.9);font-size:13px;">OTP valid for 10 minutes</span>
+          <span style="color:rgba(255,255,255,.9);font-size:11.5px;">OTP valid for 10 minutes</span>
         </div>
         <div class="reg-check">
           <div class="rci"><i class="fas fa-shield-alt"></i></div>
-          <span style="color:rgba(255,255,255,.9);font-size:13px;">One-time use — resend available after 60s</span>
+          <span style="color:rgba(255,255,255,.9);font-size:11.5px;">Resend available after 60s</span>
         </div>
       </div>
     </div>
@@ -41,15 +40,15 @@
     <div class="auth-form-wrap">
 
       <!-- ── SUCCESS STATE (All done) ── -->
-      <div *ngIf="verified" style="text-align:center;padding:60px 20px;">
-        <div style="width:80px;height:80px;background:var(--clr-primary-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
-          <i class="fas fa-check" style="color:var(--clr-primary);font-size:32px;"></i>
+      <div *ngIf="verified" style="text-align:center;padding:30px 15px;">
+        <div style="width:56px;height:56px;background:var(--clr-primary-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-check" style="color:var(--clr-primary);font-size:24px;"></i>
         </div>
-        <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:12px;">Account Verified!</h3>
-        <p style="color:var(--txt-muted);max-width:360px;margin:0 auto 16px;">
+        <h4 style="font-family:var(--ff-display);color:var(--txt-h);margin-bottom:8px;">Account Verified!</h4>
+        <p style="color:var(--txt-muted);max-width:320px;margin:0 auto 12px;font-size:12px;">
           Your account has been verified successfully. Redirecting to login...
         </p>
-        <div class="spinner-border text-success" role="status" style="width:28px;height:28px;">
+        <div class="spinner-border text-success" role="status" style="width:24px;height:24px;">
           <span class="visually-hidden">Loading...</span>
         </div>
       </div>
@@ -57,24 +56,25 @@
       <!-- ── VERIFY FORM ── -->
       <ng-container *ngIf="!verified">
 
-        <div class="mb-4">
-          <div class="d-flex align-items-center justify-content-between mb-1">
-            <h3 style="font-family:var(--ff-display);color:var(--txt-h);margin:0;">Account Verification</h3>
+        <!-- Header -->
+        <div class="form-compact-header mb-2">
+          <div class="d-flex align-items-center justify-content-between">
+            <h4 class="form-title mb-0">Account Verification</h4>
             <span class="badge-role">{{ userType }}</span>
           </div>
-          <p class="fs-13 text-muted mb-0">
-            Email और Contact Number दोनों का अलग-अलग OTP वेरिफिकेशन करें।
+          <p class="form-subtitle text-muted mb-0">
+            Email और Mobile का अलग-अलग OTP दर्ज करें
           </p>
         </div>
 
         <!-- Global Success Notification Banner -->
-        <div *ngIf="successNotice" class="panel-alert panel-alert-success mb-3">
+        <div *ngIf="successNotice" class="panel-alert panel-alert-success mb-2">
           <i class="fas fa-check-circle"></i>
           <div>{{ successNotice }}</div>
         </div>
 
         <!-- Global Error Banner -->
-        <div *ngIf="generalError" class="panel-alert panel-alert-error mb-3">
+        <div *ngIf="generalError" class="panel-alert panel-alert-error mb-2">
           <i class="fas fa-exclamation-circle"></i>
           <div>{{ generalError }}</div>
         </div>
@@ -89,7 +89,7 @@
                 <i class="fas fa-envelope"></i>
               </div>
               <div class="vcard-info">
-                <span class="vcard-badge-label">1. Email Verification</span>
+                <span class="vcard-badge-label">1. Email OTP</span>
                 <span class="vcard-val text-truncate" [title]="email">{{ email || 'No email provided' }}</span>
               </div>
             </div>
@@ -108,17 +108,21 @@
 
           <!-- Email Verified Message -->
           <div *ngIf="emailVerified" class="vcard-success-banner">
-            <i class="fas fa-check-circle text-success me-2"></i>
-            <span>Email address verified successfully.</span>
+            <i class="fas fa-check-circle text-success me-1"></i>
+            <span>Email verified successfully.</span>
           </div>
 
           <!-- Email OTP Input Row -->
           <div *ngIf="!emailVerified && emailOtpRequired" class="vcard-body">
-            <div *ngIf="emailError" class="panel-alert panel-alert-error mb-3">
+            <div *ngIf="emailError" class="panel-alert panel-alert-error mb-2">
               <i class="fas fa-exclamation-circle"></i> {{ emailError }}
             </div>
 
-            <label class="f-label mb-2">Enter 6-Digit Email OTP *</label>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="f-label-sm mb-0">Enter Email 6-Digit OTP *</label>
+              <span class="fs-11 text-muted">10 min valid</span>
+            </div>
+
             <div class="otp-box-row" (paste)="onOtpPaste('email', $event)">
               <input *ngFor="let d of emailOtpDigits; let i = index"
                 [id]="'email-otp-' + i"
@@ -134,10 +138,10 @@
                 autocomplete="one-time-code" />
             </div>
 
-            <div class="vcard-actions-row mt-3">
+            <div class="vcard-actions-row mt-2">
               <button type="button" class="btn btn-green btn-verify-single"
                 (click)="verifyEmail()" [disabled]="!emailOtpComplete || emailLoading">
-                <i [class]="emailLoading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check-shield me-1'"></i>
+                <i [class]="emailLoading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check me-1'"></i>
                 {{ emailLoading ? 'Verifying...' : 'Verify Email' }}
               </button>
 
@@ -151,7 +155,7 @@
                   <i class="fas fa-redo-alt me-1"></i>Resend OTP
                 </ng-container>
                 <ng-container *ngIf="!emailResending && emailCooldown > 0">
-                  <i class="fas fa-clock me-1"></i>Resend in {{ emailCooldown }}s
+                  <i class="fas fa-clock me-1"></i>{{ emailCooldown }}s
                 </ng-container>
               </button>
             </div>
@@ -161,14 +165,14 @@
         <!-- ══════════════════════════════════════════ -->
         <!-- CARD 2: CONTACT NUMBER (SMS) VERIFICATION -->
         <!-- ══════════════════════════════════════════ -->
-        <div class="verification-card mt-3" [class.is-verified]="mobileVerified">
+        <div class="verification-card mt-2" [class.is-verified]="mobileVerified">
           <div class="vcard-header">
             <div class="vcard-title-wrap">
               <div class="vcard-icon mobile-icon">
                 <i class="fas fa-mobile-alt"></i>
               </div>
               <div class="vcard-info">
-                <span class="vcard-badge-label">2. Contact Number Verification</span>
+                <span class="vcard-badge-label">2. Contact SMS OTP</span>
                 <span class="vcard-val">{{ mobile ? ('+91 ' + mobile) : 'No contact provided' }}</span>
               </div>
             </div>
@@ -187,17 +191,21 @@
 
           <!-- Contact Verified Message -->
           <div *ngIf="mobileVerified" class="vcard-success-banner">
-            <i class="fas fa-check-circle text-success me-2"></i>
+            <i class="fas fa-check-circle text-success me-1"></i>
             <span>Contact number verified successfully.</span>
           </div>
 
           <!-- Contact OTP Input Row -->
           <div *ngIf="!mobileVerified && smsOtpRequired" class="vcard-body">
-            <div *ngIf="mobileError" class="panel-alert panel-alert-error mb-3">
+            <div *ngIf="mobileError" class="panel-alert panel-alert-error mb-2">
               <i class="fas fa-exclamation-circle"></i> {{ mobileError }}
             </div>
 
-            <label class="f-label mb-2">Enter 6-Digit SMS OTP *</label>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="f-label-sm mb-0">Enter Contact 6-Digit OTP *</label>
+              <span class="fs-11 text-muted">10 min valid</span>
+            </div>
+
             <div class="otp-box-row" (paste)="onOtpPaste('mobile', $event)">
               <input *ngFor="let d of mobileOtpDigits; let i = index"
                 [id]="'mobile-otp-' + i"
@@ -213,10 +221,10 @@
                 autocomplete="one-time-code" />
             </div>
 
-            <div class="vcard-actions-row mt-3">
+            <div class="vcard-actions-row mt-2">
               <button type="button" class="btn btn-green btn-verify-single"
                 (click)="verifyMobile()" [disabled]="!mobileOtpComplete || mobileLoading">
-                <i [class]="mobileLoading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check-shield me-1'"></i>
+                <i [class]="mobileLoading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-check me-1'"></i>
                 {{ mobileLoading ? 'Verifying...' : 'Verify Contact' }}
               </button>
 
@@ -227,10 +235,10 @@
                   <i class="fas fa-spinner fa-spin me-1"></i>Sending...
                 </ng-container>
                 <ng-container *ngIf="!mobileResending && mobileCooldown === 0">
-                  <i class="fas fa-redo-alt me-1"></i>Resend SMS OTP
+                  <i class="fas fa-redo-alt me-1"></i>Resend OTP
                 </ng-container>
                 <ng-container *ngIf="!mobileResending && mobileCooldown > 0">
-                  <i class="fas fa-clock me-1"></i>Resend in {{ mobileCooldown }}s
+                  <i class="fas fa-clock me-1"></i>{{ mobileCooldown }}s
                 </ng-container>
               </button>
             </div>
@@ -238,24 +246,21 @@
         </div>
 
         <!-- ══════════════════════════════════════════ -->
-        <!-- UNIFIED "VERIFY BOTH & ACTIVATE" (OPTIONAL)-->
+        <!-- UNIFIED "VERIFY BOTH & ACTIVATE"          -->
         <!-- ══════════════════════════════════════════ -->
-        <div class="verify-all-card mt-4" *ngIf="!emailVerified && !mobileVerified && emailOtpRequired && smsOtpRequired">
-          <button type="button" class="btn btn-gold-action w-100 py-3"
+        <div class="verify-all-card mt-3" *ngIf="!emailVerified && !mobileVerified && emailOtpRequired && smsOtpRequired">
+          <button type="button" class="btn btn-gold-action w-100"
             (click)="verifyAll()"
             [disabled]="!emailOtpComplete || !mobileOtpComplete || allLoading">
-            <i [class]="allLoading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-shield-alt me-2'"></i>
-            {{ allLoading ? 'Verifying Both...' : 'Verify Both & Activate Account' }}
+            <i [class]="allLoading ? 'fas fa-spinner fa-spin me-1' : 'fas fa-shield-alt me-1'"></i>
+            {{ allLoading ? 'Verifying Both...' : 'Verify Both & Activate' }}
           </button>
-          <div class="text-center mt-2 fs-12 text-muted">
-            You can verify both at once, or verify each individually above.
-          </div>
         </div>
 
         <!-- Back to signup -->
-        <p class="text-center fs-13 text-muted mt-4 mb-0">
+        <p class="text-center fs-12 text-muted mt-3 mb-0">
           Incorrect details?
-          <a routerLink="/signup" [queryParams]="{type: userType}" style="color:var(--clr-primary);font-weight:600;">Go back to registration</a>
+          <a routerLink="/signup" [queryParams]="{type: userType}" style="color:var(--clr-primary);font-weight:600;">Go back</a>
         </p>
 
       </ng-container>
