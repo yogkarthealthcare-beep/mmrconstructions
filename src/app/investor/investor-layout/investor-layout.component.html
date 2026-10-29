@@ -92,32 +92,42 @@
         <div class="topbar-action-item">
           <div class="topbar-icon-btn" title="Notifications" (click)="toggleDropdown('notif')">
             <i class="fas fa-bell"></i>
-            <span class="notif-dot"></span>
+            <span class="notif-dot" *ngIf="unreadNotifCount > 0"></span>
           </div>
 
           <div class="topbar-dropdown notif-dropdown" *ngIf="activeDropdown === 'notif'" (click)="$event.stopPropagation()">
             <div class="notif-dropdown-header">
-              <h6>Investor Alerts</h6>
-              <span class="notif-badge">Alerts</span>
+              <div class="d-flex align-items-center gap-2">
+                <h6>Investor Alerts</h6>
+                <span class="notif-badge" *ngIf="unreadNotifCount > 0">{{ unreadNotifCount }} New</span>
+              </div>
+              <button class="notif-mark-read-btn" title="Mark all as read" *ngIf="unreadNotifCount > 0" (click)="markAllNotifsRead($event)">
+                <i class="fas fa-check-double me-1"></i>Mark Read
+              </button>
             </div>
+
             <div class="notif-dropdown-list">
-              <a routerLink="/investor/deposit" (click)="closeDropdowns()" class="notif-item">
-                <div class="notif-icon"><i class="fas fa-hand-holding-usd"></i></div>
+              <div *ngIf="loadingNotifs" class="notif-empty-state">
+                <i class="fas fa-spinner fa-spin me-1"></i> Loading alerts...
+              </div>
+              <div *ngIf="!loadingNotifs && notifications.length === 0" class="notif-empty-state">
+                <i class="fas fa-bell-slash mb-1 d-block fs-4 text-muted"></i>
+                <p class="mb-0 fs-12">No notifications found.</p>
+              </div>
+              <div *ngFor="let item of notifications" class="notif-item" [class.unread]="!item.is_read" (click)="onNotifClick(item)">
+                <div class="notif-icon"><i [class]="getNotifIcon(item)"></i></div>
                 <div class="notif-text">
-                  <div class="notif-title">Deposit &amp; Settlements</div>
-                  <div class="notif-desc">Check your verified deposits and interest settlements.</div>
+                  <div class="notif-title">{{ item.title }}</div>
+                  <div class="notif-desc">{{ item.message }}</div>
+                  <div class="notif-time">{{ item.created_at | date:'shortTime' }}</div>
                 </div>
-              </a>
-              <a routerLink="/investor/transactions" (click)="closeDropdowns()" class="notif-item">
-                <div class="notif-icon"><i class="fas fa-list-alt"></i></div>
-                <div class="notif-text">
-                  <div class="notif-title">Transaction History</div>
-                  <div class="notif-desc">View full ledger of investment returns.</div>
-                </div>
-              </a>
+              </div>
             </div>
+
             <div class="notif-dropdown-footer">
-              <a routerLink="/investor/transactions" (click)="closeDropdowns()">View All Transactions &rarr;</a>
+              <a routerLink="/investor/notifications" (click)="closeDropdowns()">
+                View All Past Notifications <i class="fas fa-arrow-right ms-1"></i>
+              </a>
             </div>
           </div>
         </div>

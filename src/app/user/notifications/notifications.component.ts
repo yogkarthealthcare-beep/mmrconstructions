@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 
 @Component({
@@ -19,6 +20,10 @@ export class NotificationsComponent implements OnInit {
   searchTerm = '';
   filterChannel = 'all';
 
+  get isAdmin(): boolean {
+    return typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+  }
+
   get filteredNotifications(): any[] {
     return this.notifications.filter(n => {
       const matchesSearch = !this.searchTerm ||
@@ -33,7 +38,7 @@ export class NotificationsComponent implements OnInit {
     });
   }
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private router: Router) {}
 
   ngOnInit() {
     this.load();
@@ -41,7 +46,11 @@ export class NotificationsComponent implements OnInit {
 
   load() {
     this.loading = true;
-    this.api.getNotifications({ page: this.page, limit: 30 }).subscribe({
+    const req$ = this.isAdmin
+      ? this.api.adminGetNotifications({ page: this.page, limit: 50 })
+      : this.api.getNotifications({ page: this.page, limit: 50 });
+
+    req$.subscribe({
       next: (res: any) => {
         if (res.success) {
           this.notifications = res.data?.notifications || [];
@@ -55,9 +64,22 @@ export class NotificationsComponent implements OnInit {
     });
   }
 
+  onNotifItemClick(n: any) {
+    if (!n.is_read) {
+      this.markRead(n);
+    }
+    if (n.link) {
+      this.router.navigateByUrl(n.link);
+    }
+  }
+
   markRead(n: any) {
     if (n.is_read) return;
-    this.api.markNotifRead(n.notif_id).subscribe({
+    const req$ = this.isAdmin
+      ? this.api.adminMarkNotifRead(n.notif_id)
+      : this.api.markNotifRead(n.notif_id);
+
+    req$.subscribe({
       next: () => {
         n.is_read = true;
         n.read_at = new Date().toISOString();
@@ -68,7 +90,11 @@ export class NotificationsComponent implements OnInit {
 
   markAll() {
     this.markingAll = true;
-    this.api.markAllRead().subscribe({
+    const req$ = this.isAdmin
+      ? this.api.adminMarkAllNotifRead()
+      : this.api.markAllRead();
+
+    req$.subscribe({
       next: () => {
         this.notifications.forEach(n => n.is_read = true);
         this.unreadCount = 0;
@@ -81,12 +107,12 @@ export class NotificationsComponent implements OnInit {
   }
 
   iconFor(channel: string) {
-    const map: any = { SMS: 'fas fa-sms', Email: 'fas fa-envelope', Push: 'fas fa-bell', All: 'fas fa-bullhorn' };
+    const map: any = { SMS: 'fas fa-sms', Email: 'fas fa-envelope', Push: 'fas fa-bell', InApp: 'fas fa-bell', All: 'fas fa-bullhorn' };
     return map[channel] || 'fas fa-bell';
   }
 
   colorFor(channel: string) {
-    const map: any = { SMS: '#2563eb', Email: '#ca8a04', Push: '#10b981', All: '#8b5cf6' };
+    const map: any = { SMS: '#2563eb', Email: '#ca8a04', Push: '#10b981', InApp: '#062b18', All: '#8b5cf6' };
     return map[channel] || '#10b981';
   }
 }

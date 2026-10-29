@@ -403,6 +403,9 @@ export class ApiService {
   }
 
   // ── ADMIN — Notifications ─────────────────────────
+  adminGetNotifications(q: any = {}) { return this.get('/api/admin/notifications', q, true); }
+  adminMarkNotifRead(id: number)   { return this.patch(`/api/admin/notifications/${id}/read`, {}, true); }
+  adminMarkAllNotifRead()          { return this.patch('/api/admin/notifications/read-all', {}, true); }
   adminSendNotif(data: any)        { return this.post('/api/admin/notifications/send', data, true); }
   adminBulkNotif(data: any)        { return this.post('/api/admin/notifications/bulk', data, true); }
 
@@ -584,7 +587,8 @@ export class ApiService {
   getInvestorDocuments() { return this.get('/api/investor/documents'); }
   uploadInvestorDocument(data: FormData) { return this.postForm('/api/investor/documents', data); }
   getInvestorNotifications() { return this.get('/api/investor/notifications'); }
-  markInvestorNotificationRead(id: number) { return this.patch(`/api/investor/notifications/${id}/read`, {}); }
+  markInvestorNotificationRead(id: any) { return this.patch(`/api/investor/notifications/${id}/read`, {}); }
+  markAllInvestorNotificationsRead() { return this.patch('/api/investor/notifications/read-all', {}); }
   getInvestorPayments(params: any = {}) { return this.get('/api/investor/payments', params); }
   uploadInvestorProfilePhoto(data: FormData) { return this.postForm('/api/investor/profile/photo', data); }
   getInvestorProfile() { return this.get('/api/investor/profile'); }

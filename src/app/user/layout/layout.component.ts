@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink, RouterOutlet, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
@@ -29,7 +29,7 @@ interface NavGroup {
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css']
 })
-export class UserLayoutComponent implements OnInit {
+export class UserLayoutComponent implements OnInit, OnDestroy {
   sidebarOpen = false;
   userData: any = null;
   private _cachedPrefix = '';
@@ -47,6 +47,8 @@ export class UserLayoutComponent implements OnInit {
     });
 
     this.checkActiveGroup(this.router.url);
+    this.loadUserNotifications();
+    this.notifTimer = setInterval(() => this.loadUserNotifications(true), 30000);
 
     // If enrollment is not marked completed in local session, check backend API
     if (!this.auth.isEnrollmentCompleted()) {
@@ -85,9 +87,71 @@ export class UserLayoutComponent implements OnInit {
   }
 
   activeDropdown: 'notif' | 'settings' | 'user' | null = null;
+  notifications: any[] = [];
+  unreadNotifCount = 0;
+  loadingNotifs = false;
+  private notifTimer: any = null;
+
+  loadUserNotifications(silent = false) {
+    if (!silent) this.loadingNotifs = true;
+    this.api.getNotifications({ limit: 12 }).subscribe({
+      next: (res: any) => {
+        this.loadingNotifs = false;
+        if (res.success) {
+          this.notifications = res.data?.notifications || [];
+          this.unreadNotifCount = res.data?.unread_count || 0;
+        }
+      },
+      error: () => {
+        this.loadingNotifs = false;
+      }
+    });
+  }
+
+  onNotifClick(item: any) {
+    if (!item.is_read) {
+      this.api.markNotifRead(item.notif_id).subscribe(() => {
+        item.is_read = true;
+        this.unreadNotifCount = Math.max(0, this.unreadNotifCount - 1);
+      });
+    }
+    this.closeDropdowns();
+    if (item.link) {
+      this.router.navigateByUrl(item.link);
+    }
+  }
+
+  markAllNotifsRead(event?: Event) {
+    if (event) event.stopPropagation();
+    this.api.markAllRead().subscribe({
+      next: () => {
+        this.notifications.forEach(n => n.is_read = true);
+        this.unreadNotifCount = 0;
+      }
+    });
+  }
+
+  getNotifIcon(item: any): string {
+    const t = (item.title || '').toLowerCase();
+    if (t.includes('withdraw')) return 'fas fa-money-bill-wave text-warning';
+    if (t.includes('booking') || t.includes('plot')) return 'fas fa-map-marker-alt text-success';
+    if (t.includes('payment') || t.includes('receipt') || t.includes('emi')) return 'fas fa-receipt text-info';
+    if (t.includes('commission')) return 'fas fa-hand-holding-usd text-success';
+    if (t.includes('approved') || t.includes('welcome')) return 'fas fa-check-circle text-primary';
+    return 'fas fa-bell text-secondary';
+  }
 
   toggleDropdown(type: 'notif' | 'settings' | 'user') {
     this.activeDropdown = this.activeDropdown === type ? null : type;
+    if (this.activeDropdown === 'notif') {
+      this.loadUserNotifications();
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.notifTimer) {
+      clearInterval(this.notifTimer);
+    }
   }
 
   closeDropdowns() {

@@ -69,32 +69,42 @@
         <div class="topbar-action-item">
           <div class="topbar-icon-btn" title="Notifications" (click)="toggleDropdown('notif')">
             <i class="fas fa-bell"></i>
-            <span class="notif-dot"></span>
+            <span class="notif-dot" *ngIf="unreadNotifCount > 0"></span>
           </div>
 
           <div class="topbar-dropdown notif-dropdown" *ngIf="activeDropdown === 'notif'" (click)="$event.stopPropagation()">
             <div class="notif-dropdown-header">
-              <h6>Notifications</h6>
-              <span class="notif-badge">Alerts</span>
+              <div class="d-flex align-items-center gap-2">
+                <h6>Notifications</h6>
+                <span class="notif-badge" *ngIf="unreadNotifCount > 0">{{ unreadNotifCount }} New</span>
+              </div>
+              <button class="notif-mark-read-btn" title="Mark all as read" *ngIf="unreadNotifCount > 0" (click)="markAllNotifsRead($event)">
+                <i class="fas fa-check-double me-1"></i>Mark Read
+              </button>
             </div>
+
             <div class="notif-dropdown-list">
-              <a [routerLink]="basePrefix + '/notifications'" (click)="closeDropdowns()" class="notif-item">
-                <div class="notif-icon"><i class="fas fa-bell"></i></div>
+              <div *ngIf="loadingNotifs" class="notif-empty-state">
+                <i class="fas fa-spinner fa-spin me-1"></i> Loading alerts...
+              </div>
+              <div *ngIf="!loadingNotifs && notifications.length === 0" class="notif-empty-state">
+                <i class="fas fa-bell-slash mb-1 d-block fs-4 text-muted"></i>
+                <p class="mb-0 fs-12">No notifications found.</p>
+              </div>
+              <div *ngFor="let item of notifications" class="notif-item" [class.unread]="!item.is_read" (click)="onNotifClick(item)">
+                <div class="notif-icon"><i [class]="getNotifIcon(item)"></i></div>
                 <div class="notif-text">
-                  <div class="notif-title">Account Alerts &amp; Updates</div>
-                  <div class="notif-desc">Check your recent booking and payment updates.</div>
+                  <div class="notif-title">{{ item.title }}</div>
+                  <div class="notif-desc">{{ item.message }}</div>
+                  <div class="notif-time">{{ item.sent_at | date:'shortTime' }}</div>
                 </div>
-              </a>
-              <a [routerLink]="basePrefix + '/emi-history'" (click)="closeDropdowns()" class="notif-item">
-                <div class="notif-icon"><i class="fas fa-calendar-check"></i></div>
-                <div class="notif-text">
-                  <div class="notif-title">EMI &amp; Installments</div>
-                  <div class="notif-desc">Track installment schedules and payment proofs.</div>
-                </div>
-              </a>
+              </div>
             </div>
+
             <div class="notif-dropdown-footer">
-              <a [routerLink]="basePrefix + '/notifications'" (click)="closeDropdowns()">View All Notifications &rarr;</a>
+              <a [routerLink]="basePrefix + '/notifications'" (click)="closeDropdowns()">
+                View All Notifications <i class="fas fa-arrow-right ms-1"></i>
+              </a>
             </div>
           </div>
         </div>

@@ -223,6 +223,8 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.auth.adminUser$.subscribe(u => this.adminUser = u);
     this.updateNavGroups();
+    this.loadAdminNotifications();
+    this.notifTimer = setInterval(() => this.loadAdminNotifications(true), 30000);
 
     // Check active group immediately on init
     this.checkActiveGroup();
@@ -242,6 +244,9 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.notifTimer) {
+      clearInterval(this.notifTimer);
+    }
     this.toggleSub?.unsubscribe();
     this.masterToggleSub?.unsubscribe();
   }
@@ -356,6 +361,59 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   }
 
   activeDropdown: 'notif' | 'settings' | 'user' | null = null;
+  notifications: any[] = [];
+  unreadNotifCount = 0;
+  loadingNotifs = false;
+  private notifTimer: any = null;
+
+  loadAdminNotifications(silent = false) {
+    if (!silent) this.loadingNotifs = true;
+    this.api.adminGetNotifications({ limit: 12 }).subscribe({
+      next: (res: any) => {
+        this.loadingNotifs = false;
+        if (res.success) {
+          this.notifications = res.data?.notifications || [];
+          this.unreadNotifCount = res.data?.unread_count || 0;
+        }
+      },
+      error: () => {
+        this.loadingNotifs = false;
+      }
+    });
+  }
+
+  onNotifClick(item: any) {
+    if (!item.is_read) {
+      this.api.adminMarkNotifRead(item.notif_id).subscribe(() => {
+        item.is_read = true;
+        this.unreadNotifCount = Math.max(0, this.unreadNotifCount - 1);
+      });
+    }
+    this.closeDropdowns();
+    if (item.link) {
+      this.router.navigateByUrl(item.link);
+    }
+  }
+
+  markAllNotifsRead(event?: Event) {
+    if (event) event.stopPropagation();
+    this.api.adminMarkAllNotifRead().subscribe({
+      next: () => {
+        this.notifications.forEach(n => n.is_read = true);
+        this.unreadNotifCount = 0;
+      }
+    });
+  }
+
+  getNotifIcon(item: any): string {
+    const t = (item.title || '').toLowerCase();
+    if (t.includes('withdraw')) return 'fas fa-money-bill-wave text-warning';
+    if (t.includes('booking') || t.includes('plot')) return 'fas fa-map-marker-alt text-success';
+    if (t.includes('payment') || t.includes('receipt') || t.includes('emi')) return 'fas fa-credit-card text-info';
+    if (t.includes('enroll') || t.includes('kyc') || t.includes('account')) return 'fas fa-user-check text-primary';
+    if (t.includes('investor') || t.includes('deposit')) return 'fas fa-gem text-warning';
+    return 'fas fa-bell text-secondary';
+  }
 
   toggleDropdown(type: 'notif' | 'settings' | 'user') {
     this.activeDropdown = this.activeDropdown === type ? null : type;
