@@ -130,10 +130,20 @@ export class InvestorSignupComponent implements OnInit {
       next: (res: any) => {
         this.loading = false;
         if (res.success) {
-          this.successMessage = 'Registration successful! Please verify your email, then login.';
-          setTimeout(() => {
-            this.router.navigate(['/investor/login']);
-          }, 2000);
+          if (res.data && res.data.otpBypassed) {
+            this.successMessage = 'Registration successful! Redirecting to login...';
+            setTimeout(() => {
+              this.router.navigate(['/investor/login']);
+            }, 1500);
+            return;
+          }
+          this.router.navigate(['/verify-otp'], {
+            queryParams: {
+              email: this.form.email,
+              mobile: this.form.mobile_number,
+              type: 'Investor'
+            }
+          });
         } else {
           this.errorMessage = res.message || 'Registration failed.';
         }

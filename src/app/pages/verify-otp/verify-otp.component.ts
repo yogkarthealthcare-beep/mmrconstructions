@@ -1,10 +1,9 @@
-// verify-otp.component.ts  (FIXED)
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { AuthService } from '../../services/auth.service';  // FIX: AuthService import kiya
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-verify-otp',
@@ -15,7 +14,8 @@ import { AuthService } from '../../services/auth.service';  // FIX: AuthService 
 })
 export class VerifyOtpComponent implements OnInit, OnDestroy {
   email    = '';
-  userType: 'Customer' | 'Associate' | 'Investor' = 'Customer';
+  mobile   = '';
+  userType: 'Customer' | 'Associate' | 'Investor' | 'Team Member' = 'Customer';
 
   otpDigits = ['', '', '', '', '', ''];
 
@@ -29,7 +29,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
 
   constructor(
     private api:    ApiService,
-    private auth:   AuthService,   // FIX: AuthService inject kiya
+    private auth:   AuthService,
     private router: Router,
     private route:  ActivatedRoute,
   ) {}
@@ -37,9 +37,12 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.email    = params['email']  || '';
+      this.mobile   = params['mobile'] || params['mobile_no'] || '';
       const typeParam = params['type'];
-      this.userType = typeParam === 'Associate' ? 'Associate' : typeParam === 'Investor' ? 'Investor' : 'Customer';
-      if (!this.email) this.router.navigate(['/register']);
+      this.userType = (typeParam === 'Associate' || typeParam === 'Investor' || typeParam === 'Team Member')
+        ? typeParam
+        : 'Customer';
+      if (!this.email && !this.mobile) this.router.navigate(['/register']);
     });
   }
 
@@ -133,55 +136,58 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error   = '';
 
-    this.api.post('/api/auth/verify-email-otp', { email: this.email, otp: this.otpValue })
-      .subscribe({
-        next: (res: any) => {
-          this.loading = false;
-          if (res.success) {
-            const userType = res.data?.user?.user_type || res.data?.user_type || this.userType;
-            this.verified = true;
-            
-            if (userType === 'Associate') {
-              import('sweetalert2').then(Swal => {
-                Swal.default.fire({
-                  icon: 'success',
-                  title: 'Registration Successful',
-                  html: `Your account has been created but is pending admin approval.<br><br>
-                         Please contact MMR Construction support to activate your account:<br>
-                         <div style="margin-top: 15px; font-size: 16px;">
-                           <strong><i class="fas fa-phone-alt"></i> +91 95111 19879</strong><br>
-                           <strong><i class="fas fa-envelope"></i> official@mmrconstructions.in</strong>
-                         </div>`,
-                  confirmButtonColor: '#d4af37',
-                  confirmButtonText: 'Go to Login'
-                }).then(() => {
-                  this.router.navigate(['/login']);
-                });
+    this.api.post('/api/auth/verify-email-otp', {
+      email: this.email,
+      mobile: this.mobile,
+      otp: this.otpValue
+    }).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+        if (res.success) {
+          const userType = res.data?.user?.user_type || res.data?.user_type || this.userType;
+          this.verified = true;
+          
+          if (userType === 'Associate' || userType === 'Team Member') {
+            import('sweetalert2').then(Swal => {
+              Swal.default.fire({
+                icon: 'success',
+                title: 'Registration Successful',
+                html: `Your account has been created but is pending admin approval.<br><br>
+                       Please contact MMR Construction support to activate your account:<br>
+                       <div style="margin-top: 15px; font-size: 16px;">
+                         <strong><i class="fas fa-phone-alt"></i> +91 95111 19879</strong><br>
+                         <strong><i class="fas fa-envelope"></i> official@mmrconstructions.in</strong>
+                       </div>`,
+                confirmButtonColor: '#d4af37',
+                confirmButtonText: 'Go to Login'
+              }).then(() => {
+                this.router.navigate(['/login']);
               });
-            } else {
-              import('sweetalert2').then(Swal => {
-                Swal.default.fire({
-                  icon: 'success',
-                  title: 'Registration Successful',
-                  text: 'Your email has been verified successfully. Please login with your email and password.',
-                  confirmButtonColor: '#d4af37',
-                  confirmButtonText: 'Go to Login'
-                }).then(() => {
-                  this.router.navigate(['/login']);
-                });
-              });
-            }
+            });
           } else {
-            this.error = res.message || 'Verification failed.';
-            this.otpDigits = ['', '', '', '', '', ''];
+            import('sweetalert2').then(Swal => {
+              Swal.default.fire({
+                icon: 'success',
+                title: 'Registration Successful',
+                text: 'Your account has been verified successfully. Please login with your credentials.',
+                confirmButtonColor: '#d4af37',
+                confirmButtonText: 'Go to Login'
+              }).then(() => {
+                this.router.navigate(['/login']);
+              });
+            });
           }
-        },
-        error: (e: any) => {
-          this.loading = false;
-          this.error   = e?.error?.message || 'Verification failed. Please try again.';
+        } else {
+          this.error = res.message || 'Verification failed.';
           this.otpDigits = ['', '', '', '', '', ''];
-        },
-      });
+        }
+      },
+      error: (e: any) => {
+        this.loading = false;
+        this.error   = e?.error?.message || 'Verification failed. Please try again.';
+        this.otpDigits = ['', '', '', '', '', ''];
+      },
+    });
   }
 
   resend() {
@@ -189,22 +195,24 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
     this.resending = true;
     this.error     = '';
 
-    this.api.post('/api/auth/resend-email-otp', { email: this.email })
-      .subscribe({
-        next: (res: any) => {
-          this.resending = false;
-          if (res.success) {
-            this.otpDigits = ['', '', '', '', '', ''];
-            this.startCooldown();
-          } else {
-            this.error = res.message || 'Could not resend OTP.';
-          }
-        },
-        error: (e: any) => {
-          this.resending = false;
-          this.error = e?.error?.message || 'Could not resend OTP.';
-        },
-      });
+    this.api.post('/api/auth/resend-email-otp', {
+      email: this.email,
+      mobile: this.mobile
+    }).subscribe({
+      next: (res: any) => {
+        this.resending = false;
+        if (res.success) {
+          this.otpDigits = ['', '', '', '', '', ''];
+          this.startCooldown();
+        } else {
+          this.error = res.message || 'Could not resend OTP.';
+        }
+      },
+      error: (e: any) => {
+        this.resending = false;
+        this.error = e?.error?.message || 'Could not resend OTP.';
+      },
+    });
   }
 
   private startCooldown() {

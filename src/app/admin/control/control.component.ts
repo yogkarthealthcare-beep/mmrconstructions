@@ -18,7 +18,7 @@ export class ControlComponent implements OnInit {
   
   settings = {
     email_otp_enabled: true,
-    whatsapp_otp_enabled: false
+    sms_otp_enabled: false
   };
 
   constructor(private api: ApiService) {}
@@ -33,7 +33,10 @@ export class ControlComponent implements OnInit {
       next: (res: any) => {
         this.loading = false;
         if (res && res.success) {
-          this.settings = res.data;
+          this.settings = {
+            email_otp_enabled: res.data.email_otp_enabled !== false,
+            sms_otp_enabled: Boolean(res.data.sms_otp_enabled)
+          };
         }
       },
       error: (e: any) => {
@@ -48,6 +51,11 @@ export class ControlComponent implements OnInit {
     this.saveSettings('Email OTP Verification ' + (this.settings.email_otp_enabled ? 'Enabled' : 'Disabled') + ' Successfully');
   }
 
+  toggleSmsOtp() {
+    this.settings.sms_otp_enabled = !this.settings.sms_otp_enabled;
+    this.saveSettings('Contact / SMS OTP Verification ' + (this.settings.sms_otp_enabled ? 'Enabled' : 'Disabled') + ' Successfully');
+  }
+
   saveSettings(successMessage: string) {
     this.saving = true;
     this.message = '';
@@ -57,7 +65,10 @@ export class ControlComponent implements OnInit {
       next: (res: any) => {
         this.saving = false;
         if (res && res.success) {
-          this.settings = res.data;
+          this.settings = {
+            email_otp_enabled: res.data.email_otp_enabled !== false,
+            sms_otp_enabled: Boolean(res.data.sms_otp_enabled)
+          };
           this.message = successMessage;
           setTimeout(() => this.message = '', 3000);
         } else {

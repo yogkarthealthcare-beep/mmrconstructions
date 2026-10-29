@@ -17,8 +17,9 @@
   </div>
 
   <div class="panel-card">
-    <div class="card-header bg-white py-2 px-3 border-bottom">
-      <h6 class="mb-0 text-dark fw-700 fs-12">Authentication Settings</h6>
+    <div class="card-header bg-white py-2 px-3 border-bottom d-flex align-items-center justify-content-between">
+      <h6 class="mb-0 text-dark fw-700 fs-12"><i class="fas fa-user-shield me-2 text-primary"></i>Registration OTP Controls</h6>
+      <span class="fs-11 text-muted">Controls Investor, Customer, Associate &amp; Team Member signups</span>
     </div>
     
     <div class="card-body p-0">
@@ -37,15 +38,16 @@
             </tr>
           </thead>
           <tbody>
+            <!-- Setting 1: Email OTP -->
             <tr>
               <td class="py-2 px-3">
                 <div class="d-flex align-items-center">
-                  <div class="icon-box rounded-circle me-2.5" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: #e0f2fe; color: #0284c7; font-size: 12px;">
+                  <div class="icon-box rounded-circle me-2.5" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #e0f2fe; color: #0284c7; font-size: 13px;">
                     <i class="fas fa-envelope"></i>
                   </div>
                   <div>
                     <div class="fw-700 text-dark fs-12">Email OTP Verification</div>
-                    <div class="fs-10 text-muted">Require OTP for Signup & Login</div>
+                    <div class="fs-10 text-muted">Require 6-digit OTP sent to user's Email address during registration</div>
                   </div>
                 </div>
               </td>
@@ -56,34 +58,40 @@
               </td>
               <td class="py-2 px-3 text-end">
                 <div class="form-check form-switch d-inline-block m-0">
-                  <input class="form-check-input" type="checkbox" role="switch" style="cursor: pointer;"
+                  <input class="form-check-input" type="checkbox" role="switch" style="cursor: pointer; width: 38px; height: 20px;"
                     [checked]="settings.email_otp_enabled"
                     (change)="toggleEmailOtp()"
-                    [disabled]="saving">
+                    [disabled]="saving"
+                    aria-label="Toggle Email OTP">
                 </div>
               </td>
             </tr>
             
+            <!-- Setting 2: Contact / SMS OTP -->
             <tr>
               <td class="py-2 px-3">
                 <div class="d-flex align-items-center">
-                  <div class="icon-box rounded-circle me-2.5" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: #dcfce7; color: #16a34a; font-size: 12px;">
-                    <i class="fab fa-whatsapp"></i>
+                  <div class="icon-box rounded-circle me-2.5" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #fef3c7; color: #d97706; font-size: 13px;">
+                    <i class="fas fa-mobile-alt"></i>
                   </div>
                   <div>
-                    <div class="fw-700 text-dark fs-12">WhatsApp OTP Verification</div>
-                    <div class="fs-10 text-muted">Coming Soon / Future</div>
+                    <div class="fw-700 text-dark fs-12">Contact / SMS OTP Verification</div>
+                    <div class="fs-10 text-muted">Require 6-digit OTP sent via SMS to user's Mobile / Contact Number during registration</div>
                   </div>
                 </div>
               </td>
               <td class="py-2 px-3">
-                <span class="sbadge" style="background: #f1f5f9; color: #64748b;">
-                  Coming Soon
+                <span class="sbadge" [ngClass]="settings.sms_otp_enabled ? 'sbadge-green' : 'sbadge-yellow'">
+                  {{ settings.sms_otp_enabled ? 'Enabled' : 'Disabled' }}
                 </span>
               </td>
               <td class="py-2 px-3 text-end">
                 <div class="form-check form-switch d-inline-block m-0">
-                  <input class="form-check-input" type="checkbox" role="switch" disabled>
+                  <input class="form-check-input" type="checkbox" role="switch" style="cursor: pointer; width: 38px; height: 20px;"
+                    [checked]="settings.sms_otp_enabled"
+                    (change)="toggleSmsOtp()"
+                    [disabled]="saving"
+                    aria-label="Toggle SMS OTP">
                 </div>
               </td>
             </tr>
