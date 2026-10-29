@@ -13,6 +13,9 @@
       <p class="admin-hero-sub mb-0">{{ pageSubtitle }}</p>
     </div>
     <div class="d-flex align-items-center gap-1">
+      <button type="button" class="btn btn-danger btn-xs" (click)="clearAllInquiries()" [disabled]="loading || bookings.length === 0" title="Delete all inquiries from database">
+        <i class="fas fa-trash-alt me-1"></i> Clear All Data
+      </button>
       <button type="button" class="btn btn-outline-light btn-xs" (click)="fetchBookingReports()" [disabled]="loading" title="Refresh Inquiries">
         <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i> Refresh
       </button>
@@ -280,6 +283,9 @@
                   </a>
                   <button type="button" class="ibtn view" (click)="openDetailModal(b)" title="Follow-up Notes">
                     <i class="fas fa-sticky-note"></i>
+                  </button>
+                  <button type="button" class="ibtn delete text-danger" (click)="deleteInquiry(b)" title="Delete Inquiry">
+                    <i class="fas fa-trash-alt"></i>
                   </button>
                 </div>
               </td>

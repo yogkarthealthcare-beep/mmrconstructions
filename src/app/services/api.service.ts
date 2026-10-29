@@ -554,6 +554,7 @@ export class ApiService {
   getAdminInquiries(params: any = {}) { return this.get('/api/admin/inquiries', params, true); }
   adminUpdateInquiry(id: number | string, data: any) { return this.put(`/api/admin/inquiries/${id}`, data, true); }
   adminDeleteInquiry(id: number | string) { return this.delete(`/api/admin/inquiries/${id}`, true); }
+  adminClearAllInquiries() { return this.delete('/api/admin/inquiries/clear-all', true); }
 
   // Wallet & Withdrawals (Admin)
   adminGetWalletTransactions(params: any = {}) { return this.get('/api/admin/wallet/transactions', params, true); }
