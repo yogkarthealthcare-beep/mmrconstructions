@@ -50,7 +50,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       expanded: false,
       items: [
         { icon: 'fas fa-chart-pie', label: 'Dashboard Overview', route: '/admin/dashboard' },
-        { icon: 'fas fa-envelope-open-text', label: 'General Enquiry', route: '/admin/booking-report', queryParams: { type: 'general_site_visit' }, badge: 'LEADS' },
+        { icon: 'fas fa-envelope-open-text', label: 'General Enquiry', route: '/admin/booking-report', queryParams: { type: 'general_site_visit' } },
       ]
     },
     {
@@ -59,7 +59,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       expanded: false,
       items: [
         { icon: 'fas fa-clipboard-list', label: 'Plot Orders', route: '/admin/plot-orders' },
-        { icon: 'fas fa-file-invoice-dollar', label: 'Payment Settlement', route: '/admin/payment-settlement', badge: 'NEW' },
+        { icon: 'fas fa-file-invoice-dollar', label: 'Payment Settlement', route: '/admin/payment-settlement' },
       ]
     },
     {
@@ -70,12 +70,12 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { icon: 'fas fa-users', label: 'Customer Directory', route: '/admin/customers' },
         { icon: 'fas fa-id-card', label: 'Customer Enrollments', route: '/admin/enrollments', queryParams: { tab: 'customer' } },
         { icon: 'fas fa-calendar-check', label: 'Booking Management', route: '/admin/booking-management' },
-        { icon: 'fas fa-sitemap', label: 'Unattributed Bookings', route: '/admin/unattributed-bookings', badge: 'RESOLVE' },
-        { icon: 'fas fa-trophy', label: 'Sales Leaderboards', route: '/admin/leaderboards', badge: 'RANK' },
+        { icon: 'fas fa-sitemap', label: 'Unattributed Bookings', route: '/admin/unattributed-bookings' },
+        { icon: 'fas fa-trophy', label: 'Sales Leaderboards', route: '/admin/leaderboards' },
         { icon: 'fas fa-tasks', label: 'Booking Workflow', route: '/admin/booking-workflow' },
         { icon: 'fas fa-rupee-sign', label: 'EMI & Installments', route: '/admin/emi-payments' },
-        { icon: 'fas fa-university', label: 'Payment & Collections Ledger', route: '/admin/payment-management', badge: 'ERP' },
-        { icon: 'fas fa-clipboard-list', label: 'Booking & Customer Enquiries', route: '/admin/booking-report', queryParams: { type: 'customer' }, badge: 'NEW' },
+        { icon: 'fas fa-university', label: 'Payment & Collections Ledger', route: '/admin/payment-management' },
+        { icon: 'fas fa-clipboard-list', label: 'Booking & Customer Enquiries', route: '/admin/booking-report', queryParams: { type: 'customer' } },
         { icon: 'fas fa-shopping-cart', label: 'Orders Management', route: '/admin/orders-mgmt' },
         { icon: 'fas fa-file-contract', label: 'Buyback Terms', route: '/admin/buyback-terms' },
         { icon: 'fas fa-envelope-open-text', label: 'Enquiries & Leads', route: '/admin/enquiries' },
@@ -86,15 +86,15 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       icon: 'fas fa-handshake',
       expanded: false,
       items: [
-        { icon: 'fas fa-user-check', label: 'Registrations & KYC', route: '/admin/approvals', badge: '!', red: true },
+        { icon: 'fas fa-user-check', label: 'Registrations & KYC', route: '/admin/approvals' },
         { icon: 'fas fa-user-tie', label: 'Associate Directory', route: '/admin/associates' },
-        { icon: 'fas fa-users-gear', label: 'Team Member Directory', route: '/admin/team-members', badge: 'NEW' },
+        { icon: 'fas fa-users-gear', label: 'Team Member Directory', route: '/admin/team-members' },
         { icon: 'fas fa-id-card', label: 'Associate Enrollments', route: '/admin/enrollments', queryParams: { tab: 'associate' } },
-        { icon: 'fas fa-project-diagram', label: 'Network Tree', route: '/admin/network-tree', badge: 'NEW' },
+        { icon: 'fas fa-project-diagram', label: 'Network Tree', route: '/admin/network-tree' },
         { icon: 'fas fa-hand-holding-usd', label: 'Commissions', route: '/admin/commissions' },
         { icon: 'fas fa-exchange-alt', label: 'Wallet Transactions', route: '/admin/wallet-transactions' },
-        { icon: 'fas fa-money-bill-wave', label: 'Withdrawal Requests', route: '/admin/withdrawal-requests', badge: 'REQ' },
-        { icon: 'fas fa-bullhorn', label: 'Referral Tools', route: '/admin/referral', badge: 'LINKS' },
+        { icon: 'fas fa-money-bill-wave', label: 'Withdrawal Requests', route: '/admin/withdrawal-requests' },
+        { icon: 'fas fa-bullhorn', label: 'Referral Tools', route: '/admin/referral' },
         { icon: 'fas fa-envelope-open-text', label: 'Associate Enquiries', route: '/admin/booking-report', queryParams: { type: 'associate' } },
       ]
     },
@@ -117,7 +117,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       icon: 'fas fa-receipt',
       expanded: false,
       items: [
-        { icon: 'fas fa-list-alt', label: 'Manage Receipts', route: '/admin/receipts', badge: 'NEW' },
+        { icon: 'fas fa-list-alt', label: 'Manage Receipts', route: '/admin/receipts' },
         { icon: 'fas fa-plus-circle', label: 'Generate Receipt', route: '/admin/receipts/create' },
         { icon: 'fas fa-file-invoice-dollar', label: 'Invoice Settings', route: '/admin/invoice-settings' },
       ]
@@ -129,10 +129,10 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       items: [
         { icon: 'fas fa-city', label: '1. Site ManageMent', route: '/admin/sites' },
         { icon: 'fas fa-plus-circle', label: '2. Add New Site Area', route: '/admin/new-site-area' },
-        { icon: 'fas fa-drafting-compass', label: '3. CAD Plot Detector', route: '/admin/plot-detector-tool', badge: 'CAD' },
-        { icon: 'fas fa-draw-polygon', label: '4. Edit Modify Plot', route: '/admin/plot-map-editor', badge: 'EDIT' },
+        { icon: 'fas fa-drafting-compass', label: '3. CAD Plot Detector', route: '/admin/plot-detector-tool' },
+        { icon: 'fas fa-draw-polygon', label: '4. Edit Modify Plot', route: '/admin/plot-map-editor' },
         { icon: 'fas fa-calculator', label: '5. EMI Calculator Mgmt', route: '/admin/emi-calculator-mgmt' },
-        { icon: 'fas fa-map-marked-alt', label: '6. Admin Sales Map', route: '/admin/sales-map', badge: 'SALES' },
+        { icon: 'fas fa-map-marked-alt', label: '6. Admin Sales Map', route: '/admin/sales-map' },
       ]
     },
     {
@@ -151,13 +151,13 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       icon: 'fas fa-cogs',
       expanded: false,
       items: [
-        { icon: 'fas fa-database', label: 'Database Backup', route: '/admin/database-backup', badge: 'DB' },
+        { icon: 'fas fa-database', label: 'Database Backup', route: '/admin/database-backup' },
         { icon: 'fab fa-whatsapp', label: 'WhatsApp Automation', route: '/admin/whatsapp' },
         { icon: 'fas fa-credit-card', label: 'Payment Gateways', route: '/admin/payment-gateways' },
         { icon: 'fas fa-sliders-h', label: 'General Settings', route: '/admin/settings' },
         { icon: 'fas fa-shield-alt', label: 'Control', route: '/admin/control' },
         { icon: 'fas fa-key', label: 'Change Password', route: '/admin/change-password' },
-        { icon: 'fas fa-database', label: 'Master Data', route: '/admin/master-data', badge: 'MASTER' },
+        { icon: 'fas fa-database', label: 'Master Data', route: '/admin/master-data' },
         { icon: 'fas fa-sms', label: 'Test OTP', route: '/admin/test-otp' },
       ]
     },
