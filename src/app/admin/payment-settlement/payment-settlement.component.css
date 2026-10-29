@@ -367,22 +367,40 @@
 /* ==========================================================================
    Sticky Actions Column (Fixed on Right)
    ========================================================================== */
+.settlement-table tr {
+  contain: none !important;
+  transform: none !important;
+  filter: none !important;
+  will-change: auto !important;
+  perspective: none !important;
+}
+
+.settlement-table td,
+.settlement-table th {
+  contain: none !important;
+  transform: none !important;
+}
+
 .sticky-action-header {
+  position: -webkit-sticky !important;
   position: sticky !important;
   right: 0 !important;
-  z-index: 20 !important;
+  z-index: 100 !important;
   background-color: #e2e8f0 !important;
-  box-shadow: -5px 0 10px rgba(0, 0, 0, 0.06);
-  min-width: 180px;
+  box-shadow: -5px 0 12px rgba(0, 0, 0, 0.08);
+  min-width: 190px !important;
+  width: 190px !important;
 }
 
 .sticky-action-cell {
+  position: -webkit-sticky !important;
   position: sticky !important;
   right: 0 !important;
-  z-index: 15 !important;
+  z-index: 90 !important;
   background-color: #ffffff !important;
-  box-shadow: -5px 0 10px rgba(0, 0, 0, 0.05);
-  min-width: 180px;
+  box-shadow: -5px 0 12px rgba(0, 0, 0, 0.08);
+  min-width: 190px !important;
+  width: 190px !important;
 }
 
 .settlement-table tbody tr:hover td.sticky-action-cell {
@@ -397,13 +415,30 @@
   background-color: #ecfdf5 !important;
 }
 
+/* Stable Column Widths */
+.col-order { min-width: 120px; }
+.col-date { min-width: 120px; }
+.col-site { min-width: 160px; }
+.col-buyer { min-width: 180px; }
+.col-seller { min-width: 180px; }
+.col-tm { min-width: 180px; }
+.col-soc { min-width: 190px; }
+.col-referral { min-width: 170px; }
+.col-price { min-width: 120px; }
+.col-received { min-width: 130px; }
+.col-paystatus { min-width: 120px; }
+.col-settlestatus { min-width: 130px; }
+.col-actions { min-width: 190px; width: 190px; }
+
 /* ==========================================================================
    Single Line Cells & Stack Formatting (No Line Break Mid-Text/Email/Name)
    ========================================================================== */
 .nowrap-text {
   white-space: nowrap !important;
   word-break: keep-all !important;
-  overflow: visible !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .cell-stack {
@@ -411,6 +446,7 @@
   flex-direction: column;
   gap: 3px;
   white-space: nowrap !important;
+  max-width: 100%;
 }
 
 .site-name-single {
@@ -701,18 +737,18 @@
 
 /* Modals */
 .modal-backdrop-custom {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
-  z-index: 1050;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 999999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
   animation: fadeIn 0.2s ease-out;
 }
 .modal-dialog-custom {

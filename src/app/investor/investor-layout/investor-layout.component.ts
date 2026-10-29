@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink, RouterOutlet, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
@@ -13,10 +13,74 @@ import { VerifiedBadgeComponent } from '../../shared/verified-badge/verified-bad
   templateUrl: './investor-layout.component.html',
   styleUrls: ['./investor-layout.component.css']
 })
-export class InvestorLayoutComponent implements OnInit {
+export class InvestorLayoutComponent implements OnInit, OnDestroy {
   sidebarOpen = false;
   sidebarCollapsed = false;
   showUserDropdown = false;
+  activeDropdown: 'notif' | 'settings' | 'user' | null = null;
+  notifications: any[] = [];
+  unreadNotifCount = 0;
+  loadingNotifs = false;
+  private notifTimer: any = null;
+
+  toggleDropdown(type: 'notif' | 'settings' | 'user') {
+    this.activeDropdown = this.activeDropdown === type ? null : type;
+    if (this.activeDropdown === 'notif') {
+      this.loadInvestorNotifications();
+    }
+  }
+
+  closeDropdowns() {
+    this.activeDropdown = null;
+  }
+
+  loadInvestorNotifications(silent = false) {
+    if (!silent) this.loadingNotifs = true;
+    this.api.getInvestorNotifications().subscribe({
+      next: (res: any) => {
+        this.loadingNotifs = false;
+        if (res.success) {
+          const list = res.data || [];
+          this.notifications = list.slice(0, 12);
+          this.unreadNotifCount = list.filter((n: any) => !n.is_read).length;
+        }
+      },
+      error: () => {
+        this.loadingNotifs = false;
+      }
+    });
+  }
+
+  onNotifClick(item: any) {
+    if (!item.is_read) {
+      this.api.markInvestorNotificationRead(item.id).subscribe(() => {
+        item.is_read = true;
+        this.unreadNotifCount = Math.max(0, this.unreadNotifCount - 1);
+      });
+    }
+    this.closeDropdowns();
+    if (item.link) {
+      this.router.navigateByUrl(item.link);
+    }
+  }
+
+  markAllNotifsRead(event?: Event) {
+    if (event) event.stopPropagation();
+    this.api.markAllInvestorNotificationsRead().subscribe({
+      next: () => {
+        this.notifications.forEach(n => n.is_read = true);
+        this.unreadNotifCount = 0;
+      }
+    });
+  }
+
+  getNotifIcon(item: any): string {
+    const t = (item.title || '').toLowerCase();
+    if (t.includes('deposit')) return 'fas fa-hand-holding-usd text-success';
+    if (t.includes('withdraw')) return 'fas fa-money-bill-wave text-warning';
+    if (t.includes('settlement')) return 'fas fa-chart-line text-info';
+    return 'fas fa-gem text-warning';
+  }
   investorData: any = null;
 
   toggleSidebarCollapse() {
@@ -101,6 +165,8 @@ export class InvestorLayoutComponent implements OnInit {
 
   ngOnInit() {
     this.initNavGroups();
+    this.loadInvestorNotifications();
+    this.notifTimer = setInterval(() => this.loadInvestorNotifications(true), 30000);
 
     this.auth.investorUser$.subscribe(user => {
       this.investorData = user;
@@ -138,15 +204,10 @@ export class InvestorLayoutComponent implements OnInit {
     return n.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase();
   }
 
-  activeDropdown: 'notif' | 'settings' | 'user' | null = null;
-
-  toggleDropdown(type: 'notif' | 'settings' | 'user' = 'user') {
-    this.activeDropdown = this.activeDropdown === type ? null : type;
-  }
-
-  closeDropdowns() {
-    this.activeDropdown = null;
-    this.showUserDropdown = false;
+  ngOnDestroy() {
+    if (this.notifTimer) {
+      clearInterval(this.notifTimer);
+    }
   }
 
   toggleSidebar() {

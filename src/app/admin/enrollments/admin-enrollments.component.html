@@ -135,11 +135,11 @@
         <thead>
           <tr>
             <th class="th-sno" style="width: 5%;">#</th>
-            <th style="width: 23%;">Applicant Name &amp; App No</th>
-            <th style="width: 20%;">Contact &amp; Email</th>
-            <th class="priority-2" style="width: 18%;">Project &amp; Property</th>
-            <th style="width: 14%;">Total Value</th>
-            <th style="width: 10%;">Enrollment Status</th>
+            <th style="width: 22%;">Applicant Name &amp; App No</th>
+            <th style="width: 18%;">Contact &amp; Email</th>
+            <th class="priority-2" style="width: 16%;">Project &amp; Property</th>
+            <th style="width: 15%;">Enrollment Status</th>
+            <th style="width: 14%;">Document Verification</th>
             <th class="text-end" style="width: 10%;">Actions</th>
           </tr>
         </thead>
@@ -164,22 +164,33 @@
                 <span class="prop-type text-truncate">{{ item.property_type || '—' }} <span *ngIf="item.plot_flat_no">(#{{ item.plot_flat_no }})</span></span>
               </div>
             </td>
-            <td data-label="Total Value">
-              <span class="amount-val fw-700 text-dark">₹{{ (item.basic_sale_price || 0) + (item.plc_dev_charges || 0) | number }}</span>
-            </td>
             <td data-label="Enrollment Status">
-              <span class="chip" [ngClass]="{
-                'chip-ok': item.enrollment_status === 'Completed' || item.application_status === 'Approved',
-                'chip-warn': item.enrollment_status === 'Pending' || item.application_status === 'Pending' || (!item.enrollment_status && item.application_status !== 'Approved' && item.application_status !== 'Rejected'),
-                'chip-err': item.enrollment_status === 'Rejected' || item.application_status === 'Rejected'
-              }">
-                <i class="fas" [ngClass]="{
-                  'fa-check-circle': item.enrollment_status === 'Completed' || item.application_status === 'Approved',
-                  'fa-clock': item.enrollment_status === 'Pending' || item.application_status === 'Pending' || (!item.enrollment_status && item.application_status !== 'Approved' && item.application_status !== 'Rejected'),
-                  'fa-times-circle': item.enrollment_status === 'Rejected' || item.application_status === 'Rejected'
-                }"></i>
-                {{ item.enrollment_status || item.application_status || 'Pending' }}
-              </span>
+              <select class="form-select form-select-xs fw-600 status-dropdown"
+                      [ngClass]="{
+                        'border-success text-success bg-success-subtle': item.enrollment_status === 'Completed' || item.application_status === 'Approved',
+                        'border-warning text-dark bg-warning-subtle': item.enrollment_status === 'Pending' || item.application_status === 'Pending' || (!item.enrollment_status && item.application_status !== 'Approved' && item.application_status !== 'Rejected'),
+                        'border-danger text-danger bg-danger-subtle': item.enrollment_status === 'Rejected' || item.application_status === 'Rejected'
+                      }"
+                      [value]="(item.enrollment_status === 'Completed' || item.application_status === 'Approved') ? 'Approved' : ((item.enrollment_status === 'Rejected' || item.application_status === 'Rejected') ? 'Rejected' : 'Pending')"
+                      (change)="onCustomerStatusDropdownChange(item, $event)">
+                <option value="Pending" [disabled]="true">Pending Approval</option>
+                <option value="Approved">Approve</option>
+                <option value="Rejected">Reject</option>
+              </select>
+            </td>
+            <td data-label="Document Verification">
+              <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                <span class="badge" [ngClass]="{
+                  'bg-success-subtle text-success border border-success': item.is_verified || item.enrollment_status === 'Completed' || item.application_status === 'Approved',
+                  'bg-warning-subtle text-dark border border-warning': !item.is_verified && item.enrollment_status !== 'Completed' && item.application_status !== 'Approved'
+                }">
+                  <i class="fas" [ngClass]="(item.is_verified || item.enrollment_status === 'Completed' || item.application_status === 'Approved') ? 'fa-check-circle' : 'fa-clock'"></i>
+                  {{ (item.is_verified || item.enrollment_status === 'Completed' || item.application_status === 'Approved') ? 'Verified' : 'Pending' }}
+                </span>
+                <button type="button" class="btn btn-outline-primary btn-xs fw-600 py-0.5 px-1.5" (click)="openDocVerification(item)" title="Click to view & verify documents">
+                  <i class="fas fa-folder-open me-1"></i> Verify
+                </button>
+              </div>
             </td>
             <td class="td-actions text-end" data-label="Actions">
               <div class="action-btn-group">
@@ -1121,6 +1132,111 @@
         <i class="fas fa-save" [class.fa-spin]="saving"></i>
         {{ saving ? 'Saving Changes...' : 'Save & Update Database' }}
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CUSTOMER DOCUMENT VERIFICATION MODAL ================= -->
+<div class="modal-backdrop-custom" *ngIf="showDocVerificationModal" (click)="closeDocVerification()">
+  <div class="modal-dialog-custom" (click)="$event.stopPropagation()" style="max-width: 720px; max-height: 85vh; display: flex; flex-direction: column; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+    <!-- Modal Header -->
+    <div class="d-flex justify-content-between align-items-center py-2.5 px-3 bg-dark text-white border-bottom" style="background: linear-gradient(135deg, #0f3724 0%, #17422b 100%) !important;">
+      <div class="d-flex align-items-center gap-2">
+        <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(212,175,55,0.2); display: flex; align-items: center; justify-content: center;">
+          <i class="fas fa-shield-alt text-warning fs-14"></i>
+        </div>
+        <div>
+          <h5 class="fs-13 fw-700 text-white mb-0">Customer Document Verification</h5>
+          <small class="text-white-50 fs-11">
+            {{ selectedDocItem?.applicant_name || selectedDocItem?.full_name }} &bull; {{ selectedDocItem?.application_no || selectedDocItem?.user_id }}
+          </small>
+        </div>
+      </div>
+      <button type="button" class="btn-close btn-close-white btn-xs" (click)="closeDocVerification()" style="filter: brightness(0) invert(1); opacity: 0.8;"></button>
+    </div>
+
+    <!-- Modal Body with scrolling -->
+    <div class="p-3 overflow-auto" style="flex: 1 1 auto; max-height: calc(85vh - 120px);">
+      <!-- Loading State -->
+      <div *ngIf="docVerificationLoading" class="text-center py-4">
+        <i class="fas fa-spinner fa-spin fa-2x text-success"></i>
+        <p class="fs-12 text-muted mt-2 mb-0">Loading customer verification documents...</p>
+      </div>
+
+      <div *ngIf="!docVerificationLoading">
+        <!-- Customer Info Banner -->
+        <div class="alert alert-light border d-flex justify-content-between align-items-center flex-wrap gap-2 p-2 mb-3 rounded-8" style="background: #f8fafc;">
+          <div class="fs-12">
+            <strong>Customer:</strong> {{ selectedDocItem?.applicant_name || selectedDocItem?.full_name }} &bull;
+            <strong>Phone:</strong> {{ selectedDocItem?.mobile_1 || selectedDocItem?.mobile_no || 'N/A' }} &bull;
+            <strong>Status:</strong>
+            <span class="badge ms-1" [ngClass]="(selectedDocItem?.enrollment_status === 'Completed' || selectedDocItem?.application_status === 'Approved') ? 'bg-success' : 'bg-warning text-dark'">
+              {{ (selectedDocItem?.enrollment_status === 'Completed' || selectedDocItem?.application_status === 'Approved') ? 'Verified' : 'Pending' }}
+            </span>
+          </div>
+          <button type="button" class="btn btn-success btn-xs fw-700" (click)="approveAllCustomerDocuments()" [disabled]="docVerificationApproving">
+            <i class="fas fa-check-double me-1" *ngIf="!docVerificationApproving"></i>
+            <i class="fas fa-spinner fa-spin me-1" *ngIf="docVerificationApproving"></i>
+            Approve All Documents
+          </button>
+        </div>
+
+        <!-- No Documents State -->
+        <div *ngIf="customerDocuments.length === 0" class="text-center py-4 bg-light rounded-8 border">
+          <i class="fas fa-folder-open text-muted fa-2x mb-2"></i>
+          <p class="fs-12 text-muted mb-0">No uploaded documents or photos found for this customer.</p>
+          <small class="text-muted">You can still approve the customer's identity or verify submitted profile.</small>
+        </div>
+
+        <!-- Documents List -->
+        <div class="row g-2" *ngIf="customerDocuments.length > 0">
+          <div class="col-md-6" *ngFor="let doc of customerDocuments">
+            <div class="p-2 border rounded-8 bg-white h-100 d-flex flex-column justify-content-between shadow-xs" style="border: 1px solid #e2e8f0; border-radius: 8px;">
+              <div>
+                <div class="d-flex justify-content-between align-items-center mb-1.5">
+                  <span class="fw-700 fs-12 text-dark">
+                    <i class="fas fa-file-alt text-success me-1"></i> {{ doc.doc_type }}
+                  </span>
+                  <span class="badge" [ngClass]="doc.is_verified ? 'bg-success-subtle text-success border border-success' : 'bg-warning-subtle text-dark border border-warning'">
+                    <i class="fas" [ngClass]="doc.is_verified ? 'fa-check-circle' : 'fa-clock'"></i>
+                    {{ doc.is_verified ? 'Verified' : 'Pending' }}
+                  </span>
+                </div>
+
+                <!-- Preview Thumbnail if image -->
+                <div class="text-center my-2 p-1 bg-light rounded border" style="max-height: 120px; overflow: hidden;" *ngIf="doc.url">
+                  <a [href]="doc.url" target="_blank" title="Click to view full image">
+                    <img [src]="doc.url" class="img-fluid rounded" style="max-height: 110px; object-fit: contain;" [alt]="doc.doc_type">
+                  </a>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mt-2 pt-1 border-top">
+                <a [href]="doc.url" target="_blank" class="btn btn-outline-secondary btn-xs">
+                  <i class="fas fa-external-link-alt me-1"></i> View Full
+                </a>
+                <button type="button" class="btn btn-xs fw-600"
+                        [ngClass]="doc.is_verified ? 'btn-outline-success' : 'btn-success'"
+                        (click)="verifySingleDoc(doc)"
+                        [disabled]="doc.is_verified">
+                  <i class="fas fa-check me-1"></i> {{ doc.is_verified ? 'Verified' : 'Approve' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="py-2 px-3 bg-light border-top d-flex justify-content-between align-items-center">
+      <span class="fs-11 text-muted">Approving documents will mark customer documents as Verified across Customer Panel.</span>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary btn-xs" (click)="closeDocVerification()">Close</button>
+        <button type="button" class="btn btn-success btn-xs fw-700" (click)="approveAllCustomerDocuments()" [disabled]="docVerificationApproving">
+          <i class="fas fa-check-circle me-1"></i> Approve Documents
+        </button>
+      </div>
     </div>
   </div>
 </div>

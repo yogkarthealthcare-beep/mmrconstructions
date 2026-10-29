@@ -534,3 +534,200 @@ export function validateImageUpload(file: File | null | undefined, type: UploadF
   return { valid: true, sizeKb, maxKb };
 }
 
+/**
+ * Standard Investor Enrollment Validation Patterns
+ */
+export const INDIAN_MOBILE_10_PATTERN = /^[6-9][0-9]{9}$/;
+export const PAN_CARD_PATTERN = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+export const PIN_CODE_PATTERN = /^[0-9]{6}$/;
+export const BANK_ACCOUNT_PATTERN = /^[0-9]{9,18}$/;
+export const IFSC_CODE_PATTERN = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
+export interface InvestorValidationResult {
+  valid: boolean;
+  errors: Record<string, string>;
+  firstError?: { field: string; message: string };
+}
+
+/**
+ * Unified Investor Enrollment Validator used across Investor Panel and Admin View
+ */
+export function validateInvestorEnrollmentPayload(data: any, options: { isInvestorSubmit?: boolean; isFinalSubmit?: boolean } = {}): InvestorValidationResult {
+  const errors: Record<string, string> = {};
+
+  // 1. Personal Particulars
+  if (!data.invFirstName || !String(data.invFirstName).trim()) {
+    errors['invFirstName'] = 'Investor First Name required hai (Investor First Name is required).';
+  } else if (!isValidHumanName(data.invFirstName)) {
+    errors['invFirstName'] = 'First Name mein sirf letters hone chahiye (First Name must contain only letters).';
+  }
+
+  if (data.invMiddleName && !isValidHumanName(data.invMiddleName)) {
+    errors['invMiddleName'] = 'Middle Name mein sirf letters hone chahiye (Middle Name must contain only letters).';
+  }
+
+  if (!data.invSurname || !String(data.invSurname).trim()) {
+    errors['invSurname'] = 'Investor Surname required hai (Investor Surname is required).';
+  } else if (!isValidHumanName(data.invSurname)) {
+    errors['invSurname'] = 'Surname mein sirf letters hone chahiye (Surname must contain only letters).';
+  }
+
+  if (!data.fhFirstName || !String(data.fhFirstName).trim()) {
+    errors['fhFirstName'] = "Father's/Husband's First Name required hai (Father's/Husband's First Name is required).";
+  } else if (!isValidHumanName(data.fhFirstName)) {
+    errors['fhFirstName'] = "Father's First Name mein sirf letters hone chahiye (First Name must contain only letters).";
+  }
+
+  if (data.fhMiddleName && !isValidHumanName(data.fhMiddleName)) {
+    errors['fhMiddleName'] = "Father's Middle Name mein sirf letters hone chahiye (Middle Name must contain only letters).";
+  }
+
+  if (!data.fhSurname || !String(data.fhSurname).trim()) {
+    errors['fhSurname'] = "Father's/Husband's Surname required hai (Father's/Husband's Surname is required).";
+  } else if (!isValidHumanName(data.fhSurname)) {
+    errors['fhSurname'] = "Father's Surname mein sirf letters hone chahiye (Surname must contain only letters).";
+  }
+
+  // DOB & Age
+  if (!data.dob) {
+    errors['dob'] = 'Date of Birth required hai (Date of Birth is required).';
+  } else {
+    const age = calculateAgeFromDob(data.dob);
+    if (age === null || Number(age) < 18) {
+      errors['dob'] = 'Applicant ki umar kam se kam 18 saal honi chahiye (Applicant must be at least 18 years old).';
+    }
+  }
+
+  // Permanent Address
+  if (!data.address || !String(data.address).trim()) {
+    errors['address'] = 'Permanent Address required hai (Permanent Address is required).';
+  }
+  if (!data.city || !String(data.city).trim()) {
+    errors['city'] = 'City required hai (City is required).';
+  }
+  if (!data.state || !String(data.state).trim()) {
+    errors['state'] = 'State required hai (State is required).';
+  }
+  if (!data.pinCode || !PIN_CODE_PATTERN.test(String(data.pinCode).trim())) {
+    errors['pinCode'] = 'Pin Code 6 digit ka hona chahiye (PIN Code must be exactly 6 digits).';
+  }
+
+  // Correspondence Address (conditional on sameAsPermanent)
+  if (!data.sameAsPermanent) {
+    if (!data.corrAddress || !String(data.corrAddress).trim()) {
+      errors['corrAddress'] = 'Correspondence Address required hai (Correspondence Address is required).';
+    }
+    if (!data.corrCity || !String(data.corrCity).trim()) {
+      errors['corrCity'] = 'Correspondence City required hai (Correspondence City is required).';
+    }
+    if (!data.corrState || !String(data.corrState).trim()) {
+      errors['corrState'] = 'Correspondence State required hai (Correspondence State is required).';
+    }
+    if (!data.corrPinCode || !PIN_CODE_PATTERN.test(String(data.corrPinCode).trim())) {
+      errors['corrPinCode'] = 'Correspondence Pin Code 6 digit ka hona chahiye (PIN Code must be exactly 6 digits).';
+    }
+  }
+
+  // Mobile & Email
+  if (!data.mobile || !INDIAN_MOBILE_10_PATTERN.test(String(data.mobile).trim())) {
+    errors['mobile'] = 'Mobile number 10 digit ka hona chahiye (6-9 se shuru) (Mobile must be 10 digits starting with 6-9).';
+  }
+  if (data.altTel && !INDIAN_MOBILE_10_PATTERN.test(String(data.altTel).trim())) {
+    errors['altTel'] = 'Alternative Telephone 10 digit ka hona chahiye (Alt phone must be 10 digits).';
+  }
+  if (!data.email || !EMAIL_PATTERN.test(String(data.email).trim())) {
+    errors['email'] = 'Valid Email ID darj karein (Please enter a valid Email ID).';
+  }
+
+  // PAN & Aadhaar
+  if (!data.pan || !PAN_CARD_PATTERN.test(String(data.pan).trim().toUpperCase())) {
+    errors['pan'] = 'PAN Card No. ka format galat hai (e.g. ABCDE1234F) (Invalid PAN Card format).';
+  }
+  if (!data.aadhar || !AADHAAR_PATTERN.test(String(data.aadhar).trim().replace(/\s/g, ''))) {
+    errors['aadhar'] = 'Aadhaar Card No. exactly 12 digit ka hona chahiye (Aadhaar must be exactly 12 digits).';
+  }
+
+  // Investment & Bank
+  const numAmount = Number(data.amount);
+  if (!data.amount || isNaN(numAmount) || numAmount <= 0) {
+    errors['amount'] = 'Investment Amount 0 se bada hona chahiye (Investment Amount must be greater than 0).';
+  }
+
+  if (!data.paymentMode) {
+    errors['paymentMode'] = 'Mode of Payment chunna zaroori hai (Please select Payment Mode).';
+  } else if (data.paymentMode !== 'Cash') {
+    if (!data.txnNo || !String(data.txnNo).trim()) {
+      errors['txnNo'] = 'TXN / Cheque / Ref No. required hai (Transaction/Cheque number is required).';
+    }
+    if (!data.txnDate) {
+      errors['txnDate'] = 'Payment Date required hai (Payment Date is required).';
+    }
+  }
+
+  if (!data.bankBranch || !String(data.bankBranch).trim()) {
+    errors['bankBranch'] = 'Bank & Branch Name required hai (Bank and Branch Name is required).';
+  }
+  if (!data.accountNumber || !BANK_ACCOUNT_PATTERN.test(String(data.accountNumber).trim())) {
+    errors['accountNumber'] = 'Account Number 9 se 18 digit ka hona chahiye (Account Number must be 9 to 18 digits).';
+  }
+  if (!data.ifscCode || !IFSC_CODE_PATTERN.test(String(data.ifscCode).trim().toUpperCase())) {
+    errors['ifscCode'] = 'IFSC Code 11 alphanumeric characters ka hona chahiye (e.g. SBIN0001234).';
+  }
+
+  // Nominees Validation
+  if (Array.isArray(data.nominees) && data.nominees.length > 0) {
+    let filledCount = 0;
+    let totalProp = 0;
+    for (let i = 0; i < data.nominees.length; i++) {
+      const nom = data.nominees[i];
+      const hasAnyField = Boolean(nom.name || nom.relationship || nom.age || nom.proportion);
+      if (hasAnyField) {
+        filledCount++;
+        if (!nom.name || !String(nom.name).trim()) {
+          errors[`nominee_${i}_name`] = `Nominee #${i + 1} ka Name required hai.`;
+        }
+        if (!nom.relationship || !String(nom.relationship).trim()) {
+          errors[`nominee_${i}_relationship`] = `Nominee #${i + 1} ka Relationship required hai.`;
+        }
+        if (!nom.age || Number(nom.age) <= 0) {
+          errors[`nominee_${i}_age`] = `Nominee #${i + 1} ki Age valid honi chahiye.`;
+        }
+        const prop = Number(nom.proportion);
+        if (isNaN(prop) || prop <= 0 || prop > 100) {
+          errors[`nominee_${i}_proportion`] = `Nominee #${i + 1} ka Proportion (1-100)% hona chahiye.`;
+        } else {
+          totalProp += prop;
+        }
+      }
+    }
+    if (filledCount > 0 && totalProp !== 100) {
+      errors['nominees_total'] = `Sabhi Nominees ka Proportion total exactly 100% hona chahiye (Current total: ${totalProp}%).`;
+    }
+  }
+
+  // Declaration & Place
+  if (!data.declPlace || !String(data.declPlace).trim()) {
+    errors['declPlace'] = 'Place required hai (Place of signing is required).';
+  }
+
+  if (options.isInvestorSubmit) {
+    if (!data.declarationCheck) {
+      errors['declarationCheck'] = 'Declaration terms par agree karke tick lagana zaroori hai (Please tick the declaration checkbox).';
+    }
+  }
+
+  // Photo & Signature (required)
+  if (!data.photo && !data.photo_url) {
+    errors['photo'] = 'Passport-size Photo upload karna zaroori hai (JPG/PNG <= 100 KB).';
+  }
+  if (!data.signature && !data.signature_first_url && !data.signatureFirstApplicant && !data.declSignatureDataUrl) {
+    errors['signature'] = 'Investor Signature upload karna zaroori hai (JPG/PNG <= 50 KB).';
+  }
+
+  const keys = Object.keys(errors);
+  const valid = keys.length === 0;
+  const firstError = valid ? undefined : { field: keys[0], message: errors[keys[0]] };
+
+  return { valid, errors, firstError };
+}
+

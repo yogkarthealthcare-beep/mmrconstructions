@@ -6,13 +6,13 @@
         <i class="fas fa-hand-holding-usd"></i>
       </div>
       <div>
-        <h1 class="inv-page-title">Make a Deposit</h1>
-        <p class="inv-page-subtitle">Add funds securely to your investor account via online gateway or manual UPI</p>
+        <h1 class="inv-page-title">Make a Deposit / फण्ड जमा करें</h1>
+        <p class="inv-page-subtitle">Add funds securely to your investor wallet via Company UPI, Bank Transfer, or Cheque/DD</p>
       </div>
     </div>
     <div class="inv-page-actions">
       <span class="inv-badge inv-badge-gold">
-        <i class="fas fa-shield-alt"></i> Verified Payment Gateway
+        <i class="fas fa-shield-alt"></i> Verified Account Details
       </span>
     </div>
   </div>
@@ -65,7 +65,7 @@
               </div>
             </div>
 
-            <!-- Payment Method -->
+            <!-- Payment Method Dropdown -->
             <div class="inv-form-group">
               <label class="inv-label" for="paymentMethod">
                 Payment Method <span class="req">*</span>
@@ -75,39 +75,43 @@
               </select>
             </div>
 
-            <!-- Online Gateway (if online) -->
-            <div class="inv-form-group" *ngIf="form.payment_method === 'online'">
-              <label class="inv-label" for="gatewaySelect">Payment Gateway <span class="req">*</span></label>
-              <select id="gatewaySelect" class="inv-select text-capitalize" [(ngModel)]="form.gateway" name="gateway">
-                <option *ngFor="let gateway of gateways" [value]="gateway">{{ gateway }}</option>
-              </select>
-            </div>
-
-            <!-- 1. Manual UPI Payment Box -->
+            <!-- 1. Manual UPI Payment Box (with Admin Active QR & UPI ID) -->
             <div class="inv-upi-box mb-3" *ngIf="form.payment_method === 'manual_upi'">
               <div class="d-flex align-items-center justify-content-between mb-2">
                 <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
-                  <i class="fas fa-qrcode text-success"></i> Official Company UPI
+                  <i class="fas fa-qrcode text-success"></i> {{ companyQrLabel || 'Official Company UPI' }}
                 </span>
-                <span class="inv-badge inv-badge-approved" style="font-size: 10px;">Verified Account</span>
+                <span class="inv-badge inv-badge-approved" style="font-size: 10px;">Active Admin QR</span>
+              </div>
+
+              <!-- Multiple QR code switcher tabs if admin has more than 1 active QR -->
+              <div *ngIf="activeQrs.length > 1" class="d-flex gap-1.5 mb-2">
+                <button type="button"
+                        *ngFor="let q of activeQrs"
+                        class="btn btn-xs"
+                        [class.btn-success]="selectedQrKey === q.qr_code_key"
+                        [class.btn-outline-secondary]="selectedQrKey !== q.qr_code_key"
+                        (click)="selectQr(q)">
+                  {{ q.label }}
+                </button>
               </div>
 
               <div class="d-flex align-items-center gap-3">
                 <div class="inv-upi-qr-frame">
-                  <img [src]="companyQrUrl" alt="Company UPI QR" />
+                  <img [src]="companyQrUrl" [alt]="companyQrLabel" (error)="$any($event.target).src = '/assets/images/qr/mmr_qr1.png'" />
                 </div>
                 <div class="flex-fill" style="min-width: 0;">
-                  <div class="text-muted" style="font-size: 11.5px;">Company UPI ID</div>
+                  <div class="text-muted" style="font-size: 11px;">Company UPI ID (कंपनी UPI ID)</div>
                   <div class="fw-bold text-dark font-monospace text-truncate" style="font-size: 13px;">{{ companyUpiId }}</div>
-                  <button type="button" class="inv-btn inv-btn-sm inv-btn-outline mt-1.5 py-1 px-2" (click)="copyUpiId()">
-                    <i [class]="copiedUpi ? 'fas fa-check text-success' : 'fas fa-copy'"></i>
-                    <span>{{ copiedUpi ? 'UPI ID Copied!' : 'Copy UPI ID' }}</span>
+                  <button type="button" class="inv-btn inv-btn-sm inv-btn-outline mt-1.5 py-1 px-2.5" (click)="copyUpiId()">
+                    <i [class]="copiedUpi ? 'fas fa-check text-success' : 'far fa-copy'"></i>
+                    <span class="ms-1">{{ copiedUpi ? 'UPI ID Copied!' : 'Copy UPI ID' }}</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <!-- 2. Bank Transfer Info Box (Full Bank Details with Copy buttons) -->
+            <!-- 2. Bank Transfer Info Box (Compact Single-line design) -->
             <div class="mb-3" *ngIf="form.payment_method === 'bank_transfer'">
               <app-bank-details [compact]="true"></app-bank-details>
             </div>
@@ -116,45 +120,84 @@
             <div class="inv-upi-box mb-3" *ngIf="form.payment_method === 'offline_cash'">
               <div class="d-flex align-items-center justify-content-between mb-2">
                 <span class="fw-bold text-dark small d-flex align-items-center gap-1.5">
-                  <i class="fas fa-money-bill-wave text-warning"></i> Office Cash / Cheque / DD
+                  <i class="fas fa-money-bill-wave text-warning"></i> Cheque / Demand Draft / Cash
                 </span>
-                <span class="inv-badge inv-badge-neutral" style="font-size: 10px;">Offline Receipt</span>
+                <span class="inv-badge inv-badge-neutral" style="font-size: 10px;">Office Deposit</span>
               </div>
               <p class="small text-muted mb-0">
-                Deposit cash/cheque directly at our branch office. Enter the Receipt Slip / Cheque number below and upload a photo of the slip.
+                Deposit cheque, demand draft or cash at company branch office. Please enter the cheque or receipt number below and capture or upload a clear photo of the cheque/receipt.
               </p>
             </div>
 
-            <!-- Transaction Reference / UTR Number (for all non-online) -->
-            <div class="inv-form-group" *ngIf="form.payment_method !== 'online'">
+            <!-- Transaction Reference / UTR Number -->
+            <div class="inv-form-group">
               <label class="inv-label" for="txnRef">
-                {{ form.payment_method === 'offline_cash' ? 'Receipt Slip / Cheque / DD Number' : 'Transaction Reference / UTR Number' }} <span class="req">*</span>
+                <span *ngIf="form.payment_method === 'manual_upi'">12-Digit UPI Transaction ID / UTR Number</span>
+                <span *ngIf="form.payment_method === 'bank_transfer'">IMPS / NEFT / RTGS Reference Number</span>
+                <span *ngIf="form.payment_method === 'offline_cash'">Cheque No. / DD No. / Receipt Slip Number</span>
+                <span class="req">*</span>
               </label>
               <input id="txnRef"
                      type="text"
                      class="inv-input"
                      [(ngModel)]="form.transaction_reference"
                      name="transaction_reference"
-                     [placeholder]="form.payment_method === 'offline_cash' ? 'e.g. REC-10294 or Cheque No.' : 'Enter 12-digit UTR / Txn Reference'"
+                     [placeholder]="form.payment_method === 'offline_cash' ? 'e.g. CHQ-001294 or Slip Number' : (form.payment_method === 'manual_upi' ? 'e.g. 429381749201 (12-digit UTR)' : 'e.g. HDFCN1234567890')"
                      required />
             </div>
 
-            <!-- Upload Screenshot / Proof -->
-            <div class="inv-form-group" *ngIf="form.payment_method !== 'online'">
-              <label class="inv-label" for="screenshotUpload">
-                Upload Payment Proof / Receipt Slip <span class="text-muted">(Optional)</span>
+            <!-- Upload Screenshot / Photo Capture (Camera or File) -->
+            <div class="inv-form-group">
+              <label class="inv-label mb-1.5">
+                <span *ngIf="form.payment_method === 'manual_upi'">Payment Screenshot / Receipt Photo (स्क्रीनशॉट / फोटो)</span>
+                <span *ngIf="form.payment_method === 'bank_transfer'">Bank Transfer Acknowledgement / Receipt Photo</span>
+                <span *ngIf="form.payment_method === 'offline_cash'">Cheque / DD / Receipt Slip Photo (चेक/डीडी/रसीद फोटो)</span>
+                <span class="text-muted small ms-1">(Optional / ऐच्छिक)</span>
               </label>
-              <input id="screenshotUpload"
-                     type="file"
-                     class="inv-input"
-                     accept=".jpg,.jpeg,.png,.pdf"
-                     (change)="onScreenshotChange($event)" />
-              <div class="text-muted mt-1" style="font-size: 11px;">Supported: JPG, PNG, PDF (Max 5 MB)</div>
+
+              <!-- Dual Options: Camera Capture (Mobile) & File Chooser (Desktop/Mobile) -->
+              <div class="proof-upload-buttons d-flex gap-2 mb-2">
+                <label class="btn btn-sm btn-outline-success flex-fill mb-0 py-2 d-flex align-items-center justify-content-center gap-1.5" style="cursor: pointer;" title="Camera se photo click karein">
+                  <i class="fas fa-camera text-success fs-6"></i>
+                  <span class="fw-semibold">Take Photo (कैमरा)</span>
+                  <input type="file" #cameraInput accept="image/*" capture="environment" (change)="onScreenshotChange($event)" hidden>
+                </label>
+                <label class="btn btn-sm btn-outline-primary flex-fill mb-0 py-2 d-flex align-items-center justify-content-center gap-1.5" style="cursor: pointer;" title="Gallery ya folder se file select karein">
+                  <i class="fas fa-image text-primary fs-6"></i>
+                  <span class="fw-semibold">Choose File (अपलोड)</span>
+                  <input type="file" #fileInput accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" (change)="onScreenshotChange($event)" hidden>
+                </label>
+              </div>
+
+              <!-- Selected File / Captured Photo Preview -->
+              <div *ngIf="selectedScreenshot" class="selected-proof-card p-2 border rounded bg-white mt-2">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="proof-thumb-box" *ngIf="screenshotPreviewUrl" (click)="openPreview(screenshotPreviewUrl)" title="Click to view">
+                    <img [src]="screenshotPreviewUrl" alt="Proof Preview" class="proof-thumb-img">
+                  </div>
+                  <div class="proof-thumb-box d-flex align-items-center justify-content-center bg-light" *ngIf="!screenshotPreviewUrl">
+                    <i class="fas fa-file-pdf text-danger fs-3"></i>
+                  </div>
+                  <div class="flex-fill text-truncate">
+                    <div class="small fw-bold text-dark text-truncate">{{ selectedScreenshot.name }}</div>
+                    <div class="text-muted" style="font-size: 11px;">
+                      {{ (selectedScreenshot.size / 1024).toFixed(0) }} KB &bull; <span class="text-success"><i class="fas fa-check-circle"></i> Ready to submit</span>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-xs btn-outline-danger" (click)="clearScreenshot(cameraInput, fileInput)" title="Remove file">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="text-muted mt-1" style="font-size: 11px;">
+                <i class="fas fa-info-circle me-1"></i> Mobile user camera se direct photo click kar sakte hain ya screenshot upload kar sakte hain. Max: 5 MB.
+              </div>
             </div>
 
             <!-- Submit Button -->
             <div class="mt-3">
-              <button type="submit" class="inv-btn inv-btn-primary w-100 py-2" [disabled]="submitting">
+              <button type="submit" class="inv-btn inv-btn-primary w-100 py-2.5" [disabled]="submitting">
                 <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1.5"></span>
                 <i *ngIf="!submitting" class="fas fa-check-circle me-1.5"></i>
                 {{ submitting ? 'Submitting Request...' : 'Submit Deposit Request' }}
@@ -176,7 +219,7 @@
             </div>
             <div>
               <h2 class="inv-card-title">Deposit History</h2>
-              <p class="inv-card-desc">Log of your past deposit requests</p>
+              <p class="inv-card-desc">Log of your past deposit requests and verification status</p>
             </div>
           </div>
           <span class="inv-badge inv-badge-neutral" *ngIf="!loading">
@@ -199,6 +242,7 @@
                   <th class="text-end">Amount</th>
                   <th>Method</th>
                   <th>Reference / UTR</th>
+                  <th>Proof</th>
                   <th>Status</th>
                   <th class="pe-3">Remarks</th>
                 </tr>
@@ -206,16 +250,29 @@
               <tbody>
                 <tr *ngFor="let dep of deposits">
                   <td class="ps-3 text-muted" style="white-space: nowrap; font-size: 12px;">
-                    {{ dep.created_at | date:'mediumDate' }}
+                    {{ dep.created_at | date:'dd MMM yyyy, hh:mm a' }}
                   </td>
                   <td class="text-end fw-bold text-success" style="white-space: nowrap;">
                     + ₹{{ dep.amount | number:'1.2-2' }}
                   </td>
                   <td class="text-capitalize small">
-                    {{ dep.payment_method?.replace('_', ' ') }}
+                    <span *ngIf="dep.payment_method === 'manual_upi'"><i class="fas fa-qrcode text-success me-1"></i> UPI</span>
+                    <span *ngIf="dep.payment_method === 'bank_transfer'"><i class="fas fa-university text-primary me-1"></i> Bank Transfer</span>
+                    <span *ngIf="dep.payment_method === 'offline_cash'"><i class="fas fa-money-bill text-warning me-1"></i> Cheque/Cash</span>
+                    <span *ngIf="dep.payment_method !== 'manual_upi' && dep.payment_method !== 'bank_transfer' && dep.payment_method !== 'offline_cash'">{{ dep.payment_method?.replace('_', ' ') }}</span>
                   </td>
                   <td>
-                    <span class="inv-mono-chip">{{ dep.transaction_reference || '-' }}</span>
+                    <span class="inv-mono-chip font-monospace">{{ dep.transaction_reference || '-' }}</span>
+                  </td>
+                  <td>
+                    <button *ngIf="dep.payment_screenshot_url || dep.payment_screenshot_data"
+                            type="button"
+                            class="btn btn-xs btn-outline-primary"
+                            (click)="openPreview(getProofUrl(dep))"
+                            title="View Payment Proof">
+                      <i class="fas fa-image me-1"></i> View Proof
+                    </button>
+                    <span *ngIf="!dep.payment_screenshot_url && !dep.payment_screenshot_data" class="text-muted small">-</span>
                   </td>
                   <td>
                     <span class="inv-badge"
@@ -242,6 +299,26 @@
             <p class="inv-empty-desc">Your submitted deposit requests and verification status will appear here.</p>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal for Deposit Proof -->
+  <div *ngIf="previewDocUrl" class="doc-lightbox-backdrop" (click)="closePreview()">
+    <div class="doc-lightbox-modal" (click)="$event.stopPropagation()">
+      <div class="doc-lightbox-header d-flex justify-content-between align-items-center p-3 bg-dark text-white">
+        <h6 class="mb-0 text-white"><i class="fas fa-file-image text-success me-2"></i> Payment Proof / Receipt</h6>
+        <div class="d-flex gap-2">
+          <a [href]="previewDocUrl" target="_blank" download class="btn btn-sm btn-outline-light">
+            <i class="fas fa-download me-1"></i> Download
+          </a>
+          <button type="button" class="btn btn-sm btn-light" (click)="closePreview()">
+            <i class="fas fa-times"></i> Close
+          </button>
+        </div>
+      </div>
+      <div class="doc-lightbox-content p-3 text-center bg-black">
+        <img [src]="previewDocUrl" alt="Payment Proof" class="img-fluid" style="max-height: 75vh; object-fit: contain;">
       </div>
     </div>
   </div>

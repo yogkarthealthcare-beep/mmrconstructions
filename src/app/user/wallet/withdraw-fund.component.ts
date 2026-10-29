@@ -1141,6 +1141,7 @@ export class WithdrawFundComponent implements OnInit {
   }
 
   public walletHomePath(): string {
+    if (this.router.url.startsWith('/team-member')) return '/team-member/wallet';
     return this.router.url.startsWith('/associate') ? '/associate/wallet' : '/user/wallet';
   }
 

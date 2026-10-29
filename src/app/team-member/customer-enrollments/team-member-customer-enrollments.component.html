@@ -1,0 +1,428 @@
+<div class="team-enrollments-container">
+
+  <!-- HERO HEADER BANNER -->
+  <div class="hero-card mb-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 position-relative z-2">
+      <div>
+        <div class="hero-badge"><i class="fas fa-id-card me-1"></i>CUSTOMER ONBOARDING &amp; APPROVAL</div>
+        <h2 class="hero-title mb-1" style="color: #ffffff !important;">Customer Enrollment Approvals</h2>
+        <p class="hero-sub mb-0" style="color: rgba(255,255,255,0.85) !important;">
+          Review and approve submitted enrollment forms and KYC details for your attributed customers.
+        </p>
+      </div>
+
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <a routerLink="/team-member/referral" class="btn btn-warning btn-xs fw-700 text-dark">
+          <i class="fas fa-user-plus me-1"></i> Invite Customer
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI SUMMARY CARDS -->
+  <div class="row g-2 mb-2">
+    <div class="col-6 col-md-3">
+      <div class="kpi-card p-2 bg-white rounded-8 border shadow-xs d-flex align-items-center gap-2">
+        <div class="kpi-icon-box bg-primary-subtle text-primary">
+          <i class="fas fa-users"></i>
+        </div>
+        <div>
+          <div class="kpi-num fw-800 text-dark fs-16">{{ stats.total }}</div>
+          <div class="kpi-lbl fs-11 text-muted">Total Customers</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="kpi-card p-2 bg-white rounded-8 border shadow-xs d-flex align-items-center gap-2" (click)="setStatusFilter('pending')" style="cursor: pointer;">
+        <div class="kpi-icon-box bg-warning-subtle text-dark">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div>
+          <div class="kpi-num fw-800 text-dark fs-16">{{ stats.pending }}</div>
+          <div class="kpi-lbl fs-11 text-muted">Pending Review</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="kpi-card p-2 bg-white rounded-8 border shadow-xs d-flex align-items-center gap-2" (click)="setStatusFilter('approved')" style="cursor: pointer;">
+        <div class="kpi-icon-box bg-success-subtle text-success">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div>
+          <div class="kpi-num fw-800 text-success fs-16">{{ stats.approved }}</div>
+          <div class="kpi-lbl fs-11 text-muted">Approved &amp; Active</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="kpi-card p-2 bg-white rounded-8 border shadow-xs d-flex align-items-center gap-2" (click)="setStatusFilter('rejected')" style="cursor: pointer;">
+        <div class="kpi-icon-box bg-danger-subtle text-danger">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div>
+          <div class="kpi-num fw-800 text-danger fs-16">{{ stats.rejected }}</div>
+          <div class="kpi-lbl fs-11 text-muted">Rejected / Cancelled</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH & FILTER TOOLBAR -->
+  <div class="filter-card bg-white p-2 rounded-8 border mb-2 d-flex justify-content-between align-items-center flex-wrap gap-2 shadow-xs">
+    <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 450px;">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-light border-end-0 py-1 px-2 text-muted">
+          <i class="fas fa-search fs-11"></i>
+        </span>
+        <input type="text"
+               class="form-control form-control-sm border-start-0 py-1 fs-12"
+               placeholder="Search by customer name, mobile, member ID..."
+               [(ngModel)]="searchQuery"
+               (input)="onSearch()">
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-1.5 flex-wrap">
+      <button type="button" class="btn btn-xs fw-600"
+              [ngClass]="statusFilter === 'all' ? 'btn-dark' : 'btn-outline-secondary'"
+              (click)="setStatusFilter('all')">
+        All ({{ stats.total }})
+      </button>
+      <button type="button" class="btn btn-xs fw-600"
+              [ngClass]="statusFilter === 'pending' ? 'btn-warning text-dark' : 'btn-outline-secondary'"
+              (click)="setStatusFilter('pending')">
+        Pending ({{ stats.pending }})
+      </button>
+      <button type="button" class="btn btn-xs fw-600"
+              [ngClass]="statusFilter === 'approved' ? 'btn-success' : 'btn-outline-secondary'"
+              (click)="setStatusFilter('approved')">
+        Approved ({{ stats.approved }})
+      </button>
+      <button type="button" class="btn btn-xs fw-600"
+              [ngClass]="statusFilter === 'rejected' ? 'btn-danger' : 'btn-outline-secondary'"
+              (click)="setStatusFilter('rejected')">
+        Rejected ({{ stats.rejected }})
+      </button>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" class="text-center py-5 bg-white rounded-8 border shadow-xs mb-2">
+    <i class="fas fa-spinner fa-spin fa-2x text-emerald"></i>
+    <p class="fs-12 text-muted mt-2 mb-0">Loading customer enrollment records...</p>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="!loading && filteredCustomers.length === 0" class="text-center py-5 bg-white rounded-8 border shadow-xs mb-2">
+    <div style="width: 50px; height: 50px; border-radius: 50%; background: #f1f5f9; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+      <i class="fas fa-id-card-alt text-muted fs-4"></i>
+    </div>
+    <h6 class="fw-700 text-dark mb-1">No customer enrollments found</h6>
+    <p class="fs-12 text-muted mb-3">No customers match your search criteria or no enrollment has been submitted yet.</p>
+    <a routerLink="/team-member/referral" class="btn btn-warning btn-xs fw-700 text-dark">
+      <i class="fas fa-share-alt me-1"></i> Share Referral Link
+    </a>
+  </div>
+
+  <!-- CUSTOMER ENROLLMENT TABLE -->
+  <div class="card border rounded-8 overflow-hidden shadow-xs bg-white mb-2" *ngIf="!loading && filteredCustomers.length > 0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle custom-enroll-table mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 4%;">#</th>
+            <th style="width: 24%;">Customer &amp; Member ID</th>
+            <th style="width: 18%;">Contact &amp; Mobile</th>
+            <th style="width: 16%;">Application / Project</th>
+            <th style="width: 14%;">Enrollment Status</th>
+            <th style="width: 12%;">Verification Actions</th>
+            <th class="text-end" style="width: 12%;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of filteredCustomers; let i = index">
+            <!-- Sno -->
+            <td class="text-muted fs-11">{{ i + 1 }}</td>
+
+            <!-- Customer & Member ID -->
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-circle-sm">
+                  {{ c.full_name ? c.full_name[0].toUpperCase() : 'C' }}
+                </div>
+                <div>
+                  <strong class="d-block text-dark fs-12">{{ c.full_name || 'Customer' }}</strong>
+                  <code class="text-emerald fs-11">{{ c.member_id || 'ID Pending' }}</code>
+                </div>
+              </div>
+            </td>
+
+            <!-- Contact -->
+            <td>
+              <div class="fs-11">
+                <span class="d-block text-dark fw-600"><i class="fas fa-phone-alt text-muted me-1"></i>{{ c.mobile_no || '—' }}</span>
+                <span class="text-muted text-truncate d-block" *ngIf="c.email" style="max-width: 160px;" [title]="c.email">
+                  <i class="fas fa-envelope text-muted me-1"></i>{{ c.email }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Application & Project -->
+            <td>
+              <div class="fs-11">
+                <span class="fw-700 text-dark d-block">
+                  {{ c.enrollment_submission?.project_name || 'Residential Plot' }}
+                </span>
+                <small class="text-muted">
+                  App: {{ c.enrollment_submission?.application_no || c.application_no || 'Submitted' }}
+                </small>
+              </div>
+            </td>
+
+            <!-- Enrollment Status -->
+            <td>
+              <ng-container *ngIf="c.enrollment_submission?.application_status || c.application_status || c.enrollment_status as st">
+                <span class="badge"
+                      [ngClass]="{
+                        'bg-success-subtle text-success border border-success': st === 'Approved' || st === 'Completed',
+                        'bg-warning-subtle text-dark border border-warning': st === 'Pending' || st === 'Hold/Pending KYC' || (!st && st !== 'Approved' && st !== 'Rejected'),
+                        'bg-danger-subtle text-danger border border-danger': st === 'Rejected' || st === 'Cancelled'
+                      }">
+                  <i class="fas me-1"
+                     [ngClass]="{
+                       'fa-check-circle': st === 'Approved' || st === 'Completed',
+                       'fa-clock': st === 'Pending' || st === 'Hold/Pending KYC' || (!st && st !== 'Approved' && st !== 'Rejected'),
+                       'fa-times-circle': st === 'Rejected' || st === 'Cancelled'
+                     }"></i>
+                  {{ st === 'Completed' ? 'Approved' : st }}
+                </span>
+              </ng-container>
+              <ng-container *ngIf="!c.enrollment_submission?.application_status && !c.application_status && !c.enrollment_status">
+                <span class="badge bg-secondary-subtle text-secondary border">Pending Form</span>
+              </ng-container>
+            </td>
+
+            <!-- Embedded Verification Review Actions -->
+            <td>
+              <app-customer-approval-actions [customer]="c" (updated)="loadEnrollments()"></app-customer-approval-actions>
+            </td>
+
+            <!-- Action Buttons -->
+            <td class="text-end">
+              <div class="d-inline-flex align-items-center gap-1">
+                <button type="button" class="btn btn-outline-dark btn-xs fw-600" (click)="viewSubmittedForm(c)" title="View submitted form details">
+                  <i class="fas fa-eye me-1"></i> View Form
+                </button>
+                <button type="button"
+                        class="btn btn-success btn-xs fw-600"
+                        *ngIf="c.enrollment_submission?.application_status !== 'Approved' && c.enrollment_status !== 'Completed'"
+                        (click)="approveCustomer(c)"
+                        title="Approve Customer Enrollment">
+                  <i class="fas fa-check"></i> Approve
+                </button>
+                <button type="button"
+                        class="btn btn-outline-danger btn-xs"
+                        *ngIf="c.enrollment_submission?.application_status !== 'Rejected' && c.enrollment_status !== 'Rejected'"
+                        (click)="rejectCustomer(c)"
+                        title="Reject Customer Enrollment">
+                  <i class="fas fa-times"></i>
+                </button>
+                <button type="button"
+                        class="btn btn-outline-secondary btn-xs"
+                        *ngIf="c.enrollment_submission?.application_status === 'Approved' || c.enrollment_status === 'Completed'"
+                        (click)="downloadPdf(c)"
+                        title="Download Enrollment Form PDF">
+                  <i class="fas fa-file-pdf"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= SUBMITTED ENROLLMENT FORM MODAL ================= -->
+  <div class="modal-backdrop-custom" *ngIf="showFormModal" (click)="closeFormModal()">
+    <div class="modal-dialog-custom modal-lg" (click)="$event.stopPropagation()" style="max-width: 820px; max-height: 85vh; display: flex; flex-direction: column; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3);">
+      
+      <!-- Modal Header -->
+      <div class="py-2.5 px-3 bg-dark-emerald text-white border-bottom d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #0f3724 0%, #17422b 100%) !important;">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fas fa-file-invoice text-gold fs-5"></i>
+          <div>
+            <h5 class="fs-13 fw-700 text-white mb-0">Customer Submitted Enrollment Form</h5>
+            <small class="text-white-50 fs-11">
+              {{ selectedCustomer?.full_name }} &bull; {{ selectedCustomer?.member_id || selectedCustomer?.user_id }} &bull; App No: {{ selectedEnrollment?.application_no || 'Pending' }}
+            </small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white btn-xs" (click)="closeFormModal()" style="filter: brightness(0) invert(1); opacity: 0.8;"></button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-3 overflow-auto" style="flex: 1 1 auto; max-height: calc(85vh - 120px); background: #f8fafc;">
+        <div *ngIf="formDetailLoading" class="text-center py-4">
+          <i class="fas fa-spinner fa-spin fa-2x text-emerald"></i>
+          <p class="fs-12 text-muted mt-2 mb-0">Loading complete enrollment submission...</p>
+        </div>
+
+        <div *ngIf="!formDetailLoading">
+          <!-- Status Banner -->
+          <div class="alert d-flex justify-content-between align-items-center flex-wrap gap-2 p-2 mb-2.5 rounded-8"
+               [ngClass]="{
+                 'alert-success': selectedEnrollment?.application_status === 'Approved',
+                 'alert-warning': selectedEnrollment?.application_status === 'Pending' || !selectedEnrollment?.application_status,
+                 'alert-danger': selectedEnrollment?.application_status === 'Rejected'
+               }">
+            <div class="fs-12">
+              <strong>Form Status:</strong>
+              <span class="badge ms-1" [ngClass]="selectedEnrollment?.application_status === 'Approved' ? 'bg-success' : (selectedEnrollment?.application_status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark')">
+                {{ selectedEnrollment?.application_status || 'Pending Review' }}
+              </span>
+              <span class="ms-2" *ngIf="selectedEnrollment?.verified_by">
+                &bull; Verified by: <strong>{{ selectedEnrollment?.verified_by }}</strong>
+              </span>
+            </div>
+            <div class="d-flex gap-1.5" *ngIf="selectedEnrollment?.application_status !== 'Approved'">
+              <button type="button" class="btn btn-success btn-xs fw-700" (click)="approveCustomer(selectedCustomer)">
+                <i class="fas fa-check-circle me-1"></i> Approve This Customer
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-xs fw-600" (click)="rejectCustomer(selectedCustomer)">
+                <i class="fas fa-times-circle me-1"></i> Reject Form
+              </button>
+            </div>
+          </div>
+
+          <!-- Section 1: Property / Plot Details -->
+          <div class="card p-2.5 rounded-8 border bg-white mb-2">
+            <h6 class="fs-11 fw-700 text-emerald text-uppercase mb-2 pb-1 border-bottom">
+              <i class="fas fa-building me-1"></i> 1. Property / Project Details
+            </h6>
+            <div class="row g-2 fs-11">
+              <div class="col-sm-6 col-md-3">
+                <span class="text-muted d-block">Project Name</span>
+                <strong class="text-dark">{{ selectedEnrollment?.project_name || '—' }}</strong>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <span class="text-muted d-block">Property Type</span>
+                <strong class="text-dark">{{ selectedEnrollment?.property_type || 'Residential' }}</strong>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <span class="text-muted d-block">Plot / Flat No</span>
+                <strong class="text-dark font-monospace">{{ selectedEnrollment?.plot_flat_no || '—' }}</strong>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <span class="text-muted d-block">Total Property Value</span>
+                <strong class="text-success fw-800">₹{{ (selectedEnrollment?.total_property_value || selectedEnrollment?.basic_sale_price || 0) | number }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Applicant Details -->
+          <div class="card p-2.5 rounded-8 border bg-white mb-2">
+            <h6 class="fs-11 fw-700 text-emerald text-uppercase mb-2 pb-1 border-bottom">
+              <i class="fas fa-user me-1"></i> 2. Applicant Details
+            </h6>
+            <div class="row g-2 fs-11">
+              <div class="col-sm-9">
+                <div class="row g-2">
+                  <div class="col-sm-6">
+                    <span class="text-muted d-block">Full Applicant Name</span>
+                    <strong class="text-dark">{{ selectedEnrollment?.applicant_name || selectedCustomer?.full_name || '—' }}</strong>
+                  </div>
+                  <div class="col-sm-6">
+                    <span class="text-muted d-block">Mobile Number</span>
+                    <strong class="text-dark">{{ selectedEnrollment?.mobile_1 || selectedCustomer?.mobile_no || '—' }}</strong>
+                  </div>
+                  <div class="col-sm-6">
+                    <span class="text-muted d-block">Email Address</span>
+                    <span class="text-dark">{{ selectedEnrollment?.email_1 || selectedCustomer?.email || '—' }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <span class="text-muted d-block">PAN / Aadhaar Number</span>
+                    <span class="text-dark font-monospace">
+                      PAN: {{ selectedEnrollment?.pan_no || '—' }} | UID: {{ selectedEnrollment?.aadhar_no || '—' }}
+                    </span>
+                  </div>
+                  <div class="col-12">
+                    <span class="text-muted d-block">Address</span>
+                    <span class="text-dark">{{ selectedEnrollment?.present_address || selectedCustomer?.address || '—' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Applicant Photo -->
+              <div class="col-sm-3 text-center border-start" *ngIf="selectedEnrollment?.photo_first_applicant_url">
+                <span class="text-muted fs-10 d-block mb-1">Applicant Photo</span>
+                <img [src]="getImageUrl(selectedEnrollment.photo_first_applicant_url)" class="img-fluid rounded border" style="max-height: 90px;" alt="Applicant Photo">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Bank & Payout Details -->
+          <div class="card p-2.5 rounded-8 border bg-white mb-2">
+            <h6 class="fs-11 fw-700 text-emerald text-uppercase mb-2 pb-1 border-bottom">
+              <i class="fas fa-university me-1"></i> 3. Bank Details
+            </h6>
+            <div class="row g-2 fs-11">
+              <div class="col-sm-6 col-md-3">
+                <span class="text-muted d-block">Bank Name</span>
+                <strong class="text-dark">{{ selectedEnrollment?.bank_name || '—' }}</strong>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <span class="text-muted d-block">Account Number</span>
+                <strong class="text-dark font-monospace">{{ selectedEnrollment?.bank_account_no || '—' }}</strong>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <span class="text-muted d-block">IFSC Code</span>
+                <strong class="text-dark font-monospace">{{ selectedEnrollment?.ifsc || '—' }}</strong>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <span class="text-muted d-block">Branch</span>
+                <span class="text-dark">{{ selectedEnrollment?.branch_name || '—' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Signatures -->
+          <div class="card p-2.5 rounded-8 border bg-white mb-2" *ngIf="selectedEnrollment?.signature_sole_first_applicant_url || selectedEnrollment?.signature_co_applicant_url">
+            <h6 class="fs-11 fw-700 text-emerald text-uppercase mb-2 pb-1 border-bottom">
+              <i class="fas fa-signature me-1"></i> 4. Verified Signatures
+            </h6>
+            <div class="d-flex align-items-center gap-3 overflow-auto">
+              <div *ngIf="selectedEnrollment?.signature_sole_first_applicant_url" class="text-center p-1 bg-light rounded border">
+                <img [src]="getImageUrl(selectedEnrollment.signature_sole_first_applicant_url)" style="max-height: 60px;" alt="First Applicant Signature">
+                <small class="d-block text-muted fs-10 mt-1">Applicant Signature</small>
+              </div>
+              <div *ngIf="selectedEnrollment?.signature_co_applicant_url" class="text-center p-1 bg-light rounded border">
+                <img [src]="getImageUrl(selectedEnrollment.signature_co_applicant_url)" style="max-height: 60px;" alt="Co-Applicant Signature">
+                <small class="d-block text-muted fs-10 mt-1">Co-Applicant Signature</small>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="py-2 px-3 bg-light border-top d-flex justify-content-between align-items-center">
+        <span class="fs-11 text-muted">Team Member Authorized Review Portal &bull; MMR Constructions</span>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-secondary btn-xs" (click)="closeFormModal()">Close</button>
+          <button type="button"
+                  class="btn btn-success btn-xs fw-700"
+                  *ngIf="selectedEnrollment?.application_status !== 'Approved'"
+                  (click)="approveCustomer(selectedCustomer)">
+            <i class="fas fa-check-circle me-1"></i> Approve Form
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

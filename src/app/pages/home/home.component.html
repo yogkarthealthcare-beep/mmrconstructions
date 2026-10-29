@@ -3,46 +3,13 @@
 
 <app-hero-slider *ngIf="showHeroSlider"></app-hero-slider>
 
-<!-- Mobile Quick Action Cards: Login & Register with MMR Logo (Mobile Only) -->
-<div class="mobile-auth-cards-section d-block d-md-none">
-  <div class="mmr-container">
-    <div class="row g-2">
-      <div class="col-6">
-        <a routerLink="/login" class="mobile-auth-card mobile-login-card">
-          <div class="auth-card-head">
-            <img src="assets/mmr-logo.png" alt="MMR Construction" class="auth-card-logo">
-            <span class="auth-card-badge login-badge"><i class="fas fa-sign-in-alt me-1"></i>Login</span>
-          </div>
-          <div class="auth-card-body">
-            <div class="auth-card-title">Member Portal</div>
-            <div class="auth-card-desc">Customer & Associate &rarr;</div>
-          </div>
-        </a>
-      </div>
-      <div class="col-6">
-        <a routerLink="/register" class="mobile-auth-card mobile-register-card">
-          <div class="auth-card-head">
-            <img src="assets/mmr-logo.png" alt="MMR Construction" class="auth-card-logo">
-            <span class="auth-card-badge register-badge"><i class="fas fa-user-plus me-1"></i>Register</span>
-          </div>
-          <div class="auth-card-body">
-            <div class="auth-card-title">New Registration</div>
-            <div class="auth-card-desc">Book Plots &amp; Earn &rarr;</div>
-          </div>
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
+
 
 <!-- Home Flow: Sites upper, Trust Strip lower on mobile; Desktop retains Trust Strip first then Sites -->
 <div class="home-flow-container">
-  <!-- Sites Section -->
-  <div class="home-flow-sites">
-    <app-sites *ngIf="sectionVisibility['sites'] !== false"></app-sites>
-  </div>
+  
 
-  <!-- Information Section (Trust Strip) -->
+  <!-- Information Section (Trust Strip + 4 Registration Cards) -->
   <div class="home-flow-info" *ngIf="sectionVisibility['information'] !== false">
     <div class="trust-strip">
       <div class="mmr-container">
@@ -51,7 +18,7 @@
           <div class="trust-sep d-none d-md-block"></div>
           <div class="item"><i class="fas fa-university"></i> Bank Finance</div>
           <div class="trust-sep"></div>
-          <div class="item"><i class="fas fa-award"></i> 10 Years of Trust</div>
+          <div class="item"><i class="fas fa-award"></i> 100% Clear Title</div>
           <div class="trust-sep"></div>
           <div class="item"><i class="fas fa-mobile-alt"></i> Android App</div>
           <div class="trust-sep d-none d-md-block"></div>
@@ -59,6 +26,87 @@
         </div>
       </div>
     </div>
+
+    <!-- 4 Registration Type Cards in 1 Row (Refined Premium Real Estate UI) -->
+    <section class="home-reg-section" #regSection aria-labelledby="reg-section-heading" (mousemove)="onSectionMouseMove($event)" (mouseleave)="onSectionMouseLeave()">
+      <!-- Interactive Floating Decorative Bubbles Canvas (Mouse-repelled) -->
+      <canvas #bubblesCanvas class="reg-bubbles-canvas" aria-hidden="true"></canvas>
+      <div class="mmr-container">
+        <!-- Section Header -->
+        <div class="reg-section-header text-center">
+          <div class="reg-eyebrow-pill mb-2">
+            <i class="fas fa-shield-halved text-gold me-1.5"></i>
+            <span>MMR VERIFIED PORTALS • WELCOME TO MMR</span>
+          </div>
+          <h2 id="reg-section-heading" class="reg-main-heading mb-1.5">
+            Choose Your <span class="heading-gold-accent">Registration Type</span>
+          </h2>
+          <p class="reg-main-subtext mx-auto">
+            Select how you want to partner with Uttar Pradesh's most trusted real estate developer to begin your journey.
+          </p>
+        </div>
+
+        <!-- 4 Cards Grid: Desktop 4 in 1 row (col-lg-3), Tablet 2 per row (col-md-6), Mobile 1 per row (col-12) -->
+        <div class="row g-3 g-xl-35 align-items-stretch justify-content-center">
+          <div class="col-12 col-md-6 col-lg-3 d-flex" *ngFor="let card of registrationCards">
+            <div class="reg-type-card {{ card.cardClass }} w-100 d-flex flex-column justify-content-between"
+                 [routerLink]="card.route"
+                 role="button"
+                 tabindex="0"
+                 [attr.aria-label]="card.ctaText">
+              <!-- Top Card Region -->
+              <div class="card-inner-top">
+                <div class="card-header-row mb-2.5">
+                  <span class="reg-badge-tag {{ card.badgeClass }}">
+                    <i [class]="card.tagIcon + ' me-1'"></i> {{ card.tag }}
+                  </span>
+                  <div class="reg-accent-icon-wrap {{ card.iconClass }}" aria-hidden="true">
+                    <i [class]="card.icon"></i>
+                  </div>
+                </div>
+
+                <h3 class="reg-card-title">{{ card.title }}</h3>
+                <p class="reg-card-desc">{{ card.desc }}</p>
+
+                <!-- Value Perks Checklist (Equal 2 perks on every card) -->
+                <ul class="reg-card-perks list-unstyled mb-0" *ngIf="card.perks?.length">
+                  <li *ngFor="let perk of card.perks" class="perk-item">
+                    <i class="fas fa-check-circle perk-icon me-1.5"></i>
+                    <span>{{ perk }}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Bottom Card Region / Standardized CTA Button -->
+              <div class="card-inner-bottom pt-2.5 mt-auto border-top">
+                <div class="reg-cta-btn {{ card.ctaClass }}">
+                  <span class="cta-label">{{ card.ctaText }}</span>
+                  <span class="cta-arrow-circle" aria-hidden="true">
+                    <i class="fas fa-arrow-right"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compact Bottom Verification Bar -->
+        <div class="reg-footer-trust text-center">
+          <div class="trust-badge-bar">
+            <span class="trust-micro-item"><i class="fas fa-certificate text-emerald me-1.5"></i> Govt. Registered (CIN: U68200UP2025PTC229203)</span>
+            <span class="trust-sep d-none d-sm-inline">•</span>
+            <span class="trust-micro-item"><i class="fas fa-shield-alt text-primary me-1.5"></i> 100% Legal &amp; Bank Approved</span>
+            <span class="trust-sep d-none d-sm-inline">•</span>
+            <span class="trust-micro-item"><i class="fas fa-lock text-gold me-1.5"></i> Instant 6-Digit OTP Verification</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Sites Section -->
+  <div class="home-flow-sites">
+    <app-sites *ngIf="sectionVisibility['sites'] !== false"></app-sites>
   </div>
 </div>
 <app-investors *ngIf="sectionVisibility['investors'] !== false"></app-investors>

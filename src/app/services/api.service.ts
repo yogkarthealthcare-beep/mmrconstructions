@@ -403,6 +403,9 @@ export class ApiService {
   }
 
   // ── ADMIN — Notifications ─────────────────────────
+  adminGetNotifications(q: any = {}) { return this.get('/api/admin/notifications', q, true); }
+  adminMarkNotifRead(id: number)   { return this.patch(`/api/admin/notifications/${id}/read`, {}, true); }
+  adminMarkAllNotifRead()          { return this.patch('/api/admin/notifications/read-all', {}, true); }
   adminSendNotif(data: any)        { return this.post('/api/admin/notifications/send', data, true); }
   adminBulkNotif(data: any)        { return this.post('/api/admin/notifications/bulk', data, true); }
 
@@ -584,7 +587,8 @@ export class ApiService {
   getInvestorDocuments() { return this.get('/api/investor/documents'); }
   uploadInvestorDocument(data: FormData) { return this.postForm('/api/investor/documents', data); }
   getInvestorNotifications() { return this.get('/api/investor/notifications'); }
-  markInvestorNotificationRead(id: number) { return this.patch(`/api/investor/notifications/${id}/read`, {}); }
+  markInvestorNotificationRead(id: any) { return this.patch(`/api/investor/notifications/${id}/read`, {}); }
+  markAllInvestorNotificationsRead() { return this.patch('/api/investor/notifications/read-all', {}); }
   getInvestorPayments(params: any = {}) { return this.get('/api/investor/payments', params); }
   uploadInvestorProfilePhoto(data: FormData) { return this.postForm('/api/investor/profile/photo', data); }
   getInvestorProfile() { return this.get('/api/investor/profile'); }
@@ -715,8 +719,11 @@ export class ApiService {
   adminUpdateMasterRecord(tableName: string, id: any, data: any): Observable<any> {
     return this.put(`/api/admin/master-data/tables/${tableName}/${id}`, { data }, true);
   }
-  adminDeleteMasterRecord(tableName: string, id: any, cascade: boolean = false): Observable<any> {
-    const query = cascade ? '?cascade=true' : '';
+  adminDeleteMasterRecord(tableName: string, id: any, cascade: boolean = false, pk?: string): Observable<any> {
+    const parts: string[] = [];
+    if (cascade) parts.push('cascade=true');
+    if (pk) parts.push(`pk=${encodeURIComponent(pk)}`);
+    const query = parts.length > 0 ? `?${parts.join('&')}` : '';
     return this.delete(`/api/admin/master-data/tables/${tableName}/${id}${query}`, true);
   }
 
@@ -729,6 +736,17 @@ export class ApiService {
   }
   adminSimulatePayEmi(bookingId: number | string, data: any = {}): Observable<any> {
     return this.post(`/api/admin/bookings/${bookingId}/pay-emi-simulate`, data, true);
+  }
+
+  // ── TEAM MEMBER COMMISSIONS & SALES ────────────────────────
+  getTeamMemberCommissionSummary(): Observable<any> {
+    return this.get('/api/team-member/commission-summary');
+  }
+  getTeamMemberCommissions(params: any = {}): Observable<any> {
+    return this.get('/api/team-member/commissions', params);
+  }
+  getTeamMemberSalesTable(params: any = {}): Observable<any> {
+    return this.get('/api/team-member/sales', params);
   }
 }
 

@@ -21,12 +21,42 @@ export const TEAM_MEMBER_ROUTES: Routes = [
     title: 'Plot Orders'
   },
   {
+    path: 'commissions',
+    loadComponent: () => import('./commissions/team-member-commissions.component').then(m => m.TeamMemberCommissionsComponent),
+    title: 'My Commission History — Team Member'
+  },
+  {
+    path: 'wallet',
+    loadComponent: () => import('../user/wallet/wallet.component').then(m => m.WalletComponent),
+    title: 'My Wallet — Team Member'
+  },
+  {
+    path: 'wallet/withdraw',
+    loadComponent: () => import('../user/wallet/withdraw-fund.component').then(m => m.WithdrawFundComponent),
+    title: 'Withdraw Funds — Team Member'
+  },
+  {
+    path: 'wallet/withdrawal-history',
+    loadComponent: () => import('../user/wallet/withdrawal-history.component').then(m => m.WithdrawalHistoryComponent),
+    title: 'Withdrawal History — Team Member'
+  },
+  {
+    path: 'wallet/transactions',
+    loadComponent: () => import('../user/wallet/wallet-transactions.component').then(m => m.WalletTransactionsComponent),
+    title: 'Wallet Transactions — Team Member'
+  },
+  {
     path: 'sales',
     loadComponent: () => import('./sales/sales.component').then(m => m.TeamMemberSalesComponent)
   },
   {
     path: 'customers',
     loadComponent: () => import('./customers/customers.component').then(m => m.TeamMemberCustomersComponent)
+  },
+  {
+    path: 'customer-enrollments',
+    loadComponent: () => import('./customer-enrollments/team-member-customer-enrollments.component').then(m => m.TeamMemberCustomerEnrollmentsComponent),
+    title: 'Customer Enrollments & Approval — Team Member Portal'
   },
   {
     path: 'referral',

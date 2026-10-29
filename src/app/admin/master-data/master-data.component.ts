@@ -184,7 +184,7 @@ export class MasterDataComponent implements OnInit, OnDestroy {
   isDeleteModalOpen = false;
   deletingRecordId: any = null;
   deletingRecordSummary = '';
-  forceCascadeDelete = false;
+  forceCascadeDelete = true;
 
   constructor(private api: ApiService) {}
 
@@ -412,7 +412,7 @@ export class MasterDataComponent implements OnInit, OnDestroy {
 
     const pkVal = row[this.primaryKey];
     this.deletingRecordId = pkVal;
-    this.forceCascadeDelete = false;
+    this.forceCascadeDelete = true;
     const nameCol = row['full_name'] || row['name'] || row['email'] || row['mobile_no'] || row['member_id'] || row['team_member_uid'] || '';
     this.deletingRecordSummary = `${this.primaryKey} = ${pkVal}${nameCol ? ' (' + nameCol + ')' : ''}`;
     this.isDeleteModalOpen = true;
@@ -423,14 +423,14 @@ export class MasterDataComponent implements OnInit, OnDestroy {
     this.isDeleteModalOpen = false;
     this.deletingRecordId = null;
     this.deletingRecordSummary = '';
-    this.forceCascadeDelete = false;
+    this.forceCascadeDelete = true;
   }
 
   executeDelete(): void {
     if (!this.deletingRecordId || !this.selectedTable) return;
     this.deletingRow = true;
 
-    this.api.adminDeleteMasterRecord(this.selectedTable, this.deletingRecordId, this.forceCascadeDelete).subscribe({
+    this.api.adminDeleteMasterRecord(this.selectedTable, this.deletingRecordId, this.forceCascadeDelete, this.primaryKey).subscribe({
       next: (res: any) => {
         this.deletingRow = false;
         this.closeDeleteModal();

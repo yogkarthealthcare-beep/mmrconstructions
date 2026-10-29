@@ -129,7 +129,8 @@
   <div *ngFor="let n of filteredNotifications"
        class="notif-item-card"
        [class.notif-unread]="!n.is_read"
-       (click)="markRead(n)">
+       (click)="onNotifItemClick(n)"
+       [style.cursor]="'pointer'">
 
     <div class="notif-icon-wrap" [style.background]="colorFor(n.channel) + '18'">
       <i [class]="iconFor(n.channel)" [style.color]="colorFor(n.channel)"></i>
@@ -146,10 +147,15 @@
 
       <p class="notif-msg mb-1">{{ n.message }}</p>
 
-      <div class="notif-meta">
-        <span><i class="fas fa-clock me-1 text-gold"></i>{{ n.sent_at | date:'dd MMM yyyy, hh:mm a' }}</span>
-        <span *ngIf="n.is_read && n.read_at" class="text-success ms-3">
-          <i class="fas fa-check-double me-1"></i>Read {{ n.read_at | date:'dd MMM' }}
+      <div class="notif-meta d-flex align-items-center justify-content-between">
+        <div>
+          <span><i class="fas fa-clock me-1 text-gold"></i>{{ n.sent_at | date:'dd MMM yyyy, hh:mm a' }}</span>
+          <span *ngIf="n.is_read && n.read_at" class="text-success ms-3">
+            <i class="fas fa-check-double me-1"></i>Read {{ n.read_at | date:'dd MMM' }}
+          </span>
+        </div>
+        <span *ngIf="n.link" class="text-success fw-600 fs-11 ms-auto">
+          Open Action <i class="fas fa-arrow-right ms-1"></i>
         </span>
       </div>
     </div>

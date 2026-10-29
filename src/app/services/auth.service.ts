@@ -594,9 +594,12 @@ export class AuthService {
     if (!user) return false;
     const type = String(user.user_type || user.role || '').toLowerCase().trim();
     if (type === 'team member' || type.includes('team member') || type === 'teammember') {
+      const acctStatus = String(user.account_status || '').toLowerCase().trim();
+      if (acctStatus === 'active' || acctStatus === 'approved') return true;
+      if (user.is_approved === true || user.isApproved === true) return true;
       if (user.is_enrolled === true || user.isEnrolled === true || user.is_final_submitted === true || user.isFinalSubmitted === true) return true;
       const tmStatus = String(user.enrollment_status || user.enrollmentStatus || user.status || '').toLowerCase().trim();
-      if (tmStatus === 'completed' || tmStatus === 'submitted') return true;
+      if (tmStatus === 'completed' || tmStatus === 'submitted' || tmStatus === 'approved' || tmStatus === 'active') return true;
       return false;
     }
     const status = String(user.enrollment_status || user.enrollmentStatus || '').toLowerCase().trim();

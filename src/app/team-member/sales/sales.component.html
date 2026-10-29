@@ -63,6 +63,8 @@
             <th>Sale Type</th>
             <th>Associate Approval</th>
             <th>Booking Status</th>
+            <th class="text-end">Commission Amount</th>
+            <th class="text-center">Settlement Status</th>
             <th>Date</th>
             <th class="text-end">Actions</th>
           </tr>
@@ -99,6 +101,18 @@
             </td>
             <td>
               <span class="badge bg-light text-dark border">{{ s.booking_status }}</span>
+            </td>
+            <td class="text-end font-monospace fw-bold text-success">
+              + ₹{{ (s.commission_amount || 0) | number:'1.2-2' }}
+            </td>
+            <td class="text-center">
+              <span class="badge" [ngClass]="{
+                'bg-success-subtle text-success border border-success': s.settlement_status === 'Released' || s.settlement_status === 'Settled',
+                'bg-warning-subtle text-warning-dark border border-warning': s.settlement_status === 'Pending' || !s.settlement_status,
+                'bg-danger-subtle text-danger border border-danger': s.settlement_status === 'Cancelled'
+              }">
+                {{ (s.settlement_status === 'Released' ? 'Settled' : (s.settlement_status || 'Pending')) }}
+              </span>
             </td>
             <td><small class="text-muted">{{ s.created_at | date:'dd MMM yyyy' }}</small></td>
             <td class="text-end">

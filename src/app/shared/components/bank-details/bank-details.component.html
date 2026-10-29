@@ -7,7 +7,7 @@
       </div>
       <div>
         <h6 class="bank-section-title">{{ title }}</h6>
-        <p class="bank-section-sub" *ngIf="subtitle">{{ subtitle }}</p>
+        <p class="bank-section-sub" *ngIf="subtitle && !compact">{{ subtitle }}</p>
       </div>
     </div>
     <div class="header-badge" *ngIf="!compact">
@@ -24,15 +24,16 @@
       [class.field-fullwidth]="item.isFullWidth"
     >
       <div class="field-content">
-        <span class="field-label">{{ item.label }}</span>
+        <span class="field-label">{{ item.label }}:</span>
         <span
           class="field-value"
           [class.font-mono]="item.isMonospace"
           [class.value-highlight]="item.highlight"
+          [title]="item.value"
         >
           {{ item.value }}
         </span>
-        <span class="field-subtext" *ngIf="item.subtext">{{ item.subtext }}</span>
+        <span class="field-subtext" *ngIf="item.subtext && !compact">{{ item.subtext }}</span>
       </div>
 
       <button
@@ -42,7 +43,7 @@
         [class.is-copied]="copiedKey === item.key"
         (click)="copyToClipboard(item.value, item.key)"
         [attr.aria-label]="'Copy ' + item.label"
-        title="Copy to clipboard"
+        [title]="'Copy ' + item.label"
       >
         <i [class]="copiedKey === item.key ? 'fas fa-check' : 'far fa-copy'"></i>
         <span class="copy-text">{{ copiedKey === item.key ? 'Copied' : 'Copy' }}</span>

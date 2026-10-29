@@ -99,6 +99,30 @@ export class LoginComponent implements OnInit {
             this.auth.setUserSession(res.data || res);
           }
 
+          if (userType.includes('team member')) {
+            this.api.get('/api/team-members/me').subscribe({
+              next: (tmRes: any) => {
+                const tm = tmRes?.data;
+                const isFinal = Boolean(tm?.is_final_submitted);
+                const isApproved = Boolean(tm?.is_approved || tm?.status?.toLowerCase() === 'approved' || tm?.status?.toLowerCase() === 'active');
+                if (isFinal || isApproved) {
+                  this.auth.setEnrollmentCompleted();
+                  this.router.navigate(['/team-member/dashboard']);
+                } else {
+                  this.router.navigate(['/team-member/enrollment']);
+                }
+              },
+              error: () => {
+                if (this.auth.isApprovedUser() || this.auth.isEnrollmentCompleted()) {
+                  this.router.navigate(['/team-member/dashboard']);
+                } else {
+                  this.router.navigate(['/team-member/enrollment']);
+                }
+              }
+            });
+            return;
+          }
+
           let targetDashboard = this.auth.getHomeRouteForRole(userType);
           let targetEnrollment = targetDashboard;
           if (userType.includes('associate')) {

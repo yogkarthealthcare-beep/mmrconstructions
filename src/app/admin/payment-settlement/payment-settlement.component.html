@@ -250,7 +250,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let order of orders" [class.row-released]="order.settlement_status === 'Released'">
+          <tr *ngFor="let order of orders; trackBy: trackByBookingId" [class.row-released]="order.settlement_status === 'Released'">
             <!-- Order ID -->
             <td class="col-order">
               <div class="cell-stack">
@@ -390,7 +390,7 @@
             <!-- Plot Price -->
             <td class="col-price text-end">
               <div class="cell-stack text-end">
-                <div class="fw-700 text-dark nowrap-text">₹{{ (order.total_plot_price || 0) | number:'1.0-0' }}</div>
+                <div class="fw-700 text-dark nowrap-text">₹{{ formatMoney(order.total_plot_price) }}</div>
                 <div class="text-muted fs-11 nowrap-text">{{ order.payment_type || 'FullPayment' }}</div>
               </div>
             </td>
@@ -398,9 +398,9 @@
             <!-- Amount Received -->
             <td class="col-received text-end">
               <div class="cell-stack text-end">
-                <div class="fw-700 text-emerald nowrap-text">₹{{ (order.amount_received || 0) | number:'1.0-0' }}</div>
-                <div *ngIf="order.remaining_balance > 0" class="text-muted fs-11 nowrap-text">
-                  Bal: ₹{{ order.remaining_balance | number:'1.0-0' }}
+                <div class="fw-700 text-emerald nowrap-text">₹{{ formatMoney(order.amount_received) }}</div>
+                <div *ngIf="order.remaining_balance && order.remaining_balance > 0" class="text-muted fs-11 nowrap-text">
+                  Bal: ₹{{ formatMoney(order.remaining_balance) }}
                 </div>
               </div>
             </td>
@@ -443,20 +443,24 @@
                 <!-- Release Payment Button -->
                 <button
                   type="button"
+                  tabindex="-1"
+                  (mousedown)="$event.preventDefault()"
                   class="btn btn-release btn-sm nowrap-text"
-                  [disabled]="order.settlement_status === 'Released' || order.amount_received <= 0"
-                  (click)="openReleaseModal(order)"
-                  [title]="order.settlement_status === 'Released' ? 'Already Released' : 'Calculate & Release Payment Settlement'"
+                  [disabled]="(order.settlement_status === 'Released' && order.total_distributed > 0) || order.amount_received <= 0"
+                  (click)="openReleaseModal(order, $event)"
+                  [title]="order.settlement_status === 'Released' && (!order.total_distributed || order.total_distributed == 0) ? 'Re-Distribute Commission' : (order.settlement_status === 'Released' ? 'Already Released' : 'Calculate & Release Payment Settlement')"
                 >
                   <i class="fas fa-hand-holding-dollar me-1"></i>
-                  {{ order.settlement_status === 'Released' ? 'Released' : 'Release' }}
+                  {{ (order.settlement_status === 'Released' && (!order.total_distributed || order.total_distributed == 0)) ? 'Re-Distribute' : (order.settlement_status === 'Released' ? 'Released' : 'Release') }}
                 </button>
 
                 <!-- View Breakdown / Audit -->
                 <button
                   type="button"
+                  tabindex="-1"
+                  (mousedown)="$event.preventDefault()"
                   class="btn btn-outline-info btn-sm btn-icon"
-                  (click)="openReleaseModal(order)"
+                  (click)="openReleaseModal(order, $event)"
                   title="View Recipient Distribution Breakdown"
                 ><i class="fas fa-eye"></i></button>
 
@@ -464,6 +468,8 @@
                 <button
                   *ngIf="order.settlement_status === 'Pending'"
                   type="button"
+                  tabindex="-1"
+                  (mousedown)="$event.preventDefault()"
                   class="btn btn-outline-danger btn-sm btn-icon"
                   (click)="openCancelModal(order)"
                   title="Cancel Settlement Request"
@@ -616,7 +622,7 @@
                   </tr>
 
                   <!-- If no recipients (e.g. Company Direct or Self Purchase) -->
-                  <tr *ngIf="settlementPreview.recipients.length === 0">
+                  <tr *ngIf="!settlementPreview.recipients || settlementPreview.recipients.length === 0">
                     <td colspan="5" class="text-center py-3 text-muted">
                       <em>{{ settlementPreview.notes || 'No external commission payable. 100% of proceeds retained by MMR Constructions & Developers Pvt. Ltd.' }}</em>
                     </td>

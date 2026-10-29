@@ -7,6 +7,11 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./dashboard/dashboard.component').then(m => m.AdminDashboardComponent) 
   },
   { 
+    path: 'notifications', 
+    loadComponent: () => import('../user/notifications/notifications.component').then(m => m.NotificationsComponent),
+    title: 'Admin Notifications — MMR Construction'
+  },
+  { 
     path: 'analytics', 
     loadComponent: () => import('./analytics/analytics.component').then(m => m.AdminAnalyticsComponent) 
   },

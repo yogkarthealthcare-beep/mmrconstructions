@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ApiService } from '../../services/api.service';
 import { BookingAttributionApiService } from '../../services/booking-attribution-api.service';
 import { CustomerSalesRow } from '../../services/booking-attribution.types';
 
@@ -14,8 +15,8 @@ import { CustomerSalesRow } from '../../services/booking-attribution.types';
   styleUrls: ['./sales.component.css']
 })
 export class TeamMemberSalesComponent implements OnInit {
-  sales: CustomerSalesRow[] = [];
-  filteredSales: CustomerSalesRow[] = [];
+  sales: any[] = [];
+  filteredSales: any[] = [];
   loading = true;
 
   saleTypeFilter: 'ALL' | 'CUSTOMER_SALE' | 'SELF_PURCHASE' = 'ALL';
@@ -24,6 +25,7 @@ export class TeamMemberSalesComponent implements OnInit {
 
   constructor(
     private auth: AuthService,
+    private api: ApiService,
     private attributionApi: BookingAttributionApiService
   ) {}
 
@@ -38,6 +40,24 @@ export class TeamMemberSalesComponent implements OnInit {
 
   loadSales(userId: number): void {
     this.loading = true;
+    this.api.getTeamMemberSalesTable({ page: 1, limit: 100 }).subscribe({
+      next: (res: any) => {
+        if (res?.success && Array.isArray(res.data)) {
+          this.sales = res.data;
+          this.applyFilters();
+          this.loading = false;
+        } else {
+          // Fallback to attribution API
+          this.fallbackLoadSales(userId);
+        }
+      },
+      error: () => {
+        this.fallbackLoadSales(userId);
+      }
+    });
+  }
+
+  private fallbackLoadSales(userId: number): void {
     this.attributionApi.getTeamMemberCustomersSales(userId, { page: 1, limit: 100 }).subscribe({
       next: (res) => {
         this.sales = res.data || [];

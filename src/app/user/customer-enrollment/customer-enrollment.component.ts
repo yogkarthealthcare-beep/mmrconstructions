@@ -817,7 +817,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
 
   goToDashboard() {
     const role = this.auth.getUserRolePrefix();
-    this.router.navigate([`/${role}/dashboard`]);
+    const cleanRole = role.startsWith('/') ? role.substring(1) : role;
+    this.router.navigate([`/${cleanRole}/dashboard`]);
   }
 
   patchSubmittedData(enroll: any) {

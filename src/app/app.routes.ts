@@ -246,6 +246,9 @@ export const routes: Routes = [
   { path: 'property-in-fatehpur', redirectTo: 'property-dealer-in-fatehpur', pathMatch: 'full' },
   { path: 'property-in-raebareli', redirectTo: 'property-dealer-in-raebareli', pathMatch: 'full' },
   { path: 'property-in-kannauj', redirectTo: 'property-dealer-in-kannauj', pathMatch: 'full' },
+  { path: 'enrollment', redirectTo: 'customer/enrollment', pathMatch: 'full' },
+  { path: 'customer-enrollment', redirectTo: 'customer/enrollment', pathMatch: 'full' },
+  { path: 'customer/customer-enrollment', redirectTo: 'customer/enrollment', pathMatch: 'full' },
 
   // Feature Tree: Admin (Lazy Loaded Layout & Routes)
   {

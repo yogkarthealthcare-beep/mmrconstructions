@@ -112,6 +112,13 @@ export class AdminPaymentSettlementComponent implements OnInit {
     return 'digits-normal';
   }
 
+  formatMoney(val: any): string {
+    if (val === undefined || val === null || val === '') return '0';
+    const num = Number(val);
+    if (isNaN(num)) return '0';
+    return Math.round(num).toLocaleString('en-IN');
+  }
+
   loadOrders(page: number = 1): void {
     this.loading = true;
     this.pagination.page = page;
@@ -127,7 +134,25 @@ export class AdminPaymentSettlementComponent implements OnInit {
       next: (res: any) => {
         this.loading = false;
         if (res.success && res.data) {
-          this.orders = res.data.orders || [];
+          const rawOrders: any[] = res.data.orders || [];
+          const seen = new Set<any>();
+          this.orders = rawOrders
+            .filter((o: any) => {
+              const key = o.booking_id ?? o.booking_serial;
+              if (!key || seen.has(key)) return false;
+              if (o.is_self_purchase || o.is_company_direct || o.booking_type === 'SELF_PURCHASE') return false;
+              if (o.buyer_user_type && o.buyer_user_type !== 'Customer') return false;
+              seen.add(key);
+              return true;
+            })
+            .map((o: any) => ({
+              ...o,
+              total_plot_price: Number(o.total_plot_price) || 0,
+              amount_received: Number(o.amount_received) || 0,
+              remaining_balance: Number(o.remaining_balance) || 0,
+              total_distributed: Number(o.total_distributed) || 0,
+              settlement_status: o.settlement_status || 'Pending'
+            }));
           this.metrics = res.data.metrics || this.metrics;
           this.pagination = res.data.pagination || this.pagination;
         } else {
@@ -166,7 +191,19 @@ export class AdminPaymentSettlementComponent implements OnInit {
     this.loadOrders(1);
   }
 
-  openReleaseModal(order: any): void {
+  openReleaseModal(order: any, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      const target = event.currentTarget as HTMLElement;
+      if (target && target.blur) {
+        target.blur();
+      }
+    }
+    if (typeof document !== 'undefined' && document.activeElement) {
+      (document.activeElement as HTMLElement).blur();
+    }
+
     this.selectedOrder = order;
     this.settlementPreview = null;
     this.releaseRemarks = '';
@@ -366,6 +403,10 @@ export class AdminPaymentSettlementComponent implements OnInit {
     }));
 
     this.exportService.exportToExcel(dataToExport, columns, `MMR_Plot_Orders_Payment_Settlement_${new Date().toISOString().slice(0,10)}`);
+  }
+
+  trackByBookingId(index: number, order: any): any {
+    return order?.booking_id ?? order?.booking_serial ?? index;
   }
 
   showToast(msg: string, type: 'success' | 'error' = 'success'): void {

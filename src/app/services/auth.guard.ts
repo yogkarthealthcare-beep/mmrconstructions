@@ -22,13 +22,14 @@ export const enrollmentGuard: CanActivateFn = (_route, state) => {
   }
 
   if (auth.isTeamMember()) {
+    const isEnrolled = auth.isEnrollmentCompleted();
     if (url.includes('/enrollment')) {
+      if (isEnrolled) {
+        return router.createUrlTree(['/team-member/dashboard']);
+      }
       return true;
     }
-    if (!auth.isEnrollmentCompleted()) {
-      if (auth.isEnrollmentSkippedThisSession()) {
-        return true;
-      }
+    if (!isEnrolled) {
       return router.createUrlTree(['/team-member/enrollment']);
     }
     if (url.startsWith('/associate') || url.startsWith('/customer') || url.startsWith('/user')) {
@@ -169,13 +170,14 @@ export const teamMemberGuard: CanActivateFn = (_route, state) => {
     return router.createUrlTree([`${prefix}/dashboard`]);
   }
   const url = state.url.toLowerCase();
+  const isEnrolled = auth.isEnrollmentCompleted();
   if (url.includes('/enrollment')) {
+    if (isEnrolled) {
+      return router.createUrlTree(['/team-member/dashboard']);
+    }
     return true;
   }
-  if (!auth.isEnrollmentCompleted()) {
-    if (auth.isEnrollmentSkippedThisSession()) {
-      return true;
-    }
+  if (!isEnrolled) {
     return router.createUrlTree(['/team-member/enrollment']);
   }
   return true;
