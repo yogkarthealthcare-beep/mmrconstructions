@@ -146,17 +146,17 @@ export class BookingReportComponent implements OnInit {
     if (!name) return true;
     const lower = name.toLowerCase().trim();
     return lower === 'general plot inquiry' ||
-           lower === 'website' ||
-           lower === 'site-map-new page' ||
-           lower === 'home page popup' ||
-           lower === 'general / all sites' ||
-           lower.startsWith('plot booking') ||
-           lower.startsWith('associate') ||
-           lower.startsWith('investor') ||
-           lower.startsWith('site visit') ||
-           lower.startsWith('general') ||
-           lower.includes('commission') ||
-           lower.includes('gaj');
+      lower === 'website' ||
+      lower === 'site-map-new page' ||
+      lower === 'home page popup' ||
+      lower === 'general / all sites' ||
+      lower.startsWith('plot booking') ||
+      lower.startsWith('associate') ||
+      lower.startsWith('investor') ||
+      lower.startsWith('site visit') ||
+      lower.startsWith('general') ||
+      lower.includes('commission') ||
+      lower.includes('gaj');
   }
 
   exportData(mode: 'current' | 'all', format: 'excel' | 'pdf') {
