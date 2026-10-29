@@ -1,4 +1,118 @@
 <div class="team-enrollment-container">
+  <!-- Internal CSS: Unconditional Zero Overlap Guarantee for Icons & Inputs -->
+  <style>
+    .team-enrollment-container .input-with-icon {
+      position: relative !important;
+      display: flex !important;
+      align-items: center !important;
+      width: 100% !important;
+    }
+    .team-enrollment-container .input-with-icon > .input-icon,
+    .team-enrollment-container .input-with-icon > i,
+    .team-enrollment-container .input-with-icon i.input-icon,
+    .team-enrollment-container .input-with-icon > .fas,
+    .team-enrollment-container .input-with-icon > .far {
+      position: absolute !important;
+      left: 14px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      width: 20px !important;
+      height: 20px !important;
+      line-height: 20px !important;
+      font-size: 15px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      color: #64748b !important;
+      pointer-events: none !important;
+      z-index: 10 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .team-enrollment-container .input-with-icon input,
+    .team-enrollment-container .input-with-icon select,
+    .team-enrollment-container .input-with-icon .form-control,
+    .team-enrollment-container .input-with-icon .readonly-input {
+      width: 100% !important;
+      padding-left: 44px !important;
+      padding-right: 14px !important;
+      height: 42px !important;
+      min-height: 42px !important;
+      border-radius: 8px !important;
+      border: 1.5px solid #cbd5e1 !important;
+      background-color: #ffffff !important;
+      font-size: 0.92rem !important;
+      color: #0f172a !important;
+      box-sizing: border-box !important;
+      text-indent: 0 !important;
+    }
+    .team-enrollment-container .input-with-icon input:focus,
+    .team-enrollment-container .input-with-icon select:focus,
+    .team-enrollment-container .input-with-icon .form-control:focus {
+      border-color: #059669 !important;
+      outline: none !important;
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15) !important;
+    }
+    .team-enrollment-container .input-with-icon.has-datepicker-action input,
+    .team-enrollment-container .input-with-icon.has-datepicker-action input.date-text-input {
+      padding-left: 44px !important;
+      padding-right: 48px !important;
+    }
+    .team-enrollment-container .input-with-icon select.form-control {
+      padding-left: 44px !important;
+      padding-right: 36px !important;
+    }
+    .team-enrollment-container .datepicker-popup-btn {
+      position: absolute !important;
+      right: 10px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      background: transparent !important;
+      border: none !important;
+      color: #059669 !important;
+      font-size: 16px !important;
+      cursor: pointer !important;
+      z-index: 10 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 4px !important;
+    }
+    .team-enrollment-container .datepicker-popup-btn:hover {
+      color: #047857 !important;
+      transform: translateY(-50%) scale(1.08) !important;
+    }
+    .team-enrollment-container .native-hidden-datepicker {
+      position: absolute !important;
+      right: 8px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      width: 28px !important;
+      height: 28px !important;
+      opacity: 0 !important;
+      cursor: pointer !important;
+      z-index: 8 !important;
+      border: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      pointer-events: none !important;
+    }
+    .team-enrollment-container .search-input-wrap .search-icon {
+      position: absolute !important;
+      left: 14px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      color: #94a3b8 !important;
+      z-index: 2 !important;
+      pointer-events: none !important;
+    }
+    .team-enrollment-container .search-input-wrap input.search-input {
+      padding-left: 44px !important;
+      padding-right: 14px !important;
+    }
+  </style>
+
   <!-- Top Navigation / Header -->
   <div class="header-card">
     <div class="header-content">
@@ -309,6 +423,7 @@
                   class="form-control readonly-input fw-700" 
                   placeholder="Associate Referral ID"
                   [value]="associateMemberId || (associateId ? ('MMR-ASC-' + associateId) : '')"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <small class="help-text text-muted">Locked to your active session credentials ({{ associateMemberId || (associateId ? ('MMR-ASC-' + associateId) : '') }})</small>
@@ -325,6 +440,7 @@
                   formControlName="associateName" 
                   class="form-control readonly-input" 
                   placeholder="Associate Name"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <small class="help-text text-muted">Auto-filled from company profile record</small>
@@ -366,6 +482,7 @@
                   formControlName="fullName" 
                   class="form-control" 
                   placeholder="Enter full legal name"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('fullName')?.errors?.['required'] && enrollmentForm.get('fullName')?.touched">
@@ -384,6 +501,7 @@
                   formControlName="fatherHusbandName" 
                   class="form-control" 
                   placeholder="Enter father or husband name"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('fatherHusbandName')?.errors?.['required'] && enrollmentForm.get('fatherHusbandName')?.touched">
@@ -409,6 +527,7 @@
                   placeholder="DD/MM/YYYY"
                   maxlength="10"
                   (input)="onDobInput($event)"
+                  style="padding-left: 44px !important; padding-right: 48px !important;"
                 >
                 <input 
                   #dobPickerInput
@@ -446,7 +565,7 @@
               <label class="required-label">Gender</label>
               <div class="input-with-icon">
                 <i class="fas fa-venus-mars input-icon"></i>
-                <select formControlName="gender" class="form-control">
+                <select formControlName="gender" class="form-control" style="padding-left: 44px !important; padding-right: 36px !important;">
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
@@ -467,6 +586,7 @@
                   class="form-control" 
                   placeholder="10-digit mobile number"
                   maxlength="10"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('mobileNo')?.errors?.['required'] && enrollmentForm.get('mobileNo')?.touched">
@@ -496,6 +616,7 @@
                   class="form-control" 
                   placeholder="12-digit numeric Aadhar number"
                   maxlength="12"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('aadharNo')?.errors?.['required'] && enrollmentForm.get('aadharNo')?.touched">
@@ -519,6 +640,7 @@
                   class="form-control" 
                   placeholder="10-digit PAN (e.g. ABCDE1234F)"
                   maxlength="10"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('panNo')?.errors?.['required'] && enrollmentForm.get('panNo')?.touched">
@@ -540,6 +662,7 @@
                   formControlName="emailId" 
                   class="form-control" 
                   placeholder="team.member@example.com"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('emailId')?.errors?.['required'] && enrollmentForm.get('emailId')?.touched">
@@ -589,6 +712,7 @@
                   formControlName="nomineeName" 
                   class="form-control" 
                   placeholder="Enter nominee name"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('nomineeName')?.errors?.['required'] && enrollmentForm.get('nomineeName')?.touched">
@@ -607,6 +731,7 @@
                   formControlName="nomineeRelation" 
                   class="form-control" 
                   placeholder="e.g. Spouse / Son / Father / Mother"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('nomineeRelation')?.errors?.['required'] && enrollmentForm.get('nomineeRelation')?.touched">
@@ -625,6 +750,7 @@
                   formControlName="nomineeAgeDob" 
                   class="form-control" 
                   placeholder="e.g. 28 Years or DD/MM/YYYY"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('nomineeAgeDob')?.errors?.['required'] && enrollmentForm.get('nomineeAgeDob')?.touched">
@@ -653,6 +779,7 @@
                   class="form-control" 
                   placeholder="10-digit mobile number"
                   maxlength="10"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('nomineeContactNo')?.errors?.['required'] && enrollmentForm.get('nomineeContactNo')?.touched">
@@ -693,6 +820,7 @@
                   class="form-control uppercase-input" 
                   placeholder="e.g. SBIN0001234 / HDFC0000001"
                   maxlength="11"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <small *ngIf="ifscBankInfo()" class="help-text text-success font-weight-bold">{{ ifscBankInfo() }}</small>
@@ -715,6 +843,7 @@
                   formControlName="bankName" 
                   class="form-control" 
                   placeholder="e.g. State Bank of India / HDFC Bank"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('bankName')?.errors?.['required'] && enrollmentForm.get('bankName')?.touched">
@@ -733,6 +862,7 @@
                   formControlName="branchName" 
                   class="form-control" 
                   placeholder="e.g. Gomti Nagar, Lucknow"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('branchName')?.errors?.['required'] && enrollmentForm.get('branchName')?.touched">
@@ -758,6 +888,7 @@
                   class="form-control" 
                   placeholder="Enter full bank account number"
                   maxlength="30"
+                  style="padding-left: 44px !important;"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('accountNo')?.errors?.['required'] && enrollmentForm.get('accountNo')?.touched">
@@ -994,6 +1125,7 @@
             placeholder="Search by Name, UID, Mobile, or Aadhar..."
             [ngModel]="searchQuery()"
             (ngModelChange)="searchQuery.set($event); onSearchChange()"
+            style="padding-left: 44px !important;"
           >
         </div>
 
