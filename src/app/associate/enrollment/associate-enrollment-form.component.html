@@ -1,10 +1,10 @@
 <div class="wrap">
   <!-- Top Skip Navigation Bar -->
-  <div class="top-skip-bar d-flex justify-content-between align-items-center mb-3 p-2 px-3 rounded shadow-sm" style="background: #f8fafc; border: 1px solid #e2e8f0;">
-    <div class="text-secondary small fw-medium">
-      <i class="fas fa-info-circle text-primary me-1"></i> You can complete the Associate Enrollment form now or skip to your dashboard.
+  <div class="top-skip-bar">
+    <div class="top-skip-text">
+      <i class="fas fa-info-circle me-1"></i> You can complete the Associate Enrollment form now or skip to your dashboard.
     </div>
-    <button type="button" class="btn btn-outline-secondary btn-sm px-3 fw-bold d-flex align-items-center gap-2" (click)="skipToDashboard()" id="skipToAssociateDashboardBtn">
+    <button type="button" class="top-skip-btn" (click)="skipToDashboard()" id="skipToAssociateDashboardBtn">
       <span>Skip to Dashboard</span>
       <i class="fas fa-arrow-right"></i>
     </button>
@@ -12,16 +12,16 @@
 
   <!-- Header (Always visible) -->
   <div class="header">
-      <div class="brand">
-        <div class="brand-mark" style="background: #fff; padding: 4px; display: flex; align-items: center; justify-content: center;">
-          <img src="assets/mmr-logo.png" alt="MMR Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px;">
-        </div>
-        <div>
-          <h1>M.M.R. Construction &amp; Developers Private Limited</h1>
-          <p style="color: #ffffff; opacity: 1;">Head Office: 00, Tribhuvan Khera, Sheshpur Nari | Corporate Office: Unnao, Uttar Pradesh, India 209801</p>
-        </div>
+    <div class="brand">
+      <div class="brand-mark">
+        <img src="assets/mmr-logo.png" alt="MMR Logo">
       </div>
-      <div class="header-meta">
+      <div class="brand-info">
+        <h1>M.M.R. Construction &amp; Developers Private Limited</h1>
+        <p>Head Office: 00, Tribhuvan Khera, Sheshpur Nari | Corporate Office: Unnao, Uttar Pradesh, India 209801</p>
+      </div>
+    </div>
+    <div class="header-meta">
         <div>Ph: 9511119879 | 8429823067</div>
         <div>GST No. 09AATCM6753A1Z5</div>
         <div>CIN No. U68200UP2025PTC229203</div>
@@ -31,66 +31,68 @@
     <div class="form-title">Associate Enrollment Form</div>
 
     <!-- Prominent Locked / Pending Approval Banner when already submitted -->
-    <div *ngIf="isSubmitted" class="locked-banner" style="background: #fffdf0; border: 1px solid #fef08a; border-left: 5px solid #ca8a04; color: #854d0e; padding: 16px 20px; border-radius: 10px; margin-bottom: 22px; box-shadow: 0 4px 14px rgba(202, 138, 4, 0.08);">
-      <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-        <div style="display: flex; align-items: flex-start; gap: 14px;">
-          <div style="width: 42px; height: 42px; border-radius: 50%; background: #fef9c3; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #a16207; flex-shrink: 0;">
+    <div *ngIf="isSubmitted" class="locked-banner">
+      <div class="locked-banner-row">
+        <div class="locked-banner-left">
+          <div class="locked-banner-icon">
             <i class="fas" [class.fa-lock]="isFinalSubmitted" [class.fa-hourglass-half]="!isFinalSubmitted && enrollmentStatus!=='completed' && enrollmentStatus!=='approved'" [class.fa-check-circle]="enrollmentStatus==='completed' || enrollmentStatus==='approved'"></i>
           </div>
-          <div>
-            <div style="font-weight: 800; font-size: 15px; color: #713f12; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <div class="locked-banner-content">
+            <div class="locked-banner-title">
               <span *ngIf="!isFinalSubmitted">Associate Enrollment Form Saved (Read-Only Mode) / फॉर्म सहेजा गया</span>
               <span *ngIf="isFinalSubmitted">Associate Enrollment Form Finalized (Locked) / फॉर्म अंतिम रूप से जमा हो चुका है</span>
-              <span class="badge" style="background: #fef08a; color: #854d0e; font-size: 11px; padding: 4px 8px; border-radius: 6px;" *ngIf="!isFinalSubmitted">
+              <span class="badge badge-saved" *ngIf="!isFinalSubmitted">
                 <i class="fas fa-edit me-1"></i> Saved — Click Edit to modify or Final Submit to finalize
               </span>
-              <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 11px; padding: 4px 8px; border-radius: 6px;" *ngIf="isFinalSubmitted">
+              <span class="badge badge-final" *ngIf="isFinalSubmitted">
                 <i class="fas fa-check-circle me-1"></i> Permanently Finalized
               </span>
-              <span *ngIf="submissionAssociateId" style="color: #062b18; font-size: 12px;">ID: <strong>{{ submissionAssociateId }}</strong></span>
+              <span *ngIf="submissionAssociateId" class="locked-id-badge">ID: <strong>{{ submissionAssociateId }}</strong></span>
             </div>
             
-            <p style="font-size: 12.5px; color: #854d0e; margin: 4px 0 10px; line-height: 1.4;" *ngIf="!isFinalSubmitted">
+            <p class="locked-banner-desc" *ngIf="!isFinalSubmitted">
               Your enrollment details have been saved. You can click <strong>Edit</strong> to modify details or <strong>Final Submit</strong> to permanently finalize your application.
             </p>
-            <p style="font-size: 12.5px; color: #854d0e; margin: 4px 0 10px; line-height: 1.4;" *ngIf="isFinalSubmitted">
+            <p class="locked-banner-desc" *ngIf="isFinalSubmitted">
               Your associate enrollment form has been finalized and permanently locked.
             </p>
 
             <!-- Support Contact Info Strip -->
-            <div style="background: #ffffff; border: 1px solid #fde047; border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 14px; font-size: 12px; font-weight: 600;">
-              <span style="color: #713f12; font-weight: 700;"><i class="fas fa-headset text-gold me-1"></i> For Approval Assistance:</span>
-              <a href="mailto:mmrconstructionsbuilder@gmail.com" style="color: #0f172a; text-decoration: none;">
-                <i class="fas fa-envelope text-gold me-1"></i> mmrconstructionsbuilder&#64;gmail.com
+            <div class="locked-support-strip">
+              <span class="support-title"><i class="fas fa-headset me-1 text-warning"></i> For Approval Assistance:</span>
+              <a href="mailto:mmrconstructionsbuilder@gmail.com" class="support-link">
+                <i class="fas fa-envelope text-warning me-1"></i> mmrconstructionsbuilder&#64;gmail.com
               </a>
-              <span style="color: #cbd5e1;">|</span>
-              <a href="tel:+917071951011" style="color: #0f172a; text-decoration: none;">
-                <i class="fas fa-phone-alt text-emerald me-1"></i> +91 7071951011 / +91 7071951012
+              <span class="support-sep">|</span>
+              <a href="tel:+917071951011" class="support-link">
+                <i class="fas fa-phone-alt text-success me-1"></i> +91 7071951011 / +91 7071951012
               </a>
-              <span style="color: #cbd5e1;">|</span>
-              <a href="https://wa.me/917071951011?text=Hello%20MMR%20Support,%20please%20verify%20my%20Associate%20Enrollment%20application" target="_blank" style="color: #15803d; text-decoration: none; font-weight: 700;">
+              <span class="support-sep">|</span>
+              <a href="https://wa.me/917071951011?text=Hello%20MMR%20Support,%20please%20verify%20my%20Associate%20Enrollment%20application" target="_blank" class="support-link support-wa">
                 <i class="fab fa-whatsapp me-1 text-success"></i> WhatsApp Support
               </a>
             </div>
           </div>
         </div>
 
-        <div style="display: flex; gap: 8px;" class="no-print ms-auto">
-          <button *ngIf="isSubmitted && !isFinalSubmitted && !isEditing" type="button" (click)="onEdit()" style="background: #d97706; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px;">
+        <div class="locked-banner-actions no-print">
+          <button *ngIf="isSubmitted && !isFinalSubmitted && !isEditing" type="button" (click)="onEdit()" class="locked-btn locked-btn-edit">
             <i class="fas fa-edit"></i> Edit
           </button>
-          <button *ngIf="isSubmitted && !isFinalSubmitted && !isEditing" type="button" (click)="onFinalSubmit()" style="background: #15803d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px;">
+          <button *ngIf="isSubmitted && !isFinalSubmitted && !isEditing" type="button" (click)="onFinalSubmit()" class="locked-btn locked-btn-final">
             <i class="fas fa-check-double"></i> Final Submit
           </button>
-          <button type="button" routerLink="/associate/dashboard" style="background: #062b18; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px;">
+          <button type="button" routerLink="/associate/dashboard" class="locked-btn locked-btn-dash">
             <i class="fas fa-th-large"></i> Go to Dashboard
           </button>
-          <button *ngIf="submissionAssociateId" type="button" (click)="downloadPdf(submissionAssociateId)" [disabled]="printing" style="background: #14532d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px;">
+          <button *ngIf="submissionAssociateId" type="button" (click)="downloadPdf(submissionAssociateId)" [disabled]="printing" class="locked-btn locked-btn-pdf">
             <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i> Download PDF
           </button>
         </div>
       </div>
     </div>
+
+
 
     <!-- Error Alert from store if API fails -->
     <div *ngIf="error$ | async as errMsg" class="section" style="border-color: var(--danger); background: #fdf2f2; color: var(--danger); font-weight: 600; padding: 12px 20px; border-radius: 8px;">
@@ -104,7 +106,7 @@
       <div class="section" formGroupName="personalDetails">
         <h2><span class="num">1</span>Personal Details</h2>
         <div class="grid with-photo">
-          <div class="grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="grid">
             <div class="field full">
               <label>Full Name (only Adult) <span class="req">*</span></label>
               <input type="text" formControlName="fullName" placeholder="Enter Full Name">
@@ -332,9 +334,9 @@
           </div>
         </div>
 
-        <div style="margin: 18px 0 10px; display: flex; align-items: center; gap: 8px; background: #f0f7ff; padding: 10px 14px; border-radius: 6px; border: 1px solid #bfdbfe;">
-          <input type="checkbox" id="assocSameAsPerm" formControlName="sameAsPerm" (change)="onSameAsPermChange($event)" style="width: auto; cursor: pointer;">
-          <label for="assocSameAsPerm" style="font-weight: 600; cursor: pointer; color: #1e3a8a; margin: 0; font-size: 13.5px;">
+        <div class="same-as-perm-box">
+          <input type="checkbox" id="assocSameAsPerm" formControlName="sameAsPerm" (change)="onSameAsPermChange($event)">
+          <label for="assocSameAsPerm">
             Local / Correspondence Address is same as Permanent Address / स्थानीय पता स्थायी पते के समान है
           </label>
         </div>
@@ -412,7 +414,7 @@
       <div class="section" formGroupName="nomineeDetails">
           <h2><span class="num">4</span>Nominee Details</h2>
           <div class="grid with-photo">
-            <div class="grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="grid">
               <div class="field">
                 <label>Nominee Name <span class="req">*</span></label>
                 <input type="text" formControlName="nomineeName" placeholder="Nominee Name">
@@ -717,13 +719,13 @@
       </div>
 
       <!-- 8. For Office Use Only -->
-      <div class="section office-section" style="background: #fbf6ea; border: 1px dashed #c9a94a; border-radius: 6px; padding: 20px; margin-top: 24px;">
-        <h2 style="color: #856404; font-size: 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
-          <span><span class="num" style="background:#c9a94a;color:#fff;padding:2px 8px;border-radius:50%;margin-right:8px;font-size:12px;">8</span>8. For Office Use Only</span>
-          <span style="font-size: 12px; color: #856404; font-weight: normal; background: #fff3cd; padding: 3px 8px; border-radius: 4px; border: 1px solid #ffeeba;">Disabled for Applicant (Staff / Admin Use Only)</span>
+      <div class="section office-section">
+        <h2 class="office-h2">
+          <span><span class="num office-num">8</span>8. For Office Use Only</span>
+          <span class="office-badge">Disabled for Applicant (Staff / Admin Use Only)</span>
         </h2>
-        <fieldset disabled style="border:none;padding:0;margin:0;pointer-events:none;opacity:0.75;">
-          <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+        <fieldset disabled class="office-fieldset">
+          <div class="office-grid">
             <div class="field">
               <label style="font-weight:600;font-size:12.5px;color:#333;margin-bottom:4px;display:block;">Application Status</label>
               <select disabled style="width:100%;border:1px solid #ccc;padding:8px 10px;border-radius:4px;background:#f9f9f9;font-size:13.5px;cursor:not-allowed;">
@@ -769,13 +771,13 @@
       </div>
 
       <!-- Actions Row (Submitted / Saved state) -->
-      <div class="submit-row" *ngIf="isSubmitted && !isEditing" style="display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 25px;">
+      <div class="submit-row submitted-actions" *ngIf="isSubmitted && !isEditing">
         <!-- If NOT Final Submitted: Show Edit and Final Submit -->
         <button
           *ngIf="!isFinalSubmitted"
           type="button"
           (click)="onEdit()"
-          style="background-color: #f59e0b; color: #1e293b; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          class="bottom-action-btn btn-edit">
           <i class="fas fa-edit"></i> Edit
         </button>
         <button
@@ -783,14 +785,14 @@
           type="button"
           (click)="onFinalSubmit()"
           [disabled]="loading$ | async"
-          style="background-color: #059669; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          class="bottom-action-btn btn-final">
           <i class="fas fa-check-double"></i> Final Submit
         </button>
 
-        <button type="button" routerLink="/associate/dashboard" style="background-color: var(--primary, #1e3a8a); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+        <button type="button" routerLink="/associate/dashboard" class="bottom-action-btn btn-dash">
           <i class="fas fa-th-large"></i> Go to Dashboard
         </button>
-        <button *ngIf="submissionAssociateId" type="button" (click)="downloadPdf(submissionAssociateId)" [disabled]="printing" style="background-color: #14532d; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+        <button *ngIf="submissionAssociateId" type="button" (click)="downloadPdf(submissionAssociateId)" [disabled]="printing" class="bottom-action-btn btn-pdf">
           <i class="fas" [class.fa-spinner]="printing" [class.fa-spin]="printing" [class.fa-print]="!printing"></i>
           {{ printing ? 'Generating PDF...' : 'Download / Print Form' }}
         </button>
