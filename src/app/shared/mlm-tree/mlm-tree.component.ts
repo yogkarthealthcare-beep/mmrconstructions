@@ -73,6 +73,7 @@ export class MlmTreeComponent implements OnInit {
 
   // Breadcrumbs & Re-rooting
   currentRootId: string | number = 'ADMIN';
+  topRootUserId: string | number | null = null;
   breadcrumbs: Array<{ user_id: string | number; member_id: string; full_name: string; user_type?: string }> = [];
 
   // Context Menu & Modals
@@ -131,6 +132,9 @@ export class MlmTreeComponent implements OnInit {
   }
 
   get isRootAdminActive() {
+    if (this.topRootUserId != null) {
+      return String(this.currentRootId) === String(this.topRootUserId);
+    }
     return this.currentRootId === 'ADMIN' || this.currentRootId === 'MMR-0' || this.currentRootId === 0;
   }
 
@@ -178,34 +182,38 @@ export class MlmTreeComponent implements OnInit {
   // ── ADMIN TREE LOADER ─────────────────────────────────────────────
   private async loadAdminTree(rootId: string | number = 'ADMIN', depth: number = 4) {
     try {
-      const isRootAdmin = String(rootId).toUpperCase() === 'ADMIN' || rootId === '0' || rootId === 'MMR-0';
-
-      // 1. Fetch breadcrumb path
-      if (!isRootAdmin) {
-        try {
-          const pathRes: any = await firstValueFrom(this.api.adminGetNetworkTreePath(rootId));
-          this.breadcrumbs = pathRes?.success && Array.isArray(pathRes.data) ? pathRes.data : [];
-        } catch {
-          this.breadcrumbs = [{ user_id: 'ADMIN', member_id: 'MMR-0', full_name: 'MMR Admin' }];
-        }
-      } else {
-        this.breadcrumbs = [{ user_id: 'ADMIN', member_id: 'MMR-0', full_name: 'MMR Admin' }];
-      }
-
-      // 2. Fetch Tree Nodes
+      // 1. Fetch Tree Nodes
       const treeRes: any = await firstValueFrom(this.api.adminGetNetworkTree(rootId, depth, this.showCustomers));
       const rawNodes = treeRes?.success && treeRes.data?.nodes ? treeRes.data.nodes : [];
+      const returnedRoot = treeRes?.data?.root;
 
       if (!rawNodes || rawNodes.length === 0) {
         this.root = null;
         this.flatNodes = [];
+        this.breadcrumbs = [];
         return;
       }
 
-      this.root = this.buildAdminHierarchy(rawNodes, rootId);
+      this.root = this.buildAdminHierarchy(rawNodes, returnedRoot || rootId);
       this.flatNodes = this.flatten(this.root);
       this.recalculate(this.root);
       this.focusedNode = this.root;
+
+      const effectiveRootId = this.root?.userId || returnedRoot || rootId;
+      if (!this.topRootUserId && this.root?.userId) {
+        this.topRootUserId = this.root.userId;
+      }
+      this.currentRootId = effectiveRootId;
+
+      // 2. Fetch breadcrumb path
+      try {
+        const pathRes: any = await firstValueFrom(this.api.adminGetNetworkTreePath(effectiveRootId));
+        this.breadcrumbs = pathRes?.success && Array.isArray(pathRes.data) && pathRes.data.length > 0
+          ? pathRes.data
+          : (this.root ? [{ user_id: this.root.userId, member_id: this.root.memberCode, full_name: this.root.name }] : []);
+      } catch {
+        this.breadcrumbs = this.root ? [{ user_id: this.root.userId, member_id: this.root.memberCode, full_name: this.root.name }] : [];
+      }
 
       if (this.flatNodes.length > MAX_RENDER_NODES) {
         this.toast = `Showing first ${MAX_RENDER_NODES} members for performance. Click expand or search to inspect downlines.`;
@@ -216,12 +224,11 @@ export class MlmTreeComponent implements OnInit {
   }
 
   private buildAdminHierarchy(rawList: any[], rootId: string | number): MlmNode | null {
-    const isRootAdmin = String(rootId).toUpperCase() === 'ADMIN' || rootId === '0' || rootId === 'MMR-0';
     const byId = new Map<string, MlmNode>();
 
     // Map raw DB objects to MlmNode
     const nodes: MlmNode[] = rawList.map((item, index) => {
-      const node = this.toNode(item, item.level || 1, index);
+      const node = this.toNode(item, item.level != null ? item.level : 0, index);
       node.expanded = (item.level <= 3); // initial view expanded up to 4 levels
       node.loaded = true;
       byId.set(String(item.user_id), node);
@@ -230,11 +237,13 @@ export class MlmTreeComponent implements OnInit {
     });
 
     let rootNode: MlmNode | null = null;
+    const isRootAdmin = String(rootId).toUpperCase() === 'ADMIN' || rootId === '0' || rootId === 'MMR-0' || !rootId;
 
-    if (isRootAdmin) {
-      rootNode = byId.get('ADMIN') || nodes[0] || null;
-    } else {
-      rootNode = byId.get(String(rootId)) || nodes[0] || null;
+    if (!isRootAdmin) {
+      rootNode = byId.get(String(rootId)) || null;
+    }
+    if (!rootNode) {
+      rootNode = nodes.find(n => n.level === 0) || nodes[0] || null;
     }
 
     if (!rootNode) return null;
@@ -245,19 +254,15 @@ export class MlmTreeComponent implements OnInit {
       const rawItem = rawList.find(r => String(r.user_id) === String(node.userId)) || {};
       const sponsorKey = rawItem.sponsor_user_id != null ? String(rawItem.sponsor_user_id) : '';
 
-      if (!sponsorKey || sponsorKey === 'null' || sponsorKey === 'ADMIN') {
-        // Direct child of Admin root
-        if (rootNode && rootNode.userId === 'ADMIN') {
-          rootNode.children.push(node);
-        }
-      } else {
+      if (sponsorKey) {
         const parent = byId.get(sponsorKey);
         if (parent && parent !== node) {
           parent.children.push(node);
-        } else if (isRootAdmin && rootNode) {
-          // If parent is not in current view, fallback attach to root
+        } else if (rootNode) {
           rootNode.children.push(node);
         }
+      } else if (rootNode) {
+        rootNode.children.push(node);
       }
     });
 
@@ -639,7 +644,7 @@ export class MlmTreeComponent implements OnInit {
   resetToAdminRoot() {
     this.searchTerm = '';
     this.searchResults = [];
-    this.loadTree('ADMIN');
+    this.loadTree(this.topRootUserId || 'ADMIN');
     this.resetView();
   }
 
