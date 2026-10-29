@@ -400,22 +400,43 @@
                   Age: {{ calculatedAge() }} Yrs
                 </span>
               </div>
-              <div class="input-with-icon">
+              <div class="input-with-icon has-datepicker-action">
                 <i class="fas fa-calendar-alt input-icon"></i>
                 <input 
-                  type="date" 
+                  type="text" 
                   formControlName="dateOfBirth" 
-                  [max]="maxAdultDob"
-                  class="form-control"
-                  (keydown)="$event.preventDefault()"
-                  (click)="$any($event.target).showPicker ? $any($event.target).showPicker() : null"
+                  class="form-control date-text-input" 
+                  placeholder="DD/MM/YYYY"
+                  maxlength="10"
+                  (input)="onDobInput($event)"
                 >
+                <input 
+                  #dobPickerInput
+                  type="date" 
+                  [max]="maxAdultDob"
+                  (change)="onDatepickerSelect($event)"
+                  class="native-hidden-datepicker"
+                  tabindex="-1"
+                  aria-hidden="true"
+                  title="Choose date from calendar"
+                >
+                <button 
+                  type="button" 
+                  class="datepicker-popup-btn" 
+                  (click)="openDatePicker(dobPickerInput)"
+                  title="Open Calendar Date Picker"
+                >
+                  <i class="fas fa-calendar-day"></i>
+                </button>
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('dateOfBirth')?.errors?.['required'] && enrollmentForm.get('dateOfBirth')?.touched">
                 Date of birth is required.
               </span>
               <span class="error-msg" *ngIf="enrollmentForm.get('dateOfBirth')?.errors?.['underAge'] && enrollmentForm.get('dateOfBirth')?.touched">
                 Applicant must be at least 18 years old / टीम सदस्य की आयु कम से कम 18 वर्ष होनी चाहिए।
+              </span>
+              <span class="error-msg" *ngIf="enrollmentForm.get('dateOfBirth')?.errors?.['invalidDate'] && enrollmentForm.get('dateOfBirth')?.touched">
+                Please enter a valid Date of Birth (DD/MM/YYYY).
               </span>
             </div>
           </div>

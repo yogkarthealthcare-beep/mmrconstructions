@@ -17,7 +17,9 @@ import {
   calculateAgeFromDob,
   humanNameValidator,
   normalizeHumanName,
-  validateImageUpload 
+  validateImageUpload,
+  formatDateToDDMMYYYY,
+  parseDDMMYYYYToISO
 } from '../../shared/utils/form-helpers';
 
 export interface TeamMemberSlot {
@@ -449,6 +451,37 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     this.setTab('enroll');
   }
 
+  onDobInput(event: any): void {
+    let val = (event.target.value || '').replace(/[^0-9/]/g, '');
+    if (val.length === 2 && !val.includes('/')) {
+      val = val + '/';
+    } else if (val.length === 5 && val.split('/').length === 2) {
+      val = val + '/';
+    }
+    event.target.value = val;
+    this.enrollmentForm.get('dateOfBirth')?.setValue(val, { emitEvent: true });
+  }
+
+  onDatepickerSelect(event: any): void {
+    const pickedDate = event.target.value;
+    if (pickedDate) {
+      const formatted = formatDateToDDMMYYYY(pickedDate);
+      this.enrollmentForm.get('dateOfBirth')?.setValue(formatted, { emitEvent: true });
+    }
+  }
+
+  openDatePicker(picker: HTMLInputElement): void {
+    if (!picker) return;
+    if (typeof picker.showPicker === 'function') {
+      try {
+        picker.showPicker();
+        return;
+      } catch (e) {}
+    }
+    picker.focus();
+    picker.click();
+  }
+
   onAadharInput(event: any): void {
     const input = event.target as HTMLInputElement;
     input.value = input.value.replace(/\D/g, '').slice(0, 12);
@@ -801,7 +834,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     formData.append('associateName', normalizeHumanName(this.associateName));
     formData.append('fullName', normalizeHumanName(raw.fullName));
     formData.append('fatherHusbandName', normalizeHumanName(raw.fatherHusbandName));
-    formData.append('dateOfBirth', raw.dateOfBirth);
+    formData.append('dateOfBirth', parseDDMMYYYYToISO(raw.dateOfBirth));
     formData.append('gender', raw.gender);
     formData.append('aadharNo', raw.aadharNo);
     if (raw.panNo) formData.append('panNo', raw.panNo);
@@ -1016,7 +1049,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
 
     let dobStr = '';
     if (member.date_of_birth) {
-      dobStr = String(member.date_of_birth).split('T')[0];
+      dobStr = formatDateToDDMMYYYY(member.date_of_birth);
     }
 
     const isFinal = Boolean(member.is_final_submitted);
