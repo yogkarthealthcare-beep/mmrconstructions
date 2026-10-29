@@ -1360,21 +1360,21 @@
 <!-- ═════════════════════════════════════════════════════════════════════════ -->
 <!-- ADD NEW TEAM MEMBER MODAL (DASHBOARD QUICK REGISTRATION)                  -->
 <!-- ═════════════════════════════════════════════════════════════════════════ -->
-<div class="modal-backdrop-custom" *ngIf="showAddTeamMemberModal" (click)="closeAddTeamMemberModal()" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 1050; display: flex; align-items: center; justify-content: center; padding: 16px;">
-  <div class="modal-dialog-custom add-tm-modal-dialog" (click)="$event.stopPropagation()" style="background: #ffffff; width: 100%; max-width: 540px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; max-height: 90vh; display: flex; flex-direction: column;">
+<div class="modal-backdrop-custom" *ngIf="showAddTeamMemberModal" (click)="closeAddTeamMemberModal()" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 1050; display: flex; align-items: center; justify-content: center; padding: 12px;">
+  <div class="modal-dialog-custom add-tm-modal-dialog" (click)="$event.stopPropagation()">
     
     <!-- HEADER -->
-    <div class="d-flex align-items-center justify-content-between p-3" style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%); color: #fff;">
-      <div class="d-flex align-items-center gap-2.5">
-        <div style="background: #10b981; color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+    <div class="add-tm-header">
+      <div class="d-flex align-items-center gap-2" style="min-width: 0;">
+        <div class="add-tm-icon-badge">
           <i class="fas fa-user-shield"></i>
         </div>
-        <div>
-          <h5 class="mb-0 fw-700 text-white" style="font-size: 15px;">Add New Team Member</h5>
-          <span style="font-size: 11px; opacity: 0.85;">Register a new direct Team Member in your 10-slot sales network (11 Total Team Size)</span>
+        <div style="min-width: 0;">
+          <h5 class="add-tm-title">Add New Team Member</h5>
+          <div class="add-tm-sub">Register direct Team Member in your 10-slot network</div>
         </div>
       </div>
-      <button type="button" class="btn btn-sm btn-link text-white p-0" (click)="closeAddTeamMemberModal()" style="font-size: 18px; text-decoration: none;">
+      <button type="button" class="add-tm-close-btn" (click)="closeAddTeamMemberModal()" aria-label="Close" title="Close">
         <i class="fas fa-times"></i>
       </button>
     </div>
@@ -1383,71 +1383,78 @@
     <div class="p-3" *ngIf="!addTeamMemberSuccess" style="overflow-y: auto;">
       
       <!-- SPONSOR INFO -->
-      <div class="tm-sponsor-card mb-3" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #10b981; padding: 12px 16px; border-radius: 10px;">
-        <div class="d-flex align-items-center justify-content-between mb-1.5 flex-wrap gap-1">
-          <span class="fs-11 fw-700 text-success text-uppercase" style="letter-spacing: 0.5px;">Parent Associate (Team Lead)</span>
-          <span class="badge bg-success text-white fs-10 px-2 py-1" style="border-radius: 6px;"><i class="fas fa-layer-group me-1"></i> Max 10 Direct Slots (11 Team Total)</span>
+      <div class="tm-sponsor-card">
+        <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
+          <span class="tm-lead-label"><i class="fas fa-sitemap me-1"></i>PARENT ASSOCIATE (TEAM LEAD)</span>
+          <span class="tm-lead-badge"><i class="fas fa-layer-group me-1"></i>Max 10 Direct Slots</span>
         </div>
-        <div class="fw-700 text-dark fs-12">
-          {{ (profile.member_id || userData?.member_id || 'MMR-ASSOC') + ' — ' + (profile.full_name || userData?.full_name || 'Associate Partner') }}
+        <div class="tm-lead-name">
+          <i class="fas fa-id-badge text-success me-1"></i>
+          <span>{{ (profile.member_id || userData?.member_id || 'MMR-ASC-0002') + ' — ' + (profile.full_name || userData?.full_name || 'Associate Partner') }}</span>
         </div>
       </div>
 
       <!-- ERROR ALERT -->
-      <div class="alert alert-danger py-2 px-3 fs-12 mb-3" *ngIf="addTeamMemberError">
-        <i class="fas fa-exclamation-circle me-1"></i> {{ addTeamMemberError }}
+      <div class="alert alert-danger py-1 px-2.5 fs-11 mb-2 d-flex align-items-center gap-1.5" *ngIf="addTeamMemberError">
+        <i class="fas fa-exclamation-circle text-danger"></i>
+        <span>{{ addTeamMemberError }}</span>
       </div>
 
       <form (ngSubmit)="submitAddTeamMember()">
-        <div class="mb-2.5">
-          <label class="form-label fs-11 fw-700 text-uppercase text-muted mb-1">Full Name <span class="text-danger">*</span></label>
-          <div class="input-group input-group-sm tm-form-group">
-            <span class="input-group-text bg-light tm-addon"><i class="fas fa-user text-muted"></i></span>
-            <input type="text" class="form-control form-control-sm tm-input" placeholder="e.g. Ramesh Chandra" [(ngModel)]="newTeamMember.full_name" name="tm_name" required>
+        <!-- Full Name -->
+        <div class="mb-2">
+          <label class="tm-xs-label">Full Name <span class="text-danger">*</span></label>
+          <div class="tm-xs-group">
+            <span class="tm-xs-addon"><i class="fas fa-user"></i></span>
+            <input type="text" class="tm-xs-input" placeholder="e.g. Ramesh Chandra" [(ngModel)]="newTeamMember.full_name" name="tm_name" required autocomplete="name">
           </div>
         </div>
 
-        <div class="row g-2 mb-2.5">
+        <!-- Mobile & Email in 2 Columns -->
+        <div class="row g-2 mb-2">
           <div class="col-6">
-            <label class="form-label fs-11 fw-700 text-uppercase text-muted mb-1">Mobile Number <span class="text-danger">*</span></label>
-            <div class="input-group input-group-sm tm-form-group">
-              <span class="input-group-text bg-light fw-700 fs-11 tm-addon">+91</span>
-              <input type="tel" class="form-control form-control-sm tm-input" placeholder="10-digit mobile" maxlength="10" [(ngModel)]="newTeamMember.mobile_no" name="tm_mobile" required>
+            <label class="tm-xs-label">Mobile Number <span class="text-danger">*</span></label>
+            <div class="tm-xs-group">
+              <span class="tm-xs-addon tm-addon-tel">+91</span>
+              <input type="tel" class="tm-xs-input" placeholder="10-digit mobile" maxlength="10" [(ngModel)]="newTeamMember.mobile_no" name="tm_mobile" required autocomplete="tel">
             </div>
           </div>
           <div class="col-6">
-            <label class="form-label fs-11 fw-700 text-uppercase text-muted mb-1">Email Address <span class="text-danger">*</span></label>
-            <div class="input-group input-group-sm tm-form-group">
-              <span class="input-group-text bg-light tm-addon"><i class="fas fa-envelope text-muted"></i></span>
-              <input type="email" class="form-control form-control-sm tm-input" placeholder="teammember@example.com" [(ngModel)]="newTeamMember.email" name="tm_email" required>
-            </div>
-          </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label class="form-label fs-11 fw-700 text-uppercase text-muted mb-1">Password <span class="text-danger">*</span></label>
-            <div class="input-group input-group-sm tm-form-group">
-              <span class="input-group-text bg-light tm-addon"><i class="fas fa-key text-muted"></i></span>
-              <input [type]="showTeamMemberPassword ? 'text' : 'password'" class="form-control form-control-sm tm-input" placeholder="Min 6 characters" [(ngModel)]="newTeamMember.password" name="tm_pwd" required>
-            </div>
-          </div>
-          <div class="col-6">
-            <label class="form-label fs-11 fw-700 text-uppercase text-muted mb-1">Confirm Password <span class="text-danger">*</span></label>
-            <div class="input-group input-group-sm tm-form-group">
-              <span class="input-group-text bg-light tm-addon"><i class="fas fa-check-double text-muted"></i></span>
-              <input [type]="showTeamMemberPassword ? 'text' : 'password'" class="form-control form-control-sm tm-input" placeholder="Repeat password" [(ngModel)]="newTeamMember.confirm_password" name="tm_confirm_pwd" required>
+            <label class="tm-xs-label">Email Address <span class="text-danger">*</span></label>
+            <div class="tm-xs-group">
+              <span class="tm-xs-addon"><i class="fas fa-envelope"></i></span>
+              <input type="email" class="tm-xs-input" placeholder="teammember@example.com" [(ngModel)]="newTeamMember.email" name="tm_email" required autocomplete="email">
             </div>
           </div>
         </div>
 
-        <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeAddTeamMemberModal()" [disabled]="addTeamMemberSubmitting">
+        <!-- Password & Confirm Password in 2 Columns -->
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="tm-xs-label">Password <span class="text-danger">*</span></label>
+            <div class="tm-xs-group">
+              <span class="tm-xs-addon"><i class="fas fa-key"></i></span>
+              <input [type]="showTeamMemberPassword ? 'text' : 'password'" class="tm-xs-input" placeholder="Min 6 characters" [(ngModel)]="newTeamMember.password" name="tm_pwd" required autocomplete="new-password">
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="tm-xs-label">Confirm Password <span class="text-danger">*</span></label>
+            <div class="tm-xs-group">
+              <span class="tm-xs-addon"><i class="fas fa-check-double"></i></span>
+              <input [type]="showTeamMemberPassword ? 'text' : 'password'" class="tm-xs-input" placeholder="Repeat password" [(ngModel)]="newTeamMember.confirm_password" name="tm_confirm_pwd" required autocomplete="new-password">
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Buttons (X-Small) -->
+        <div class="tm-footer-actions">
+          <button type="button" class="btn-tm-cancel" (click)="closeAddTeamMemberModal()" [disabled]="addTeamMemberSubmitting">
             Cancel
           </button>
-          <button type="submit" class="btn btn-success btn-sm fw-700" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none;" [disabled]="addTeamMemberSubmitting">
-            <i class="fas fa-spinner fa-spin me-1" *ngIf="addTeamMemberSubmitting"></i>
-            {{ addTeamMemberSubmitting ? 'Registering...' : 'Register Team Member' }}
+          <button type="submit" class="btn-tm-submit" [disabled]="addTeamMemberSubmitting">
+            <i class="fas fa-spinner fa-spin" *ngIf="addTeamMemberSubmitting"></i>
+            <i class="fas fa-user-plus" *ngIf="!addTeamMemberSubmitting"></i>
+            <span>{{ addTeamMemberSubmitting ? 'Registering...' : 'Register Team Member' }}</span>
           </button>
         </div>
       </form>
