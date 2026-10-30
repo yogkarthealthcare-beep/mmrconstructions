@@ -12,6 +12,7 @@ import { EmiCalculatorComponent } from '../../sections/emi-calculator/emi-calcul
 import { BuybackComponent } from '../../sections/buyback/buyback.component';
 import { EarnComponent } from '../../sections/earn/earn.component';
 import { ContactComponent } from '../../sections/contact/contact.component';
+import { HomeAdBannerComponent } from '../../shared/components/home-ad-banner/home-ad-banner.component';
 import { ApiService } from '../../services/api.service';
 import { SiteToggleService } from '../../services/site-toggle.service';
 import { SeoService } from '../../services/seo.service';
@@ -65,7 +66,7 @@ const BUBBLE_COLORS = {
   selector: 'app-home',
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule, TopbarComponent, NavbarComponent, FooterComponent,
-    HeroSliderComponent, SitesComponent, InvestorsComponent, EmiCalculatorComponent, BuybackComponent, EarnComponent, ContactComponent],
+    HeroSliderComponent, SitesComponent, InvestorsComponent, EmiCalculatorComponent, BuybackComponent, EarnComponent, ContactComponent, HomeAdBannerComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })

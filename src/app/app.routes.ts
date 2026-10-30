@@ -173,6 +173,11 @@ export const routes: Routes = [
     path: 'site-map-new', 
     loadComponent: () => import('./pages/site-map-new/site-map-new.component').then(m => m.SiteMapNewComponent) 
   },
+  {
+    path: 'gallery',
+    loadComponent: () => import('./pages/gallery/gallery.component').then(m => m.PublicGalleryComponent),
+    title: 'Media Gallery — MMR Construction & Developers'
+  },
   { 
     path: 'all-sites', 
     loadComponent: () => import('./pages/all-sites/all-sites.component').then(m => m.AllSitesComponent),

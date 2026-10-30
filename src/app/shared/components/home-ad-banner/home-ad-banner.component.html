@@ -1,0 +1,130 @@
+<section class="home-ad-section" *ngIf="ads.length > 0" (mouseenter)="pauseSlider()" (mouseleave)="resumeSlider()">
+  <div class="ad-banner-container">
+    <div class="ad-slides-wrapper" [style.transform]="'translateX(-' + (currentIndex * 100) + '%)'">
+      <div class="ad-slide" *ngFor="let ad of displayedAds; let i = index">
+        <!-- Background Media Layer -->
+        <div class="ad-media-layer">
+          <!-- 1. IMAGE AD -->
+          <ng-container *ngIf="ad.type === 'image'">
+            <img
+              [src]="resolveUrl(ad.url)"
+              [alt]="ad.title || 'Advertisement'"
+              class="ad-bg-media"
+              loading="lazy" />
+          </ng-container>
+
+          <!-- 2. YOUTUBE AD -->
+          <ng-container *ngIf="ad.type === 'youtube'">
+            <iframe
+              *ngIf="getYouTubeEmbedUrl(ad) as ytUrl"
+              [src]="ytUrl"
+              title="YouTube Ad Video"
+              class="ad-bg-iframe"
+              frameborder="0"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+            <!-- Fallback poster if iframe not ready or blocked -->
+            <img
+              *ngIf="!getYouTubeEmbedUrl(ad)"
+              [src]="getThumbnail(ad)"
+              [alt]="ad.title || 'YouTube Video'"
+              class="ad-bg-media" />
+          </ng-container>
+
+          <!-- 3. UPLOADED VIDEO AD -->
+          <ng-container *ngIf="ad.type === 'video'">
+            <video
+              [src]="resolveUrl(ad.url)"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              class="ad-bg-media">
+            </video>
+          </ng-container>
+
+          <!-- Dark Gradient Scrim Overlay for Readability -->
+          <div class="ad-scrim-overlay"></div>
+        </div>
+
+        <!-- Content Overlay Layer -->
+        <div class="ad-content-container mmr-container">
+          <div class="ad-content-box">
+            <div class="ad-eyebrow">
+              <span class="badge bg-gold text-dark fs-11 fw-800 me-2">FEATURED SHOWCASE</span>
+              <span class="ad-type-tag" *ngIf="ad.type !== 'image'">
+                <i class="fas fa-video me-1"></i> Video Tour
+              </span>
+            </div>
+
+            <h3 class="ad-title" *ngIf="ad.title">{{ ad.title }}</h3>
+
+            <div class="ad-actions mt-3 d-flex align-items-center gap-2 flex-wrap">
+              <!-- Play / Expand Lightbox Button -->
+              <button
+                type="button"
+                class="btn btn-emerald-ad btn-sm"
+                (click)="openLightbox(ad)"
+                title="Watch or view in full screen">
+                <i class="fas fa-expand me-1.5" *ngIf="ad.type === 'image'"></i>
+                <i class="fas fa-play me-1.5" *ngIf="ad.type !== 'image'"></i>
+                {{ ad.type === 'image' ? 'View Full Image' : 'Watch Video' }}
+              </button>
+
+              <!-- Optional Call-To-Action Button -->
+              <a
+                *ngIf="ad.cta_link"
+                [href]="ad.cta_link"
+                target="_blank"
+                rel="noopener"
+                class="btn btn-gold-ad btn-sm">
+                <span>{{ ad.cta_label || 'Explore Now' }}</span>
+                <i class="fas fa-arrow-right ms-1.5"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Arrows (if > 1 ad) -->
+    <ng-container *ngIf="displayedAds.length > 1">
+      <button
+        type="button"
+        class="ad-slider-arrow prev"
+        (click)="prevSlide()"
+        aria-label="Previous advertisement slide">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button
+        type="button"
+        class="ad-slider-arrow next"
+        (click)="nextSlide()"
+        aria-label="Next advertisement slide">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+
+      <!-- Pagination Indicators / Dots -->
+      <div class="ad-dots-container">
+        <button
+          type="button"
+          class="ad-dot"
+          *ngFor="let ad of displayedAds; let dotIdx = index"
+          [class.active]="dotIdx === currentIndex"
+          (click)="goToSlide(dotIdx)"
+          [attr.aria-label]="'Go to slide ' + (dotIdx + 1)">
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</section>
+
+<!-- Lightbox Modal for Full View / Video Audio -->
+<app-lightbox-modal
+  [isOpen]="showLightbox"
+  [item]="activeLightboxAd"
+  (closeEvent)="showLightbox = false">
+</app-lightbox-modal>
+

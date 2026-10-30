@@ -53,6 +53,16 @@ export const ADMIN_ROUTES: Routes = [
     title: 'Site Gallery Management'
   },
   { 
+    path: 'gallery', 
+    loadComponent: () => import('./gallery/admin-gallery.component').then(m => m.AdminGalleryComponent),
+    title: 'Media Gallery Management'
+  },
+  { 
+    path: 'advertisements', 
+    loadComponent: () => import('./gallery/admin-gallery.component').then(m => m.AdminGalleryComponent),
+    title: 'Advertisement Management'
+  },
+  { 
     path: 'site-gallery/plot', 
     loadComponent: () => import('./site-gallery/site-gallery.component').then(m => m.AdminSiteGalleryComponent),
     title: 'Site Gallery — Plot Category'

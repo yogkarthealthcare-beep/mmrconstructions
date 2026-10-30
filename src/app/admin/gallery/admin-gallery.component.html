@@ -1,0 +1,1102 @@
+<div class="admin-gallery-page container-fluid px-3 px-md-4 py-3">
+  <!-- Page Header -->
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2">
+        <h4 class="fw-bold mb-0 text-dark">
+          <i class="fas fa-photo-film text-emerald me-2"></i>Marketing &amp; Content Management
+        </h4>
+        <span class="badge bg-emerald-subtle text-emerald px-2 py-1 rounded-pill fs-12">Media Center</span>
+      </div>
+      <p class="text-muted fs-13 mb-0 mt-1">
+        Manage public website media gallery, project showcases, and the home page advertisement banner.
+      </p>
+    </div>
+
+    <!-- Mode Navigation Tabs -->
+    <div class="nav nav-pills bg-white border p-1 rounded-3 shadow-xs">
+      <button
+        type="button"
+        class="nav-link fs-13 fw-600 px-3 py-1.5"
+        [class.active]="activeTab === 'gallery'"
+        (click)="switchTab('gallery')">
+        <i class="fas fa-images me-1.5"></i>Gallery &amp; Uploads
+        <span class="badge bg-secondary ms-1.5">{{ allItems.length }}</span>
+      </button>
+      <button
+        type="button"
+        class="nav-link fs-13 fw-600 px-3 py-1.5"
+        [class.active]="activeTab === 'advertisement'"
+        (click)="switchTab('advertisement')">
+        <i class="fas fa-bullhorn text-gold me-1.5"></i>Home Advertisements
+        <span class="badge bg-gold text-dark ms-1.5">{{ adItems.length }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Global Alerts -->
+  <div *ngIf="alertMessage" class="alert alert-{{ alertType }} alert-dismissible fade show shadow-xs mb-4" role="alert">
+    <i class="fas me-2" [ngClass]="alertType === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'"></i>
+    {{ alertMessage }}
+    <button type="button" class="btn-close" (click)="alertMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- TAB 1: GALLERY & UPLOADS -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div *ngIf="activeTab === 'gallery'">
+    <!-- 3 Upload Forms Accordion/Cards -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+      <div class="card-header bg-light border-bottom p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-emerald rounded-circle p-2"><i class="fas fa-plus text-white"></i></span>
+          <span class="fw-bold text-dark fs-15">Add New Media to Gallery</span>
+        </div>
+        <div class="btn-group btn-group-sm">
+          <button
+            type="button"
+            class="btn"
+            [class.btn-emerald]="uploadMode === 'image'"
+            [class.btn-outline-secondary]="uploadMode !== 'image'"
+            (click)="uploadMode = 'image'">
+            <i class="fas fa-image me-1"></i>1. Add Image
+          </button>
+          <button
+            type="button"
+            class="btn"
+            [class.btn-emerald]="uploadMode === 'youtube'"
+            [class.btn-outline-secondary]="uploadMode !== 'youtube'"
+            (click)="uploadMode = 'youtube'">
+            <i class="fab fa-youtube me-1"></i>2. Add YouTube Link
+          </button>
+          <button
+            type="button"
+            class="btn"
+            [class.btn-emerald]="uploadMode === 'video'"
+            [class.btn-outline-secondary]="uploadMode !== 'video'"
+            (click)="uploadMode = 'video'">
+            <i class="fas fa-video me-1"></i>3. Add Video File
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body p-3 p-md-4">
+        <!-- ── FORM A: ADD IMAGE ── -->
+        <form *ngIf="uploadMode === 'image'" (ngSubmit)="submitAddImage()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-600 fs-13">Image Title / Caption <span class="text-muted">(Optional)</span></label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="e.g. Master Site Entrance View, Green Belt Corridor"
+                [(ngModel)]="imageForm.title"
+                name="imageTitle"
+                [disabled]="isUploading" />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-600 fs-13">Image File <span class="text-danger">*</span> <small class="text-muted">(JPG, PNG, WEBP - Max 5 MB)</small></label>
+              <input
+                type="file"
+                class="form-control"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                (change)="onImageFileSelected($event)"
+                [disabled]="isUploading" />
+            </div>
+
+            <!-- Preview & Options -->
+            <div class="col-12" *ngIf="imagePreviewUrl">
+              <div class="p-2 border rounded-3 bg-light d-inline-flex align-items-center gap-3">
+                <img [src]="imagePreviewUrl" alt="Preview" class="rounded-2 shadow-xs" style="width: 100px; height: 60px; object-fit: cover;" />
+                <div>
+                  <div class="fw-bold fs-13 text-dark">{{ selectedImageFile?.name }}</div>
+                  <div class="text-muted fs-11">{{ (selectedImageFile?.size || 0) / 1024 | number:'1.0-1' }} KB</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="p-3 bg-light rounded-3 border">
+                <div class="form-check form-switch mb-2">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="imgShowAd"
+                    [(ngModel)]="imageForm.showInAdvertisement"
+                    name="imgShowAd" />
+                  <label class="form-check-label fw-600 text-dark" for="imgShowAd">
+                    <i class="fas fa-bullhorn text-gold me-1"></i> Show this in the Home page advertisement banner
+                  </label>
+                </div>
+
+                <!-- Expanded Ad Options -->
+                <div class="row g-2 pt-2 border-top mt-2" *ngIf="imageForm.showInAdvertisement">
+                  <div class="col-md-6">
+                    <label class="form-label fs-12 text-muted">Click-Through URL (Optional)</label>
+                    <input
+                      type="url"
+                      class="form-control form-control-sm"
+                      placeholder="https://mmrconstructions.in/sites/1/plot-map"
+                      [(ngModel)]="imageForm.ctaLink"
+                      name="imgCtaLink" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fs-12 text-muted">CTA Button Label</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      placeholder="e.g. Explore Plots, Book Now"
+                      [(ngModel)]="imageForm.ctaLabel"
+                      name="imgCtaLabel" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 d-flex justify-content-end">
+              <button
+                type="submit"
+                class="btn btn-emerald px-4 fw-600 shadow-xs"
+                [disabled]="isUploading || !selectedImageFile">
+                <i class="fas fa-spinner fa-spin me-1.5" *ngIf="isUploading"></i>
+                <i class="fas fa-upload me-1.5" *ngIf="!isUploading"></i>
+                {{ isUploading ? 'Uploading Image...' : 'Save Image to Gallery' }}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- ── FORM B: ADD YOUTUBE LINK ── -->
+        <form *ngIf="uploadMode === 'youtube'" (ngSubmit)="submitAddYouTube()">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label fw-600 fs-13">YouTube Video URL <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-white"><i class="fab fa-youtube text-danger"></i></span>
+                <input
+                  type="url"
+                  class="form-control"
+                  placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/... or /shorts/..."
+                  [(ngModel)]="youtubeForm.url"
+                  name="ytUrl"
+                  (ngModelChange)="onYouTubeUrlChanged($event)"
+                  [disabled]="isUploading" />
+              </div>
+              <small class="text-muted fs-11">
+                Supported formats: watch?v=, youtu.be/, /shorts/, /embed/. Allowed domains: youtube.com, youtu.be, youtube-nocookie.com.
+              </small>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-600 fs-13">Video Title</label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Fetching title or type manually..."
+                  [(ngModel)]="youtubeForm.title"
+                  name="ytTitle"
+                  [disabled]="isUploading" />
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm"
+                  title="Auto-fetch title from YouTube"
+                  (click)="fetchTitleFromYouTube()"
+                  [disabled]="!youtubeForm.extractedId || fetchingYtTitle">
+                  <i class="fas fa-rotate" [class.fa-spin]="fetchingYtTitle"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- YouTube Preview Card -->
+            <div class="col-12" *ngIf="youtubeForm.extractedId">
+              <div class="p-2.5 border rounded-3 bg-light d-flex align-items-center gap-3">
+                <div class="position-relative" style="width: 120px; height: 68px;">
+                  <img
+                    [src]="'https://img.youtube.com/vi/' + youtubeForm.extractedId + '/hqdefault.jpg'"
+                    alt="YouTube Thumbnail"
+                    class="rounded-2 w-100 h-100 shadow-xs"
+                    style="object-fit: cover;" />
+                  <div class="position-absolute top-50 start-50 translate-middle bg-danger text-white rounded-circle px-2 py-1 fs-11 shadow">
+                    <i class="fas fa-play"></i>
+                  </div>
+                </div>
+                <div>
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle mb-1">
+                    <i class="fab fa-youtube me-1"></i> Validated YouTube ID: {{ youtubeForm.extractedId }}
+                  </span>
+                  <div class="fw-bold fs-13 text-dark">{{ youtubeForm.title || 'Untitled Video' }}</div>
+                  <a [href]="youtubeForm.url" target="_blank" rel="noopener" class="fs-11 text-emerald text-decoration-none">
+                    <i class="fas fa-external-link-alt me-1"></i>Open video link
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="p-3 bg-light rounded-3 border">
+                <div class="form-check form-switch mb-2">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="ytShowAd"
+                    [(ngModel)]="youtubeForm.showInAdvertisement"
+                    name="ytShowAd" />
+                  <label class="form-check-label fw-600 text-dark" for="ytShowAd">
+                    <i class="fas fa-bullhorn text-gold me-1"></i> Show this in the Home page advertisement banner
+                  </label>
+                </div>
+
+                <div class="row g-2 pt-2 border-top mt-2" *ngIf="youtubeForm.showInAdvertisement">
+                  <div class="col-md-6">
+                    <label class="form-label fs-12 text-muted">Click-Through URL (Optional)</label>
+                    <input
+                      type="url"
+                      class="form-control form-control-sm"
+                      placeholder="https://mmrconstructions.in/sites/1/plot-map"
+                      [(ngModel)]="youtubeForm.ctaLink"
+                      name="ytCtaLink" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fs-12 text-muted">CTA Button Label</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      placeholder="e.g. Watch Full Tour"
+                      [(ngModel)]="youtubeForm.ctaLabel"
+                      name="ytCtaLabel" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 d-flex justify-content-end">
+              <button
+                type="submit"
+                class="btn btn-emerald px-4 fw-600 shadow-xs"
+                [disabled]="isUploading || !youtubeForm.extractedId">
+                <i class="fas fa-spinner fa-spin me-1.5" *ngIf="isUploading"></i>
+                <i class="fas fa-plus-circle me-1.5" *ngIf="!isUploading"></i>
+                {{ isUploading ? 'Saving...' : 'Add YouTube Video' }}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- ── FORM C: ADD VIDEO FILE ── -->
+        <form *ngIf="uploadMode === 'video'" (ngSubmit)="submitAddVideo()">
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label fw-600 fs-13">Video Title <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="e.g. Drone Tour 2026 - AIMA Site Development"
+                [(ngModel)]="videoForm.title"
+                name="videoTitle"
+                [disabled]="isUploading"
+                required />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-600 fs-13">Video File <span class="text-danger">*</span> <small class="text-muted">(MP4, WEBM - Max 100 MB)</small></label>
+              <input
+                type="file"
+                class="form-control"
+                accept=".mp4,.webm,video/mp4,video/webm"
+                (change)="onVideoFileSelected($event)"
+                [disabled]="isUploading" />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-600 fs-13">Thumbnail Poster Image <span class="text-muted">(Optional, Max 5 MB)</span></label>
+              <input
+                type="file"
+                class="form-control"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                (change)="onVideoThumbSelected($event)"
+                [disabled]="isUploading" />
+            </div>
+
+            <!-- Upload Progress Bar -->
+            <div class="col-12" *ngIf="isUploading && uploadProgress > 0">
+              <label class="form-label fs-12 fw-600 text-muted d-flex justify-content-between">
+                <span><i class="fas fa-cloud-arrow-up text-emerald me-1"></i> Uploading Video file to server...</span>
+                <span>{{ uploadProgress }}%</span>
+              </label>
+              <div class="progress" style="height: 10px;">
+                <div
+                  class="progress-bar progress-bar-striped progress-bar-animated bg-emerald"
+                  role="progressbar"
+                  [style.width.%]="uploadProgress">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="p-3 bg-light rounded-3 border">
+                <div class="form-check form-switch mb-2">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="videoShowAd"
+                    [(ngModel)]="videoForm.showInAdvertisement"
+                    name="videoShowAd" />
+                  <label class="form-check-label fw-600 text-dark" for="videoShowAd">
+                    <i class="fas fa-bullhorn text-gold me-1"></i> Show this in the Home page advertisement banner
+                  </label>
+                </div>
+
+                <div class="row g-2 pt-2 border-top mt-2" *ngIf="videoForm.showInAdvertisement">
+                  <div class="col-md-6">
+                    <label class="form-label fs-12 text-muted">Click-Through URL (Optional)</label>
+                    <input
+                      type="url"
+                      class="form-control form-control-sm"
+                      placeholder="https://mmrconstructions.in/sites/1/plot-map"
+                      [(ngModel)]="videoForm.ctaLink"
+                      name="videoCtaLink" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fs-12 text-muted">CTA Button Label</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      placeholder="e.g. Book Plot Online"
+                      [(ngModel)]="videoForm.ctaLabel"
+                      name="videoCtaLabel" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 d-flex justify-content-end">
+              <button
+                type="submit"
+                class="btn btn-emerald px-4 fw-600 shadow-xs"
+                [disabled]="isUploading || !selectedVideoFile || !videoForm.title.trim()">
+                <i class="fas fa-spinner fa-spin me-1.5" *ngIf="isUploading"></i>
+                <i class="fas fa-cloud-arrow-up me-1.5" *ngIf="!isUploading"></i>
+                {{ isUploading ? 'Uploading Video (' + uploadProgress + '%)...' : 'Upload Video to Gallery' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── GALLERY ITEMS LIST & TABLE ── -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+      <div class="card-header bg-white border-bottom p-3">
+        <div class="row g-2 align-items-center justify-content-between">
+          <div class="col-12 col-md-4">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+              <input
+                type="text"
+                class="form-control bg-light border-start-0"
+                placeholder="Search by title or link..."
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChanged()" />
+            </div>
+          </div>
+
+          <div class="col-12 col-md-8 d-flex flex-wrap align-items-center justify-content-md-end gap-2">
+            <!-- Filter Type Pills -->
+            <div class="btn-group btn-group-sm">
+              <button
+                type="button"
+                class="btn"
+                [class.btn-dark]="filterType === 'all'"
+                [class.btn-outline-secondary]="filterType !== 'all'"
+                (click)="setFilterType('all')">
+                All ({{ allItems.length }})
+              </button>
+              <button
+                type="button"
+                class="btn"
+                [class.btn-dark]="filterType === 'image'"
+                [class.btn-outline-secondary]="filterType !== 'image'"
+                (click)="setFilterType('image')">
+                <i class="fas fa-image me-1"></i>Images ({{ countByType('image') }})
+              </button>
+              <button
+                type="button"
+                class="btn"
+                [class.btn-dark]="filterType === 'youtube'"
+                [class.btn-outline-secondary]="filterType !== 'youtube'"
+                (click)="setFilterType('youtube')">
+                <i class="fab fa-youtube text-danger me-1"></i>YouTube ({{ countByType('youtube') }})
+              </button>
+              <button
+                type="button"
+                class="btn"
+                [class.btn-dark]="filterType === 'video'"
+                [class.btn-outline-secondary]="filterType !== 'video'"
+                (click)="setFilterType('video')">
+                <i class="fas fa-video text-primary me-1"></i>Videos ({{ countByType('video') }})
+              </button>
+            </div>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="loadAllItems()" title="Refresh List">
+              <i class="fas fa-rotate" [class.fa-spin]="isLoading"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Body -->
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light text-muted fs-12 text-uppercase">
+            <tr>
+              <th style="width: 60px;">#</th>
+              <th style="width: 120px;">Media</th>
+              <th style="width: 110px;">Type</th>
+              <th>Title &amp; Resource URL</th>
+              <th style="width: 130px;">Advertisement</th>
+              <th style="width: 110px;">Status</th>
+              <th style="width: 110px;">Created</th>
+              <th style="width: 130px;" class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Loading -->
+            <tr *ngIf="isLoading">
+              <td colspan="8" class="text-center py-5">
+                <div class="spinner-border text-emerald" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="text-muted fs-13 mt-2">Loading gallery items...</div>
+              </td>
+            </tr>
+
+            <!-- Empty -->
+            <tr *ngIf="!isLoading && filteredItems.length === 0">
+              <td colspan="8" class="text-center py-5 text-muted">
+                <i class="fas fa-photo-film fa-3x mb-2 text-secondary opacity-50"></i>
+                <div class="fw-bold fs-15 text-dark">No gallery items found</div>
+                <p class="fs-12 mb-0">Add your first photo, YouTube video, or uploaded clip using the forms above.</p>
+              </td>
+            </tr>
+
+            <!-- Rows -->
+            <tr *ngFor="let item of filteredItems; let i = index">
+              <td class="text-muted fs-12">{{ i + 1 }}</td>
+
+              <!-- Thumbnail & Preview Click -->
+              <td>
+                <div
+                  class="media-thumb-box position-relative rounded-2 overflow-hidden cursor-pointer"
+                  style="width: 90px; height: 54px; background: #000;"
+                  (click)="openPreview(item)">
+                  <img
+                    [src]="getThumbnail(item)"
+                    [alt]="item.title || 'Media'"
+                    class="w-100 h-100"
+                    style="object-fit: cover;"
+                    (error)="onThumbError($event)" />
+                  <div class="thumb-hover-overlay">
+                    <i class="fas" [ngClass]="item.type === 'image' ? 'fa-magnifying-glass' : 'fa-play'"></i>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Type Badge -->
+              <td>
+                <span
+                  class="badge px-2 py-1 rounded-pill fs-11"
+                  [ngClass]="{
+                    'bg-success-subtle text-success border border-success-subtle': item.type === 'image',
+                    'bg-danger-subtle text-danger border border-danger-subtle': item.type === 'youtube',
+                    'bg-primary-subtle text-primary border border-primary-subtle': item.type === 'video'
+                  }">
+                  <i
+                    class="me-1"
+                    [ngClass]="{
+                      'fas fa-image': item.type === 'image',
+                      'fab fa-youtube': item.type === 'youtube',
+                      'fas fa-video': item.type === 'video'
+                    }"></i>
+                  {{ item.type | uppercase }}
+                </span>
+              </td>
+
+              <!-- Title & URL -->
+              <td>
+                <div class="fw-bold fs-13 text-dark text-truncate" style="max-width: 320px;" [title]="item.title || 'Untitled'">
+                  {{ item.title || 'Untitled item' }}
+                </div>
+                <div class="text-muted fs-11 text-truncate" style="max-width: 320px;">
+                  <a [href]="item.url" target="_blank" rel="noopener" class="text-muted text-decoration-none">
+                    <i class="fas fa-link me-1"></i>{{ item.url }}
+                  </a>
+                </div>
+                <div *ngIf="item.storage_path" class="text-secondary fs-10 mt-0.5">
+                  <i class="fas fa-hard-drive me-1 text-muted"></i>Path: {{ item.storage_path }}
+                </div>
+              </td>
+
+              <!-- Advertisement Badge & Toggle -->
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-sm py-0.5 px-2 rounded-pill fs-11 fw-600"
+                  [class.btn-gold]="item.show_in_advertisement"
+                  [class.btn-outline-secondary]="!item.show_in_advertisement"
+                  (click)="toggleAdQuick(item)"
+                  title="Toggle banner advertisement visibility">
+                  <i class="fas fa-bullhorn me-1"></i>
+                  {{ item.show_in_advertisement ? 'Active Ad' : 'No Ad' }}
+                </button>
+              </td>
+
+              <!-- Active Toggle -->
+              <td>
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    [checked]="item.is_active"
+                    (change)="toggleActiveQuick(item)" />
+                  <span class="fs-11 fw-600" [class.text-success]="item.is_active" [class.text-muted]="!item.is_active">
+                    {{ item.is_active ? 'Active' : 'Disabled' }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Date -->
+              <td class="text-muted fs-12">
+                {{ item.created_at ? (item.created_at | date:'dd MMM yyyy') : '—' }}
+              </td>
+
+              <!-- Action Buttons -->
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="openPreview(item)"
+                    title="Preview Media">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    (click)="openEditModal(item)"
+                    title="Edit Item & Replace File">
+                    <i class="fas fa-pencil-alt"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    (click)="openDeleteModal(item)"
+                    title="Delete Item & Clean Storage">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- TAB 2: HOME ADVERTISEMENT BANNER MANAGER -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div *ngIf="activeTab === 'advertisement'">
+    <!-- Top Ad Strategy Banner -->
+    <div class="card border-0 bg-dark-green text-white p-3 p-md-4 rounded-4 shadow-sm mb-4">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+          <span class="badge bg-gold text-dark fw-bold px-2.5 py-1 mb-2">HOME BANNER CAMPAIGNS</span>
+          <h5 class="fw-bold text-white mb-1">Active Homepage Advertisements</h5>
+          <p class="text-white-50 fs-13 mb-0" style="max-width: 650px;">
+            Items configured here display in the dark-green full-width carousel on the MMR Constructions homepage (between Registration Types and Premium Sites). Only active items are rendered (max 3 in slider, auto-rotate, pause on hover).
+          </p>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-gold btn-sm fw-bold px-3 py-2" (click)="openAddFromGalleryModal()">
+            <i class="fas fa-plus me-1.5"></i>Pick from Gallery to Advertise
+          </button>
+          <button type="button" class="btn btn-outline-light btn-sm fw-600 px-3 py-2" (click)="saveAdReordering()" [disabled]="!isAdOrderChanged">
+            <i class="fas fa-save me-1.5"></i>Save Ad Reorder
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ad Items Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+      <div class="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+        <span class="fw-bold fs-14 text-dark">
+          <i class="fas fa-sliders-h text-gold me-2"></i>Live Advertisement Cards ({{ adItems.length }})
+        </span>
+        <small class="text-muted fs-12">Drag or use arrow buttons to adjust slider sequence</small>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light text-muted fs-12 text-uppercase">
+            <tr>
+              <th style="width: 100px;">Sort Order</th>
+              <th style="width: 120px;">Media</th>
+              <th style="width: 100px;">Type</th>
+              <th>Title / Ad Content</th>
+              <th>Call To Action Link</th>
+              <th>Schedule (Start / End)</th>
+              <th style="width: 100px;">Status</th>
+              <th style="width: 130px;" class="text-end">Manage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="adItems.length === 0">
+              <td colspan="8" class="text-center py-5 text-muted">
+                <i class="fas fa-bullhorn fa-3x mb-2 text-gold opacity-50"></i>
+                <div class="fw-bold fs-15 text-dark">No active advertisements</div>
+                <p class="fs-12 mb-3">Add items from your gallery to show in the home page banner slider.</p>
+                <button type="button" class="btn btn-emerald btn-sm" (click)="openAddFromGalleryModal()">
+                  <i class="fas fa-plus me-1"></i>Pick Items from Gallery
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngFor="let ad of adItems; let idx = index">
+              <!-- Reorder Buttons -->
+              <td>
+                <div class="d-flex align-items-center gap-1">
+                  <span class="badge bg-light text-dark border fs-12 px-2">{{ idx + 1 }}</span>
+                  <div class="btn-group-vertical btn-group-sm">
+                    <button
+                      type="button"
+                      class="btn btn-light btn-xs py-0 px-1 border"
+                      [disabled]="idx === 0"
+                      (click)="moveAd(idx, -1)"
+                      title="Move Up">
+                      <i class="fas fa-chevron-up fs-10"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-light btn-xs py-0 px-1 border"
+                      [disabled]="idx === adItems.length - 1"
+                      (click)="moveAd(idx, 1)"
+                      title="Move Down">
+                      <i class="fas fa-chevron-down fs-10"></i>
+                    </button>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Media Thumb -->
+              <td>
+                <div
+                  class="position-relative rounded-2 overflow-hidden cursor-pointer"
+                  style="width: 90px; height: 54px; background: #000;"
+                  (click)="openPreview(ad)">
+                  <img
+                    [src]="getThumbnail(ad)"
+                    [alt]="ad.title || 'Ad'"
+                    class="w-100 h-100"
+                    style="object-fit: cover;"
+                    (error)="onThumbError($event)" />
+                  <div class="thumb-hover-overlay">
+                    <i class="fas fa-play"></i>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Type Badge -->
+              <td>
+                <span
+                  class="badge px-2 py-1 rounded-pill fs-11"
+                  [ngClass]="{
+                    'bg-success-subtle text-success': ad.type === 'image',
+                    'bg-danger-subtle text-danger': ad.type === 'youtube',
+                    'bg-primary-subtle text-primary': ad.type === 'video'
+                  }">
+                  {{ ad.type | uppercase }}
+                </span>
+              </td>
+
+              <!-- Title -->
+              <td>
+                <div class="fw-bold fs-13 text-dark text-truncate" style="max-width: 250px;">
+                  {{ ad.title || 'Untitled Advertisement' }}
+                </div>
+                <div class="text-muted fs-11 text-truncate" style="max-width: 250px;">
+                  {{ ad.url }}
+                </div>
+              </td>
+
+              <!-- CTA Link & Label -->
+              <td>
+                <div *ngIf="ad.cta_link">
+                  <span class="badge bg-gold-subtle text-dark border border-gold px-2 py-0.5 rounded-pill fs-11 me-1">
+                    {{ ad.cta_label || 'Learn More' }}
+                  </span>
+                  <a [href]="ad.cta_link" target="_blank" rel="noopener" class="text-emerald fs-11 text-decoration-none">
+                    <i class="fas fa-external-link-alt"></i>
+                  </a>
+                </div>
+                <span *ngIf="!ad.cta_link" class="text-muted fs-11">— None —</span>
+              </td>
+
+              <!-- Schedule Dates -->
+              <td class="fs-12 text-muted">
+                <div *ngIf="ad.start_date || ad.end_date">
+                  <div *ngIf="ad.start_date"><small>From:</small> {{ ad.start_date | date:'dd MMM yyyy' }}</div>
+                  <div *ngIf="ad.end_date"><small>To:</small> {{ ad.end_date | date:'dd MMM yyyy' }}</div>
+                </div>
+                <span *ngIf="!ad.start_date && !ad.end_date" class="badge bg-light text-muted border">Always Active</span>
+              </td>
+
+              <!-- Active Toggle -->
+              <td>
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    [checked]="ad.is_active"
+                    (change)="toggleActiveQuick(ad)" />
+                </div>
+              </td>
+
+              <!-- Actions -->
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    (click)="openEditModal(ad)"
+                    title="Edit Advertisement">
+                    <i class="fas fa-pencil-alt"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-warning"
+                    (click)="removeFromAds(ad)"
+                    title="Remove from Advertisements (Retains file in Gallery)">
+                    <i class="fas fa-ban"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODAL 1: EDIT GALLERY ITEM & SAFE FILE REPLACEMENT -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showEditModal" style="background: rgba(0,0,0,0.6);" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header bg-light border-bottom p-3">
+        <h5 class="modal-title fw-bold fs-15 text-dark">
+          <i class="fas fa-edit text-emerald me-2"></i>Edit Gallery Item #{{ editingItem?.id }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+      </div>
+
+      <div class="modal-body p-3 p-md-4">
+        <form (ngSubmit)="saveEditItem()">
+          <div class="row g-3">
+            <!-- Current Media Preview -->
+            <div class="col-12">
+              <div class="p-2.5 bg-light rounded-3 border d-flex align-items-center gap-3">
+                <img
+                  [src]="editPreviewUrl || getThumbnail(editingItem)"
+                  alt="Preview"
+                  class="rounded-2 shadow-xs"
+                  style="width: 100px; height: 60px; object-fit: cover; background: #000;" />
+                <div class="flex-grow-1">
+                  <span class="badge bg-dark px-2 py-0.5 rounded-pill fs-11 me-2">{{ editForm.type | uppercase }}</span>
+                  <span class="text-muted fs-11">Current URL:</span>
+                  <div class="text-truncate fs-12 text-dark font-monospace" style="max-width: 480px;">{{ editingItem?.url }}</div>
+                  <div *ngIf="editingItem?.storage_path" class="text-secondary fs-10 mt-0.5">
+                    Storage: {{ editingItem?.storage_path }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Title -->
+            <div class="col-12">
+              <label class="form-label fw-600 fs-13">Title / Description</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="editForm.title"
+                name="editTitle"
+                [disabled]="isSavingEdit" />
+            </div>
+
+            <!-- REPLACE FILE REGION -->
+            <div class="col-12">
+              <div class="p-3 bg-light rounded-3 border">
+                <div class="fw-bold fs-13 text-dark mb-2">
+                  <i class="fas fa-repeat text-emerald me-1.5"></i>Replace File / Resource
+                </div>
+
+                <!-- If editing image -->
+                <div *ngIf="editForm.type === 'image'">
+                  <label class="form-label fs-12 text-muted">Upload Replacement Image File <small>(Optional, max 5 MB)</small></label>
+                  <input
+                    type="file"
+                    class="form-control form-control-sm"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    (change)="onEditFileSelected($event)"
+                    [disabled]="isSavingEdit" />
+                  <small class="text-muted fs-11 mt-1 d-block">
+                    Note: The new file will be uploaded first, and only after the database record is saved will the old file be safely removed from disk.
+                  </small>
+                </div>
+
+                <!-- If editing YouTube -->
+                <div *ngIf="editForm.type === 'youtube'">
+                  <label class="form-label fs-12 text-muted">Update YouTube URL</label>
+                  <input
+                    type="url"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="editForm.url"
+                    name="editYtUrl"
+                    (ngModelChange)="onEditYouTubeUrlChanged($event)"
+                    [disabled]="isSavingEdit" />
+                </div>
+
+                <!-- If editing video -->
+                <div *ngIf="editForm.type === 'video'">
+                  <div class="row g-2">
+                    <div class="col-md-6">
+                      <label class="form-label fs-12 text-muted">Replace Video File <small>(MP4, WEBM max 100MB)</small></label>
+                      <input
+                        type="file"
+                        class="form-control form-control-sm"
+                        accept=".mp4,.webm,video/mp4,video/webm"
+                        (change)="onEditFileSelected($event)"
+                        [disabled]="isSavingEdit" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fs-12 text-muted">Replace Poster Thumbnail <small>(Max 5MB)</small></label>
+                      <input
+                        type="file"
+                        class="form-control form-control-sm"
+                        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                        (change)="onEditThumbSelected($event)"
+                        [disabled]="isSavingEdit" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Advertisement & Status Flags -->
+            <div class="col-md-6">
+              <div class="form-check form-switch pt-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="editShowAd"
+                  [(ngModel)]="editForm.showInAdvertisement"
+                  name="editShowAd" />
+                <label class="form-check-label fw-600 text-dark fs-13" for="editShowAd">
+                  Show in Advertisement Banner
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-check form-switch pt-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="editActive"
+                  [(ngModel)]="editForm.isActive"
+                  name="editActive" />
+                <label class="form-check-label fw-600 text-dark fs-13" for="editActive">
+                  Active (Visible publicly)
+                </label>
+              </div>
+            </div>
+
+            <!-- Ad Details when Checked -->
+            <div class="col-12" *ngIf="editForm.showInAdvertisement">
+              <div class="p-3 bg-light rounded-3 border">
+                <div class="fw-bold fs-13 text-dark mb-2">
+                  <i class="fas fa-bullhorn text-gold me-1.5"></i>Advertisement Settings
+                </div>
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <label class="form-label fs-12 text-muted">CTA Link</label>
+                    <input
+                      type="url"
+                      class="form-control form-control-sm"
+                      placeholder="https://..."
+                      [(ngModel)]="editForm.ctaLink"
+                      name="editCtaLink" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fs-12 text-muted">CTA Button Label</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      placeholder="e.g. Learn More"
+                      [(ngModel)]="editForm.ctaLabel"
+                      name="editCtaLabel" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fs-12 text-muted">Campaign Start Date</label>
+                    <input
+                      type="date"
+                      class="form-control form-control-sm"
+                      [(ngModel)]="editForm.startDate"
+                      name="editStartDate" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fs-12 text-muted">Campaign End Date</label>
+                    <input
+                      type="date"
+                      class="form-control form-control-sm"
+                      [(ngModel)]="editForm.endDate"
+                      name="editEndDate" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 d-flex justify-content-end gap-2 pt-2 border-top">
+              <button type="button" class="btn btn-secondary px-3" (click)="closeEditModal()" [disabled]="isSavingEdit">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-emerald px-4 fw-600 shadow-xs" [disabled]="isSavingEdit">
+                <i class="fas fa-spinner fa-spin me-1.5" *ngIf="isSavingEdit"></i>
+                <i class="fas fa-check me-1.5" *ngIf="!isSavingEdit"></i>
+                {{ isSavingEdit ? 'Saving Changes...' : 'Save & Update Item' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODAL 2: DELETE CONFIRMATION -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showDeleteModal" style="background: rgba(0,0,0,0.6);" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header bg-danger text-white p-3">
+        <h5 class="modal-title fw-bold fs-15">
+          <i class="fas fa-triangle-exclamation me-2"></i>Confirm Deletion &amp; File Cleanup
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="showDeleteModal = false"></button>
+      </div>
+      <div class="modal-body p-4 text-center">
+        <div class="avatar-circle mx-auto mb-3" style="width: 56px; height: 56px; background: #fee2e2; color: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+          <i class="fas fa-trash-alt"></i>
+        </div>
+        <h6 class="fw-bold text-dark mb-1">Delete Gallery Item #{{ itemToDelete?.id }}?</h6>
+        <p class="text-muted fs-13 mb-3">
+          This will permanently remove <strong>"{{ itemToDelete?.title || 'Untitled' }}"</strong> from the database.
+          <span *ngIf="itemToDelete?.storage_path" class="d-block text-danger fw-600 mt-1">
+            Associated file on storage ({{ itemToDelete?.storage_path }}) will also be unlinked.
+          </span>
+        </p>
+
+        <div class="d-flex justify-content-center gap-2">
+          <button type="button" class="btn btn-light px-4" (click)="showDeleteModal = false" [disabled]="isDeleting">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-danger px-4 fw-600" (click)="confirmDeleteItem()" [disabled]="isDeleting">
+            <i class="fas fa-spinner fa-spin me-1.5" *ngIf="isDeleting"></i>
+            {{ isDeleting ? 'Deleting...' : 'Delete & Clean File' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODAL 3: PICK ITEMS FROM GALLERY FOR ADVERTISEMENT -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showPickerModal" style="background: rgba(0,0,0,0.6);" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header bg-light border-bottom p-3">
+        <h5 class="modal-title fw-bold fs-15 text-dark">
+          <i class="fas fa-bullhorn text-gold me-2"></i>Select Items to Add as Advertisements
+        </h5>
+        <button type="button" class="btn-close" (click)="showPickerModal = false"></button>
+      </div>
+      <div class="modal-body p-3 p-md-4">
+        <p class="text-muted fs-13 mb-3">
+          Click "Add to Banner" next to any gallery item below to promote it to the Home page advertisement slider.
+        </p>
+
+        <div class="table-responsive" style="max-height: 380px;">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light fs-11 text-uppercase text-muted">
+              <tr>
+                <th style="width: 80px;">Preview</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cand of eligibleAdCandidates">
+                <td>
+                  <img
+                    [src]="getThumbnail(cand)"
+                    alt="Cand"
+                    class="rounded-2"
+                    style="width: 60px; height: 36px; object-fit: cover; background: #000;"
+                    (error)="onThumbError($event)" />
+                </td>
+                <td>
+                  <div class="fw-bold fs-13 text-dark text-truncate" style="max-width: 320px;">
+                    {{ cand.title || 'Untitled' }}
+                  </div>
+                  <div class="text-muted fs-11 text-truncate" style="max-width: 320px;">{{ cand.url }}</div>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border">{{ cand.type | uppercase }}</span>
+                </td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-gold btn-sm fw-600" (click)="promoteToAd(cand)">
+                    <i class="fas fa-plus me-1"></i>Add to Banner
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="eligibleAdCandidates.length === 0">
+                <td colspan="4" class="text-center py-4 text-muted fs-13">
+                  All available gallery items are already configured as advertisements.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer p-2.5">
+        <button type="button" class="btn btn-secondary btn-sm px-3" (click)="showPickerModal = false">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reusable Lightbox Preview Modal -->
+<app-lightbox-modal
+  [isOpen]="showLightbox"
+  [item]="lightboxItem"
+  (closeEvent)="showLightbox = false">
+</app-lightbox-modal>
+

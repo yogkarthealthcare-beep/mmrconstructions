@@ -140,6 +140,8 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       icon: 'fas fa-images',
       expanded: false,
       items: [
+        { icon: 'fas fa-photo-film', label: 'Gallery', route: '/admin/gallery' },
+        { icon: 'fas fa-bullhorn', label: 'Advertisement', route: '/admin/advertisements' },
         { icon: 'fas fa-sliders-h', label: 'Home Sliders', route: '/admin/home-slider' },
         { icon: 'fas fa-desktop', label: 'Home Page Settings', route: '/admin/home-page-settings' },
         { icon: 'fas fa-folder-open', label: 'Company Documents', route: '/admin/company-documents' },
