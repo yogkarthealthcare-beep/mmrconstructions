@@ -152,6 +152,14 @@ export class HomeAdBannerComponent implements OnInit, OnDestroy {
     return safe;
   }
 
+  onSlideClick(ad: GalleryItem): void {
+    if (ad.cta_link) {
+      window.open(ad.cta_link, '_blank', 'noopener,noreferrer');
+    } else {
+      this.openLightbox(ad);
+    }
+  }
+
   openLightbox(ad: GalleryItem): void {
     this.activeLightboxAd = {
       ...ad,
