@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostBinding, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { GalleryService, GalleryItem } from '../../../services/gallery.service';
@@ -15,6 +15,8 @@ export class HomeAdBannerComponent implements OnInit, OnDestroy {
   private galleryService = inject(GalleryService);
   private sanitizer = inject(DomSanitizer);
 
+  // Hidden by default, no flicker during load
+  isLoading = true;
   ads: GalleryItem[] = [];
   displayedAds: GalleryItem[] = [];
   currentIndex = 0;
@@ -28,6 +30,22 @@ export class HomeAdBannerComponent implements OnInit, OnDestroy {
   showLightbox = false;
   activeLightboxAd: GalleryItem | null = null;
 
+  // Host element is completely hidden (0px) when loading or when no active ads exist
+  @HostBinding('style.display')
+  get hostDisplay(): string {
+    return !this.isLoading && this.displayedAds.length > 0 ? 'block' : 'none';
+  }
+
+  @HostBinding('style.margin')
+  get hostMargin(): string {
+    return !this.isLoading && this.displayedAds.length > 0 ? '' : '0';
+  }
+
+  @HostBinding('style.padding')
+  get hostPadding(): string {
+    return !this.isLoading && this.displayedAds.length > 0 ? '' : '0';
+  }
+
   ngOnInit(): void {
     this.loadAds();
   }
@@ -37,18 +55,33 @@ export class HomeAdBannerComponent implements OnInit, OnDestroy {
   }
 
   loadAds(): void {
+    this.isLoading = true;
     this.galleryService.getActiveAdvertisements().subscribe({
       next: items => {
-        this.ads = items || [];
-        // Max 3 active ads for the carousel as per requirement
-        this.displayedAds = this.ads.slice(0, 3);
+        // Strict client-side validation of active status and date bounds
+        const now = Date.now();
+        const validAds = (items || []).filter(item => {
+          if (!item.show_in_advertisement || !item.is_active) return false;
+          if (item.start_date && new Date(item.start_date).getTime() > now) return false;
+          if (item.end_date && new Date(item.end_date).getTime() < now) return false;
+          return true;
+        });
+
+        this.ads = validAds;
+        // Max 3 active ads for the banner carousel
+        this.displayedAds = validAds.slice(0, 3);
+        this.isLoading = false;
+
         if (this.displayedAds.length > 1) {
           this.startAutoRotate();
         }
       },
-      error: () => {
+      error: err => {
+        // Silently log error, do not show any error alert to the visitor
+        console.warn('[HomeAdBanner] Unable to fetch active advertisements:', err);
         this.ads = [];
         this.displayedAds = [];
+        this.isLoading = false;
       }
     });
   }
@@ -128,4 +161,3 @@ export class HomeAdBannerComponent implements OnInit, OnDestroy {
     this.showLightbox = true;
   }
 }
-
