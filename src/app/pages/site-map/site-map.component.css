@@ -180,9 +180,7 @@
 }
 
 .map-layout {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+  display: block;
   margin: 0 auto;
   max-width: 1480px;
   min-height: calc(100vh - 124px);
@@ -346,7 +344,7 @@
   transform-origin: center center;
   transition: transform .18s ease;
   user-select: none;
-  width: min(98%, 1180px);
+  width: min(98%, 1400px);
 }
 
 .plot-overlay-svg {
@@ -376,12 +374,24 @@
   font-weight: 900;
   paint-order: stroke;
   pointer-events: none;
-  stroke: rgba(15, 23, 42, .72);
-  stroke-width: .35px;
+  stroke: rgba(15, 23, 42, .85);
+  stroke-width: .4px;
   text-anchor: middle;
+  opacity: 0;
+  transition: opacity .18s ease;
 }
 
-.plot-overlay-svg polygon.active + text {
+.plot-overlay-svg .plot-group:hover text,
+.plot-overlay-svg .plot-group.active text,
+.plot-overlay-svg polygon:hover + text,
+.plot-overlay-svg polygon:hover ~ text,
+.plot-overlay-svg polygon.active + text,
+.plot-overlay-svg polygon.active ~ text {
+  opacity: 1;
+}
+
+.plot-overlay-svg polygon.active + text,
+.plot-overlay-svg .plot-group.active text {
   fill: #fef3c7;
   stroke: #0f172a;
   stroke-width: .55px;
@@ -1058,4 +1068,29 @@
     align-items: center;
     padding: 12px;
   }
+}
+
+
+.non-interactive-banner {
+  align-items: center;
+  background: rgba(255, 255, 255, .95);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, .08);
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto 14px;
+  max-width: 1480px;
+  padding: 12px 18px;
+  width: 100%;
+}
+.non-interactive-banner strong {
+  color: #0f172a;
+  display: block;
+  font-size: 15px;
+}
+.non-interactive-banner p {
+  color: #64748b;
+  font-size: 12px;
+  margin: 2px 0 0;
 }
