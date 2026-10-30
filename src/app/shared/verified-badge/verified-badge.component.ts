@@ -98,6 +98,16 @@ export class VerifiedBadgeComponent {
       return false;
     }
 
+    // Team Members MUST have completed the Associate Enrollment Form (is_final_submitted)
+    const isTeamMember = (
+      String(u.user_type || '').toLowerCase().includes('team') ||
+      String(u.team_member_uid || u.member_id || '').toUpperCase().startsWith('MMR-TM-') ||
+      String(u.team_member_uid || u.member_id || '').toUpperCase().startsWith('TM-')
+    );
+    if (isTeamMember && !u.is_final_submitted && String(u.is_final_submitted) !== 'true' && u.is_final_submitted !== 1) {
+      return false;
+    }
+
     // 1. Direct explicit boolean / 1-or-0 check on input property
     if (this.isVerified !== undefined && this.isVerified !== null) {
       if (this.isVerified === false || this.isVerified === 0 || String(this.isVerified) === '0' || String(this.isVerified).toLowerCase() === 'false') {

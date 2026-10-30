@@ -868,7 +868,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     formData.append('accountNo', raw.accountNo);
     formData.append('ifscCode', raw.ifscCode);
     formData.append('declarationAccepted', 'true');
-    formData.append('isFinalSubmit', 'false');
+    formData.append('isFinalSubmit', 'true');
 
     if (this.photoFile) {
       formData.append('photo', this.photoFile);
@@ -903,7 +903,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
           this.enrolledMemberId.set(id);
           this.enrolledMemberUid.set(uid);
           this.isReviewMode.set(true);
-          this.isFinalSubmitted.set(false);
+          this.isFinalSubmitted.set(true);
           this.isEditing.set(false);
 
           // Disable all data fields
