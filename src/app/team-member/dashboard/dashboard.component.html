@@ -222,9 +222,13 @@
             (ngModelChange)="onSearchCustomer()"
           />
         </div>
+        <a *ngIf="activeTab === 'customers'" routerLink="/team-member/customers" class="btn-xs btn-outline-success">
+          <span>All Customers &amp; Orders</span>
+          <i class="fas fa-arrow-right ms-1"></i>
+        </a>
         <a *ngIf="activeTab === 'sales'" routerLink="/team-member/sales" class="btn-xs btn-outline-success">
           <span>All Sales</span>
-          <i class="fas fa-arrow-right"></i>
+          <i class="fas fa-arrow-right ms-1"></i>
         </a>
       </div>
     </div>
@@ -293,6 +297,14 @@
                 {{ (cust.registered_at || cust.created_at) ? ((cust.registered_at || cust.created_at) | date:'dd MMM yyyy') : '-' }}
               </td>
               <td class="text-end">
+                <a
+                  routerLink="/team-member/customers"
+                  class="btn-xs btn-outline-warning text-dark fw-bold me-1 text-decoration-none"
+                  title="View Customer Plot Orders & Installments"
+                >
+                  <i class="fas fa-list-check text-warning me-1"></i>
+                  <span>Orders</span>
+                </a>
                 <button
                   type="button"
                   class="btn-xs btn-book"

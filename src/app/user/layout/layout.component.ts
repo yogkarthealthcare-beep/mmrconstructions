@@ -212,7 +212,7 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
             { icon: 'fas fa-receipt', label: 'Plot Orders', route: `${p}/plot-orders`, badge: 'ORDERS' },
             { icon: 'fas fa-chart-line', label: 'My Sales Pipeline', route: `${p}/sales` },
             { icon: 'fas fa-id-card', label: 'Customer Enrollments', route: `${p}/customer-enrollments`, badge: 'NEW' },
-            { icon: 'fas fa-users', label: 'Attributed Customers', route: `${p}/customers` },
+            { icon: 'fas fa-users text-gold', label: 'My Customers & Orders', route: `${p}/customers`, badge: 'CLIENTS' },
             { icon: 'fas fa-bullhorn', label: 'Referral Tools', route: `${p}/referral` },
             { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` }
           ]

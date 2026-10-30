@@ -1,82 +1,491 @@
 <div class="customers-container">
+  <!-- Top Banner / Header -->
   <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div>
-      <h2 style="color: #ffffff !important;"><i class="fas fa-users text-warning"></i> My Attributed Customers</h2>
-      <p>Clients registered via your referral code or booked by you.</p>
+      <h2 style="color: #fbbf24 !important;">
+        <i class="fas fa-users text-gold"></i> My Customers &amp; Bookings
+      </h2>
+      <p class="mb-0 text-white-70 fs-13">
+        Manage clients enrolled under your referral code or plots booked on their behalf.
+      </p>
     </div>
-    <a routerLink="/team-member/referral" class="btn btn-warning fw-bold text-dark">
-      <i class="fas fa-share-alt me-1"></i> Invite New Customer
-    </a>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <a routerLink="/team-member/book-plot" class="btn btn-xs btn-success fw-bold px-3 py-1.5 shadow-sm">
+        <i class="fas fa-layer-group me-1"></i> Book a Plot
+      </a>
+      <a routerLink="/team-member/referral" class="btn btn-xs btn-warning text-dark fw-bold px-3 py-1.5 shadow-sm">
+        <i class="fas fa-share-alt me-1"></i> Referral Link
+      </a>
+    </div>
   </div>
 
-  <div class="search-bar-card">
-    <div class="search-input-wrap">
-      <i class="fas fa-search"></i>
+  <!-- Summary Metric Stats -->
+  <div class="row g-2 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="stat-card p-2.5 rounded-3 bg-white border d-flex align-items-center gap-2.5">
+        <div class="stat-icon-circle bg-gold-subtle text-gold">
+          <i class="fas fa-users"></i>
+        </div>
+        <div>
+          <div class="fs-10 text-uppercase text-muted fw-700">Total Customers</div>
+          <div class="fs-15 fw-800 text-dark">{{ customers.length }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card p-2.5 rounded-3 bg-white border d-flex align-items-center gap-2.5">
+        <div class="stat-icon-circle bg-success-subtle text-success">
+          <i class="fas fa-map-marked-alt"></i>
+        </div>
+        <div>
+          <div class="fs-10 text-uppercase text-muted fw-700">Plots Sold</div>
+          <div class="fs-15 fw-800 text-success">{{ totalPlotsCount }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card p-2.5 rounded-3 bg-white border d-flex align-items-center gap-2.5">
+        <div class="stat-icon-circle bg-info-subtle text-info">
+          <i class="fas fa-chart-area"></i>
+        </div>
+        <div>
+          <div class="fs-10 text-uppercase text-muted fw-700">Total Gaj Sold</div>
+          <div class="fs-15 fw-800 text-dark">{{ totalGajSold | number }} <small class="fs-11 text-muted">Gaj</small></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card p-2.5 rounded-3 bg-white border d-flex align-items-center gap-2.5">
+        <div class="stat-icon-circle bg-gold-subtle text-gold">
+          <i class="fas fa-coins"></i>
+        </div>
+        <div>
+          <div class="fs-10 text-uppercase text-muted fw-700">Total Sales Value</div>
+          <div class="fs-15 fw-800 text-gold-dark">₹{{ totalVolumeSold | number }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="search-bar-card p-2.5 px-3 rounded-3 bg-white border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="search-input-wrap flex-grow-1" style="max-width: 480px;">
+      <i class="fas fa-search text-gold"></i>
       <input
         type="text"
-        class="form-control"
-        placeholder="Search customers by name, mobile, or member ID..."
+        class="form-control form-control-sm"
+        placeholder="Search customer by name, mobile, member ID..."
         [(ngModel)]="searchQuery"
         (input)="onSearchInput()"
       >
     </div>
-    <div class="text-muted small">
-      Total Customers: <strong>{{ filteredCustomers.length }}</strong>
+    <div class="fs-11 text-muted fw-600">
+      Showing <strong>{{ filteredCustomers.length }}</strong> of <strong>{{ customers.length }}</strong> Customers
     </div>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="loading" class="text-center py-5">
-    <i class="fas fa-spinner fa-spin fa-2x text-success"></i>
-    <p class="mt-2 text-muted">Loading customer records...</p>
+  <div *ngIf="loading" class="text-center py-5 bg-white rounded-3 border">
+    <i class="fas fa-spinner fa-spin fa-2x text-gold"></i>
+    <p class="mt-2 text-muted fs-12 mb-0">Loading customer records &amp; orders...</p>
   </div>
 
   <!-- Customer Table Card -->
-  <div *ngIf="!loading" class="customers-card">
+  <div *ngIf="!loading" class="customers-card bg-white rounded-3 border overflow-hidden shadow-sm">
     <div *ngIf="filteredCustomers.length === 0" class="text-center py-5 text-muted">
-      <i class="fas fa-user-friends fa-3x mb-3 text-secondary"></i>
-      <h5>No customers found</h5>
-      <p class="small">Share your referral link to register clients under your profile.</p>
+      <i class="fas fa-user-friends fa-3x mb-2 text-gold opacity-50 d-block"></i>
+      <h6 class="fw-bold text-dark">No customers found</h6>
+      <p class="fs-11 text-muted mb-3">Share your referral link to register clients or book plots under your team member profile.</p>
+      <a routerLink="/team-member/referral" class="btn btn-xs btn-warning text-dark fw-bold px-3 py-1">
+        <i class="fas fa-share-alt me-1"></i> Get Referral Link
+      </a>
     </div>
 
     <div *ngIf="filteredCustomers.length > 0" class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
+      <table class="table table-hover align-middle mb-0 font-sm">
+        <thead class="table-light sticky-top">
           <tr>
-            <th>Customer Name</th>
-            <th>Member ID</th>
-            <th>Mobile Number</th>
-            <th>Email</th>
+            <th style="width: 45px;" class="text-center">#</th>
+            <th>Customer Profile</th>
+            <th>Contact Details</th>
+            <th class="text-center">Booked Plots</th>
+            <th>Financial Summary</th>
             <th>Account Status</th>
-            <th>Approval &amp; Verification</th>
-            <th class="text-end">Actions</th>
+            <th class="text-center">Approval &amp; KYC</th>
+            <th class="text-end" style="min-width: 200px;">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let c of filteredCustomers">
+          <tr *ngFor="let c of filteredCustomers; let i = index">
+            <!-- Row Number -->
+            <td class="text-center text-muted fw-bold fs-11">{{ i + 1 }}</td>
+
+            <!-- Customer Profile -->
             <td>
-              <div class="fw-bold text-dark">{{ c.full_name }}</div>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-circle-sm bg-dark-green text-gold fw-bold">
+                  {{ (c.full_name || 'C').charAt(0).toUpperCase() }}
+                </div>
+                <div>
+                  <div class="fw-bold text-dark fs-12">{{ c.full_name }}</div>
+                  <div class="fs-10 text-muted">
+                    <code class="text-success">{{ c.member_id }}</code>
+                    <span *ngIf="c.registered_at" class="ms-1">· Joined {{ c.registered_at | date:'dd MMM yyyy' }}</span>
+                  </div>
+                </div>
+              </div>
             </td>
-            <td><code class="text-success">{{ c.member_id }}</code></td>
-            <td>{{ c.mobile_no }}</td>
-            <td><small class="text-muted">{{ c.email || '-' }}</small></td>
+
+            <!-- Contact -->
             <td>
-              <span class="badge bg-success-subtle text-success border border-success-subtle">
+              <div class="fs-12 text-dark">
+                <i class="fas fa-phone-alt text-gold me-1 fs-10"></i>{{ c.mobile_no || '—' }}
+                <a *ngIf="c.mobile_no && c.mobile_no !== '—'" 
+                   [href]="'https://wa.me/91' + c.mobile_no" 
+                   target="_blank" 
+                   class="text-success ms-1 fs-11" 
+                   title="WhatsApp Chat">
+                  <i class="fab fa-whatsapp"></i>
+                </a>
+              </div>
+              <div class="fs-11 text-muted" *ngIf="c.email && c.email !== '—'">
+                <i class="fas fa-envelope text-muted me-1 fs-10"></i>{{ c.email }}
+              </div>
+            </td>
+
+            <!-- Booked Plots Count -->
+            <td class="text-center">
+              <span *ngIf="(c.bookings?.length || 0) > 0" class="badge bg-gold-subtle text-dark border border-warning fs-11 fw-bold">
+                <i class="fas fa-layer-group text-warning me-1"></i>{{ c.bookings.length }} {{ c.bookings.length === 1 ? 'Plot' : 'Plots' }}
+                <span *ngIf="c.total_gaj" class="ms-1 font-monospace">({{ c.total_gaj }} Gaj)</span>
+              </span>
+              <span *ngIf="!c.bookings || c.bookings.length === 0" class="badge bg-light text-muted border fs-10">
+                0 Plots
+              </span>
+            </td>
+
+            <!-- Financial Summary -->
+            <td>
+              <div *ngIf="(c.bookings?.length || 0) > 0">
+                <div class="fs-12 fw-bold text-dark">₹{{ c.total_value | number }}</div>
+                <div class="fs-10">
+                  <span class="text-success fw-600">Paid: ₹{{ c.total_paid | number }}</span>
+                  <span *ngIf="c.total_due > 0" class="text-danger ms-1 fw-600">· Due: ₹{{ c.total_due | number }}</span>
+                </div>
+              </div>
+              <div *ngIf="!c.bookings || c.bookings.length === 0" class="text-muted fs-11">—</div>
+            </td>
+
+            <!-- Account Status -->
+            <td>
+              <span class="badge" 
+                    [class.bg-success-subtle]="c.account_status==='Active'||c.account_status==='Approved'"
+                    [class.text-success]="c.account_status==='Active'||c.account_status==='Approved'"
+                    [class.border-success-subtle]="c.account_status==='Active'||c.account_status==='Approved'"
+                    [class.bg-warning-subtle]="c.account_status!=='Active'&&c.account_status!=='Approved'"
+                    [class.text-dark]="c.account_status!=='Active'&&c.account_status!=='Approved'">
                 {{ c.account_status || 'Active' }}
               </span>
             </td>
-            <td>
-              <!-- Reusable Customer Approval Actions (Enrollment, Docs, KYC) -->
+
+            <!-- Approval & KYC Actions -->
+            <td class="text-center">
               <app-customer-approval-actions [customer]="c" (updated)="loadCustomers()"></app-customer-approval-actions>
             </td>
+
+            <!-- Action Buttons -->
             <td class="text-end">
-              <button class="btn btn-sm btn-success" (click)="bookForCustomer(c)">
-                <i class="fas fa-plus-circle me-1"></i> Book Plot
-              </button>
+              <div class="d-inline-flex align-items-center gap-1.5 flex-wrap justify-content-end">
+                <!-- VIEW ORDERS BUTTON -->
+                <button 
+                  type="button" 
+                  class="btn btn-xs btn-outline-warning text-dark fw-bold border-warning d-inline-flex align-items-center gap-1"
+                  (click)="openOrdersModal(c)"
+                  title="View Plot Orders &amp; Installment Details">
+                  <i class="fas fa-list-check text-warning"></i>
+                  <span>View Orders ({{ c.bookings?.length || 0 }})</span>
+                </button>
+
+                <!-- BOOK PLOT BUTTON -->
+                <button 
+                  type="button" 
+                  class="btn btn-xs btn-success fw-bold d-inline-flex align-items-center gap-1"
+                  (click)="bookForCustomer(c)"
+                  title="Book Plot on Behalf of this Customer">
+                  <i class="fas fa-plus"></i>
+                  <span>Book Plot</span>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- VIEW ORDERS POPUP / MODAL (ऑर्डर्स और किश्त विवरण पॉप-अप) -->
+<!-- ===================================================================== -->
+<div *ngIf="showOrdersModal && selectedCustomer" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom">
+    <div class="modal-content-custom">
+
+      <!-- Modal Header (Dark Green Background with Golden Title & Cross Button) -->
+      <div class="modal-header-custom p-3 bg-dark-green d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <div class="modal-header-icon text-gold">
+            <i class="fas fa-layer-group fs-5"></i>
+          </div>
+          <div>
+            <h5 class="mb-0 text-gold fw-800 fs-14 d-flex align-items-center gap-1.5">
+              <span>Plot Orders &amp; Installments</span>
+              <span class="badge bg-gold text-dark fs-10 px-2 py-0.5 fw-bold">
+                {{ selectedCustomer.bookings?.length || 0 }} {{ (selectedCustomer.bookings?.length || 0) === 1 ? 'Order' : 'Orders' }}
+              </span>
+            </h5>
+            <div class="fs-11 text-white-70 mt-0.5">
+              Customer: <strong class="text-white">{{ selectedCustomer.full_name }}</strong>
+              <span class="mx-1">·</span>
+              <code>{{ selectedCustomer.member_id }}</code>
+              <span class="mx-1" *ngIf="selectedCustomer.mobile_no && selectedCustomer.mobile_no !== '—'">·</span>
+              <span *ngIf="selectedCustomer.mobile_no && selectedCustomer.mobile_no !== '—'">
+                <i class="fas fa-phone-alt text-gold me-1 fs-9"></i>{{ selectedCustomer.mobile_no }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cross Button (Yellow / White Accent) -->
+        <button type="button" class="btn-close-custom" (click)="closeOrdersModal()" aria-label="Close" title="Close Orders Modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body-custom p-3">
+        <!-- Empty State if No Orders -->
+        <div *ngIf="!selectedCustomer.bookings || selectedCustomer.bookings.length === 0" class="text-center py-4 text-muted bg-light rounded-3 border">
+          <i class="fas fa-folder-open text-gold fs-2 mb-2 d-block"></i>
+          <h6 class="fw-bold text-dark fs-13 mb-1">No Plot Bookings Found</h6>
+          <p class="fs-11 text-muted mb-2.5">This customer has not booked any plots under your attribution yet.</p>
+          <button type="button" class="btn btn-xs btn-success fw-bold px-3 py-1.5" (click)="bookForCustomer(selectedCustomer)">
+            <i class="fas fa-plus-circle me-1"></i> Book a Plot for {{ selectedCustomer.full_name }}
+          </button>
+        </div>
+
+        <!-- Orders List -->
+        <div *ngIf="selectedCustomer.bookings && selectedCustomer.bookings.length > 0" class="orders-list d-flex flex-column gap-3">
+          <div *ngFor="let b of selectedCustomer.bookings" class="order-card border rounded-3 overflow-hidden bg-white shadow-xs">
+            
+            <!-- Order Header Strip -->
+            <div class="order-header-strip p-2 px-3 bg-light border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge bg-gold text-dark fw-bold fs-11">
+                  <i class="fas fa-map-pin me-1"></i>Plot {{ b.plot_number }}
+                </span>
+                <span class="fw-bold fs-12 text-dark font-display">
+                  <i class="fas fa-city text-gold me-1"></i>{{ b.site_name }}
+                </span>
+                <span class="fs-10 text-muted">
+                  ({{ b.booking_serial }})
+                </span>
+                <span *ngIf="b.booking_date" class="fs-10 text-muted">
+                  · {{ b.booking_date | date:'dd MMM yyyy' }}
+                </span>
+              </div>
+
+              <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                <!-- Payment Plan Badge -->
+                <span *ngIf="b.payment_type==='FullPayment' || b.payment_type==='OneTime'" class="badge bg-success-subtle text-success border border-success-subtle fs-10 fw-bold">
+                  <i class="fas fa-check-circle me-1"></i>One-Time Payment
+                </span>
+                <span *ngIf="b.payment_type==='Partial' || b.payment_type==='PartWise'" class="badge bg-primary-subtle text-primary border border-primary-subtle fs-10 fw-bold">
+                  <i class="fas fa-coins me-1"></i>Partial Payment (4 Parts)
+                </span>
+                <span *ngIf="b.payment_type==='EMI'" class="badge bg-info-subtle text-info-emphasis border border-info-subtle fs-10 fw-bold">
+                  <i class="fas fa-calendar-alt me-1"></i>EMI Plan ({{ b.installments_summary?.paid || 0 }}/{{ b.installments_summary?.total || 0 }} Paid)
+                </span>
+
+                <!-- Booking Status Badge -->
+                <span class="badge fs-10 fw-600"
+                      [class.bg-success]="b.booking_status==='Confirmed'||b.booking_status==='Active'"
+                      [class.bg-info]="b.booking_status==='Allocated'"
+                      [class.bg-warning]="b.booking_status==='Payment Pending'||b.booking_status==='PaymentPending'"
+                      [class.text-dark]="b.booking_status!=='Confirmed'&&b.booking_status!=='Active'">
+                  {{ b.booking_status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Specs & Financial Strip -->
+            <div class="order-content p-2.5">
+              <div class="row g-2 text-center align-items-center mb-2">
+                <div class="col-6 col-sm-3 border-end">
+                  <div class="fs-10 text-uppercase text-muted fw-700">Plot Size</div>
+                  <div class="fs-12 fw-800 text-dark">
+                    {{ b.plot_area }} <small class="text-muted fw-normal">{{ b.area_unit || 'Gaj' }}</small>
+                  </div>
+                </div>
+                <div class="col-6 col-sm-3 border-end">
+                  <div class="fs-10 text-uppercase text-muted fw-700">Total Price</div>
+                  <div class="fs-12 fw-800 text-dark">₹{{ b.plot_price | number }}</div>
+                </div>
+                <div class="col-6 col-sm-3 border-end">
+                  <div class="fs-10 text-uppercase text-success fw-700">Confirmed Paid</div>
+                  <div class="fs-12 fw-800 text-success">₹{{ b.confirmed_paid | number }}</div>
+                </div>
+                <div class="col-6 col-sm-3">
+                  <div class="fs-10 text-uppercase text-danger fw-700">Remaining Due</div>
+                  <div class="fs-12 fw-800 text-danger">₹{{ b.remaining_due | number }}</div>
+                </div>
+              </div>
+
+              <!-- Settlement Progress Bar -->
+              <div class="d-flex justify-content-between align-items-center fs-10 mb-1">
+                <span class="text-muted fw-600">Settlement Progress</span>
+                <span class="fw-bold text-success">{{ b.progress_percent }}% Cleared</span>
+              </div>
+              <div class="progress" style="height: 5px;">
+                <div class="progress-bar bg-success" role="progressbar" [style.width.%]="b.progress_percent"></div>
+              </div>
+
+              <!-- Toggle Breakdown Button (Golden Accent) -->
+              <div *ngIf="b.payment_type==='Partial' || b.payment_type==='PartWise' || b.payment_type==='EMI'" class="mt-2 text-center">
+                <button 
+                  type="button" 
+                  class="btn btn-xs btn-outline-warning text-dark fw-bold w-100 py-1 d-flex align-items-center justify-content-center gap-1.5"
+                  (click)="toggleBookingDetail(b.booking_id)">
+                  <i class="fas text-warning" [class.fa-chevron-down]="expandedBookingId===b.booking_id" [class.fa-chevron-right]="expandedBookingId!==b.booking_id"></i>
+                  <span *ngIf="b.payment_type==='Partial'||b.payment_type==='PartWise'">
+                    {{ expandedBookingId === b.booking_id ? 'Hide Partial Breakdown (विवरण छुपाएं)' : 'View Partial Breakdown (किश्त विवरण देखें - 4 हिस्से)' }}
+                  </span>
+                  <span *ngIf="b.payment_type==='EMI'">
+                    {{ expandedBookingId === b.booking_id ? 'Hide EMI Schedule (शेड्यूल छुपाएं)' : 'View EMI Schedule (ईएमआई शेड्यूल देखें - ' + (b.installments_summary?.paid || 0) + '/' + (b.installments_summary?.total || 0) + ' Paid)' }}
+                  </span>
+                </button>
+              </div>
+
+              <!-- Expanded Breakdown Accordion -->
+              <div *ngIf="expandedBookingId === b.booking_id" class="breakdown-drawer mt-2 p-2.5 rounded-3 bg-light border">
+                
+                <!-- If Partial Payment (4 Parts Breakdown) -->
+                <div *ngIf="b.payment_type==='Partial'||b.payment_type==='PartWise'">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="fs-11 fw-bold text-dark">
+                      <i class="fas fa-coins text-warning me-1"></i> Partial Payment Schedule (4 Installments)
+                    </span>
+                    <span class="fs-10 text-muted">
+                      Paid: <strong>{{ b.installments_summary?.paid || 0 }}</strong> / 4 Parts
+                    </span>
+                  </div>
+
+                  <div class="table-responsive border rounded-2 bg-white">
+                    <table class="table table-sm table-hover align-middle mb-0 font-sm">
+                      <thead class="table-light fs-10">
+                        <tr>
+                          <th style="width: 55px;" class="text-center">Part #</th>
+                          <th>Due Date</th>
+                          <th class="text-end">Amount</th>
+                          <th>Paid Date / Mode</th>
+                          <th class="text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody class="fs-11">
+                        <tr *ngFor="let inst of b.installments" 
+                            [style.background-color]="inst.emi_status==='Paid' ? '#f0fdf4' : (inst.emi_status==='ProofSubmitted' ? '#f0f9ff' : '#fefce8')">
+                          <td class="text-center fw-bold">#{{ inst.installment_no }}</td>
+                          <td>{{ inst.due_date ? (inst.due_date | date:'dd MMM yyyy') : 'Booking Time' }}</td>
+                          <td class="text-end fw-bold">₹{{ inst.emi_amount | number }}</td>
+                          <td>
+                            <span *ngIf="inst.paid_date" class="text-success fw-bold fs-10">
+                              <i class="fas fa-check-circle me-1"></i>{{ inst.paid_date | date:'dd MMM yyyy' }}
+                            </span>
+                            <span *ngIf="!inst.paid_date && inst.installment_no === 1 && inst.emi_status === 'Paid'" class="text-success fw-bold fs-10">
+                              <i class="fas fa-check-circle me-1"></i>Booking Advance
+                            </span>
+                            <span *ngIf="!inst.paid_date && inst.emi_status === 'ProofSubmitted'" class="text-info fw-bold fs-10">
+                              <i class="fas fa-clock me-1"></i>In Verification
+                            </span>
+                            <span *ngIf="!inst.paid_date && inst.emi_status !== 'ProofSubmitted' && (inst.installment_no !== 1 || inst.emi_status !== 'Paid')" class="text-muted fs-10">—</span>
+                          </td>
+                          <td class="text-center">
+                            <span *ngIf="inst.emi_status==='Paid'" class="badge bg-success text-white fs-9 px-2 py-0.5">Paid</span>
+                            <span *ngIf="inst.emi_status==='ProofSubmitted'" class="badge bg-info text-dark fs-9 px-2 py-0.5">Under Verification</span>
+                            <span *ngIf="inst.emi_status!=='Paid'&&inst.emi_status!=='ProofSubmitted'" class="badge bg-warning text-dark fs-9 px-2 py-0.5">Unpaid</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- If EMI Schedule (Monthly Installments) -->
+                <div *ngIf="b.payment_type==='EMI'">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="fs-11 fw-bold text-dark">
+                      <i class="fas fa-calendar-check text-warning me-1"></i> Monthly EMI Installment Schedule
+                    </span>
+                    <span class="fs-10 text-muted">
+                      Paid: <strong>{{ b.installments_summary?.paid || 0 }}</strong> / {{ b.installments_summary?.total || 0 }}
+                      <span *ngIf="b.installments_summary?.unpaid" class="text-danger ms-1">({{ b.installments_summary?.unpaid }} Unpaid)</span>
+                    </span>
+                  </div>
+
+                  <div class="table-responsive border rounded-2 bg-white" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-sm table-hover align-middle mb-0 font-sm">
+                      <thead class="table-light fs-10 sticky-top">
+                        <tr>
+                          <th style="width: 55px;" class="text-center">Inst. #</th>
+                          <th>Due Date</th>
+                          <th class="text-end">Amount</th>
+                          <th>Paid Date</th>
+                          <th class="text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody class="fs-11">
+                        <tr *ngFor="let inst of b.installments"
+                            [style.background-color]="inst.emi_status==='Paid' ? '#f0fdf4' : (inst.emi_status==='ProofSubmitted' ? '#f0f9ff' : '#ffffff')">
+                          <td class="text-center fw-bold">#{{ inst.installment_no }}</td>
+                          <td>{{ inst.due_date | date:'dd MMM yyyy' }}</td>
+                          <td class="text-end fw-bold">₹{{ inst.emi_amount | number }}</td>
+                          <td>
+                            <span *ngIf="inst.paid_date" class="text-success fw-bold fs-10">
+                              <i class="fas fa-check-circle me-1"></i>{{ inst.paid_date | date:'dd MMM yyyy' }}
+                            </span>
+                            <span *ngIf="!inst.paid_date && inst.emi_status === 'ProofSubmitted'" class="text-info fw-bold fs-10">
+                              <i class="fas fa-clock me-1"></i>In Verification
+                            </span>
+                            <span *ngIf="!inst.paid_date && inst.emi_status !== 'ProofSubmitted'" class="text-muted fs-10">—</span>
+                          </td>
+                          <td class="text-center">
+                            <span *ngIf="inst.emi_status==='Paid'" class="badge bg-success text-white fs-9 px-2 py-0.5">Paid</span>
+                            <span *ngIf="inst.emi_status==='ProofSubmitted'" class="badge bg-info text-dark fs-9 px-2 py-0.5">Verification</span>
+                            <span *ngIf="inst.emi_status!=='Paid'&&inst.emi_status!=='ProofSubmitted'" class="badge bg-warning text-dark fs-9 px-2 py-0.5">Unpaid</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer (Compact, Golden Accent Close Button) -->
+      <div class="modal-footer-custom p-2 px-3 bg-light border-top d-flex justify-content-between align-items-center">
+        <div class="fs-11 text-muted">
+          Showing plots booked for <strong>{{ selectedCustomer.full_name }}</strong>
+        </div>
+        <button type="button" class="btn btn-xs btn-warning text-dark fw-bold px-3 py-1 shadow-sm" (click)="closeOrdersModal()">
+          <i class="fas fa-times me-1"></i> Close
+        </button>
+      </div>
+
     </div>
   </div>
 </div>

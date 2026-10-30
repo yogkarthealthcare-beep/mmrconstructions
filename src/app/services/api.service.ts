@@ -749,5 +749,10 @@ export class ApiService {
   getTeamMemberSalesTable(params: any = {}): Observable<any> {
     return this.get('/api/team-member/sales', params);
   }
+
+  getTeamMemberCustomers(search: string = ''): Observable<any> {
+    const params = search ? { search } : {};
+    return this.get('/api/team-member/my-customers', params);
+  }
 }
 

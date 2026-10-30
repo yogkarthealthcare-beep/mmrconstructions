@@ -71,7 +71,7 @@ export class TeamMemberDashboardComponent implements OnInit {
     Promise.all([
       this.attributionApi.getTeamMemberSalesSummary(userId).toPromise().catch(() => null),
       this.attributionApi.getTeamMemberCustomersSales(userId, { page: 1, limit: 100 }).toPromise().catch(() => ({ data: [], total: 0 })),
-      this.attributionApi.getMyBookableCustomers().toPromise().catch(() => []),
+      this.api.getTeamMemberCustomers().toPromise().then((res: any) => res?.data || (Array.isArray(res) ? res : [])).catch(() => this.attributionApi.getMyBookableCustomers().toPromise().catch(() => [])),
       this.api.getTeamMemberCommissionSummary().toPromise().catch(() => null)
     ]).then(([sumRes, salesRes, custList, commRes]) => {
       this.summary = sumRes || null;
