@@ -72,6 +72,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   // Masking toggles
   showAadhar = signal<boolean>(false);
   showAccount = signal<boolean>(false);
+  showPassword = signal<boolean>(false);
 
   // File uploads
   photoFile: File | null = null;
@@ -315,6 +316,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       panNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i)]],
       mobileNo: ['', [Validators.required, Validators.pattern(MOBILE_PATTERN)]],
       emailId: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
+      password: ['', [Validators.minLength(6)]],
       fullAddress: ['', [Validators.required, Validators.minLength(5)]],
 
       nomineeName: ['', [Validators.required, humanNameValidator()]],
@@ -390,6 +392,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       panNo: '',
       mobileNo: '',
       emailId: '',
+      password: '',
       fullAddress: '',
       nomineeName: '',
       nomineeRelation: '',
@@ -853,6 +856,13 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    const isUpdateCheck = Boolean(this.enrolledMemberId());
+    const rawFormVal = this.enrollmentForm.getRawValue();
+    if (!isUpdateCheck && (!rawFormVal.password || String(rawFormVal.password).trim().length < 6)) {
+      this.enrollmentForm.get('password')?.setErrors({ required: true });
+      this.enrollmentForm.get('password')?.markAsTouched();
+    }
+
     if (this.enrollmentForm.invalid) {
       this.enrollmentForm.markAllAsTouched();
       Swal.fire({
@@ -893,6 +903,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     if (raw.panNo) formData.append('panNo', raw.panNo);
     formData.append('mobileNo', raw.mobileNo);
     if (raw.emailId) formData.append('emailId', raw.emailId);
+    if (raw.password) formData.append('password', raw.password);
     formData.append('fullAddress', raw.fullAddress);
 
     if (raw.nomineeName) formData.append('nomineeName', normalizeHumanName(raw.nomineeName));
@@ -1111,6 +1122,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       panNo: member.pan_no || '',
       mobileNo: member.mobile_no || '',
       emailId: member.email_id || '',
+      password: '',
       fullAddress: member.full_address || '',
       nomineeName: member.nominee_name || '',
       nomineeRelation: member.nominee_relation || '',
