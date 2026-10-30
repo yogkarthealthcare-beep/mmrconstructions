@@ -262,11 +262,12 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
           expanded: true,
           items: [
             { icon: 'fas fa-th-large', label: 'Dashboard', route: `${p}/dashboard` },
+            { icon: 'fas fa-layer-group', label: 'Book a Plot', route: `${p}/book-plot` },
             { icon: 'fas fa-map-marked-alt', label: 'My Properties', route: `${p}/my-plots` },
             { icon: 'fas fa-calendar-check', label: 'EMI & Installments', route: `${p}/emi-history` },
             { icon: 'fas fa-receipt', label: 'Payment History', route: `${p}/payments` },
             { icon: 'fas fa-folder-open', label: 'Documents', route: `${p}/documents` },
-            { icon: 'fas fa-shield-alt', label: 'Buyback Requests', route: `${p}/buyback` },
+            
             { icon: 'fas fa-bell', label: 'Notifications', route: `${p}/notifications` },
           ]
         },

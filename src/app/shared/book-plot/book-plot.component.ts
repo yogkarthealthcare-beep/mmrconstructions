@@ -252,7 +252,7 @@ export class BookPlotComponent implements OnInit, OnDestroy {
       if (role === 'Admin') this.router.navigate(['/admin/dashboard']);
       else if (role === 'TeamMember') this.router.navigate(['/team-member/dashboard']);
       else if (role === 'Associate') this.router.navigate(['/associate/dashboard']);
-      else this.router.navigate(['/user/dashboard']);
+      else this.router.navigate(['/customer/dashboard']);
     }
   }
 
