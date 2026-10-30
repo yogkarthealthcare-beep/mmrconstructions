@@ -287,12 +287,17 @@ export class SiteMapComponent implements OnInit, OnDestroy {
     return this.appointmentDates.find(item => item.date === this.selectedAppointmentDate)?.slots || [];
   }
 
-  requiredBookingPayment(plot: any) {
-    return Number(this.workflowConfig?.required_booking_payment || ((plot?.booking_amount || plot?.down_payment || 0) + (plot?.monthly_emi || 0)));
+  requiredBookingPayment(plot: any): number {
+    const fromPlot = (Number(plot?.booking_amount || plot?.down_payment || 0) + Number(plot?.monthly_emi || 0));
+    if (fromPlot > 0) return fromPlot;
+    return Number(this.workflowConfig?.required_booking_payment || 60000);
   }
 
-  remainingBalance(plot: any) {
-    return Math.max(0, Number(this.priceFor(plot) || 0) - this.requiredBookingPayment(plot));
+  remainingBalance(plot: any): number {
+    if (!plot) return 0;
+    const price = Number(this.priceFor(plot) || 0);
+    const required = this.requiredBookingPayment(plot);
+    return Math.max(0, price - required);
   }
 
   private validateBookingEligibility(plot: any) {
@@ -497,9 +502,33 @@ export class SiteMapComponent implements OnInit, OnDestroy {
     }
   }
 
-  priceFor(plot: any) {
-    const value = plot?.base_price || plot?.price || plot?.total_price || plot?.sale_price;
-    return Number(value) || null;
+  priceFor(plot: any): number | null {
+    if (!plot) return null;
+    const directPrice = Number(plot?.base_price || plot?.price || plot?.total_price || plot?.sale_price || 0);
+    if (directPrice > 0) return directPrice;
+
+    // Determine rate per sqft (default 1200 as configured across MMR admin site management)
+    const rate = Number(plot?.rate_per_sqft || plot?.rate || this.site?.rate_per_sqft || 1200);
+
+    // Calculate area in sqft
+    let sqft = Number(plot?.sqft || plot?.area_sqft || 0);
+    if (!sqft) {
+      const gajMatch = String(plot?.plot_number || '').match(/GAJ[:=\s]*([0-9.]+)/i);
+      const gajFromNum = gajMatch ? Number(gajMatch[1]) : 0;
+      const areaVal = Number(plot?.plot_area || plot?.area || gajFromNum || 0);
+      const isGaj = (plot?.area_unit && /gaj/i.test(plot.area_unit)) || gajFromNum > 0 || /gaj/i.test(String(plot?.plot_number || ''));
+
+      if (areaVal > 0) {
+        sqft = isGaj ? (areaVal * 9) : areaVal;
+      } else {
+        sqft = 1000;
+      }
+    }
+
+    if (sqft > 0 && rate > 0) {
+      return Math.round(sqft * rate);
+    }
+    return 1200000;
   }
 
   sizeFor(plot: any) {

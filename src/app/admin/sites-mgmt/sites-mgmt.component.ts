@@ -356,8 +356,18 @@ export class SitesMgmtComponent implements OnInit {
         const labelPt = points.length
           ? points.reduce((acc, pt) => ({ x: acc.x + pt.x / points.length, y: acc.y + pt.y / points.length }), { x: 0, y: 0 })
           : { x: 0, y: 0 };
+        const gajMatch = String(p?.plot_number || '').match(/GAJ[:=\s]*([0-9.]+)/i);
+        const gajFromNum = gajMatch ? Number(gajMatch[1]) : 0;
+        const areaVal = Number(p?.plot_area || p?.area || gajFromNum || 0);
+        const isGaj = (p?.area_unit && /gaj/i.test(p.area_unit)) || gajFromNum > 0 || /gaj/i.test(String(p?.plot_number || ''));
+        const calculatedSqft = p.sqft ? Number(p.sqft) : (areaVal > 0 ? (isGaj ? areaVal * 9 : areaVal) : 1000);
+        const calculatedRate = Number(p.rate_per_sqft || 1200);
+
         return {
           ...p,
+          sqft: calculatedSqft,
+          rate_per_sqft: calculatedRate,
+          facing_direction: p.facing_direction || 'East',
           _polygonPoints: polyStr,
           _labelPoint: labelPt,
           _color: this.plotColor(p?.plot_status)

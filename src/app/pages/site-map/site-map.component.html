@@ -165,13 +165,13 @@
         <div class="detail-grid">
           <div><span>Size</span><strong>{{ sizeFor(selectedPlotDetail || selectedPlot) }}</strong></div>
           <div><span>Dimensions</span><strong>{{ (selectedPlotDetail || selectedPlot)?.dimensions || (selectedPlotDetail || selectedPlot)?.dimension || '-' }}</strong></div>
-          <div><span>Facing</span><strong>{{ (selectedPlotDetail || selectedPlot)?.facing || (selectedPlotDetail || selectedPlot)?.facing_direction || '-' }}</strong></div>
+          <div><span>Facing</span><strong>{{ (selectedPlotDetail || selectedPlot)?.facing || (selectedPlotDetail || selectedPlot)?.facing_direction || 'East' }}</strong></div>
           <div><span>Status</span><strong>{{ plotLabel((selectedPlotDetail || selectedPlot)?.plot_status) }}</strong></div>
           <div><span>Price</span><strong>{{ priceFor(selectedPlotDetail || selectedPlot) ? (priceFor(selectedPlotDetail || selectedPlot) | currency:'INR':'symbol':'1.0-0') : '-' }}</strong></div>
-          <div><span>Booking Amount</span><strong>{{ (selectedPlotDetail || selectedPlot)?.booking_amount || (selectedPlotDetail || selectedPlot)?.down_payment ? (((selectedPlotDetail || selectedPlot)?.booking_amount || (selectedPlotDetail || selectedPlot)?.down_payment) | currency:'INR':'symbol':'1.0-0') : '-' }}</strong></div>
+          <div><span>Booking Amount</span><strong>{{ (selectedPlotDetail || selectedPlot)?.booking_amount || (selectedPlotDetail || selectedPlot)?.down_payment ? (((selectedPlotDetail || selectedPlot)?.booking_amount || (selectedPlotDetail || selectedPlot)?.down_payment) | currency:'INR':'symbol':'1.0-0') : ((workflowConfig?.minimum_booking_amount || 50000) | currency:'INR':'symbol':'1.0-0') }}</strong></div>
           <div><span>Remaining Balance</span><strong>{{ remainingBalance(selectedPlotDetail || selectedPlot) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
           <div><span>Site</span><strong>{{ (selectedPlotDetail || selectedPlot)?.site_name || site?.site_name || '-' }}</strong></div>
-          <div><span>EMI</span><strong>{{ (selectedPlotDetail || selectedPlot)?.monthly_emi ? ((selectedPlotDetail || selectedPlot)?.monthly_emi | currency:'INR':'symbol':'1.0-0') : '-' }}</strong></div>
+          <div><span>EMI</span><strong>{{ (selectedPlotDetail || selectedPlot)?.monthly_emi ? ((selectedPlotDetail || selectedPlot)?.monthly_emi | currency:'INR':'symbol':'1.0-0') : ((workflowConfig?.first_emi_amount || 10000) | currency:'INR':'symbol':'1.0-0') }}</strong></div>
         </div>
         <p class="plot-desc" *ngIf="(selectedPlotDetail || selectedPlot)?.description || (selectedPlotDetail || selectedPlot)?.additional_details">
           {{ (selectedPlotDetail || selectedPlot)?.description || (selectedPlotDetail || selectedPlot)?.additional_details }}
@@ -209,11 +209,11 @@
         <div><span>Project</span><strong>{{ confirmPlot.site_name || site?.site_name }}</strong></div>
         <div><span>Plot Size</span><strong>{{ sizeFor(confirmPlot) }}</strong></div>
         <div><span>Plot Price</span><strong>{{ priceFor(confirmPlot) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
-        <div><span>Minimum Booking</span><strong>{{ workflowConfig?.minimum_booking_amount | currency:'INR':'symbol':'1.0-0' }}</strong></div>
-        <div><span>First EMI</span><strong>{{ workflowConfig?.first_emi_amount | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div><span>Minimum Booking</span><strong>{{ (workflowConfig?.minimum_booking_amount || 50000) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div><span>First EMI</span><strong>{{ (workflowConfig?.first_emi_amount || 10000) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
         <div><span>Required Now</span><strong>{{ requiredBookingPayment(confirmPlot) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
         <div><span>Remaining Balance</span><strong>{{ remainingBalance(confirmPlot) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
-        <div><span>Monthly EMI</span><strong>{{ confirmPlot.monthly_emi | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div><span>Monthly EMI</span><strong>{{ (confirmPlot.monthly_emi || workflowConfig?.first_emi_amount || 10000) | currency:'INR':'symbol':'1.0-0' }}</strong></div>
       </div>
       <div class="payment-methods">
         <label [class.selected]="paymentMethod==='Online'">
