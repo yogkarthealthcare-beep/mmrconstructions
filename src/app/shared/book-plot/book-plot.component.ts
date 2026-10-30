@@ -1377,12 +1377,6 @@ export class BookPlotComponent implements OnInit, OnDestroy {
         return `One-Time Payment requires the full plot value of ₹${this.totalPlotPrice.toLocaleString()}.`;
       }
     }
-    if (this.paymentMode === 'PART_WISE') {
-      const minPartWise = this.totalPlotPrice > 0 ? Math.round(this.totalPlotPrice * 0.25) : 10000;
-      if (amount < minPartWise) {
-        return `Part-Wise payment requires the first installment to be at least 25% of total plot value (₹${minPartWise.toLocaleString('en-IN')}).`;
-      }
-    }
     if (this.paymentMode === 'EMI') {
       if (!this.selectedInstallmentPlanId) {
         return 'Please select an active EMI installment plan.';

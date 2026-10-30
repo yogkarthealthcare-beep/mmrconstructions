@@ -52,7 +52,13 @@ export class BookingAttributionApiService {
         userMsg = serverMsg || 'Bad request. Please verify your input data.';
       }
     } else if (status === 403) {
-      userMsg = serverMsg || 'Access Denied: You do not have permission to perform this action.';
+      if (/on-behalf/i.test(serverMsg) || /other/i.test(serverMsg)) {
+        userMsg = 'Customers are not permitted to make bookings on behalf of others.';
+      } else if (/kyc/i.test(serverMsg) || /document/i.test(serverMsg)) {
+        userMsg = 'document upload AND KYC not done';
+      } else {
+        userMsg = serverMsg || 'document upload AND KYC not done';
+      }
     } else if (status === 409) {
       if (/plot/i.test(serverMsg) || /unavailable/i.test(serverMsg)) {
         userMsg = 'This plot is currently locked, under booking, or already confirmed by another client.';
