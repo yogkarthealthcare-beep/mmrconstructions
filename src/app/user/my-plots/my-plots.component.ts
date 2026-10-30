@@ -163,10 +163,27 @@ export class MyPlotsComponent implements OnInit {
       const emiPaidSum = confirmedPaidEmis.reduce((s: number, e: any) => s + Number(e.paid_amount || e.emi_amount || 0), 0);
       const submittedEmiSum = submittedEmis.reduce((s: number, e: any) => s + Number(e.emi_amount || 0), 0);
       
-      // FIX A: For APPROVED bookings restore the ORIGINAL formula exactly
-      const confirmedPaid = isApproved 
-        ? Math.max(advancePaid + emiPaidSum, Number(b.total_paid || 0), advancePaid)
-        : emiPaidSum;
+      // Determine if EMI schedule includes the initial advance as Installment #1 (e.g. Partial / PartWise plans)
+      // where total scheduled installments equal total plot price.
+      const isPartialOrPartWise = b.payment_type === 'Partial' || b.payment_type === 'PartWise';
+      const scheduledTotal = plotEmis.reduce((s: number, e: any) => s + Number(e.emi_amount || 0), 0);
+      const emisCoverFullPrice = plotEmis.length > 0 && Math.abs(scheduledTotal - totalPrice) < 50;
+
+      let confirmedPaid = 0;
+      if (isPartialOrPartWise || emisCoverFullPrice) {
+        // Installment #1 represents the initial booking advance. All installments together = Total Plot Price.
+        // Therefore, emiPaidSum already includes the advance; we must not add advancePaid again.
+        confirmedPaid = isApproved 
+          ? Math.max(emiPaidSum, advancePaid)
+          : emiPaidSum;
+      } else {
+        // Standard EMI schedule: Installments only cover (totalPrice - advancePaid).
+        // Advance payment is separate from EMI installments.
+        confirmedPaid = isApproved 
+          ? Math.max(advancePaid + emiPaidSum, Number(b.total_paid || 0), advancePaid)
+          : emiPaidSum;
+      }
+      confirmedPaid = Math.min(totalPrice > 0 ? totalPrice : confirmedPaid, confirmedPaid);
 
       // Under Verification includes pending booking advance + submitted EMI installments awaiting approval
       const underVerificationAmount = (isPending ? advancePaid : 0) + submittedEmiSum;
