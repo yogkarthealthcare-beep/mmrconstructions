@@ -6,28 +6,19 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* 1600 × 450 px Native Banner Aspect Ratio */
 .ad-banner-container {
   position: relative;
   width: 100%;
-  height: 280px;
+  aspect-ratio: 1600 / 450;
+  max-height: 560px;
   overflow: hidden;
 }
 
-@media (min-width: 768px) {
+@supports not (aspect-ratio: 1600 / 450) {
   .ad-banner-container {
-    height: 330px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .ad-banner-container {
-    height: 370px;
-  }
-}
-
-@media (max-width: 576px) {
-  .ad-banner-container {
-    height: 220px;
+    height: 28.125vw;
+    max-height: 560px;
   }
 }
 
@@ -51,17 +42,18 @@
   justify-content: center;
 }
 
+/* contain ensures 100% of the image is visible without any cropping */
 .ad-banner-media {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   display: block;
   transition: transform 0.35s ease;
 }
 
 .ad-slide:hover .ad-banner-media {
-  transform: scale(1.015);
+  transform: scale(1.008);
 }
 
 .ad-bg-iframe {
