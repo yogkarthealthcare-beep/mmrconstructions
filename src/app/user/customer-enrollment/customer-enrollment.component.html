@@ -210,7 +210,19 @@
             Religion is required.
           </div>
         </div>
-        <div class="field"><label>Occupation <span class="text-danger">*</span></label><input type="text" formControlName="occupation"></div>
+                <div class="field">
+          <label>Occupation <span class="text-danger">*</span></label>
+          <select formControlName="occupation">
+            <option value="">Select Occupation</option>
+            <option *ngFor="let occ of occupationsList" [value]="occ">{{ occ }}</option>
+            <option *ngIf="enrollmentForm.get('occupation')?.value && !occupationsList.includes(enrollmentForm.get('occupation')?.value)" [value]="enrollmentForm.get('occupation')?.value">
+              {{ enrollmentForm.get('occupation')?.value }}
+            </option>
+          </select>
+          <div *ngIf="enrollmentForm.get('occupation')?.touched && enrollmentForm.get('occupation')?.invalid" class="text-danger" style="font-size: 11px;">
+            Occupation is required.
+          </div>
+        </div>
       </div>
 
       <div class="row2">
@@ -264,7 +276,16 @@
 
       <div class="field"><label>Co-Applicant Name</label><input type="text" formControlName="coApplicantName"></div>
       <div class="field"><label>Father / Husband's Name</label><input type="text" formControlName="coFhName"></div>
-      <div class="field"><label>Relation with Applicant</label><input type="text" formControlName="coRelation"></div>
+            <div class="field">
+        <label>Relation with Applicant</label>
+        <select formControlName="coRelation">
+          <option value="">Select Relation</option>
+          <option *ngFor="let rel of relationsList" [value]="rel">{{ rel }}</option>
+          <option *ngIf="enrollmentForm.get('coRelation')?.value && !relationsList.includes(enrollmentForm.get('coRelation')?.value)" [value]="enrollmentForm.get('coRelation')?.value">
+            {{ enrollmentForm.get('coRelation')?.value }}
+          </option>
+        </select>
+      </div>
 
       <div class="row2">
         <div class="field">
@@ -307,17 +328,44 @@
         <div *ngFor="let nom of nominees.controls; let i=index" [formGroupName]="i">
           <div class="row2">
             <div class="field"><label>Nominee Name <span class="text-danger">*</span></label><input type="text" formControlName="nomineeName"></div>
-            <div class="field"><label>Relation <span class="text-danger">*</span></label><input type="text" formControlName="nomineeRelation"></div>
+                        <div class="field">
+              <label>Relation <span class="text-danger">*</span></label>
+              <select formControlName="nomineeRelation">
+                <option value="">Select Relation</option>
+                <option *ngFor="let rel of relationsList" [value]="rel">{{ rel }}</option>
+                <option *ngIf="nom.get('nomineeRelation')?.value && !relationsList.includes(nom.get('nomineeRelation')?.value)" [value]="nom.get('nomineeRelation')?.value">
+                  {{ nom.get('nomineeRelation')?.value }}
+                </option>
+              </select>
+              <div class="text-danger fs-12 mt-1" *ngIf="nom.get('nomineeRelation')?.touched && nom.get('nomineeRelation')?.errors?.['required']">
+                Relation is required.
+              </div>
+            </div>
           </div>
           <div class="row2">
             <div class="field">
-              <label>Age / DOB <span class="text-danger">*</span></label>
-              <input type="text" formControlName="nomineeAgeDob" placeholder="e.g. 28 Years or DD/MM/YYYY">
+              <label>
+                Age / Date of Birth (DD/MM/YYYY) <span class="text-danger">*</span>
+                <span *ngIf="getNomineeAge(i) !== ''" class="text-success fw-600" style="font-size: 11px; margin-left: 6px;">
+                  (Age: {{ getNomineeAge(i) }} Years)
+                </span>
+              </label>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="text" formControlName="nomineeAgeDob" placeholder="DD/MM/YYYY" maxlength="10" (input)="onDobInput($event, 'nomineeAgeDob', i)" style="padding-right: 36px;">
+                <input #nomineeDobPicker type="date" [max]="maxAdultDob" (change)="onDatepickerSelect($event, 'nomineeAgeDob', i)" style="position: absolute; right: 6px; width: 28px; height: 28px; opacity: 0; cursor: pointer; z-index: 2;" title="Choose date from calendar">
+                <i class="fas fa-calendar-alt" (click)="openDatePicker(nomineeDobPicker)" style="position: absolute; right: 10px; color: #64748b; cursor: pointer; font-size: 16px; z-index: 1;" title="Choose date from calendar"></i>
+              </div>
               <div class="text-danger fs-12 mt-1" *ngIf="nom.get('nomineeAgeDob')?.errors?.['underAge'] && nom.get('nomineeAgeDob')?.touched">
-                Nominee must be at least 18 years old.
+                Nominee must be at least 18 years old / नॉमिनी की उम्र कम से कम 18 वर्ष होनी चाहिए।
               </div>
               <div class="text-danger fs-12 mt-1" *ngIf="nom.get('nomineeAgeDob')?.errors?.['futureDate'] && nom.get('nomineeAgeDob')?.touched">
-                Nominee Date of Birth cannot be in the future.
+                Nominee Date of Birth cannot be in the future / जन्मतिथि भविष्य की नहीं हो सकती।
+              </div>
+              <div class="text-danger fs-12 mt-1" *ngIf="nom.get('nomineeAgeDob')?.errors?.['invalidDate'] && nom.get('nomineeAgeDob')?.touched">
+                Please enter a valid Date of Birth (DD/MM/YYYY).
+              </div>
+              <div class="text-danger fs-12 mt-1" *ngIf="nom.get('nomineeAgeDob')?.errors?.['required'] && nom.get('nomineeAgeDob')?.touched">
+                Nominee Date of Birth is required.
               </div>
             </div>
             <div class="field"><label>Aadhar No. (12 Digits) <span class="text-danger">*</span></label><input type="text" formControlName="nomineeAadhar" maxlength="12" placeholder="12-digit Aadhaar No."></div>

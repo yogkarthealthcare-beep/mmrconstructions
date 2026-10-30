@@ -21,7 +21,9 @@ import {
   parseDDMMYYYYToISO,
   humanNameValidator,
   normalizeHumanName,
-  validateImageUpload
+  validateImageUpload,
+  ASSOCIATE_OCCUPATIONS,
+  NOMINEE_RELATIONSHIPS
 } from '../../shared/utils/form-helpers';
 
 @Component({
@@ -47,6 +49,8 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
 
   statesList = APPROVED_INDIAN_STATES;
   religionsList = RELIGIONS_LIST;
+  occupationsList = ASSOCIATE_OCCUPATIONS;
+  relationsList = NOMINEE_RELATIONSHIPS;
   maxAdultDob = getMaxAdultDobDate();
   
   photo1DataUrl = '';
@@ -597,7 +601,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
     }, 100);
   }
 
-  onDobInput(event: any, fieldName: string = 'dob') {
+  onDobInput(event: any, fieldName: string = 'dob', index?: number) {
     let val = (event.target.value || '').replace(/[^0-9/]/g, '');
     if (val.length === 2 && !val.includes('/')) {
       val = val + '/';
@@ -605,15 +609,39 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       val = val + '/';
     }
     event.target.value = val;
-    this.enrollmentForm.get(fieldName)?.setValue(val, { emitEvent: true });
+    if (typeof index === 'number' && this.nominees && this.nominees.at(index)) {
+      this.nominees.at(index).get(fieldName)?.setValue(val, { emitEvent: true });
+    } else {
+      this.enrollmentForm.get(fieldName)?.setValue(val, { emitEvent: true });
+    }
   }
 
-  onDatepickerSelect(event: any, fieldName: string = 'dob') {
+  onDatepickerSelect(event: any, fieldName: string = 'dob', index?: number) {
     const pickedDate = event.target.value;
     if (pickedDate) {
       const formatted = formatDateToDDMMYYYY(pickedDate);
-      this.enrollmentForm.get(fieldName)?.setValue(formatted, { emitEvent: true });
+      if (typeof index === 'number' && this.nominees && this.nominees.at(index)) {
+        this.nominees.at(index).get(fieldName)?.setValue(formatted, { emitEvent: true });
+        this.nominees.at(index).get(fieldName)?.markAsDirty();
+        this.nominees.at(index).get(fieldName)?.markAsTouched();
+      } else {
+        this.enrollmentForm.get(fieldName)?.setValue(formatted, { emitEvent: true });
+        this.enrollmentForm.get(fieldName)?.markAsDirty();
+        this.enrollmentForm.get(fieldName)?.markAsTouched();
+      }
     }
+  }
+
+  getNomineeAge(index: number): number | '' {
+    const val = this.nominees?.at(index)?.get('nomineeAgeDob')?.value;
+    if (!val) return '';
+    const clean = String(val).trim();
+    const ageMatch = clean.match(/^(\d{1,3})(\s*(years?|yrs?|yr)?)?$/i);
+    if (ageMatch && !clean.includes('/') && !clean.includes('-')) {
+      const num = parseInt(ageMatch[1], 10);
+      return !isNaN(num) ? num : '';
+    }
+    return calculateAgeFromDob(clean);
   }
 
   openDatePicker(picker: HTMLInputElement) {
@@ -934,10 +962,10 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       nomArray.clear();
       enroll.nominees.forEach((n: any) => {
         nomArray.push(this.fb.group({
-          nomineeName: [n.nominee_name || ''],
-          nomineeRelation: [n.relation || ''],
-          nomineeAgeDob: [n.age_dob || ''],
-          nomineeAadhar: [n.aadhar_no || '']
+          nomineeName: [n.nominee_name || '', [Validators.required, humanNameValidator()]],
+          nomineeRelation: [n.relation || '', Validators.required],
+          nomineeAgeDob: [n.age_dob || '', [Validators.required, nomineeDobValidator(18)]],
+          nomineeAadhar: [n.aadhar_no || '', [Validators.required, Validators.pattern(AADHAAR_PATTERN)]]
         }));
       });
     }
