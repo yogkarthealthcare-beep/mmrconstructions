@@ -740,13 +740,17 @@
               <label class="required-label">Relationship with Applicant</label>
               <div class="input-with-icon">
                 <i class="fas fa-heart input-icon"></i>
-                <input 
-                  type="text" 
+                <select 
                   formControlName="nomineeRelation" 
                   class="form-control" 
-                  placeholder="e.g. Spouse / Son / Father / Mother"
-                  style="padding-left: 44px !important;"
+                  style="padding-left: 44px !important; padding-right: 36px !important;"
                 >
+                  <option value="">Select Relationship</option>
+                  <option *ngFor="let rel of nomineeRelationshipsList" [value]="rel">{{ rel }}</option>
+                  <option *ngIf="enrollmentForm.get('nomineeRelation')?.value && !nomineeRelationshipsList.includes(enrollmentForm.get('nomineeRelation')?.value)" [value]="enrollmentForm.get('nomineeRelation')?.value">
+                    {{ enrollmentForm.get('nomineeRelation')?.value }}
+                  </option>
+                </select>
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('nomineeRelation')?.errors?.['required'] && enrollmentForm.get('nomineeRelation')?.touched">
                 Relationship is required.
@@ -756,15 +760,38 @@
 
           <div class="grid-col-6">
             <div class="form-group" [class.has-error]="enrollmentForm.get('nomineeAgeDob')?.invalid && enrollmentForm.get('nomineeAgeDob')?.touched">
-              <label class="required-label">Nominee Age / Date of Birth</label>
-              <div class="input-with-icon">
-                <i class="fas fa-calendar input-icon"></i>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="required-label mb-0">Nominee Age / Date of Birth</label>
+                <span class="badge bg-success text-white" *ngIf="nomineeCalculatedAge() !== ''" style="font-size:10px; padding:2px 6px; border-radius:4px;">
+                  Age: {{ nomineeCalculatedAge() }} Yrs
+                </span>
+              </div>
+              <div class="input-with-icon has-datepicker-action">
+                <i class="fas fa-calendar-alt input-icon"></i>
                 <input 
                   type="text" 
                   formControlName="nomineeAgeDob" 
-                  class="form-control" 
-                  placeholder="e.g. 28 Years or DD/MM/YYYY"
-                  style="padding-left: 44px !important;"
+                  class="form-control date-text-input" 
+                  placeholder="DD/MM/YYYY"
+                  maxlength="10"
+                  (input)="onNomineeDobInput($event)"
+                  style="padding-left: 44px !important; padding-right: 48px !important;"
+                >
+                <!-- Visible Green Calendar Icon -->
+                <i 
+                  class="fas fa-calendar-day datepicker-popup-btn" 
+                  title="Choose date from calendar"
+                ></i>
+                <!-- Native Datepicker (Invisible Overlay directly intercepting clicks/taps) -->
+                <input 
+                  #nomineeDobPickerInput
+                  type="date" 
+                  [max]="todayStr"
+                  [value]="getIsoNomineeDobValue()"
+                  (change)="onNomineeDatepickerSelect($event)"
+                  (click)="openDatePicker(nomineeDobPickerInput)"
+                  class="native-hidden-datepicker"
+                  title="Choose date from calendar"
                 >
               </div>
               <span class="error-msg" *ngIf="enrollmentForm.get('nomineeAgeDob')?.errors?.['required'] && enrollmentForm.get('nomineeAgeDob')?.touched">
@@ -1094,6 +1121,16 @@
               </div>
 
               <div class="final-actions-group d-flex align-items-center gap-2 ms-auto">
+                <!-- Edit / Update Details Button (Always accessible) -->
+                <button 
+                  type="button" 
+                  class="btn btn-warning fw-bold text-dark" 
+                  (click)="onEdit()"
+                  title="Edit and update team member details"
+                  style="border-radius: 6px; font-weight: 700; padding: 7px 16px;"
+                >
+                  <i class="fas fa-edit me-1"></i> Edit / Update Details
+                </button>
                 <!-- Preview / Download PDF -->
                 <button 
                   type="button" 
@@ -1272,12 +1309,11 @@
                   <button 
                     type="button" 
                     class="btn btn-sm btn-outline-warning text-dark fw-bold px-2 py-1" 
-                    *ngIf="member.status === 'pending' && !member.is_final_submitted"
                     (click)="resumeDraftMember(member)"
-                    title="Resume and finalize application"
+                    title="Edit and update team member details"
                     style="font-size: 11px; border-radius: 4px;"
                   >
-                    <i class="fas fa-edit me-1"></i> Resume
+                    <i class="fas fa-edit me-1"></i> Edit
                   </button>
 
                   <!-- PDF Download Button (blob download via HttpClient) -->

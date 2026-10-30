@@ -10,7 +10,8 @@ import {
   MOBILE_PATTERN, 
   EMAIL_PATTERN, 
   AADHAAR_PATTERN, 
-  APPROVED_INDIAN_STATES, 
+  APPROVED_INDIAN_STATES,
+  NOMINEE_RELATIONSHIPS, 
   getMaxAdultDobDate, 
   adultAgeValidator, 
   nomineeDobValidator,
@@ -51,6 +52,15 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   statesList = APPROVED_INDIAN_STATES;
   maxAdultDob = getMaxAdultDobDate();
   calculatedAge = signal<number | ''>('');
+  nomineeRelationshipsList = NOMINEE_RELATIONSHIPS;
+  nomineeDobSignal = signal<string>('');
+  todayStr = new Date().toISOString().split('T')[0];
+  nomineeCalculatedAge = computed(() => {
+    const val = this.nomineeDobSignal();
+    if (!val) return '';
+    if (/^\d{1,3}$/.test(val.trim())) return val.trim();
+    return calculateAgeFromDob(val);
+  });
 
   // View state: 10 Slots Grid (default), Enrollment Form, or Table List
   activeTab: 'slots' | 'enroll' | 'list' = 'slots';
@@ -480,6 +490,41 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     }
   }
 
+  onNomineeDobInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let v = input.value.replace(/[^0-9]/g, '');
+    if (v.length > 2 && v.length <= 4) {
+      v = v.slice(0, 2) + '/' + v.slice(2);
+    } else if (v.length > 4) {
+      v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4, 8);
+    }
+    input.value = v;
+    this.enrollmentForm.get('nomineeAgeDob')?.setValue(v, { emitEvent: true });
+    this.nomineeDobSignal.set(v);
+  }
+
+  onNomineeDatepickerSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.value) return;
+    const [y, m, d] = input.value.split('-');
+    const formatted = `${d}/${m}/${y}`;
+    this.enrollmentForm.get('nomineeAgeDob')?.setValue(formatted, { emitEvent: true });
+    this.enrollmentForm.get('nomineeAgeDob')?.markAsDirty();
+    this.enrollmentForm.get('nomineeAgeDob')?.markAsTouched();
+    this.nomineeDobSignal.set(formatted);
+  }
+
+  getIsoNomineeDobValue(): string {
+    const val = this.nomineeDobSignal() || this.enrollmentForm?.get('nomineeAgeDob')?.value || '';
+    if (!val) return '';
+    const ddmmyyyy = String(val).trim().match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (ddmmyyyy) {
+      const [, d, m, y] = ddmmyyyy;
+      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+    return '';
+  }
+
   openDatePicker(picker: HTMLInputElement): void {
     if (!picker) return;
     try {
@@ -791,14 +836,6 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   onSubmit(): void {
-    if (this.isFinalSubmitted()) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Form Finalized',
-        text: 'This team member enrollment has already been finalized and cannot be modified.'
-      });
-      return;
-    }
 
     if (!this.photoFile && !this.photoPreviewUrl) {
       Swal.fire({
@@ -943,16 +980,9 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   }
 
   onEdit(): void {
-    if (this.isFinalSubmitted()) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Form Finalized',
-        text: 'This team member enrollment form has been permanently finalized and cannot be edited.'
-      });
-      return;
-    }
     this.isEditing.set(true);
     this.isReviewMode.set(false);
+    this.isFinalSubmitted.set(false);
     this.enrollmentForm.enable();
     this.enrollmentForm.get('associateId')?.disable();
     this.enrollmentForm.get('associateName')?.disable();
@@ -1094,6 +1124,13 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     });
 
     this.photoPreviewUrl = member.photo_url || null;
+    this.nomineeDobSignal.set(member.nominee_age_dob || '');
+    this.isFinalSubmitted.set(false);
+    this.isReviewMode.set(false);
+    this.isEditing.set(true);
+    this.enrollmentForm.enable();
+    this.enrollmentForm.get('associateId')?.disable();
+    this.enrollmentForm.get('associateName')?.disable();
     this.uploadedApplicantSigUrl = member.applicant_signature_url || null;
     this.uploadedAssociateSigUrl = member.associate_signature_url || null;
 
