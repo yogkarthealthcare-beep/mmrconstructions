@@ -227,9 +227,24 @@ export class BookingAttributionApiService {
    * Calls POST /api/associate/booking-approvals/:id/decide
    */
   decideAssociateApproval(bookingId: number, payload: ApprovalDecisionPayload): Observable<any> {
-    return this.http.post<any>(`${BASE_URL}/api/associate/booking-approvals/${bookingId}/decide`, payload, {
+    const action = payload.decision === 'approve' ? 'approve' : 'reject';
+    const body = {
+      decision: payload.decision,
+      reason: payload.rejection_reason || payload.decision_notes || '',
+      decision_notes: payload.decision_notes,
+      rejection_reason: payload.rejection_reason
+    };
+    return this.http.post<any>(`${BASE_URL}/api/associate/booking-approvals/${bookingId}/decide`, body, {
       headers: this.getAuthHeaders(false)
     }).pipe(
+      catchError((err) => {
+        if (err.status === 404) {
+          return this.http.post<any>(`${BASE_URL}/api/associate/booking-approvals/${bookingId}/${action}`, body, {
+            headers: this.getAuthHeaders(false)
+          });
+        }
+        return throwError(() => err);
+      }),
       catchError(err => this.handleError(err))
     );
   }
