@@ -23,6 +23,27 @@
         <button type="button" class="btn btn-outline-secondary btn-sm fw-600" (click)="openSitesManagement()" title="Manage all site locations">
           <i class="fas fa-city me-1"></i> Sites Management
         </button>
+        <button type="button" class="btn btn-warning btn-sm fw-700 text-dark shadow-sm" (click)="copyCadPrompt()" title="Copy CAD Generator AI prompt for ChatGPT/Claude">
+          <i class="fas" [ngClass]="promptCopied ? 'fa-check text-success' : 'fa-copy me-1'"></i>
+          {{ promptCopied ? 'Prompt Copied!' : 'Copy Prompt' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- AI CAD GENERATOR PROMPT STRIP (RIGHT BELOW TOP MENU) -->
+    <div class="d-flex align-items-center justify-content-between p-2 px-3 mt-2 rounded bg-amber-light border border-warning-subtle flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-warning text-dark fw-bold px-2 py-1"><i class="fas fa-robot me-1"></i> AI CAD Prompt</span>
+        <span class="fs-12 fw-700 text-dark">Image-to-DXF Generator Prompt (Give this prompt to ChatGPT/Claude along with your layout image)</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-xs btn-outline-dark fw-600" (click)="showPromptModal = true">
+          <i class="fas fa-eye me-1"></i> View Prompt
+        </button>
+        <button type="button" class="btn btn-xs btn-warning text-dark fw-bold" (click)="copyCadPrompt()">
+          <i class="fas" [ngClass]="promptCopied ? 'fa-check text-success' : 'fa-copy me-1'"></i>
+          {{ promptCopied ? 'Copied to Clipboard!' : 'Copy Prompt' }}
+        </button>
       </div>
     </div>
   </div>
@@ -849,3 +870,41 @@
   <!-- CAD GUIDELINE DIALOG COMPONENT -->
   <app-cad-guideline-dialog [show]="showGuidelineDialog" (close)="closeGuidelineDialog()"></app-cad-guideline-dialog>
 </div>
+
+  <!-- CAD GENERATOR PROMPT MODAL -->
+  <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1060;" *ngIf="showPromptModal">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-dark text-white py-2 px-3">
+          <h5 class="modal-title fs-13 fw-700">
+            <i class="fas fa-robot text-warning me-2"></i>AI CAD File Generator Prompt
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="showPromptModal = false"></button>
+        </div>
+        <div class="modal-body p-3 bg-light">
+          <p class="fs-12 text-muted mb-2">
+            Copy this prompt and give it to an AI model (like ChatGPT Plus or Claude) along with your site plan or layout image. The AI will write a Python script with <code>ezdxf</code> and generate an exact <code>.dxf</code> file compatible with this Plot Detector Tool.
+          </p>
+          <div class="position-relative">
+            <textarea 
+              class="form-control font-monospace fs-11" 
+              rows="16" 
+              readonly 
+              style="background: #1e293b; color: #f8fafc; border-radius: 6px; resize: vertical;"
+              [value]="cadGeneratorPrompt"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer py-2 px-3 bg-white justify-content-between">
+          <span class="fs-11 text-muted">Ready to paste into ChatGPT or Claude</span>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="showPromptModal = false">Close</button>
+            <button type="button" class="btn btn-warning btn-sm text-dark fw-bold" (click)="copyCadPrompt()">
+              <i class="fas" [ngClass]="promptCopied ? 'fa-check text-success' : 'fa-copy me-1'"></i>
+              {{ promptCopied ? 'Copied to Clipboard!' : 'Copy Prompt' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

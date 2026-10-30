@@ -244,6 +244,42 @@ export class PlotDetectorToolComponent implements OnInit {
     this.showUnpricedPlotsModal = false;
   }
 
+    showPromptModal = false;
+  promptCopied = false;
+  readonly cadGeneratorPrompt: string = "You are a CAD file generator. I will give you a site-plan / layout image.\nConvert it into a DXF file that can be uploaded to my \"Plot Detector Tool\"\nwithout errors. Write and run Python code with the ezdxf library, save the\nfile, and give it to me as a download. Do not just describe the file.\n\n========== STEP 1: ANALYSE THE IMAGE ==========\nIdentify and trace as closed polygons:\n- every sellable plot / lot (the coloured or numbered parcels)\n- all roads (main roads and internal roads)\n- green areas / parks / open space / ponds\n- footpaths / trails\n- the outer site boundary\n- trees (ONLY if I ask for them; otherwise skip trees completely)\nTrace as accurately as you can: same shapes, same positions, same\nproportions as the image. Use image pixel coordinates and flip the Y axis\n(CAD Y goes up, image Y goes down). Plot shapes must not overlap each other.\n\n========== STEP 2: DXF RULES (my tool will reject anything else) ==========\nFormat: ASCII DXF, version R2010 (AC1024), ezdxf.new(\"R2010\"). Put\neverything in Model Space. Do NOT use blocks or INSERT.\n\nUse EXACTLY these layer names (the tool ignores or mis-reads any other\nname, e.g. LOTS or LOT_NUMBERS give 0 plots):\n- PLOTS               every plot, ONE closed LWPOLYLINE each (close=True)\n- PLOT_NUMBERS        one label per plot (see Step 3)\n- SITE_BOUNDARY       outer perimeter, closed LWPOLYLINE\n- MAIN_ROAD_60FT      main roads, closed LWPOLYLINE, one per road\n- INTERNAL_ROAD_30FT  internal roads / cul-de-sacs, closed LWPOLYLINE\n- ROAD_MARKINGS       road centre-lines (open LWPOLYLINE is fine)\n- GREEN_BELT          green corridors / open space, closed LWPOLYLINE\n- LANDSCAPING         parks / gardens, closed LWPOLYLINE\n- FOOTPATH_INTERNAL   footpaths / trails\n- TREES               CIRCLE entities (only if trees are requested)\n- TEXT_LABELS         road names or general text (TEXT entities)\nOther plot types, if the image has them, use their own layers with a\nprefixed number: MALL_COMMERCIAL (M-1), RESTAURANT (R-1), HOSPITAL (H-1),\nSCHOOL (S-1), VILLA (V-1), SHOPS (SH-1), COMMERCIAL (C-1), DUPLEX (D-1),\nFARMHOUSE (F-1).\n\nGeometry rules:\n- A plot is ONE closed LWPOLYLINE with at least 3 unique vertices, no\n  duplicate consecutive points, no loose LINE segments.\n- Never put plots or numbers on layer 0.\n- No two plots may overlap.\n\n========== STEP 3: PLOT NUMBERS AND SIZE (GAJ) ==========\n- Every plot gets exactly ONE number object on layer PLOT_NUMBERS, placed\n  strictly INSIDE its own polygon (use the point farthest from the edges,\n  and make sure it is not inside any other plot).\n- Numbers are plain identifiers: 1, 2, 3 ... (or the numbers visible in the\n  image if they are readable). No words like \"Plot No\".\n- The plot size is stored in the same label as MTEXT, with the number on\n  the first line and the size on the second line:\n      <number>\\PAREA_GAJ: <gaj>\n  e.g. \"12\\PAREA_GAJ: 100\". Use attachment_point=5 (middle centre) so the\n  insertion point is the centre of the label.\n- Plot sizes must be one of: 50, 100 or 200 gaj (1 gaj = 1 square yard =\n  9 sq ft). If I give you a list of sizes, use it exactly. If I do not,\n  classify plots by their relative area in the image (smallest = 50,\n  medium = 100, largest = 200) and tell me the class counts.\n- Scale the drawing so the units are FEET and the total plot area matches\n  the assigned gaj values (scale = sqrt(sum(gaj*9) / sum(polygon area)) ).\n  Tell me the scale you used and that I should choose unit = ft in the tool.\n- Optional price (only if I provide it): add a third line\n  RATE_PER_GAJ: <number>.\n\n========== STEP 4: VALIDATE BEFORE DELIVERING ==========\nAfter saving, reopen the file with ezdxf and check, and print the result:\n1. count of entities per layer;\n2. every PLOTS polyline is closed;\n3. each plot polygon contains exactly one PLOT_NUMBERS label, and there\n   are no orphan labels;\n4. no duplicate plot numbers;\n5. plot areas (in gaj) are close to the assigned sizes;\n6. the file opens without errors.\nAlso render a PNG preview of the DXF and compare it with my image. If\nshapes differ noticeably, fix them and repeat.\n\n========== STEP 5: DELIVERY ==========\nGive me the DXF file as a download and a short summary: total plots, count\nof 50/100/200 gaj plots, number of roads, the scale used, and anything you\ncould not read clearly in the image (e.g. plot numbers) so I can correct it.";
+
+  async copyCadPrompt(): Promise<void> {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(this.cadGeneratorPrompt);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = this.cadGeneratorPrompt;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      this.promptCopied = true;
+      setTimeout(() => (this.promptCopied = false), 3500);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Prompt Copied!',
+        text: 'The CAD Generator AI prompt has been copied to your clipboard. Paste it into ChatGPT or Claude with your site plan image.',
+        timer: 2500,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+      });
+    } catch (e) {
+      console.error('Failed to copy prompt', e);
+    }
+  }
+
   skipUnpricedPlots() {
     this.showUnpricedPlotsModal = false;
   }
