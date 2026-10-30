@@ -280,7 +280,12 @@
             <div class="col-6 col-sm-3">
               <div class="spec-tile p-2">
                 <div class="spec-lbl">Installments</div>
-                <div class="spec-val text-primary">{{ b.paidInstallmentsCount }} / {{ b.totalInstallments || 0 }} Paid</div>
+                <div class="spec-val text-primary">
+                  {{ b.paidInstallmentsCount }} / {{ b.totalInstallments || 0 }} Paid
+                  <div *ngIf="b.submittedInstallmentsCount > 0" class="fs-10 text-info fw-bold">
+                    ({{ b.submittedInstallmentsCount }} In Verification)
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -295,7 +300,7 @@
               <div class="col-4 border-end">
                 <div class="fs-10 text-uppercase text-emerald fw-700">Confirmed Paid</div>
                 <div class="fs-13 fw-800 text-success">₹{{ b.confirmedPaid | number }}</div>
-                <div *ngIf="!b.isApproved && b.underVerificationAmount > 0" class="mt-0.5">
+                <div *ngIf="b.underVerificationAmount > 0" class="mt-0.5">
                   <span class="badge bg-warning-subtle text-dark border border-warning px-1 py-0 fs-9">
                     Under Verification: ₹{{ b.underVerificationAmount | number }}
                   </span>
@@ -346,15 +351,15 @@
             </div>
           </div>
 
-          <!-- Next EMI Alert Banner (If Applicable) -->
-          <div *ngIf="b.nextEmi" class="next-emi-strip p-2 px-3 rounded-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2" [class.overdue-strip]="b.nextEmi.overdue_days > 0">
+          <!-- Next EMI Alert Banner (If Payable) -->
+          <div *ngIf="b.nextPayableEmi" class="next-emi-strip p-2 px-3 rounded-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2" [class.overdue-strip]="b.nextPayableEmi.overdue_days > 0">
             <div class="d-flex align-items-center gap-2">
-              <i [class]="b.nextEmi.overdue_days > 0 ? 'fas fa-exclamation-circle text-danger' : 'fas fa-calendar-alt text-gold'"></i>
+              <i [class]="b.nextPayableEmi.overdue_days > 0 ? 'fas fa-exclamation-circle text-danger' : 'fas fa-calendar-alt text-gold'"></i>
               <span class="fs-12 text-dark">
-                Next Installment: <strong>₹{{ b.nextEmi.emi_amount | number }}</strong>
-                <span class="text-muted ms-1">(Due: {{ b.nextEmi.due_date | date:'dd MMM yyyy' }})</span>
-                <span *ngIf="b.nextEmi.overdue_days > 0" class="badge bg-danger ms-1">{{ b.nextEmi.overdue_days }}d Overdue</span>
-                <span *ngIf="b.nextEmi.emi_status === 'ProofSubmitted'" class="badge bg-gold-subtle text-dark ms-1">Proof Submitted</span>
+                Next Installment: <strong>₹{{ b.nextPayableEmi.emi_amount | number }}</strong>
+                <span class="text-muted ms-1">(Due: {{ b.nextPayableEmi.due_date | date:'dd MMM yyyy' }})</span>
+                <span *ngIf="b.nextPayableEmi.overdue_days > 0" class="badge bg-danger ms-1">{{ b.nextPayableEmi.overdue_days }}d Overdue</span>
+                <span *ngIf="b.submittedInstallmentsCount > 0" class="badge bg-info-subtle text-dark border border-info ms-1">{{ b.submittedInstallmentsCount }} payment(s) in review</span>
               </span>
             </div>
             <button class="btn btn-xs btn-gold" (click)="openPaymentModal(b)">
@@ -362,7 +367,18 @@
             </button>
           </div>
 
-          <div *ngIf="!b.nextEmi && b.financialStatus === 'Fully Paid'" class="p-2 px-3 rounded-3 mb-3 bg-emerald-light border border-success text-success fs-12 fw-700 d-flex align-items-center gap-2">
+          <!-- All Due Installments Submitted Notice -->
+          <div *ngIf="!b.nextPayableEmi && b.submittedInstallmentsCount > 0" class="p-2 px-3 rounded-3 mb-3 bg-info-subtle border border-info text-dark fs-12 fw-600 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-clock text-info fs-5"></i>
+              <span>All due installments submitted! <strong>{{ b.submittedInstallmentsCount }} payment(s)</strong> awaiting Admin verification.</span>
+            </div>
+            <button class="btn btn-xs btn-outline-primary" (click)="openInstallmentModal(b)">
+              <i class="fas fa-list me-1"></i> View Schedule
+            </button>
+          </div>
+
+          <div *ngIf="!b.nextPayableEmi && b.submittedInstallmentsCount === 0 && b.financialStatus === 'Fully Paid'" class="p-2 px-3 rounded-3 mb-3 bg-emerald-light border border-success text-success fs-12 fw-700 d-flex align-items-center gap-2">
             <i class="fas fa-check-double"></i> 100% Property Payments Verified &amp; Completed
           </div>
         </div>
@@ -381,17 +397,16 @@
                 (click)="openInstallmentModal(b)"
                 title="View Detailed Installment Schedule">
           <i class="fas fa-calendar-check me-1"></i> Installments ({{ b.paidInstallmentsCount }}/{{ b.totalInstallments || 0 }})
+          <span *ngIf="b.submittedInstallmentsCount > 0" class="badge bg-info text-white ms-1">
+            +{{ b.submittedInstallmentsCount }} In Review
+          </span>
         </button>
 
         <button class="btn btn-outline-green btn-xs flex-fill" (click)="openPaymentModal(b)" *ngIf="b.unpaidAmount > 0">
           <i class="fas fa-money-bill-wave me-1"></i> Submit Payment
         </button>
 
-        <button *ngIf="(b.computedStatus === 'Confirmed' || b.computedStatus === 'Active') && !b.isBuybackPending && !b.isBuybackApproved" 
-                class="btn btn-gold btn-xs flex-fill" 
-                (click)="buybackModal = b">
-          <i class="fas fa-shield-alt me-1"></i> Apply Buyback
-        </button>
+        <!-- Buyback button hidden from card as requested -->
       </div>
 
     </div>
@@ -507,15 +522,15 @@
     </div>
 
     <form (ngSubmit)="submitPaymentProof()">
-      <!-- Installment Dropdown for EMI (Task 4) -->
-      <div class="mb-2" *ngIf="paymentModalBooking.payment_type === 'EMI' && unpaidInstallments.length > 0">
+      <!-- Installment Dropdown for EMI & Partial plans -->
+      <div class="mb-2" *ngIf="(paymentModalBooking.payment_type === 'EMI' || paymentModalBooking.payment_type === 'Partial' || unpaidInstallments.length > 0) && unpaidInstallments.length > 0">
         <label class="form-label fs-11 fw-700 text-dark mb-1">Select Installment *</label>
         <select class="form-select form-select-sm" [ngModel]="selectedInstallmentEmiId" (ngModelChange)="onInstallmentChange($event)" name="installment_id">
           <option *ngFor="let inst of unpaidInstallments" 
                   [value]="inst.emi_id" 
                   [disabled]="inst.emi_status === 'ProofSubmitted'">
             Installment #{{ inst.installment_no }} (₹{{ (inst.emi_amount || 0) | number }}) - Due {{ inst.due_date | date:'dd MMM yyyy' }}
-            <ng-container *ngIf="inst.emi_status === 'ProofSubmitted'"> - Under Verification</ng-container>
+            <ng-container *ngIf="inst.emi_status === 'ProofSubmitted'"> - [Proof Submitted: Under Verification]</ng-container>
           </option>
         </select>
         <div class="form-text fs-10 text-muted">Oldest unpaid installment is selected by default.</div>
@@ -618,9 +633,12 @@
           <span class="badge bg-light text-dark border fs-12 fw-600 font-mono">
             {{ selectedInstallmentBooking.booking_serial || ('BK-' + selectedInstallmentBooking.booking_id) }}
           </span>
-          <!-- Summary Badge (Task 3) -->
+          <!-- Summary Badge -->
           <span class="badge bg-light text-dark border fs-12 fw-700">
-            Paid {{ selectedInstallmentBooking.paidInstallmentsCount || 0 }} / Unpaid {{ ((selectedInstallmentBooking.totalInstallments || installmentSchedules.length || 0) - (selectedInstallmentBooking.paidInstallmentsCount || 0)) }}
+            Paid {{ selectedInstallmentBooking.paidInstallmentsCount || 0 }} / Total {{ (selectedInstallmentBooking.totalInstallments || installmentSchedules.length || 0) }}
+          </span>
+          <span *ngIf="selectedInstallmentBooking.submittedInstallmentsCount > 0" class="badge bg-info text-dark border border-info fs-12 fw-700">
+            <i class="fas fa-clock me-1"></i>{{ selectedInstallmentBooking.submittedInstallmentsCount }} Under Verification
           </span>
         </div>
         <h5 class="fw-800 text-dark mb-0 font-display">Installment Schedule &amp; EMI Tracker</h5>
@@ -634,7 +652,7 @@
     <!-- Scrollable Body with Internal Scrolling -->
     <div class="modal-installment-body flex-grow-1">
       <!-- Notice Before Admin Approval (Task 3) -->
-      <div *ngIf="!selectedInstallmentBooking.isApproved" class="alert alert-warning p-3 rounded-3 mb-3 d-flex align-items-center gap-2">
+      <div *ngIf="!selectedInstallmentBooking.isApproved && (!installmentSchedules || installmentSchedules.length === 0)" class="alert alert-warning p-3 rounded-3 mb-3 d-flex align-items-center gap-2">
         <i class="fas fa-clock text-warning fs-4"></i>
         <div class="fw-bold fs-13 text-dark">
           Installments will be generated after admin approval.
@@ -665,17 +683,24 @@
         <div class="p-2 rounded-3 bg-light border">
           <div class="fs-10 text-uppercase text-danger fw-700">Remaining Due</div>
           <div class="fs-13 fw-800 text-danger">₹{{ selectedInstallmentBooking.unpaidAmount | number }}</div>
+          <div *ngIf="selectedInstallmentBooking.underVerificationAmount > 0" class="fs-9 text-muted mt-0.5">
+            (₹{{ selectedInstallmentBooking.underVerificationAmount | number }} in verification)
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Color Legend (Task 3: Green Paid / Yellow Unpaid) -->
+    <!-- Color Legend: Green Paid / Blue Under Verification / Yellow Unpaid -->
     <div class="p-2 px-3 rounded-3 mb-3 bg-light border d-flex align-items-center justify-content-between flex-wrap gap-2 fs-11">
       <div class="d-flex align-items-center gap-3">
         <span><strong>Status Legend:</strong></span>
         <span class="d-inline-flex align-items-center gap-1">
           <span class="badge bg-success">&nbsp;</span>
           <strong class="text-success">Paid</strong>
+        </span>
+        <span class="d-inline-flex align-items-center gap-1">
+          <span class="badge bg-info">&nbsp;</span>
+          <strong class="text-info">Under Verification</strong>
         </span>
         <span class="d-inline-flex align-items-center gap-1">
           <span class="badge bg-warning text-dark">&nbsp;</span>
@@ -717,12 +742,13 @@
             </td>
           </tr>
           <tr *ngFor="let emi of installmentSchedules" 
-              [style.background-color]="emi.emi_status === 'Paid' ? '#dcfce7' : '#fefce8'">
+              [style.background-color]="emi.emi_status === 'Paid' ? '#dcfce7' : (emi.emi_status === 'ProofSubmitted' ? '#e0f2fe' : '#fefce8')">
             <!-- Installment Number -->
             <td class="text-center fw-bold">
               <span class="badge" 
                     [class.bg-success]="emi.emi_status === 'Paid'" 
-                    [class.bg-warning]="emi.emi_status !== 'Paid'"
+                    [class.bg-info]="emi.emi_status === 'ProofSubmitted'"
+                    [class.bg-warning]="emi.emi_status !== 'Paid' && emi.emi_status !== 'ProofSubmitted'"
                     [class.text-dark]="emi.emi_status !== 'Paid'">
                 #{{ emi.installment_no }}
               </span>
@@ -740,18 +766,24 @@
               <span *ngIf="emi.paid_date" class="text-success fw-bold fs-12">
                 <i class="fas fa-check-circle me-1"></i>{{ emi.paid_date | date:'dd MMM yyyy' }}
               </span>
-              <span *ngIf="!emi.paid_date" class="text-muted fs-11">—</span>
+              <span *ngIf="!emi.paid_date && emi.emi_status === 'ProofSubmitted'" class="text-info fw-600 fs-11">
+                <i class="fas fa-clock me-1"></i>Under Verification
+              </span>
+              <span *ngIf="!emi.paid_date && emi.emi_status !== 'ProofSubmitted'" class="text-muted fs-11">—</span>
             </td>
-            <!-- Status Badge (Task 3): Green Paid / Yellow Unpaid -->
+            <!-- Status Badge: Green Paid / Blue Under Verification / Yellow Unpaid -->
             <td class="text-center">
               <span *ngIf="emi.emi_status === 'Paid'" class="badge bg-success text-white px-2 py-1">
                 <i class="fas fa-check me-1"></i> Paid
               </span>
-              <span *ngIf="emi.emi_status !== 'Paid'" class="badge bg-warning text-dark border border-warning px-2 py-1">
+              <span *ngIf="emi.emi_status === 'ProofSubmitted'" class="badge bg-info text-dark border border-info px-2 py-1">
+                <i class="fas fa-clock me-1"></i> Under Verification
+              </span>
+              <span *ngIf="emi.emi_status !== 'Paid' && emi.emi_status !== 'ProofSubmitted'" class="badge bg-warning text-dark border border-warning px-2 py-1">
                 Unpaid
               </span>
             </td>
-            <!-- Invoice / Receipt Button -->
+            <!-- Invoice / Receipt / Proof Button -->
             <td class="text-center">
               <a *ngIf="emi.emi_status === 'Paid'"
                  [routerLink]="['/invoice', emi.invoice_number || ('EMI-' + emi.emi_id)]"
@@ -760,7 +792,18 @@
                  title="Download / View Installment Bill">
                 <i class="fas fa-file-invoice me-1"></i> Bill
               </a>
-              <button *ngIf="emi.emi_status !== 'Paid'"
+              <a *ngIf="emi.emi_status === 'ProofSubmitted' && emi.voucher_file_path"
+                 [href]="emi.voucher_file_path"
+                 target="_blank"
+                 class="btn btn-xs btn-outline-info"
+                 title="View Uploaded Payment Proof">
+                <i class="fas fa-receipt me-1"></i> View Proof
+              </a>
+              <span *ngIf="emi.emi_status === 'ProofSubmitted' && !emi.voucher_file_path"
+                    class="badge bg-info-subtle text-dark border border-info">
+                <i class="fas fa-clock me-1"></i> In Review
+              </span>
+              <button *ngIf="emi.emi_status !== 'Paid' && emi.emi_status !== 'ProofSubmitted'"
                       class="btn btn-xs btn-outline-secondary"
                       (click)="closeInstallmentModal(); openPaymentModal(selectedInstallmentBooking)"
                       title="Upload Payment Proof">

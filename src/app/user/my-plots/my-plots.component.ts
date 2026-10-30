@@ -157,22 +157,28 @@ export class MyPlotsComponent implements OnInit {
       );
       
       const confirmedPaidEmis = plotEmis.filter((e: any) => e.emi_status === 'Paid');
+      const submittedEmis = plotEmis.filter((e: any) => e.emi_status === 'ProofSubmitted');
+      const unpaidEmis = plotEmis.filter((e: any) => e.emi_status !== 'Paid' && e.emi_status !== 'ProofSubmitted');
+
       const emiPaidSum = confirmedPaidEmis.reduce((s: number, e: any) => s + Number(e.paid_amount || e.emi_amount || 0), 0);
+      const submittedEmiSum = submittedEmis.reduce((s: number, e: any) => s + Number(e.emi_amount || 0), 0);
       
       // FIX A: For APPROVED bookings restore the ORIGINAL formula exactly
       const confirmedPaid = isApproved 
         ? Math.max(advancePaid + emiPaidSum, Number(b.total_paid || 0), advancePaid)
         : emiPaidSum;
 
-      // New Under Verification applies ONLY to genuinely pending bookings
-      const underVerificationAmount = isPending ? advancePaid : 0;
-      const unpaidAmount = isApproved ? Math.max(0, totalPrice - confirmedPaid) : (isPending ? 0 : Math.max(0, totalPrice - confirmedPaid));
+      // Under Verification includes pending booking advance + submitted EMI installments awaiting approval
+      const underVerificationAmount = (isPending ? advancePaid : 0) + submittedEmiSum;
+      const unpaidAmount = Math.max(0, totalPrice - confirmedPaid);
       const progressPercent = (totalPrice > 0 && confirmedPaid > 0) 
         ? Math.min(100, Math.round((confirmedPaid / totalPrice) * 100)) 
         : (confirmedPaid > 0 ? 100 : 0);
       
+      // Next payable installment is the first unpaid installment without proof submitted
+      const nextPayableEmi = unpaidEmis.length > 0 ? unpaidEmis[0] : null;
       const pendingEmis = plotEmis.filter((e: any) => e.emi_status === 'Pending' || e.emi_status === 'Overdue' || e.emi_status === 'ProofSubmitted');
-      const nextEmi = pendingEmis.length > 0 ? pendingEmis[0] : null;
+      const nextEmi = nextPayableEmi || (pendingEmis.length > 0 ? pendingEmis[0] : null);
       
       const isBuybackApproved = this.buybackApplications.some((a: any) => a.booking_id === b.booking_id && (a.buyback_status === 'Approved' || a.buyback_status === 'Completed'));
       const isBuybackPending = this.buybackApplications.some((a: any) => a.booking_id === b.booking_id && a.buyback_status === 'Pending');
@@ -223,7 +229,10 @@ export class MyPlotsComponent implements OnInit {
         plotEmis,
         totalInstallments: plotEmis.length,
         paidInstallmentsCount: confirmedPaidEmis.length,
+        submittedInstallmentsCount: submittedEmis.length,
+        unpaidInstallmentsCount: unpaidEmis.length,
         nextEmi,
+        nextPayableEmi,
         computedStatus,
         financialStatus,
         isBuybackApproved,
@@ -406,13 +415,13 @@ export class MyPlotsComponent implements OnInit {
     this.paymentModalBooking = booking;
     this.activePaymentTab = 'UPI';
 
-    const isEmi = booking.payment_type === 'EMI' || (booking.plotEmis && booking.plotEmis.length > 0);
+    const isEmi = booking.payment_type === 'EMI' || booking.payment_type === 'Partial' || (booking.plotEmis && booking.plotEmis.length > 0);
     if (isEmi && booking.plotEmis && booking.plotEmis.length > 0) {
       this.unpaidInstallments = booking.plotEmis.filter((e: any) => e.emi_status !== 'Paid');
       const selectable = this.unpaidInstallments.find((e: any) => e.emi_status !== 'ProofSubmitted');
       const defaultInstallment = selectable || this.unpaidInstallments[0] || null;
       this.selectedInstallmentEmiId = defaultInstallment ? Number(defaultInstallment.emi_id) : null;
-      const defaultAmount = defaultInstallment ? defaultInstallment.emi_amount : (booking.nextEmi ? booking.nextEmi.emi_amount : (booking.unpaidAmount > 0 ? booking.unpaidAmount : ''));
+      const defaultAmount = defaultInstallment ? defaultInstallment.emi_amount : (booking.nextPayableEmi ? booking.nextPayableEmi.emi_amount : (booking.nextEmi ? booking.nextEmi.emi_amount : (booking.unpaidAmount > 0 ? booking.unpaidAmount : '')));
 
       this.paymentProofData = {
         payment_mode: 'UPI',
