@@ -289,7 +289,7 @@ export class EmiPaymentsComponent implements OnInit {
     this.api.adminGetBookingDetail(b.booking_id).subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
-          this.selectedBooking = { ...this.selectedBooking, ...res.data };
+          const d = res.data; this.selectedBooking = { ...this.selectedBooking, ...d, emis: d.emis || d.emi_schedule || [] };
         }
         this.detailLoading = false;
       },

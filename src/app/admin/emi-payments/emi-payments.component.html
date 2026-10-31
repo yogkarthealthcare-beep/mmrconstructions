@@ -364,20 +364,25 @@
                     <td>
                       <span class="chip" [ngClass]="{
                         'chip-ok': emi.emi_status === 'Paid',
+                        'chip-blue': emi.emi_status === 'ProofSubmitted',
                         'chip-warn': emi.emi_status === 'Pending',
                         'chip-err': emi.emi_status === 'Overdue'
                       }">
                         <i class="fas" [ngClass]="{
                           'fa-check-circle': emi.emi_status === 'Paid',
+                          'fa-hourglass-half': emi.emi_status === 'ProofSubmitted',
                           'fa-clock': emi.emi_status === 'Pending',
                           'fa-exclamation-circle': emi.emi_status === 'Overdue'
                         }"></i>
-                        {{ emi.emi_status }}
+                        {{ emi.emi_status === 'ProofSubmitted' ? 'Under Verification' : emi.emi_status }}
                       </span>
                     </td>
-                    <td class="text-end">
+                    <td class="text-end text-nowrap">
+                      <a *ngIf="emi.voucher_file_path" [href]="emi.voucher_file_path" target="_blank" rel="noopener" class="btn btn-outline-primary btn-xs me-1.5" title="View Customer Proof Receipt">
+                        <i class="fas fa-file-invoice me-1"></i> View Proof
+                      </a>
                       <button class="btn btn-emerald btn-xs" *ngIf="emi.emi_status !== 'Paid'" (click)="confirmEmi(emi)">
-                        Mark Paid
+                        <i class="fas fa-check-circle me-1"></i> Approve &amp; Mark Paid
                       </button>
                     </td>
                   </tr>
