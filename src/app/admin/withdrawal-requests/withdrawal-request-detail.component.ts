@@ -126,7 +126,7 @@ import { WithdrawalReleaseDialogComponent } from './withdrawal-release-dialog.co
               <div class="col-md-4">
                 <span class="fs-11 text-muted uppercase fw-bold">Role / Panel</span>
                 <div class="fs-13 mt-1 text-dark">
-                  <span class="badge" [ngClass]="request.user_role === 'Associate' ? 'bg-warning text-dark' : 'bg-info text-dark'">
+                  <span class="badge" [ngClass]="(request.user_role === 'Associate' || request.user_role === 'Team Member') ? 'bg-warning text-dark' : 'bg-info text-dark'">
                     {{ request.user_role }}
                   </span>
                 </div>
