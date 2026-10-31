@@ -147,6 +147,12 @@ export class UserDashboardComponent implements OnInit {
   paymentSuccessMsg = '';
   paymentErrorMsg = '';
 
+  // Active UPI QR Config for Unified Payment Modal
+  activeQrs: any[] = [];
+  selectedQr: any = null;
+  upiId: string = 'mmrconstructions@hdfcbank';
+  copiedUpi: boolean = false;
+
   // Report Missing Payment Modal State
   missingPaymentModalOpen = false;
   missingPaymentSubmitting = false;
@@ -194,6 +200,7 @@ export class UserDashboardComponent implements OnInit {
 
     this.initInquiryDefaults();
     this.loadAllData();
+    this.loadActiveQrs();
   }
 
   get basePrefix(): string {
@@ -623,6 +630,55 @@ export class UserDashboardComponent implements OnInit {
     this.dossierData = null;
   }
 
+  loadActiveQrs() {
+    this.api.get('/api/payment/active-upi-qrs').subscribe({
+      next: (res: any) => {
+        const rows = res?.data || (Array.isArray(res) ? res : []);
+        if (rows && rows.length > 0) {
+          this.activeQrs = rows;
+          const primary = rows.find((q: any) => q.is_primary) || rows[0];
+          this.selectedQr = primary;
+          this.upiId = primary.upi_id || 'mmrconstructions@hdfcbank';
+        } else {
+          this.upiId = 'mmrconstructions@hdfcbank';
+        }
+      },
+      error: () => {
+        this.upiId = 'mmrconstructions@hdfcbank';
+      }
+    });
+  }
+
+  getUpiQrUrl(): string {
+    if (this.selectedQr?.qr_image_url) {
+      return this.selectedQr.qr_image_url;
+    }
+    const upi = this.upiId || 'mmrconstructions@hdfcbank';
+    const amt = Number(this.paymentForm.amount || 0);
+    const amountParam = amt > 0 ? '&am=' + amt : '';
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=' + encodeURIComponent(upi) + '&pn=MMR%20Constructions&cu=INR' + amountParam;
+  }
+
+  copyDashboardUpi() {
+    if (!this.upiId) return;
+    const text = this.upiId;
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.copiedUpi = true;
+        setTimeout(() => this.copiedUpi = false, 2500);
+      });
+    } else {
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      this.copiedUpi = true;
+      setTimeout(() => this.copiedUpi = false, 2500);
+    }
+  }
+
   // ── Unified Payment Modal ───────────────────────────────────────────
   openPaymentModal(prop: PropertyDossier, emi?: any) {
     this.selectedPropertyForPayment = prop;
@@ -644,6 +700,7 @@ export class UserDashboardComponent implements OnInit {
     };
     this.paymentSuccessMsg = '';
     this.paymentErrorMsg = '';
+    if (!this.activeQrs || this.activeQrs.length === 0) { this.loadActiveQrs(); }
     this.paymentModalOpen = true;
   }
 

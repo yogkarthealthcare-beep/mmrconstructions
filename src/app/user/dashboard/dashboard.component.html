@@ -1110,7 +1110,7 @@
       <div class="modal-body p-4 payment-modal-body">
         
         <!-- Plot Balance Summary Card with Generous Padding -->
-        <div class="plot-balance-summary-card mb-3">
+        <div class="plot-balance-summary-card mb-2">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div>
               <span class="summary-lbl">Booking Serial</span>
@@ -1136,7 +1136,7 @@
         <form (ngSubmit)="submitUnifiedPayment()" *ngIf="!paymentSuccessMsg">
           
           <!-- Payment Purpose -->
-          <div class="mb-3">
+          <div class="mb-2">
             <label class="form-label fs-11 fw-700 text-dark mb-1">Payment Purpose</label>
             <select class="form-select form-select-sm payment-input-control" [(ngModel)]="paymentForm.payment_purpose" name="payment_purpose">
               <option value="EmiPayment">Monthly EMI Installment</option>
@@ -1147,7 +1147,7 @@
           </div>
 
           <!-- Payment Amount -->
-          <div class="mb-3">
+          <div class="mb-2">
             <label class="form-label fs-11 fw-700 text-dark mb-1">Payment Amount (₹)</label>
             <div class="input-group input-group-sm flex-nowrap">
               <span class="input-group-text bg-light border-end-0 fw-bold text-muted">₹</span>
@@ -1160,48 +1160,76 @@
           </div>
 
           <!-- Payment Mode (5-Card Selector including Cash) -->
-          <div class="mb-3">
-            <label class="form-label fs-11 fw-700 text-dark mb-1.5">Select Payment Mode</label>
+          <div class="mb-2">
+            <label class="form-label fs-11 fw-700 text-dark mb-1">Select Payment Mode</label>
             <div class="payment-modes-row">
               <label class="payment-mode-card" [class.active]="paymentForm.payment_mode === 'UPI'">
                 <input type="radio" name="payment_mode" value="UPI" [(ngModel)]="paymentForm.payment_mode" class="d-none">
-                <i class="fas fa-qrcode text-emerald fs-16 mb-1"></i>
+                <i class="fas fa-qrcode text-emerald fs-15 mb-0.5"></i>
                 <span class="mode-name">UPI / QR</span>
               </label>
 
               <label class="payment-mode-card" [class.active]="paymentForm.payment_mode === 'BankTransfer'">
                 <input type="radio" name="payment_mode" value="BankTransfer" [(ngModel)]="paymentForm.payment_mode" class="d-none">
-                <i class="fas fa-university text-primary fs-16 mb-1"></i>
+                <i class="fas fa-university text-primary fs-15 mb-0.5"></i>
                 <span class="mode-name">Bank Transfer</span>
               </label>
 
               <label class="payment-mode-card" [class.active]="paymentForm.payment_mode === 'Cash'">
                 <input type="radio" name="payment_mode" value="Cash" [(ngModel)]="paymentForm.payment_mode" class="d-none">
-                <i class="fas fa-money-bill-wave text-success fs-16 mb-1"></i>
+                <i class="fas fa-money-bill-wave text-success fs-15 mb-0.5"></i>
                 <span class="mode-name">Cash</span>
               </label>
 
               <label class="payment-mode-card" [class.active]="paymentForm.payment_mode === 'Cheque'">
                 <input type="radio" name="payment_mode" value="Cheque" [(ngModel)]="paymentForm.payment_mode" class="d-none">
-                <i class="fas fa-money-check text-amber fs-16 mb-1"></i>
+                <i class="fas fa-money-check text-amber fs-15 mb-0.5"></i>
                 <span class="mode-name">Cheque</span>
               </label>
 
               <label class="payment-mode-card" [class.active]="paymentForm.payment_mode === 'Wallet'">
                 <input type="radio" name="payment_mode" value="Wallet" [(ngModel)]="paymentForm.payment_mode" class="d-none">
-                <i class="fas fa-wallet text-purple fs-16 mb-1"></i>
+                <i class="fas fa-wallet text-purple fs-15 mb-0.5"></i>
                 <span class="mode-name">Wallet</span>
               </label>
             </div>
           </div>
 
+          <!-- UPI / QR Code & UPI ID (Compact Box: keeps popup height strictly small) -->
+          <div *ngIf="paymentForm.payment_mode === 'UPI'" class="compact-upi-box mb-2">
+            <div class="d-flex align-items-center gap-2.5">
+              <!-- Compact QR -->
+              <div class="upi-qr-wrapper">
+                <img [src]="getUpiQrUrl()" alt="MMR UPI QR" class="upi-qr-img" />
+                <span class="qr-scan-badge"><i class="fas fa-qrcode me-0.5"></i>Scan & Pay</span>
+              </div>
+
+              <!-- UPI ID & Copy -->
+              <div class="upi-info-wrapper flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center justify-content-between mb-0.5">
+                  <span class="upi-title-text"><i class="fas fa-bolt text-emerald me-1"></i>Pay via Any UPI App</span>
+                  <span *ngIf="copiedUpi" class="badge bg-success py-0.5 px-1.5 fs-9">Copied!</span>
+                </div>
+                <div class="upi-id-bar">
+                  <span class="upi-id-text text-truncate" [title]="upiId">{{ upiId }}</span>
+                  <button type="button" class="btn btn-copy-upi" (click)="copyDashboardUpi()" title="Copy UPI ID">
+                    <i class="far fa-copy me-1"></i>Copy
+                  </button>
+                </div>
+                <div class="upi-subnote">
+                  Amount: <strong>₹{{ (paymentForm.amount || 0) | number }}</strong> · Transfer & paste UTR below
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Bank Transfer Details (Full Bank Info with Copy Buttons) -->
-          <div *ngIf="paymentForm.payment_mode === 'BankTransfer'" class="mb-3">
+          <div *ngIf="paymentForm.payment_mode === 'BankTransfer'" class="mb-2">
             <app-bank-details [compact]="true"></app-bank-details>
           </div>
 
           <!-- UTR / Reference ID for UPI / Bank Transfer -->
-          <div class="mb-3" *ngIf="paymentForm.payment_mode === 'UPI' || paymentForm.payment_mode === 'BankTransfer'">
+          <div class="mb-2" *ngIf="paymentForm.payment_mode === 'UPI' || paymentForm.payment_mode === 'BankTransfer'">
             <label class="form-label fs-11 fw-700 text-dark mb-1">UTR / Transaction Reference Number</label>
             <input type="text" class="form-control form-control-sm payment-input-control" [(ngModel)]="paymentForm.utr_number" name="utr_number" placeholder="Enter 12-digit UTR or Bank Reference ID">
           </div>
@@ -1246,13 +1274,13 @@
           </div>
 
           <!-- Remarks / Notes -->
-          <div class="mb-3">
+          <div class="mb-2">
             <label class="form-label fs-11 fw-700 text-dark mb-1">Remarks / Customer Notes</label>
-            <textarea class="form-control form-control-sm payment-input-control" rows="2" [(ngModel)]="paymentForm.customer_notes" name="customer_notes" placeholder="Optional notes for Accounts verification desk"></textarea>
+            <textarea class="form-control form-control-sm payment-input-control" rows="1" [(ngModel)]="paymentForm.customer_notes" name="customer_notes" placeholder="Optional notes for Accounts verification desk"></textarea>
           </div>
 
           <!-- Footer Buttons -->
-          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+          <div class="d-flex justify-content-end gap-2 pt-2 border-top">
             <button type="button" class="btn btn-outline-secondary btn-sm px-3 rounded-8 fs-12 fw-700" (click)="closePaymentModal()">Cancel</button>
             <button type="submit" class="btn btn-payment-action btn-sm px-4 fw-700 rounded-8 fs-12 d-flex align-items-center gap-1.5" [disabled]="paymentSubmitting">
               <i class="fas fa-spinner fa-spin" *ngIf="paymentSubmitting"></i>
