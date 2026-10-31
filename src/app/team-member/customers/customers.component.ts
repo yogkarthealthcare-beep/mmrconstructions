@@ -91,6 +91,11 @@ export class TeamMemberCustomersComponent implements OnInit {
     this.applyFilter();
   }
 
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.applyFilter();
+  }
+
   applyFilter(): void {
     const q = this.searchQuery.toLowerCase().trim();
     if (!q) {
