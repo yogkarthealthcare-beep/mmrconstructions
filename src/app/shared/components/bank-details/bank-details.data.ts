@@ -50,19 +50,5 @@ export const COMPANY_BANK_DETAILS: BankDetailField[] = [
     value: 'UNNAO',
     copyable: true,
     isFullWidth: false
-  },
-  {
-    key: 'branch_address',
-    label: 'Branch Address',
-    value: 'Ground Floor, Plot No. 104, Civil Lines, Court Road, Unnao, Uttar Pradesh - 209801',
-    copyable: true,
-    isFullWidth: true
-  },
-  {
-    key: 'bank_address',
-    label: 'Bank Address',
-    value: 'Axis Bank Ltd., Ground Floor, Plot No. 104, Civil Lines, Court Road, Unnao, Uttar Pradesh - 209801',
-    copyable: true,
-    isFullWidth: true
   }
 ];
