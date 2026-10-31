@@ -8,7 +8,7 @@
           (click)="onSlideClick(ad)"
           [title]="ad.title || 'Advertisement'">
           
-          <!-- 1. IMAGE AD (Simple, clean, full visibility) -->
+          <!-- 1. IMAGE AD (Clean, full visibility, natural aspect ratio, no cropping) -->
           <ng-container *ngIf="ad.type === 'image'">
             <img
               [src]="resolveUrl(ad.url)"
@@ -19,15 +19,16 @@
 
           <!-- 2. YOUTUBE AD -->
           <ng-container *ngIf="ad.type === 'youtube'">
-            <iframe
-              *ngIf="getYouTubeEmbedUrl(ad) as ytUrl"
-              [src]="ytUrl"
-              title="YouTube Ad Video"
-              class="ad-bg-iframe"
-              frameborder="0"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowfullscreen>
-            </iframe>
+            <div class="ad-iframe-wrapper" *ngIf="getYouTubeEmbedUrl(ad) as ytUrl">
+              <iframe
+                [src]="ytUrl"
+                title="YouTube Ad Video"
+                class="ad-bg-iframe"
+                frameborder="0"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowfullscreen>
+              </iframe>
+            </div>
             <img
               *ngIf="!getYouTubeEmbedUrl(ad)"
               [src]="getThumbnail(ad)"

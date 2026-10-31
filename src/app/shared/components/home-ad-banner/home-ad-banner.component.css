@@ -1,7 +1,7 @@
 .home-ad-section {
   width: 100%;
   position: relative;
-  background: #0f3d27;
+  background: #0d3322;
   background: linear-gradient(135deg, #0d3322 0%, #154533 50%, #0f3d27 100%);
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(15, 61, 39, 0.25);
@@ -9,26 +9,21 @@
   border-bottom: 1px solid rgba(201, 168, 76, 0.15);
 }
 
-/* 1600 × 450 px Native Banner Aspect Ratio */
 .ad-banner-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 1600 / 450;
-  max-height: 560px;
+  height: auto;
   overflow: hidden;
-}
-
-@supports not (aspect-ratio: 1600 / 450) {
-  .ad-banner-container {
-    height: 28.125vw;
-    max-height: 560px;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ad-slides-wrapper {
   display: flex;
   width: 100%;
-  height: 100%;
+  height: auto;
+  align-items: center;
   transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
@@ -36,7 +31,7 @@
   position: relative;
   flex: 0 0 100%;
   width: 100%;
-  height: 100%;
+  height: auto;
   overflow: hidden;
   cursor: pointer;
   background: transparent;
@@ -45,29 +40,41 @@
   justify-content: center;
 }
 
-/* contain ensures 100% of the image is visible without any cropping */
+/* 
+ * 100% Complete Image Visibility:
+ * - Natural aspect ratio preserved (height: auto)
+ * - Fills 100% width cleanly
+ * - Never cropped or cut at top, bottom, or sides
+ * - Works for any uploaded image dimensions/resolution
+ */
 .ad-banner-media {
   width: 100%;
-  height: 100%;
+  height: auto;
+  max-height: 85vh;
   object-fit: contain;
   object-position: center;
   display: block;
-  transition: transform 0.35s ease;
+  margin: 0 auto;
 }
 
-.ad-slide:hover .ad-banner-media {
-  transform: scale(1.008);
+/* Responsive YouTube Video Wrapper */
+.ad-iframe-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 85vh;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ad-bg-iframe {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  min-width: 100%;
-  min-height: 100%;
-  transform: translate(-50%, -50%);
   border: none;
 }
 
@@ -105,7 +112,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(15, 61, 39, 0.7);
+  background: rgba(15, 61, 39, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: #ffffff;
   display: flex;
@@ -162,4 +169,37 @@
   border-color: #c9a84c;
   width: 26px;
   border-radius: 10px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .ad-slider-arrow {
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
+  .ad-slider-arrow.prev {
+    left: 8px;
+  }
+  .ad-slider-arrow.next {
+    right: 8px;
+  }
+  .ad-dots-container {
+    bottom: 8px;
+    padding: 4px 8px;
+    gap: 6px;
+  }
+  .ad-dot {
+    width: 8px;
+    height: 8px;
+  }
+  .ad-dot.active {
+    width: 18px;
+  }
+  .ad-cta-badge {
+    bottom: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    font-size: 11px;
+  }
 }
