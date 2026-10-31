@@ -25,75 +25,65 @@
   </div>
 
   <!-- Summary Metric Stats (KPI Grid) -->
-  <div class="kpi-grid mb-3">
+  <div class="cust-kpi-grid mb-3">
     <!-- Card 1: Total Customers -->
-    <div class="kpi-card s-amber">
-      <div class="kpi-content">
-        <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
-          <span class="kpi-label">Total Customers</span>
-          <span class="kpi-pill pill-amber">Portfolio</span>
-        </div>
-        <div class="kpi-value text-dark">{{ customers.length }}</div>
-        <span class="kpi-subtext">Registered clients</span>
+    <div class="cust-kpi-card s-amber">
+      <div class="cust-kpi-content">
+        <span class="cust-kpi-label">Total Customers</span>
+        <div class="cust-kpi-value text-dark">{{ customers.length }}</div>
+        <span class="cust-kpi-subtext">Registered clients</span>
       </div>
-      <div class="kpi-icon-wrap kpi-amber">
+      <div class="cust-kpi-icon kpi-amber">
         <i class="fas fa-users"></i>
       </div>
     </div>
 
     <!-- Card 2: Plots Sold -->
-    <div class="kpi-card s-emerald">
-      <div class="kpi-content">
-        <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
-          <span class="kpi-label">Plots Sold</span>
-          <span class="kpi-pill pill-emerald">Bookings</span>
-        </div>
-        <div class="kpi-value text-emerald">{{ totalPlotsCount }}</div>
-        <span class="kpi-subtext">Confirmed units</span>
+    <div class="cust-kpi-card s-emerald">
+      <div class="cust-kpi-content">
+        <span class="cust-kpi-label">Plots Sold</span>
+        <div class="cust-kpi-value text-emerald">{{ totalPlotsCount }}</div>
+        <span class="cust-kpi-subtext">Confirmed units</span>
       </div>
-      <div class="kpi-icon-wrap kpi-emerald">
+      <div class="cust-kpi-icon kpi-emerald">
         <i class="fas fa-map-marked-alt"></i>
       </div>
     </div>
 
     <!-- Card 3: Total Gaj Sold -->
-    <div class="kpi-card s-blue">
-      <div class="kpi-content">
-        <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
-          <span class="kpi-label">Total Gaj Sold</span>
-          <span class="kpi-pill pill-blue">Land Area</span>
+    <div class="cust-kpi-card s-blue">
+      <div class="cust-kpi-content">
+        <span class="cust-kpi-label">Total Gaj Sold</span>
+        <div class="cust-kpi-value text-dark">
+          {{ totalGajSold | number }} <small class="cust-kpi-unit">Gaj</small>
         </div>
-        <div class="kpi-value text-dark">{{ totalGajSold | number }} <small class="fs-11 fw-normal text-muted">Gaj</small></div>
-        <span class="kpi-subtext">Attributed land</span>
+        <span class="cust-kpi-subtext">Attributed land</span>
       </div>
-      <div class="kpi-icon-wrap kpi-blue">
+      <div class="cust-kpi-icon kpi-blue">
         <i class="fas fa-ruler-combined"></i>
       </div>
     </div>
 
     <!-- Card 4: Total Sales Value -->
-    <div class="kpi-card s-gold">
-      <div class="kpi-content">
-        <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
-          <span class="kpi-label">Total Sales Value</span>
-          <span class="kpi-pill pill-gold">Revenue</span>
-        </div>
-        <div class="kpi-value text-gold-dark">₹{{ totalVolumeSold | number }}</div>
-        <span class="kpi-subtext">Gross booking value</span>
+    <div class="cust-kpi-card s-gold">
+      <div class="cust-kpi-content">
+        <span class="cust-kpi-label">Total Sales Value</span>
+        <div class="cust-kpi-value text-gold-dark">₹{{ totalVolumeSold | number }}</div>
+        <span class="cust-kpi-subtext">Gross booking value</span>
       </div>
-      <div class="kpi-icon-wrap kpi-gold">
-        <i class="fas fa-coins"></i>
+      <div class="cust-kpi-icon kpi-gold">
+        <i class="fas fa-sack-dollar"></i>
       </div>
     </div>
   </div>
 
   <!-- Search & Filter Bar -->
   <div class="search-bar-card p-2.5 px-3 rounded-3 bg-white border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow-xs">
-    <div class="search-input-wrap flex-grow-1" style="max-width: 480px;">
+    <div class="search-input-wrap flex-grow-1" style="max-width: 520px;">
       <i class="fas fa-search search-icon"></i>
       <input
         type="text"
-        class="form-control form-control-sm modern-search-input"
+        class="form-control form-control-sm search-input"
         placeholder="Search customer by name, mobile, member ID..."
         [(ngModel)]="searchQuery"
         (input)="onSearchInput()"
@@ -103,8 +93,8 @@
       </button>
     </div>
     <div class="d-flex align-items-center gap-2">
-      <span class="badge bg-light text-secondary border px-2.5 py-1.5 fs-11 fw-600 rounded-pill">
-        <i class="fas fa-filter text-gold me-1"></i>
+      <span class="badge bg-light text-secondary border px-3 py-1.5 fs-11 fw-600 rounded-pill">
+        <i class="fas fa-filter text-gold me-1.5"></i>
         Showing <strong class="text-dark">{{ filteredCustomers.length }}</strong> of <strong class="text-dark">{{ customers.length }}</strong> Customers
       </span>
     </div>
