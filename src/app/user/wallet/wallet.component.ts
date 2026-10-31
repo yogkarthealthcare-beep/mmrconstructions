@@ -33,14 +33,31 @@ export class WalletComponent implements OnInit, OnDestroy {
     private ngZone: NgZone
   ) {}
 
+  selectedTx: any = null;
+
   @HostListener('document:click')
   closeDropdowns() {
     this.activeDropdownId = null;
   }
 
+  @HostListener('document:keydown.escape')
+  onEscapeKey() {
+    this.closeTxDetails();
+  }
+
   toggleDropdown(id: any, event: Event) {
     event.stopPropagation();
     this.activeDropdownId = this.activeDropdownId === id ? null : id;
+  }
+
+  openTxDetails(tx: any, event?: Event) {
+    if (event) event.stopPropagation();
+    this.selectedTx = tx;
+    this.activeDropdownId = null;
+  }
+
+  closeTxDetails() {
+    this.selectedTx = null;
   }
 
   ngOnInit() {

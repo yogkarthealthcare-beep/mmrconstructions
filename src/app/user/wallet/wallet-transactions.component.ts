@@ -165,37 +165,10 @@ import { ApiService } from '../../services/api.service';
                   <button
                     type="button"
                     class="btn btn-outline-success btn-sm px-2.5 py-1 fs-11 fw-bold rounded-pill"
-                    (click)="toggleDropdown(tx.id || tx.payment_order_id, $event)"
+                    (click)="openTxDetails(tx, $event)"
                   >
                     <i class="fas fa-eye me-1"></i> Details
                   </button>
-
-                  <!-- DROPDOWN DETAILS CARD -->
-                  <div
-                    class="dropdown-details-card shadow-lg rounded-3 border"
-                    *ngIf="activeDropdownId === (tx.id || tx.payment_order_id)"
-                    (click)="$event.stopPropagation()"
-                  >
-                    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
-                      <span class="fw-bold fs-12 text-dark"><i class="fas fa-receipt me-1 text-success"></i> Transaction Info</span>
-                      <span class="badge bg-light text-secondary border fs-11 text-capitalize">{{ tx.payment_gateway || 'Online' }}</span>
-                    </div>
-                    
-                    <div class="mb-2 text-start">
-                      <div class="text-muted fs-10 uppercase fw-extrabold text-secondary">Date &amp; Time</div>
-                      <div class="fw-semibold text-dark fs-12">{{ tx.created_at | date:'dd MMM yyyy, hh:mm a' }}</div>
-                    </div>
-
-                    <div class="mb-2 text-start">
-                      <div class="text-muted fs-10 uppercase fw-extrabold text-secondary">Source / Description</div>
-                      <div class="fw-semibold text-dark fs-12">{{ tx.source || 'Wallet Activity' }}</div>
-                    </div>
-
-                    <div *ngIf="tx.remarks" class="mb-0 text-start">
-                      <div class="text-muted fs-10 uppercase fw-extrabold text-secondary">Remarks</div>
-                      <div class="fs-12 text-secondary">{{ tx.remarks }}</div>
-                    </div>
-                  </div>
                 </td>
 
               </tr>
@@ -210,6 +183,150 @@ import { ApiService } from '../../services/api.service';
           <p class="text-muted fs-13">No wallet transactions match your selected filter criteria.</p>
         </div>
 
+      </div>
+
+      <!-- TRANSACTION INFO POPUP MODAL -->
+      <div class="modal-backdrop fade show" *ngIf="selectedTx" (click)="closeTxDetails()"></div>
+      <div
+        class="modal fade show d-block"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        *ngIf="selectedTx"
+        (click)="closeTxDetails()"
+      >
+        <div class="modal-dialog modal-dialog-centered tx-modal-dialog" (click)="$event.stopPropagation()">
+          <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            
+            <!-- Modal Header -->
+            <div class="modal-header bg-dark-emerald text-white py-3 px-3.5 d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="tx-modal-icon-circle">
+                  <i class="fas fa-receipt"></i>
+                </div>
+                <div>
+                  <h6 class="modal-title fs-14 fw-bold text-white mb-0">Transaction Info</h6>
+                  <div class="fs-11 text-emerald-100 font-monospace opacity-90">
+                    {{ selectedTx.payment_order_id || selectedTx.id }}
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-white-20 text-white border border-white-30 fs-10 text-capitalize px-2 py-1">
+                  {{ selectedTx.payment_gateway || 'Online' }}
+                </span>
+                <button type="button" class="btn-close btn-close-white" (click)="closeTxDetails()" aria-label="Close"></button>
+              </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body p-3.5">
+              
+              <!-- Amount & Status Hero Card -->
+              <div
+                class="tx-modal-hero text-center p-3 rounded-3 mb-3"
+                [ngClass]="isCredit(selectedTx) ? 'hero-credit' : 'hero-debit'"
+              >
+                <div class="fs-10 text-uppercase fw-extrabold letter-spacing-1 mb-1 text-muted">
+                  {{ isCredit(selectedTx) ? 'Amount Credited' : 'Amount Debited' }}
+                </div>
+                <div
+                  class="fs-22 fw-900 mb-1"
+                  [class.text-success]="isCredit(selectedTx)"
+                  [class.text-danger]="!isCredit(selectedTx)"
+                >
+                  {{ isCredit(selectedTx) ? '+' : '−' }} ₹{{ (selectedTx.amount < 0 ? -selectedTx.amount : selectedTx.amount) | number:'1.2-2' }}
+                </div>
+                <div>
+                  <span
+                    class="status-chip"
+                    [ngClass]="{
+                      'chip-success': selectedTx.status === 'success',
+                      'chip-pending': selectedTx.status === 'pending',
+                      'chip-failed': selectedTx.status === 'failed' || selectedTx.status === 'cancelled'
+                    }"
+                  >
+                    <i class="fas" [ngClass]="{
+                      'fa-check-circle': selectedTx.status === 'success',
+                      'fa-clock': selectedTx.status === 'pending',
+                      'fa-times-circle': selectedTx.status === 'failed' || selectedTx.status === 'cancelled'
+                    }"></i>
+                    {{ (selectedTx.status || 'success') | titlecase }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Details Key-Value List -->
+              <div class="tx-info-list d-flex flex-column gap-2">
+                
+                <!-- Date & Time -->
+                <div class="tx-info-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                  <span class="text-muted fs-12 d-flex align-items-center gap-1.5">
+                    <i class="far fa-calendar-alt text-emerald"></i> Date &amp; Time
+                  </span>
+                  <span class="fw-bold text-dark fs-12">
+                    {{ selectedTx.created_at | date:'dd MMM yyyy, hh:mm a' }}
+                  </span>
+                </div>
+
+                <!-- Transaction Type -->
+                <div class="tx-info-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                  <span class="text-muted fs-12 d-flex align-items-center gap-1.5">
+                    <i class="fas fa-exchange-alt text-emerald"></i> Transaction Type
+                  </span>
+                  <span class="tx-type-badge" [ngClass]="isCredit(selectedTx) ? 'tx-credit' : 'tx-debit'">
+                    <i [class]="isCredit(selectedTx) ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
+                    {{ (selectedTx.transaction_type || (isCredit(selectedTx) ? 'CREDIT' : 'DEBIT')) | uppercase }}
+                  </span>
+                </div>
+
+                <!-- Source / Description -->
+                <div class="tx-info-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                  <span class="text-muted fs-12 d-flex align-items-center gap-1.5">
+                    <i class="fas fa-tag text-emerald"></i> Source / Description
+                  </span>
+                  <span class="fw-bold text-dark fs-12">
+                    {{ selectedTx.source || 'Wallet Activity' }}
+                  </span>
+                </div>
+
+                <!-- Payment Channel / Gateway -->
+                <div class="tx-info-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                  <span class="text-muted fs-12 d-flex align-items-center gap-1.5">
+                    <i class="fas fa-globe text-emerald"></i> Mode / Gateway
+                  </span>
+                  <span class="badge bg-light text-dark border fs-11 text-capitalize px-2 py-1">
+                    {{ selectedTx.payment_gateway || 'Online' }}
+                  </span>
+                </div>
+
+                <!-- Remarks -->
+                <div *ngIf="selectedTx.remarks" class="tx-info-item py-2">
+                  <div class="text-muted fs-11 fw-bold text-uppercase mb-1 d-flex align-items-center gap-1.5">
+                    <i class="fas fa-comment-alt text-emerald"></i> Remarks
+                  </div>
+                  <div class="p-2.5 rounded-3 bg-light border text-secondary fs-12 text-break">
+                    {{ selectedTx.remarks }}
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer bg-light border-top py-2.5 px-3.5 d-flex justify-content-end">
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm px-3.5 py-1.5 fs-12 fw-bold rounded-pill"
+                (click)="closeTxDetails()"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
       </div>
     </div>
   `,
@@ -407,6 +524,36 @@ import { ApiService } from '../../services/api.service';
       box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15);
       text-align: left;
     }
+
+    .tx-modal-dialog {
+      max-width: 440px;
+      width: 95%;
+      margin: 1.75rem auto;
+    }
+    .bg-dark-emerald {
+      background: linear-gradient(135deg, #064e3b 0%, #047857 60%, #065f46 100%);
+    }
+    .tx-modal-icon-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #a7f3d0;
+      font-size: 14px;
+    }
+    .bg-white-20 { background-color: rgba(255, 255, 255, 0.2); }
+    .border-white-30 { border-color: rgba(255, 255, 255, 0.3) !important; }
+    .text-emerald-100 { color: #d1fae5; }
+    .text-emerald { color: #059669; }
+    .tx-modal-hero { border: 1px solid #e2e8f0; }
+    .tx-modal-hero.hero-credit { background: #f0fdf4; border-color: #bbf7d0; }
+    .tx-modal-hero.hero-debit { background: #fef2f2; border-color: #fecaca; }
+    .letter-spacing-1 { letter-spacing: 0.06em; }
+    .fw-900 { font-weight: 900; }
+
   `]
 })
 export class WalletTransactionsComponent implements OnInit {
@@ -428,14 +575,31 @@ export class WalletTransactionsComponent implements OnInit {
     this.loadTransactions();
   }
 
+  selectedTx: any = null;
+
   @HostListener('document:click')
   closeDropdowns() {
     this.activeDropdownId = null;
   }
 
+  @HostListener('document:keydown.escape')
+  onEscapeKey() {
+    this.closeTxDetails();
+  }
+
   toggleDropdown(id: any, event: Event) {
     event.stopPropagation();
     this.activeDropdownId = this.activeDropdownId === id ? null : id;
+  }
+
+  openTxDetails(tx: any, event?: Event) {
+    if (event) event.stopPropagation();
+    this.selectedTx = tx;
+    this.activeDropdownId = null;
+  }
+
+  closeTxDetails() {
+    this.selectedTx = null;
   }
 
   loadTransactions() {
