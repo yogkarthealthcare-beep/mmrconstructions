@@ -363,72 +363,119 @@
       </div>
     </div>
 
-    <!-- Payment Tabs -->
+    <!-- Payment Tabs (Wallet Removed, Online & Proof Only) -->
     <ul class="nav nav-pills nav-fill mb-3 gap-1 bg-light p-1 rounded-3">
       <li class="nav-item">
         <button class="nav-link fs-12 fw-700 py-2 rounded-2" [class.active]="payTab==='online'" (click)="payTab='online'">
-          <i class="fas fa-bolt me-1 text-gold"></i> Instant Online
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link fs-12 fw-700 py-2 rounded-2" [class.active]="payTab==='wallet'" (click)="payTab='wallet'">
-          <i class="fas fa-wallet me-1"></i> MMR Wallet
+          <i class="fas fa-bolt me-1 text-gold"></i> Instant Online &amp; UPI QR
         </button>
       </li>
       <li class="nav-item">
         <button class="nav-link fs-12 fw-700 py-2 rounded-2" [class.active]="payTab==='offline'" (click)="payTab='offline'">
-          <i class="fas fa-university me-1"></i> Bank Proof
+          <i class="fas fa-university me-1"></i> Bank Proof / Offline
         </button>
       </li>
     </ul>
 
-    <!-- TAB 1: INSTANT ONLINE PAYMENT (Razorpay / UPI / NetBanking / Cards) -->
+    <!-- TAB 1: INSTANT ONLINE PAYMENT (UPI QR Code, UPI ID, and Gateway) -->
     <div *ngIf="payTab==='online'">
-      <div class="p-3 bg-emerald-light rounded-3 border border-success-subtle mb-3">
-        <div class="d-flex align-items-center gap-2 text-success fw-700 fs-13 mb-1">
-          <i class="fas fa-lock"></i> 100% Secure Instant Settlement
+      <!-- Active QR Switcher (if multiple QRs configured) -->
+      <div class="d-flex align-items-center gap-1.5 mb-2.5 flex-wrap" *ngIf="activeQrs.length > 1">
+        <span class="fs-11 fw-700 text-muted me-1">Select Bank QR:</span>
+        <button
+          type="button"
+          class="btn btn-xs py-1 px-2.5 rounded-pill fw-600 transition"
+          *ngFor="let q of activeQrs"
+          [class.btn-emerald]="selectedQrKey === q.qr_code_key"
+          [class.btn-outline-secondary]="selectedQrKey !== q.qr_code_key"
+          (click)="selectQr(q.qr_code_key)">
+          <i class="fas fa-qrcode me-1"></i> {{ q.label || q.qr_code_key.toUpperCase() }}
+          <span *ngIf="q.is_primary" class="badge bg-gold text-dark ms-1 fs-9">Primary</span>
+        </button>
+      </div>
+
+      <!-- UPI QR Code & UPI ID Card -->
+      <div class="p-3 bg-light rounded-3 border mb-3">
+        <div class="row g-3 align-items-center">
+          <!-- QR Image Frame -->
+          <div class="col-12 col-sm-auto text-center mx-auto mx-sm-0">
+            <div class="qr-code-frame text-center p-2 bg-white rounded-3 border shadow-xs d-inline-block">
+              <img
+                [src]="getQrImageUrl()"
+                alt="UPI QR Code"
+                class="img-fluid rounded"
+                style="width: 145px; height: 145px; object-fit: contain;" />
+              <div class="fs-10 text-muted mt-1 fw-600 d-flex align-items-center justify-content-center gap-1">
+                <i class="fas fa-camera text-emerald"></i> Scan with any UPI App
+              </div>
+            </div>
+          </div>
+
+          <!-- QR & UPI Info Details -->
+          <div class="col-12 col-sm">
+            <!-- Supported UPI Apps Badges -->
+            <div class="d-flex align-items-center gap-1.5 mb-2 flex-wrap">
+              <span class="badge bg-white text-dark border fs-10 px-2 py-0.5"><i class="fab fa-google-pay text-primary me-1"></i>GPay</span>
+              <span class="badge bg-white text-dark border fs-10 px-2 py-0.5 text-purple"><i class="fas fa-bolt me-1 text-purple"></i>PhonePe</span>
+              <span class="badge bg-white text-dark border fs-10 px-2 py-0.5 text-info"><i class="fas fa-wallet me-1 text-info"></i>Paytm</span>
+              <span class="badge bg-white text-dark border fs-10 px-2 py-0.5 text-success"><i class="fas fa-university me-1 text-success"></i>BHIM</span>
+            </div>
+
+            <div class="fw-700 text-dark fs-13 mb-1">
+              {{ selectedQr?.label || 'MMR Constructions Pvt Ltd' }}
+            </div>
+
+            <!-- Copyable UPI ID Box -->
+            <div class="p-2 bg-white rounded-2 border d-flex align-items-center justify-content-between mb-2">
+              <div class="text-truncate me-2">
+                <span class="fs-10 text-muted fw-600 d-block">Company Official UPI ID:</span>
+                <span class="fs-13 fw-800 font-monospace text-emerald text-truncate d-block">{{ selectedQr?.upi_id || 'mmrconstructions@hdfcbank' }}</span>
+              </div>
+              <button
+                type="button"
+                class="btn btn-outline-success btn-sm py-1 px-2.5 fs-11 fw-700 d-flex align-items-center gap-1 flex-shrink-0"
+                (click)="copyUpiId()"
+                [title]="'Copy ' + (selectedQr?.upi_id || 'UPI ID')">
+                <i class="fas" [class.fa-check]="copiedUpi" [class.fa-copy]="!copiedUpi"></i>
+                <span>{{ copiedUpi ? 'Copied!' : 'Copy' }}</span>
+              </button>
+            </div>
+
+            <div class="fs-11 text-muted d-flex align-items-center justify-content-between">
+              <span>Payable EMI Amount:</span>
+              <strong class="text-success fs-14 fw-900">₹{{ (activePayEmi.total_due || activePayEmi.emi_amount) | number }}</strong>
+            </div>
+          </div>
         </div>
-        <p class="fs-12 text-muted mb-0">
-          Pay via UPI (GPay, PhonePe, Paytm), Credit/Debit Card, or NetBanking. Your EMI will be marked <strong>Paid instantly</strong> and invoice will be generated immediately.
-        </p>
+
+        <!-- Note to switch to proof submission -->
+        <div class="mt-2.5 pt-2 border-top fs-11 text-muted d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <span><i class="fas fa-info-circle text-gold me-1"></i> Paid using QR / UPI?</span>
+          <button type="button" class="btn btn-link btn-xs p-0 text-decoration-none fw-700 text-success" (click)="payTab='offline'">
+            Submit UTR / Payment Proof here <i class="fas fa-arrow-right ms-1"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- OR Instant Automated Gateway Settlement -->
+      <div class="p-2.5 bg-emerald-light rounded-3 border border-success-subtle mb-2.5">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="fs-11 text-muted">
+            <i class="fas fa-shield-alt text-success me-1"></i>
+            Want <strong>Instant automated settlement</strong> with online receipt?
+          </div>
+        </div>
       </div>
 
       <div class="d-grid gap-2">
         <button class="btn btn-green btn-lg py-2.5 fs-14 fw-700 shadow" (click)="payWithRazorpay()" [disabled]="isProcessingPayment">
           <i [class]="isProcessingPayment ? 'fas fa-spinner fa-spin me-2' : 'fas fa-lock me-2'"></i>
-          {{ isProcessingPayment ? 'Connecting Gateway...' : 'Pay ₹' + ((activePayEmi.total_due || activePayEmi.emi_amount) | number) + ' Securely' }}
+          {{ isProcessingPayment ? 'Connecting Gateway...' : 'Pay ₹' + ((activePayEmi.total_due || activePayEmi.emi_amount) | number) + ' via Cards / NetBanking / Razorpay' }}
         </button>
       </div>
     </div>
 
-    <!-- TAB 2: MMR WALLET BALANCE -->
-    <div *ngIf="payTab==='wallet'">
-      <div class="p-3 rounded-3 border mb-3" [class.bg-emerald-light]="walletBalance >= (activePayEmi.total_due || activePayEmi.emi_amount)" [class.bg-light]="walletBalance < (activePayEmi.total_due || activePayEmi.emi_amount)">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="fs-12 text-muted fw-600">Your Wallet Balance:</span>
-          <strong class="fs-16 fw-900" [class.text-success]="walletBalance >= (activePayEmi.total_due || activePayEmi.emi_amount)" [class.text-danger]="walletBalance < (activePayEmi.total_due || activePayEmi.emi_amount)">
-            ₹{{ walletBalance | number }}
-          </strong>
-        </div>
-        <div *ngIf="walletBalance < (activePayEmi.total_due || activePayEmi.emi_amount)" class="fs-11 text-danger fw-600 mt-1">
-          <i class="fas fa-exclamation-circle me-1"></i> Insufficient balance. Please use Instant Online payment or add funds to your wallet.
-        </div>
-        <div *ngIf="walletBalance >= (activePayEmi.total_due || activePayEmi.emi_amount)" class="fs-11 text-success fw-600 mt-1">
-          <i class="fas fa-check-circle me-1"></i> Sufficient balance available. Payment will settle instantly.
-        </div>
-      </div>
-
-      <div class="d-grid gap-2">
-        <button class="btn btn-gold btn-lg py-2.5 fs-14 fw-700 shadow" 
-                (click)="payWithWallet()" 
-                [disabled]="isProcessingPayment || walletBalance < (activePayEmi.total_due || activePayEmi.emi_amount)">
-          <i [class]="isProcessingPayment ? 'fas fa-spinner fa-spin me-2' : 'fas fa-wallet me-2'"></i>
-          {{ isProcessingPayment ? 'Processing...' : 'Pay with Wallet Balance' }}
-        </button>
-      </div>
-    </div>
-
-    <!-- TAB 3: OFFLINE BANK PROOF UPLOAD -->
+    <!-- TAB 2: OFFLINE BANK PROOF UPLOAD -->
     <div *ngIf="payTab==='offline'">
       <app-bank-details [compact]="true"></app-bank-details>
 

@@ -31,9 +31,16 @@ export class EmiHistoryComponent implements OnInit {
   selectedReceipt: any = null;
   walletBalance: number = 0;
 
+  // Active UPI QR Configurations
+  activeQrs: any[] = [];
+  selectedQrKey: string = 'qr1';
+  selectedQr: any = null;
+  copiedUpi: boolean = false;
+  loadingQrs: boolean = false;
+
   // Pay EMI Modal
   activePayEmi: any = null;
-  payTab: 'online' | 'wallet' | 'offline' = 'online';
+  payTab: 'online' | 'offline' = 'online';
   isProcessingPayment = false;
 
   // Proof Form (Offline Tab)
@@ -52,7 +59,7 @@ export class EmiHistoryComponent implements OnInit {
 
   ngOnInit() {
     this.loadData();
-    this.fetchWalletBalance();
+    this.loadActiveQrs();
   }
 
   fetchWalletBalance() {
@@ -159,17 +166,90 @@ export class EmiHistoryComponent implements OnInit {
     });
   }
 
+    // ── Active UPI QR Codes ──────────────────────────────
+  loadActiveQrs() {
+    this.loadingQrs = true;
+    this.api.get('/api/payment/active-upi-qrs').subscribe({
+      next: (res: any) => {
+        const rows = res?.data || (Array.isArray(res) ? res : []);
+        if (rows && rows.length > 0) {
+          this.activeQrs = rows;
+          const primary = rows.find((q: any) => q.is_primary) || rows[0];
+          this.selectQr(primary.qr_code_key);
+        } else {
+          this.activeQrs = [{
+            qr_code_key: 'qr1',
+            label: 'Primary UPI QR (HDFC Bank)',
+            upi_id: 'mmrconstructions@hdfcbank',
+            qr_image_url: null,
+            is_primary: true
+          }];
+          this.selectQr('qr1');
+        }
+        this.loadingQrs = false;
+      },
+      error: () => {
+        this.activeQrs = [{
+          qr_code_key: 'qr1',
+          label: 'Primary UPI QR (HDFC Bank)',
+          upi_id: 'mmrconstructions@hdfcbank',
+          qr_image_url: null,
+          is_primary: true
+        }];
+        this.selectQr('qr1');
+        this.loadingQrs = false;
+      }
+    });
+  }
+
+  selectQr(key: string) {
+    this.selectedQrKey = key;
+    this.selectedQr = this.activeQrs.find(q => q.qr_code_key === key) || this.activeQrs[0];
+  }
+
+  getQrImageUrl(): string {
+    if (this.selectedQr?.qr_image_url) {
+      return this.selectedQr.qr_image_url;
+    }
+    const upi = this.selectedQr?.upi_id || 'mmrconstructions@hdfcbank';
+    const amt = Number(this.activePayEmi?.total_due || this.activePayEmi?.emi_amount || 0);
+    const amountParam = amt > 0 ? '&am=' + amt : '';
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=upi://pay?pa=' + encodeURIComponent(upi) + '&pn=MMR%20Constructions&cu=INR' + amountParam;
+  }
+
+  copyUpiId() {
+    if (!this.selectedQr?.upi_id) return;
+    const text = this.selectedQr.upi_id;
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.copiedUpi = true;
+        setTimeout(() => this.copiedUpi = false, 2500);
+      });
+    } else {
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      this.copiedUpi = true;
+      setTimeout(() => this.copiedUpi = false, 2500);
+    }
+  }
+
   // ── Open Payment Modal ─────────────────────────────────
-  openPayModal(emi: any, tab: 'online' | 'wallet' | 'offline' = 'online') {
+  openPayModal(emi: any, tab: 'online' | 'offline' = 'online') {
     this.activePayEmi = emi;
     this.payTab = tab;
     this.proofForm = {
       payment_mode: 'UPI',
       reference_number: '',
-      amount: emi.emi_amount || '',
+      amount: emi.total_due || emi.emi_amount || '',
       proof_file: null
     };
-    this.fetchWalletBalance();
+    if (!this.activeQrs || this.activeQrs.length === 0) {
+      this.loadActiveQrs();
+    }
   }
 
   closePayModal() {
