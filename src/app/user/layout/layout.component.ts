@@ -323,7 +323,6 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
           { icon: 'fas fa-receipt', label: 'Plot Orders', route: `${p}/plot-orders`, badge: 'ORDERS' },
           { icon: 'fas fa-map', label: 'My Booked Plots', route: `${p}/my-plots` },
           { icon: 'fas fa-calendar-check', label: 'EMI Schedule', route: `${p}/emi-history` },
-          { icon: 'fas fa-shield-alt', label: 'Buyback Guarantee', route: `${p}/buyback` },
         ]
       },
       {
