@@ -368,6 +368,12 @@ export class MlmTreeComponent implements OnInit {
           node.isFree = false;
           (node as any).slotNumber = s;
           (node as any).isEmptySlot = false;
+          if (!node.sponsorName && root) {
+            node.sponsorName = root.name;
+          }
+          if (!node.sponsorId && root) {
+            node.sponsorId = root.memberCode;
+          }
           root.children.push(node);
         } else {
           const emptyNode: MlmNode = {
@@ -474,7 +480,7 @@ export class MlmTreeComponent implements OnInit {
       id: this.nodeId(item) || `node-${index}`,
       name: item.full_name || item.name || item.associate_name || item.email || 'Member',
       userId: String(item.user_id ?? item.id ?? item.member_id ?? `U-${index}`),
-      memberCode: item.member_id || item.member_code || item.invitation_code || item.referral_code || `MMR-${index}`,
+      memberCode: item.team_member_uid || item.member_code || item.member_id || item.invitation_code || item.referral_code || `MMR-${index}`,
       mobile: item.mobile_no || item.mobile || '—',
       email: item.email || '—',
       joinDate: item.registered_at || item.created_at || item.join_date || '',
@@ -490,12 +496,12 @@ export class MlmTreeComponent implements OnInit {
       teamCount: team,
       level: Math.min(Math.max(0, fallbackLevel), this.maxDepthAllowed),
       rank: rankTitle,
-      salesGaj: Number(item.sales_gaj ?? item.total_gaj_sold ?? 0),
-      commissionEarned: Number(item.commission_earned ?? item.total_commission_earned ?? 0),
-      pendingCommission: Number(item.pending_commission || 0),
+      salesGaj: Number(item.sales_gaj ?? item.total_gaj_sold ?? item.salesGaj ?? 0),
+      commissionEarned: Number(item.commission_earned ?? item.total_commission_earned ?? item.commissionEarned ?? 0),
+      pendingCommission: Number(item.pending_commission ?? item.pendingCommission ?? 0),
       profile_image_url: item.profile_image_url || '',
-      purchasedPlotsCount: Number(item.total_purchased_plots || item.purchased_plots_count || 0),
-      purchasedAmount: Number(item.total_purchased_amount || item.purchased_amount || 0),
+      purchasedPlotsCount: Number(item.total_purchased_plots || item.purchased_plots_count || item.purchasedPlotsCount || item.plots_purchased || (item.invoice_count && Number(item.invoice_count) > 0 ? item.invoice_count : 0) || 0),
+      purchasedAmount: Number(item.total_purchased_amount || item.purchased_amount || item.purchasedAmount || item.purchase_value || item.total_plot_amount || item.total_paid_amount || 0),
       city: item.city || item.location || '',
       expanded: fallbackLevel <= 3,
       loaded: fallbackLevel <= 3,
@@ -528,9 +534,13 @@ export class MlmTreeComponent implements OnInit {
     node.children.forEach(child => child.level = Math.min(this.maxDepthAllowed, Math.max(node.level + 1, child.level)));
     const childTeam = node.children.reduce((sum, child) => sum + this.recalculate(child), 0);
     if (this.audience !== 'admin') {
-      node.directCount = node.children.length || node.directCount;
-      node.teamCount = node.children.length + childTeam;
-      node.rank = this.rankFor(node.directCount);
+      if (node.children.length > 0) {
+        node.directCount = node.children.length;
+        node.teamCount = node.children.length + childTeam;
+      }
+      if (!node.rank || (!node.rank.startsWith('Slot #') && !node.rank.includes('Team Member'))) {
+        node.rank = this.rankFor(node.directCount);
+      }
     }
     this.assignBinary(node);
     return node.teamCount;
