@@ -38,7 +38,8 @@ export class AssociateTeamSalesComponent implements OnInit {
     this.loading = true;
     this.attributionApi.getAssociateTeamSales(associateId, { page: 1, limit: 100 }).subscribe({
       next: (res: any) => {
-        this.sales = res?.data || res || [];
+        const raw = res?.data || res || [];
+        this.sales = Array.isArray(raw) ? raw : (raw.sales || raw.team_sales || raw.bookings || raw.team_members || []);
         this.applyFilter();
         this.loading = false;
       },

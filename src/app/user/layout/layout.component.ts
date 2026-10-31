@@ -308,7 +308,6 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
         icon: 'fas fa-coins',
         expanded: false,
         items: [
-          { icon: 'fas fa-plus-circle', label: 'Add Fund to Wallet', route: `${p}/wallet/add-fund` },
           { icon: 'fas fa-arrow-alt-circle-up', label: 'Withdraw Payout', route: `${p}/wallet/withdraw`, badge: 'REQ' },
           { icon: 'fas fa-history', label: 'Transaction History', route: `${p}/wallet/transactions` },
           { icon: 'fas fa-list-check', label: 'Payout Status History', route: `${p}/wallet/withdrawal-history` },
