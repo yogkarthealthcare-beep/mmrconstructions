@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -25,7 +25,7 @@ import { WithdrawalReleaseDialogComponent } from './withdrawal-release-dialog.co
   templateUrl: './admin-withdrawal-requests.component.html',
   styleUrls: ['./admin-withdrawal-requests.component.css']
 })
-export class AdminWithdrawalRequestsComponent implements OnInit {
+export class AdminWithdrawalRequestsComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
   private exportService = inject(AdminExportService);
@@ -116,6 +116,11 @@ export class AdminWithdrawalRequestsComponent implements OnInit {
     } else {
       this.exportService.exportToPdf(formatted, columns, filename, title);
     }
+  }
+
+
+  ngOnDestroy(): void {
+    document.body.classList.remove('has-active-modal');
   }
 
   ngOnInit(): void {
@@ -241,27 +246,41 @@ export class AdminWithdrawalRequestsComponent implements OnInit {
 
   // Dialog Trigger Methods
   openApprove(request: any): void {
+    (document.activeElement as HTMLElement)?.blur();
     this.selectedRequest = request;
     this.approveOpen = true;
+    document.body.classList.add('has-active-modal');
   }
 
   openRelease(request: any): void {
+    (document.activeElement as HTMLElement)?.blur();
     this.selectedRequest = request;
     this.releaseOpen = true;
+    document.body.classList.add('has-active-modal');
   }
 
   openReject(request: any): void {
+    (document.activeElement as HTMLElement)?.blur();
     this.selectedRequest = request;
     this.rejectionReason = '';
     this.rejectOpen = true;
+    document.body.classList.add('has-active-modal');
+  }
+
+  closeModals(): void {
+    this.approveOpen = false;
+    this.releaseOpen = false;
+    this.rejectOpen = false;
+    document.body.classList.remove('has-active-modal');
   }
 
   // Action Submit Handlers
   submitApprove(remarks: string): void {
     if (!this.selectedRequest) return;
-    this.approveOpen = false;
+    const reqId = this.selectedRequest.id;
+    this.closeModals();
 
-    this.api.adminApproveWithdrawalRequest(this.selectedRequest.id, { remarks }).subscribe({
+    this.api.adminApproveWithdrawalRequest(reqId, { remarks }).subscribe({
       next: (res: any) => {
         if (res.success || res.status === 'success') {
           this.loadRequests();
@@ -277,9 +296,10 @@ export class AdminWithdrawalRequestsComponent implements OnInit {
 
   submitRelease(data: { payout_reference_id: string; remarks: string }): void {
     if (!this.selectedRequest) return;
-    this.releaseOpen = false;
+    const reqId = this.selectedRequest.id;
+    this.closeModals();
 
-    this.api.adminReleaseWithdrawalRequest(this.selectedRequest.id, data).subscribe({
+    this.api.adminReleaseWithdrawalRequest(reqId, data).subscribe({
       next: (res: any) => {
         if (res.success || res.status === 'success') {
           this.loadRequests();
@@ -295,9 +315,11 @@ export class AdminWithdrawalRequestsComponent implements OnInit {
 
   submitReject(): void {
     if (!this.selectedRequest || !this.rejectionReason.trim()) return;
-    this.rejectOpen = false;
+    const reason = this.rejectionReason;
+    const reqId = this.selectedRequest.id;
+    this.closeModals();
 
-    this.api.adminRejectWithdrawalRequest(this.selectedRequest.id, this.rejectionReason).subscribe({
+    this.api.adminRejectWithdrawalRequest(reqId, reason).subscribe({
       next: (res: any) => {
         if (res.success || res.status === 'success') {
           this.loadRequests();

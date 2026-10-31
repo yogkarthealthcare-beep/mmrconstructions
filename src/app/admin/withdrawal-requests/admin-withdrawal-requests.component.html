@@ -343,20 +343,22 @@
   <app-withdrawal-approval-dialog
     [isOpen]="approveOpen"
     [amount]="selectedRequest?.amount || 0"
+    [request]="selectedRequest"
     (confirm)="submitApprove($event)"
-    (cancel)="approveOpen = false">
+    (cancel)="closeModals()">
   </app-withdrawal-approval-dialog>
 
   <!-- RELEASE MODAL DIALOG -->
   <app-withdrawal-release-dialog
     [isOpen]="releaseOpen"
     [amount]="selectedRequest?.amount || 0"
+    [request]="selectedRequest"
     (confirm)="submitRelease($event)"
-    (cancel)="releaseOpen = false">
+    (cancel)="closeModals()">
   </app-withdrawal-release-dialog>
 
   <!-- REJECTION MODAL DIALOG -->
-  <div class="erp-modal-backdrop" *ngIf="rejectOpen" (click)="rejectOpen = false">
+  <div class="erp-modal-backdrop" *ngIf="rejectOpen" (click)="closeModals()">
     <div class="erp-modal-dialog" (click)="$event.stopPropagation()">
       <div class="erp-modal-content">
         <div class="erp-modal-header bg-danger text-white">
@@ -367,7 +369,7 @@
               <div class="erp-modal-subtitle text-white-50">Return held balance to user wallet with audit log</div>
             </div>
           </div>
-          <button type="button" class="btn-modal-close" (click)="rejectOpen = false">
+          <button type="button" class="btn-modal-close" (click)="closeModals()">
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -386,7 +388,7 @@
           </div>
         </div>
         <div class="erp-modal-footer">
-          <button type="button" class="btn btn-secondary btn-xs" (click)="rejectOpen = false">Cancel</button>
+          <button type="button" class="btn btn-secondary btn-xs" (click)="closeModals()">Cancel</button>
           <button type="button" class="btn btn-danger btn-xs fw-bold" (click)="submitReject()" [disabled]="!rejectionReason.trim()">
             Confirm Rejection
           </button>
