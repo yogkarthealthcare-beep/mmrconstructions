@@ -88,6 +88,13 @@ export class UserDashboardComponent implements OnInit {
   // Associate Network Stats (Team Members & Customers)
   associateTeamMembersCount: number = 0;
   associateCustomersCount: number = 0;
+  associateTotalEarning: number = 0;
+  associateWalletBalance: number = 0;
+  associatePendingCommission: number = 0;
+  associateDirectSalesValue: number = 0;
+  associateDirectSalesGaj: number = 0;
+  associateDirectPlotsSold: number = 0;
+  associateDirectCustomersCount: number = 0;
 
   // Active Portfolio Tab: 'active' (Purchased/Booked) or 'sold' (Sold/Buyback)
   portfolioTab: 'active' | 'sold' = 'active';
@@ -288,8 +295,10 @@ export class UserDashboardComponent implements OnInit {
         ? Promise.all([
             this.api.getAssociateTeamMembers().toPromise().catch(() => null),
             this.api.getMyCustomersForApproval().toPromise().catch(() => null),
-            this.api.getAssocNetwork().toPromise().catch(() => null)
-          ]).then(([tmRes, custRes, netRes]) => {
+            this.api.getAssocNetwork().toPromise().catch(() => null),
+            this.api.getAssocDashboard().toPromise().catch(() => null),
+            this.api.getWalletBalance().toPromise().catch(() => null)
+          ]).then(([tmRes, custRes, netRes, dashRes, walletRes]) => {
             const rawMembers = (tmRes?.success && Array.isArray(tmRes.data)) ? tmRes.data : [];
             const rawCustApprovals = (custRes?.success && Array.isArray(custRes.data)) ? custRes.data : (Array.isArray(custRes) ? custRes : []);
             const rawNetwork = (netRes?.success && Array.isArray(netRes.data)) ? netRes.data : [];
@@ -325,6 +334,21 @@ export class UserDashboardComponent implements OnInit {
 
             this.associateTeamMembersCount = teamMemberIds.size;
             this.associateCustomersCount = customerIds.size;
+
+            if (dashRes?.success && dashRes.data) {
+              const d = dashRes.data;
+              this.associateTotalEarning = Number(d.total_earning || d.tracker?.total_commission_earned || 0);
+              this.associateWalletBalance = Number(d.wallet_balance || 0);
+              this.associatePendingCommission = Number(d.pending_commission || 0);
+              this.associateDirectSalesValue = Number(d.direct_sales_value || 0);
+              this.associateDirectSalesGaj = Number(d.direct_sales_gaj || d.tracker?.total_gaj_sold || 0);
+              this.associateDirectPlotsSold = Number(d.direct_plots_sold || 0);
+              this.associateDirectCustomersCount = Number(d.direct_customers_count || this.associateCustomersCount || 0);
+            }
+
+            if (walletRes?.success && walletRes.data) {
+              this.associateWalletBalance = Number(walletRes.data.balance ?? this.associateWalletBalance);
+            }
           }).catch(err => console.warn('Associate network count warning:', err))
         : Promise.resolve())
     ]).finally(() => {
