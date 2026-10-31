@@ -139,9 +139,10 @@ export class MlmTreeComponent implements OnInit {
   }
 
   get stats() {
-    const total = this.flatNodes.length;
-    const active = this.flatNodes.filter(node => node.status === 'Active').length;
-    const inactive = total - active;
+    const nonFreeNodes = this.flatNodes.filter(node => !node.isFree && !(node as any).isEmptySlot);
+    const total = this.audience === 'associate' ? nonFreeNodes.length : this.flatNodes.length;
+    const active = nonFreeNodes.filter(node => node.status === 'Active').length;
+    const inactive = Math.max(0, total - active);
     return {
       total,
       active,
@@ -339,6 +340,9 @@ export class MlmTreeComponent implements OnInit {
       root.children = [];
       const teamList = Array.isArray(network) ? network : [];
       const validTeamMembers = teamList.filter(item => {
+        if (item.slot_number != null || item.team_member_uid || String(item.member_id || item.memberCode || '').startsWith('MMR-TM')) {
+          return true;
+        }
         const type = String(item.user_type || item.role || '').toLowerCase();
         return type !== 'customer';
       });
@@ -347,7 +351,7 @@ export class MlmTreeComponent implements OnInit {
       const unslotted: any[] = [];
       validTeamMembers.forEach((item: any) => {
         const s = Number(item.slot_number);
-        if (s >= 1 && s <= 10) {
+        if (s >= 1 && s <= 10 && !slotMap.has(s)) {
           slotMap.set(s, item);
         } else {
           unslotted.push(item);
@@ -368,12 +372,8 @@ export class MlmTreeComponent implements OnInit {
           node.isFree = false;
           (node as any).slotNumber = s;
           (node as any).isEmptySlot = false;
-          if (!node.sponsorName && root) {
-            node.sponsorName = root.name;
-          }
-          if (!node.sponsorId && root) {
-            node.sponsorId = root.memberCode;
-          }
+          node.sponsorName = root?.name || node.sponsorName || 'Associate';
+          node.sponsorId = root?.memberCode || node.sponsorId || 'MMR-ASC';
           root.children.push(node);
         } else {
           const emptyNode: MlmNode = {
@@ -535,8 +535,9 @@ export class MlmTreeComponent implements OnInit {
     const childTeam = node.children.reduce((sum, child) => sum + this.recalculate(child), 0);
     if (this.audience !== 'admin') {
       if (node.children.length > 0) {
-        node.directCount = node.children.length;
-        node.teamCount = node.children.length + childTeam;
+        const realChildren = node.children.filter(c => !c.isFree && !(c as any).isEmptySlot);
+        node.directCount = realChildren.length;
+        node.teamCount = realChildren.length + childTeam;
       }
       if (!node.rank || (!node.rank.startsWith('Slot #') && !node.rank.includes('Team Member'))) {
         node.rank = this.rankFor(node.directCount);
@@ -858,6 +859,9 @@ export class MlmTreeComponent implements OnInit {
   onNodeClick(node: MlmNode, event?: MouseEvent) {
     event?.stopPropagation();
     event?.preventDefault();
+    if (node.isFree || (node as any).isEmptySlot) {
+      return;
+    }
     this.selectedProfileNode = node;
   }
 
