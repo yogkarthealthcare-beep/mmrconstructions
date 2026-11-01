@@ -73,6 +73,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
   showAadhar = signal<boolean>(false);
   showAccount = signal<boolean>(false);
   showPassword = signal<boolean>(false);
+  hasExistingPassword = signal<boolean>(false);
 
   // File uploads
   photoFile: File | null = null;
@@ -212,13 +213,16 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
         this.enrollmentForm.enable();
         this.enrollmentForm.get('associateId')?.disable();
         this.enrollmentForm.get('associateName')?.disable();
+        if (this.hasExistingPassword()) {
+          this.enrollmentForm.get('password')?.disable();
+        }
       } else if (targetSlot?.status === 'empty') {
         this.cleanFormForNewEnrollment(num);
       }
     }
   }
 
-  declarationAcceptedSignal = signal<boolean>(false);
+  declarationAcceptedSignal = signal<boolean>(true);
 
   // Submit gate computed: Reactively updates when declarationAcceptedSignal, submitting, or isCapacityFull changes
   canSubmit = computed(() => {
@@ -251,6 +255,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     const user = this.auth.getUser();
     if (this.auth.isTeamMember()) {
       this.isSelfTeamMember = true;
+      this.hasExistingPassword.set(true);
       this.activeTab = 'enroll';
       this.targetUserId = Number(user?.user_id || user?.id || 0);
       const sponsorId = Number(user?.sponsor_user_id || 0);
@@ -305,6 +310,24 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
         if (params['email']) {
           this.enrollmentForm.patchValue({ emailId: params['email'] });
         }
+        const checkQ: any = {};
+        if (params['user_id']) checkQ.userId = params['user_id'];
+        if (params['mobile'] || params['mobile_no']) checkQ.mobile = params['mobile'] || params['mobile_no'];
+        if (params['email']) checkQ.email = params['email'];
+        if (Object.keys(checkQ).length > 0) {
+          this.api.checkTeamMemberUserStatus(checkQ).subscribe({
+            next: (res) => {
+              if (res?.success && res?.data?.has_password) {
+                this.hasExistingPassword.set(true);
+                this.enrollmentForm.get('password')?.disable();
+                this.enrollmentForm.get('password')?.clearValidators();
+                this.enrollmentForm.get('password')?.setValue('');
+                this.enrollmentForm.get('password')?.updateValueAndValidity();
+              }
+            },
+            error: () => {}
+          });
+        }
         this.activeTab = 'enroll';
         setTimeout(() => this.initSignaturePads(), 150);
       }
@@ -336,7 +359,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       accountNo: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(30)]],
       ifscCode: ['', [Validators.required, Validators.pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/i)]],
 
-      declarationAccepted: [false, Validators.requiredTrue]
+      declarationAccepted: [true, Validators.requiredTrue]
     });
 
     this.enrollmentForm.get('dateOfBirth')?.valueChanges.subscribe(val => {
@@ -409,7 +432,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       branchName: '',
       accountNo: '',
       ifscCode: '',
-      declarationAccepted: false
+      declarationAccepted: true
     });
     this.enrollmentForm.enable();
     this.enrollmentForm.get('associateId')?.disable();
@@ -423,7 +446,11 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     this.ifscVerified.set(false);
     this.ifscBankInfo.set('');
     this.calculatedAge.set('');
-    this.declarationAcceptedSignal.set(false);
+    this.declarationAcceptedSignal.set(true);
+    this.hasExistingPassword.set(false);
+    this.enrollmentForm.get('password')?.enable();
+    this.enrollmentForm.get('password')?.setValidators([Validators.minLength(6)]);
+    this.enrollmentForm.get('password')?.updateValueAndValidity();
   }
 
   ngAfterViewInit(): void {
@@ -569,6 +596,29 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     const input = event.target as HTMLInputElement;
     input.value = input.value.replace(/\D/g, '').slice(0, 15);
     this.enrollmentForm.get('mobileNo')?.setValue(input.value);
+    const cleanMobile = input.value.replace(/\D/g, '');
+    if (cleanMobile.length === 10 && !this.enrolledMemberId()) {
+      this.api.checkTeamMemberUserStatus({ mobile: cleanMobile }).subscribe({
+        next: (res) => {
+          if (res?.success && res?.data?.has_password) {
+            this.hasExistingPassword.set(true);
+            this.enrollmentForm.get('password')?.disable();
+            this.enrollmentForm.get('password')?.clearValidators();
+            this.enrollmentForm.get('password')?.setValue('');
+            this.enrollmentForm.get('password')?.updateValueAndValidity();
+            if (res.data.user_id && !this.targetUserId) {
+              this.targetUserId = res.data.user_id;
+            }
+          } else if (!this.enrolledMemberId()) {
+            this.hasExistingPassword.set(false);
+            this.enrollmentForm.get('password')?.enable();
+            this.enrollmentForm.get('password')?.setValidators([Validators.minLength(6)]);
+            this.enrollmentForm.get('password')?.updateValueAndValidity();
+          }
+        },
+        error: () => {}
+      });
+    }
   }
 
   onIfscInput(event: any): void {
@@ -910,7 +960,7 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     if (raw.panNo) formData.append('panNo', raw.panNo);
     formData.append('mobileNo', raw.mobileNo);
     if (raw.emailId) formData.append('emailId', raw.emailId);
-    if (raw.password) formData.append('password', raw.password);
+    if (raw.password && !this.hasExistingPassword()) formData.append('password', raw.password);
     formData.append('fullAddress', raw.fullAddress);
 
     if (raw.nomineeName) formData.append('nomineeName', normalizeHumanName(raw.nomineeName));
@@ -1004,6 +1054,9 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     this.enrollmentForm.enable();
     this.enrollmentForm.get('associateId')?.disable();
     this.enrollmentForm.get('associateName')?.disable();
+    if (this.hasExistingPassword()) {
+      this.enrollmentForm.get('password')?.disable();
+    }
   }
 
   onFinalSubmit(): void {
@@ -1117,6 +1170,8 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     }
 
     const isFinal = Boolean(member.is_final_submitted);
+    const hasPwd = Boolean(member.has_password);
+    this.hasExistingPassword.set(hasPwd);
 
     this.enrollmentForm.patchValue({
       associateId: member.associate_id || this.associateId,
@@ -1153,6 +1208,35 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
     this.uploadedApplicantSigUrl = member.applicant_signature_url || null;
     this.uploadedAssociateSigUrl = member.associate_signature_url || null;
 
+    if (hasPwd) {
+      this.enrollmentForm.get('password')?.disable();
+      this.enrollmentForm.get('password')?.clearValidators();
+      this.enrollmentForm.get('password')?.setValue('');
+    } else {
+      this.enrollmentForm.get('password')?.enable();
+      this.enrollmentForm.get('password')?.setValidators([Validators.minLength(6)]);
+    }
+    this.enrollmentForm.get('password')?.updateValueAndValidity();
+
+    if (!hasPwd && (member.user_id || member.mobile_no || member.team_member_uid)) {
+      this.api.checkTeamMemberUserStatus({
+        userId: member.user_id,
+        mobile: member.mobile_no,
+        memberId: member.team_member_uid
+      }).subscribe({
+        next: (res) => {
+          if (res?.success && res?.data?.has_password) {
+            this.hasExistingPassword.set(true);
+            this.enrollmentForm.get('password')?.disable();
+            this.enrollmentForm.get('password')?.clearValidators();
+            this.enrollmentForm.get('password')?.setValue('');
+            this.enrollmentForm.get('password')?.updateValueAndValidity();
+          }
+        },
+        error: () => {}
+      });
+    }
+
     if (!isFinal) {
       this.isFinalSubmitted.set(false);
       this.isReviewMode.set(false);
@@ -1160,6 +1244,9 @@ export class TeamMemberEnrollmentComponent implements OnInit, AfterViewInit {
       this.enrollmentForm.enable();
       this.enrollmentForm.get('associateId')?.disable();
       this.enrollmentForm.get('associateName')?.disable();
+      if (this.hasExistingPassword()) {
+        this.enrollmentForm.get('password')?.disable();
+      }
     } else {
       this.isFinalSubmitted.set(true);
       this.isReviewMode.set(false);

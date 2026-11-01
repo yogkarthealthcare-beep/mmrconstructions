@@ -43,7 +43,7 @@ export class RegisterComponent implements OnInit {
     confirmPassword: '',
     email: '',
     sponsor_invite_code: 'MMR-ASC-0001',
-    terms_accepted: false,
+    terms_accepted: true,
   };
   otpSent      = false;
   otpVerified  = false;
@@ -66,7 +66,7 @@ export class RegisterComponent implements OnInit {
     perm_address_line1: '', perm_city: '', perm_state: DEFAULT_STATE, perm_country: DEFAULT_COUNTRY, perm_pin: '',
     account_number: '', ifsc_code: '', bank_name: '', branch_name: '',
     nominee_name: '', nominee_dob: '', nominee_relationship: '',
-    sponsor_invite_code: 'MMR-ASC-0001', terms_accepted: false,
+    sponsor_invite_code: 'MMR-ASC-0001', terms_accepted: true,
   };
   fOtp = ['','','','','',''];
 

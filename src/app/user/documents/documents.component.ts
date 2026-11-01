@@ -46,7 +46,7 @@ export class DocumentsComponent implements OnInit {
 
   isDocVerified(doc: any): boolean {
     if (!doc) return false;
-    return Boolean(doc.is_verified) || String(doc.review_status || '').toLowerCase() === 'approved';
+    return Boolean(doc.is_verified) || String(doc.review_status || '').toLowerCase() === 'approved' || String(doc.status || '').toLowerCase() === 'approved';
   }
 
   get verifiedCount(): number {

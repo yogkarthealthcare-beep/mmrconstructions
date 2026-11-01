@@ -689,31 +689,36 @@
           </div>
 
           <div class="grid-col-6">
-            <div class="form-group" [class.has-error]="enrollmentForm.get('password')?.invalid && enrollmentForm.get('password')?.touched">
+            <div class="form-group" [class.has-error]="!hasExistingPassword() && enrollmentForm.get('password')?.invalid && enrollmentForm.get('password')?.touched">
               <div class="label-with-toggle">
-                <label [class.required-label]="!enrolledMemberId()">Login Password</label>
-                <button type="button" class="btn-toggle-mask" (click)="showPassword.set(!showPassword())">
+                <label [class.required-label]="!hasExistingPassword() && !enrolledMemberId()">Login Password</label>
+                <!-- Show/Hide toggle button only if password is NOT already set -->
+                <button type="button" class="btn-toggle-mask" *ngIf="!hasExistingPassword()" (click)="showPassword.set(!showPassword())">
                   <i class="fas" [ngClass]="showPassword() ? 'fa-eye-slash' : 'fa-eye'"></i>
                   <span>{{ showPassword() ? 'Hide' : 'Show' }}</span>
                 </button>
               </div>
               <div class="input-with-icon">
-                <i class="fas fa-lock input-icon"></i>
+                <i class="fas fa-lock input-icon" [ngClass]="{ 'text-muted': hasExistingPassword() }"></i>
                 <input 
-                  [type]="showPassword() ? 'text' : 'password'" 
+                  [type]="showPassword() && !hasExistingPassword() ? 'text' : 'password'" 
                   formControlName="password" 
                   class="form-control" 
-                  placeholder="Set login password (min 6 characters)"
+                  [placeholder]="hasExistingPassword() ? '•••••••• (Password set during registration)' : 'Set login password (min 6 characters)'"
                   style="padding-left: 44px !important;"
+                  [readonly]="hasExistingPassword()"
                 >
               </div>
-              <span class="error-msg" *ngIf="enrollmentForm.get('password')?.errors?.['required'] && enrollmentForm.get('password')?.touched">
+              <span class="error-msg" *ngIf="!hasExistingPassword() && enrollmentForm.get('password')?.errors?.['required'] && enrollmentForm.get('password')?.touched">
                 Login password is required for new team member.
               </span>
-              <span class="error-msg" *ngIf="enrollmentForm.get('password')?.errors?.['minlength'] && enrollmentForm.get('password')?.touched">
+              <span class="error-msg" *ngIf="!hasExistingPassword() && enrollmentForm.get('password')?.errors?.['minlength'] && enrollmentForm.get('password')?.touched">
                 Password must be at least 6 characters long.
               </span>
-              <small class="field-hint text-muted d-block mt-1" *ngIf="enrolledMemberId()">
+              <small class="field-hint text-success d-block mt-1" *ngIf="hasExistingPassword()">
+                <i class="fas fa-shield-alt text-success me-1"></i> Password already set by member during registration. Cannot be viewed or edited.
+              </small>
+              <small class="field-hint text-muted d-block mt-1" *ngIf="!hasExistingPassword() && enrolledMemberId()">
                 Leave blank to keep existing password unchanged.
               </small>
             </div>

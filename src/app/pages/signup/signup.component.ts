@@ -29,7 +29,7 @@ export class SignupComponent implements OnInit {
     password: '',
     confirmPassword: '',
     sponsor_invite_code: 'MMR-ASC-0001',
-    terms_accepted: false
+    terms_accepted: true
   };
 
   // ── UI state ──
@@ -180,7 +180,7 @@ export class SignupComponent implements OnInit {
       password: '',
       confirmPassword: '',
       sponsor_invite_code: defaultSponsor,
-      terms_accepted: false
+      terms_accepted: true
     };
     this.sponsorValid = false;
     this.sponsorName = '';
@@ -223,7 +223,7 @@ export class SignupComponent implements OnInit {
       this.sponsorValid = false;
       this.sponsorName = '';
       this.sponsorCodeFormatted = '';
-      if (this.userType === 'Customer') {
+      if (this.userType === 'Customer' || this.userType === 'Investor') {
         delete this.v['sponsor_invite_code'];
       } else {
         this.v['sponsor_invite_code'] = 'Sponsor ID is required.';
@@ -459,7 +459,12 @@ export class SignupComponent implements OnInit {
 
     // 6. Sponsor ID Rule per Role
     const cleanSponsor = this.form.sponsor_invite_code.replace(/\*/g, '').trim().toUpperCase();
-    if (this.userType === 'Customer') {
+    if (this.userType === 'Investor') {
+      // Hidden on UI for Investor - default MMR-ASC-0001 or active referral is used automatically
+      if (!cleanSponsor) {
+        this.form.sponsor_invite_code = 'MMR-ASC-0001';
+      }
+    } else if (this.userType === 'Customer') {
       // Optional for Customer. If provided, must be valid.
       if (cleanSponsor && !this.sponsorValid) {
         this.v['sponsor_invite_code'] = this.v['sponsor_invite_code'] || '✕ Sponsor not available';

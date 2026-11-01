@@ -146,7 +146,7 @@ export class InvestorEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       declSignatureName: [''],
       firstApplicantName: ['', [Validators.required, humanNameValidator()]],
       jointApplicantName: [''],
-      declarationCheck: [false, Validators.requiredTrue]
+      declarationCheck: [true, Validators.requiredTrue]
     });
 
     // Auto-sync full name to firstApplicantName and declSignatureName

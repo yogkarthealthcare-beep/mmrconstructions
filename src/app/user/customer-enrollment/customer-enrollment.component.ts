@@ -179,7 +179,7 @@ export class CustomerEnrollmentComponent implements OnInit, AfterViewInit, OnDes
       paymentStatusDate: [{ value: '', disabled: true }],
       authorizedSignatory: [{ value: '', disabled: true }],
       
-      declarationCheck: [false, Validators.requiredTrue]
+      declarationCheck: [true, Validators.requiredTrue]
     });
 
     // Auto-calculate Age on First Applicant DOB change

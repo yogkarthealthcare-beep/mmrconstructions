@@ -94,12 +94,12 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
 
   // Signal to drive the T&C checkboxes computed state
   private termsState = signal({
-    tc1: false,
-    tc2: false,
-    tc3: false,
-    tc4: false,
-    tc5: false,
-    tc6: false
+    tc1: true,
+    tc2: true,
+    tc3: true,
+    tc4: true,
+    tc5: true,
+    tc6: true
   });
 
   // Computed signal driving the Submit Button status
@@ -449,12 +449,12 @@ export class AssociateEnrollmentFormComponent implements OnInit, OnDestroy {
         sponsorContact: [sContact, [Validators.required, Validators.pattern(MOBILE_PATTERN)]]
       }),
       termsAndConditions: this.fb.group({
-        tc1: [false, Validators.requiredTrue],
-        tc2: [false, Validators.requiredTrue],
-        tc3: [false, Validators.requiredTrue],
-        tc4: [false, Validators.requiredTrue],
-        tc5: [false, Validators.requiredTrue],
-        tc6: [false, Validators.requiredTrue]
+        tc1: [true, Validators.requiredTrue],
+        tc2: [true, Validators.requiredTrue],
+        tc3: [true, Validators.requiredTrue],
+        tc4: [true, Validators.requiredTrue],
+        tc5: [true, Validators.requiredTrue],
+        tc6: [true, Validators.requiredTrue]
       }),
       signature: this.fb.group({
         signDate: [this.todayStr, Validators.required]

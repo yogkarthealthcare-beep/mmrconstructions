@@ -168,6 +168,10 @@ export class ApiService {
     return this.get(`/api/team-members/${id}`);
   }
 
+  checkTeamMemberUserStatus(params: any = {}): Observable<any> {
+    return this.get('/api/team-members/user-status', params);
+  }
+
   createTeamMember(data: FormData | any): Observable<any> {
     if (data instanceof FormData) {
       return this.postForm('/api/team-members', data);
@@ -320,6 +324,9 @@ export class ApiService {
   adminUpdateAssociate(id: number, data: any) { return this.put(`/api/admin/associates/${id}`, data, true); }
   adminApproveUser(id: number, note = '') {
     return this.post(`/api/admin/users/${id}/approve`, { verify_note: note }, true);
+  }
+  adminApproveUserKycDocuments(id: number | string) {
+    return this.post(`/api/admin/users/${id}/documents/approve-all`, {}, true);
   }
   adminRejectUser(id: number, reason: string, custom = '') {
     return this.post(`/api/admin/users/${id}/reject`, { rejection_reason: reason, rejection_custom: custom }, true);

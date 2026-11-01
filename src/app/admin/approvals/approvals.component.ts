@@ -272,6 +272,7 @@ export class ApprovalsComponent implements OnInit {
             this.selectedUser.account_status = 'Active';
             this.selectedUser.is_verified = true;
             if (res.data?.member_id) this.selectedUser.member_id = res.data.member_id;
+            (this.selectedUser.documents || []).forEach((d: any) => { d.is_verified = true; d.review_status = 'Approved'; });
           }
           this.showToast(`User account approved successfully! User can now log in.`);
           this.closeModals();
