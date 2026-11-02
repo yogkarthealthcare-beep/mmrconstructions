@@ -55,7 +55,9 @@ export class NavbarComponent implements OnInit {
           this.navSites = list.map((item: any) => {
             const loc = String(item.location || '').trim();
             const parts = loc.split(',');
-            const city = parts.length > 1 ? parts[parts.length - 1].trim() : (loc || 'UP');
+            const city = (item.city && String(item.city).trim()) 
+              ? String(item.city).trim() 
+              : (parts.length > 1 ? parts[parts.length - 1].trim() : (loc || 'UP'));
             return {
               site_id: Number(item.site_id),
               site_name: item.site_name,
