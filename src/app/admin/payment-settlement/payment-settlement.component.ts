@@ -75,8 +75,37 @@ export class AdminPaymentSettlementComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
 
+  // Primary Tab: Orders vs EMI Installments
+  activeMainTab: 'ORDERS' | 'EMIS' = 'ORDERS';
+
+  // EMI Installments State
+  emis: any[] = [];
+  emiMetrics: any = {
+    total_emis: 0,
+    verification_count: 0,
+    pending_count: 0,
+    paid_count: 0,
+    overdue_count: 0,
+    total_collected_amount: 0
+  };
+  emiPagination = {
+    total: 0,
+    page: 1,
+    limit: 15,
+    pages: 1
+  };
+  emiSearch = '';
+  emiStatusTab: 'ALL' | 'VERIFICATION' | 'PENDING' | 'PAID' | 'OVERDUE' = 'ALL';
+  emiLoading = false;
+  releasingEmiId: number | null = null;
+
+  // Proof Modal State
+  showProofModal = false;
+  selectedProofEmi: any = null;
+
   ngOnInit(): void {
     this.loadOrders(1);
+    this.loadEmiMetricsOnly();
   }
 
   toggleLandscapeMode(): void {
@@ -403,6 +432,149 @@ export class AdminPaymentSettlementComponent implements OnInit {
     }));
 
     this.exportService.exportToExcel(dataToExport, columns, `MMR_Plot_Orders_Payment_Settlement_${new Date().toISOString().slice(0,10)}`);
+  }
+
+  setMainTab(tab: 'ORDERS' | 'EMIS'): void {
+    this.activeMainTab = tab;
+    if (tab === 'EMIS' && this.emis.length === 0) {
+      this.loadEmis(1);
+    } else if (tab === 'ORDERS' && this.orders.length === 0) {
+      this.loadOrders(1);
+    }
+  }
+
+  loadEmiMetricsOnly(): void {
+    this.api.get('/api/admin/payment-settlements/emi-installments', { page: 1, limit: 1 }, true).subscribe({
+      next: (res: any) => {
+        if (res.success && res.data?.metrics) {
+          this.emiMetrics = res.data.metrics;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  loadEmis(page: number = 1): void {
+    this.emiLoading = true;
+    this.emiPagination.page = page;
+
+    const params: any = {
+      page: this.emiPagination.page,
+      limit: this.emiPagination.limit,
+      search: this.emiSearch.trim(),
+      status: this.emiStatusTab
+    };
+
+    this.api.get('/api/admin/payment-settlements/emi-installments', params, true).subscribe({
+      next: (res: any) => {
+        this.emiLoading = false;
+        if (res.success && res.data) {
+          this.emis = (res.data.installments || []).map((e: any) => ({
+            ...e,
+            emi_amount: Number(e.emi_amount) || 0,
+            late_fee_amount: Number(e.late_fee_amount) || 0,
+            total_due: Number(e.total_due) || 0,
+            paid_amount: Number(e.paid_amount) || 0,
+            total_plot_price: Number(e.total_plot_price) || 0,
+            advance_amount: Number(e.advance_amount) || 0
+          }));
+          this.emiMetrics = res.data.metrics || this.emiMetrics;
+          this.emiPagination = res.data.pagination || this.emiPagination;
+        } else {
+          this.emis = [];
+        }
+      },
+      error: (err: any) => {
+        this.emiLoading = false;
+        this.showToast(err?.error?.message || 'Failed to load EMI installments', 'error');
+      }
+    });
+  }
+
+  setEmiTab(tab: 'ALL' | 'VERIFICATION' | 'PENDING' | 'PAID' | 'OVERDUE'): void {
+    this.emiStatusTab = tab;
+    this.loadEmis(1);
+  }
+
+  onEmiSearch(): void {
+    this.loadEmis(1);
+  }
+
+  resetEmiFilters(): void {
+    this.emiSearch = '';
+    this.emiStatusTab = 'ALL';
+    this.loadEmis(1);
+  }
+
+  openProofModal(emi: any): void {
+    this.selectedProofEmi = emi;
+    this.showProofModal = true;
+  }
+
+  closeProofModal(): void {
+    this.showProofModal = false;
+    this.selectedProofEmi = null;
+  }
+
+  releaseEmi(emi: any): void {
+    if (this.releasingEmiId) return;
+
+    Swal.fire({
+      title: `Release EMI Installment #${emi.installment_no}`,
+      html: `
+        <div style="text-align: left; font-size: 13.5px; line-height: 1.6;">
+          <p><strong>Customer:</strong> ${emi.customer_name || 'Customer'} (${emi.customer_member_id || 'N/A'})</p>
+          <p><strong>Plot & Site:</strong> Plot #${emi.plot_number || 'N/A'}, ${emi.site_name || 'Project Site'}</p>
+          <p><strong>Installment No:</strong> #${emi.installment_no} (${emi.due_date ? (new Date(emi.due_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })) : 'N/A'})</p>
+          <p><strong>EMI Amount:</strong> ₹${Number(emi.total_due || emi.emi_amount || 0).toLocaleString('en-IN')}</p>
+          ${emi.proof_reference_no ? `<p><strong>UTR / Ref No:</strong> ${emi.proof_reference_no}</p>` : ''}
+          ${emi.proof_payment_mode ? `<p><strong>Payment Mode:</strong> ${emi.proof_payment_mode}</p>` : ''}
+          <hr style="margin: 8px 0;"/>
+          <p style="font-size: 12px; color: #059669; font-weight: 600;">
+            ✓ Approving this will mark the installment as <strong>Paid</strong>, generate payment voucher, and release associate/team member commissions!
+          </p>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, Approve & Release',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.releasingEmiId = emi.emi_id;
+        const payload = {
+          paid_amount: Number(emi.total_due || emi.emi_amount || 0)
+        };
+
+        this.api.post(`/api/admin/payment-settlements/emi-installments/${emi.emi_id}/release`, payload, true).subscribe({
+          next: (res: any) => {
+            this.releasingEmiId = null;
+            if (res.success) {
+              Swal.fire({
+                icon: 'success',
+                title: 'EMI Settlement Released!',
+                text: res.message || `Installment #${emi.installment_no} approved and commissions released.`,
+                timer: 2500
+              });
+              this.showToast(`Installment #${emi.installment_no} approved successfully!`);
+              this.loadEmis(this.emiPagination.page);
+            } else {
+              Swal.fire('Error', res.message || 'Failed to release EMI payment', 'error');
+            }
+          },
+          error: (err: any) => {
+            this.releasingEmiId = null;
+            Swal.fire('Error', err?.error?.message || 'Failed to release EMI settlement', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  trackByEmiId(index: number, item: any): any {
+    return item?.emi_id ?? index;
   }
 
   trackByBookingId(index: number, order: any): any {

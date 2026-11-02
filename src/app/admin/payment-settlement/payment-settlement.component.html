@@ -745,4 +745,89 @@
       </div>
     </div>
   </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: VIEW EMI PAYMENT PROOF SCREENSHOT                                  -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showProofModal" class="modal-backdrop-custom">
+    <div class="modal-dialog-custom modal-dialog-md">
+      <div class="modal-content-custom">
+        <div class="modal-header-custom d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <div class="modal-icon-badge" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6) !important;">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div>
+              <h5 class="modal-title mb-0">EMI Payment Proof</h5>
+              <p class="modal-subtitle mb-0 text-muted fs-12">
+                Installment #{{ selectedProofEmi?.installment_no }} • {{ selectedProofEmi?.customer_name }}
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-custom" (click)="closeProofModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body-custom p-3 text-center">
+          <div class="proof-meta-banner mb-3 p-2.5 bg-light rounded-8 border text-start">
+            <div class="row g-2 fs-12">
+              <div class="col-sm-6">
+                <strong>Customer:</strong> {{ selectedProofEmi?.customer_name }} ({{ selectedProofEmi?.customer_member_id }})
+              </div>
+              <div class="col-sm-6">
+                <strong>Amount:</strong> ₹{{ selectedProofEmi?.emi_amount | number }}
+              </div>
+              <div class="col-sm-6" *ngIf="selectedProofEmi?.proof_reference_no">
+                <strong>UTR / Ref:</strong> <span class="font-monospace text-primary fw-700">{{ selectedProofEmi?.proof_reference_no }}</span>
+              </div>
+              <div class="col-sm-6" *ngIf="selectedProofEmi?.proof_payment_mode">
+                <strong>Mode:</strong> {{ selectedProofEmi?.proof_payment_mode }}
+              </div>
+              <div class="col-sm-12" *ngIf="selectedProofEmi?.proof_uploaded_at">
+                <strong>Uploaded At:</strong> {{ selectedProofEmi?.proof_uploaded_at | date:'dd MMM yyyy, hh:mm a' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="proof-img-container p-2 bg-dark rounded-8">
+            <img
+              *ngIf="selectedProofEmi?.proof_file_path"
+              [src]="selectedProofEmi?.proof_file_path"
+              alt="Payment Proof Screenshot"
+              class="img-fluid rounded"
+              style="max-height: 480px; object-fit: contain;"
+            />
+            <div *ngIf="!selectedProofEmi?.proof_file_path" class="text-white py-4">
+              <i class="fas fa-image fs-1 mb-2"></i>
+              <p class="mb-0 fs-13">No proof image file available.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer-custom d-flex align-items-center justify-content-between p-3 bg-light border-top">
+          <a
+            *ngIf="selectedProofEmi?.proof_file_path"
+            [href]="selectedProofEmi?.proof_file_path"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-external-link-alt me-1"></i> Open Full Image
+          </a>
+          <div class="d-flex gap-2">
+            <button
+              *ngIf="selectedProofEmi?.emi_status !== 'Paid'"
+              type="button"
+              class="btn btn-emerald btn-sm px-3 fw-700"
+              (click)="closeProofModal(); releaseEmi(selectedProofEmi)">
+              <i class="fas fa-check-circle me-1"></i> Approve &amp; Release Settlement
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm px-3" (click)="closeProofModal()">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
