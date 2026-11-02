@@ -180,8 +180,28 @@ export class HomeSliderComponent implements OnInit {
       is_active: slider.is_active !== false,
       slider_image: null,
     };
-    this.previewUrl = slider.image_url || '';
+    const ytId = this.extractYouTubeId(slider.image_url);
+    this.previewUrl = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : (slider.image_url || '');
     this.showForm = true;
+  }
+
+  extractYouTubeId(url?: string | null): string | null {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }
+
+  onImageUrlChange(url: string): void {
+    const ytId = this.extractYouTubeId(url);
+    if (ytId) {
+      this.previewUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+      if (!this.form.thumbnail_url) {
+        this.form.thumbnail_url = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+      }
+    } else {
+      this.previewUrl = url;
+    }
   }
 
   closeForm(): void {

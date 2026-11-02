@@ -5,6 +5,16 @@
   (mouseleave)="resumeTimer()">
   <div class="slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
     <div class="slide-bg" [style.background-image]="'url(' + slide.bg + ')'"></div>
+    <div class="slide-video-bg" *ngIf="slide.youtubeEmbedUrl && i === currentSlide">
+      <iframe
+        [src]="slide.youtubeEmbedUrl"
+        title="Slide Background Video"
+        class="hero-bg-iframe"
+        frameborder="0"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
     <div class="slide-overlay"></div>
     <div class="slide-content">
       <div class="mmr-container">

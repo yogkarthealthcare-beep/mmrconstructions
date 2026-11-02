@@ -19,13 +19,13 @@
 
           <!-- 2. YOUTUBE AD -->
           <ng-container *ngIf="ad.type === 'youtube'">
-            <div class="ad-iframe-wrapper" *ngIf="getYouTubeEmbedUrl(ad) as ytUrl">
+            <div class="ad-iframe-wrapper" *ngIf="getYouTubeEmbedUrl(ad) as ytUrl" (click)="$event.stopPropagation()">
               <iframe
                 [src]="ytUrl"
                 title="YouTube Ad Video"
                 class="ad-bg-iframe"
                 frameborder="0"
-                allow="autoplay; encrypted-media; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen>
               </iframe>
             </div>
@@ -57,8 +57,20 @@
             rel="noopener"
             (click)="$event.stopPropagation()"
             class="ad-cta-badge">
-            <span>{{ ad.cta_label || 'Explore Now' }}</span>
-            <i class="fas fa-arrow-right ms-1"></i>
+            <i [class]="isYouTubeUrl(ad.cta_link) ? 'fab fa-youtube text-danger me-1.5' : 'fas fa-arrow-right me-1.5'"></i>
+            <span>{{ ad.cta_label || (isYouTubeUrl(ad.cta_link) ? 'Watch Video' : 'Explore Now') }}</span>
+          </a>
+
+          <!-- Direct Watch on YouTube Badge for YouTube Ads without custom cta_link -->
+          <a
+            *ngIf="ad.type === 'youtube' && !ad.cta_link"
+            [href]="ad.url"
+            target="_blank"
+            rel="noopener"
+            (click)="$event.stopPropagation()"
+            class="ad-cta-badge">
+            <i class="fab fa-youtube text-danger me-1.5"></i>
+            <span>Watch on YouTube</span>
           </a>
         </div>
       </div>

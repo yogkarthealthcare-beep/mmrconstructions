@@ -102,6 +102,18 @@ export class PublicGalleryComponent implements OnInit {
   }
 
   openItem(item: GalleryItem, index: number): void {
+    // If YouTube video, open directly on YouTube in a new tab instead of opening the popup modal
+    if (item.type === 'youtube') {
+      const ytId = item.youtube_id || this.galleryService.extractYouTubeId(item.url);
+      const ytUrl = ytId
+        ? `https://www.youtube.com/watch?v=${ytId}`
+        : (item.url && /^https?:\/\//i.test(item.url) ? item.url : null);
+      if (ytUrl) {
+        window.open(ytUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+    }
+
     this.activeLightboxIndex = index;
     this.activeLightboxItem = {
       ...item,

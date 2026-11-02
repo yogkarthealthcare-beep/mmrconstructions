@@ -209,7 +209,13 @@
             <input class="form-control f-input" type="file" accept=".jpg,.jpeg,.png" (change)="onImageSelected($event)">
             <small class="text-muted fs-9.5">JPG/PNG up to 5 MB.</small>
           </div>
-          <div class="full"><label class="f-label">Image URL (Optional)</label><input class="form-control f-input" name="image_url" placeholder="https://..." maxlength="1000" [(ngModel)]="form.image_url"></div>
+          <div class="full">
+            <label class="f-label">Image or YouTube Video URL (Optional)</label>
+            <input class="form-control f-input" name="image_url" placeholder="https://... or YouTube link (e.g. https://www.youtube.com/watch?v=...)" maxlength="1000" [(ngModel)]="form.image_url" (ngModelChange)="onImageUrlChange($event)">
+            <small *ngIf="extractYouTubeId(form.image_url)" class="text-danger fw-600 fs-11 mt-1 d-block">
+              <i class="fab fa-youtube me-1"></i> YouTube Video link detected! Background video &amp; thumbnail will automatically be generated.
+            </small>
+          </div>
         </div>
 
         <div class="slider-preview rounded-8 mt-2.5" *ngIf="previewUrl || form.image_url">

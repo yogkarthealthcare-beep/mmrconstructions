@@ -137,6 +137,10 @@ export class HomeAdBannerComponent implements OnInit, OnDestroy {
     return this.galleryService.resolveUrl(ad.url);
   }
 
+  isYouTubeUrl(url?: string | null): boolean {
+    return !!this.galleryService.extractYouTubeId(url);
+  }
+
   getYouTubeEmbedUrl(ad: GalleryItem): SafeResourceUrl | null {
     const id = ad.youtube_id || this.galleryService.extractYouTubeId(ad.url);
     if (!id) return null;
@@ -145,8 +149,8 @@ export class HomeAdBannerComponent implements OnInit, OnDestroy {
       return this.ytEmbedCache.get(id)!;
     }
 
-    // Embed autoplay muted loop playsinline
-    const url = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&modestbranding=1&enablejsapi=1`;
+    // Embed with player controls enabled, autoplay muted loop playsinline
+    const url = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=1&loop=1&playlist=${id}&playsinline=1&modestbranding=1&enablejsapi=1&rel=0`;
     const safe = this.sanitizer.bypassSecurityTrustResourceUrl(url);
     this.ytEmbedCache.set(id, safe);
     return safe;
@@ -155,6 +159,14 @@ export class HomeAdBannerComponent implements OnInit, OnDestroy {
   onSlideClick(ad: GalleryItem): void {
     if (ad.cta_link) {
       window.open(ad.cta_link, '_blank', 'noopener,noreferrer');
+    } else if (ad.type === 'youtube') {
+      const ytId = ad.youtube_id || this.galleryService.extractYouTubeId(ad.url);
+      const ytUrl = ytId ? `https://www.youtube.com/watch?v=${ytId}` : (ad.url && /^https?:\/\//i.test(ad.url) ? ad.url : null);
+      if (ytUrl) {
+        window.open(ytUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      this.openLightbox(ad);
     } else {
       this.openLightbox(ad);
     }

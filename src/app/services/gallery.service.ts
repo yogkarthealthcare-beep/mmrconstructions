@@ -14,8 +14,10 @@ export interface GalleryItem {
   thumbnail_storage_path?: string | null;
   youtube_id?: string | null;
   show_in_advertisement: boolean;
+  showInAdvertisement?: boolean;
   is_active: boolean;
   sort_order: number;
+  sortOrder?: number;
   start_date?: string | null;
   end_date?: string | null;
   cta_link?: string | null;

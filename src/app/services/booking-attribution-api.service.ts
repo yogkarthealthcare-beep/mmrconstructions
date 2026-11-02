@@ -55,9 +55,9 @@ export class BookingAttributionApiService {
       if (/on-behalf/i.test(serverMsg) || /other/i.test(serverMsg)) {
         userMsg = 'Customers are not permitted to make bookings on behalf of others.';
       } else if (/kyc/i.test(serverMsg) || /document/i.test(serverMsg)) {
-        userMsg = 'document upload AND KYC not done';
+        userMsg = serverMsg || 'Document verification required.';
       } else {
-        userMsg = serverMsg || 'document upload AND KYC not done';
+        userMsg = serverMsg || 'Access denied.';
       }
     } else if (status === 409) {
       if (/plot/i.test(serverMsg) || /unavailable/i.test(serverMsg)) {

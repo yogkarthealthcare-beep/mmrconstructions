@@ -584,7 +584,8 @@ export class AdminGalleryComponent implements OnInit {
 
   toggleAdQuick(item: GalleryItem): void {
     const newAdStatus = !item.show_in_advertisement;
-    this.galleryService.toggleAdvertisement(item.id, { show_in_advertisement: newAdStatus }).subscribe({
+    const payload: any = { show_in_advertisement: newAdStatus, showInAdvertisement: newAdStatus };
+    this.galleryService.toggleAdvertisement(item.id, payload).subscribe({
       next: updated => {
         item.show_in_advertisement = updated.show_in_advertisement;
         this.refreshAdItems();
@@ -595,7 +596,8 @@ export class AdminGalleryComponent implements OnInit {
   }
 
   removeFromAds(item: GalleryItem): void {
-    this.galleryService.toggleAdvertisement(item.id, { show_in_advertisement: false }).subscribe({
+    const payload: any = { show_in_advertisement: false, showInAdvertisement: false };
+    this.galleryService.toggleAdvertisement(item.id, payload).subscribe({
       next: () => {
         item.show_in_advertisement = false;
         this.refreshAdItems();
@@ -639,7 +641,12 @@ export class AdminGalleryComponent implements OnInit {
   promoteToAd(item: GalleryItem): void {
     const nextOrder = this.adItems.length + 1;
     this.galleryService
-      .toggleAdvertisement(item.id, { show_in_advertisement: true, sort_order: nextOrder })
+      .toggleAdvertisement(item.id, {
+        show_in_advertisement: true,
+        showInAdvertisement: true,
+        sort_order: nextOrder,
+        sortOrder: nextOrder
+      })
       .subscribe({
         next: () => {
           item.show_in_advertisement = true;

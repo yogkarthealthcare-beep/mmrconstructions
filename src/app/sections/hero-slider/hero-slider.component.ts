@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 
@@ -23,6 +24,8 @@ interface SlideItem {
   thumb: string;
   thumbTitle: string;
   thumbSub: string;
+  youtubeId?: string | null;
+  youtubeEmbedUrl?: SafeResourceUrl | null;
 }
 
 @Component({
@@ -35,6 +38,14 @@ interface SlideItem {
 export class HeroSliderComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private router = inject(Router);
+  private sanitizer = inject(DomSanitizer);
+
+  extractYouTubeId(url?: string | null): string | null {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }
   currentSlide = 0;
   private timer: any;
 
@@ -127,25 +138,41 @@ export class HeroSliderComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
           const apiSlides = res.data.map((item: any) => {
-            const bgUrl = item.image_url
-              ? (/^https?:\/\//i.test(item.image_url) ? item.image_url : this.api.url(item.image_url))
-              : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&q=80';
+            const rawImg = (item.image_url || '').trim();
+            const ytId = this.extractYouTubeId(rawImg);
+
+            let bgUrl = '';
+            let ytEmbedUrl: SafeResourceUrl | null = null;
+
+            if (ytId) {
+              bgUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+              ytEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+                `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&playsinline=1&modestbranding=1&enablejsapi=1`
+              );
+            } else if (rawImg) {
+              bgUrl = /^https?:\/\//i.test(rawImg) ? rawImg : this.api.url(rawImg);
+            } else {
+              bgUrl = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&q=80';
+            }
+
             const thumbUrl = item.thumbnail_url
               ? (/^https?:\/\//i.test(item.thumbnail_url) ? item.thumbnail_url : this.api.url(item.thumbnail_url))
-              : bgUrl;
+              : (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : bgUrl);
 
             return {
               bg: bgUrl,
-              tagIcon: item.tag_icon || 'fas fa-star',
+              youtubeId: ytId,
+              youtubeEmbedUrl: ytEmbedUrl,
+              tagIcon: item.tag_icon || (ytId ? 'fab fa-youtube text-danger' : 'fas fa-star'),
               tagTxt: item.tag_text || '',
               title: item.title || '',
               titleHl: item.subtitle || '',
               desc: item.description || '',
               btn1: {
-                text: item.button_text || '',
-                icon: item.button_icon || 'fas fa-arrow-right',
-                link: item.button_link || '',
-                show: item.show_button1 !== false && !!(item.button_text && item.button_text.trim()),
+                text: item.button_text || (ytId ? 'Watch Video' : ''),
+                icon: item.button_icon || (ytId ? 'fab fa-youtube' : 'fas fa-arrow-right'),
+                link: item.button_link || (ytId ? `https://www.youtube.com/watch?v=${ytId}` : ''),
+                show: item.show_button1 !== false && !!((item.button_text && item.button_text.trim()) || ytId),
               },
               btn2: {
                 text: item.button2_text || '',
