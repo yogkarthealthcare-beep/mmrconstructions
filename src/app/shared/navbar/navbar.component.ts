@@ -54,13 +54,11 @@ export class NavbarComponent implements OnInit {
         if (Array.isArray(list) && list.length > 0) {
           this.navSites = list.map((item: any) => {
             const loc = String(item.location || '').trim();
-            const parts = loc.split(',');
-            const city = (item.city && String(item.city).trim()) 
-              ? String(item.city).trim() 
-              : (parts.length > 1 ? parts[parts.length - 1].trim() : (loc || 'UP'));
+            const siteName = String(item.site_name || '').trim();
+            const city = this.resolveSiteCity(item.city, loc, siteName);
             return {
               site_id: Number(item.site_id),
-              site_name: item.site_name,
+              site_name: siteName,
               city: city,
               location: loc
             };
@@ -69,6 +67,40 @@ export class NavbarComponent implements OnInit {
       },
       error: () => {}
     });
+  }
+
+  resolveSiteCity(rawCity?: string, location?: string, siteName?: string): string {
+    const c = String(rawCity || '').trim();
+    const l = String(location || '').trim();
+    const n = String(siteName || '').trim();
+    const haystack = `${c} ${l} ${n}`.toLowerCase();
+
+    if (haystack.includes('kanpur') || haystack.includes('rooma') || haystack.includes('pac line')) {
+      return 'Kanpur';
+    }
+    if (haystack.includes('unnao') || haystack.includes('ajgain') || haystack.includes('tribhuwan') || haystack.includes('gadan')) {
+      return 'Unnao';
+    }
+    if (haystack.includes('lucknow') || haystack.includes('amusi') || haystack.includes('amousi')) {
+      return 'Lucknow';
+    }
+    if (haystack.includes('bighapur')) {
+      return 'Unnao';
+    }
+
+    if (c && !/0\s*0|mmr|construction|\d/i.test(c) && c.length >= 3) {
+      return c;
+    }
+
+    const parts = l.split(',');
+    if (parts.length > 1) {
+      const candidate = parts[parts.length - 1].replace(/\d+/g, '').trim();
+      if (candidate.length >= 3 && !/mmr|construction/i.test(candidate)) {
+        return candidate;
+      }
+    }
+
+    return 'Uttar Pradesh';
   }
 
   get isLoggedIn(): boolean {
